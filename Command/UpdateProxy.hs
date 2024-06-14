@@ -8,11 +8,13 @@
 module Command.UpdateProxy where
 
 import Command
+import qualified Annex
 import Logs.Proxy
 import Annex.UUID
 import qualified Remote as R
 import qualified Types.Remote as R
 import Utility.SafeOutput
+import Types.Cluster
 
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -28,9 +30,12 @@ seek = withNothing (commandAction start)
 start :: CommandStart
 start = startingCustomOutput (ActionItemOther Nothing) $ do
 	rs <- R.remoteList
-	let proxies = S.fromList $ 
-		map (\r -> Proxy (R.uuid r) (R.name r)) $
-			filter (isproxy . R.gitconfig) rs
+	let remoteproxies = S.fromList $ map mkproxy $
+		filter (isproxy . R.gitconfig) rs
+	clusterproxies <-
+		(S.fromList . map mkclusterproxy . M.toList . annexClusters)
+		<$> Annex.getGitConfig
+	let proxies = remoteproxies <> clusterproxies
 	u <- getUUID
 	oldproxies <- fromMaybe mempty . M.lookup u <$> getProxies
 	if oldproxies == proxies
@@ -52,3 +57,8 @@ start = startingCustomOutput (ActionItemOther Nothing) $ do
 				_ -> noop
 	
 	isproxy c = remoteAnnexProxy c || not (null (remoteAnnexClusterNode c))
+	
+	mkproxy r = Proxy (R.uuid r) (R.name r)
+
+	mkclusterproxy (remotename, cu) = 
+		Proxy (fromClusterUUID cu) remotename
