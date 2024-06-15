@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="beryllium@5bc3c32eb8156390f96e363e4ba38976567425ec"
+ nickname="beryllium"
+ avatar="http://cdn.libravatar.org/avatar/62b67d68e918b381e7e9dd6a96c16137"
+ subject="comment 7"
+ date="2024-06-15T07:37:06Z"
+ content="""
+I have found one way to graft in the S3 bucket. And that involves performing git-annex initremote cloud type=S3 <params>, which unavoidably creates a new dummybucket (can use bucket=dummy to identify it). Then performing git-annex enableremote cloud bucket=cloud-<origuuid> to utilise the original bucket without having to copy/move over all the files.
+
+I did try it in one shot with git-annex initremote cloud type=S3 bucket=cloud-<origuuid> <params>, but unfortunately it fails because the creation of the bucket step appears mandatory, and the S3 api errors out with an \"already created bucket\" type of error.
+
+However, if there is a general guidance somewhere for... I guess importing/exporting the special remote metadata (including stored encryption keys), that would be very much appreciated.
+
+Sorry, I should just clarify. Trying to do this via sync from the old, non-tuned git-annex repo fails with:
+
+	git-annex: Remote repository is tuned in incompatible way; cannot be merged with local repository.
+
+Which I understand for the wider branch data implications... but I don't know enough to understand why just the special remote data can't be merge in.
+
+"""]]
