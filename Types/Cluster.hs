@@ -13,9 +13,9 @@ module Types.Cluster (
 	genClusterUUID,
 	fromClusterUUID,
 	isClusterUUID,
-	fromClusterUUID,
 	ClusterNodeUUID(..),
 	Clusters(..),
+	noClusters,
 ) where
 
 import Types.UUID
@@ -79,3 +79,6 @@ data Clusters = Clusters
 	, clusterNodeUUIDs :: M.Map ClusterNodeUUID (S.Set ClusterUUID)
 	}
 	deriving (Show)
+
+noClusters :: Clusters
+noClusters = Clusters mempty mempty

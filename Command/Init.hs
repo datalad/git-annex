@@ -12,6 +12,7 @@ module Command.Init where
 import Command
 import Annex.Init
 import Annex.Version
+import Annex.Startup
 import Types.RepoVersion
 import qualified Annex.SpecialRemote
 
@@ -77,7 +78,7 @@ perform os = do
 			Just v | v /= wantversion ->
 				giveup $ "This repository is already a initialized with version " ++ show (fromRepoVersion v) ++ ", not changing to requested version."
 			_ -> noop
-	initialize
+	initialize startupAnnex
 		(if null (initDesc os) then Nothing else Just (initDesc os))
 		(initVersion os)
 	unless (noAutoEnable os)

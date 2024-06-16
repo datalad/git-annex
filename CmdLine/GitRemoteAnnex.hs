@@ -30,6 +30,7 @@ import qualified Logs.Remote
 import qualified Remote.External
 import Remote.Helper.Encryptable (parseEncryptionMethod)
 import Annex.Transfer
+import Annex.Startup
 import Backend.GitRemoteAnnex
 import Config
 import Types.Key
@@ -1173,7 +1174,7 @@ cleanupInitialization sab alternatejournaldir = void $ tryNonAsync $ do
 						inRepo $ Git.Branch.delete Annex.Branch.fullname
 	ifM (Annex.Branch.hasSibling <&&> nonbuggygitversion)
 		( do
-			autoInitialize' (pure True) remoteList
+			autoInitialize' (pure True) startupAnnex remoteList
 			differences <- allDifferences <$> recordedDifferences
 			when (differences /= mempty) $
 				deletebundleobjects

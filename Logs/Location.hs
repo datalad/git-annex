@@ -41,7 +41,7 @@ import Annex.Common
 import qualified Annex.Branch
 import Logs
 import Logs.Presence
-import Logs.Cluster
+import Types.Cluster
 import Annex.UUID
 import Annex.CatFile
 import Annex.VectorClock
@@ -248,3 +248,8 @@ overLocationLogs' iv discarder keyaction = do
 	Annex.Branch.overBranchFileContents getk (go iv) >>= \case
 		Just r -> return r
 		Nothing -> giveup "This repository is read-only, and there are unmerged git-annex branches, which prevents operating on allu keys. (Set annex.merge-annex-branches to false to ignore the unmerged git-annex branches.)"
+
+-- Cannot import Logs.Cluster due to a cycle.
+-- Annex.clusters gets populated when starting up git-annex.
+getClusters :: Annex Clusters
+getClusters = fromMaybe noClusters <$> Annex.getState Annex.clusters

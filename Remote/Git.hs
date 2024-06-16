@@ -345,7 +345,7 @@ tryGitConfigRead autoinit r hasuuid
 	readlocalannexconfig = do
 		let check = do
 			Annex.BranchState.disableUpdate
-			catchNonAsync (autoInitialize (pure [])) $ \e ->
+			catchNonAsync (autoInitialize noop (pure [])) $ \e ->
 				warning $ UnquotedString $ "Remote " ++ Git.repoDescribe r ++
 					": "  ++ show e
 			Annex.getState Annex.repo
@@ -601,7 +601,7 @@ repairRemote r a = return $ do
 	s <- Annex.new r
 	Annex.eval s $ do
 		Annex.BranchState.disableUpdate
-		ensureInitialized (pure [])
+		ensureInitialized noop (pure [])
 		a `finally` quiesce True
 
 data LocalRemoteAnnex = LocalRemoteAnnex Git.Repo (MVar [(Annex.AnnexState, Annex.AnnexRead)])
@@ -645,7 +645,7 @@ onLocal' (LocalRemoteAnnex repo mv) a = liftIO (takeMVar mv) >>= \case
 	[] -> do
 		liftIO $ putMVar mv []
 		v <- newLocal repo
-		go (v, ensureInitialized (pure []) >> a)
+		go (v, ensureInitialized noop (pure []) >> a)
 	(v:rest) -> do
 		liftIO $ putMVar mv rest
 		go (v, a)

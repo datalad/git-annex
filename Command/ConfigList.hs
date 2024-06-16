@@ -16,6 +16,7 @@ import Git.Types
 import Remote.GCrypt (coreGCryptId)
 import qualified CmdLine.GitAnnexShell.Fields as Fields
 import CmdLine.GitAnnexShell.Checks
+import Annex.Startup
 
 cmd :: Command
 cmd = noCommit $ dontCheck repoExists $
@@ -47,7 +48,7 @@ findOrGenUUID = do
 		else ifM (Annex.Branch.hasSibling <||> (isJust <$> Fields.getField Fields.autoInit))
 			( do
 				liftIO checkNotReadOnly
-				initialize Nothing Nothing
+				initialize startupAnnex Nothing Nothing
 				getUUID
 			, return NoUUID
 			)

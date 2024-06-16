@@ -17,6 +17,7 @@ import qualified BuildInfo
 import Utility.HumanTime
 import Assistant.Install
 import Remote.List
+import Annex.Startup
 
 import Control.Concurrent.Async
 
@@ -63,7 +64,7 @@ start o
 		stop
 	| otherwise = do
 		liftIO ensureInstalled
-		ensureInitialized remoteList
+		ensureInitialized startupAnnex remoteList
 		Command.Watch.start True (daemonOptions o) (startDelayOption o)
 
 startNoRepo :: AssistantOptions -> IO ()

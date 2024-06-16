@@ -103,8 +103,8 @@ genDescription Nothing = do
 		Right username -> [username, at, hostname, ":", reldir]
 		Left _ -> [hostname, ":", reldir]
 
-initialize :: Maybe String -> Maybe RepoVersion -> Annex ()
-initialize mdescription mversion = checkInitializeAllowed $ \initallowed -> do
+initialize :: Annex () -> Maybe String -> Maybe RepoVersion -> Annex ()
+initialize startupannex mdescription mversion = checkInitializeAllowed $ \initallowed -> do
 	{- Has to come before any commits are made as the shared
 	 - clone heuristic expects no local objects. -}
 	sharedclone <- checkSharedClone
@@ -114,14 +114,14 @@ initialize mdescription mversion = checkInitializeAllowed $ \initallowed -> do
 	ensureCommit $ Annex.Branch.create
 
 	prepUUID
-	initialize' mversion initallowed
+	initialize' startupannex mversion initallowed
 	
 	initSharedClone sharedclone
 	
 	u <- getUUID
 	when (u == NoUUID) $
 		giveup "Failed to read annex.uuid from git config after setting it. This should never happen. Please file a bug report."
-	
+
 	{- Avoid overwriting existing description with a default
 	 - description. -}
 	whenM (pure (isJust mdescription) <||> not . M.member u <$> uuidDescMapRaw) $
@@ -129,8 +129,8 @@ initialize mdescription mversion = checkInitializeAllowed $ \initallowed -> do
 
 -- Everything except for uuid setup, shared clone setup, and initial
 -- description.
-initialize' :: Maybe RepoVersion -> InitializeAllowed -> Annex ()
-initialize' mversion _initallowed = do
+initialize' :: Annex () -> Maybe RepoVersion -> InitializeAllowed -> Annex ()
+initialize' startupannex mversion _initallowed = do
 	checkLockSupport
 	checkFifoSupport
 	checkCrippledFileSystem
@@ -161,6 +161,10 @@ initialize' mversion _initallowed = do
 	propigateSecureHashesOnly
 	createInodeSentinalFile False
 	fixupUnusualReposAfterInit
+
+	-- This is usually run at Annex startup, but when git-annex was
+	-- not already initialized, it will not yet have run.
+	startupannex
 
 uninitialize :: Annex ()
 uninitialize = do
@@ -203,12 +207,12 @@ getInitializedVersion = do
  -
  - Checks repository version and handles upgrades too.
  -}
-ensureInitialized :: Annex [Remote] -> Annex ()
-ensureInitialized remotelist = getInitializedVersion >>= maybe needsinit checkUpgrade
+ensureInitialized :: Annex () -> Annex [Remote] -> Annex ()
+ensureInitialized startupannex remotelist = getInitializedVersion >>= maybe needsinit checkUpgrade
   where
 	needsinit = ifM autoInitializeAllowed
 		( do
-			tryNonAsync (initialize Nothing Nothing) >>= \case
+			tryNonAsync (initialize startupannex Nothing Nothing) >>= \case
 				Right () -> noop
 				Left e -> giveup $ show e ++ "\n" ++
 					"git-annex: automatic initialization failed due to above problems"
@@ -256,15 +260,16 @@ guardSafeToUseRepo a = ifM (inRepo Git.Config.checkRepoConfigInaccessible)
  -
  - Checks repository version and handles upgrades too.
  -}
-autoInitialize :: Annex [Remote] -> Annex ()
+autoInitialize :: Annex () -> Annex [Remote] -> Annex ()
 autoInitialize = autoInitialize' autoInitializeAllowed
 
-autoInitialize' :: Annex Bool -> Annex [Remote] -> Annex ()
-autoInitialize' check remotelist = getInitializedVersion >>= maybe needsinit checkUpgrade
+autoInitialize' :: Annex Bool -> Annex () -> Annex [Remote] -> Annex ()
+autoInitialize' check startupannex remotelist =
+	getInitializedVersion >>= maybe needsinit checkUpgrade
   where
 	needsinit =
 		whenM (initializeAllowed <&&> check) $ do
-			initialize Nothing Nothing
+			initialize startupannex Nothing Nothing
 			autoEnableSpecialRemotes remotelist
 
 {- Checks if a repository is initialized. Does not check version for upgrade. -}
