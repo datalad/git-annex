@@ -20,6 +20,7 @@ module Annex.NumCopies (
 	defaultNumCopies,
 	numCopiesCheck,
 	numCopiesCheck',
+	numCopiesCheck'',
 	numCopiesCount,
 	verifyEnoughCopiesToDrop,
 	verifiableCopies,
@@ -199,12 +200,17 @@ numCopiesCheck file key vs = do
 
 numCopiesCheck' :: RawFilePath -> (Int -> Int -> v) -> [UUID] -> Annex v
 numCopiesCheck' file vs have = do
-	needed <- fromNumCopies . fst <$> getFileNumMinCopies file
+	needed <- fst <$> getFileNumMinCopies file
 	let nhave = numCopiesCount have
 	explain (ActionItemTreeFile file) $ Just $ UnquotedString $
 		"has " ++ show nhave ++ " " ++ pluralCopies nhave ++ 
 		", and the configured annex.numcopies is " ++ show needed
-	return $ nhave `vs` needed
+	return $ numCopiesCheck'' have vs needed
+
+numCopiesCheck'' :: [UUID] -> (Int -> Int -> v) -> NumCopies -> v
+numCopiesCheck'' have vs needed =
+	let nhave = numCopiesCount have
+	in nhave `vs` fromNumCopies needed
 
 {- When a key is logged as present in a node of the cluster,
  - the cluster's UUID will also be in the list, but is not a

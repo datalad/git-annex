@@ -58,7 +58,7 @@ handleDropsFrom locs rs reason fromhere key afile si preverified runner = do
 	getcopies fs = do
 		(untrusted, have) <- trustPartition UnTrusted locs
 		(numcopies, mincopies) <- getSafestNumMinCopies' afile key fs
-		return (length have, numcopies, mincopies, S.fromList untrusted)
+		return (numCopiesCount have, numcopies, mincopies, S.fromList untrusted)
 
 	{- Check that we have enough copies still to drop the content.
 	 - When the remote being dropped from is untrusted, it was not

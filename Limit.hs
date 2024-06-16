@@ -408,7 +408,7 @@ limitCopies want = case splitc ':' want of
 	go' n good notpresent key = do
 		us <- filter (`S.notMember` notpresent)
 			<$> (filterM good =<< Remote.keyLocations key)
-		return $ length us >= n
+		return $ numCopiesCount us >= n
 	checktrust checker u = checker <$> lookupTrust u
 	checkgroup g u = S.member g <$> lookupGroups u
 	parsetrustspec s
@@ -442,7 +442,8 @@ limitLackingCopies desc approx want = case readish want of
 				MatchingUserInfo {} -> approxNumCopies
 		us <- filter (`S.notMember` notpresent)
 			<$> (trustExclude UnTrusted =<< Remote.keyLocations key)
-		return $ fromNumCopies numcopies - length us >= needed
+		let vs nhave numcopies' = numcopies' - nhave >= needed
+		return $ numCopiesCheck'' us vs numcopies
 	approxNumCopies = fromMaybe defaultNumCopies <$> getGlobalNumCopies
 
 {- Match keys that are unused.

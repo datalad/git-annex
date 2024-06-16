@@ -48,11 +48,7 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
 * Omit cluster UUIDs when constructing drop proofs, since lockcontent will
   always fail on a cluster. (done)
 
-* Don't count cluster UUID as a copy. (Including in `whereis` display.)
-
-  Work in progress. fromNumCopies is sometimes used to get a
-  number that is compared with a list of UUIDs. And limitCopies doesn't
-  use numcopies machinery
+* Don't count cluster UUID as a copy. (done)
 
 * Basic proxying to special remote support (non-streaming).
 
