@@ -1,6 +1,6 @@
 {- git-annex numcopies configuration and checking
  -
- - Copyright 2014-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -20,6 +20,7 @@ module Annex.NumCopies (
 	defaultNumCopies,
 	numCopiesCheck,
 	numCopiesCheck',
+	numCopiesCount,
 	verifyEnoughCopiesToDrop,
 	verifiableCopies,
 	UnVerifiedCopy(..),
@@ -30,6 +31,7 @@ import qualified Annex
 import Types.NumCopies
 import Logs.NumCopies
 import Logs.Trust
+import Types.Cluster
 import Annex.CheckAttr
 import qualified Remote
 import qualified Types.Remote as Remote
@@ -198,11 +200,18 @@ numCopiesCheck file key vs = do
 numCopiesCheck' :: RawFilePath -> (Int -> Int -> v) -> [UUID] -> Annex v
 numCopiesCheck' file vs have = do
 	needed <- fromNumCopies . fst <$> getFileNumMinCopies file
-	let nhave = length have
+	let nhave = numCopiesCount have
 	explain (ActionItemTreeFile file) $ Just $ UnquotedString $
 		"has " ++ show nhave ++ " " ++ pluralCopies nhave ++ 
 		", and the configured annex.numcopies is " ++ show needed
 	return $ nhave `vs` needed
+
+{- When a key is logged as present in a node of the cluster,
+ - the cluster's UUID will also be in the list, but is not a
+ - distinct copy.
+ -}
+numCopiesCount :: [UUID] -> Int
+numCopiesCount = length . filter (not . isClusterUUID)
 
 data UnVerifiedCopy = UnVerifiedRemote Remote | UnVerifiedHere
 	deriving (Ord, Eq)
@@ -239,12 +248,17 @@ verifyEnoughCopiesToDrop nolocmsg key removallock neednum needmin skip preverifi
 				Left stillhave -> helper bad missing stillhave (c:cs) lockunsupported
 		| otherwise = case c of
 			UnVerifiedHere -> lockContentShared key contverified
-			UnVerifiedRemote r -> checkremote r contverified $
-				let lockunsupported' = r : lockunsupported
-				in Remote.hasKey r key >>= \case
-					Right True  -> helper bad missing (mkVerifiedCopy RecentlyVerifiedCopy r : have) cs lockunsupported'
-					Left _      -> helper (r:bad) missing have cs lockunsupported'
-					Right False -> helper bad (Remote.uuid r:missing) have cs lockunsupported'
+			UnVerifiedRemote r
+				-- Skip cluster uuids because locking is
+				-- not supported with them, instead will
+				-- lock individual nodes.
+				| isClusterUUID (Remote.uuid r) -> helper bad missing have cs lockunsupported
+				| otherwise -> checkremote r contverified $
+					let lockunsupported' = r : lockunsupported
+					in Remote.hasKey r key >>= \case
+						Right True  -> helper bad missing (mkVerifiedCopy RecentlyVerifiedCopy r : have) cs lockunsupported'
+						Left _      -> helper (r:bad) missing have cs lockunsupported'
+						Right False -> helper bad (Remote.uuid r:missing) have cs lockunsupported'
 		  where
 			contverified vc = helper bad missing (vc : have) cs lockunsupported
 
@@ -312,13 +326,16 @@ pluralCopies _ = "copies"
  - The return lists also exclude any repositories that are untrusted,
  - since those should not be used for verification.
  -
+ - Cluster UUIDs are also excluded since locking on a cluster is done by
+ - locking on individual nodes.
+ -
  - The UnVerifiedCopy list is cost ordered.
  - The VerifiedCopy list contains repositories that are trusted to
  - contain the key.
  -}
 verifiableCopies :: Key -> [UUID] -> Annex ([UnVerifiedCopy], [VerifiedCopy])
 verifiableCopies key exclude = do
-	locs <- Remote.keyLocations key
+	locs <- filter (not . isClusterUUID) <$> Remote.keyLocations key
 	(remotes, trusteduuids) <- Remote.remoteLocations (Remote.IncludeIgnored False) locs
 		=<< trustGet Trusted
 	untrusteduuids <- trustGet UnTrusted

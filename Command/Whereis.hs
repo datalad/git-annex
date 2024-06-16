@@ -15,6 +15,7 @@ import Logs.Trust
 import Logs.Web
 import Remote.Web (getWebUrls)
 import Annex.UUID
+import Annex.NumCopies
 import qualified Utility.Format
 import qualified Command.Find
 
@@ -86,7 +87,7 @@ perform o remotemap key ai = do
 	(untrustedlocations, safelocations) <- trustPartition UnTrusted locations
 	case formatOption o of
 		Nothing -> do
-			let num = length safelocations
+			let num = numCopiesCount safelocations
 			showNote $ UnquotedString $ show num ++ " " ++ copiesplural num
 			pp <- ppwhereis "whereis" safelocations urls
 			unless (null safelocations) $
