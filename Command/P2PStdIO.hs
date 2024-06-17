@@ -62,17 +62,15 @@ performLocal theiruuid servermode = do
 performProxy :: UUID -> P2P.ServerMode -> Remote -> CommandPerform
 performProxy clientuuid servermode remote = do
 	clientrunst <- liftIO (mkRunState $ Serving clientuuid Nothing)
-	let clientside = ClientSide $
-		liftIO . runNetProto clientrunst
-			(stdioP2PConnection Nothing)
+	let clientside = ClientSide clientrunst (stdioP2PConnection Nothing)
 	getClientProtocolVersion remote clientside 
 		(withclientversion clientside)
 		protoerrhandler
   where
-	withclientversion clientside (Just (clientmaxversion, othermsg)) =
-		connectremote clientmaxversion $ \remoteside ->
-			proxy done proxymethods servermode clientside remoteside 
-				othermsg protoerrhandler
+	withclientversion clientside (Just (clientmaxversion, othermsg)) = do
+		remoteside <- connectremote clientmaxversion
+		proxy done proxymethods servermode clientside remoteside 
+			othermsg protoerrhandler
 	withclientversion _ Nothing = done
 	
 	proxymethods = ProxyMethods
@@ -81,12 +79,15 @@ performProxy clientuuid servermode remote = do
 		}
 
 	-- FIXME: Support special remotes.
-	connectremote clientmaxversion cont = 
+	connectremote clientmaxversion = mkRemoteSide (Remote.uuid remote) $
 		openP2PShellConnection' remote clientmaxversion >>= \case
 			Just conn@(P2P.IO.OpenConnection (remoterunst, remoteconn, _)) ->
-				cont (RemoteSide (liftIO . runNetProto remoterunst remoteconn) (Remote.uuid remote))
-					`finally` liftIO (closeP2PShellConnection conn)
-			_  -> giveup "Unable to connect to remote."
+				return $ Just 
+					( remoterunst
+					, remoteconn
+					, void $ liftIO $ closeP2PShellConnection conn
+					)
+			_  -> return Nothing
 
 	protoerrhandler cont a = a >>= \case
 		-- Avoid displaying an error when the client hung up on us.

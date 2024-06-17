@@ -15,10 +15,23 @@ import P2P.IO
 import qualified Remote
 import Utility.Metered (nullMeterUpdate)
 
-type ProtoRunner = forall a. Proto a -> Annex (Either ProtoFailure a)
+import Control.Concurrent.STM
 
-data ClientSide = ClientSide ProtoRunner
-data RemoteSide = RemoteSide ProtoRunner UUID
+type ProtoCloser = Annex ()
+
+data ClientSide = ClientSide RunState P2PConnection
+
+data RemoteSide = RemoteSide
+	{ remoteUUID :: UUID
+	, remoteConnect :: Annex (Maybe (RunState, P2PConnection, ProtoCloser))
+	, remoteTMVar :: TMVar (RunState, P2PConnection, ProtoCloser)
+	}
+
+mkRemoteSide :: UUID -> Annex (Maybe (RunState, P2PConnection, ProtoCloser)) -> Annex RemoteSide
+mkRemoteSide remoteuuid remoteconnect = RemoteSide
+	<$> pure remoteuuid
+	<*> pure remoteconnect
+	<*> liftIO (atomically newEmptyTMVar)
 
 {- To keep this module limited to P2P protocol actions,
  - all other actions that a proxy needs to do are provided
@@ -47,12 +60,14 @@ type ProtoErrorHandled r =
  - brought up yet.
  -}
 getClientProtocolVersion 
-	:: Remote 
+	:: Remote
 	-> ClientSide
 	-> (Maybe (ProtocolVersion, Maybe Message) -> Annex r)
 	-> ProtoErrorHandled r
-getClientProtocolVersion remote (ClientSide client) cont protoerrhandler =
+getClientProtocolVersion remote (ClientSide clientrunst clientconn) cont protoerrhandler =
 	protoerrhandler cont $ client $ getClientProtocolVersion' remote
+  where
+	client = liftIO . runNetProto clientrunst clientconn
 
 getClientProtocolVersion'
 	:: Remote
@@ -74,8 +89,7 @@ getClientProtocolVersion' remote = do
 			(Just (defaultProtocolVersion, Just othermsg))
 
 {- Proxy between the client and the remote. This picks up after
- - getClientProtocolVersion, after the connection to the remote has
- - been made, and the protocol version negotiated with the remote.
+ - getClientProtocolVersion.
  -}
 proxy 
 	:: Annex r
@@ -87,7 +101,7 @@ proxy
 	-- ^ non-VERSION message that was received from the client when
 	-- negotiating protocol version, and has not been responded to yet
 	-> ProtoErrorHandled r
-proxy proxydone proxymethods servermode (ClientSide client) (RemoteSide remote remoteuuid) othermessage protoerrhandler = do
+proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) remoteside othermessage protoerrhandler = do
 	case othermessage of
 		Just message -> proxyclientmessage (Just message)
 		Nothing -> do
@@ -95,6 +109,26 @@ proxy proxydone proxymethods servermode (ClientSide client) (RemoteSide remote r
 			protoerrhandler proxynextclientmessage $ 
 				client $ net $ sendMessage $ VERSION v
   where
+	client = liftIO . runNetProto clientrunst clientconn
+
+	remote a = liftIO (atomically $ tryReadTMVar $ remoteTMVar remoteside) >>= \case
+		Just (runst, conn, _closer) -> liftIO $ runNetProto runst conn a
+		Nothing -> remoteConnect remoteside >>= \case
+			Just (runst, conn, closer) -> do
+				liftIO $ atomically $ putTMVar
+					(remoteTMVar remoteside)
+					(runst, conn, closer)
+				liftIO $ runNetProto runst conn a
+			Nothing -> giveup "Unable to connect to remote."
+
+	closeremote = liftIO (atomically $ tryReadTMVar $ remoteTMVar remoteside) >>= \case
+		Just (_, _, closer) -> closer
+		Nothing -> return ()
+
+	proxydone' = do
+		closeremote
+		proxydone
+
 	protocolversion = either (const defaultProtocolVersion) id
 		<$> remote (net getProtocolVersion)
 
@@ -107,7 +141,7 @@ proxy proxydone proxymethods servermode (ClientSide client) (RemoteSide remote r
 			protoerrhandler proxynextclientmessage $
 				client notallowed
 
-	proxyclientmessage Nothing = proxydone
+	proxyclientmessage Nothing = proxydone'
 	proxyclientmessage (Just message) = case message of
 		CHECKPRESENT _ ->
 			proxyresponse message (const proxynextclientmessage)
@@ -129,7 +163,7 @@ proxy proxydone proxymethods servermode (ClientSide client) (RemoteSide remote r
 			servermodechecker (checkCONNECTServerMode service) $
 				-- P2P protocol does not continue after
 				-- relaying from git.
-				protoerrhandler (\() -> proxydone) $
+				protoerrhandler (\() -> proxydone') $
 					client $ net $ relayService service 
 		NOTIFYCHANGE -> protoerr
 		-- Messages that the client should only send after one of
@@ -172,7 +206,7 @@ proxy proxydone proxymethods servermode (ClientSide client) (RemoteSide remote r
 	withresp a (Just resp) = a resp
 	-- Whichever of the remote or client the message was read from 
 	-- hung up.
-	withresp _ Nothing = proxydone
+	withresp _ Nothing = proxydone'
 
 	-- Read a message from one party, send it to the other,
 	-- and then pass the message to the continuation.
@@ -190,7 +224,7 @@ proxy proxydone proxymethods servermode (ClientSide client) (RemoteSide remote r
 		proxyresponse message $ \resp () -> do
 			case resp of
 				SUCCESS -> removedContent proxymethods
-					remoteuuid k
+					(remoteUUID remoteside) k
 				_ -> return ()
 			proxynextclientmessage ()
 
@@ -219,7 +253,7 @@ proxy proxydone proxymethods servermode (ClientSide client) (RemoteSide remote r
 	  where
 		finished resp () = do
 			case resp of
-				SUCCESS -> addedContent proxymethods remoteuuid k
+				SUCCESS -> addedContent proxymethods (remoteUUID remoteside) k
 				_ -> return ()
 			proxynextclientmessage ()
 
