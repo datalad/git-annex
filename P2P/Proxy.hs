@@ -34,8 +34,8 @@ data ProxyMethods = ProxyMethods
  - used to handle a ProtoFailure when receiving a message
  - from the client or remote.
  -}
-type ProtoErrorHandled m r = 
-	(forall t. ((t -> m r) -> m (Either ProtoFailure t) -> m r)) -> m r
+type ProtoErrorHandled r = 
+	(forall t. ((t -> Annex r) -> Annex (Either ProtoFailure t) -> Annex r)) -> Annex r
 
 {- This is the first thing run when proxying with a client. 
  - The client has already authenticated. Most clients will send a
@@ -50,7 +50,7 @@ getClientProtocolVersion
 	:: Remote 
 	-> ClientSide
 	-> (Maybe (ProtocolVersion, Maybe Message) -> Annex r)
-	-> ProtoErrorHandled Annex r
+	-> ProtoErrorHandled r
 getClientProtocolVersion remote (ClientSide client) cont protoerrhandler =
 	protoerrhandler cont $ client $ getClientProtocolVersion' remote
 
@@ -86,7 +86,7 @@ proxy
 	-> Maybe Message
 	-- ^ non-VERSION message that was received from the client when
 	-- negotiating protocol version, and has not been responded to yet
-	-> ProtoErrorHandled Annex r
+	-> ProtoErrorHandled r
 proxy proxydone proxymethods servermode (ClientSide client) (RemoteSide remote remoteuuid) othermessage protoerrhandler = do
 	case othermessage of
 		Just message -> proxyclientmessage (Just message)
