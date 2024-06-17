@@ -17,6 +17,7 @@ import Annex.UUID
 import qualified CmdLine.GitAnnexShell.Checks as Checks
 import Remote.Helper.Ssh (openP2PShellConnection', closeP2PShellConnection)
 import Logs.Location
+import Logs.Cluster
 import qualified Remote
 
 import System.IO.Error
@@ -40,8 +41,12 @@ start theiruuid = startingCustomOutput (ActionItemOther Nothing) $ do
 			(False, True) -> P2P.ServeAppendOnly
 			(False, False) -> P2P.ServeReadWrite
 	Annex.getState Annex.proxyremote >>= \case
-		Nothing -> performLocal theiruuid servermode
-		Just r -> performProxy theiruuid servermode r
+		Nothing ->
+			performLocal theiruuid servermode
+		Just (Right r) ->
+			performProxy theiruuid servermode r
+		Just (Left clusteruuid) -> 
+			performProxyCluster theiruuid clusteruuid servermode
 
 performLocal :: UUID -> P2P.ServerMode -> CommandPerform
 performLocal theiruuid servermode = do
@@ -51,48 +56,60 @@ performLocal theiruuid servermode = do
 		P2P.net $ P2P.sendMessage (P2P.AUTH_SUCCESS myuuid)
 		P2P.serveAuthed servermode myuuid
 	runst <- liftIO $ mkRunState $ Serving theiruuid Nothing
-	runFullProto runst conn server >>= \case
-		Right () -> done
-		-- Avoid displaying an error when the client hung up on us.
-		Left (ProtoFailureIOError e) | isEOFError e -> done
-		Left e -> giveup (describeProtoFailure e)
-  where
-	done = next $ return True
+	p2pErrHandler (const p2pDone) (runFullProto runst conn server)
 
 performProxy :: UUID -> P2P.ServerMode -> Remote -> CommandPerform
 performProxy clientuuid servermode remote = do
-	clientrunst <- liftIO (mkRunState $ Serving clientuuid Nothing)
-	let clientside = ClientSide clientrunst (stdioP2PConnection Nothing)
-	getClientProtocolVersion remote clientside 
+	clientside <- proxyClientSide clientuuid
+	getClientProtocolVersion (Remote.uuid remote) clientside 
 		(withclientversion clientside)
-		protoerrhandler
+		p2pErrHandler
   where
 	withclientversion clientside (Just (clientmaxversion, othermsg)) = do
-		remoteside <- connectremote clientmaxversion
-		proxy done proxymethods servermode clientside remoteside 
-			othermsg protoerrhandler
-	withclientversion _ Nothing = done
+		remoteside <- proxySshRemoteSide clientmaxversion remote
+		proxy p2pDone proxymethods servermode clientside remoteside 
+			othermsg p2pErrHandler
+	withclientversion _ Nothing = p2pDone
 	
 	proxymethods = ProxyMethods
 		{ removedContent = \u k -> logChange k u InfoMissing
 		, addedContent = \u k -> logChange k u InfoPresent
 		}
 
-	-- FIXME: Support special remotes.
-	connectremote clientmaxversion = mkRemoteSide (Remote.uuid remote) $
-		openP2PShellConnection' remote clientmaxversion >>= \case
-			Just conn@(P2P.IO.OpenConnection (remoterunst, remoteconn, _)) ->
-				return $ Just 
-					( remoterunst
-					, remoteconn
-					, void $ liftIO $ closeP2PShellConnection conn
-					)
-			_  -> return Nothing
+performProxyCluster :: UUID -> ClusterUUID -> P2P.ServerMode -> CommandPerform
+performProxyCluster clientuuid clusteruuid servermode = do
+	clientside <- proxyClientSide clientuuid
+	getClientProtocolVersion (fromClusterUUID clusteruuid) clientside 
+		(withclientversion clientside)
+		p2pErrHandler
+  where
+	withclientversion clientside (Just (clientmaxversion, othermsg)) = do
+		giveup "TODO"
+	withclientversion _ Nothing = p2pDone
 
-	protoerrhandler cont a = a >>= \case
-		-- Avoid displaying an error when the client hung up on us.
-		Left (ProtoFailureIOError e) | isEOFError e -> done
-		Left e -> giveup (describeProtoFailure e)
-		Right v -> cont v
-	
-	done = next $ return True
+proxyClientSide :: UUID -> Annex ClientSide
+proxyClientSide clientuuid = do
+	clientrunst <- liftIO (mkRunState $ Serving clientuuid Nothing)
+	return $ ClientSide clientrunst (stdioP2PConnection Nothing)
+
+-- FIXME: Support special remotes.
+proxySshRemoteSide :: P2P.ProtocolVersion -> Remote -> Annex RemoteSide
+proxySshRemoteSide clientmaxversion remote = mkRemoteSide (Remote.uuid remote) $
+	openP2PShellConnection' remote clientmaxversion >>= \case
+		Just conn@(P2P.IO.OpenConnection (remoterunst, remoteconn, _)) ->
+			return $ Just 
+				( remoterunst
+				, remoteconn
+				, void $ liftIO $ closeP2PShellConnection conn
+				)
+		_  -> return Nothing
+
+p2pErrHandler :: (a -> CommandPerform) -> Annex (Either ProtoFailure a) -> CommandPerform
+p2pErrHandler cont a = a >>= \case
+	-- Avoid displaying an error when the client hung up on us.
+	Left (ProtoFailureIOError e) | isEOFError e -> p2pDone
+	Left e -> giveup (describeProtoFailure e)
+	Right v -> cont v
+
+p2pDone :: CommandPerform
+p2pDone = next $ return True

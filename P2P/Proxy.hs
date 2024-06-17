@@ -12,7 +12,6 @@ module P2P.Proxy where
 import Annex.Common
 import P2P.Protocol
 import P2P.IO
-import qualified Remote
 import Utility.Metered (nullMeterUpdate)
 
 import Control.Concurrent.STM
@@ -60,20 +59,20 @@ type ProtoErrorHandled r =
  - brought up yet.
  -}
 getClientProtocolVersion 
-	:: Remote
+	:: UUID
 	-> ClientSide
 	-> (Maybe (ProtocolVersion, Maybe Message) -> Annex r)
 	-> ProtoErrorHandled r
-getClientProtocolVersion remote (ClientSide clientrunst clientconn) cont protoerrhandler =
-	protoerrhandler cont $ client $ getClientProtocolVersion' remote
+getClientProtocolVersion remoteuuid (ClientSide clientrunst clientconn) cont protoerrhandler =
+	protoerrhandler cont $ client $ getClientProtocolVersion' remoteuuid
   where
 	client = liftIO . runNetProto clientrunst clientconn
 
 getClientProtocolVersion'
-	:: Remote
+	:: UUID
 	-> Proto (Maybe (ProtocolVersion, Maybe Message))
-getClientProtocolVersion' remote = do
-	net $ sendMessage (AUTH_SUCCESS (Remote.uuid remote))
+getClientProtocolVersion' remoteuuid = do
+	net $ sendMessage (AUTH_SUCCESS remoteuuid)
 	msg <- net receiveMessage
 	case msg of
 		Nothing -> return Nothing

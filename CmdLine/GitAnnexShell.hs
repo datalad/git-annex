@@ -21,6 +21,7 @@ import Remote.GCrypt (getGCryptUUID)
 import P2P.Protocol (ServerMode(..))
 import Git.Types
 import Logs.Proxy
+import Logs.Cluster
 import Logs.UUID
 import Remote
 
@@ -193,21 +194,33 @@ checkProxy remoteuuid ouruuid = M.lookup ouruuid <$> getProxies >>= \case
 	Just proxies ->
 		case filter (\p -> proxyRemoteUUID p == remoteuuid) (S.toList proxies) of
 			[] -> notconfigured
-			ps -> do
-				-- This repository may have multiple
-				-- remotes that access the same repository.
-				-- Proxy for the lowest cost one that
-				-- is configured to be used as a proxy.
-				rs <- concat . byCost <$> remoteList
-				let sameuuid r = uuid r == remoteuuid
-				let samename r p = name r == proxyRemoteName p
-				case headMaybe (filter (\r -> sameuuid r && any (samename r) ps) rs) of
-					Nothing -> notconfigured
-					Just r -> do
-						Annex.changeState $ \st ->
-							st { Annex.proxyremote = Just r }
-						return True
+			ps -> case mkClusterUUID remoteuuid of
+				Just cu -> proxyforcluster cu
+				Nothing -> proxyfor ps
   where
+	-- This repository may have multiple remotes that access the same
+	-- repository. Proxy for the lowest cost one that is configured to
+	-- be used as a proxy.
+	proxyfor ps = do
+		rs <- concat . byCost <$> remoteList
+		let sameuuid r = uuid r == remoteuuid
+		let samename r p = name r == proxyRemoteName p
+		case headMaybe (filter (\r -> sameuuid r && any (samename r) ps) rs) of
+			Nothing -> notconfigured
+			Just r -> do
+				Annex.changeState $ \st ->
+					st { Annex.proxyremote = Just (Right r) }
+				return True
+
+	proxyforcluster cu = do
+		clusters <- getClusters
+		if M.member cu (clusterUUIDs clusters)
+			then do
+				Annex.changeState $ \st ->
+					st { Annex.proxyremote = Just (Left cu) }
+				return True
+			else notconfigured
+
 	notconfigured = M.lookup remoteuuid <$> uuidDescMap >>= \case
-		Just desc -> giveup $ "not configured to proxy for repository " ++ (fromUUIDDesc desc)
+		Just desc -> giveup $ "not configured to proxy for repository " ++ fromUUIDDesc desc
 		Nothing -> return False

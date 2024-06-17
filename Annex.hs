@@ -215,7 +215,7 @@ data AnnexState = AnnexState
 	, urloptions :: Maybe UrlOptions
 	, insmudgecleanfilter :: Bool
 	, getvectorclock :: IO CandidateVectorClock
-	, proxyremote :: Maybe (Types.Remote.RemoteA Annex)
+	, proxyremote :: Maybe (Either ClusterUUID (Types.Remote.RemoteA Annex))
 	}
 
 newAnnexState :: GitConfig -> Git.Repo -> IO AnnexState

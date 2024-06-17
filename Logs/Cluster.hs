@@ -8,14 +8,10 @@
 {-# LANGUAGE OverloadedStrings, TupleSections #-}
 
 module Logs.Cluster (
-	ClusterUUID,
-	isClusterUUID,
-	fromClusterUUID,
-	ClusterNodeUUID(..),
+	module Types.Cluster,
 	getClusters,
 	loadClusters,
 	recordCluster,
-	Clusters(..)
 ) where
 
 import qualified Annex
