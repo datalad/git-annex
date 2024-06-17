@@ -61,9 +61,10 @@ performLocal theiruuid servermode = do
 
 performProxy :: UUID -> P2P.ServerMode -> Remote -> CommandPerform
 performProxy clientuuid servermode remote = do
-	clientside <- ClientSide
-		<$> liftIO (mkRunState $ Serving clientuuid Nothing)
-		<*> pure (stdioP2PConnection Nothing)
+	clientrunst <- liftIO (mkRunState $ Serving clientuuid Nothing)
+	let clientside = ClientSide $
+		liftIO . runNetProto clientrunst
+			(stdioP2PConnection Nothing)
 	getClientProtocolVersion remote clientside 
 		(withclientversion clientside)
 		protoerrhandler
@@ -83,7 +84,7 @@ performProxy clientuuid servermode remote = do
 	connectremote clientmaxversion cont = 
 		openP2PShellConnection' remote clientmaxversion >>= \case
 			Just conn@(P2P.IO.OpenConnection (remoterunst, remoteconn, _)) ->
-				cont (RemoteSide remoterunst remoteconn (Remote.uuid remote))
+				cont (RemoteSide (liftIO . runNetProto remoterunst remoteconn) (Remote.uuid remote))
 					`finally` liftIO (closeP2PShellConnection conn)
 			_  -> giveup "Unable to connect to remote."
 

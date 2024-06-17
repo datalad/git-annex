@@ -15,8 +15,10 @@ import P2P.IO
 import qualified Remote
 import Utility.Metered (nullMeterUpdate)
 
-data ClientSide = ClientSide RunState P2PConnection
-data RemoteSide = RemoteSide RunState P2PConnection UUID
+type ProtoRunner = forall a. Proto a -> Annex (Either ProtoFailure a)
+
+data ClientSide = ClientSide ProtoRunner
+data RemoteSide = RemoteSide ProtoRunner UUID
 
 {- To keep this module limited to P2P protocol actions,
  - all other actions that a proxy needs to do are provided
@@ -49,10 +51,8 @@ getClientProtocolVersion
 	-> ClientSide
 	-> (Maybe (ProtocolVersion, Maybe Message) -> Annex r)
 	-> ProtoErrorHandled Annex r
-getClientProtocolVersion remote (ClientSide clientrunst clientconn) cont protoerrhandler =
-	protoerrhandler cont $
-		liftIO $ runNetProto clientrunst clientconn $
-			getClientProtocolVersion' remote
+getClientProtocolVersion remote (ClientSide client) cont protoerrhandler =
+	protoerrhandler cont $ client $ getClientProtocolVersion' remote
 
 getClientProtocolVersion'
 	:: Remote
@@ -87,7 +87,7 @@ proxy
 	-- ^ non-VERSION message that was received from the client when
 	-- negotiating protocol version, and has not been responded to yet
 	-> ProtoErrorHandled Annex r
-proxy proxydone proxymethods servermode clientside remoteside othermessage protoerrhandler = do
+proxy proxydone proxymethods servermode (ClientSide client) (RemoteSide remote remoteuuid) othermessage protoerrhandler = do
 	case othermessage of
 		Just message -> proxyclientmessage (Just message)
 		Nothing -> do
@@ -95,12 +95,6 @@ proxy proxydone proxymethods servermode clientside remoteside othermessage proto
 			protoerrhandler proxynextclientmessage $ 
 				client $ net $ sendMessage $ VERSION v
   where
-	ClientSide clientrunst clientconn = clientside
-	RemoteSide remoterunst remoteconn remoteuuid = remoteside
-	
-	remote = liftIO . runNetProto remoterunst remoteconn
-	client = liftIO . runNetProto clientrunst clientconn
-
 	protocolversion = either (const defaultProtocolVersion) id
 		<$> remote (net getProtocolVersion)
 
