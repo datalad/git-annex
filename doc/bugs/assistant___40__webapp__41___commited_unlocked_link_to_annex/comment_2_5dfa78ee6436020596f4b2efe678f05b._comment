@@ -1,0 +1,88 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2024-06-11T17:36:51Z"
+ content="""
+interestingly on the client `git restore --staged PATH` managed to recover the link to become \"proper\". And `git-annex restage` did nothing to fix situation with `Modified` file:
+
+```
+[bids@rolando VIDS] > git merge --ff-only synced/master
+Updating b4f3af57..263dad67
+Updating files: 100% (871/871), done.
+Fast-forward
+ .gitattributes                                                           |  1 +
+ .gitignore                          
+...
+create mode 100644 logs/2024-05-24T07:35-04:00.log
+ create mode 100644 logs/2024-05-24T07:35-04:00.logpwd
+
+
+
+git-annex: git status will show Videos/2024/03/2024.03.17.14.09.12.550_2024.03.17.14.09.18.818.mkv.log to be modified, since content availability has changed and git-annex was unable to update the index. This is only a cosmetic problem affecting git status; git add, git commit, etc won't be affected. To fix the git status display, you can run: git-annex restage
+[bids@rolando VIDS] > 
+[bids@rolando VIDS] > 
+[bids@rolando VIDS] > 
+[bids@rolando VIDS] > git-annex restage
+restage  ok
+[bids@rolando VIDS] > git status
+On branch master
+Changes to be committed:
+  (use \"git restore --staged <file>...\" to unstage)
+	modified:   Videos/2024/03/2024.03.17.14.09.12.550_2024.03.17.14.09.18.818.mkv.log
+
+[bids@rolando VIDS] > git-annex restage 
+restage  ok
+[bids@rolando VIDS] > git status
+On branch master
+Changes to be committed:
+  (use \"git restore --staged <file>...\" to unstage)
+	modified:   Videos/2024/03/2024.03.17.14.09.12.550_2024.03.17.14.09.18.818.mkv.log
+
+[bids@rolando VIDS] > git-annex restage  Videos/2024/03/2024.03.17.14.09.12.550_2024.03.17.14.09.18.818.mkv.log
+git-annex: This command takes no parameters.
+[bids@rolando VIDS] > git status
+On branch master
+Changes to be committed:
+  (use \"git restore --staged <file>...\" to unstage)
+	modified:   Videos/2024/03/2024.03.17.14.09.12.550_2024.03.17.14.09.18.818.mkv.log
+
+[bids@rolando VIDS] > git restore --staged Videos/2024/03/2024.03.17.14.09.12.550_2024.03.17.14.09.18.818.mkv.log
+[bids@rolando VIDS] > git status
+On branch master
+Changes not staged for commit:
+  (use \"git add <file>...\" to update what will be committed)
+  (use \"git restore <file>...\" to discard changes in working directory)
+	modified:   Videos/2024/03/2024.03.17.14.09.12.550_2024.03.17.14.09.18.818.mkv.log
+
+no changes added to commit (use \"git add\" and/or \"git commit -a\")
+[bids@rolando VIDS] > git diff
+diff --git a/Videos/2024/03/2024.03.17.14.09.12.550_2024.03.17.14.09.18.818.mkv.log b/Videos/2024/03/2024.03.17.14.09.12.550_2024.03.17.14.09.18.818.mkv.log
+index 92b79020..fc930f54 100644
+--- a/Videos/2024/03/2024.03.17.14.09.12.550_2024.03.17.14.09.18.818.mkv.log
++++ b/Videos/2024/03/2024.03.17.14.09.12.550_2024.03.17.14.09.18.818.mkv.log
+@@ -1 +1 @@
+-/annex/objects/MD5E-s69--08983cc11522233e5d4815e4ef62275a.mkv.log
++/annex/objects/MD5E-s68799--29541299bea3691f430d855d2fb432fb.mkv.log
+diff --git a/Videos/2024/04/2024.04.04.06.01.22.647_.mkv.log b/Videos/2024/04/2024.04.04.06.01.22.647_.mkv.log
+--- a/Videos/2024/04/2024.04.04.06.01.22.647_.mkv.log
++++ b/Videos/2024/04/2024.04.04.06.01.22.647_.mkv.log
+@@ -1 +0,0 @@
+-/annex/objects/MD5E-s0--d41d8cd98f00b204e9800998ecf8427e.mkv.log
+[bids@rolando VIDS] > git log Videos/2024/03/2024.03.17.14.09.12.550_2024.03.17.14.09.18.818.mkv.log
+commit ef5549f74dfea19c11bf963a7ec9789bce0d925d
+Author: ReproStim User <changeme@example.com>
+Date:   Wed Apr 17 09:38:23 2024 -0400
+
+    Move files under subfolders
+
+```
+
+
+```
+[bids@rolando VIDS] > git --version
+git version 2.39.2
+[bids@rolando VIDS] > git annex version --raw
+10.20231129+git83-g86dbe9a825-1~ndall+1
+```
+"""]]

@@ -1,0 +1,66 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2024-06-13T16:31:57Z"
+ content="""
+First I wanted to see if I could get this to happen without the assistant.
+
+	joey@darkstar:~/tmp/y>echo '/annex/objects/SHA256E-s30--93c16dbf65b7b66e479bd484398c09c920338e4a1df1fe352b245078d04645f4' > new
+	joey@darkstar:~/tmp/y>git annex add new
+	add new ok
+	joey@darkstar:~/tmp/y>git annex find --format='${key}\n' new
+	SHA256E-s30--93c16dbf65b7b66e479bd484398c09c920338e4a1df1fe352b245078d04645f4
+
+	joey@darkstar:~/tmp/y>git config annex.largefiles anything
+	joey@darkstar:~/tmp/y>echo '/annex/objects/SHA256E-s30--93c16dbf65b7b66e479bd484398c09c920338e4a1df1fe352b245078d04645f4' > new2
+	joey@darkstar:~/tmp/y>git add new2
+	joey@darkstar:~/tmp/y>git annex find --format='${key}\n' new2
+	SHA256E-s30--93c16dbf65b7b66e479bd484398c09c920338e4a1df1fe352b245078d04645f4
+
+So no, it must be only the assistant that can mess up and add an annexed
+link to the annex.
+
+Secondly, here's a way to manually create a repository with this behavior
+w/o using the assistant.
+
+	joey@darkstar:~/tmp/y>git remote add z ../z
+	joey@darkstar:~/tmp/y>git-annex move --key SHA256E-s30--93c16dbf65b7b66e479bd484398c09c920338e4a1df1fe352b245078d04645f4 --to z
+	joey@darkstar:~/tmp/y>echo '/annex/objects/SHA256E-s30--93c16dbf65b7b66e479bd484398c09c920338e4a1df1fe352b245078d04645f4' > funkyobj
+	joey@darkstar:~/tmp/y>git-annex setkey WORM--foo funkyobj
+	setkey funkyobj ok
+	joey@darkstar:~/tmp/y>echo '/annex/objects/WORM--foo' > funky
+	joey@darkstar:~/tmp/y>git add funky
+	git-annex: git status will show funky to be modified, since content availability has changed and git-annex was unable to update the index. This is only a cosmetic problem affecting git status; git add, git commit, etc won't be affected. To fix the git status display, you can run: git-annex restage
+	joey@darkstar:~/tmp/y>git commit -m add funky
+	joey@darkstar:~/tmp/y>git annex find --format='${key}\n' funky
+	WORM--foo
+	joey@darkstar:~/tmp/y>cat funky
+	/annex/objects/SHA256E-s30--93c16dbf65b7b66e479bd484398c09c920338e4a1df1fe352b245078d04645f4
+	joey@darkstar:~/tmp/y>git-annex get funky
+	joey@darkstar:~/tmp/y>	
+
+Nothing has gone wrong yet, funky is an unlocked file and it happens to have
+the content of an annex pointer file, but git-annex is not treating that
+content *as* an annex pointer file. If it were, the `git-annex get funky` above
+would get the SHA256 key from remote x.
+
+But in a fresh clone, it's another story:
+
+	joey@darkstar:~/tmp>git clone y x
+	joey@darkstar:~/tmp>cd x
+	joey@darkstar:~/tmp/x>git remote add z ../z
+	joey@darkstar:~/tmp/x>cat funky
+	/annex/objects/WORM--foo
+	joey@darkstar:~/tmp/x>git-annex get funky
+	get funky (from origin...)
+	ok
+	(recording state in git...)
+	joey@darkstar:~/tmp/x>git-annex get funky
+	get funky (from z...)
+	ok
+	(recording state in git...)
+	joey@darkstar:~/tmp/x>cat funky
+	Thu Jun 13 12:30:17 JEST 2024
+
+Which reproduces what you showed. I think this on its own is a bug, leaving aside whatever caused the assistant to generate this.
+"""]]

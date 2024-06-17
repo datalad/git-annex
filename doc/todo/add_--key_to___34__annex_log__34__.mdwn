@@ -1,0 +1,15 @@
+```
+NAME
+       git-annex-log - shows location log information
+
+SYNOPSIS
+       git annex log [path ...]
+
+```
+
+although quite often desired to check by the key which might not even be in the tree. `whereis` ( a sister command for similar investigations ) has `--key`, so I thought it would be great to get it here too.
+
+In my case -- doing archaeology on AFNI's test data in [https://github.com/afni/afni/pull/656](https://github.com/afni/afni/pull/656).
+
+[[!meta author=yoh]]
+[[!tag projects/repronim]]
