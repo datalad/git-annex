@@ -50,6 +50,28 @@ closeRemoteSide remoteside =
 		Just (_, _, closer) -> closer
 		Nothing -> return ()
 
+{- Selects what remotes to proxy to for top-level P2P protocol
+ - actions.
+ - -}
+data ProxySelector = ProxySelector
+	{ proxyCHECKPRESENT :: Key -> Annex RemoteSide
+	, proxyLOCKCONTENT :: Key -> Annex RemoteSide
+	, proxyUNLOCKCONTENT :: Annex RemoteSide
+	, proxyREMOVE :: Key -> Annex RemoteSide
+	, proxyGET :: Key -> Annex RemoteSide
+	, proxyPUT :: Key -> Annex RemoteSide
+	}
+
+singleProxySelector :: RemoteSide -> ProxySelector
+singleProxySelector r = ProxySelector
+	{ proxyCHECKPRESENT = const (pure r)
+	, proxyLOCKCONTENT = const (pure r)
+	, proxyUNLOCKCONTENT = pure r
+	, proxyREMOVE = const (pure r)
+	, proxyGET = const (pure r)
+	, proxyPUT = const (pure r)
+	}
+
 {- To keep this module limited to P2P protocol actions,
  - all other actions that a proxy needs to do are provided
  - here. -}
@@ -113,13 +135,13 @@ proxy
 	-> ProxyMethods
 	-> ServerMode
 	-> ClientSide
-	-> (Message -> Annex RemoteSide)
+	-> ProxySelector
 	-> ProtocolVersion
 	-> Maybe Message
 	-- ^ non-VERSION message that was received from the client when
 	-- negotiating protocol version, and has not been responded to yet
 	-> ProtoErrorHandled r
-proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) getremoteside protocolversion othermessage protoerrhandler = do
+proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) proxyselector protocolversion othermessage protoerrhandler = do
 	case othermessage of
 		Nothing -> protoerrhandler proxynextclientmessage $ 
 			client $ net $ sendMessage $ VERSION protocolversion
@@ -138,24 +160,24 @@ proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) getr
 
 	proxyclientmessage Nothing = proxydone
 	proxyclientmessage (Just message) = case message of
-		CHECKPRESENT _ -> do
-			remoteside <- getremoteside message
+		CHECKPRESENT k -> do
+			remoteside <- proxyCHECKPRESENT proxyselector k
 			proxyresponse remoteside message (const proxynextclientmessage)
-		LOCKCONTENT _ -> do
-			remoteside <- getremoteside message
+		LOCKCONTENT k -> do
+			remoteside <- proxyLOCKCONTENT proxyselector k
 			proxyresponse remoteside message (const proxynextclientmessage)
 		UNLOCKCONTENT -> do
-			remoteside <- getremoteside message
+			remoteside <- proxyUNLOCKCONTENT proxyselector
 			proxynoresponse remoteside message proxynextclientmessage
 		REMOVE k -> do
-			remoteside <- getremoteside message
+			remoteside <- proxyREMOVE proxyselector k
 			servermodechecker checkREMOVEServerMode $
 				handleREMOVE remoteside k message
-		GET _ _ _ -> do
-			remoteside <- getremoteside message
+		GET _ _ k -> do
+			remoteside <- proxyGET proxyselector k
 			handleGET remoteside message
 		PUT _ k -> do
-			remoteside <- getremoteside message
+			remoteside <- proxyPUT proxyselector k
 			servermodechecker checkPUTServerMode $
 				handlePUT remoteside k message
 		-- These messages involve the git repository, not the

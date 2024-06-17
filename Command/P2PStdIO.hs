@@ -74,7 +74,7 @@ performProxy clientuuid servermode remote = do
 			closeRemoteSide remoteside
 			p2pDone
 		proxy closer proxyMethods servermode clientside
-			(const $ return remoteside)
+			(singleProxySelector remoteside)
 			protocolversion othermsg p2pErrHandler
 	withclientversion _ Nothing = p2pDone
 
