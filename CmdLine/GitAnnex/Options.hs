@@ -40,6 +40,7 @@ import qualified Types.Backend as Backend
 import Utility.HumanTime
 import Utility.DataUnits
 import Annex.Concurrent
+import Remote.List
 
 -- Options that are accepted by all git-annex sub-commands,
 -- although not always used.
@@ -569,14 +570,30 @@ parseDaemonOptions canstop
 		)
 
 completeRemotes :: HasCompleter f => Mod f a
-completeRemotes = completer $ mkCompleter $ \input -> do
-	r <- maybe (pure Nothing) (Just <$$> Git.Config.read)
-		=<< Git.Construct.fromCwd
-	return $ filter (input `isPrefixOf`) $
-		mapMaybe remoteKeyToRemoteName $
-			filter isRemoteUrlKey $
-				maybe [] (M.keys . config) r
-		
+completeRemotes = completer $ mkCompleter $ \input ->
+	Git.Construct.fromCwd >>= \case
+		Nothing -> return []
+		Just g -> completeRemotes' g input
+
+completeRemotes' :: Repo -> [Char] -> IO [[Char]]
+completeRemotes' g input = do
+	g' <- Git.Config.read g
+	state <- Annex.new g'
+	Annex.eval state $ do
+		Annex.setOutput QuietOutput
+		gc <- Annex.getGitConfig
+		if isinitialized gc
+			then do
+				rs <- remoteList
+				matches $ map Remote.name rs
+			else matches $
+				mapMaybe remoteKeyToRemoteName $
+					filter isRemoteUrlKey $ 
+						M.keys $ config g
+  where
+	isinitialized gc = annexUUID gc /= NoUUID && isJust (annexVersion gc)
+	matches = return . filter (input `isPrefixOf`)
+
 completeBackends :: HasCompleter f => Mod f a
 completeBackends = completeWith $
 	map (decodeBS . formatKeyVariety . Backend.backendVariety) Backend.builtinList
