@@ -67,14 +67,16 @@ performProxy clientuuid servermode remote = do
   where
 	withclientversion clientside (Just (clientmaxversion, othermsg)) = do
 		remoteside <- proxySshRemoteSide clientmaxversion remote
-		proxy p2pDone proxymethods servermode clientside remoteside 
-			othermsg p2pErrHandler
+		protocolversion <- either (const (min P2P.maxProtocolVersion clientmaxversion)) id
+			<$> runRemoteSide remoteside 
+				(P2P.net P2P.getProtocolVersion)
+		let closer = do
+			closeRemoteSide remoteside
+			p2pDone
+		proxy closer proxyMethods servermode clientside
+			(const $ return remoteside)
+			protocolversion othermsg p2pErrHandler
 	withclientversion _ Nothing = p2pDone
-	
-	proxymethods = ProxyMethods
-		{ removedContent = \u k -> logChange k u InfoMissing
-		, addedContent = \u k -> logChange k u InfoPresent
-		}
 
 performProxyCluster :: UUID -> ClusterUUID -> P2P.ServerMode -> CommandPerform
 performProxyCluster clientuuid clusteruuid servermode = do
@@ -84,8 +86,17 @@ performProxyCluster clientuuid clusteruuid servermode = do
 		p2pErrHandler
   where
 	withclientversion clientside (Just (clientmaxversion, othermsg)) = do
-		giveup "TODO"
+		let protocolversion = min P2P.maxProtocolVersion clientmaxversion
+		let selectnode = giveup "FIXME" -- FIXME
+		proxy p2pDone proxyMethods servermode clientside selectnode
+			protocolversion othermsg p2pErrHandler
 	withclientversion _ Nothing = p2pDone
+
+proxyMethods :: ProxyMethods
+proxyMethods = ProxyMethods
+	{ removedContent = \u k -> logChange k u InfoMissing
+	, addedContent = \u k -> logChange k u InfoPresent
+	}
 
 proxyClientSide :: UUID -> Annex ClientSide
 proxyClientSide clientuuid = do
