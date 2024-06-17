@@ -148,6 +148,9 @@ Configuring the instantiated remotes like that would let anyone who can
 write to the git-annex branch flood other people's repos with configs
 for any number of git remotes. Which might be obnoxious.
 
+Ah, instead git-annex's tab completion can be made to include instantiated
+remotes, no need to list them in git config.
+
 ## single upload with fanout
 
 If we want to send a file to multiple repositories that are behind the same

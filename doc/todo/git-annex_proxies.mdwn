@@ -50,10 +50,9 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
 
 * Don't count cluster UUID as a copy. (done)
 
-* Basic proxying to special remote support (non-streaming).
+* Tab complete proxied remotes and clusters in eg --from option. (done)
 
-* Consider getting instantiated remotes into git remote list.
-  See design.
+* Basic proxying to special remote support (non-streaming).
 
 * Implement upload with fanout and reporting back additional UUIDs over P2P
   protocol.
