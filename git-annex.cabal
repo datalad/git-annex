@@ -508,6 +508,7 @@ Executable git-annex
     Annex.ChangedRefs
     Annex.CheckAttr
     Annex.CheckIgnore
+    Annex.Cluster
     Annex.Common
     Annex.Concurrent
     Annex.Concurrent.Utility

@@ -18,6 +18,7 @@ import qualified CmdLine.GitAnnexShell.Checks as Checks
 import Remote.Helper.Ssh (openP2PShellConnection', closeP2PShellConnection)
 import Logs.Location
 import Logs.Cluster
+import Annex.Cluster
 import qualified Remote
 
 import System.IO.Error
@@ -73,30 +74,20 @@ performProxy clientuuid servermode remote = do
 		let closer = do
 			closeRemoteSide remoteside
 			p2pDone
-		proxy closer proxyMethods servermode clientside
+		proxy closer proxymethods servermode clientside
 			(singleProxySelector remoteside)
 			protocolversion othermsg p2pErrHandler
 	withclientversion _ Nothing = p2pDone
+	
+	proxymethods = ProxyMethods
+		{ removedContent = \u k -> logChange k u InfoMissing
+		, addedContent = \u k -> logChange k u InfoPresent
+		}
 
 performProxyCluster :: UUID -> ClusterUUID -> P2P.ServerMode -> CommandPerform
 performProxyCluster clientuuid clusteruuid servermode = do
 	clientside <- proxyClientSide clientuuid
-	getClientProtocolVersion (fromClusterUUID clusteruuid) clientside 
-		(withclientversion clientside)
-		p2pErrHandler
-  where
-	withclientversion clientside (Just (clientmaxversion, othermsg)) = do
-		let protocolversion = min P2P.maxProtocolVersion clientmaxversion
-		let selectnode = giveup "FIXME" -- FIXME
-		proxy p2pDone proxyMethods servermode clientside selectnode
-			protocolversion othermsg p2pErrHandler
-	withclientversion _ Nothing = p2pDone
-
-proxyMethods :: ProxyMethods
-proxyMethods = ProxyMethods
-	{ removedContent = \u k -> logChange k u InfoMissing
-	, addedContent = \u k -> logChange k u InfoPresent
-	}
+	proxyCluster clusteruuid p2pDone servermode clientside p2pErrHandler
 
 proxyClientSide :: UUID -> Annex ClientSide
 proxyClientSide clientuuid = do
