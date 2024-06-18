@@ -55,20 +55,20 @@ closeRemoteSide remoteside =
  - -}
 data ProxySelector = ProxySelector
 	{ proxyCHECKPRESENT :: Key -> Annex RemoteSide
-	, proxyLOCKCONTENT :: Key -> Annex RemoteSide
-	, proxyUNLOCKCONTENT :: Annex RemoteSide
+	, proxyLOCKCONTENT :: Key -> Annex (Maybe RemoteSide)
+	, proxyUNLOCKCONTENT :: Annex (Maybe RemoteSide)
 	, proxyREMOVE :: Key -> Annex RemoteSide
-	, proxyGET :: Key -> Annex RemoteSide
+	, proxyGET :: Key -> Annex (Maybe RemoteSide)
 	, proxyPUT :: Key -> Annex RemoteSide
 	}
 
 singleProxySelector :: RemoteSide -> ProxySelector
 singleProxySelector r = ProxySelector
 	{ proxyCHECKPRESENT = const (pure r)
-	, proxyLOCKCONTENT = const (pure r)
-	, proxyUNLOCKCONTENT = pure r
+	, proxyLOCKCONTENT = const (pure (Just r))
+	, proxyUNLOCKCONTENT = pure (Just r)
 	, proxyREMOVE = const (pure r)
-	, proxyGET = const (pure r)
+	, proxyGET = const (pure (Just r))
 	, proxyPUT = const (pure r)
 	}
 
@@ -163,19 +163,28 @@ proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) prox
 		CHECKPRESENT k -> do
 			remoteside <- proxyCHECKPRESENT proxyselector k
 			proxyresponse remoteside message (const proxynextclientmessage)
-		LOCKCONTENT k -> do
-			remoteside <- proxyLOCKCONTENT proxyselector k
-			proxyresponse remoteside message (const proxynextclientmessage)
-		UNLOCKCONTENT -> do
-			remoteside <- proxyUNLOCKCONTENT proxyselector
-			proxynoresponse remoteside message proxynextclientmessage
+		LOCKCONTENT k -> proxyLOCKCONTENT proxyselector k >>= \case
+			Just remoteside -> 
+				proxyresponse remoteside message 
+					(const proxynextclientmessage)
+			Nothing ->
+				protoerrhandler proxynextclientmessage $
+					client $ net $ sendMessage FAILURE
+		UNLOCKCONTENT -> proxyUNLOCKCONTENT proxyselector >>= \case
+			Just remoteside ->
+				proxynoresponse remoteside message
+					proxynextclientmessage
+			Nothing -> proxynextclientmessage ()
 		REMOVE k -> do
 			remoteside <- proxyREMOVE proxyselector k
 			servermodechecker checkREMOVEServerMode $
 				handleREMOVE remoteside k message
-		GET _ _ k -> do
-			remoteside <- proxyGET proxyselector k
-			handleGET remoteside message
+		GET _ _ k -> proxyGET proxyselector k >>= \case
+			Just remoteside -> handleGET remoteside message
+			Nothing -> 
+				protoerrhandler proxynextclientmessage $
+					client $ net $ sendMessage $ 
+						ERROR "content not present"
 		PUT _ k -> do
 			remoteside <- proxyPUT proxyselector k
 			servermodechecker checkPUTServerMode $

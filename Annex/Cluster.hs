@@ -15,6 +15,7 @@ import Logs.Cluster
 import P2P.Proxy
 import P2P.Protocol
 import P2P.IO
+import Annex.Proxy
 import Logs.Location
 import Types.Command
 import Remote.List
@@ -46,22 +47,31 @@ proxyCluster clusteruuid proxydone servermode clientside protoerrhandler = do
 		-- determine. Instead, pick the newest protocol version
 		-- that we and the client both speak.
 		let protocolversion = min maxProtocolVersion clientmaxversion
-		selectnode <- clusterProxySelector clusteruuid
+		selectnode <- clusterProxySelector clusteruuid protocolversion
 		proxy proxydone proxymethods servermode clientside selectnode
 			protocolversion othermsg protoerrhandler
 	withclientversion Nothing = proxydone
 
-clusterProxySelector :: ClusterUUID -> Annex ProxySelector
-clusterProxySelector clusteruuid = do
+clusterProxySelector :: ClusterUUID -> ProtocolVersion -> Annex ProxySelector
+clusterProxySelector clusteruuid protocolversion = do
 	nodes <- (fromMaybe S.empty . M.lookup clusteruuid . clusterUUIDs)
 		<$> getClusters
 	remotes <- filter (flip S.member nodes . ClusterNodeUUID . Remote.uuid)
 		<$> remoteList
+	remotesides <- mapM (proxySshRemoteSide protocolversion) remotes
 	return $ ProxySelector
 		{ proxyCHECKPRESENT = \k -> error "TODO"
-		, proxyLOCKCONTENT = \k -> error "TODO"
-		, proxyUNLOCKCONTENT = error "TODO"
-		, proxyREMOVE = \k -> error "TODO"
-		, proxyGET = \k -> error "TODO"
+		, proxyGET = \k -> do
+			locs <- S.fromList <$> loggedLocations k
+			case filter (flip S.member locs . remoteUUID) remotesides of
+				-- TODO: Avoid always using same remote
+				(r:_) -> return (Just r)
+				[] -> return Nothing
 		, proxyPUT = \k -> error "TODO"
+		, proxyREMOVE = \k -> error "TODO"
+		-- Content is not locked on the cluster as a whole,
+		-- instead it can be locked on individual nodes that are
+		-- proxied to the client.
+		, proxyLOCKCONTENT = const (pure Nothing)
+		, proxyUNLOCKCONTENT = pure Nothing
 		}

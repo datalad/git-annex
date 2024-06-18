@@ -57,6 +57,11 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
 * Getting a key from a cluster should proxy from one of the nodes that has
   it, or from the proxy repository itself if it has the key.
 
+* Getting a key from a cluster currently always selects the lowest cost
+  remote, and always the same remote if cost is the same. Should
+  round-robin amoung remotes, and prefer to avoid using remotes that
+  other git-annex processes are currently using.
+
 * Implement upload with fanout and reporting back additional UUIDs over P2P
   protocol.
 
