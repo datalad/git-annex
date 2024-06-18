@@ -10,6 +10,7 @@
 module Annex.Cluster where
 
 import Annex.Common
+import qualified Annex
 import Types.Cluster
 import Logs.Cluster
 import P2P.Proxy
@@ -20,6 +21,7 @@ import Logs.Location
 import Types.Command
 import Remote.List
 import qualified Remote
+import qualified Types.Remote as Remote
 
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -56,8 +58,8 @@ clusterProxySelector :: ClusterUUID -> ProtocolVersion -> Annex ProxySelector
 clusterProxySelector clusteruuid protocolversion = do
 	nodes <- (fromMaybe S.empty . M.lookup clusteruuid . clusterUUIDs)
 		<$> getClusters
-	remotes <- filter (flip S.member nodes . ClusterNodeUUID . Remote.uuid)
-		<$> remoteList
+	clusternames <- annexClusters <$> Annex.getGitConfig
+	remotes <- filter (isnode nodes clusternames) <$> remoteList
 	remotesides <- mapM (proxySshRemoteSide protocolversion) remotes
 	return $ ProxySelector
 		{ proxyCHECKPRESENT = nodecontaining remotesides
@@ -71,6 +73,20 @@ clusterProxySelector clusteruuid protocolversion = do
 		, proxyUNLOCKCONTENT = pure Nothing
 		}
   where
+	-- Nodes of the cluster have remote.name.annex-cluster-node
+	-- containing its name.
+	isnode nodes clusternames r = 
+		case remoteAnnexClusterNode (Remote.gitconfig r) of
+			Nothing -> False
+			Just names
+				| any (isclustername clusternames) names ->
+					flip S.member nodes $ 
+						ClusterNodeUUID $ Remote.uuid r
+				| otherwise -> False
+	
+	isclustername clusternames name = 
+		M.lookup name clusternames == Just clusteruuid
+	
 	nodecontaining remotesides k = do
 		locs <- S.fromList <$> loggedLocations k
 		case filter (flip S.member locs . remoteUUID) remotesides of

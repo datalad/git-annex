@@ -151,41 +151,6 @@ for any number of git remotes. Which might be obnoxious.
 Ah, instead git-annex's tab completion can be made to include instantiated
 remotes, no need to list them in git config.
 
-## single upload with fanout
-
-If we want to send a file to multiple repositories that are behind the same
-proxy, it would be wasteful to upload it through the proxy repeatedly.
-
-Perhaps a good user interface to this is `git-annex copy --to proxy`.
-The proxy could fan out the upload and store it in one or more nodes behind
-it. Using preferred content to select which nodes to use.
-This would need `storeKey` to be changed to allow returning a UUID (or UUIDs)
-where the content was actually stored.
-
-Alternatively, `git-annex copy --to proxy-foo` could notice that proxy-bar
-also wants the content, and fan out a copy to there. Then it could 
-record in its git-annex branch that the content is present in proxy-bar.
-If the user later does `git-annex copy --to proxy-bar`, it would avoid
-another upload (and the user would learn at that point that it was in
-proxy-bar). This avoids needing to change the `storeKey` interface.
-
-Should a proxy always fanout? if `git-annex copy --to proxy` is what does
-fanout, and `git-annex copy --to proxy-foo` doesn't, then the user has
-content. But if the latter does fanout, that might be annoying to users who
-want to use proxies, but want full control over what lands where, and don't
-want to use preferred content to do it. So probably fanout should be
-configurable. But it can't be configured client side, because the fanout
-happens on the proxy. Seems like remote.name.annex-fanout could be set to
-false to prevent fanout to a specific remote. (This is analagous to a
-remote having `git-annex assistant` running on it, it might fan out uploads
-to it to other repos, and only the owner of that repo can control it.)
-
-A command like `git-annex push` would see all the instantiated remotes and
-would pick ones to send content to. If the proxy does fanout, this would
-lead to `git-annex push` doing extra work iterating over instantiated
-remotes that have already received content via fanout. Could this extra
-work be avoided?
-
 ## clusters
 
 One way to use a proxy is just as a convenient way to access a group of
@@ -281,6 +246,43 @@ cluster UUIDs.
 
 No other protocol extensions or special cases should be needed.
 
+## single upload with fanout
+
+If we want to send a file to multiple repositories that are behind the same
+proxy, it would be wasteful to upload it through the proxy repeatedly.
+
+Perhaps a good user interface to this is `git-annex copy --to proxy`.
+The proxy could fan out the upload and store it in one or more nodes behind
+it. Using preferred content to select which nodes to use.
+This would need `storeKey` to be changed to allow returning a UUID (or UUIDs)
+where the content was actually stored.
+
+Alternatively, `git-annex copy --to proxy-foo` could notice that proxy-bar
+also wants the content, and fan out a copy to there. Then it could 
+record in its git-annex branch that the content is present in proxy-bar.
+If the user later does `git-annex copy --to proxy-bar`, it would avoid
+another upload (and the user would learn at that point that it was in
+proxy-bar). This avoids needing to change the `storeKey` interface.
+
+Should a proxy always fanout? if `git-annex copy --to proxy` is what does
+fanout, and `git-annex copy --to proxy-foo` doesn't, then the user has
+content. But if the latter does fanout, that might be annoying to users who
+want to use proxies, but want full control over what lands where, and don't
+want to use preferred content to do it. So probably fanout should be
+configurable. But it can't be configured client side, because the fanout
+happens on the proxy. Seems like remote.name.annex-fanout could be set to
+false to prevent fanout to a specific remote. (This is analagous to a
+remote having `git-annex assistant` running on it, it might fan out uploads
+to it to other repos, and only the owner of that repo can control it.)
+
+Alternatively, fanout could be limited to clusters.
+
+A command like `git-annex push` would see all the instantiated remotes and
+would pick ones to send content to. If fanout is done, this would
+lead to `git-annex push` doing extra work iterating over instantiated
+remotes that have already received content via fanout. Could this extra
+work be avoided?
+
 ## cluster configuration lockdown
 
 If some organization is running a cluster, and giving others access to it,
@@ -301,6 +303,10 @@ to lock down the proxy configuration.
 
 Of course, someone with access to a cluster can also drop all data from
 it! Unless git-annex-shell is run with `GIT_ANNEX_SHELL_APPENDONLY` set.
+
+A remote will only be treated as a node of a cluster when the git
+configuration remote.name.annex-cluster-node is set, which will prevent
+creating clusters in places where they are not intended to be.
 
 ## speed
 
