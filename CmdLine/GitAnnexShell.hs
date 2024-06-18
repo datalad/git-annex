@@ -20,6 +20,7 @@ import CmdLine.GitAnnexShell.Fields
 import Remote.GCrypt (getGCryptUUID)
 import P2P.Protocol (ServerMode(..))
 import Git.Types
+import qualified Types.Remote as R
 import Logs.Proxy
 import Logs.Cluster
 import Logs.UUID
@@ -204,8 +205,9 @@ checkProxy remoteuuid ouruuid = M.lookup ouruuid <$> getProxies >>= \case
 	proxyfor ps = do
 		rs <- concat . byCost <$> remoteList
 		let sameuuid r = uuid r == remoteuuid
+		let proxyconfigured = remoteAnnexProxy . R.gitconfig
 		let samename r p = name r == proxyRemoteName p
-		case headMaybe (filter (\r -> sameuuid r && any (samename r) ps) rs) of
+		case headMaybe (filter (\r -> sameuuid r && proxyconfigured r && any (samename r) ps) rs) of
 			Nothing -> notconfigured
 			Just r -> do
 				Annex.changeState $ \st ->
