@@ -54,18 +54,31 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
 
 * Basic proxying to special remote support (non-streaming).
 
-* Implement upload with fanout and reporting back additional UUIDs over P2P
-  protocol.
-
 * Getting a key from a cluster should proxy from one of the nodes that has
   it, or from the proxy repository itself if it has the key.
+
+* Implement upload with fanout and reporting back additional UUIDs over P2P
+  protocol.
 
 * On upload to a cluster, as well as fanout to nodes, if the key is
   preferred content of the proxy repository, store it there.
   (But not when preferred content is not configured.)
 
 * Implement cluster drops, trying to remove from all nodes, and returning
-  which UUIDs it was dropped from.
+  which UUIDs it was dropped from. 
+
+  Problem: May lock content on cluster
+  nodes to satisfy numcopies (rather than locking elsewhere) and so not be
+  able to drop from nodes. Avoid using cluster nodes when constructing drop
+  proof for cluster.
+
+  Problem: When nodes are special remotes, may
+  treat nodes as copies while dropping from cluster, and so violate
+  numcopies. (But not mincopies.)
+
+  Problem: `move --from cluster` in "does this make it worse"
+  check may fail to realize that dropping from multiple nodes does in fact
+  make it worse.
 
 * Support proxies-of-proxies better, eg foo-bar-baz.
   Currently, it does work, but have to run `git-annex updateproxy`
