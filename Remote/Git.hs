@@ -550,7 +550,7 @@ copyToRemote' repo r st@(State connpool duc _ _ _) key file meterupdate
 		)
 	| Git.repoIsSsh repo =
 		P2PHelper.store (gitconfig r)
-			(Ssh.runProto r connpool (return False))
+			(Ssh.runProto r connpool (return Nothing))
 			key file meterupdate
 		
 	| otherwise = giveup "copying to non-ssh repo not supported"

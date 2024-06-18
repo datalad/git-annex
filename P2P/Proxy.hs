@@ -6,15 +6,18 @@
  -}
 
 {-# LANGUAGE RankNTypes, FlexibleContexts, ScopedTypeVariables #-}
+{-# LANGUAGE BangPatterns #-}
 
 module P2P.Proxy where
 
 import Annex.Common
 import P2P.Protocol
 import P2P.IO
-import Utility.Metered (nullMeterUpdate)
+import Utility.Metered
 
+import Data.Either
 import Control.Concurrent.STM
+import qualified Data.ByteString.Lazy as L
 
 type ProtoCloser = Annex ()
 
@@ -59,7 +62,7 @@ data ProxySelector = ProxySelector
 	, proxyUNLOCKCONTENT :: Annex (Maybe RemoteSide)
 	, proxyREMOVE :: Key -> Annex RemoteSide
 	, proxyGET :: Key -> Annex (Maybe RemoteSide)
-	, proxyPUT :: Key -> Annex RemoteSide
+	, proxyPUT :: Key -> Annex [RemoteSide]
 	}
 
 singleProxySelector :: RemoteSide -> ProxySelector
@@ -69,7 +72,7 @@ singleProxySelector r = ProxySelector
 	, proxyUNLOCKCONTENT = pure (Just r)
 	, proxyREMOVE = const (pure r)
 	, proxyGET = const (pure (Just r))
-	, proxyPUT = const (pure r)
+	, proxyPUT = const (pure [r])
 	}
 
 {- To keep this module limited to P2P protocol actions,
@@ -120,9 +123,7 @@ getClientProtocolVersion' remoteuuid = do
 			-- If the client sends a newer version than we
 			-- understand, reduce it; we need to parse the
 			-- protocol too.
-			let v' = if v > maxProtocolVersion
-				then maxProtocolVersion
-				else v
+			let v' = min v maxProtocolVersion
 			in return (Just (v', Nothing))
 		Just othermsg -> return
 			(Just (defaultProtocolVersion, Just othermsg))
@@ -135,16 +136,17 @@ proxy
 	-> ProxyMethods
 	-> ServerMode
 	-> ClientSide
+	-> UUID
 	-> ProxySelector
 	-> ProtocolVersion
 	-> Maybe Message
 	-- ^ non-VERSION message that was received from the client when
 	-- negotiating protocol version, and has not been responded to yet
 	-> ProtoErrorHandled r
-proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) proxyselector protocolversion othermessage protoerrhandler = do
+proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) remoteuuid proxyselector (ProtocolVersion protocolversion) othermessage protoerrhandler = do
 	case othermessage of
 		Nothing -> protoerrhandler proxynextclientmessage $ 
-			client $ net $ sendMessage $ VERSION protocolversion
+			client $ net $ sendMessage $ VERSION $ ProtocolVersion protocolversion
 		Just message -> proxyclientmessage (Just message)
   where
 	client = liftIO . runNetProto clientrunst clientconn
@@ -190,9 +192,9 @@ proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) prox
 					client $ net $ sendMessage $ 
 						ERROR "content not present"
 		PUT _ k -> do
-			remoteside <- proxyPUT proxyselector k
+			remotesides <- proxyPUT proxyselector k
 			servermodechecker checkPUTServerMode $
-				handlePUT remoteside k message
+				handlePUT remotesides k message
 		-- These messages involve the git repository, not the
 		-- annex. So they affect the git repository of the proxy,
 		-- not the remote.
@@ -206,6 +208,7 @@ proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) prox
 		-- Messages that the client should only send after one of
 		-- the messages above.
 		SUCCESS -> protoerr
+		SUCCESS_PLUS _ -> protoerr
 		FAILURE -> protoerr
 		DATA _ -> protoerr
 		VALIDITY _ -> protoerr
@@ -218,6 +221,7 @@ proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) prox
 		AUTH_FAILURE -> protoerr
 		PUT_FROM _ -> protoerr
 		ALREADY_HAVE -> protoerr
+		ALREADY_HAVE_PLUS _ -> protoerr
 		-- Early messages that the client should not send now.
 		AUTH _ _ -> protoerr
 		VERSION _ -> protoerr
@@ -269,13 +273,21 @@ proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) prox
 	handleGET remoteside message = getresponse (runRemoteSide remoteside) message $
 		withDATA (relayGET remoteside)
 
-	handlePUT remoteside k message = 
+	handlePUT (remoteside:[]) k message =
 		getresponse (runRemoteSide remoteside) message $ \resp -> case resp of
 			ALREADY_HAVE -> protoerrhandler proxynextclientmessage $
 				client $ net $ sendMessage resp
+			ALREADY_HAVE_PLUS _ -> protoerrhandler proxynextclientmessage $
+				client $ net $ sendMessage resp
 			PUT_FROM _ -> 
-				getresponse client resp $ withDATA (relayPUT remoteside k)
+				getresponse client resp $ 
+					withDATA (relayPUT remoteside k)
 			_ -> protoerr
+	handlePUT [] _ _ = 
+		protoerrhandler proxynextclientmessage $
+			client $ net $ sendMessage ALREADY_HAVE
+	handlePUT remotesides k message = 
+		handlePutMulti remotesides k message
 
 	withDATA a message@(DATA len) = a len message
 	withDATA _ _ = protoerr
@@ -294,6 +306,9 @@ proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) prox
 		finished resp () = do
 			case resp of
 				SUCCESS -> addedContent proxymethods (remoteUUID remoteside) k
+				SUCCESS_PLUS us ->
+					forM_ (remoteUUID remoteside:us) $ \u ->
+						addedContent proxymethods u k
 				_ -> return ()
 			proxynextclientmessage ()
 
@@ -301,15 +316,96 @@ proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) prox
 		protoerrhandler (\() -> receive) $
 			x $ net $ sendMessage message
 
-	relayDATACore len x y finishget = protoerrhandler send $
+	relayDATACore len x y a = protoerrhandler send $
 			x $ net $ receiveBytes len nullMeterUpdate
 	  where
-		send b = protoerrhandler finishget $
+		send b = protoerrhandler a $
 			y $ net $ sendBytes len b nullMeterUpdate
 	
-	relayDATAFinish x y sendsuccessfailure () = case protocolversion of
-		ProtocolVersion 0 -> sendsuccessfailure
+	relayDATAFinish x y sendsuccessfailure ()
+		| protocolversion == 0 = sendsuccessfailure
 		-- Protocol version 1 has a VALID or
 		-- INVALID message after the data.
-		_ -> relayonemessage x y (\_ () -> sendsuccessfailure)
+		| otherwise = relayonemessage x y (\_ () -> sendsuccessfailure)
 
+	handlePutMulti remotesides k message = do
+		let initiate remoteside = do
+			resp <- runRemoteSide remoteside $ net $ do
+                                  sendMessage message
+                                  receiveMessage
+			case resp of
+				Right (Just (PUT_FROM (Offset offset))) -> 
+					return $ Right $
+						Right (remoteside, offset)
+				Right (Just ALREADY_HAVE) -> 
+					return $ Right $ Left remoteside
+				Right (Just _) -> protoerr
+				Right Nothing -> return (Left ())
+				Left _err -> return (Left ())
+		let alreadyhave = \case
+			Right (Left _) -> True
+			_ -> False
+		l <- forM remotesides initiate
+		if all alreadyhave l
+			then if protocolversion < 2
+				then protoerrhandler proxynextclientmessage $
+					client $ net $ sendMessage ALREADY_HAVE
+				else protoerrhandler proxynextclientmessage $
+					client $ net $ sendMessage $ ALREADY_HAVE_PLUS $
+						filter (/= remoteuuid) $
+							map remoteUUID (lefts (rights l))
+			else if null (rights l)
+				-- no response from any remote
+				then proxydone
+				else do
+					let l' = rights (rights l)
+					let minoffset = minimum (map snd l')
+					getresponse client (PUT_FROM (Offset minoffset)) $
+						withDATA (relayPUTMulti minoffset l' k)	
+
+	relayPUTMulti minoffset remotes k (Len datalen) _ = do
+		let totallen = datalen + minoffset
+		-- Tell each remote how much data to expect, depending
+		-- on the remote's offset.
+		forM_ remotes $ \(remoteside, remoteoffset) ->
+			runRemoteSide remoteside $ 
+				net $ sendMessage $ DATA $ Len $
+					totallen - remoteoffset
+		protoerrhandler (send remotes minoffset) $
+			client $ net $ receiveBytes (Len datalen) nullMeterUpdate
+	  where
+		chunksize = fromIntegral defaultChunkSize
+		
+	  	-- Stream the lazy bytestring out to the remotes in chunks.
+		-- Only start sending to a remote once past its desired
+		-- offset.
+		send rs n b = do
+			let (chunk, b') = L.splitAt chunksize b
+			let chunklen = fromIntegral (L.length chunk)
+			let !n' = n + chunklen
+			rs' <- forM rs $ \r@(remoteside, remoteoffset) ->
+				if n >= remoteoffset
+					then skipfailed r $ runRemoteSide remoteside $
+						net $ sendBytes (Len chunklen) chunk nullMeterUpdate
+					else if (n' <= remoteoffset)
+						then do
+							let chunkoffset = remoteoffset - n
+							let subchunklen = chunklen - chunkoffset
+							let subchunk = L.drop (fromIntegral chunkoffset) chunk
+							skipfailed r $ runRemoteSide remoteside $
+								net $ sendBytes (Len subchunklen) subchunk nullMeterUpdate
+						else return (Just r)
+			if L.null b'
+				then sent (catMaybes rs')
+				else send (catMaybes rs') n' b'
+
+		sent [] = proxydone
+		sent rs = giveup "XXX" -- XXX
+		
+		skipfailed r@(remoteside, _) a = a >>= \case
+			Right _ -> return (Just r)
+			Left _ -> do
+				-- This connection to the remote is
+				-- unrecoverable at this point, so close it.
+				closeRemoteSide remoteside
+				return Nothing

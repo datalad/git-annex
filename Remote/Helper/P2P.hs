@@ -19,6 +19,7 @@ import Utility.Metered
 import Utility.Tuple
 import Types.NumCopies
 import Annex.Verify
+import Logs.Location
 
 import Control.Concurrent
 
@@ -32,14 +33,19 @@ type ProtoConnRunner c = forall a. P2P.Proto a -> ClosableConnection c -> Annex 
 -- the pool when done.
 type WithConn a c = (ClosableConnection c -> Annex (ClosableConnection c, a)) -> Annex a
 
-store :: RemoteGitConfig -> ProtoRunner Bool -> Key -> AssociatedFile -> MeterUpdate -> Annex ()
+store :: RemoteGitConfig -> ProtoRunner (Maybe [UUID]) -> Key -> AssociatedFile -> MeterUpdate -> Annex ()
 store gc runner k af p = do
 	let sizer = KeySizer k (fmap (toRawFilePath . fst3) <$> prepSendAnnex k)
 	let bwlimit = remoteAnnexBwLimitUpload gc <|> remoteAnnexBwLimit gc
 	metered (Just p) sizer bwlimit $ \_ p' ->
 		runner (P2P.put k af p') >>= \case
-			Just True -> return ()
-			Just False -> giveup "Transfer failed"
+			Just (Just fanoutuuids) -> do
+				-- Storing on the remote can cause it
+				-- to be stored on additional UUIDs, 
+				-- so record those.
+				forM_ fanoutuuids $ \u ->
+					logChange k u InfoPresent
+			Just Nothing -> giveup "Transfer failed"
 			Nothing -> remoteUnavail
 
 retrieve :: RemoteGitConfig -> (ProtoRunner (Bool, Verification)) -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification

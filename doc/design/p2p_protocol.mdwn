@@ -55,7 +55,7 @@ any authentication.
 
 The client sends the highest protocol version it supports:
 
-	VERSION 2
+	VERSION 3
 
 The server responds with the highest protocol version it supports
 that is less than or equal to the version the client sent:
@@ -132,7 +132,14 @@ spaces, since it's not the last token in the line. Use '%' to indicate
 whitespace.)
 
 The server may respond with ALREADY-HAVE if it already
-had the conent of that key. Otherwise, it responds with:
+had the conent of that key. 
+
+In protocol version 2, the server can optionally reply with
+ALREADY-HAVE-PLUS. The subsequent list of UUIDs are additional
+UUIDs where the content is stored, in addition to the UUID where
+the client was going to send it.
+
+Otherwise, it responds with:
 
 	PUT-FROM Offset
 
@@ -151,6 +158,10 @@ was being sent.
 
 If the server successfully receives the data and stores the content,
 it replies with SUCCESS. Otherwise, FAILURE.
+
+In protocol version 2, the server can optionally reply with SUCCESS-PLUS.
+The subsequent list of UUIDs are additional UUIDs where the content was
+stored, in addition to the UUID where the client was sending it.
 
 ## Getting content from the server
 

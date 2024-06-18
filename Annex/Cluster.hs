@@ -50,8 +50,9 @@ proxyCluster clusteruuid proxydone servermode clientside protoerrhandler = do
 		-- that we and the client both speak.
 		let protocolversion = min maxProtocolVersion clientmaxversion
 		selectnode <- clusterProxySelector clusteruuid protocolversion
-		proxy proxydone proxymethods servermode clientside selectnode
-			protocolversion othermsg protoerrhandler
+		proxy proxydone proxymethods servermode clientside 
+			(fromClusterUUID clusteruuid)
+			selectnode protocolversion othermsg protoerrhandler
 	withclientversion Nothing = proxydone
 
 clusterProxySelector :: ClusterUUID -> ProtocolVersion -> Annex ProxySelector
@@ -64,7 +65,10 @@ clusterProxySelector clusteruuid protocolversion = do
 	return $ ProxySelector
 		{ proxyCHECKPRESENT = nodecontaining remotesides
 		, proxyGET = nodecontaining remotesides
-		, proxyPUT = \k -> error "TODO"
+		-- Send the key to every node that does not yet contain it.
+		, proxyPUT = \k -> do
+			locs <- S.fromList <$> loggedLocations k
+			return $ filter (flip S.notMember locs . remoteUUID) remotesides
 		, proxyREMOVE = \k -> error "TODO"
 		-- Content is not locked on the cluster as a whole,
 		-- instead it can be locked on individual nodes that are

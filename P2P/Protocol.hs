@@ -54,7 +54,7 @@ defaultProtocolVersion :: ProtocolVersion
 defaultProtocolVersion = ProtocolVersion 0
 
 maxProtocolVersion :: ProtocolVersion
-maxProtocolVersion = ProtocolVersion 1
+maxProtocolVersion = ProtocolVersion 2
 
 newtype ProtoAssociatedFile = ProtoAssociatedFile AssociatedFile
 	deriving (Show)
@@ -85,7 +85,9 @@ data Message
 	| PUT ProtoAssociatedFile Key
 	| PUT_FROM Offset
 	| ALREADY_HAVE
+	| ALREADY_HAVE_PLUS [UUID]
 	| SUCCESS
+	| SUCCESS_PLUS [UUID]
 	| FAILURE
 	| DATA Len -- followed by bytes of data
 	| VALIDITY Validity
@@ -109,7 +111,9 @@ instance Proto.Sendable Message where
 	formatMessage (PUT af key) = ["PUT", Proto.serialize af, Proto.serialize key]
 	formatMessage (PUT_FROM offset) = ["PUT-FROM", Proto.serialize offset]
 	formatMessage ALREADY_HAVE = ["ALREADY-HAVE"]
+	formatMessage (ALREADY_HAVE_PLUS uuids) = ("ALREADY-HAVE-PLUS":map Proto.serialize uuids)
 	formatMessage SUCCESS = ["SUCCESS"]
+	formatMessage (SUCCESS_PLUS uuids) = ("SUCCESS-PLUS":map Proto.serialize uuids)
 	formatMessage FAILURE = ["FAILURE"]
 	formatMessage (VALIDITY Valid) = ["VALID"]
 	formatMessage (VALIDITY Invalid) = ["INVALID"]
@@ -133,7 +137,9 @@ instance Proto.Receivable Message where
 	parseCommand "PUT" = Proto.parse2 PUT
 	parseCommand "PUT-FROM" = Proto.parse1 PUT_FROM
 	parseCommand "ALREADY-HAVE" = Proto.parse0 ALREADY_HAVE
+	parseCommand "ALREADY-HAVE-PLUS" = Proto.parseList ALREADY_HAVE_PLUS
 	parseCommand "SUCCESS" = Proto.parse0 SUCCESS
+	parseCommand "SUCCESS-PLUS" = Proto.parseList SUCCESS_PLUS
 	parseCommand "FAILURE" = Proto.parse0 FAILURE
 	parseCommand "DATA" = Proto.parse1 DATA
 	parseCommand "ERROR" = Proto.parse1 ERROR
@@ -244,7 +250,7 @@ data LocalF c
 	| ContentSize Key (Maybe Len -> c)
 	-- ^ Gets size of the content of a key, when the full content is
 	-- present.
-	| ReadContent Key AssociatedFile Offset (L.ByteString -> Proto Validity -> Proto Bool) (Bool -> c)
+	| ReadContent Key AssociatedFile Offset (L.ByteString -> Proto Validity -> Proto (Maybe [UUID])) (Maybe [UUID] -> c)
 	-- ^ Reads the content of a key and sends it to the callback.
 	-- Must run the callback, or terminate the protocol connection.
 	--
@@ -362,16 +368,17 @@ get dest key iv af m p =
 	sizer = fileSize dest
 	storer = storeContentTo dest iv
 
-put :: Key -> AssociatedFile -> MeterUpdate -> Proto Bool
+put :: Key -> AssociatedFile -> MeterUpdate -> Proto (Maybe [UUID])
 put key af p = do
 	net $ sendMessage (PUT (ProtoAssociatedFile af) key)
 	r <- net receiveMessage
 	case r of
 		Just (PUT_FROM offset) -> sendContent key af offset p
-		Just ALREADY_HAVE -> return True
+		Just ALREADY_HAVE -> return (Just [])
+		Just (ALREADY_HAVE_PLUS uuids) -> return (Just uuids)
 		_ -> do
 			net $ sendMessage (ERROR "expected PUT_FROM or ALREADY_HAVE")
-			return False
+			return Nothing
 
 data ServerHandler a
 	= ServerGot a
@@ -539,7 +546,7 @@ checkCONNECTServerMode service servermode a =
 		(ServeReadOnly, UploadPack) -> a Nothing
 		(ServeReadOnly, ReceivePack) -> a (Just sendReadOnlyError)
 
-sendContent :: Key -> AssociatedFile -> Offset -> MeterUpdate -> Proto Bool
+sendContent :: Key -> AssociatedFile -> Offset -> MeterUpdate -> Proto (Maybe [UUID])
 sendContent key af offset@(Offset n) p = go =<< local (contentSize key)
   where
 	go (Just (Len totallen)) = do
@@ -558,7 +565,13 @@ sendContent key af offset@(Offset n) p = go =<< local (contentSize key)
 		ver <- net getProtocolVersion
 		when (ver >= ProtocolVersion 1) $
 			net . sendMessage . VALIDITY =<< validitycheck
-		checkSuccess
+		if ver >= ProtocolVersion 2
+			then checkSuccessPlus
+			else do
+				ok <- checkSuccess
+				if ok
+					then return (Just [])
+					else return Nothing
 
 receiveContent
 	:: Observable t
@@ -605,6 +618,17 @@ checkSuccess = do
 		_ -> do
 			net $ sendMessage (ERROR "expected SUCCESS or FAILURE")
 			return False
+
+checkSuccessPlus :: Proto (Maybe [UUID])
+checkSuccessPlus = do
+	ack <- net receiveMessage
+	case ack of
+		Just SUCCESS -> return (Just [])
+		Just (SUCCESS_PLUS l) -> return (Just l)
+		Just FAILURE -> return Nothing
+		_ -> do
+			net $ sendMessage (ERROR "expected SUCCESS or SUCCESS-PLUS or FAILURE")
+			return Nothing
 
 sendSuccess :: Bool -> Proto ()
 sendSuccess True = net $ sendMessage SUCCESS

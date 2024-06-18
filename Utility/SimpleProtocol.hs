@@ -1,6 +1,6 @@
 {- Simple line-based protocols.
  -
- - Copyright 2013-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2024 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -21,6 +21,7 @@ module Utility.SimpleProtocol (
 	parse3,
 	parse4,
 	parse5,
+	parseList,
 	dupIoHandles,
 	getProtocolLine,
 ) where
@@ -110,6 +111,10 @@ parse5 mk s = mk <$> deserialize p1 <*> deserialize p2 <*> deserialize p3 <*> de
 
 splitWord :: String -> (String, String)
 splitWord = separate isSpace
+
+{- Only safe to use when the serialization does not include whitespace. -}
+parseList :: Serializable p => ([p] -> a) -> Parser a
+parseList mk v = mk <$> mapM deserialize (words v)
 
 {- When a program speaks a simple protocol over stdio, any other output
  - to stdout (or anything that attempts to read from stdin)
