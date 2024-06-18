@@ -204,8 +204,12 @@ checkProxy remoteuuid ouruuid = M.lookup ouruuid <$> getProxies >>= \case
 	-- be used as a proxy.
 	proxyfor ps = do
 		rs <- concat . byCost <$> remoteList
+		myclusters <- annexClusters <$> Annex.getGitConfig
 		let sameuuid r = uuid r == remoteuuid
-		let proxyconfigured = remoteAnnexProxy . R.gitconfig
+		-- Only proxy for a remote when the git configuration
+		-- allows it.
+		let proxyconfigured r = remoteAnnexProxy (R.gitconfig r)
+			|| (any (`M.member` myclusters) $ fromMaybe [] $ remoteAnnexClusterNode $ R.gitconfig r)
 		let samename r p = name r == proxyRemoteName p
 		case headMaybe (filter (\r -> sameuuid r && proxyconfigured r && any (samename r) ps) rs) of
 			Nothing -> notconfigured
