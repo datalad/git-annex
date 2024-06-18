@@ -13,9 +13,9 @@ import P2P.Annex
 import P2P.Proxy
 import qualified P2P.Protocol as P2P
 import qualified Annex
+import Annex.Proxy
 import Annex.UUID
 import qualified CmdLine.GitAnnexShell.Checks as Checks
-import Remote.Helper.Ssh (openP2PShellConnection', closeP2PShellConnection)
 import Logs.Location
 import Logs.Cluster
 import Annex.Cluster
@@ -93,18 +93,6 @@ proxyClientSide :: UUID -> Annex ClientSide
 proxyClientSide clientuuid = do
 	clientrunst <- liftIO (mkRunState $ Serving clientuuid Nothing)
 	return $ ClientSide clientrunst (stdioP2PConnection Nothing)
-
--- FIXME: Support special remotes.
-proxySshRemoteSide :: P2P.ProtocolVersion -> Remote -> Annex RemoteSide
-proxySshRemoteSide clientmaxversion remote = mkRemoteSide (Remote.uuid remote) $
-	openP2PShellConnection' remote clientmaxversion >>= \case
-		Just conn@(P2P.IO.OpenConnection (remoterunst, remoteconn, _)) ->
-			return $ Just 
-				( remoterunst
-				, remoteconn
-				, void $ liftIO $ closeP2PShellConnection conn
-				)
-		_  -> return Nothing
 
 p2pErrHandler :: (a -> CommandPerform) -> Annex (Either ProtoFailure a) -> CommandPerform
 p2pErrHandler cont a = a >>= \case
