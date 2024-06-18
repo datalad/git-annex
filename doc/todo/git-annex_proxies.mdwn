@@ -55,7 +55,7 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
 * Basic proxying to special remote support (non-streaming).
 
 * Getting a key from a cluster should proxy from one of the nodes that has
-  it, or from the proxy repository itself if it has the key.
+  it. (done)
 
 * Getting a key from a cluster currently always selects the lowest cost
   remote, and always the same remote if cost is the same. Should
@@ -64,10 +64,6 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
 
 * Implement upload with fanout and reporting back additional UUIDs over P2P
   protocol.
-
-* On upload to a cluster, as well as fanout to nodes, if the key is
-  preferred content of the proxy repository, store it there.
-  (But not when preferred content is not configured.)
 
 * Implement cluster drops, trying to remove from all nodes, and returning
   which UUIDs it was dropped from. 
@@ -84,6 +80,12 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
   Problem: `move --from cluster` in "does this make it worse"
   check may fail to realize that dropping from multiple nodes does in fact
   make it worse.
+
+* On upload to a cluster, as well as fanout to nodes, if the key is
+  preferred content of the proxy repository, store it there.
+  (But not when preferred content is not configured.)
+  And on download from a cluster, if the proxy repository has the content,
+  get it from there to avoid the overhead of proxying to a node.
 
 * Support proxies-of-proxies better, eg foo-bar-baz.
   Currently, it does work, but have to run `git-annex updateproxy`

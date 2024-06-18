@@ -60,13 +60,8 @@ clusterProxySelector clusteruuid protocolversion = do
 		<$> remoteList
 	remotesides <- mapM (proxySshRemoteSide protocolversion) remotes
 	return $ ProxySelector
-		{ proxyCHECKPRESENT = \k -> error "TODO"
-		, proxyGET = \k -> do
-			locs <- S.fromList <$> loggedLocations k
-			case filter (flip S.member locs . remoteUUID) remotesides of
-				-- TODO: Avoid always using same remote
-				(r:_) -> return (Just r)
-				[] -> return Nothing
+		{ proxyCHECKPRESENT = nodecontaining remotesides
+		, proxyGET = nodecontaining remotesides
 		, proxyPUT = \k -> error "TODO"
 		, proxyREMOVE = \k -> error "TODO"
 		-- Content is not locked on the cluster as a whole,
@@ -75,3 +70,11 @@ clusterProxySelector clusteruuid protocolversion = do
 		, proxyLOCKCONTENT = const (pure Nothing)
 		, proxyUNLOCKCONTENT = pure Nothing
 		}
+  where
+	nodecontaining remotesides k = do
+		locs <- S.fromList <$> loggedLocations k
+		case filter (flip S.member locs . remoteUUID) remotesides of
+			-- TODO: Avoid always using same remote
+			(r:_) -> return (Just r)
+			[] -> return Nothing
+		

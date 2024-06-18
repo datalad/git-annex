@@ -54,7 +54,7 @@ closeRemoteSide remoteside =
  - actions.
  - -}
 data ProxySelector = ProxySelector
-	{ proxyCHECKPRESENT :: Key -> Annex RemoteSide
+	{ proxyCHECKPRESENT :: Key -> Annex (Maybe RemoteSide)
 	, proxyLOCKCONTENT :: Key -> Annex (Maybe RemoteSide)
 	, proxyUNLOCKCONTENT :: Annex (Maybe RemoteSide)
 	, proxyREMOVE :: Key -> Annex RemoteSide
@@ -64,7 +64,7 @@ data ProxySelector = ProxySelector
 
 singleProxySelector :: RemoteSide -> ProxySelector
 singleProxySelector r = ProxySelector
-	{ proxyCHECKPRESENT = const (pure r)
+	{ proxyCHECKPRESENT = const (pure (Just r))
 	, proxyLOCKCONTENT = const (pure (Just r))
 	, proxyUNLOCKCONTENT = pure (Just r)
 	, proxyREMOVE = const (pure r)
@@ -160,9 +160,13 @@ proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) prox
 
 	proxyclientmessage Nothing = proxydone
 	proxyclientmessage (Just message) = case message of
-		CHECKPRESENT k -> do
-			remoteside <- proxyCHECKPRESENT proxyselector k
-			proxyresponse remoteside message (const proxynextclientmessage)
+		CHECKPRESENT k -> proxyCHECKPRESENT proxyselector k >>= \case
+			Just remoteside -> 
+				proxyresponse remoteside message
+					(const proxynextclientmessage)
+			Nothing -> 
+				protoerrhandler proxynextclientmessage $
+					client $ net $ sendMessage FAILURE
 		LOCKCONTENT k -> proxyLOCKCONTENT proxyselector k >>= \case
 			Just remoteside -> 
 				proxyresponse remoteside message 
