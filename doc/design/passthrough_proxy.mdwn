@@ -315,7 +315,7 @@ content. Eg, analize what files are typically requested, and store another
 copy of those on the proxy. Perhaps prioritize storing smaller files, where
 latency tends to swamp transfer speed.
 
-## streaming to special remotes
+## proxying to special remotes
 
 As well as being an intermediary to git-annex repositories, the proxy could
 provide access to other special remotes. That could be an object store like
@@ -324,8 +324,63 @@ service like S3, only the proxy needs to know the access credentials.
 
 Currently git-annex does not support streaming content to special remotes.
 The remote interface operates on object files stored on disk. See
-[[todo/transitive_transfers]] for discussion of that problem. If proxies
-get implemented, that problem should be revisited.
+[[todo/transitive_transfers]] for discussion of that.
+
+Even if the special remote interface was extended to support streaming,
+there would be external special remotes that don't implement the extended
+interface. So it would be good to start with something that works with the
+current interface. And maybe it will be good enough and it will be possible
+to avoid big changes to lots of special remotes.
+
+Being able to resume transfers is important. Uploads and downloads to some
+special remotes like rsync are resumable. And uploads and downloads from
+chunked special remotes are resumable. Proxying to a special remote should
+also be resumable.
+
+A simple approach for proxying downloads is to download from the special
+remote to the usual temp object file on the proxy, but without moving that
+to the annex object file at the end. As the temp object file grows, stream
+the content out via the proxy. Incrementally hash the content sent to the
+proxy. When the download is complete, check if the hash matches the key,
+and if not send a new P2P protocol message, INVALID-RESENDING, followed by
+sending DATA and the complete content. This will deal with remotes that
+write to the file out of order. (When a non-hashing backend is used,
+incrementally hash with sha256 and at the end rehash the file to detect out
+of order writes.)
+
+A simple approach for proxying uploads is to buffer the upload to the temp
+object file, and once it's complete (and hash verified), send it on to the
+special remote(s). Then delete the temp object file. This has a problem that
+the client will wait for the server's SUCCESS message, and there is no way for
+the server to indicate its own progress of uploading to the special remote.
+But the server needs to wait until the file is on the special remote before
+sending SUCCESS. Perhaps extend the P2P protocol with progress information
+for the uploads?
+
+Both of those file-based approaches need the proxy to have enough free disk
+space to buffer the largest file, times the number of concurrent
+uploads+downloads. So the proxy will need to check annex.diskreserve
+and refuse transfers that would use too much disk.
+
+If git-annex-shell gets interrupted, or a transfer from/to a special remote
+fails part way through, it will leave the temp object files on
+disk. That will tend to fill up the proxy's disk with temp object files.
+So probably the proxy will need to delete them proactively. But not too
+proactively, since the user could take a while before resuming an
+interrupted or failed transfer. How proactive to be should scale with how
+close the proxy is to running up against annex.diskreserve.
+
+A complication will be handling multiple concurrent downloads of the same
+object from a special remote. If a download is already in progress,
+another process could open the temp file and stream it out to its client.
+But how to detect when the whole content has been received? Could check key
+size, but what about unsized keys? 
+
+Also, it's possible that a special remote overwrites or truncates and
+rewrites the file at some point in the download process. This will need to
+be detected when streaming the file. It is especially a complication for a
+second concurrent process, which would not be able to examine the complete
+file at the end.
 
 ## chunking
 
@@ -360,6 +415,7 @@ different opinions.
 Also if encryption for a special remote behind a proxy happened
 client-side, and the client relied on that, nothing would stop the proxy
 from replacing that encrypted special remote with an unencrypted remote.
+The proxy controls what remotes it proxies for.
 Then the client side encryption would not happen, the user would not
 notice, and the proxy could see their unencrypted content.
 
