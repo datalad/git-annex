@@ -340,13 +340,26 @@ also be resumable.
 A simple approach for proxying downloads is to download from the special
 remote to the usual temp object file on the proxy, but without moving that
 to the annex object file at the end. As the temp object file grows, stream
-the content out via the proxy. Incrementally hash the content sent to the
+the content out via the proxy. 
+
+Some special remotes will overwrite or truncate an existing temp object
+file when starting a download. So the proxy should wait until the file is
+growing to start streaming it.
+
+Some special remotes write to files out of order.
+That could be dealt with by Incrementally hashing the content sent to the
 proxy. When the download is complete, check if the hash matches the key,
 and if not send a new P2P protocol message, INVALID-RESENDING, followed by
-sending DATA and the complete content. This will deal with remotes that
-write to the file out of order. (When a non-hashing backend is used,
+sending DATA and the complete content. (When a non-hashing backend is used,
 incrementally hash with sha256 and at the end rehash the file to detect out
 of order writes.)
+
+That would be pretty annoying to the client which has to download 2x the
+data in that case. So perhaps also extend the special remote interface with
+a way to indicate when a special remote writes out of order. And don't
+stream downloads from such special remotes. So there will be a perhaps long
+delay before the client sees their download start. Extend the P2P protocol
+with a way to send pre-download progress perhaps?
 
 A simple approach for proxying uploads is to buffer the upload to the temp
 object file, and once it's complete (and hash verified), send it on to the
@@ -354,7 +367,8 @@ special remote(s). Then delete the temp object file. This has a problem that
 the client will wait for the server's SUCCESS message, and there is no way for
 the server to indicate its own progress of uploading to the special remote.
 But the server needs to wait until the file is on the special remote before
-sending SUCCESS. Perhaps extend the P2P protocol with progress information
+sending SUCCESS, leading to a perhaps long delay on the client before an
+upload finishes. Perhaps extend the P2P protocol with progress information
 for the uploads?
 
 Both of those file-based approaches need the proxy to have enough free disk
@@ -375,12 +389,6 @@ object from a special remote. If a download is already in progress,
 another process could open the temp file and stream it out to its client.
 But how to detect when the whole content has been received? Could check key
 size, but what about unsized keys? 
-
-Also, it's possible that a special remote overwrites or truncates and
-rewrites the file at some point in the download process. This will need to
-be detected when streaming the file. It is especially a complication for a
-second concurrent process, which would not be able to examine the complete
-file at the end.
 
 ## chunking
 
