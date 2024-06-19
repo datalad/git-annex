@@ -34,7 +34,7 @@ startup = do
  - Alternatively, run after initialization.
  -}
 startupAnnex :: Annex ()
-startupAnnex =
+startupAnnex = doQuietAction $
 	-- Logs.Location needs clusters to be loaded before it is used,
 	-- in order for a cluster to be treated as the location of keys
 	-- that are located in any of its nodes.

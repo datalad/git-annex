@@ -94,7 +94,7 @@ list autoinit = do
 	c <- fromRepo Git.config
 	rs <- mapM (tweakurl c) =<< Annex.getGitRemotes
 	rs' <- mapM (configRead autoinit) (filter (not . isGitRemoteAnnex) rs)
-	proxies <- getProxies
+	proxies <- doQuietAction getProxies
 	if proxies == mempty
 		then return rs'
 		else do
