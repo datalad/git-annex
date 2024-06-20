@@ -1,0 +1,25 @@
+### Please describe the problem.
+
+Very rarely we get a unittest to error out with smth like
+
+```
+2024-06-18T03:18:50.5586670Z E           datalad.runner.exception.CommandError: CommandError: 'git -c diff.ignoreSubmodules=none -c core.quotepath=false annex find --anything --include '*' --json --json-error-messages -c annex.dotfiles=true' failed with exitcode 139 under /private/var/folders/b3/2xm02wpd21qgrpkck5q1c6k40000gn/T/datalad_temp_test_path_diff49gfi408 [info keys: stdout_json] [err: 'error: git-annex died of signal 11']
+2024-06-18T03:18:50.5588210Z 
+2024-06-18T03:18:50.5588730Z /Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/datalad/runner/runner.py:242: CommandError
+```
+
+unfortunately no more information is captured.  I just wanted to seek ideas on what could lead to exit with 11 and may be what data to collect.
+
+original report: [datalad/issues/7490](https://github.com/datalad/datalad/issues/7490)
+
+### What steps will reproduce the problem?
+
+not sure yet how feasible would be to reproduce since happens really rarely
+
+### What version of git-annex are you using? On what operating system?
+
+OSX. Last time - from brew git-annex--10.20240531.arm64_sonoma.bottle.tar.gz
+
+
+[[!meta author=yoh]]
+[[!tag projects/repronim]]
