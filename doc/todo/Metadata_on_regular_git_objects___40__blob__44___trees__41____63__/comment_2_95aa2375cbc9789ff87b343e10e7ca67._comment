@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joris"
+ avatar="http://cdn.libravatar.org/avatar/6fb83f8f62afd4adac91fb14b60928c6"
+ subject="comment 2"
+ date="2024-06-20T09:58:05Z"
+ content="""
+Was this ever explored more? This would be very interesting to be able to use the metadata functionality on regular git files that are not in the annex.
+"""]]
