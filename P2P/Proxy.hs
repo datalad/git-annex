@@ -62,7 +62,9 @@ data ProxySelector = ProxySelector
 	, proxyUNLOCKCONTENT :: Annex (Maybe RemoteSide)
 	, proxyREMOVE :: Key -> Annex RemoteSide
 	, proxyGET :: Key -> Annex (Maybe RemoteSide)
+	-- ^ can get from any of these remotes
 	, proxyPUT :: Key -> Annex [RemoteSide]
+	-- ^ can put to some/all of these remotes
 	}
 
 singleProxySelector :: RemoteSide -> ProxySelector
@@ -139,6 +141,9 @@ proxy
 	-> UUID
 	-> ProxySelector
 	-> ProtocolVersion
+	-- ^ Protocol version being spoken between the proxy and the
+	-- client. When there are multiple remotes, some may speak an
+	-- earlier version.
 	-> Maybe Message
 	-- ^ non-VERSION message that was received from the client when
 	-- negotiating protocol version, and has not been responded to yet
@@ -291,7 +296,7 @@ proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) remo
 
 	withDATA a message@(DATA len) = a len message
 	withDATA _ _ = protoerr
-
+	
 	relayGET remoteside len = relayDATAStart client $
 		relayDATACore len (runRemoteSide remoteside) client $
 			relayDATAFinish (runRemoteSide remoteside) client $
@@ -304,29 +309,19 @@ proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) remo
 				relayonemessage (runRemoteSide remoteside) client finished
 	  where
 		finished resp () = do
-			case resp of
-				SUCCESS -> addedContent proxymethods (remoteUUID remoteside) k
-				SUCCESS_PLUS us ->
-					forM_ (remoteUUID remoteside:us) $ \u ->
-						addedContent proxymethods u k
-				_ -> return ()
+			void $ relayPUTRecord k remoteside resp
 			proxynextclientmessage ()
 
-	relayDATAStart x receive message =
-		protoerrhandler (\() -> receive) $
-			x $ net $ sendMessage message
-
-	relayDATACore len x y a = protoerrhandler send $
-			x $ net $ receiveBytes len nullMeterUpdate
-	  where
-		send b = protoerrhandler a $
-			y $ net $ sendBytes len b nullMeterUpdate
-	
-	relayDATAFinish x y sendsuccessfailure ()
-		| protocolversion == 0 = sendsuccessfailure
-		-- Protocol version 1 has a VALID or
-		-- INVALID message after the data.
-		| otherwise = relayonemessage x y (\_ () -> sendsuccessfailure)
+	relayPUTRecord k remoteside SUCCESS = do
+		addedContent proxymethods (remoteUUID remoteside) k
+		return $ Just [remoteUUID remoteside]
+	relayPUTRecord k remoteside (SUCCESS_PLUS us) = do
+		let us' = remoteUUID remoteside : us
+		forM_ us' $ \u ->
+			addedContent proxymethods u k
+		return $ Just us'
+	relayPUTRecord _ _ _ =
+		return Nothing
 
 	handlePutMulti remotesides k message = do
 		let initiate remoteside = do
@@ -362,7 +357,7 @@ proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) remo
 					let minoffset = minimum (map snd l')
 					getresponse client (PUT_FROM (Offset minoffset)) $
 						withDATA (relayPUTMulti minoffset l' k)	
-
+	
 	relayPUTMulti minoffset remotes k (Len datalen) _ = do
 		let totallen = datalen + minoffset
 		-- Tell each remote how much data to expect, depending
@@ -385,27 +380,77 @@ proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) remo
 			let !n' = n + chunklen
 			rs' <- forM rs $ \r@(remoteside, remoteoffset) ->
 				if n >= remoteoffset
-					then skipfailed r $ runRemoteSide remoteside $
+					then runRemoteSideOrSkipFailed remoteside $ do
 						net $ sendBytes (Len chunklen) chunk nullMeterUpdate
+						return r
 					else if (n' <= remoteoffset)
 						then do
 							let chunkoffset = remoteoffset - n
 							let subchunklen = chunklen - chunkoffset
 							let subchunk = L.drop (fromIntegral chunkoffset) chunk
-							skipfailed r $ runRemoteSide remoteside $
+							runRemoteSideOrSkipFailed remoteside $ do
 								net $ sendBytes (Len subchunklen) subchunk nullMeterUpdate
+								return r
 						else return (Just r)
 			if L.null b'
 				then sent (catMaybes rs')
 				else send (catMaybes rs') n' b'
 
 		sent [] = proxydone
-		sent rs = giveup "XXX" -- XXX
-		
-		skipfailed r@(remoteside, _) a = a >>= \case
-			Right _ -> return (Just r)
+		sent rs = relayDATAFinishMulti k (map fst rs)
+	
+	runRemoteSideOrSkipFailed remoteside a = 
+		runRemoteSide remoteside a >>= \case
+			Right v -> return (Just v)
 			Left _ -> do
 				-- This connection to the remote is
 				-- unrecoverable at this point, so close it.
 				closeRemoteSide remoteside
 				return Nothing
+
+	relayDATAStart x receive message =
+		protoerrhandler (\() -> receive) $
+			x $ net $ sendMessage message
+
+	relayDATACore len x y a = protoerrhandler send $
+			x $ net $ receiveBytes len nullMeterUpdate
+	  where
+		send b = protoerrhandler a $
+			y $ net $ sendBytes len b nullMeterUpdate
+	
+	relayDATAFinish x y sendsuccessfailure ()
+		| protocolversion == 0 = sendsuccessfailure
+		-- Protocol version 1 has a VALID or
+		-- INVALID message after the data.
+		| otherwise = relayonemessage x y (\_ () -> sendsuccessfailure)
+
+	relayDATAFinishMulti k rs
+		| protocolversion == 0 = 
+			finish $ net receiveMessage
+		| otherwise =
+			flip protoerrhandler (client $ net $ receiveMessage) $
+				withresp $ \message ->
+					finish $ do
+						-- Relay VALID or INVALID message
+						-- only to remotes that support
+						-- protocol version 1.
+						net getProtocolVersion >>= \case
+							ProtocolVersion 0 -> return ()
+							_ -> net $ sendMessage message
+						net receiveMessage			
+	  where
+		finish a = do
+			storeduuids <- forM rs $ \r -> 
+				runRemoteSideOrSkipFailed r a >>= \case
+					Just (Just resp) ->
+						relayPUTRecord k r resp
+					_ -> return Nothing
+			protoerrhandler proxynextclientmessage $
+				client $ net $ sendMessage $
+					case concat (catMaybes storeduuids) of
+						[] -> FAILURE
+						(_u:[]) -> SUCCESS
+						us
+							| protocolversion < 2 -> SUCCESS
+							| otherwise -> SUCCESS_PLUS us
+
