@@ -1,0 +1,98 @@
+A git-annex repository can provide access to its remotes as nodes of a
+cluster. This allows other repositories to access the cluster as a single
+logical repository.
+
+[[!toc ]]
+
+## using a cluster
+
+For example, a remote "bigserver" that is configured as a cluster will
+make available an additional remote "bigserver-mycluster", as well as some
+remotes for each node eg "bigserver-node1", "bigserver-node2", etc.
+
+The user can get files from the cluster without caring which node it comes
+from:
+
+    $ git-annex get foo --from bigserver-mycluster
+    copy foo (from bigserver-mycluster...) ok
+
+And the user can send files to the cluster, without caring what nodes
+they are stored to:
+
+    $ git-annex move bar --to bigserver-mycluster
+    move bar (to bigserver-mycluster...) ok
+
+In fact, a single upload can be sent to every node of the cluster at once.
+    
+    $ git-annex whereis bar
+	whereis bar (3 copies)
+	  	acae2ff6-6c1e-8bec-b8b9-397a3755f397 -- my cluster [bigserver-mycluster]
+	   	9f514001-6dc0-4d83-9af3-c64c96626892 -- node 1 [bigserver-node1]
+	   	d81e0b28-612e-4d73-a4e6-6dabbb03aba1 -- node 2 [bigserver-node2]
+	    5657baca-2f11-11ef-ae1a-5b68c6321dd9 -- node 3 [bigserver-node3]
+
+Notice that the file is shown as present in the cluster, as well as on
+individual nodes. But the cluster itself does not count as a copy of the file,
+so the 3 copies are the copies on individual nodes.
+
+Most other git-annex commands that operate on repositories can also operate on
+clusters.
+
+Clusters can only be accessed via ssh.
+
+## configuring a cluster
+
+A new cluster first needs to be initialized. Run [[git-annex-initcluster]] in
+the repository that will serve the cluster to clients. In the example above,
+this was the "bigserver" repository.
+
+	$ git-annex initcluster mycluster
+
+Once a cluster is initialized, the next step is to add nodes to it.
+To make a remote be a node of the cluster, configure 
+`git config remote.name.annex-cluster-node`, setting it to the
+name of the cluster.
+
+In the example above, the three cluster nodes were configured like this:
+
+	$ git remote add node1 /media/disk1/repo
+	$ git remote add node2 /media/disk2/repo
+	$ git remote add node3 /media/disk3/repo
+	$ git config remote.node1.annex-cluster-node true
+	$ git config remote.node2.annex-cluster-node true
+	$ git config remote.node3.annex-cluster-node true
+
+Finally, run `git-annex updatecluster` to record the cluster configuration
+in the git-annex branch. That tells other repositories about the cluster.
+	
+	$ git-annex updatecluster mycluster
+	Added node node1 to cluster: mycluster
+	Added node node2 to cluster: mycluster
+	Added node node3 to cluster: mycluster
+	Started proxying for node1
+	Started proxying for node2
+	Started proxying for node3
+
+## preferred content of clusters
+
+The preferred content of the cluster can be configured. This tells
+users what files the cluster as a whole should contain.
+
+To configure the preferred content of a cluster, as well as other related
+things like [[groups|git-annex-group]] and [[required_content]], it's easiest
+to do the configuration in a repository that has the cluster as a remote.
+
+For example:
+
+	git-annex wanted bigserver-mycluster standard
+	git-annex group bigserver-mycluster archive
+
+By default, when a file is uploaded to a cluster, it is stored on every node of
+the cluster. To control which nodes to store to, the [[preferred_content]] of
+each node can be configured.
+
+If the preferred content configuration of nodes make none of them
+want a copy of a file, the upload to the cluster will fail. That is done to
+avoid git-annex picking an arbitrary node. But, the user can bypass the
+cluster and send content to any individual node, even if it's not preferred
+content of that node.

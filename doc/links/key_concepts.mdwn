@@ -5,3 +5,5 @@
 * [[special_remotes]]
 * [[workflows|workflow]]
 * [[sync]]
+* [[preferred_content]]
+* [[clusters]]

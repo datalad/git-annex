@@ -29,6 +29,8 @@ and run this command.
 [[git-annex-initcluster]](1)
 [[git-annex-updateproxy]](1)
 
+<https://git-annex.branchable.com/clusters/>
+
 # AUTHOR
 
 Joey Hess <id@joeyh.name>
