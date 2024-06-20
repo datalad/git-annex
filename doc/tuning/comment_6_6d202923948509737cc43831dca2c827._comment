@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="beryllium@5bc3c32eb8156390f96e363e4ba38976567425ec"
+ nickname="beryllium"
+ avatar="http://cdn.libravatar.org/avatar/62b67d68e918b381e7e9dd6a96c16137"
+ subject="Grafting? a special remote for tuned migration"
+ date="2024-06-15T00:57:26Z"
+ content="""
+Naively, I put myself in a position where my rather large, untuned git-annex had to be recovered due to not appreciating the effect of case-insensitive filesystems.
+
+Specifically, NTFS-3G is deadly in this case. Because, whilst Windows has advanced, and with WSL added the ability to add case-sensitivity on a folder, which is also inheritable to folders under it... NTFS-3G does not do this.
+
+So beware if you try to work in an \"interoperable\" way. NTFS-3G will do mixed case, but will create child folders that are not case-sensitive.
+
+To that end, I want to migrate this rather large git-annex to be tuned to annex.tune.objecthashlower. I already have a good strategy around this. I'll just create a completely new stream of git-annex'es originating from a newly formed one. I will also be able to create new type=directory special remotes for my \"tape-out\" existing git-annex. I will just use git annex fsck --fast --from $remote to rebuild the location data for it.
+
+I've also tested this with an S3 git-annex as a proof-of-concept. So in the new git-annex, I ran git-annex initremote cloud type=S3... to create a new bucket, copied over a file from the old bucket, and rebuilt the location data for that file.
+
+But I really really would like to be able to avoid creating a new bucket. I am happy to lose the file presence/location data for the old bucket, but I'd like to graft back in, or initremote the cloud bucket with matching parameters. So too I guess, with an encrypted special remote, ie. import over the encryption keys, etc.
+
+Are there \"plumbing\" commands that can do this? Or does it require knowing about the low-level storage of this metadata to achieve it, which seems to just send me back to the earlier comment of using a filter-branch... which I am hoping to avoid (because of all the potential pit-falls)
+
+"""]]

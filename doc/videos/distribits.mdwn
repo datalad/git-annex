@@ -1,0 +1,10 @@
+Joey Hess presented at [Distribits 2024](https://distribits.live/)
+a talk titled "git annex is complete, right?"
+
+- [on youtube](https://www.youtube.com/watch?v=pp8IeGXpRRI&list=PLEQHbPfpVqU6esVrgqjfYybY394XD2qf2&index=3)
+- [a mirror](https://downloads.kitenet.net/talks/distribits_2024__git-annex_is_complete,_right.mkv)
+
+Many of the other talks at Distribits also involved git-annex.
+[Playlist](https://www.youtube.com/playlist?list=PLEQHbPfpVqU6esVrgqjfYybY394XD2qf2)
+
+[[!meta title="git-annex presentation by Joey Hess at Distribits 2024"]]

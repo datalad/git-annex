@@ -1,0 +1,8 @@
+Hi, I have some large repositories on a separate disk server that I would like to be able to browse on my desktop pc or laptop.
+The repositories do not fit on the my client's disk, therefore I cannot just use `git annex get .`
+One solution would be a readonly NFS mount. However, adding new files as I now more complicated: I have to clone the repo (via ssh) to my desktop/laptop, add new files, use `git annex copy` to get them on the server and then update the working copy there.
+In addition, the readonly mount does not allow me to modify text files which are not managed by git annex.
+
+I've been thinking about using some kind of union fs (overlayfs / mergerfs) but the dead symlinks of the local copy would probably hide the files of the NFS mount. I could probably also just symlink .git/annex/objects to the NFS mount but that sounds like a pretty unsafe and bad idea.
+
+Any suggestions how I might solve this problem?
