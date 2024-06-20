@@ -61,7 +61,8 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
   other git-annex processes are currently using.
 
 * Implement upload with fanout and reporting back additional UUIDs over P2P
-  protocol. (started, but incomplete)
+  protocol. (done, but need to check for fencepost errors on resume of
+  incomplete upload with remotes at different points)
 
 * On upload to cluster, send to nodes where it's preferred content, and not
   to other nodes.
