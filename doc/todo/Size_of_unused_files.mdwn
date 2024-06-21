@@ -1,0 +1,14 @@
+It would be nice to have `git annex unused` report the total size of unused files.
+
+I tried:
+
+- ❌ `git annex unused`: doesn't show the size
+- ❌ `git annex info`: doesn't list unused size
+- ❌ `git annex info --unused`: doesn't work
+- ❌ `git annex list --unused`: doesn't work
+- ❌ `git annex find --unused`: doesn't work
+
+Maybe I'm missing something, but it feels like having `git annex unused` and `git annex info` directly report it would be nice.
+
+Cheers,
+Yann
