@@ -70,16 +70,6 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
 * Implement cluster drops, trying to remove from all nodes, and returning
   which UUIDs it was dropped from. 
 
-  Problem: May lock content on cluster
-  nodes to satisfy numcopies (rather than locking elsewhere) and so not be
-  able to drop from nodes. Avoid using cluster nodes when constructing drop
-  proof for cluster.
-
-  Problem: When nodes are special remotes, may
-  treat nodes as copies while dropping from cluster, and so violate
-  numcopies. (But not mincopies.) This is also solved by avoiding using
-  cluster nodes when constructing drop proof for cluster.
-
   Problem: `move --from cluster` in "does this make it worse"
   check may fail to realize that dropping from multiple nodes does in fact
   make it worse.

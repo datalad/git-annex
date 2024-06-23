@@ -32,7 +32,7 @@ import qualified Annex
 import Types.NumCopies
 import Logs.NumCopies
 import Logs.Trust
-import Types.Cluster
+import Logs.Cluster
 import Annex.CheckAttr
 import qualified Remote
 import qualified Types.Remote as Remote
@@ -42,8 +42,10 @@ import Annex.CatFile
 import qualified Database.Keys
 
 import Control.Exception
-import qualified Control.Monad.Catch as M
+import qualified Control.Monad.Catch as MC
 import Data.Typeable
+import qualified Data.Set as S
+import qualified Data.Map as M
 
 defaultNumCopies :: NumCopies
 defaultNumCopies = configuredNumCopies 1
@@ -284,11 +286,11 @@ verifyEnoughCopiesToDrop nolocmsg key removallock neednum needmin skip preverifi
 			-- of exceptions by using DropException.
 			let a = lockcontent key $ \v -> 
 				cont v `catchNonAsync` (throw . DropException)
-			a `M.catches`
-				[ M.Handler (\ (e :: AsyncException) -> throwM e)
-				, M.Handler (\ (e :: SomeAsyncException) -> throwM e)
-				, M.Handler (\ (DropException e') -> throwM e')
-				, M.Handler (\ (_e :: SomeException) -> fallback)
+			a `MC.catches`
+				[ MC.Handler (\ (e :: AsyncException) -> throwM e)
+				, MC.Handler (\ (e :: SomeAsyncException) -> throwM e)
+				, MC.Handler (\ (DropException e') -> throwM e')
+				, MC.Handler (\ (_e :: SomeException) -> fallback)
 				]
 		Nothing -> fallback
 
@@ -332,8 +334,10 @@ pluralCopies _ = "copies"
  - The return lists also exclude any repositories that are untrusted,
  - since those should not be used for verification.
  -
- - Cluster UUIDs are also excluded since locking on a cluster is done by
- - locking on individual nodes.
+ - When dropping from a cluster UUID, its nodes are excluded.
+ -
+ - Cluster UUIDs are also excluded since locking a key on a cluster
+ - is done by locking on individual nodes.
  -
  - The UnVerifiedCopy list is cost ordered.
  - The VerifiedCopy list contains repositories that are trusted to
@@ -344,8 +348,13 @@ verifiableCopies key exclude = do
 	locs <- filter (not . isClusterUUID) <$> Remote.keyLocations key
 	(remotes, trusteduuids) <- Remote.remoteLocations (Remote.IncludeIgnored False) locs
 		=<< trustGet Trusted
+	clusternodes <- if any isClusterUUID exclude
+		then do
+			clusters <- getClusters
+			pure $ concatMap (getclusternodes clusters) exclude
+		else pure []
 	untrusteduuids <- trustGet UnTrusted
-	let exclude' = exclude ++ untrusteduuids
+	let exclude' = exclude ++ untrusteduuids ++ clusternodes
 	let remotes' = Remote.remotesWithoutUUID remotes (exclude' ++ trusteduuids)
 	let verified = map (mkVerifiedCopy TrustedCopy) $
 		filter (`notElem` exclude') trusteduuids
@@ -354,3 +363,8 @@ verifiableCopies key exclude = do
 		then [UnVerifiedHere]
 		else []
 	return (herec ++ map UnVerifiedRemote remotes', verified)
+  where
+	getclusternodes clusters u = case mkClusterUUID u of
+		Just cu -> maybe [] (map fromClusterNodeUUID . S.toList) $
+			M.lookup cu (clusterUUIDs clusters)
+		Nothing -> []
