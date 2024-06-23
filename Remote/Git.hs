@@ -549,7 +549,7 @@ copyToRemote' repo r st@(State connpool duc _ _ _) key file meterupdate
 		, giveup "remote does not have expected annex.uuid value"
 		)
 	| Git.repoIsSsh repo =
-		P2PHelper.store (gitconfig r)
+		P2PHelper.store (uuid r) (gitconfig r)
 			(Ssh.runProto r connpool (return Nothing))
 			key file meterupdate
 		
