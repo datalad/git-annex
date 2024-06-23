@@ -104,3 +104,6 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
 
 * Support using a proxy when its url is a P2P address.
   (Eg tor-annex remotes.)
+
+* `viconfig` support for setting preferred content and description of
+  clusters
