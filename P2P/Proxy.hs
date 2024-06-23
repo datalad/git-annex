@@ -292,11 +292,13 @@ proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) remo
 		mapM_ (\u -> removedContent proxymethods u k) us
 		protoerrhandler proxynextclientmessage $
 			client $ net $ sendMessage $
-				if all (maybe False fst) v'
-					then if null us || protocolversion < 2
+				let nonplussed = all (== remoteuuid) us 
+					|| protocolversion < 2
+				in if all (maybe False fst) v'
+					then if nonplussed
 						then SUCCESS
 						else SUCCESS_PLUS us
-					else if null us || protocolversion < 2
+					else if nonplussed
 						then FAILURE
 						else FAILURE_PLUS us
 
