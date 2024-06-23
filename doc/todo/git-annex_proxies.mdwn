@@ -55,17 +55,11 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
 * Getting a key from a cluster should proxy from one of the nodes that has
   it. (done)
 
+* Implement upload with fanout and reporting back additional UUIDs over P2P
+  protocol. (done)
+
 * Implement cluster drops, trying to remove from all nodes, and returning
   which UUIDs it was dropped from. (done)
-
-* Getting a key from a cluster currently always selects the lowest cost
-  remote, and always the same remote if cost is the same. Should
-  round-robin amoung remotes, and prefer to avoid using remotes that
-  other git-annex processes are currently using.
-
-* Implement upload with fanout and reporting back additional UUIDs over P2P
-  protocol. (done, but need to check for fencepost errors on resume of
-  incomplete upload with remotes at different points)
 
 * `git-annex sync --content` does not send content to clusters, or to
   proxied remotes. Seems that the second call to Remote.list somehow
@@ -76,6 +70,11 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
 
 * On upload to cluster, send to nodes where it's preferred content, and not
   to other nodes.
+
+* Getting a key from a cluster currently always selects the lowest cost
+  remote, and always the same remote if cost is the same. Should
+  round-robin amoung remotes, and prefer to avoid using remotes that
+  other git-annex processes are currently using.
 
 * Support annex.jobs for clusters.
 
@@ -108,5 +107,5 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
 * Support using a proxy when its url is a P2P address.
   (Eg tor-annex remotes.)
 
-* `viconfig` support for setting preferred content and description of
-  clusters
+* `viconfig` support for setting preferred content, group, 
+  and description of clusters
