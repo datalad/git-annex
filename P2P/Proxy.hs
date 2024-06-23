@@ -411,7 +411,7 @@ proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) remo
 					then runRemoteSideOrSkipFailed remoteside $ do
 						net $ sendBytes (Len chunklen) chunk nullMeterUpdate
 						return r
-					else if (n' <= remoteoffset)
+					else if (n' > remoteoffset)
 						then do
 							let chunkoffset = remoteoffset - n
 							let subchunklen = chunklen - chunkoffset
