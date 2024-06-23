@@ -74,10 +74,6 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
   check may fail to realize that dropping from multiple nodes does in fact
   make it worse.
 
-* Bug: When a cluster has one node, copying a file to it does not update
-  location log to say the content is present on it. It's returning SUCCESS
-  rather than SUCCESS-PLUS.
-
 * Support annex.jobs for clusters.
 
 * On upload to a cluster, as well as fanout to nodes, if the key is

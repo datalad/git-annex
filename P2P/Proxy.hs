@@ -303,16 +303,17 @@ proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) remo
 	handleGET remoteside message = getresponse (runRemoteSide remoteside) message $
 		withDATA (relayGET remoteside)
 
-	handlePUT (remoteside:[]) k message =
-		getresponse (runRemoteSide remoteside) message $ \resp -> case resp of
-			ALREADY_HAVE -> protoerrhandler proxynextclientmessage $
-				client $ net $ sendMessage resp
-			ALREADY_HAVE_PLUS _ -> protoerrhandler proxynextclientmessage $
-				client $ net $ sendMessage resp
-			PUT_FROM _ -> 
-				getresponse client resp $ 
-					withDATA (relayPUT remoteside k)
-			_ -> protoerr
+	handlePUT (remoteside:[]) k message
+		| remoteUUID remoteside == remoteuuid =
+			getresponse (runRemoteSide remoteside) message $ \resp -> case resp of
+				ALREADY_HAVE -> protoerrhandler proxynextclientmessage $
+					client $ net $ sendMessage resp
+				ALREADY_HAVE_PLUS _ -> protoerrhandler proxynextclientmessage $
+					client $ net $ sendMessage resp
+				PUT_FROM _ -> 
+					getresponse client resp $ 
+						withDATA (relayPUT remoteside k)
+				_ -> protoerr
 	handlePUT [] _ _ = 
 		protoerrhandler proxynextclientmessage $
 			client $ net $ sendMessage ALREADY_HAVE
@@ -474,7 +475,6 @@ proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) remo
 				client $ net $ sendMessage $
 					case concat (catMaybes storeduuids) of
 						[] -> FAILURE
-						(_u:[]) -> SUCCESS
 						us
 							| protocolversion < 2 -> SUCCESS
 							| otherwise -> SUCCESS_PLUS us
