@@ -68,7 +68,10 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
   incomplete upload with remotes at different points)
 
 * `git-annex sync --content` does not send content to clusters, or to
-  proxied remotes. And when operating on clusters, it should operate on the
+  proxied remotes. Seems that the second call to Remote.list somehow
+  is failing to listProxies. 
+
+* `git-annex sync` etc, when operating on clusters, should operate on the
   cluster as a whole, not on cluster nodes.
 
 * On upload to cluster, send to nodes where it's preferred content, and not
