@@ -67,10 +67,6 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
   protocol. (done, but need to check for fencepost errors on resume of
   incomplete upload with remotes at different points)
 
-* Problem: `move --from cluster` in "does this make it worse"
-  check may fail to realize that dropping from multiple nodes does in fact
-  make it worse.
-
 * `git-annex sync --content` does not send content to clusters, or to
   proxied remotes. And when operating on clusters, it should operate on the
   cluster as a whole, not on cluster nodes.
