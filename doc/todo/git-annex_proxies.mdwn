@@ -55,6 +55,9 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
 * Getting a key from a cluster should proxy from one of the nodes that has
   it. (done)
 
+* Implement cluster drops, trying to remove from all nodes, and returning
+  which UUIDs it was dropped from. (done)
+
 * Getting a key from a cluster currently always selects the lowest cost
   remote, and always the same remote if cost is the same. Should
   round-robin amoung remotes, and prefer to avoid using remotes that
@@ -67,12 +70,15 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
 * On upload to cluster, send to nodes where it's preferred content, and not
   to other nodes.
 
-* Implement cluster drops, trying to remove from all nodes, and returning
-  which UUIDs it was dropped from. 
-
-  Problem: `move --from cluster` in "does this make it worse"
+* Problem: `move --from cluster` in "does this make it worse"
   check may fail to realize that dropping from multiple nodes does in fact
   make it worse.
+
+* Bug: When a cluster has one node, copying a file to it does not update
+  location log to say the content is present on it. It's returning SUCCESS
+  rather than SUCCESS-PLUS.
+
+* Support annex.jobs for clusters.
 
 * On upload to a cluster, as well as fanout to nodes, if the key is
   preferred content of the proxy repository, store it there.

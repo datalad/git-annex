@@ -193,7 +193,7 @@ toPerform' mcontentlock dest removewhen key afile fastcheck isthere = do
 				DropCheckNumCopies -> do
 					(numcopies, mincopies) <- getSafestNumMinCopies afile key
 					(tocheck, verified) <- verifiableCopies key [srcuuid]
-					verifyEnoughCopiesToDrop "" key (Just contentlock)
+					verifyEnoughCopiesToDrop "" key (Just srcuuid) (Just contentlock)
 						 numcopies mincopies [srcuuid] verified
 						 (UnVerifiedRemote dest : tocheck)
 						 (drophere setpresentremote contentlock . showproof)
@@ -299,7 +299,7 @@ fromDrop src destuuid deststartedwithcopy key afile adjusttocheck =
 		DropCheckNumCopies -> do
 			(numcopies, mincopies) <- getSafestNumMinCopies afile key
 			(tocheck, verified) <- verifiableCopies key [Remote.uuid src]
-			verifyEnoughCopiesToDrop "" key Nothing numcopies mincopies [Remote.uuid src] verified
+			verifyEnoughCopiesToDrop "" key (Just (Remote.uuid src)) Nothing numcopies mincopies [Remote.uuid src] verified
 				(adjusttocheck tocheck) (dropremote . showproof) faileddropremote
 		DropWorse -> faileddropremote
   where

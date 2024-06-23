@@ -205,7 +205,7 @@ doDrop pcc dropfrom contentlock key afile numcopies mincopies skip preverified c
 	ifM (Annex.getRead Annex.force)
 		( dropaction Nothing
 		, ifM (checkRequiredContent pcc dropfrom key afile)
-			( verifyEnoughCopiesToDrop nolocmsg key 
+			( verifyEnoughCopiesToDrop nolocmsg key (Just dropfrom)
 				contentlock numcopies mincopies
 				skip preverified check
 					(dropaction . Just)

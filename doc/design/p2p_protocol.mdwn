@@ -117,6 +117,10 @@ To remove a key's content from the server, the client sends:
 
 The server responds with either SUCCESS or FAILURE.
 
+In protocol version 2, the server can optionally reply with SUCCESS-PLUS
+or FAILURE-PLUS. Each has a subsequent list of UUIDs of repositories
+that the content was removed from.
+
 ## Storing content on the server
 
 To store content on the server, the client sends:
@@ -159,9 +163,8 @@ was being sent.
 If the server successfully receives the data and stores the content,
 it replies with SUCCESS. Otherwise, FAILURE.
 
-In protocol version 2, the server can optionally reply with SUCCESS-PLUS.
-The subsequent list of UUIDs are additional UUIDs where the content was
-stored, in addition to the UUID where the client was sending it.
+In protocol version 2, the server can optionally reply with SUCCESS-PLUS
+and a list of UUIDs where the content was stored.
 
 ## Getting content from the server
 

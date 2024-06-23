@@ -342,11 +342,12 @@ remoteLocations (IncludeIgnored ii) locations trusted = do
 
 {- Displays known locations of a key and helps the user take action
  - to make them accessible. -}
-showLocations :: Bool -> Key -> [UUID] -> String -> Annex ()
-showLocations separateuntrusted key exclude nolocmsg = do
+showLocations :: Bool -> Key -> (UUID -> Annex Bool) -> String -> Annex ()
+showLocations separateuntrusted key checkexclude nolocmsg = do
 	u <- getUUID
 	remotes <- remoteList
 	uuids <- keyLocations key
+	exclude <- filterM checkexclude uuids
 	untrusteduuids <- if separateuntrusted
 		then trustGet UnTrusted
 		else pure []

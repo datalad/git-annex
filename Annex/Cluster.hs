@@ -69,7 +69,11 @@ clusterProxySelector clusteruuid protocolversion = do
 		, proxyPUT = \k -> do
 			locs <- S.fromList <$> loggedLocations k
 			return $ filter (flip S.notMember locs . remoteUUID) remotesides
-		, proxyREMOVE = \k -> error "TODO"
+		-- Remove the key from every node that contains it.
+		-- But, since it's possible the location log for some nodes
+		-- could be out of date, actually try to remove from every
+		-- node.
+		, proxyREMOVE = const (pure remotesides)
 		-- Content is not locked on the cluster as a whole,
 		-- instead it can be locked on individual nodes that are
 		-- proxied to the client.

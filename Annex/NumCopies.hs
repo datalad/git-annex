@@ -231,6 +231,7 @@ data UnVerifiedCopy = UnVerifiedRemote Remote | UnVerifiedHere
 verifyEnoughCopiesToDrop
 	:: String -- message to print when there are no known locations
 	-> Key
+	-> Maybe UUID -- repo dropping from
 	-> Maybe ContentRemovalLock
 	-> NumCopies
 	-> MinCopies
@@ -240,14 +241,14 @@ verifyEnoughCopiesToDrop
 	-> (SafeDropProof -> Annex a) -- action to perform the drop
 	-> Annex a -- action to perform when unable to drop
 	-> Annex a
-verifyEnoughCopiesToDrop nolocmsg key removallock neednum needmin skip preverified tocheck dropaction nodropaction = 
+verifyEnoughCopiesToDrop nolocmsg key dropfrom removallock neednum needmin skip preverified tocheck dropaction nodropaction = 
 	helper [] [] preverified (nub tocheck) []
   where
 	helper bad missing have [] lockunsupported =
 		liftIO (mkSafeDropProof neednum needmin have removallock) >>= \case
 			Right proof -> dropaction proof
 			Left stillhave -> do
-				notEnoughCopies key neednum needmin stillhave (skip++missing) bad nolocmsg lockunsupported
+				notEnoughCopies key dropfrom neednum needmin stillhave (skip++missing) bad nolocmsg lockunsupported
 				nodropaction
 	helper bad missing have (c:cs) lockunsupported
 		| isSafeDrop neednum needmin have removallock =
@@ -299,8 +300,8 @@ data DropException = DropException SomeException
 
 instance Exception DropException
 
-notEnoughCopies :: Key -> NumCopies -> MinCopies -> [VerifiedCopy] -> [UUID] -> [Remote] -> String -> [Remote] -> Annex ()
-notEnoughCopies key neednum needmin have skip bad nolocmsg lockunsupported = do
+notEnoughCopies :: Key -> Maybe UUID -> NumCopies -> MinCopies -> [VerifiedCopy] -> [UUID] -> [Remote] -> String -> [Remote] -> Annex ()
+notEnoughCopies key dropfrom neednum needmin have skip bad nolocmsg lockunsupported = do
 	showNote "unsafe"
 	if length have < fromNumCopies neednum
 		then showLongNote $ UnquotedString $
@@ -319,7 +320,29 @@ notEnoughCopies key neednum needmin have skip bad nolocmsg lockunsupported = do
 					++ Remote.listRemoteNames lockunsupported
 
 	Remote.showTriedRemotes bad
-	Remote.showLocations True key (map toUUID have++skip) nolocmsg
+	-- When dropping from a cluster, don't suggest making the nodes of
+	-- the cluster available
+	clusternodes <- case mkClusterUUID =<< dropfrom of
+		Nothing -> pure []
+		Just cu -> do
+			clusters <- getClusters
+			pure $ maybe [] (map fromClusterNodeUUID . S.toList) $
+				M.lookup cu (clusterUUIDs clusters)
+	let excludeset = S.fromList $ map toUUID have++skip++clusternodes
+	-- Don't suggest making a cluster available when dropping from its
+	-- node.
+	let exclude u
+		| u `S.member` excludeset = pure True
+		| otherwise = case (dropfrom, mkClusterUUID u) of
+			(Just dropfrom', Just cu) -> do
+				clusters <- getClusters
+				pure $ case M.lookup cu (clusterUUIDs clusters) of
+					Just nodes -> 
+						ClusterNodeUUID dropfrom' 
+							`S.member` nodes
+					Nothing -> False
+			_ -> pure False
+	Remote.showLocations True key exclude nolocmsg
 
 pluralCopies :: Int -> String
 pluralCopies 1 = "copy"

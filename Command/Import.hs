@@ -319,7 +319,7 @@ verifyExisting key destfile (yes, no) = do
 	(needcopies, mincopies) <- getFileNumMinCopies destfile
 
 	(tocheck, preverified) <- verifiableCopies key []
-	verifyEnoughCopiesToDrop [] key Nothing needcopies mincopies [] preverified tocheck
+	verifyEnoughCopiesToDrop [] key Nothing Nothing needcopies mincopies [] preverified tocheck
 		(const yes) no
 
 seekRemote :: Remote -> Branch -> Maybe TopFilePath -> Bool -> CheckGitIgnore -> [String] -> CommandSeek

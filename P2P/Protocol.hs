@@ -2,7 +2,7 @@
  -
  - See doc/design/p2p_protocol.mdwn
  -
- - Copyright 2016-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2016-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -89,6 +89,7 @@ data Message
 	| SUCCESS
 	| SUCCESS_PLUS [UUID]
 	| FAILURE
+	| FAILURE_PLUS [UUID]
 	| DATA Len -- followed by bytes of data
 	| VALIDITY Validity
 	| ERROR String
@@ -115,6 +116,7 @@ instance Proto.Sendable Message where
 	formatMessage SUCCESS = ["SUCCESS"]
 	formatMessage (SUCCESS_PLUS uuids) = ("SUCCESS-PLUS":map Proto.serialize uuids)
 	formatMessage FAILURE = ["FAILURE"]
+	formatMessage (FAILURE_PLUS uuids) = ("FAILURE-PLUS":map Proto.serialize uuids)
 	formatMessage (VALIDITY Valid) = ["VALID"]
 	formatMessage (VALIDITY Invalid) = ["INVALID"]
 	formatMessage (DATA len) = ["DATA", Proto.serialize len]
@@ -141,6 +143,7 @@ instance Proto.Receivable Message where
 	parseCommand "SUCCESS" = Proto.parse0 SUCCESS
 	parseCommand "SUCCESS-PLUS" = Proto.parseList SUCCESS_PLUS
 	parseCommand "FAILURE" = Proto.parse0 FAILURE
+	parseCommand "FAILURE-PLUS" = Proto.parseList FAILURE_PLUS
 	parseCommand "DATA" = Proto.parse1 DATA
 	parseCommand "ERROR" = Proto.parse1 ERROR
 	parseCommand "VALID" = Proto.parse0 (VALIDITY Valid)
@@ -355,10 +358,10 @@ lockContentWhile runproto key a = bracket setup cleanup a
 	cleanup True = runproto () $ net $ sendMessage UNLOCKCONTENT
 	cleanup False = return ()
 
-remove :: Key -> Proto Bool
+remove :: Key -> Proto (Bool, Maybe [UUID])
 remove key = do
 	net $ sendMessage (REMOVE key)
-	checkSuccess
+	checkSuccessFailurePlus
 
 get :: FilePath -> Key -> Maybe IncrementalVerifier -> AssociatedFile -> Meter -> MeterUpdate -> Proto (Bool, Verification)
 get dest key iv af m p = 
@@ -565,13 +568,7 @@ sendContent key af offset@(Offset n) p = go =<< local (contentSize key)
 		ver <- net getProtocolVersion
 		when (ver >= ProtocolVersion 1) $
 			net . sendMessage . VALIDITY =<< validitycheck
-		if ver >= ProtocolVersion 2
-			then checkSuccessPlus
-			else do
-				ok <- checkSuccess
-				if ok
-					then return (Just [])
-					else return Nothing
+		checkSuccessPlus
 
 receiveContent
 	:: Observable t
@@ -620,15 +617,30 @@ checkSuccess = do
 			return False
 
 checkSuccessPlus :: Proto (Maybe [UUID])
-checkSuccessPlus = do
-	ack <- net receiveMessage
-	case ack of
-		Just SUCCESS -> return (Just [])
-		Just (SUCCESS_PLUS l) -> return (Just l)
-		Just FAILURE -> return Nothing
-		_ -> do
-			net $ sendMessage (ERROR "expected SUCCESS or SUCCESS-PLUS or FAILURE")
-			return Nothing
+checkSuccessPlus =
+	checkSuccessFailurePlus >>= return . \case
+		(True, v) -> v
+		(False, _) -> Nothing
+
+checkSuccessFailurePlus :: Proto (Bool, Maybe [UUID])
+checkSuccessFailurePlus = do
+	ver <- net getProtocolVersion
+	if ver >= ProtocolVersion 2
+		then do
+			ack <- net receiveMessage
+			case ack of
+				Just SUCCESS -> return (True, Just [])
+				Just (SUCCESS_PLUS l) -> return (True, Just l)
+				Just FAILURE -> return (False, Nothing)
+				Just (FAILURE_PLUS l) -> return (False, Just l)
+				_ -> do
+					net $ sendMessage (ERROR "expected SUCCESS or SUCCESS-PLUS or FAILURE or FAILURE-PLUS")
+					return (False, Nothing)
+		else do
+			ok <- checkSuccess
+			if ok
+				then return (True, Just [])
+				else return (False, Nothing)
 
 sendSuccess :: Bool -> Proto ()
 sendSuccess True = net $ sendMessage SUCCESS

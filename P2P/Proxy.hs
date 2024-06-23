@@ -60,11 +60,11 @@ data ProxySelector = ProxySelector
 	{ proxyCHECKPRESENT :: Key -> Annex (Maybe RemoteSide)
 	, proxyLOCKCONTENT :: Key -> Annex (Maybe RemoteSide)
 	, proxyUNLOCKCONTENT :: Annex (Maybe RemoteSide)
-	, proxyREMOVE :: Key -> Annex RemoteSide
+	, proxyREMOVE :: Key -> Annex [RemoteSide]
+	-- ^ remove from all of these remotes
 	, proxyGET :: Key -> Annex (Maybe RemoteSide)
-	-- ^ can get from any of these remotes
 	, proxyPUT :: Key -> Annex [RemoteSide]
-	-- ^ can put to some/all of these remotes
+	-- ^ put to some/all of these remotes
 	}
 
 singleProxySelector :: RemoteSide -> ProxySelector
@@ -72,7 +72,7 @@ singleProxySelector r = ProxySelector
 	{ proxyCHECKPRESENT = const (pure (Just r))
 	, proxyLOCKCONTENT = const (pure (Just r))
 	, proxyUNLOCKCONTENT = pure (Just r)
-	, proxyREMOVE = const (pure r)
+	, proxyREMOVE = const (pure [r])
 	, proxyGET = const (pure (Just r))
 	, proxyPUT = const (pure [r])
 	}
@@ -187,9 +187,9 @@ proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) remo
 					proxynextclientmessage
 			Nothing -> proxynextclientmessage ()
 		REMOVE k -> do
-			remoteside <- proxyREMOVE proxyselector k
+			remotesides <- proxyREMOVE proxyselector k
 			servermodechecker checkREMOVEServerMode $
-				handleREMOVE remoteside k message
+				handleREMOVE remotesides k message
 		GET _ _ k -> proxyGET proxyselector k >>= \case
 			Just remoteside -> handleGET remoteside message
 			Nothing -> 
@@ -215,6 +215,7 @@ proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) remo
 		SUCCESS -> protoerr
 		SUCCESS_PLUS _ -> protoerr
 		FAILURE -> protoerr
+		FAILURE_PLUS _ -> protoerr
 		DATA _ -> protoerr
 		VALIDITY _ -> protoerr
 		-- If the client errors out, give up.
@@ -266,14 +267,38 @@ proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) remo
 	protoerr = do
 		_ <- client $ net $ sendMessage (ERROR "protocol error")
 		giveup "protocol error"
-		
-	handleREMOVE remoteside k message =
-		proxyresponse remoteside message $ \resp () -> do
-			case resp of
-				SUCCESS -> removedContent proxymethods
-					(remoteUUID remoteside) k
-				_ -> return ()
-			proxynextclientmessage ()
+	
+	handleREMOVE [] _ _ =
+		-- When no places are provided to remove from,
+		-- don't report a successful remote.
+		protoerrhandler proxynextclientmessage $
+			client $ net $ sendMessage FAILURE	
+	handleREMOVE remotesides k message = do
+		v <- forM remotesides $ \r ->
+			runRemoteSideOrSkipFailed r $ do
+				net $ sendMessage message
+				net receiveMessage >>= return . \case
+					Just SUCCESS ->
+						Just (True, [remoteUUID r])
+					Just (SUCCESS_PLUS us) -> 
+						Just (True, remoteUUID r:us)
+					Just FAILURE ->
+						Just (False, [])
+					Just (FAILURE_PLUS us) ->
+						Just (False, us)
+					_ -> Nothing
+		let v' = map join v
+		let us = concatMap snd $ catMaybes v'
+		mapM_ (\u -> removedContent proxymethods u k) us
+		protoerrhandler proxynextclientmessage $
+			client $ net $ sendMessage $
+				if all (maybe False fst) v'
+					then if null us || protocolversion < 2
+						then SUCCESS
+						else SUCCESS_PLUS us
+					else if null us || protocolversion < 2
+						then FAILURE
+						else FAILURE_PLUS us
 
 	handleGET remoteside message = getresponse (runRemoteSide remoteside) message $
 		withDATA (relayGET remoteside)
