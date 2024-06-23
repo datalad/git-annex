@@ -238,6 +238,14 @@ always fail. Also, when constructing a drop proof for a cluster's UUID,
 the nodes of that cluster should be omitted, otherwise a drop from the
 cluster can lock content on individual nodes, causing the drop to fail.
 
+Moving from a cluster is a special case because it may reduce the number
+of copies. So move's `willDropMakeItWorse` check needs to special case
+clusters. Since dropping from the cluster may remove content from any of
+its nodes, which may include copies on nodes that the local location log does
+not know about yet, the special case probably needs to always assume
+that dropping from a cluster in a move risks reducing numcopies,
+and so only allow it when a drop proof can be constructed.
+
 Some commands like `git-annex whereis` will list content as being stored in
 the cluster, as well as on whichever of its nodes, and whereis currently
 says "n copies", but since the cluster doesn't count as a copy, that

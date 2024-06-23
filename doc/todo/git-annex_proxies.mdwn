@@ -77,7 +77,8 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
 
   Problem: When nodes are special remotes, may
   treat nodes as copies while dropping from cluster, and so violate
-  numcopies. (But not mincopies.)
+  numcopies. (But not mincopies.) This is also solved by avoiding using
+  cluster nodes when constructing drop proof for cluster.
 
   Problem: `move --from cluster` in "does this make it worse"
   check may fail to realize that dropping from multiple nodes does in fact
