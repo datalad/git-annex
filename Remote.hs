@@ -448,8 +448,8 @@ claimingUrl' remotefilter url = do
   where
 	checkclaim = maybe (pure False) (`id` url) . claimUrl
 
-{- Is this a remote of a type we can sync with, or a special remote
- - with an annex:: url configured? -}
+{- Is this a remote of a type that git pull and push work with?
+ - That includes special remotes with an annex:: url configured. -}
 gitSyncableRemote :: Remote -> Bool
 gitSyncableRemote r
 	| gitSyncableRemoteType (remotetype r) 

@@ -811,14 +811,14 @@ listProxied proxies rs = concat <$> mapM go rs
 		| any isconfig (M.keys (Git.config g)) = pure Nothing
 		| otherwise = do
 			-- Not using addGitConfigOverride for inherited
-			-- configs other than the uuid, because child
-			-- git processes do not need them to be provided
-			-- with -c.
+			-- configs, because child git processes do not
+			-- need them to be provided with -c.
 			Annex.adjustGitRepo (pure . annexconfigadjuster)
 			return $ Just $ renamedr
 	  where
 		renamedr = 
-			let c = adduuid configkeyUUID $ Git.fullconfig r
+			let c = adduuid configkeyUUID $
+				Git.fullconfig r
 			in r 
 				{ Git.remoteName = Just proxyname
 				, Git.config = M.map Prelude.head c
@@ -827,6 +827,7 @@ listProxied proxies rs = concat <$> mapM go rs
 		
 		annexconfigadjuster r' = 
 			let c = adduuid (configRepoUUID renamedr) $
+				addurl (remoteConfig renamedr "url") $
 				inheritconfigs $ Git.fullconfig r'
 			in r'
 				{ Git.config = M.map Prelude.head c
@@ -835,6 +836,9 @@ listProxied proxies rs = concat <$> mapM go rs
 
 		adduuid ck = M.insert ck
 			[Git.ConfigValue $ fromUUID $ proxyRemoteUUID p]
+
+		addurl ck = M.insert ck
+			[Git.ConfigValue $ encodeBS $ Git.repoLocation r]
 
 		inheritconfigs c = foldl' inheritconfig c proxyInheritedFields
 		

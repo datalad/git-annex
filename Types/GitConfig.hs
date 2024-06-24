@@ -620,7 +620,7 @@ remoteGitConfigField = \case
 	-- Allow proxy chains.
 	ProxyField -> inherited "proxy"
 	ClusterNodeField -> uninherited "cluster-node"
-	UrlField -> inherited "url"
+	UrlField -> uninherited "url"
 	ShellField -> inherited "shell"
 	SshOptionsField -> inherited "ssh-options"
 	RsyncOptionsField -> inherited "rsync-options"
