@@ -1674,6 +1674,15 @@ Remotes are configured using these settings in `.git/config`.
   After configuring this, run [[git-annex-updateproxy](1) to store
   the new configuration in the git-annex branch.
 
+* `remote.<name>.annex-proxied`
+
+  Setting this to "true" indicates that a remote is proxied via the
+  git-annex repository that its remote points to. That prevents commands
+  like `git-annex sync` from pulling and pushing the remote. 
+
+  Usually this is used internally, when git-annex sets up proxied remotes,
+  and will not need to be set.
+
 * `remote.<name>.annex-cluster-node`
 
   Set to the name of a cluster to make this remote be part of

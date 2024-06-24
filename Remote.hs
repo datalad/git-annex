@@ -449,11 +449,13 @@ claimingUrl' remotefilter url = do
 	checkclaim = maybe (pure False) (`id` url) . claimUrl
 
 {- Is this a remote of a type that git pull and push work with?
- - That includes special remotes with an annex:: url configured. -}
+ - That includes special remotes with an annex:: url configured.
+ - It does not include proxied remotes. -}
 gitSyncableRemote :: Remote -> Bool
 gitSyncableRemote r
 	| gitSyncableRemoteType (remotetype r) 
-		&& isJust (remoteUrl (gitconfig r)) = True
+		&& isJust (remoteUrl (gitconfig r)) =
+			not (remoteAnnexProxied (gitconfig r))
 	| otherwise = case remoteUrl (gitconfig r) of
 		Just u | "annex::" `isPrefixOf` u -> True
 		_ -> False

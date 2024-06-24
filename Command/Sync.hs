@@ -1158,7 +1158,3 @@ splitRemoteAnnexTrackingBranchSubdir tb = (branch, subdir)
 	subdir = if S.null p
 		then Nothing
 		else Just (asTopFilePath p)
-
-sameGitRepo :: Remote -> Remote -> Bool
-sameGitRepo x y = 
-	remoteUrl (Remote.gitconfig x) == remoteUrl (Remote.gitconfig y)

@@ -388,6 +388,7 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexMaxGitBundles :: Int
 	, remoteAnnexAllowEncryptedGitRepo :: Bool
 	, remoteAnnexProxy :: Bool
+	, remoteAnnexProxied :: Bool
 	, remoteAnnexClusterNode :: Maybe [RemoteName]
 	, remoteUrl :: Maybe String
 
@@ -474,6 +475,7 @@ extractRemoteGitConfig r remotename = do
 		, remoteAnnexAllowEncryptedGitRepo = 
 			getbool AllowEncryptedGitRepoField False
 		, remoteAnnexProxy = getbool ProxyField False
+		, remoteAnnexProxied = getbool ProxiedField False
 		, remoteAnnexClusterNode = 
 			(filter isLegalName . words)
 				<$> getmaybe ClusterNodeField
@@ -554,6 +556,7 @@ data RemoteGitConfigField
 	| MaxGitBundlesField
 	| AllowEncryptedGitRepoField
 	| ProxyField
+	| ProxiedField
 	| ClusterNodeField
 	| UrlField
 	| ShellField
@@ -619,6 +622,7 @@ remoteGitConfigField = \case
 	AllowEncryptedGitRepoField -> inherited "allow-encrypted-gitrepo"
 	-- Allow proxy chains.
 	ProxyField -> inherited "proxy"
+	ProxiedField -> uninherited "proxied"
 	ClusterNodeField -> uninherited "cluster-node"
 	UrlField -> uninherited "url"
 	ShellField -> inherited "shell"

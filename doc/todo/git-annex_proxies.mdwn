@@ -26,17 +26,17 @@ In development on the `proxy` branch.
 
 For June's work on [[design/passthrough_proxy]], remaining todos:
 
-* `git-annex sync` etc should not treat clusters as git syncable remotes.
+* On upload to cluster, send to nodes where it's preferred content, and not
+  to other nodes.
 
-* `git-annex sync` etc, when operating on clusters, should first 
+* `git-annex sync --content` etc, when operating on clusters, should first 
   operate on the cluster as a whole, to take advantages of fanout on upload
   and mass drop. Only operate on individual cluster nodes afterwards,
   to handle cases such as a cluster containing a key, but some node
   wanting and lacking the key. Perhaps just setting cost for nodes slightly
-  higher than the cluster cost will be enough?
-
-* On upload to cluster, send to nodes where it's preferred content, and not
-  to other nodes.
+  higher than the cluster cost will be enough? Or should it even send a key
+  to a cluster node if the cluster contains the key? Perhaps that is
+  unnecessary work, the cluster should be able to rebalance itself.
 
 * Getting a key from a cluster currently always selects the lowest cost
   remote, and always the same remote if cost is the same. Should

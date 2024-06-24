@@ -827,7 +827,8 @@ listProxied proxies rs = concat <$> mapM go rs
 		
 		annexconfigadjuster r' = 
 			let c = adduuid (configRepoUUID renamedr) $
-				addurl (remoteConfig renamedr "url") $
+				addurl $
+				addproxied $
 				inheritconfigs $ Git.fullconfig r'
 			in r'
 				{ Git.config = M.map Prelude.head c
@@ -837,8 +838,11 @@ listProxied proxies rs = concat <$> mapM go rs
 		adduuid ck = M.insert ck
 			[Git.ConfigValue $ fromUUID $ proxyRemoteUUID p]
 
-		addurl ck = M.insert ck
+		addurl = M.insert (remoteConfig renamedr "url")
 			[Git.ConfigValue $ encodeBS $ Git.repoLocation r]
+		
+		addproxied = M.insert (remoteAnnexConfig renamedr "proxied")
+			[Git.ConfigValue $ Git.Config.boolConfig' True]
 
 		inheritconfigs c = foldl' inheritconfig c proxyInheritedFields
 		
