@@ -428,6 +428,7 @@ changeGitRepo r = do
 		{ repo = r'
 		, gitconfig = gitconfigadjuster $
 			extractGitConfig FromGitConfig r'
+		, gitremotes = Nothing
 		}
 
 {- Gets the RemoteGitConfig from a remote, given the Git.Repo for that
