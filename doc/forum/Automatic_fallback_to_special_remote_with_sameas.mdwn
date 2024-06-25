@@ -4,4 +4,4 @@ I've implemented a special remote that is able to do store and remove operations
 
 Now ideally I would like operations like `git annex drop --from=origin` or `git annex copy --to=origin` to notice that origin itself cannot be used for these, and instead automatically fallback to the special remote that can do them.
 
-I expected this to be the case when already specifying sameas, but apparently it isn't. Is it possible to achieve this?
+I expected this to be the case already when specifying sameas, but apparently it isn't. Is it possible to achieve this?
