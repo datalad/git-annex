@@ -33,12 +33,6 @@ For June's work on [[design/passthrough_proxy]], remaining todos:
 
 * Support annex.jobs for clusters.
 
-* On upload to a cluster, as well as fanout to nodes, if the key is
-  preferred content of the proxy repository, store it there.
-  (But not when preferred content is not configured.)
-  And on download from a cluster, if the proxy repository has the content,
-  get it from there to avoid the overhead of proxying to a node.
-
 * Basic proxying to special remote support (non-streaming).
 
 * Support proxies-of-proxies better, eg foo-bar-baz.

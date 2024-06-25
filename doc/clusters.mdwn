@@ -6,23 +6,35 @@ logical repository.
 
 ## using a cluster
 
-For example, a remote "bigserver" that is configured as a cluster will
-make available an additional remote "bigserver-mycluster", as well as some
-remotes for each node eg "bigserver-node1", "bigserver-node2", etc.
+To use a cluster, your repository needs to have a remote that serves the
+cluster. Clusters can currently only be accessed via ssh. This remote
+is added the same as any other remote:
 
-The user can get files from the cluster without caring which node it comes
+    git remote add bigserver me@bigserver:annex
+
+The remote publishes information about the cluster that it serves
+to the git-annex branch. (See below for how that is configured.) So you may
+need to fetch from it to learn about the cluster that it serves:
+
+    git fetch bigserver
+
+That will make available an additional remote for the cluster, eg
+"bigserver-mycluster", as well as some remotes for each node eg
+"bigserver-node1", "bigserver-node2", etc.
+
+You can get files from the cluster without caring which node it comes
 from:
 
     $ git-annex get foo --from bigserver-mycluster
     copy foo (from bigserver-mycluster...) ok
 
-And the user can send files to the cluster, without caring what nodes
+And you can send files to the cluster, without caring what nodes
 they are stored to:
 
     $ git-annex move bar --to bigserver-mycluster
     move bar (to bigserver-mycluster...) ok
 
-In fact, a single upload can be sent to every node of the cluster at once.
+In fact, a single upload can be sent to every node of the cluster at once. 
     
     $ git-annex whereis bar
 	whereis bar (3 copies)
@@ -37,8 +49,6 @@ so the 3 copies are the copies on individual nodes.
 
 Most other git-annex commands that operate on repositories can also operate on
 clusters.
-
-Clusters can only be accessed via ssh.
 
 ## configuring a cluster
 
@@ -90,9 +100,3 @@ For example:
 By default, when a file is uploaded to a cluster, it is stored on every node of
 the cluster. To control which nodes to store to, the [[preferred_content]] of
 each node can be configured.
-
-If the preferred content configuration of nodes make none of them
-want a copy of a file, the upload to the cluster will fail. That is done to
-avoid git-annex picking an arbitrary node. But, the user can bypass the
-cluster and send content to any individual node, even if it's not preferred
-content of that node.
