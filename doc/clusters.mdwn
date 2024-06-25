@@ -1,20 +1,22 @@
-A git-annex repository can provide access to its remotes as nodes of a
-cluster. This allows other repositories to access the cluster as a single
-logical repository.
+A cluster is a collection of git-annex repositories which are combined to
+form a single logical repository.
+
+A cluster is accessed via a gateway repository. The gateway is not itself
+a node of the cluster.
 
 [[!toc ]]
 
 ## using a cluster
 
-To use a cluster, your repository needs to have a remote that serves the
-cluster. Clusters can currently only be accessed via ssh. This remote
-is added the same as any other remote:
+To use a cluster, your repository needs to have its gateway configured as a
+remote. Clusters can currently only be accessed via ssh. This gateway
+remote is added the same as any other remote:
 
     git remote add bigserver me@bigserver:annex
 
-The remote publishes information about the cluster that it serves
-to the git-annex branch. (See below for how that is configured.) So you may
-need to fetch from it to learn about the cluster that it serves:
+The gateway publishes information about the cluster to the git-annex
+branch. (See below for how that is configured.) So you may need to fetch
+from it to learn about the cluster:
 
     git fetch bigserver
 
@@ -34,7 +36,8 @@ they are stored to:
     $ git-annex move bar --to bigserver-mycluster
     move bar (to bigserver-mycluster...) ok
 
-In fact, a single upload can be sent to every node of the cluster at once. 
+In fact, a single upload like that can be sent to every node of the cluster
+at once, very efficiently.
     
     $ git-annex whereis bar
 	whereis bar (3 copies)
@@ -50,10 +53,13 @@ so the 3 copies are the copies on individual nodes.
 Most other git-annex commands that operate on repositories can also operate on
 clusters.
 
+A cluster is not a git repository, and so `git pull bigserver-mycluster`
+will not work.
+
 ## configuring a cluster
 
 A new cluster first needs to be initialized. Run [[git-annex-initcluster]] in
-the repository that will serve the cluster to clients. In the example above,
+the repository that will serve as the cluster's gateway. In the example above,
 this was the "bigserver" repository.
 
 	$ git-annex initcluster mycluster
@@ -107,3 +113,10 @@ For example:
 By default, when a file is uploaded to a cluster, it is stored on every node of
 the cluster. To control which nodes to store to, the [[preferred_content]] of
 each node can be configured.
+
+It's also a good idea to configure the preferred content of the cluster's
+gateway. To avoid files redundantly being stored on the gateway
+(which remember, is not a node of the cluster), you might make it not want
+any files:
+
+    $ git-annex wanted bigserver nothing
