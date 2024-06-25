@@ -67,10 +67,15 @@ clusterProxySelector clusteruuid protocolversion = do
 	return $ ProxySelector
 		{ proxyCHECKPRESENT = nodecontaining remotesides
 		, proxyGET = nodecontaining remotesides
-		-- Send the key to every node that does not yet contain it.
+		-- The key is sent to multiple nodes at the same time,
+		-- skipping nodes where it's known/expected to already be
+		-- present to avoid needing to connect to those.
 		, proxyPUT = \k -> do
 			locs <- S.fromList <$> loggedLocations k
-			return $ filter (flip S.notMember locs . remoteUUID) remotesides
+			let l = filter (flip S.notMember locs . remoteUUID) remotesides
+			return $ if null l
+				then remotesides
+				else l
 		-- Remove the key from every node that contains it.
 		-- But, since it's possible the location log for some nodes
 		-- could be out of date, actually try to remove from every
