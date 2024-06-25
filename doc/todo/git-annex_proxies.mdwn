@@ -33,14 +33,15 @@ For June's work on [[design/passthrough_proxy]], remaining todos:
 
 * Basic proxying to special remote support (non-streaming).
 
-* Make sure that cluster-in-cluster cycles are prevented. 
-  (Actually supporting cluster-in-cluster is optional, and it might
-  be added later.)
+* Support distributed clusters: Make a proxy for a cluster repeat
+  protocol messages on to any remotes that have the same UUID as
+  the cluster. Needs VIA extension to P2P protocol to avoid cycles.
 
 * Optimise proxy speed. See design for ideas.
 
 * Use `sendfile()` to avoid data copying overhead when
   `receiveBytes` is being fed right into `sendBytes`.
+  <https://github.com/Happstack/sendfile/issues/4>
 
 * Encryption and chunking. See design for issues.
 

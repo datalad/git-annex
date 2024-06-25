@@ -219,11 +219,6 @@ And, if the proxy repository itself contains the requested key, it can send
 it directly. This allows the proxy repository to be primed with frequently
 accessed files when it has the space.
 
-(Should uploads check preferred content of the proxy repository and also
-store a copy there when allowed? I think this would be ok, so long as when
-preferred content is not set, it does not default to storing content
-there.)
-
 When a drop is requested from the cluster's UUID, git-annex-shell drops
 from all nodes, as well as from the proxy itself. Only indicating success
 if it is able to delete all copies from the cluster. This needs 
@@ -287,9 +282,9 @@ configuration of the cluster. But the cluster is configured via the
 git-annex branch, particularly preferred content, and the proxy log, and
 the cluster log.
 
-A user could, for example, make the cluster's frontend want all
-content, and so fill up its small disk. They could make a particular node
-not want any content. They could remove nodes from the cluster.
+A user could, for example, make a small cluster node want all content, and
+so fill up its small disk. They could make a particular node not want any
+content. They could remove nodes from the cluster.
 
 One way to deal with this is for the cluster to reject git-annex branch
 pushes that make such changes. Or only allow them if they are signed with a
@@ -303,6 +298,23 @@ it! Unless git-annex-shell is run with `GIT_ANNEX_SHELL_APPENDONLY` set.
 A remote will only be treated as a node of a cluster when the git
 configuration remote.name.annex-cluster-node is set, which will prevent
 creating clusters in places where they are not intended to be.
+
+## distributed clusters
+
+A cluster's nodes may be geographically distributed amoung several
+locations, which are effectivly subclusters. To support this, an upload
+or removal sent to one frontend proxy of the cluster will be repeated to
+other frontend proxies that are remotes of that one and have the cluster's
+UUID.
+
+This is better than supporting a cluster that is a node of another cluster,
+because rather than a hierarchical structure, this allows for organic
+structures of any shape. For example, there could be two frontends to a
+cluster, in different locations. An upload to either frontend fans out to
+its local nodes as well as over to the other frontend, and to its local
+nodes.
+
+This does mean that cycles need to be prevented. See section below.
 
 ## speed
 
@@ -454,7 +466,7 @@ So overall, it seems better to do proxy-side encryption. But it may be
 worth adding a special remote that does its own client-side encryption
 in front of the proxy.
 
-## cycles
+## cycles of proxies
 
 A repo can advertise that it proxies for a repo which has the same uuid as
 itself. Or there can be a larger cycle involving a proxy that proxies to a
@@ -462,7 +474,7 @@ proxy, etc.
 
 Since the proxied repo uuid is communicated to git-annex-shell via 
 --uuid, a repo that advertises proxying for itself will be connected to
-with its own uuid. No proxying is done in this case.
+with its own uuid. No proxying is done in that case.
 
 What if repo A is a proxy and has repo B as a remote. Meanwhile, repo B is
 a proxy and has repo A as a remote? git-annex-shell on repo A will get
@@ -473,8 +485,32 @@ On the client side, instantiating remotes needs to identity cycles and
 break them. Otherwise it would construct an infinite number of proxied
 remotes with names like "foo-foo-foo-foo-..." or "foo-bar-foo-bar-..."
 
-Clusters could also have cycles, if a cluster's UUID were configured as
-a node of itself, or of another cluster that was a node of it.
+## cycles of cluster proxies
+
+If an PUT or REMOVE message is sent to a proxy for a cluster, and that
+repository has a remote that is also a proxy for the same cluster,
+the message gets repeated on to it. This can lead to cycles, which have to
+be broken.
+
+To break the cycle, extend the P2P protocol with an additional message,
+like:
+
+    VIA uuid1 uuid2
+
+This indicates to a proxy that the message has been received via the other
+listed proxies. It can then avoid repeating the message out via any of
+those proxies. When repeating a message out to another proxy, just add
+the UUID of the local repository to the list.
+
+This will be an extension to the protocol, but so long as it's added in
+the same git-annex version that adds support for proxies, every cluster
+proxy will support it.
+
+This avoids cycles, but it does not avoid situations where there are
+multiple paths through a proxy network that reach the same node. In such a
+situation, a REMOVE might happen twice (no problem) or a PUT be received
+twice from different paths (one of them would fail due to the other one
+taking the transfer lock).
 
 ## exporttree=yes
 
