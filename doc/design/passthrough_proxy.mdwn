@@ -462,36 +462,19 @@ proxy, etc.
 
 Since the proxied repo uuid is communicated to git-annex-shell via 
 --uuid, a repo that advertises proxying for itself will be connected to
-with its own uuid. No proxying is done in this case. Same happens with a
-larger cycle.
-
-Instantiating remotes needs to identity cycles and break them. Otherwise
-it would construct an infinite number of proxied remotes with names
-like "foo-foo-foo-foo-..." or "foo-bar-foo-bar-..."
-
-Once `git-annex copy --to proxy` is implemented, and the proxy decides
-where to send content that is being sent directly to it, cycles will
-become an issue with that as well.
+with its own uuid. No proxying is done in this case.
 
 What if repo A is a proxy and has repo B as a remote. Meanwhile, repo B is
-a proxy and has repo A as a remote?
+a proxy and has repo A as a remote? git-annex-shell on repo A will get
+A's uuid, and so will operate on it directly without proxying. So larger
+cycles are also not a problem on the proxy side.
 
-An upload to repo A will start by checking if repo B wants the content and if so,
-start an upload to repo B. Then the same happens on repo B, leading it to
-start an upload to repo A. 
+On the client side, instantiating remotes needs to identity cycles and
+break them. Otherwise it would construct an infinite number of proxied
+remotes with names like "foo-foo-foo-foo-..." or "foo-bar-foo-bar-..."
 
-At this point, it might be possible for git-annex to detect the cycle,
-if the proxy uses a transfer lock file. If repo B or repo A had some other
-remote that is not part of a cycle, they could deposit the upload there and
-the upload still succeed. Otherwise the upload would fail, which is
-probably the best that can be done with such a broken configuration.
-
-So, it seems like proxies would need to take transfer locks for uploads,
-even though the content is being proxied to elsewhere.
-
-Dropping could have similar cycles with content presence locking, which
-needs to be thought through as well. A cycle of the actual dropContent
-operation might also be possible.
+Clusters could also have cycles, if a cluster's UUID were configured as
+a node of itself, or of another cluster that was a node of it.
 
 ## exporttree=yes
 

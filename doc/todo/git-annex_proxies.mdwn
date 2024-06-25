@@ -33,14 +33,9 @@ For June's work on [[design/passthrough_proxy]], remaining todos:
 
 * Basic proxying to special remote support (non-streaming).
 
-* Support proxies-of-proxies better, eg foo-bar-baz.
-  Currently, it does work, but have to run `git-annex updateproxy`
-  on foo in order for it to notice the bar-baz proxied remote exists,
-  and record it as foo-bar-baz. Make it skip recording proxies of
-  proxies like that, and instead automatically generate those from the log.
-  (With cycle prevention there of course.)
-
-* Cycle prevention including cluster-in-cluster cycles. See design.
+* Make sure that cluster-in-cluster cycles are prevented. 
+  (Actually supporting cluster-in-cluster is optional, and it might
+  be added later.)
 
 * Optimise proxy speed. See design for ideas.
 
