@@ -355,18 +355,18 @@ proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) remo
 
 	handlePutMulti remotesides k message = do
 		let initiate remoteside = do
-			resp <- runRemoteSide remoteside $ net $ do
+			resp <- runRemoteSideOrSkipFailed remoteside $ net $ do
                                   sendMessage message
                                   receiveMessage
 			case resp of
-				Right (Just (PUT_FROM (Offset offset))) -> 
+				Just (Just (PUT_FROM (Offset offset))) -> 
 					return $ Right $
 						Right (remoteside, offset)
-				Right (Just ALREADY_HAVE) -> 
+				Just (Just ALREADY_HAVE) -> 
 					return $ Right $ Left remoteside
-				Right (Just _) -> protoerr
-				Right Nothing -> return (Left ())
-				Left _err -> return (Left ())
+				Just (Just _) -> protoerr
+				Just Nothing -> return (Left ())
+				Nothing -> return (Left ())
 		let alreadyhave = \case
 			Right (Left _) -> True
 			_ -> False
@@ -392,11 +392,12 @@ proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) remo
 		let totallen = datalen + minoffset
 		-- Tell each remote how much data to expect, depending
 		-- on the remote's offset.
-		forM_ remotes $ \(remoteside, remoteoffset) ->
-			runRemoteSide remoteside $ 
+		rs <- forM remotes $ \remote@(remoteside, remoteoffset) ->
+			runRemoteSideOrSkipFailed remoteside $ do
 				net $ sendMessage $ DATA $ Len $
 					totallen - remoteoffset
-		protoerrhandler (send remotes minoffset) $
+				return remote
+		protoerrhandler (send (catMaybes rs) minoffset) $
 			client $ net $ receiveBytes (Len datalen) nullMeterUpdate
 	  where
 		chunksize = fromIntegral defaultChunkSize
