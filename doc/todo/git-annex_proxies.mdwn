@@ -41,7 +41,8 @@ For June's work on [[design/passthrough_proxy]], remaining todos:
 
 * Use `sendfile()` to avoid data copying overhead when
   `receiveBytes` is being fed right into `sendBytes`.
-  <https://github.com/Happstack/sendfile/issues/4>
+  Library to use:
+  <https://hackage.haskell.org/package/hsyscall-0.4/docs/System-Syscall.html>
 
 * Encryption and chunking. See design for issues.
 
