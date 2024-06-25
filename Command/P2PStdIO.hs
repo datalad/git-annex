@@ -74,9 +74,11 @@ performProxy clientuuid servermode remote = do
 		let closer = do
 			closeRemoteSide remoteside
 			p2pDone
+		concurrencyconfig <- noConcurrencyConfig
 		proxy closer proxymethods servermode clientside
 			(Remote.uuid remote)
 			(singleProxySelector remoteside)
+			concurrencyconfig
 			protocolversion othermsg p2pErrHandler
 	withclientversion _ Nothing = p2pDone
 	

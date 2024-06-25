@@ -83,6 +83,13 @@ in the git-annex branch. That tells other repositories about the cluster.
 	Started proxying for node2
 	Started proxying for node3
 
+Operations that affect multiple nodes of a cluster can often be sped up by
+configuring annex.jobs in the repository that will serve the cluster to
+clients. In the example above, the nodes are all disk bound, so operating
+on more than one at a time will likely be faster.
+
+    $ git config annex.jobs cpus
+
 ## preferred content of clusters
 
 The preferred content of the cluster can be configured. This tells
@@ -94,8 +101,8 @@ to do the configuration in a repository that has the cluster as a remote.
 
 For example:
 
-	git-annex wanted bigserver-mycluster standard
-	git-annex group bigserver-mycluster archive
+	$ git-annex wanted bigserver-mycluster standard
+	$ git-annex group bigserver-mycluster archive
 
 By default, when a file is uploaded to a cluster, it is stored on every node of
 the cluster. To control which nodes to store to, the [[preferred_content]] of

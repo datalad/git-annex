@@ -149,7 +149,7 @@ commandAction start = do
 				showEndMessage startmsg False
 				return False
 	
-{- Waits for all worker threads to finish and merges their AnnexStates
+{- Waits for all worker thrneads to finish and merges their AnnexStates
  - back into the current Annex's state.
  -}
 finishCommandActions :: Annex ()

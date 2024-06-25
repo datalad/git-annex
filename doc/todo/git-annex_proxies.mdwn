@@ -31,8 +31,6 @@ For June's work on [[design/passthrough_proxy]], remaining todos:
   round-robin amoung remotes, and prefer to avoid using remotes that
   other git-annex processes are currently using.
 
-* Support annex.jobs for clusters.
-
 * Basic proxying to special remote support (non-streaming).
 
 * Support proxies-of-proxies better, eg foo-bar-baz.
@@ -104,3 +102,6 @@ For June's work on [[design/passthrough_proxy]], remaining todos:
 
 * On upload to cluster, send to nodes where its preferred content, and not
   to other nodes. (done)
+
+* Support annex.jobs for clusters. (done)
+

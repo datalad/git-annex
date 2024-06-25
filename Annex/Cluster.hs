@@ -53,9 +53,11 @@ proxyCluster clusteruuid proxydone servermode clientside protoerrhandler = do
 		-- nodes.
 		let protocolversion = min maxProtocolVersion clientmaxversion
 		selectnode <- clusterProxySelector clusteruuid protocolversion
+		concurrencyconfig <- getConcurrencyConfig
 		proxy proxydone proxymethods servermode clientside 
 			(fromClusterUUID clusteruuid)
-			selectnode protocolversion othermsg protoerrhandler
+			selectnode concurrencyconfig protocolversion
+			othermsg protoerrhandler
 	withclientversion Nothing = proxydone
 
 clusterProxySelector :: ClusterUUID -> ProtocolVersion -> Annex ProxySelector
