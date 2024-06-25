@@ -1,0 +1,7 @@
+I have a normal git/git-annex remote configured via https called "origin". This means for git-annex purposes (copy/move/drop/etc.) it is read-only.
+
+I've implemented a special remote that is able to do store and remove operations on that same location, also via https. I configured this special remote with `--sameas=origin`, to signify that relationship.
+
+Now ideally I would like operations like `git annex drop --from=origin` or `git annex copy --to=origin` to notice that origin itself cannot be used for these, and instead automatically fallback to the special remote that can do them.
+
+I expected this to be the case when already specifying sameas, but apparently it isn't. Is it possible to achieve this?
