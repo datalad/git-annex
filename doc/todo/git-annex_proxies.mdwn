@@ -33,6 +33,9 @@ For June's work on [[design/passthrough_proxy]], remaining todos:
   protocol messages on to any remotes that have the same UUID as
   the cluster. Needs VIA extension to P2P protocol to avoid cycles.
 
+* `git-annex updatecluster` needs changes to support a distributed cluster.
+  Currently it will remove nodes that are behind another gateway.
+
 * Getting a key from a cluster currently always selects the lowest cost
   remote, and always the same remote if cost is the same. Should
   round-robin amoung remotes, and prefer to avoid using remotes that
