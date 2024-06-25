@@ -18,6 +18,7 @@ import P2P.Protocol
 import P2P.IO
 import Annex.Proxy
 import Logs.Location
+import Logs.PreferredContent
 import Types.Command
 import Remote.List
 import qualified Remote
@@ -59,28 +60,30 @@ proxyCluster clusteruuid proxydone servermode clientside protoerrhandler = do
 
 clusterProxySelector :: ClusterUUID -> ProtocolVersion -> Annex ProxySelector
 clusterProxySelector clusteruuid protocolversion = do
-	nodes <- (fromMaybe S.empty . M.lookup clusteruuid . clusterUUIDs)
+	nodeuuids <- (fromMaybe S.empty . M.lookup clusteruuid . clusterUUIDs)
 		<$> getClusters
 	clusternames <- annexClusters <$> Annex.getGitConfig
-	remotes <- filter (isnode nodes clusternames) <$> remoteList
-	remotesides <- mapM (proxySshRemoteSide protocolversion) remotes
+	remotes <- filter (isnode nodeuuids clusternames) <$> remoteList
+	nodes <- mapM (proxySshRemoteSide protocolversion) remotes
 	return $ ProxySelector
-		{ proxyCHECKPRESENT = nodecontaining remotesides
-		, proxyGET = nodecontaining remotesides
+		{ proxyCHECKPRESENT = nodecontaining nodes
+		, proxyGET = nodecontaining nodes
 		-- The key is sent to multiple nodes at the same time,
 		-- skipping nodes where it's known/expected to already be
-		-- present to avoid needing to connect to those.
-		, proxyPUT = \k -> do
+		-- present to avoid needing to connect to those, and
+		-- skipping nodes where it's not preferred content.
+		, proxyPUT = \af k -> do
 			locs <- S.fromList <$> loggedLocations k
-			let l = filter (flip S.notMember locs . remoteUUID) remotesides
-			return $ if null l
-				then remotesides
-				else l
+			let l = filter (flip S.notMember locs . remoteUUID) nodes
+			l' <- filterM (\n -> isPreferredContent (Just (remoteUUID n)) mempty (Just k) af True) l
+			-- PUT to no nodes doesn't work, so fall
+			-- back to all nodes.
+			return $ nonempty [l', l] nodes
 		-- Remove the key from every node that contains it.
 		-- But, since it's possible the location log for some nodes
 		-- could be out of date, actually try to remove from every
 		-- node.
-		, proxyREMOVE = const (pure remotesides)
+		, proxyREMOVE = const (pure nodes)
 		-- Content is not locked on the cluster as a whole,
 		-- instead it can be locked on individual nodes that are
 		-- proxied to the client.
@@ -90,22 +93,26 @@ clusterProxySelector clusteruuid protocolversion = do
   where
 	-- Nodes of the cluster have remote.name.annex-cluster-node
 	-- containing its name.
-	isnode nodes clusternames r = 
+	isnode nodeuuids clusternames r = 
 		case remoteAnnexClusterNode (Remote.gitconfig r) of
 			Nothing -> False
 			Just names
 				| any (isclustername clusternames) names ->
-					flip S.member nodes $ 
+					flip S.member nodeuuids $ 
 						ClusterNodeUUID $ Remote.uuid r
 				| otherwise -> False
 	
 	isclustername clusternames name = 
 		M.lookup name clusternames == Just clusteruuid
 	
-	nodecontaining remotesides k = do
+	nodecontaining nodes k = do
 		locs <- S.fromList <$> loggedLocations k
-		case filter (flip S.member locs . remoteUUID) remotesides of
+		case filter (flip S.member locs . remoteUUID) nodes of
 			-- TODO: Avoid always using same remote
 			(r:_) -> return (Just r)
 			[] -> return Nothing
 		
+	nonempty (l:ls) fallback
+		| null l = nonempty ls fallback
+		| otherwise = l
+	nonempty [] fallback = fallback

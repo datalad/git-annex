@@ -26,9 +26,6 @@ In development on the `proxy` branch.
 
 For June's work on [[design/passthrough_proxy]], remaining todos:
 
-* On upload to cluster, send to nodes where its preferred content, and not
-  to other nodes. Unless no nodes prefer it, then what?
-
 * Getting a key from a cluster currently always selects the lowest cost
   remote, and always the same remote if cost is the same. Should
   round-robin amoung remotes, and prefer to avoid using remotes that
@@ -110,3 +107,6 @@ For June's work on [[design/passthrough_proxy]], remaining todos:
 
 * Avoid `git-annex sync --content` etc from operating on cluster nodes by
   default since syncing with a cluster implicitly syncs with its nodes. (done)
+
+* On upload to cluster, send to nodes where its preferred content, and not
+  to other nodes. (done)

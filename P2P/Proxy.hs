@@ -14,6 +14,7 @@ import Annex.Common
 import P2P.Protocol
 import P2P.IO
 import Utility.Metered
+import Git.FilePath
 
 import Data.Either
 import Control.Concurrent.STM
@@ -63,7 +64,7 @@ data ProxySelector = ProxySelector
 	, proxyREMOVE :: Key -> Annex [RemoteSide]
 	-- ^ remove from all of these remotes
 	, proxyGET :: Key -> Annex (Maybe RemoteSide)
-	, proxyPUT :: Key -> Annex [RemoteSide]
+	, proxyPUT :: AssociatedFile -> Key -> Annex [RemoteSide]
 	-- ^ put to some/all of these remotes
 	}
 
@@ -74,7 +75,7 @@ singleProxySelector r = ProxySelector
 	, proxyUNLOCKCONTENT = pure (Just r)
 	, proxyREMOVE = const (pure [r])
 	, proxyGET = const (pure (Just r))
-	, proxyPUT = const (pure [r])
+	, proxyPUT = const (const (pure [r]))
 	}
 
 {- To keep this module limited to P2P protocol actions,
@@ -196,8 +197,9 @@ proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) remo
 				protoerrhandler proxynextclientmessage $
 					client $ net $ sendMessage $ 
 						ERROR "content not present"
-		PUT _ k -> do
-			remotesides <- proxyPUT proxyselector k
+		PUT paf k -> do
+			af <- getassociatedfile paf
+			remotesides <- proxyPUT proxyselector af k
 			servermodechecker checkPUTServerMode $
 				handlePUT remotesides k message
 		-- These messages involve the git repository, not the
@@ -481,3 +483,11 @@ proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) remo
 							| protocolversion < 2 -> SUCCESS
 							| otherwise -> SUCCESS_PLUS us
 
+	-- The associated file received from the P2P protocol
+	-- is relative to the top of the git repository. But this process
+	-- may be running with a different cwd.
+	getassociatedfile (ProtoAssociatedFile (AssociatedFile (Just f))) =
+		AssociatedFile . Just 
+			<$> fromRepo (fromTopFilePath (asTopFilePath f))
+	getassociatedfile (ProtoAssociatedFile (AssociatedFile Nothing)) = 
+		return $ AssociatedFile Nothing

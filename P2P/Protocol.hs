@@ -173,12 +173,15 @@ instance Proto.Serializable Service where
 -- its serialization cannot contain any whitespace. This is handled
 -- by replacing whitespace with '%' (and '%' with '%%')
 --
--- When deserializing an AssociatedFile from a peer, it's sanitized,
--- to avoid any unusual characters that might cause problems when it's
--- displayed to the user.
+-- When deserializing an AssociatedFile from a peer, that escaping is
+-- reversed. Unfortunately, an input tab will be deescaped to a space
+-- though. And it's sanitized, to avoid any control characters that might
+-- cause problems when it's displayed to the user.
 --
--- These mungings are ok, because a ProtoAssociatedFile is only ever displayed
--- to the user and does not need to match a file on disk.
+-- These mungings are ok, because a ProtoAssociatedFile is normally
+-- only displayed to the user and so does not need to match a file on disk.
+-- It may also be used in checking preferred content, which is very
+-- unlikely to care about spaces vs tabs or control characters.
 instance Proto.Serializable ProtoAssociatedFile where
 	serialize (ProtoAssociatedFile (AssociatedFile Nothing)) = ""
 	serialize (ProtoAssociatedFile (AssociatedFile (Just af))) = 
