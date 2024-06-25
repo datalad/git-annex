@@ -45,6 +45,7 @@ import Types.CleanupActions
 import qualified CmdLine.GitAnnexShell.Fields as Fields
 import Logs.Location
 import Logs.Proxy
+import Logs.Cluster.Basic
 import Utility.Metered
 import Utility.Env
 import Utility.Batch
@@ -794,26 +795,27 @@ listProxied proxies rs = concat <$> mapM go rs
 			else case M.lookup cu proxies of
 				Nothing -> pure []
 				Just s -> catMaybes
-					<$> mapM (mkproxied g r) (S.toList s)
+					<$> mapM (mkproxied g r s) (S.toList s)
 	
 	proxiedremotename r p = do
 		n <- Git.remoteName r
 		pure $ n ++ "-" ++ proxyRemoteName p
 
-	mkproxied g r p = case proxiedremotename r p of
+	mkproxied g r proxied p = case proxiedremotename r p of
 		Nothing -> pure Nothing
-		Just proxyname -> mkproxied' g r p proxyname
+		Just proxyname -> mkproxied' g r proxied p proxyname
 	
 	-- The proxied remote is constructed by renaming the proxy remote,
 	-- changing its uuid, and setting the proxied remote's inherited
 	-- configs and uuid in Annex state.
-	mkproxied' g r p proxyname
+	mkproxied' g r proxied p proxyname
 		| any isconfig (M.keys (Git.config g)) = pure Nothing
 		| otherwise = do
+			clusters <- getClustersWith id
 			-- Not using addGitConfigOverride for inherited
 			-- configs, because child git processes do not
 			-- need them to be provided with -c.
-			Annex.adjustGitRepo (pure . annexconfigadjuster)
+			Annex.adjustGitRepo (pure . annexconfigadjuster clusters)
 			return $ Just $ renamedr
 	  where
 		renamedr = 
@@ -825,10 +827,11 @@ listProxied proxies rs = concat <$> mapM go rs
 				, Git.fullconfig = c
 				}
 		
-		annexconfigadjuster r' = 
+		annexconfigadjuster clusters r' = 
 			let c = adduuid (configRepoUUID renamedr) $
 				addurl $
 				addproxied $
+				adjustclusternode clusters $
 				inheritconfigs $ Git.fullconfig r'
 			in r'
 				{ Git.config = M.map Prelude.head c
@@ -838,11 +841,27 @@ listProxied proxies rs = concat <$> mapM go rs
 		adduuid ck = M.insert ck
 			[Git.ConfigValue $ fromUUID $ proxyRemoteUUID p]
 
-		addurl = M.insert (remoteConfig renamedr "url")
+		addurl = M.insert (remoteConfig renamedr (remoteGitConfigKey UrlField))
 			[Git.ConfigValue $ encodeBS $ Git.repoLocation r]
 		
-		addproxied = M.insert (remoteAnnexConfig renamedr "proxied")
-			[Git.ConfigValue $ Git.Config.boolConfig' True]
+		addproxied = addremoteannexfield ProxiedField True
+		
+		-- A node of a cluster that is being proxied along with
+		-- that cluster does not need to be synced with
+		-- by default, because syncing with the cluster will
+		-- effectively sync with all of its nodes.
+		adjustclusternode clusters =
+			case M.lookup (ClusterNodeUUID (proxyRemoteUUID p)) (clusterNodeUUIDs clusters) of
+				Just cs
+					| any (\c -> S.member (fromClusterUUID c) proxieduuids) (S.toList cs) ->
+						addremoteannexfield SyncField False
+				_ -> id
+
+		proxieduuids = S.map proxyRemoteUUID proxied
+
+		addremoteannexfield f b = M.insert
+			(remoteAnnexConfig renamedr (remoteGitConfigKey f))
+			[Git.ConfigValue $ Git.Config.boolConfig' b]
 
 		inheritconfigs c = foldl' inheritconfig c proxyInheritedFields
 		

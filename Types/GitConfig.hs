@@ -22,7 +22,9 @@ module Types.GitConfig (
 	RemoteNameable(..),
 	remoteAnnexConfig,
 	remoteConfig,
-	proxyInheritedFields
+	RemoteGitConfigField(..),
+	remoteGitConfigKey,
+	proxyInheritedFields,
 ) where
 
 import Common

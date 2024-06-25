@@ -26,17 +26,8 @@ In development on the `proxy` branch.
 
 For June's work on [[design/passthrough_proxy]], remaining todos:
 
-* On upload to cluster, send to nodes where it's preferred content, and not
-  to other nodes.
-
-* `git-annex sync --content` etc, when operating on clusters, should first 
-  operate on the cluster as a whole, to take advantages of fanout on upload
-  and mass drop. Only operate on individual cluster nodes afterwards,
-  to handle cases such as a cluster containing a key, but some node
-  wanting and lacking the key. Perhaps just setting cost for nodes slightly
-  higher than the cluster cost will be enough? Or should it even send a key
-  to a cluster node if the cluster contains the key? Perhaps that is
-  unnecessary work, the cluster should be able to rebalance itself.
+* On upload to cluster, send to nodes where its preferred content, and not
+  to other nodes. Unless no nodes prefer it, then what?
 
 * Getting a key from a cluster currently always selects the lowest cost
   remote, and always the same remote if cost is the same. Should
@@ -116,3 +107,6 @@ For June's work on [[design/passthrough_proxy]], remaining todos:
   which UUIDs it was dropped from. (done)
 
 * `git-annex testremote` works against proxied remote and cluster. (done)
+
+* Avoid `git-annex sync --content` etc from operating on cluster nodes by
+  default since syncing with a cluster implicitly syncs with its nodes. (done)

@@ -821,6 +821,7 @@ Executable git-annex
     Logs.Chunk
     Logs.Chunk.Pure
     Logs.Cluster
+    Logs.Cluster.Basic
     Logs.Config
     Logs.ContentIdentifier
     Logs.ContentIdentifier.Pure

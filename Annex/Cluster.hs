@@ -47,7 +47,9 @@ proxyCluster clusteruuid proxydone servermode clientside protoerrhandler = do
 		-- The protocol versions supported by the nodes are not
 		-- known at this point, and would be too expensive to
 		-- determine. Instead, pick the newest protocol version
-		-- that we and the client both speak.
+		-- that we and the client both speak. The proxy code
+		-- checks protocol versions when operating on multiple
+		-- nodes.
 		let protocolversion = min maxProtocolVersion clientmaxversion
 		selectnode <- clusterProxySelector clusteruuid protocolversion
 		proxy proxydone proxymethods servermode clientside 
