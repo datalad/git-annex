@@ -33,12 +33,6 @@ For June's work on [[design/passthrough_proxy]], remaining todos:
   protocol messages on to any remotes that have the same UUID as
   the cluster. Needs VIA extension to P2P protocol to avoid cycles.
 
-  Current status: Distributed cluster nodes are visible,
-  and can be accessed directly, but trying to GET from a cluster
-  fails when the content is located behind a remote gateway.
-  And PUT only sends to the immediate nodes
-  of the cluster, not on to other gateways.
-
 * Getting a key from a cluster currently always selects the lowest cost
   remote, and always the same remote if cost is the same. Should
   round-robin amoung remotes, and prefer to avoid using remotes that
