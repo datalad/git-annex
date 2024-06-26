@@ -13,6 +13,7 @@ import Command
 import qualified Annex
 import Types.Cluster
 import Config
+import Types.GitConfig
 import qualified Remote
 
 import qualified Data.Map as M
@@ -23,11 +24,13 @@ cmd = command "extendcluster" SectionSetup "add an gateway to a cluster"
 
 seek :: CmdParams -> CommandSeek
 seek (remotename:clustername:[]) = Remote.byName (Just clusterremotename) >>= \case
-	Just clusterremote -> 
-		case mkClusterUUID (Remote.uuid clusterremote) of
-			Just cu -> commandAction $ start cu clustername
-			Nothing -> giveup $ clusterremotename 
-				++ " is not a cluster remote."
+	Just clusterremote -> Remote.byName (Just remotename) >>= \case
+		Just gatewayremote -> 
+			case mkClusterUUID (Remote.uuid clusterremote) of
+				Just cu -> commandAction $ start cu clustername gatewayremote
+				Nothing -> giveup $ clusterremotename 
+					++ " is not a cluster remote."
+		Nothing -> giveup $ "No remote named " ++ remotename ++ " exists."
 	Nothing -> giveup $ "Expected to find a cluster remote named " 
 		++ clusterremotename
 		++ " that is accessed via " ++ remotename
@@ -38,12 +41,14 @@ seek (remotename:clustername:[]) = Remote.byName (Just clusterremotename) >>= \c
 	clusterremotename = remotename ++ "-" ++ clustername
 seek _ = giveup "Expected two parameters, gateway and clustername."
 
-start :: ClusterUUID -> String -> CommandStart
-start cu clustername = starting "extendcluster" ai si $ do
+start :: ClusterUUID -> String -> Remote -> CommandStart
+start cu clustername gatewayremote = starting "extendcluster" ai si $ do
 	myclusters <- annexClusters <$> Annex.getGitConfig
+	let setcus f = setConfig f (fromUUID (fromClusterUUID cu))
 	unless (M.member clustername myclusters) $ do
-		setConfig (annexConfig ("cluster." <> encodeBS clustername))
-			(fromUUID (fromClusterUUID cu))
+		setcus $ annexConfig ("cluster." <> encodeBS clustername)
+	setcus $ remoteAnnexConfig gatewayremote $ 
+		remoteGitConfigKey ClusterGatewayField
 	next $ return True
   where
 	ai = ActionItemOther (Just (UnquotedString clustername))

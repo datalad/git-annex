@@ -455,7 +455,7 @@ gitSyncableRemote :: Remote -> Bool
 gitSyncableRemote r
 	| gitSyncableRemoteType (remotetype r) 
 		&& isJust (remoteUrl (gitconfig r)) =
-			not (remoteAnnexProxied (gitconfig r))
+			not (isJust (remoteAnnexProxiedBy (gitconfig r)))
 	| otherwise = case remoteUrl (gitconfig r) of
 		Just u | "annex::" `isPrefixOf` u -> True
 		_ -> False

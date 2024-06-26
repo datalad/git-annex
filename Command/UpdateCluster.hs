@@ -80,5 +80,5 @@ findProxiedClusterNodes recordednodes =
   where
 	isproxynode r = 
 		asclusternode r `S.member` recordednodes
-			&& remoteAnnexProxied (R.gitconfig r)
+			&& isJust (remoteAnnexProxiedBy (R.gitconfig r))
 	asclusternode = ClusterNodeUUID . R.uuid

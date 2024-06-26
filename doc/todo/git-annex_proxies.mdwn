@@ -33,8 +33,11 @@ For June's work on [[design/passthrough_proxy]], remaining todos:
   protocol messages on to any remotes that have the same UUID as
   the cluster. Needs VIA extension to P2P protocol to avoid cycles.
 
-* `git-annex updatecluster` needs changes to support a distributed cluster.
-  Currently it will remove nodes that are behind another gateway.
+  Current status: Distributed cluster nodes are visible,
+  and can be accessed directly, but trying to GET from a cluster
+  fails when the content is located behind a remote gateway.
+  And PUT only sends to the immediate nodes
+  of the cluster, not on to other gateways.
 
 * Getting a key from a cluster currently always selects the lowest cost
   remote, and always the same remote if cost is the same. Should
@@ -106,3 +109,8 @@ For June's work on [[design/passthrough_proxy]], remaining todos:
 
 * Support annex.jobs for clusters. (done)
 
+* Add `git-annex extendcluster` command and extend `git-annex updatecluster` 
+  to support clusters with multiple gateways. (done)
+
+* Support proxying for a remote that is proxied by another gateway of
+  a cluster. (done)

@@ -386,12 +386,14 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexBwLimitUpload :: Maybe BwRate
 	, remoteAnnexBwLimitDownload :: Maybe BwRate
 	, remoteAnnexAllowUnverifiedDownloads :: Bool
+	, remoteAnnexUUID :: Maybe UUID
 	, remoteAnnexConfigUUID :: Maybe UUID
 	, remoteAnnexMaxGitBundles :: Int
 	, remoteAnnexAllowEncryptedGitRepo :: Bool
 	, remoteAnnexProxy :: Bool
-	, remoteAnnexProxied :: Bool
+	, remoteAnnexProxiedBy :: Maybe UUID
 	, remoteAnnexClusterNode :: Maybe [RemoteName]
+	, remoteAnnexClusterGateway :: [ClusterUUID]
 	, remoteUrl :: Maybe String
 
 	{- These settings are specific to particular types of remotes
@@ -471,16 +473,20 @@ extractRemoteGitConfig r remotename = do
 			readBwRatePerSecond =<< getmaybe BWLimitDownloadField
 		, remoteAnnexAllowUnverifiedDownloads = (== Just "ACKTHPPT") $
 			getmaybe SecurityAllowUnverifiedDownloadsField
+		, remoteAnnexUUID = toUUID <$> getmaybe UUIDField
 		, remoteAnnexConfigUUID = toUUID <$> getmaybe ConfigUUIDField
 		, remoteAnnexMaxGitBundles =
 			fromMaybe 100 (getmayberead MaxGitBundlesField)
 		, remoteAnnexAllowEncryptedGitRepo = 
 			getbool AllowEncryptedGitRepoField False
 		, remoteAnnexProxy = getbool ProxyField False
-		, remoteAnnexProxied = getbool ProxiedField False
+		, remoteAnnexProxiedBy = toUUID <$> getmaybe ProxiedByField
 		, remoteAnnexClusterNode = 
 			(filter isLegalName . words)
 				<$> getmaybe ClusterNodeField
+		, remoteAnnexClusterGateway = fromMaybe [] $
+			(mapMaybe (mkClusterUUID . toUUID) . words)
+				<$> getmaybe ClusterGatewayField
 		, remoteUrl = 
 			case Git.Config.getMaybe (remoteConfig remotename (remoteGitConfigKey UrlField)) r of
 				Just (ConfigValue b)
@@ -553,13 +559,15 @@ data RemoteGitConfigField
 	| BWLimitField
 	| BWLimitUploadField
 	| BWLimitDownloadField
+	| UUIDField
 	| ConfigUUIDField
 	| SecurityAllowUnverifiedDownloadsField
 	| MaxGitBundlesField
 	| AllowEncryptedGitRepoField
 	| ProxyField
-	| ProxiedField
+	| ProxiedByField
 	| ClusterNodeField
+	| ClusterGatewayField
 	| UrlField
 	| ShellField
 	| SshOptionsField
@@ -618,14 +626,16 @@ remoteGitConfigField = \case
 	BWLimitField -> inherited "bwlimit"
 	BWLimitUploadField -> inherited "bwlimit-upload"
 	BWLimitDownloadField -> inherited "bwlimit-upload"
+	UUIDField -> uninherited "uuid"
 	ConfigUUIDField -> uninherited "config-uuid"
 	SecurityAllowUnverifiedDownloadsField -> inherited "security-allow-unverified-downloads"
 	MaxGitBundlesField -> inherited "max-git-bundles"
 	AllowEncryptedGitRepoField -> inherited "allow-encrypted-gitrepo"
 	-- Allow proxy chains.
 	ProxyField -> inherited "proxy"
-	ProxiedField -> uninherited "proxied"
+	ProxiedByField -> uninherited "proxied-by"
 	ClusterNodeField -> uninherited "cluster-node"
+	ClusterGatewayField -> uninherited "cluster-gateway"
 	UrlField -> uninherited "url"
 	ShellField -> inherited "shell"
 	SshOptionsField -> inherited "ssh-options"

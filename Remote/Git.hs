@@ -794,21 +794,22 @@ listProxied proxies rs = concat <$> mapM go rs
 			then pure []
 			else case M.lookup cu proxies of
 				Nothing -> pure []
-				Just s -> catMaybes
-					<$> mapM (mkproxied g r s) (S.toList s)
+				Just proxied -> catMaybes
+					<$> mapM (mkproxied g r gc proxied)
+						(S.toList proxied)
 	
 	proxiedremotename r p = do
 		n <- Git.remoteName r
 		pure $ n ++ "-" ++ proxyRemoteName p
 
-	mkproxied g r proxied p = case proxiedremotename r p of
+	mkproxied g r gc proxied p = case proxiedremotename r p of
 		Nothing -> pure Nothing
-		Just proxyname -> mkproxied' g r proxied p proxyname
+		Just proxyname -> mkproxied' g r gc proxied p proxyname
 	
 	-- The proxied remote is constructed by renaming the proxy remote,
 	-- changing its uuid, and setting the proxied remote's inherited
 	-- configs and uuid in Annex state.
-	mkproxied' g r proxied p proxyname
+	mkproxied' g r gc proxied p proxyname
 		| any isconfig (M.keys (Git.config g)) = pure Nothing
 		| otherwise = do
 			clusters <- getClustersWith id
@@ -830,7 +831,7 @@ listProxied proxies rs = concat <$> mapM go rs
 		annexconfigadjuster clusters r' = 
 			let c = adduuid (configRepoUUID renamedr) $
 				addurl $
-				addproxied $
+				addproxiedby $
 				adjustclusternode clusters $
 				inheritconfigs $ Git.fullconfig r'
 			in r'
@@ -844,7 +845,10 @@ listProxied proxies rs = concat <$> mapM go rs
 		addurl = M.insert (remoteConfig renamedr (remoteGitConfigKey UrlField))
 			[Git.ConfigValue $ encodeBS $ Git.repoLocation r]
 		
-		addproxied = addremoteannexfield ProxiedField True
+		addproxiedby = case remoteAnnexUUID gc of
+			Just u -> addremoteannexfield ProxiedByField
+				[Git.ConfigValue $ fromUUID u]
+			Nothing -> id
 		
 		-- A node of a cluster that is being proxied along with
 		-- that cluster does not need to be synced with
@@ -854,14 +858,14 @@ listProxied proxies rs = concat <$> mapM go rs
 			case M.lookup (ClusterNodeUUID (proxyRemoteUUID p)) (clusterNodeUUIDs clusters) of
 				Just cs
 					| any (\c -> S.member (fromClusterUUID c) proxieduuids) (S.toList cs) ->
-						addremoteannexfield SyncField False
+						addremoteannexfield SyncField
+							[Git.ConfigValue $ Git.Config.boolConfig' False]
 				_ -> id
 
 		proxieduuids = S.map proxyRemoteUUID proxied
 
-		addremoteannexfield f b = M.insert
+		addremoteannexfield f = M.insert
 			(remoteAnnexConfig renamedr (remoteGitConfigKey f))
-			[Git.ConfigValue $ Git.Config.boolConfig' b]
 
 		inheritconfigs c = foldl' inheritconfig c proxyInheritedFields
 		

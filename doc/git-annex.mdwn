@@ -1398,11 +1398,12 @@ repository, using [[git-annex-config]]. See its man page for a list.)
 
 * `annex.cluster.<name>`
 
-  [[git-annex-updatecluster]] sets this to the UUID of a cluster
-  based on `remote.<name>.annex-cluster-node` configuration.
+  This is set to make the repository be a gateway to a cluster.
+  The value is the cluster UUID. Note that cluster UUIDs are not
+  the same as repository UUIDs, and a repository UUID cannot be used here.
 
-  Note that cluster UUIDs are not the same as repository UUIDs,
-  and a repository UUID cannot be used here.
+  Usually this is set up by running [[git-annex-initcluster]] or
+  [[git-annex-extendcluster]].
 
 # CONFIGURATION OF REMOTES
 
@@ -1681,14 +1682,11 @@ Remotes are configured using these settings in `.git/config`.
   After configuring this, run [[git-annex-updateproxy](1) to store
   the new configuration in the git-annex branch.
 
-* `remote.<name>.annex-proxied`
-
-  Setting this to "true" indicates that a remote is proxied via the
-  git-annex repository that its remote points to. That prevents commands
-  like `git-annex sync` from pulling and pushing the remote. 
+* `remote.<name>.annex-proxied-by`
 
   Usually this is used internally, when git-annex sets up proxied remotes,
-  and will not need to be set.
+  and will not need to be configured. The value is the UUID of the
+  git-annex repository that proxies access to this remote.
 
 * `remote.<name>.annex-cluster-node`
 
@@ -1698,6 +1696,15 @@ Remotes are configured using these settings in `.git/config`.
   
   After configuring this, run [[git-annex-updatecluster](1) to store
   the new configuration in the git-annex branch.
+
+* `remote.<name>.annex-cluster-gateway`
+
+  Set to the UUID of a cluster that this remote serves as a gateway for.
+  Multiple UUIDs can be listed, separated by whitespace. When the local
+  repository is also a gateway for that cluster, it will proxy for the
+  nodes of the remote gateway.
+  
+  Usually this is set up by running [[git-annex-extendcluster]].
 
 * `remote.<name>.annex-private`
 

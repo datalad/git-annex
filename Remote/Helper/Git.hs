@@ -65,6 +65,6 @@ gitRepoInfo r = do
 	return
 		[ ("repository location", Git.repoLocation repo)
 		, ("proxied", Git.Config.boolConfig 
-			(remoteAnnexProxied (Remote.gitconfig r)))
+			(isJust (remoteAnnexProxiedBy (Remote.gitconfig r))))
 		, ("last synced", lastsynctime)
 		]

@@ -83,7 +83,7 @@ findRemoteProxiedClusterNodes = do
 		<$> Annex.getGitConfig
 	clusternodes <- clusterNodeUUIDs <$> getClusters
 	let isproxiedclusternode r
-		| remoteAnnexProxied (R.gitconfig r) =
+		| isJust (remoteAnnexProxiedBy (R.gitconfig r)) =
 			case M.lookup (ClusterNodeUUID (R.uuid r)) clusternodes of
 				Nothing -> False
 				Just s -> not $ S.null $ 
