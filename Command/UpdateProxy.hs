@@ -32,7 +32,7 @@ start = startingCustomOutput (ActionItemOther Nothing) $ do
 	rs <- R.remoteList
 	let remoteproxies = S.fromList $ map mkproxy $
 		filter (isproxy . R.gitconfig) rs
-	clusterproxies <- getClusterProxies
+	clusterproxies <- getClusterProxies remoteproxies
 	let proxies = S.union remoteproxies clusterproxies
 	u <- getUUID
 	oldproxies <- fromMaybe mempty . M.lookup u <$> getProxies
@@ -61,18 +61,19 @@ start = startingCustomOutput (ActionItemOther Nothing) $ do
 -- Automatically proxy nodes of any cluster this repository is configured
 -- to serve as a gateway for. Also proxy other cluster nodes that are
 -- themselves proxied via other remotes.
-getClusterProxies :: Annex (S.Set Proxy)
-getClusterProxies = do
-	mynodes <- (map mkclusterproxy . M.toList . annexClusters)
+getClusterProxies :: S.Set Proxy -> Annex (S.Set Proxy)
+getClusterProxies remoteproxies = do
+	myclusters <- (map mkclusterproxy . M.toList . annexClusters)
 		<$> Annex.getGitConfig
 	remoteproxiednodes <- findRemoteProxiedClusterNodes
-	let mynodesuuids = S.fromList $ map proxyRemoteUUID mynodes
+	let myproxieduuids = S.map proxyRemoteUUID remoteproxies 
+		<> S.fromList (map proxyRemoteUUID myclusters)
 	-- filter out nodes we proxy for from the remote proxied nodes
 	-- to avoid cycles
 	let remoteproxiednodes' = filter
-		(\n -> proxyRemoteUUID n `S.notMember` mynodesuuids)
+		(\n -> proxyRemoteUUID n `S.notMember` myproxieduuids)
 		remoteproxiednodes
-	return (S.fromList (mynodes ++ remoteproxiednodes'))
+	return (S.fromList (myclusters ++ remoteproxiednodes'))
   where
 	mkclusterproxy (remotename, cu) = 
 		Proxy (fromClusterUUID cu) remotename
