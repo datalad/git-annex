@@ -16,7 +16,7 @@ gateway to the cluster. The `gateway` parameter is the name of that remote.
 The `clustername` parameter is the name of the cluster.
 
 The next step after running this command is to configure
-any additional cluster nodes that this gateway provide to the cluster,
+any additional cluster nodes that this gateway serves to the cluster,
 then run [[git-annex-updatecluster]]. See the documentation of
 that command for details about configuring nodes.
 

@@ -50,23 +50,35 @@ start = startingCustomOutput (ActionItemOther Nothing) $ do
 		let mynodes = S.map (ClusterNodeUUID . R.uuid) mynodesremotes
 		let recordednodes = fromMaybe mempty $ M.lookup cu $
 			clusterUUIDs recordedclusters
-		if recordednodes == mynodes
+		proxiednodes <- findProxiedNodes recordednodes 
+		let allnodes = S.union mynodes proxiednodes
+		if recordednodes == allnodes
 			then liftIO $ putStrLn $ safeOutput $
 				"No cluster node changes for cluster: " ++ clustername
 			else do
-				describechanges descs clustername recordednodes mynodes mynodesremotes
-				recordCluster cu mynodes
+				describechanges descs clustername recordednodes allnodes mynodesremotes
+				recordCluster cu allnodes
 
 	next $ return True
   where
-	describechanges descs clustername oldnodes mynodes mynodesremotes = do
+	describechanges descs clustername oldnodes allnodes mynodesremotes = do
 		forM_ (S.toList mynodesremotes) $ \r ->
 			unless (S.member (ClusterNodeUUID (R.uuid r)) oldnodes) $
 				liftIO $ putStrLn $ safeOutput $
 					"Added node " ++ R.name r ++ " to cluster: " ++ clustername
 		forM_ (S.toList oldnodes) $ \n ->
-			unless (S.member n mynodes) $ do
+			unless (S.member n allnodes) $ do
 				let desc = maybe (fromUUID (fromClusterNodeUUID n)) fromUUIDDesc $
 					M.lookup (fromClusterNodeUUID n) descs
 				liftIO $ putStrLn $ safeOutput $
 					"Removed node " ++ desc ++ " from cluster: " ++ clustername
+
+-- Finds nodes that are proxied by other cluster gateways.
+findProxiedNodes :: S.Set ClusterNodeUUID -> Annex (S.Set ClusterNodeUUID)
+findProxiedNodes recordednodes =
+	(S.fromList . map asclusternode . filter isproxynode) <$> R.remoteList
+  where
+	isproxynode r = 
+		asclusternode r `S.member` recordednodes
+			&& remoteAnnexProxied (R.gitconfig r)
+	asclusternode = ClusterNodeUUID . R.uuid
