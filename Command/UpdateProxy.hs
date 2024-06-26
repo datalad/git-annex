@@ -10,11 +10,11 @@ module Command.UpdateProxy where
 import Command
 import qualified Annex
 import Logs.Proxy
+import Logs.Cluster
 import Annex.UUID
 import qualified Remote as R
 import qualified Types.Remote as R
 import Utility.SafeOutput
-import Types.Cluster
 
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -32,10 +32,8 @@ start = startingCustomOutput (ActionItemOther Nothing) $ do
 	rs <- R.remoteList
 	let remoteproxies = S.fromList $ map mkproxy $
 		filter (isproxy . R.gitconfig) rs
-	clusterproxies <-
-		(S.fromList . map mkclusterproxy . M.toList . annexClusters)
-		<$> Annex.getGitConfig
-	let proxies = remoteproxies <> clusterproxies
+	clusterproxies <- getClusterProxies
+	let proxies = S.union remoteproxies clusterproxies
 	u <- getUUID
 	oldproxies <- fromMaybe mempty . M.lookup u <$> getProxies
 	if oldproxies == proxies
@@ -60,5 +58,38 @@ start = startingCustomOutput (ActionItemOther Nothing) $ do
 	
 	mkproxy r = Proxy (R.uuid r) (R.name r)
 
+-- Automatically proxy nodes of any cluster this repository is configured
+-- to serve as a gateway for. Also proxy other cluster nodes that are
+-- themselves proxied via other remotes.
+getClusterProxies :: Annex (S.Set Proxy)
+getClusterProxies = do
+	mynodes <- (map mkclusterproxy . M.toList . annexClusters)
+		<$> Annex.getGitConfig
+	remoteproxiednodes <- findRemoteProxiedClusterNodes
+	let mynodesuuids = S.fromList $ map proxyRemoteUUID mynodes
+	-- filter out nodes we proxy for from the remote proxied nodes
+	-- to avoid cycles
+	let remoteproxiednodes' = filter
+		(\n -> proxyRemoteUUID n `S.notMember` mynodesuuids)
+		remoteproxiednodes
+	return (S.fromList (mynodes ++ remoteproxiednodes'))
+  where
 	mkclusterproxy (remotename, cu) = 
 		Proxy (fromClusterUUID cu) remotename
+
+findRemoteProxiedClusterNodes :: Annex [Proxy]
+findRemoteProxiedClusterNodes = do
+	myclusters <- (S.fromList . M.elems . annexClusters)
+		<$> Annex.getGitConfig
+	clusternodes <- clusterNodeUUIDs <$> getClusters
+	let isproxiedclusternode r
+		| remoteAnnexProxied (R.gitconfig r) =
+			case M.lookup (ClusterNodeUUID (R.uuid r)) clusternodes of
+				Nothing -> False
+				Just s -> not $ S.null $ 
+					S.intersection s myclusters
+		| otherwise = False
+	(map asproxy . filter isproxiedclusternode)
+		<$> R.remoteList
+  where
+	asproxy r = Proxy (R.uuid r) (R.name r)

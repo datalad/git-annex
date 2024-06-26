@@ -9,8 +9,8 @@ git-annex updatecluster
 # DESCRIPTION
 
 This command is used to record the nodes of a cluster in the git-annex
-branch. It should be run in the repository that will serve as a gateway
-to the cluster.
+branch, and set up proxying to the nodes. It should be run in the
+repository that will serve as a gateway to the cluster.
 
 It looks at the git config `remote.name.annex-cluster-node` of
 each remote. When that is set to the name of a cluster that has been

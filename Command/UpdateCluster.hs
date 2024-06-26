@@ -50,7 +50,7 @@ start = startingCustomOutput (ActionItemOther Nothing) $ do
 		let mynodes = S.map (ClusterNodeUUID . R.uuid) mynodesremotes
 		let recordednodes = fromMaybe mempty $ M.lookup cu $
 			clusterUUIDs recordedclusters
-		proxiednodes <- findProxiedNodes recordednodes 
+		proxiednodes <- findProxiedClusterNodes recordednodes 
 		let allnodes = S.union mynodes proxiednodes
 		if recordednodes == allnodes
 			then liftIO $ putStrLn $ safeOutput $
@@ -74,8 +74,8 @@ start = startingCustomOutput (ActionItemOther Nothing) $ do
 					"Removed node " ++ desc ++ " from cluster: " ++ clustername
 
 -- Finds nodes that are proxied by other cluster gateways.
-findProxiedNodes :: S.Set ClusterNodeUUID -> Annex (S.Set ClusterNodeUUID)
-findProxiedNodes recordednodes =
+findProxiedClusterNodes :: S.Set ClusterNodeUUID -> Annex (S.Set ClusterNodeUUID)
+findProxiedClusterNodes recordednodes =
 	(S.fromList . map asclusternode . filter isproxynode) <$> R.remoteList
   where
 	isproxynode r = 
