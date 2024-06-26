@@ -15,8 +15,7 @@ remote is added the same as any other remote:
     git remote add bigserver me@bigserver:annex
 
 The gateway publishes information about the cluster to the git-annex
-branch. (See below for how that is configured.) So you may need to fetch
-from it to learn about the cluster:
+branch. So you may need to fetch from it to learn about the cluster:
 
     git fetch bigserver
 
@@ -41,7 +40,7 @@ at once, very efficiently.
     
     $ git-annex whereis bar
 	whereis bar (3 copies)
-	  	acae2ff6-6c1e-8bec-b8b9-397a3755f397 -- my cluster [bigserver-mycluster]
+	  	acae2ff6-6c1e-8bec-b8b9-397a3755f397 -- [bigserver-mycluster]
 	   	9f514001-6dc0-4d83-9af3-c64c96626892 -- node 1 [bigserver-node1]
 	   	d81e0b28-612e-4d73-a4e6-6dabbb03aba1 -- node 2 [bigserver-node2]
 	    5657baca-2f11-11ef-ae1a-5b68c6321dd9 -- node 3 [bigserver-node3]
@@ -55,46 +54,6 @@ clusters.
 
 A cluster is not a git repository, and so `git pull bigserver-mycluster`
 will not work.
-
-## configuring a cluster
-
-A new cluster first needs to be initialized. Run [[git-annex-initcluster]] in
-the repository that will serve as the cluster's gateway. In the example above,
-this was the "bigserver" repository.
-
-	$ git-annex initcluster mycluster
-
-Once a cluster is initialized, the next step is to add nodes to it.
-To make a remote be a node of the cluster, configure 
-`git config remote.name.annex-cluster-node`, setting it to the
-name of the cluster.
-
-In the example above, the three cluster nodes were configured like this:
-
-	$ git remote add node1 /media/disk1/repo
-	$ git remote add node2 /media/disk2/repo
-	$ git remote add node3 /media/disk3/repo
-	$ git config remote.node1.annex-cluster-node true
-	$ git config remote.node2.annex-cluster-node true
-	$ git config remote.node3.annex-cluster-node true
-
-Finally, run `git-annex updatecluster` to record the cluster configuration
-in the git-annex branch. That tells other repositories about the cluster.
-	
-	$ git-annex updatecluster mycluster
-	Added node node1 to cluster: mycluster
-	Added node node2 to cluster: mycluster
-	Added node node3 to cluster: mycluster
-	Started proxying for node1
-	Started proxying for node2
-	Started proxying for node3
-
-Operations that affect multiple nodes of a cluster can often be sped up by
-configuring annex.jobs in the repository that will serve the cluster to
-clients. In the example above, the nodes are all disk bound, so operating
-on more than one at a time will likely be faster.
-
-    $ git config annex.jobs cpus
 
 ## preferred content of clusters
 
@@ -120,3 +79,115 @@ gateway. To avoid files redundantly being stored on the gateway
 any files:
 
     $ git-annex wanted bigserver nothing
+
+## setting up a cluster
+
+A new cluster first needs to be initialized. Run [[git-annex-initcluster]] in
+the repository that will serve as the cluster's gateway. In the example above,
+this was the "bigserver" repository.
+
+	$ git-annex initcluster mycluster
+
+Once a cluster is initialized, the next step is to add nodes to it.
+To make a remote be a node of the cluster, configure 
+`git config remote.name.annex-cluster-node`, setting it to the
+name of the cluster.
+
+In the example above, the three cluster nodes were configured like this:
+
+	$ git remote add node1 /media/disk1/repo
+	$ git remote add node2 /media/disk2/repo
+	$ git remote add node3 /media/disk3/repo
+	$ git config remote.node1.annex-cluster-node mycluster
+	$ git config remote.node2.annex-cluster-node mycluster
+	$ git config remote.node3.annex-cluster-node mycluster
+
+Finally, run `git-annex updatecluster` to record the cluster configuration
+in the git-annex branch. That tells other repositories about the cluster.
+	
+	$ git-annex updatecluster
+	Added node node1 to cluster: mycluster
+	Added node node2 to cluster: mycluster
+	Added node node3 to cluster: mycluster
+	Started proxying for node1
+	Started proxying for node2
+	Started proxying for node3
+
+Operations that affect multiple nodes of a cluster can often be sped up by
+configuring annex.jobs in the repository that will serve the cluster to
+clients. In the example above, the nodes are all disk bound, so operating
+on more than one at a time will likely be faster.
+
+    $ git config annex.jobs cpus
+
+## adding additional gateways to a cluster
+
+A cluster can have more than one gateway. One way to use this is to
+make a cluster that is distributed across several locations.
+
+Suppose you have a datacenter in AMS, and one in NYC. There
+will be a gateway in each datacenter which provides access to the nodes
+there. And the gateways will relay data between each other as well.
+
+Start by setting up the cluster in Amsterdam. The process is the same
+as in the previous section.
+
+	AMS$ git-annex initcluster mycluster
+	AMS$ git remote add node1 /media/disk1/repo
+	AMS$ git remote add node2 /media/disk2/repo
+	AMS$ git config remote.node1.annex-cluster-node mycluster
+	AMS$ git config remote.node2.annex-cluster-node mycluster
+	AMS$ git-annex updatecluster
+    AMS$ git config annex.jobs cpus
+
+Now in a clone of the same repository in NYC, add AMS as a git remote
+accessed with ssh:
+
+    NYC$ git remote add AMS me@amsterdam.example.com:annex
+    NYC$ git fetch AMS
+
+Setting up the cluster in NYC is different, rather than using
+`git-annex initcluster` again (which would make a new, different
+cluster), we ask git-annex to extend the cluster from AMS:
+
+    NYC$ git-annex extendcluster AMS mycluster
+
+The rest of the setup process for NYC is the same, of course different
+nodes are added.
+	
+	NYC$ git remote add node3 /media/disk3/repo
+	NYC$ git remote add node4 /media/disk4/repo
+	NYC$ git config remote.node3.annex-cluster-node mycluster
+	NYC$ git config remote.node4.annex-cluster-node mycluster
+	NYC$ git-annex updatecluster
+    NYC$ git config annex.jobs cpus
+
+Finally, the AMS side of the cluster has to be updated, adding a git remote
+for NYC, and extending the cluster to there as well:
+
+    AMS$ git remote add NYC me@nyc.example.com:annex
+    AMS$ git-annex sync NYC
+    NYC$ git-annex extendcluster NYC mycluster
+    AMS$ git-annex updatecluster
+
+A user can now add either AMS or NYC as a remote, and will have access
+to the entire cluster as either `AMS-mycluster` or `NYC-mycluster`.
+
+    user$ git-annex move foo --to AMS-mycluster
+    move foo (to AMS-mycluster...) ok
+
+Looking at where files end up, all the nodes are visible, not only those
+served by the current gateway.
+
+    user$ git-annex whereis foo
+	whereis foo (4 copies)
+	  	acfc1cb2-b8d5-8393-b8dc-4a419ea38183 -- cluster mycluster [AMS-mycluster]
+	   	11ab09a9-7448-45bd-ab81-3997780d00b3 -- node4 [AMS-NYC-node4]
+	   	36197d0e-6d49-4213-8440-71cbb121e670 -- node2 [AMS-node2]
+	   	43652651-1efa-442a-8333-eb346db31553 -- node3 [AMS-NYC-node3]
+	   	7fb5a77b-77a3-4032-b3e5-536698e308b3 -- node1 [AMS-node1]
+	ok
+
+Notice that remotes for cluster nodes have names indicating the path through
+the cluster used to access them. For example, "AMS-NYC-node3" is accessed via
+the AMS gateway, which then relays to NYC where node3 is located.
