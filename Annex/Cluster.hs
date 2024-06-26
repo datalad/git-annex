@@ -96,8 +96,8 @@ clusterProxySelector clusteruuid protocolversion = do
   where
 	-- Nodes of the cluster have remote.name.annex-cluster-node
 	-- containing its name. Or they are proxied by a remote
-	-- that has remote.name.annex-cluster-node containing the cluster's
-	-- UUID.
+	-- that has remote.name.annex-cluster-gateway
+	-- containing the cluster's UUID.
 	isnode rs nodeuuids clusternames r = 
 		case remoteAnnexClusterNode (Remote.gitconfig r) of
 			Just names
@@ -106,11 +106,13 @@ clusterProxySelector clusteruuid protocolversion = do
 						ClusterNodeUUID $ Remote.uuid r
 				| otherwise -> False
 			Nothing -> case remoteAnnexProxiedBy (Remote.gitconfig r) of
-				Just proxyuuid -> not $ null $
-					filter (== clusteruuid) $
-					concatMap (remoteAnnexClusterGateway . Remote.gitconfig) $
-					filter (\p -> Remote.uuid p == proxyuuid) rs
-				Nothing -> False
+				Just proxyuuid
+					| Remote.uuid r /= fromClusterUUID clusteruuid -> 
+						not $ null $
+							filter (== clusteruuid) $
+							concatMap (remoteAnnexClusterGateway . Remote.gitconfig) $
+							filter (\p -> Remote.uuid p == proxyuuid) rs
+				_ -> False
 	
 	isclustername clusternames name = 
 		M.lookup name clusternames == Just clusteruuid
