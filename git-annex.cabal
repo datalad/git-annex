@@ -638,6 +638,7 @@ Executable git-annex
     Command.EnableRemote
     Command.EnableTor
     Command.ExamineKey
+    Command.ExtendCluster
     Command.Expire
     Command.Export
     Command.FilterBranch

@@ -1,0 +1,40 @@
+# NAME
+
+git-annex extendcluster - add an additional gateway to a cluster
+
+# SYNOPSIS
+
+git-annex extendcluster gateway clustername
+
+# DESCRIPTION
+
+This command is used to configure a repository to serve as an additional
+gateway to a cluster. It is run in that repository.
+
+The repository this command is run in should have a remote that is a
+gateway to the cluster. The `gateway` parameter is the name of that remote.
+The `clustername` parameter is the name of the cluster.
+
+The next step after running this command is to configure
+any additional cluster nodes that this gateway provide to the cluster,
+then run [[git-annex-updatecluster]]. See the documentation of
+that command for details about configuring nodes.
+
+# OPTIONS
+
+* The [[git-annex-common-options]](1) can be used.
+
+# SEE ALSO
+
+[[git-annex]](1)
+[[git-annex-initcluster]](1)
+[[git-annex-updatecluster]](1)
+[[git-annex-updateproxy]](1)
+
+<https://git-annex.branchable.com/clusters/>
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

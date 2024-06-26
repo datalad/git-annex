@@ -338,6 +338,13 @@ content from the key-value store.
   
   See [[git-annex-updatecluster](1) for details.
 
+* `extendcluster`
+
+  Adds an additional gateway to a cluster.
+  
+  See [[git-annex-extendcluster](1) for details.
+
+
 * `updateproxy`
 
   Update records with proxy configuration.

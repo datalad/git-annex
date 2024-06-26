@@ -11,8 +11,12 @@ git-annex initcluster name [description]
 This command initializes a new cluster with the specified name. If no
 description is provided, one will be set automatically.
 
+This command should be run in the repository that will serve as the gateway
+to the cluster.
+
 The next step after running this command is to configure
-the cluster, then run [[git-annex-updatecluster]].
+the cluster nodes, then run [[git-annex-updatecluster]]. See the
+documentation of that command for details about configuring nodes.
 
 # OPTIONS
 
@@ -22,6 +26,7 @@ the cluster, then run [[git-annex-updatecluster]].
 
 [[git-annex]](1)
 [[git-annex-updatecluster]](1)
+[[git-annex-extendcluster]](1)
 [[git-annex-preferred-content]](1)
 [[git-annex-updateproxy]](1)
 
