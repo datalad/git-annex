@@ -10,7 +10,7 @@ a node of the cluster.
 
 To use a cluster, your repository needs to have its gateway configured as a
 remote. Clusters can currently only be accessed via ssh. This gateway
-remote is added the same as any other remote:
+remote is added the same as any other git remote:
 
     git remote add bigserver me@bigserver:annex
 
@@ -102,7 +102,7 @@ In the example above, the three cluster nodes were configured like this:
 	$ git config remote.node2.annex-cluster-node mycluster
 	$ git config remote.node3.annex-cluster-node mycluster
 
-Finally, run `git-annex updatecluster` to record the cluster configuration
+Finally, run [[git-annex-updatecluster]] to record the cluster configuration
 in the git-annex branch. That tells other repositories about the cluster.
 	
 	$ git-annex updatecluster
@@ -148,7 +148,8 @@ accessed with ssh:
 
 Setting up the cluster in NYC is different, rather than using
 `git-annex initcluster` again (which would make a new, different
-cluster), we ask git-annex to extend the cluster from AMS:
+cluster), we ask git-annex to [[extend|git-annex-extendcluster]]
+the cluster from AMS:
 
     NYC$ git-annex extendcluster AMS mycluster
 
