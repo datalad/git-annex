@@ -1,6 +1,6 @@
 {- Standard git remotes.
  -
- - Copyright 2011-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -25,7 +25,6 @@ import qualified Git.Command
 import qualified Git.GCrypt
 import qualified Git.Types as Git
 import qualified Annex
-import Logs.Presence
 import Annex.Transfer
 import Annex.CopyFile
 import Annex.Verify
@@ -45,6 +44,8 @@ import Annex.Init
 import Types.CleanupActions
 import qualified CmdLine.GitAnnexShell.Fields as Fields
 import Logs.Location
+import Logs.Proxy
+import Logs.Cluster.Basic
 import Utility.Metered
 import Utility.Env
 import Utility.Batch
@@ -66,7 +67,8 @@ import Messages.Progress
 
 import Control.Concurrent
 import qualified Data.Map as M
-import qualified Data.ByteString as S
+import qualified Data.Set as S
+import qualified Data.ByteString as B
 import qualified Utility.RawFilePath as R
 import Network.URI
 
@@ -92,7 +94,13 @@ list :: Bool -> Annex [Git.Repo]
 list autoinit = do
 	c <- fromRepo Git.config
 	rs <- mapM (tweakurl c) =<< Annex.getGitRemotes
-	mapM (configRead autoinit) (filter (not . isGitRemoteAnnex) rs)
+	rs' <- mapM (configRead autoinit) (filter (not . isGitRemoteAnnex) rs)
+	proxies <- doQuietAction getProxies
+	if proxies == mempty
+		then return rs'
+		else do
+			proxied <- listProxied proxies rs'
+			return (proxied++rs')
   where
 	annexurl r = remoteConfig r "annexurl"
 	tweakurl c r = do
@@ -168,6 +176,7 @@ configRead autoinit r = do
 			Just r' -> return r'
 		_ -> return r
 
+
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u rc gc rs
 	-- Remote.GitLFS may be used with a repo that is also encrypted
@@ -178,10 +187,9 @@ gen r u rc gc rs
 		Nothing -> do
 			st <- mkState r u gc
 			c <- parsedRemoteConfig remote rc
-			go st c <$> remoteCost gc c defcst
+			go st c <$> remoteCost gc c (defaultRepoCost r)
 		Just addr -> Remote.P2P.chainGen addr r u rc gc rs
   where
-	defcst = if repoCheap r then cheapRemoteCost else expensiveRemoteCost
 	go st c cst = Just new
 	  where
 		new = Remote 
@@ -220,6 +228,11 @@ gen r u rc gc rs
 			, checkUrl = Nothing
 			, remoteStateHandle = rs
 			}
+
+defaultRepoCost :: Git.Repo -> Cost
+defaultRepoCost r
+	| repoCheap r = cheapRemoteCost
+	| otherwise = expensiveRemoteCost
 
 unavailable :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 unavailable r = gen r'
@@ -265,7 +278,7 @@ tryGitConfigRead autoinit r hasuuid
 		v <- liftIO $ Git.Config.fromPipe r cmd params st
 		case v of
 			Right (r', val, _err) -> do
-				unless (isUUIDConfigured r' || S.null val || not mustincludeuuuid) $ do
+				unless (isUUIDConfigured r' || val == mempty || not mustincludeuuuid) $ do
 					warning $ UnquotedString $ "Failed to get annex.uuid configuration of repository " ++ Git.repoDescribe r
 					warning $ UnquotedString $ "Instead, got: " ++ show val
 					warning "This is unexpected; please check the network transport!"
@@ -338,7 +351,7 @@ tryGitConfigRead autoinit r hasuuid
 	readlocalannexconfig = do
 		let check = do
 			Annex.BranchState.disableUpdate
-			catchNonAsync (autoInitialize (pure [])) $ \e ->
+			catchNonAsync (autoInitialize noop (pure [])) $ \e ->
 				warning $ UnquotedString $ "Remote " ++ Git.repoDescribe r ++
 					": "  ++ show e
 			Annex.getState Annex.repo
@@ -442,7 +455,8 @@ dropKey' repo r st@(State connpool duc _ _ _) key
 		, giveup "remote does not have expected annex.uuid value"
 		)
 	| Git.repoIsHttp repo = giveup "dropping from http remote not supported"
-	| otherwise = P2PHelper.remove (Ssh.runProto r connpool (return False)) key
+	| otherwise = P2PHelper.remove (uuid r) 
+		(Ssh.runProto r connpool (return (False, Nothing))) key
 
 lockKey :: Remote -> State -> Key -> (VerifiedCopy -> Annex r) -> Annex r
 lockKey r st key callback = do
@@ -464,7 +478,7 @@ lockKey' repo r st@(State connpool duc _ _ _) key callback
 		)
 	| Git.repoIsSsh repo = do
 		showLocking r
-		let withconn = Ssh.withP2PSshConnection r connpool failedlock
+		let withconn = Ssh.withP2PShellConnection r connpool failedlock
 		P2PHelper.lock withconn Ssh.runProtoConn (uuid r) key callback
 	| otherwise = failedlock
   where
@@ -542,8 +556,8 @@ copyToRemote' repo r st@(State connpool duc _ _ _) key file meterupdate
 		, giveup "remote does not have expected annex.uuid value"
 		)
 	| Git.repoIsSsh repo =
-		P2PHelper.store (gitconfig r)
-			(Ssh.runProto r connpool (return False))
+		P2PHelper.store (uuid r) (gitconfig r)
+			(Ssh.runProto r connpool (return Nothing))
 			key file meterupdate
 		
 	| otherwise = giveup "copying to non-ssh repo not supported"
@@ -594,7 +608,7 @@ repairRemote r a = return $ do
 	s <- Annex.new r
 	Annex.eval s $ do
 		Annex.BranchState.disableUpdate
-		ensureInitialized (pure [])
+		ensureInitialized noop (pure [])
 		a `finally` quiesce True
 
 data LocalRemoteAnnex = LocalRemoteAnnex Git.Repo (MVar [(Annex.AnnexState, Annex.AnnexRead)])
@@ -638,7 +652,7 @@ onLocal' (LocalRemoteAnnex repo mv) a = liftIO (takeMVar mv) >>= \case
 	[] -> do
 		liftIO $ putMVar mv []
 		v <- newLocal repo
-		go (v, ensureInitialized (pure []) >> a)
+		go (v, ensureInitialized noop (pure []) >> a)
 	(v:rest) -> do
 		liftIO $ putMVar mv rest
 		go (v, a)
@@ -725,7 +739,7 @@ mkFileCopier remotewanthardlink (State _ _ copycowtried _ _) = do
  - This returns False when the repository UUID is not as expected. -}
 type DeferredUUIDCheck = Annex Bool
 
-data State = State Ssh.P2PSshConnectionPool DeferredUUIDCheck CopyCoWTried (Annex (Git.Repo, GitConfig)) LocalRemoteAnnex
+data State = State Ssh.P2PShellConnectionPool DeferredUUIDCheck CopyCoWTried (Annex (Git.Repo, GitConfig)) LocalRemoteAnnex
 
 getRepoFromState :: State -> Annex Git.Repo
 getRepoFromState (State _ _ _ a _) = fst <$> a
@@ -738,7 +752,7 @@ getGitConfigFromState (State _ _ _ a _) = snd <$> a
 
 mkState :: Git.Repo -> UUID -> RemoteGitConfig -> Annex State
 mkState r u gc = do
-	pool <- Ssh.mkP2PSshConnectionPool
+	pool <- Ssh.mkP2PShellConnectionPool
 	copycowtried <- liftIO newCopyCoWTried
 	lra <- mkLocalRemoteAnnex r
 	(duc, getrepo) <- go
@@ -772,3 +786,122 @@ mkState r u gc = do
 				)
 
 			return (duc, getrepo)
+
+listProxied :: M.Map UUID (S.Set Proxy) -> [Git.Repo] -> Annex [Git.Repo]
+listProxied proxies rs = concat <$> mapM go rs
+  where
+	go r = do
+		g <- Annex.gitRepo
+		u <- getRepoUUID r
+		gc <- Annex.getRemoteGitConfig r
+		let cu = fromMaybe u $ remoteAnnexConfigUUID gc
+		if not (canproxy gc r) || cu == NoUUID
+			then pure []
+			else case M.lookup cu proxies of
+				Nothing -> pure []
+				Just proxied -> catMaybes
+					<$> mapM (mkproxied g r gc proxied)
+						(S.toList proxied)
+	
+	proxiedremotename r p = do
+		n <- Git.remoteName r
+		pure $ n ++ "-" ++ proxyRemoteName p
+
+	mkproxied g r gc proxied p = case proxiedremotename r p of
+		Nothing -> pure Nothing
+		Just proxyname -> mkproxied' g r gc proxied p proxyname
+	
+	-- The proxied remote is constructed by renaming the proxy remote,
+	-- changing its uuid, and setting the proxied remote's inherited
+	-- configs and uuid in Annex state.
+	mkproxied' g r gc proxied p proxyname
+		| any isconfig (M.keys (Git.config g)) = pure Nothing
+		| otherwise = do
+			clusters <- getClustersWith id
+			-- Not using addGitConfigOverride for inherited
+			-- configs, because child git processes do not
+			-- need them to be provided with -c.
+			Annex.adjustGitRepo (pure . annexconfigadjuster clusters)
+			return $ Just $ renamedr
+	  where
+		renamedr = 
+			let c = adduuid configkeyUUID $
+				Git.fullconfig r
+			in r 
+				{ Git.remoteName = Just proxyname
+				, Git.config = M.map Prelude.head c
+				, Git.fullconfig = c
+				}
+		
+		annexconfigadjuster clusters r' = 
+			let c = adduuid (configRepoUUID renamedr) $
+				addurl $
+				addproxiedby $
+				adjustclusternode clusters $
+				inheritconfigs $ Git.fullconfig r'
+			in r'
+				{ Git.config = M.map Prelude.head c
+				, Git.fullconfig = c
+				}
+
+		adduuid ck = M.insert ck
+			[Git.ConfigValue $ fromUUID $ proxyRemoteUUID p]
+
+		addurl = M.insert (remoteConfig renamedr (remoteGitConfigKey UrlField))
+			[Git.ConfigValue $ encodeBS $ Git.repoLocation r]
+		
+		addproxiedby = case remoteAnnexUUID gc of
+			Just u -> addremoteannexfield ProxiedByField
+				[Git.ConfigValue $ fromUUID u]
+			Nothing -> id
+		
+		-- A node of a cluster that is being proxied along with
+		-- that cluster does not need to be synced with
+		-- by default, because syncing with the cluster will
+		-- effectively sync with all of its nodes.
+		--
+		-- Also, give it a slightly higher cost than the
+		-- cluster by default, to encourage using the cluster.
+		adjustclusternode clusters =
+			case M.lookup (ClusterNodeUUID (proxyRemoteUUID p)) (clusterNodeUUIDs clusters) of
+				Just cs
+					| any (\c -> S.member (fromClusterUUID c) proxieduuids) (S.toList cs) ->
+						addremoteannexfield SyncField
+							[Git.ConfigValue $ Git.Config.boolConfig' False]
+						. addremoteannexfield CostField 
+							[Git.ConfigValue $ encodeBS $ show $ defaultRepoCost r + 0.1]
+				_ -> id
+
+		proxieduuids = S.map proxyRemoteUUID proxied
+
+		addremoteannexfield f = M.insert
+			(remoteAnnexConfig renamedr (remoteGitConfigKey f))
+
+		inheritconfigs c = foldl' inheritconfig c proxyInheritedFields
+		
+		inheritconfig c k = case (M.lookup dest c, M.lookup src c) of
+			(Nothing, Just v) -> M.insert dest v c
+			_ -> c
+		  where
+			src = remoteAnnexConfig r k
+			dest = remoteAnnexConfig renamedr k
+		
+		-- When the git config has anything set for a remote,
+		-- avoid making a proxied remote with the same name.
+		-- It is possible to set git configs of proxies, but it
+		-- needs both the url and uuid config to be manually set.
+		isconfig (Git.ConfigKey configkey) = 
+			proxyconfigprefix `B.isPrefixOf` configkey
+		  where 
+			Git.ConfigKey proxyconfigprefix = remoteConfig proxyname mempty
+
+	-- Git remotes that are gcrypt or git-lfs special remotes cannot
+	-- proxy. Local git remotes cannot proxy either because
+	-- git-annex-shell is not used to access a local git url.
+	-- Proxing is also yet supported for remotes using P2P
+	-- addresses.
+	canproxy gc r
+		| remoteAnnexGitLFS gc = False
+		| Git.GCrypt.isEncrypted r = False
+		| Git.repoIsLocal r || Git.repoIsLocalUnknown r = False
+		| otherwise = isNothing (repoP2PAddress r)

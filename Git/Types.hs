@@ -84,6 +84,9 @@ instance Default ConfigValue where
 fromConfigKey :: ConfigKey -> String
 fromConfigKey (ConfigKey s) = decodeBS s
 
+fromConfigKey' :: ConfigKey -> S.ByteString
+fromConfigKey' (ConfigKey s) = s
+
 instance Show ConfigKey where
 	show = fromConfigKey
 

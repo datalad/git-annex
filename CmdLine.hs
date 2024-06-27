@@ -23,6 +23,7 @@ import qualified Annex
 import qualified Git
 import qualified Git.AutoCorrect
 import qualified Git.Config
+import Annex.Startup
 import Annex.Action
 import Annex.Environment
 import Command

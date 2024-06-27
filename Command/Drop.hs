@@ -205,7 +205,7 @@ doDrop pcc dropfrom contentlock key afile numcopies mincopies skip preverified c
 	ifM (Annex.getRead Annex.force)
 		( dropaction Nothing
 		, ifM (checkRequiredContent pcc dropfrom key afile)
-			( verifyEnoughCopiesToDrop nolocmsg key 
+			( verifyEnoughCopiesToDrop nolocmsg key (Just dropfrom)
 				contentlock numcopies mincopies
 				skip preverified check
 					(dropaction . Just)
@@ -253,7 +253,7 @@ checkDropAuto automode mremote afile key a =
 			uuid <- getUUID
 			let remoteuuid = fromMaybe uuid $ Remote.uuid <$> mremote
 			locs' <- trustExclude UnTrusted $ filter (/= remoteuuid) locs
-			if length locs' >= fromNumCopies numcopies
+			if numCopiesCheck'' locs' (>=) numcopies
 				then a numcopies mincopies
 				else stop
 		| otherwise = a numcopies mincopies

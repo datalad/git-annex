@@ -342,11 +342,12 @@ remoteLocations (IncludeIgnored ii) locations trusted = do
 
 {- Displays known locations of a key and helps the user take action
  - to make them accessible. -}
-showLocations :: Bool -> Key -> [UUID] -> String -> Annex ()
-showLocations separateuntrusted key exclude nolocmsg = do
+showLocations :: Bool -> Key -> (UUID -> Annex Bool) -> String -> Annex ()
+showLocations separateuntrusted key checkexclude nolocmsg = do
 	u <- getUUID
 	remotes <- remoteList
 	uuids <- keyLocations key
+	exclude <- filterM checkexclude uuids
 	untrusteduuids <- if separateuntrusted
 		then trustGet UnTrusted
 		else pure []
@@ -447,11 +448,14 @@ claimingUrl' remotefilter url = do
   where
 	checkclaim = maybe (pure False) (`id` url) . claimUrl
 
-{- Is this a remote of a type we can sync with, or a special remote
- - with an annex:: url configured? -}
+{- Is this a remote of a type that git pull and push work with?
+ - That includes special remotes with an annex:: url configured.
+ - It does not include proxied remotes. -}
 gitSyncableRemote :: Remote -> Bool
 gitSyncableRemote r
-	| gitSyncableRemoteType (remotetype r) = True
+	| gitSyncableRemoteType (remotetype r) 
+		&& isJust (remoteUrl (gitconfig r)) =
+			not (isJust (remoteAnnexProxiedBy (gitconfig r)))
 	| otherwise = case remoteUrl (gitconfig r) of
 		Just u | "annex::" `isPrefixOf` u -> True
 		_ -> False

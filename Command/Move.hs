@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -16,11 +16,11 @@ import Annex.Content
 import qualified Remote
 import Annex.UUID
 import Annex.Transfer
-import Logs.Presence
 import Logs.Trust
 import Logs.File
 import Logs.Location
 import Annex.NumCopies
+import Types.Cluster
 
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.ByteString.Lazy as L
@@ -194,7 +194,7 @@ toPerform' mcontentlock dest removewhen key afile fastcheck isthere = do
 				DropCheckNumCopies -> do
 					(numcopies, mincopies) <- getSafestNumMinCopies afile key
 					(tocheck, verified) <- verifiableCopies key [srcuuid]
-					verifyEnoughCopiesToDrop "" key (Just contentlock)
+					verifyEnoughCopiesToDrop "" key (Just srcuuid) (Just contentlock)
 						 numcopies mincopies [srcuuid] verified
 						 (UnVerifiedRemote dest : tocheck)
 						 (drophere setpresentremote contentlock . showproof)
@@ -300,7 +300,7 @@ fromDrop src destuuid deststartedwithcopy key afile adjusttocheck =
 		DropCheckNumCopies -> do
 			(numcopies, mincopies) <- getSafestNumMinCopies afile key
 			(tocheck, verified) <- verifiableCopies key [Remote.uuid src]
-			verifyEnoughCopiesToDrop "" key Nothing numcopies mincopies [Remote.uuid src] verified
+			verifyEnoughCopiesToDrop "" key (Just (Remote.uuid src)) Nothing numcopies mincopies [Remote.uuid src] verified
 				(adjusttocheck tocheck) (dropremote . showproof) faileddropremote
 		DropWorse -> faileddropremote
   where
@@ -503,7 +503,8 @@ fromToPerform src dest removewhen key afile = do
  - On the other hand, when the destination repository did not start
  - with a copy of a file, it can be dropped from the source without
  - making numcopies worse, so the move is allowed even if numcopies
- - is not met.
+ - is not met. (However, when the source is a cluster, dropping from it 
+ - drops from all nodes, and so numcopies must be checked.)
  -
  - Similarly, a file can move from an untrusted repository to another
  - untrusted repository, even if that is the only copy of the file.
@@ -520,7 +521,7 @@ fromToPerform src dest removewhen key afile = do
 willDropMakeItWorse :: UUID -> UUID -> DestStartedWithCopy -> Key -> AssociatedFile -> Annex DropCheck
 willDropMakeItWorse srcuuid destuuid (DestStartedWithCopy deststartedwithcopy _) key afile =
 	ifM (Command.Drop.checkRequiredContent (Command.Drop.PreferredContentChecked False) srcuuid key afile)
-		( if deststartedwithcopy
+		( if deststartedwithcopy || isClusterUUID srcuuid
 			then unlessforced DropCheckNumCopies
 			else ifM checktrustlevel
 				( return DropAllowed

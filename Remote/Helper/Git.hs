@@ -64,5 +64,7 @@ gitRepoInfo r = do
 	repo <- Remote.getRepo r
 	return
 		[ ("repository location", Git.repoLocation repo)
+		, ("proxied", Git.Config.boolConfig 
+			(isJust (remoteAnnexProxiedBy (Remote.gitconfig r))))
 		, ("last synced", lastsynctime)
 		]

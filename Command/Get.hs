@@ -108,7 +108,8 @@ getKey' key afile = dispatch
 				Remote.showTriedRemotes remotes
 				showlocs (map Remote.uuid remotes)
 				return False
-	showlocs exclude = Remote.showLocations False key exclude
+	showlocs exclude = Remote.showLocations False key
+		(\u -> pure (u `elem` exclude))
 		"No other repository is known to contain the file."
 	-- This check is to avoid an ugly message if a remote is a
 	-- drive that is not mounted.

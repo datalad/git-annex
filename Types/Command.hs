@@ -142,4 +142,5 @@ data CommandCheckId
 	| RepoExists
 	| NoDaemonRunning
 	| GitAnnexShellOk
+	| GitAnnexShellNotProxyable
 	deriving (Show, Ord, Eq)

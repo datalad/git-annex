@@ -11,7 +11,7 @@ repositories.
 Joey has received funding to work on this.
 Planned schedule of work:
 
-* June: git-annex proxy
+* June: git-annex proxies and clusters
 * July, part 1: git-annex proxy support for exporttree
 * July, part 2: p2p protocol over http
 * August: balanced preferred content
@@ -24,7 +24,49 @@ Planned schedule of work:
 
 In development on the `proxy` branch.
 
-For June's work on [[design/passthrough_proxy]], implementation plan:
+For June's work on [[design/passthrough_proxy]], remaining todos:
+
+* Since proxying to special remotes is not supported yet, and won't be for
+  the first release, make it fail in a reasonable way.
+
+- or -
+
+* Proxying for special remotes.
+  Including encryption and chunking. See design for issues.
+
+# items deferred until later for [[design/passthrough_proxy]]
+
+* Indirect uploads when proxying for special remote
+  (to be considered). See design.
+
+* Getting a key from a cluster currently picks from amoung
+  the lowest cost remotes at random. This could be smarter,
+  eg prefer to avoid using remotes that are doing other transfers at the
+  same time.
+
+* The cost of a proxied node that is accessed via an intermediate gateway
+  is currently the same as a node accessed via the cluster gateway.
+  To fix this, there needs to be some way to tell how many hops through
+  gateways it takes to get to a node. Currently the only way is to
+  guess based on number of dashes in the node name, which is not satisfying.
+
+  Even counting hops is not very satisfying, one cluster gateway could
+  be much more expensive to traverse than another one.
+
+  If seriously tackling this, it might be worth making enough information
+  available to use spanning tree protocol for routing inside clusters.
+
+* Optimise proxy speed. See design for ideas.
+
+* Use `sendfile()` to avoid data copying overhead when
+  `receiveBytes` is being fed right into `sendBytes`.
+  Library to use:
+  <https://hackage.haskell.org/package/hsyscall-0.4/docs/System-Syscall.html>
+
+* Support using a proxy when its url is a P2P address.
+  (Eg tor-annex remotes.)
+
+# completed items for June's work on [[design/passthrough_proxy]]:
 
 * UUID discovery via git-annex branch. Add a log file listing UUIDs
   accessible via proxy UUIDs. It also will contain the names
@@ -40,7 +82,7 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
 * Proxy should update location tracking information for proxied remotes,
   so it is available to other users who sync with it. (done)
 
-* Implement `git-annex updatecluster` command (done)
+* Implement `git-annex initcluster` and `git-annex updatecluster` commands (done)
 
 * Implement cluster UUID insertation on location log load, and removal
   on location log store. (done)
@@ -48,66 +90,39 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
 * Omit cluster UUIDs when constructing drop proofs, since lockcontent will
   always fail on a cluster. (done)
 
-* Don't count cluster UUID as a copy. (done)
+* Don't count cluster UUID as a copy in numcopies checking etc. (done)
 
 * Tab complete proxied remotes and clusters in eg --from option. (done)
 
 * Getting a key from a cluster should proxy from one of the nodes that has
   it. (done)
 
-* Getting a key from a cluster currently always selects the lowest cost
-  remote, and always the same remote if cost is the same. Should
-  round-robin amoung remotes, and prefer to avoid using remotes that
-  other git-annex processes are currently using.
-
-* Implement upload with fanout and reporting back additional UUIDs over P2P
-  protocol. (done, but need to check for fencepost errors on resume of
-  incomplete upload with remotes at different points)
-
-* On upload to cluster, send to nodes where it's preferred content, and not
-  to other nodes.
+* Implement upload with fanout to multiple cluster nodes and reporting back
+  additional UUIDs over P2P protocol. (done)
 
 * Implement cluster drops, trying to remove from all nodes, and returning
-  which UUIDs it was dropped from. 
+  which UUIDs it was dropped from. (done)
 
-  Problem: May lock content on cluster
-  nodes to satisfy numcopies (rather than locking elsewhere) and so not be
-  able to drop from nodes. Avoid using cluster nodes when constructing drop
-  proof for cluster.
+* `git-annex testremote` works against proxied remote and cluster. (done)
 
-  Problem: When nodes are special remotes, may
-  treat nodes as copies while dropping from cluster, and so violate
-  numcopies. (But not mincopies.)
+* Avoid `git-annex sync --content` etc from operating on cluster nodes by
+  default since syncing with a cluster implicitly syncs with its nodes. (done)
 
-  Problem: `move --from cluster` in "does this make it worse"
-  check may fail to realize that dropping from multiple nodes does in fact
-  make it worse.
+* On upload to cluster, send to nodes where its preferred content, and not
+  to other nodes. (done)
 
-* On upload to a cluster, as well as fanout to nodes, if the key is
-  preferred content of the proxy repository, store it there.
-  (But not when preferred content is not configured.)
-  And on download from a cluster, if the proxy repository has the content,
-  get it from there to avoid the overhead of proxying to a node.
+* Support annex.jobs for clusters. (done)
 
-* Basic proxying to special remote support (non-streaming).
+* Add `git-annex extendcluster` command and extend `git-annex updatecluster` 
+  to support clusters with multiple gateways. (done)
 
-* Support proxies-of-proxies better, eg foo-bar-baz.
-  Currently, it does work, but have to run `git-annex updateproxy`
-  on foo in order for it to notice the bar-baz proxied remote exists,
-  and record it as foo-bar-baz. Make it skip recording proxies of
-  proxies like that, and instead automatically generate those from the log.
-  (With cycle prevention there of course.)
+* Support proxying for a remote that is proxied by another gateway of
+  a cluster. (done)
 
-* Cycle prevention including cluster-in-cluster cycles. See design.
+* Support distributed clusters: Make a proxy for a cluster repeat
+  protocol messages on to any remotes that have the same UUID as
+  the cluster. Needs extension to P2P protocol to avoid cycles.
+  (done)
 
-* Optimise proxy speed. See design for ideas.
-
-* Use `sendfile()` to avoid data copying overhead when
-  `receiveBytes` is being fed right into `sendBytes`.
-
-* Encryption and chunking. See design for issues.
-
-* Indirect uploads (to be considered). See design.
-
-* Support using a proxy when its url is a P2P address.
-  (Eg tor-annex remotes.)
+* Proxied cluster nodes should have slightly higher cost than the cluster
+  gateway. (done)

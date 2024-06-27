@@ -1,0 +1,39 @@
+# NAME
+
+git-annex initcluster - initialize a new cluster
+
+# SYNOPSIS
+
+git-annex initcluster name [description]
+
+# DESCRIPTION
+
+This command initializes a new cluster with the specified name. If no
+description is provided, one will be set automatically.
+
+This command should be run in the repository that will serve as the gateway
+to the cluster.
+
+The next step after running this command is to configure
+the cluster nodes, then run [[git-annex-updatecluster]]. See the
+documentation of that command for details about configuring nodes.
+
+# OPTIONS
+
+* The [[git-annex-common-options]](1) can be used.
+
+# SEE ALSO
+
+[[git-annex]](1)
+[[git-annex-updatecluster]](1)
+[[git-annex-extendcluster]](1)
+[[git-annex-preferred-content]](1)
+[[git-annex-updateproxy]](1)
+
+<https://git-annex.branchable.com/tips/clusters/>
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

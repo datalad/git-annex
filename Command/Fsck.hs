@@ -573,7 +573,7 @@ checkKeyNumCopies key afile numcopies = do
 	locs <- loggedLocations key
 	(untrustedlocations, otherlocations) <- trustPartition UnTrusted locs
 	(deadlocations, safelocations) <- trustPartition DeadTrusted otherlocations
-	let present = length safelocations
+	let present = numCopiesCount safelocations
 	if present < fromNumCopies numcopies
 		then ifM (checkDead key)
 			( do

@@ -508,6 +508,7 @@ Executable git-annex
     Annex.ChangedRefs
     Annex.CheckAttr
     Annex.CheckIgnore
+    Annex.Cluster
     Annex.Common
     Annex.Concurrent
     Annex.Concurrent.Utility
@@ -549,6 +550,7 @@ Executable git-annex
     Annex.Path
     Annex.Perms
     Annex.PidLock
+    Annex.Proxy
     Annex.Queue
     Annex.ReplaceFile
     Annex.RemoteTrackingBranch
@@ -556,6 +558,7 @@ Executable git-annex
     Annex.SpecialRemote.Config
     Annex.Ssh
     Annex.StallDetection
+    Annex.Startup
     Annex.TaggedPush
     Annex.Tmp
     Annex.Transfer
@@ -635,6 +638,7 @@ Executable git-annex
     Command.EnableRemote
     Command.EnableTor
     Command.ExamineKey
+    Command.ExtendCluster
     Command.Expire
     Command.Export
     Command.FilterBranch
@@ -658,6 +662,7 @@ Executable git-annex
     Command.Indirect
     Command.Info
     Command.Init
+    Command.InitCluster
     Command.InitRemote
     Command.Inprogress
     Command.List
@@ -720,6 +725,8 @@ Executable git-annex
     Command.UnregisterUrl
     Command.Untrust
     Command.Unused
+    Command.UpdateCluster
+    Command.UpdateProxy
     Command.Upgrade
     Command.VAdd
     Command.VCycle
@@ -814,6 +821,8 @@ Executable git-annex
     Logs.AdjustedBranchUpdate
     Logs.Chunk
     Logs.Chunk.Pure
+    Logs.Cluster
+    Logs.Cluster.Basic
     Logs.Config
     Logs.ContentIdentifier
     Logs.ContentIdentifier.Pure
@@ -838,6 +847,7 @@ Executable git-annex
     Logs.PreferredContent.Raw
     Logs.Presence
     Logs.Presence.Pure
+    Logs.Proxy
     Logs.Remote
     Logs.Remote.Pure
     Logs.RemoteState
@@ -868,6 +878,7 @@ Executable git-annex
     P2P.Auth
     P2P.IO
     P2P.Protocol
+    P2P.Proxy
     Remote
     Remote.Adb
     Remote.BitTorrent
@@ -930,6 +941,7 @@ Executable git-annex
     Types.BranchState
     Types.CatFileHandles
     Types.CleanupActions
+    Types.Cluster
     Types.Command
     Types.Concurrency
     Types.Creds

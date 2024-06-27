@@ -1,0 +1,217 @@
+A cluster is a collection of git-annex repositories which are combined to
+form a single logical repository.
+
+A cluster is accessed via a gateway repository. The gateway is not itself
+a node of the cluster.
+
+[[!toc ]]
+
+## using a cluster
+
+To use a cluster, your repository needs to have its gateway configured as a
+remote. Clusters can currently only be accessed via ssh. This gateway
+remote is added the same as any other remote:
+
+    git remote add bigserver me@bigserver:annex
+
+The gateway publishes information about the cluster to the git-annex
+branch. So you may need to fetch from it to learn about the cluster:
+
+    git fetch bigserver
+
+That will make available an additional remote for the cluster, eg
+"bigserver-mycluster", as well as some remotes for each node eg
+"bigserver-node1", "bigserver-node2", etc.
+
+You can get files from the cluster without caring which node it comes
+from:
+
+    $ git-annex get foo --from bigserver-mycluster
+    copy foo (from bigserver-mycluster...) ok
+
+And you can send files to the cluster, without caring what nodes
+they are stored to:
+
+    $ git-annex move bar --to bigserver-mycluster
+    move bar (to bigserver-mycluster...) ok
+
+In fact, a single upload like that can be sent to every node of the cluster
+at once, very efficiently.
+    
+    $ git-annex whereis bar
+	whereis bar (3 copies)
+	  	acae2ff6-6c1e-8bec-b8b9-397a3755f397 -- [bigserver-mycluster]
+	   	9f514001-6dc0-4d83-9af3-c64c96626892 -- node 1 [bigserver-node1]
+	   	d81e0b28-612e-4d73-a4e6-6dabbb03aba1 -- node 2 [bigserver-node2]
+	    5657baca-2f11-11ef-ae1a-5b68c6321dd9 -- node 3 [bigserver-node3]
+
+Notice that the file is shown as present in the cluster, as well as on
+individual nodes. But the cluster itself does not count as a copy of the file,
+so the 3 copies are the copies on individual nodes.
+
+Most other git-annex commands that operate on repositories can also operate on
+clusters.
+
+A cluster is not a git repository, and so `git pull bigserver-mycluster`
+will not work.
+
+## preferred content of clusters
+
+The preferred content of the cluster can be configured. This tells
+users what files the cluster as a whole should contain.
+
+To configure the preferred content of a cluster, as well as other related
+things like [[groups|git-annex-group]] and [[required_content]], it's easiest
+to do the configuration in a repository that has the cluster as a remote.
+
+For example:
+
+	$ git-annex wanted bigserver-mycluster standard
+	$ git-annex group bigserver-mycluster archive
+
+By default, when a file is uploaded to a cluster, it is stored on every node of
+the cluster. To control which nodes to store to, the [[preferred_content]] of
+each node can be configured.
+
+It's also a good idea to configure the preferred content of the cluster's
+gateway. To avoid files redundantly being stored on the gateway
+(which remember, is not a node of the cluster), you might make it not want
+any files:
+
+    $ git-annex wanted bigserver nothing
+
+## setting up a cluster
+
+A new cluster first needs to be initialized. Run [[git-annex-initcluster]] in
+the repository that will serve as the cluster's gateway. In the example above,
+this was the "bigserver" repository.
+
+	$ git-annex initcluster mycluster
+
+Once a cluster is initialized, the next step is to add nodes to it.
+To make a remote be a node of the cluster, configure 
+`git config remote.name.annex-cluster-node`, setting it to the
+name of the cluster.
+
+In the example above, the three cluster nodes were configured like this:
+
+	$ git remote add node1 /media/disk1/repo
+	$ git remote add node2 /media/disk2/repo
+	$ git remote add node3 /media/disk3/repo
+	$ git config remote.node1.annex-cluster-node mycluster
+	$ git config remote.node2.annex-cluster-node mycluster
+	$ git config remote.node3.annex-cluster-node mycluster
+
+Finally, run `git-annex updatecluster` to record the cluster configuration
+in the git-annex branch. That tells other repositories about the cluster.
+	
+	$ git-annex updatecluster
+	Added node node1 to cluster: mycluster
+	Added node node2 to cluster: mycluster
+	Added node node3 to cluster: mycluster
+	Started proxying for node1
+	Started proxying for node2
+	Started proxying for node3
+
+Operations that affect multiple nodes of a cluster can often be sped up by
+configuring annex.jobs in the repository that will serve the cluster to
+clients. In the example above, the nodes are all disk bound, so operating
+on more than one at a time will likely be faster.
+
+    $ git config annex.jobs cpus
+
+## adding additional gateways to a cluster
+
+A cluster can have more than one gateway. One way to use this is to
+make a cluster that is distributed across several locations.
+
+Suppose you have a datacenter in AMS, and one in NYC. There
+will be a gateway in each datacenter which provides access to the nodes
+there. And the gateways will relay data between each other as well.
+
+Start by setting up the cluster in Amsterdam. The process is the same
+as in the previous section.
+
+	AMS$ git-annex initcluster mycluster
+	AMS$ git remote add node1 /media/disk1/repo
+	AMS$ git remote add node2 /media/disk2/repo
+	AMS$ git config remote.node1.annex-cluster-node mycluster
+	AMS$ git config remote.node2.annex-cluster-node mycluster
+	AMS$ git-annex updatecluster
+    AMS$ git config annex.jobs cpus
+
+Now in a clone of the same repository in NYC, add AMS as a git remote
+accessed with ssh:
+
+    NYC$ git remote add AMS me@amsterdam.example.com:annex
+    NYC$ git fetch AMS
+
+Setting up the cluster in NYC is different, rather than using
+`git-annex initcluster` again (which would make a new, different
+cluster), we ask git-annex to extend the cluster from AMS:
+
+    NYC$ git-annex extendcluster AMS mycluster
+
+The rest of the setup process for NYC is the same, of course different
+nodes are added.
+	
+	NYC$ git remote add node3 /media/disk3/repo
+	NYC$ git remote add node4 /media/disk4/repo
+	NYC$ git config remote.node3.annex-cluster-node mycluster
+	NYC$ git config remote.node4.annex-cluster-node mycluster
+	NYC$ git-annex updatecluster
+    NYC$ git config annex.jobs cpus
+
+Finally, the AMS side of the cluster has to be updated, adding a git remote
+for NYC, and extending the cluster to there as well:
+
+    AMS$ git remote add NYC me@nyc.example.com:annex
+    AMS$ git-annex sync NYC
+    NYC$ git-annex extendcluster NYC mycluster
+
+A user can now add either AMS or NYC as a remote, and will have access
+to the entire cluster as either `AMS-mycluster` or `NYC-mycluster`.
+
+    user$ git-annex move foo --to AMS-mycluster
+    move foo (to AMS-mycluster...) ok
+
+Looking at where files end up, all the nodes are visible, not only those
+served by the current gateway.
+
+    user$ git-annex whereis foo
+	whereis foo (4 copies)
+	  	acfc1cb2-b8d5-8393-b8dc-4a419ea38183 -- cluster mycluster [AMS-mycluster]
+	   	11ab09a9-7448-45bd-ab81-3997780d00b3 -- node4 [AMS-NYC-node4]
+	   	36197d0e-6d49-4213-8440-71cbb121e670 -- node2 [AMS-node2]
+	   	43652651-1efa-442a-8333-eb346db31553 -- node3 [AMS-NYC-node3]
+	   	7fb5a77b-77a3-4032-b3e5-536698e308b3 -- node1 [AMS-node1]
+	ok
+
+Notice that remotes for cluster nodes have names indicating the path through
+the cluster used to access them. For example, "AMS-NYC-node3" is accessed via
+the AMS gateway, which then relays to NYC where node3 is located.
+
+## considerations for multi-gateway clusters
+
+When a cluster has multiple gateways, nothing keeps the git repositories on
+the gateways in sync. A branch pushed to one gateway will not be able to
+be pulled from another one. And gateways only learn about the locations of
+keys that are uploaded to the cluster via them. So in the example above,
+after an upload to AMS-mycluster, NYC-mycluster will only know that the
+key is stored in its nodes, but won't know that it's stored in nodes
+behind AMS. So, it's best to have a single git repository that is synced
+with, or perhaps run [[git-annex-remotedaemon]] on each gateway to keep
+its git repository in sync with the other gateways.
+
+Clusters can be constructed with any number of gateways, and any internal
+topology of connections between gateways. But there must always be a path
+from any gateway to all nodes of the cluster, otherwise a key won't
+be able to be stored from, or retrieved from some nodes.
+
+It's best to avoid there being multiple paths to a node that go via
+different gateways, since all paths will be tried in parallel when eg,
+uploading a key to the cluster.
+
+A breakdown in communication between gateways will temporarily split the
+cluster. When communication resumes, some keys may need to be copied to
+additional nodes.

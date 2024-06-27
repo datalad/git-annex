@@ -19,6 +19,7 @@ import Utility.Metered
 import Utility.Tuple
 import Types.NumCopies
 import Annex.Verify
+import Logs.Location
 
 import Control.Concurrent
 
@@ -32,14 +33,20 @@ type ProtoConnRunner c = forall a. P2P.Proto a -> ClosableConnection c -> Annex 
 -- the pool when done.
 type WithConn a c = (ClosableConnection c -> Annex (ClosableConnection c, a)) -> Annex a
 
-store :: RemoteGitConfig -> ProtoRunner Bool -> Key -> AssociatedFile -> MeterUpdate -> Annex ()
-store gc runner k af p = do
+store :: UUID -> RemoteGitConfig -> ProtoRunner (Maybe [UUID]) -> Key -> AssociatedFile -> MeterUpdate -> Annex ()
+store remoteuuid gc runner k af p = do
 	let sizer = KeySizer k (fmap (toRawFilePath . fst3) <$> prepSendAnnex k)
 	let bwlimit = remoteAnnexBwLimitUpload gc <|> remoteAnnexBwLimit gc
 	metered (Just p) sizer bwlimit $ \_ p' ->
 		runner (P2P.put k af p') >>= \case
-			Just True -> return ()
-			Just False -> giveup "Transfer failed"
+			Just (Just fanoutuuids) -> do
+				-- Storing on the remote can cause it
+				-- to be stored on additional UUIDs, 
+				-- so record those.
+				forM_ fanoutuuids $ \u ->
+					when (u /= remoteuuid) $
+						logChange k u InfoPresent
+			Just Nothing -> giveup "Transfer failed"
 			Nothing -> remoteUnavail
 
 retrieve :: RemoteGitConfig -> (ProtoRunner (Bool, Verification)) -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification
@@ -52,11 +59,20 @@ retrieve gc runner k af dest p verifyconfig = do
 			Just (False, _) -> giveup "Transfer failed"
 			Nothing -> remoteUnavail
 
-remove :: ProtoRunner Bool -> Key -> Annex ()
-remove runner k = runner (P2P.remove k) >>= \case
-	Just True -> return ()
-	Just False -> giveup "removing content from remote failed"
+remove :: UUID -> ProtoRunner (Bool, Maybe [UUID]) -> Key -> Annex ()
+remove remoteuuid runner k = runner (P2P.remove k) >>= \case
+	Just (True, alsoremoveduuids) -> note alsoremoveduuids
+	Just (False, alsoremoveduuids) -> do
+		note alsoremoveduuids
+		giveup "removing content from remote failed"
 	Nothing -> remoteUnavail
+  where
+	-- The remote reports removal from other UUIDs than its own,
+	-- so record those.
+	note alsoremoveduuids = 
+		forM_ (fromMaybe [] alsoremoveduuids) $ \u ->
+			when (u /= remoteuuid) $
+				logChange k u InfoMissing
 
 checkpresent :: ProtoRunner Bool -> Key -> Annex Bool
 checkpresent runner k = maybe remoteUnavail return =<< runner (P2P.checkPresent k)

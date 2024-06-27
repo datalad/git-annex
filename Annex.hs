@@ -74,6 +74,7 @@ import Types.CatFileHandles
 import Types.RemoteConfig
 import Types.TransferrerPool
 import Types.VectorClock
+import Types.Cluster
 import Annex.VectorClock.Utility
 import Annex.Debug.Utility
 import qualified Database.Keys.Handle as Keys
@@ -194,6 +195,7 @@ data AnnexState = AnnexState
 	, preferredcontentmap :: Maybe (FileMatcherMap Annex)
 	, requiredcontentmap :: Maybe (FileMatcherMap Annex)
 	, remoteconfigmap :: Maybe (M.Map UUID RemoteConfig)
+	, clusters :: Maybe Clusters
 	, forcetrust :: TrustMap
 	, trustmap :: Maybe TrustMap
 	, groupmap :: Maybe GroupMap
@@ -213,6 +215,7 @@ data AnnexState = AnnexState
 	, urloptions :: Maybe UrlOptions
 	, insmudgecleanfilter :: Bool
 	, getvectorclock :: IO CandidateVectorClock
+	, proxyremote :: Maybe (Either ClusterUUID (Types.Remote.RemoteA Annex))
 	}
 
 newAnnexState :: GitConfig -> Git.Repo -> IO AnnexState
@@ -247,6 +250,7 @@ newAnnexState c r = do
 		, preferredcontentmap = Nothing
 		, requiredcontentmap = Nothing
 		, remoteconfigmap = Nothing
+		, clusters = Nothing
 		, forcetrust = M.empty
 		, trustmap = Nothing
 		, groupmap = Nothing
@@ -266,6 +270,7 @@ newAnnexState c r = do
 		, urloptions = Nothing
 		, insmudgecleanfilter = False
 		, getvectorclock = vc
+		, proxyremote = Nothing
 		}
 
 {- Makes an Annex state object for the specified git repo.
@@ -423,6 +428,7 @@ changeGitRepo r = do
 		{ repo = r'
 		, gitconfig = gitconfigadjuster $
 			extractGitConfig FromGitConfig r'
+		, gitremotes = Nothing
 		}
 
 {- Gets the RemoteGitConfig from a remote, given the Git.Repo for that

@@ -23,6 +23,7 @@ import CmdLine.Batch as ReExported
 import Options.Applicative as ReExported hiding (command)
 import qualified Git
 import Annex.Init
+import Annex.Startup
 import Utility.Daemon
 import Types.Transfer
 import Types.ActionItem as ReExported
@@ -125,7 +126,7 @@ commonChecks :: [CommandCheck]
 commonChecks = [repoExists]
 
 repoExists :: CommandCheck
-repoExists = CommandCheck RepoExists (ensureInitialized remoteList)
+repoExists = CommandCheck RepoExists (ensureInitialized startupAnnex remoteList)
 
 notBareRepo :: Command -> Command
 notBareRepo = addCheck CheckNotBareRepo checkNotBareRepo

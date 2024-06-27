@@ -35,7 +35,7 @@ For example (eliding the full HTTP responses, only showing the data):
     > Content-Length: ...
     > 
     > AUTH 79a5a1f4-07e8-11ef-873d-97f93ca91925 
-    < AUTH_SUCCESS ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6
+    < AUTH-SUCCESS ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6
 
     > POST /git-annex HTTP/1.0
     > Content-Type: x-git-annex-p2p
@@ -80,7 +80,7 @@ correspond to each action in the P2P protocol.
 Something like this:
 
     > GET /git-annex/v1/AUTH?clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925 HTTP/1.0
-    < AUTH_SUCCESS ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6
+    < AUTH-SUCCESS ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6
 
     > GET /git-annex/v1/CHECKPRESENT?key=SHA1--foo&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.0
     > SUCCESS

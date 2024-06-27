@@ -6,7 +6,7 @@
  - UUIDs of remotes are cached in git config, using keys named
  - remote.<name>.annex-uuid
  -
- - Copyright 2010-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -15,6 +15,7 @@
 
 module Annex.UUID (
 	configkeyUUID,
+	configRepoUUID,
 	getUUID,
 	getRepoUUID,
 	getUncachedUUID,
@@ -46,6 +47,9 @@ import Data.String
 
 configkeyUUID :: ConfigKey
 configkeyUUID = annexConfig "uuid"
+
+configRepoUUID :: Git.Repo -> ConfigKey
+configRepoUUID r = remoteAnnexConfig r "uuid"
 
 {- Generates a random UUID, that does not include the MAC address. -}
 genUUID :: IO UUID
@@ -82,7 +86,7 @@ getRepoUUID r = do
 	updatecache u = do
 		g <- gitRepo
 		when (g /= r) $ storeUUIDIn cachekey u
-	cachekey = remoteAnnexConfig r "uuid"
+	cachekey = configRepoUUID r
 
 removeRepoUUID :: Annex ()
 removeRepoUUID = do

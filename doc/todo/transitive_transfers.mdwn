@@ -6,7 +6,7 @@ remotes.
 
 So this todo remains open, but is now only concerned with
 streaming an object that is being received from one remote out to another
-remote without first needing to buffer the whole object on disk.
+repository without first needing to buffer the whole object on disk.
 
 git-annex's remote interface does not currently support that.
 `retrieveKeyFile` stores the object into a file. And `storeKey`
@@ -27,3 +27,7 @@ Recieving to a file, and sending from the same file as it grows is one
 possibility, since that would handle buffering, and it might avoid needing
 to change interfaces as much. It would still need a new interface since the
 current one does not guarantee the file is written in-order.
+
+A fifo is a possibility, but would certianly not work with remotes
+that don't write to the file in-order. Also resuming a download would not
+work with a fifo, the sending remote wouldn't know where to resume from.

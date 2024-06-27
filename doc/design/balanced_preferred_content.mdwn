@@ -124,9 +124,16 @@ See [[todo/proving_preferred_content_behavior]].
 ## rebalancing
 
 In both the 3 of 5 use case and a split brain situation, it's possible for
-content to end up not optimally balanced between repositories. git-annex
-can be made to operate in a mode where it does additional work to rebalance
-repositories. 
+content to end up not optimally balanced between repositories. 
+
+(There are also situations where a cluster node ends up without a copy
+of a file that is preferred content, or where adding a copy to a node
+would satisfy numcopies. This can happen eg, when a client sends a file
+to a single node rather than to the cluster. Rebalancing also will deal
+with those.)
+
+git-annex can be made to operate in a mode where it does additional work
+to rebalance repositories. 
 
 This can be an option like --rebalance, that changes how the preferred content
 expression is evaluated. The user can choose where and when to run that.

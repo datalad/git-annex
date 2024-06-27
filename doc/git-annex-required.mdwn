@@ -9,7 +9,7 @@ git annex required `repository [expression]`
 # DESCRIPTION
 
 When run with an expression, configures the content that is required
-to be held in the archive.
+to be held in the repository.
 
 For example:
 

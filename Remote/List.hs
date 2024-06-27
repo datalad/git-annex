@@ -65,7 +65,7 @@ remoteTypes = map adjustExportImportRemoteType
 	, Remote.External.remote
 	]
 
-{- Builds a list of all available Remotes.
+{- Builds a list of all Remotes.
  - Since doing so can be expensive, the list is cached. -}
 remoteList :: Annex [Remote]
 remoteList = do

@@ -40,8 +40,8 @@ The server responds with either its own UUID when authentication
 is successful. Or, it can fail the authentication, and close the
 connection.
 
-	AUTH_SUCCESS UUID
-	AUTH_FAILURE
+	AUTH-SUCCESS UUID
+	AUTH-FAILURE
 
 Note that authentication does not guarantee that the client is talking to
 who they expect to be talking to. This, and encryption of the connection,
@@ -63,6 +63,19 @@ that is less than or equal to the version the client sent:
 	VERSION 1
 
 Now both client and server should use version 1.
+
+## Cluster cycle prevention
+
+In protocol version 2, immediately after VERSION, the
+client can send an additional message that is used to
+prevent cycles when accessing clusters.
+
+    BYPASS UUID1 UUID2 ...
+
+The UUIDs are cluster gateways to avoid connecting to when
+serving a cluster.
+
+The server makes no response to this message.
 
 ## Binary data
 
@@ -117,6 +130,10 @@ To remove a key's content from the server, the client sends:
 
 The server responds with either SUCCESS or FAILURE.
 
+In protocol version 2, the server can optionally reply with SUCCESS-PLUS
+or FAILURE-PLUS. Each has a subsequent list of UUIDs of repositories
+that the content was removed from.
+
 ## Storing content on the server
 
 To store content on the server, the client sends:
@@ -132,7 +149,14 @@ spaces, since it's not the last token in the line. Use '%' to indicate
 whitespace.)
 
 The server may respond with ALREADY-HAVE if it already
-had the conent of that key. Otherwise, it responds with:
+had the conent of that key. 
+
+In protocol version 2, the server can optionally reply with
+ALREADY-HAVE-PLUS. The subsequent list of UUIDs are additional
+UUIDs where the content is stored, in addition to the UUID where
+the client was going to send it.
+
+Otherwise, it responds with:
 
 	PUT-FROM Offset
 
@@ -151,6 +175,9 @@ was being sent.
 
 If the server successfully receives the data and stores the content,
 it replies with SUCCESS. Otherwise, FAILURE.
+
+In protocol version 2, the server can optionally reply with SUCCESS-PLUS
+and a list of UUIDs where the content was stored.
 
 ## Getting content from the server
 
@@ -191,6 +218,8 @@ When the service exits, the server indicates this by telling the client
 its exit code.
 
 	CONNECTDONE ExitCode
+
+After that, the server closes the connection.
 
 ## Change notification
 

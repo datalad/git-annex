@@ -11,6 +11,7 @@ import Command
 import Upgrade
 import Annex.Version
 import Annex.Init
+import Annex.Startup
 
 cmd :: Command
 cmd = dontCheck
@@ -46,6 +47,6 @@ start (UpgradeOptions { autoOnly = True }) =
 start _ =
 	starting "upgrade" (ActionItemOther Nothing) (SeekInput []) $ do
 		whenM (isNothing <$> getVersion) $ do
-			initialize Nothing Nothing
+			initialize startupAnnex Nothing Nothing
 		r <- upgrade False latestVersion
 		next $ return r

@@ -1,0 +1,43 @@
+# NAME
+
+git-annex updatecluster - update records of cluster nodes
+
+# SYNOPSIS
+
+git-annex updatecluster
+
+# DESCRIPTION
+
+This command is used to record the nodes of a cluster in the git-annex
+branch, and set up proxying to the nodes. It should be run in the
+repository that will serve as a gateway to the cluster.
+
+It looks at the git config `remote.name.annex-cluster-node` of
+each remote. When that is set to the name of a cluster that has been
+initialized with `git-annex initcluster`, the node will be recorded in the
+git-annex branch.
+
+To remove a node from a cluster, unset `remote.name.annex-cluster-node`
+and run this command.
+
+To add additional gateways to a cluster, after running this command,
+use [[git-annex-extendcluster]].
+
+# OPTIONS
+
+* The [[git-annex-common-options]](1) can be used.
+
+# SEE ALSO
+
+[[git-annex]](1)
+[[git-annex-initcluster]](1)
+[[git-annex-extendcluster]](1)
+[[git-annex-updateproxy]](1)
+
+<https://git-annex.branchable.com/tips/clusters/>
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

@@ -1,6 +1,6 @@
 {- git-annex numcopies configuration and checking
  -
- - Copyright 2014-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -20,6 +20,8 @@ module Annex.NumCopies (
 	defaultNumCopies,
 	numCopiesCheck,
 	numCopiesCheck',
+	numCopiesCheck'',
+	numCopiesCount,
 	verifyEnoughCopiesToDrop,
 	verifiableCopies,
 	UnVerifiedCopy(..),
@@ -30,6 +32,7 @@ import qualified Annex
 import Types.NumCopies
 import Logs.NumCopies
 import Logs.Trust
+import Logs.Cluster
 import Annex.CheckAttr
 import qualified Remote
 import qualified Types.Remote as Remote
@@ -39,8 +42,10 @@ import Annex.CatFile
 import qualified Database.Keys
 
 import Control.Exception
-import qualified Control.Monad.Catch as M
+import qualified Control.Monad.Catch as MC
 import Data.Typeable
+import qualified Data.Set as S
+import qualified Data.Map as M
 
 defaultNumCopies :: NumCopies
 defaultNumCopies = configuredNumCopies 1
@@ -197,12 +202,24 @@ numCopiesCheck file key vs = do
 
 numCopiesCheck' :: RawFilePath -> (Int -> Int -> v) -> [UUID] -> Annex v
 numCopiesCheck' file vs have = do
-	needed <- fromNumCopies . fst <$> getFileNumMinCopies file
-	let nhave = length have
+	needed <- fst <$> getFileNumMinCopies file
+	let nhave = numCopiesCount have
 	explain (ActionItemTreeFile file) $ Just $ UnquotedString $
 		"has " ++ show nhave ++ " " ++ pluralCopies nhave ++ 
 		", and the configured annex.numcopies is " ++ show needed
-	return $ nhave `vs` needed
+	return $ numCopiesCheck'' have vs needed
+
+numCopiesCheck'' :: [UUID] -> (Int -> Int -> v) -> NumCopies -> v
+numCopiesCheck'' have vs needed =
+	let nhave = numCopiesCount have
+	in nhave `vs` fromNumCopies needed
+
+{- When a key is logged as present in a node of the cluster,
+ - the cluster's UUID will also be in the list, but is not a
+ - distinct copy.
+ -}
+numCopiesCount :: [UUID] -> Int
+numCopiesCount = length . filter (not . isClusterUUID)
 
 data UnVerifiedCopy = UnVerifiedRemote Remote | UnVerifiedHere
 	deriving (Ord, Eq)
@@ -214,6 +231,7 @@ data UnVerifiedCopy = UnVerifiedRemote Remote | UnVerifiedHere
 verifyEnoughCopiesToDrop
 	:: String -- message to print when there are no known locations
 	-> Key
+	-> Maybe UUID -- repo dropping from
 	-> Maybe ContentRemovalLock
 	-> NumCopies
 	-> MinCopies
@@ -223,14 +241,14 @@ verifyEnoughCopiesToDrop
 	-> (SafeDropProof -> Annex a) -- action to perform the drop
 	-> Annex a -- action to perform when unable to drop
 	-> Annex a
-verifyEnoughCopiesToDrop nolocmsg key removallock neednum needmin skip preverified tocheck dropaction nodropaction = 
+verifyEnoughCopiesToDrop nolocmsg key dropfrom removallock neednum needmin skip preverified tocheck dropaction nodropaction = 
 	helper [] [] preverified (nub tocheck) []
   where
 	helper bad missing have [] lockunsupported =
 		liftIO (mkSafeDropProof neednum needmin have removallock) >>= \case
 			Right proof -> dropaction proof
 			Left stillhave -> do
-				notEnoughCopies key neednum needmin stillhave (skip++missing) bad nolocmsg lockunsupported
+				notEnoughCopies key dropfrom neednum needmin stillhave (skip++missing) bad nolocmsg lockunsupported
 				nodropaction
 	helper bad missing have (c:cs) lockunsupported
 		| isSafeDrop neednum needmin have removallock =
@@ -239,12 +257,17 @@ verifyEnoughCopiesToDrop nolocmsg key removallock neednum needmin skip preverifi
 				Left stillhave -> helper bad missing stillhave (c:cs) lockunsupported
 		| otherwise = case c of
 			UnVerifiedHere -> lockContentShared key contverified
-			UnVerifiedRemote r -> checkremote r contverified $
-				let lockunsupported' = r : lockunsupported
-				in Remote.hasKey r key >>= \case
-					Right True  -> helper bad missing (mkVerifiedCopy RecentlyVerifiedCopy r : have) cs lockunsupported'
-					Left _      -> helper (r:bad) missing have cs lockunsupported'
-					Right False -> helper bad (Remote.uuid r:missing) have cs lockunsupported'
+			UnVerifiedRemote r
+				-- Skip cluster uuids because locking is
+				-- not supported with them, instead will
+				-- lock individual nodes.
+				| isClusterUUID (Remote.uuid r) -> helper bad missing have cs lockunsupported
+				| otherwise -> checkremote r contverified $
+					let lockunsupported' = r : lockunsupported
+					in Remote.hasKey r key >>= \case
+						Right True  -> helper bad missing (mkVerifiedCopy RecentlyVerifiedCopy r : have) cs lockunsupported'
+						Left _      -> helper (r:bad) missing have cs lockunsupported'
+						Right False -> helper bad (Remote.uuid r:missing) have cs lockunsupported'
 		  where
 			contverified vc = helper bad missing (vc : have) cs lockunsupported
 
@@ -264,11 +287,11 @@ verifyEnoughCopiesToDrop nolocmsg key removallock neednum needmin skip preverifi
 			-- of exceptions by using DropException.
 			let a = lockcontent key $ \v -> 
 				cont v `catchNonAsync` (throw . DropException)
-			a `M.catches`
-				[ M.Handler (\ (e :: AsyncException) -> throwM e)
-				, M.Handler (\ (e :: SomeAsyncException) -> throwM e)
-				, M.Handler (\ (DropException e') -> throwM e')
-				, M.Handler (\ (_e :: SomeException) -> fallback)
+			a `MC.catches`
+				[ MC.Handler (\ (e :: AsyncException) -> throwM e)
+				, MC.Handler (\ (e :: SomeAsyncException) -> throwM e)
+				, MC.Handler (\ (DropException e') -> throwM e')
+				, MC.Handler (\ (_e :: SomeException) -> fallback)
 				]
 		Nothing -> fallback
 
@@ -277,8 +300,8 @@ data DropException = DropException SomeException
 
 instance Exception DropException
 
-notEnoughCopies :: Key -> NumCopies -> MinCopies -> [VerifiedCopy] -> [UUID] -> [Remote] -> String -> [Remote] -> Annex ()
-notEnoughCopies key neednum needmin have skip bad nolocmsg lockunsupported = do
+notEnoughCopies :: Key -> Maybe UUID -> NumCopies -> MinCopies -> [VerifiedCopy] -> [UUID] -> [Remote] -> String -> [Remote] -> Annex ()
+notEnoughCopies key dropfrom neednum needmin have skip bad nolocmsg lockunsupported = do
 	showNote "unsafe"
 	if length have < fromNumCopies neednum
 		then showLongNote $ UnquotedString $
@@ -297,7 +320,29 @@ notEnoughCopies key neednum needmin have skip bad nolocmsg lockunsupported = do
 					++ Remote.listRemoteNames lockunsupported
 
 	Remote.showTriedRemotes bad
-	Remote.showLocations True key (map toUUID have++skip) nolocmsg
+	-- When dropping from a cluster, don't suggest making the nodes of
+	-- the cluster available
+	clusternodes <- case mkClusterUUID =<< dropfrom of
+		Nothing -> pure []
+		Just cu -> do
+			clusters <- getClusters
+			pure $ maybe [] (map fromClusterNodeUUID . S.toList) $
+				M.lookup cu (clusterUUIDs clusters)
+	let excludeset = S.fromList $ map toUUID have++skip++clusternodes
+	-- Don't suggest making a cluster available when dropping from its
+	-- node.
+	let exclude u
+		| u `S.member` excludeset = pure True
+		| otherwise = case (dropfrom, mkClusterUUID u) of
+			(Just dropfrom', Just cu) -> do
+				clusters <- getClusters
+				pure $ case M.lookup cu (clusterUUIDs clusters) of
+					Just nodes -> 
+						ClusterNodeUUID dropfrom' 
+							`S.member` nodes
+					Nothing -> False
+			_ -> pure False
+	Remote.showLocations True key exclude nolocmsg
 
 pluralCopies :: Int -> String
 pluralCopies 1 = "copy"
@@ -312,17 +357,27 @@ pluralCopies _ = "copies"
  - The return lists also exclude any repositories that are untrusted,
  - since those should not be used for verification.
  -
+ - When dropping from a cluster UUID, its nodes are excluded.
+ -
+ - Cluster UUIDs are also excluded since locking a key on a cluster
+ - is done by locking on individual nodes.
+ -
  - The UnVerifiedCopy list is cost ordered.
  - The VerifiedCopy list contains repositories that are trusted to
  - contain the key.
  -}
 verifiableCopies :: Key -> [UUID] -> Annex ([UnVerifiedCopy], [VerifiedCopy])
 verifiableCopies key exclude = do
-	locs <- Remote.keyLocations key
+	locs <- filter (not . isClusterUUID) <$> Remote.keyLocations key
 	(remotes, trusteduuids) <- Remote.remoteLocations (Remote.IncludeIgnored False) locs
 		=<< trustGet Trusted
+	clusternodes <- if any isClusterUUID exclude
+		then do
+			clusters <- getClusters
+			pure $ concatMap (getclusternodes clusters) exclude
+		else pure []
 	untrusteduuids <- trustGet UnTrusted
-	let exclude' = exclude ++ untrusteduuids
+	let exclude' = exclude ++ untrusteduuids ++ clusternodes
 	let remotes' = Remote.remotesWithoutUUID remotes (exclude' ++ trusteduuids)
 	let verified = map (mkVerifiedCopy TrustedCopy) $
 		filter (`notElem` exclude') trusteduuids
@@ -331,3 +386,8 @@ verifiableCopies key exclude = do
 		then [UnVerifiedHere]
 		else []
 	return (herec ++ map UnVerifiedRemote remotes', verified)
+  where
+	getclusternodes clusters u = case mkClusterUUID u of
+		Just cu -> maybe [] (map fromClusterNodeUUID . S.toList) $
+			M.lookup cu (clusterUUIDs clusters)
+		Nothing -> []

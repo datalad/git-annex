@@ -89,6 +89,12 @@ instance Observable (Maybe a) where
 	observeBool Nothing = False
 	observeFailure = Nothing
 
+instance Observable (Either e (Maybe a)) where
+	observeBool (Left _) = False
+	observeBool (Right Nothing) = False
+	observeBool (Right (Just _)) = True
+	observeFailure = Right Nothing
+
 class Transferrable t where
 	descTransfrerrable :: t -> Maybe String
 

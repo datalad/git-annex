@@ -184,12 +184,6 @@ commit commitmode allowempty message branch parentrefs repo =
 			update' branch sha repo
 			return $ Just sha
 		Nothing -> return Nothing
-  where
-	cancommit tree
-		| allowempty = return True
-		| otherwise = case parentrefs of
-			[p] -> maybe False (tree /=) <$> Git.Ref.tree p repo
-			_ -> return True
 
 {- Same as commit but without updating any branch. -}
 commitSha :: CommitMode -> Bool -> String -> [Ref] -> Repo -> IO (Maybe Sha)
