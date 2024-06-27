@@ -1,9 +1,12 @@
 git-annex (10.20240532) UNRELEASED; urgency=medium
 
-  * Added git-annex updateproxy command and remote.name.annex-proxy
-    configuration.
-  * Added git-annex initcluster and updatecluster commands, 
-    and remote.name.annex-cluster-node and annex.cluster.name configuration.
+  * git-annex remotes can now act as proxies that provide access to
+    their remotes. Configure this with remote.name.annex-proxy
+    and the git-annex update proxy command.
+  * Clusters are now supported. These are collections of nodes that can
+    be accessed as a single entity, accessed by one or more gateway
+    repositories.
+  * Added git-annex initcluster, updatecluster, and extendcluster commands.
   * Fix a bug where interrupting git-annex while it is updating the
     git-annex branch for an export could later lead to git fsck
     complaining about missing tree objects.
