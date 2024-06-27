@@ -24,11 +24,11 @@ documentation of that command for details about configuring nodes.
 
 # SEE ALSO
 
-[[git-annex]](1)
-[[git-annex-updatecluster]](1)
-[[git-annex-extendcluster]](1)
-[[git-annex-preferred-content]](1)
-[[git-annex-updateproxy]](1)
+* [[git-annex]](1)
+* [[git-annex-updatecluster]](1)
+* [[git-annex-extendcluster]](1)
+* [[git-annex-preferred-content]](1)
+* [[git-annex-updateproxy]](1)
 
 <https://git-annex.branchable.com/tips/clusters/>
 

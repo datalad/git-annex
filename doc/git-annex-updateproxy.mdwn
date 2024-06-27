@@ -34,8 +34,8 @@ Proxies can only be accessed via ssh.
 
 # SEE ALSO
 
-[[git-annex]](1)
-[[git-annex-updatecluster]](1)
+* [[git-annex]](1)
+* [[git-annex-updatecluster]](1)
 
 # AUTHOR
 

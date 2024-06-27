@@ -30,10 +30,10 @@ after adding the new gateway repository as a remote.
 
 # SEE ALSO
 
-[[git-annex]](1)
-[[git-annex-initcluster]](1)
-[[git-annex-updatecluster]](1)
-[[git-annex-updateproxy]](1)
+* [[git-annex]](1)
+* [[git-annex-initcluster]](1)
+* [[git-annex-updatecluster]](1)
+* [[git-annex-updateproxy]](1)
 
 <https://git-annex.branchable.com/tips/clusters/>
 

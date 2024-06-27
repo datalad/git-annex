@@ -29,10 +29,10 @@ use [[git-annex-extendcluster]].
 
 # SEE ALSO
 
-[[git-annex]](1)
-[[git-annex-initcluster]](1)
-[[git-annex-extendcluster]](1)
-[[git-annex-updateproxy]](1)
+* [[git-annex]](1)
+* [[git-annex-initcluster]](1)
+* [[git-annex-extendcluster]](1)
+* [[git-annex-updateproxy]](1)
 
 <https://git-annex.branchable.com/tips/clusters/>
 
