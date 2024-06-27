@@ -33,8 +33,7 @@ use [[git-annex-extendcluster]].
 * [[git-annex-initcluster]](1)
 * [[git-annex-extendcluster]](1)
 * [[git-annex-updateproxy]](1)
-
-<https://git-annex.branchable.com/tips/clusters/>
+* <https://git-annex.branchable.com/tips/clusters/>
 
 # AUTHOR
 

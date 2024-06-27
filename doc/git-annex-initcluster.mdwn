@@ -29,8 +29,7 @@ documentation of that command for details about configuring nodes.
 * [[git-annex-extendcluster]](1)
 * [[git-annex-preferred-content]](1)
 * [[git-annex-updateproxy]](1)
-
-<https://git-annex.branchable.com/tips/clusters/>
+* <https://git-annex.branchable.com/tips/clusters/>
 
 # AUTHOR
 
