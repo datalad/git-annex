@@ -33,6 +33,9 @@ For June's work on [[design/passthrough_proxy]], remaining todos:
 
 * Encryption and chunking. See design for issues.
 
+* Indirect uploads when proxying for special remote
+  (to be considered). See design.
+
 * Getting a key from a cluster currently always selects the lowest cost
   remote, and always the same remote if cost is the same. Should
   round-robin amoung remotes, and prefer to avoid using remotes that
@@ -44,8 +47,6 @@ For June's work on [[design/passthrough_proxy]], remaining todos:
   `receiveBytes` is being fed right into `sendBytes`.
   Library to use:
   <https://hackage.haskell.org/package/hsyscall-0.4/docs/System-Syscall.html>
-
-* Indirect uploads (to be considered). See design.
 
 * Support using a proxy when its url is a P2P address.
   (Eg tor-annex remotes.)

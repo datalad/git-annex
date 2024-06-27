@@ -318,22 +318,24 @@ This does mean that cycles need to be prevented. See section below.
 
 ## speed
 
-A passthrough proxy should be as fast as possible so as not to add overhead
+A proxy should be as fast as possible so as not to add overhead
 to a file retrieve, store, or checkpresent. This probably means that
-it keeps TCP connections open to each host in the cluster. It might use a
+it keeps TCP connections open to each host. It might use a
 protocol with less overhead than ssh.
 
-In the case of checkpresent, it would be possible for the proxy to not
-communicate with the cluster to check that the data is still present on it.
-As long as all access is intermediated via the proxy, its git-annex branch
-could be relied on to always be correct, in theory. Proving that theory,
-making sure to account for all possible race conditions and other scenarios,
-would be necessary for such an optimisation.
+In the case of checkpresent, it would be possible for the gateway to not
+communicate with cluster nodes to check that the data is still present
+in the cluster. As long as all access is intermediated via a single gateway, 
+its git-annex branch could be relied on to always be correct, in theory.
+Proving that theory, making sure to account for all possible race conditions
+and other scenarios, would be necessary for such an optimisation. This
+would not work for multi-gateway clusters unless the gateways were kept in
+sync about locations, which they currently are not.
 
-Another way the proxy could speed things up is to cache some subset of
-content. Eg, analize what files are typically requested, and store another
-copy of those on the proxy. Perhaps prioritize storing smaller files, where
-latency tends to swamp transfer speed.
+Another way the cluster gateway could speed things up is to cache some
+subset of content. Eg, analize what files are typically requested, and
+store another copy of those on the proxy. Perhaps prioritize storing
+smaller files, where latency tends to swamp transfer speed.
 
 ## proxying to special remotes
 
