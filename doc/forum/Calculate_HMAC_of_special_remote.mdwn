@@ -1,0 +1,14 @@
+Hello,
+
+I need to do some plumbing in a special remote. What is the best way to get the filenames of all the chunks belonging to a key?
+From https://git-annex.branchable.com/internals/ I know that `.log.cnk` stores size and number of chunks. And that part of the cipher in remote.log is used as the HMAC encryption key. 
+
+I found that I can use `openssl` to calculate the HMAC, but what exactly do I need to feed it?
+
+```
+echo $PAYLOAD | openssl sha512 -hex -mac HMAC -macopt hexkey:$KEY_HEX
+```
+
+Or is there a git-annex plumbing command that I overlooked?
+
+--lykos153
