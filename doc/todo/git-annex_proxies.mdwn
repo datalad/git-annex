@@ -29,10 +29,22 @@ For June's work on [[design/passthrough_proxy]], remaining todos:
 * Since proxying to special remotes is not supported yet, and won't be for
   the first release, make it fail in a reasonable way.
 
+* Proxying for special remotes.
+
+* Encryption and chunking. See design for issues.
+
 * Getting a key from a cluster currently always selects the lowest cost
   remote, and always the same remote if cost is the same. Should
   round-robin amoung remotes, and prefer to avoid using remotes that
   other git-annex processes are currently using.
+
+* When a cluster has multiple gateways, and a key is uploaded via one
+  gateway, that gateway learns about every node where the key is stored.
+  But other gateways do not, they only learn about nodes reached via them
+  where the key is stored. This means that another user, syncing with
+  the other gateway, won't know how many copies exist, or necessarily
+  that the key is in the cluster at all. Should gateways broadcast
+  location change messages to other gateways?
 
 * Optimise proxy speed. See design for ideas.
 
@@ -41,8 +53,6 @@ For June's work on [[design/passthrough_proxy]], remaining todos:
   Library to use:
   <https://hackage.haskell.org/package/hsyscall-0.4/docs/System-Syscall.html>
 
-* Encryption and chunking. See design for issues.
-
 * Indirect uploads (to be considered). See design.
 
 * Support using a proxy when its url is a P2P address.
@@ -50,7 +60,6 @@ For June's work on [[design/passthrough_proxy]], remaining todos:
 
 * `viconfig` support for setting preferred content, group, 
   and description of clusters
-
 
 # completed items for June's work on [[design/passthrough_proxy]]:
 

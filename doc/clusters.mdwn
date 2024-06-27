@@ -191,3 +191,14 @@ served by the current gateway.
 Notice that remotes for cluster nodes have names indicating the path through
 the cluster used to access them. For example, "AMS-NYC-node3" is accessed via
 the AMS gateway, which then relays to NYC where node3 is located.
+
+## cluster topologies
+
+Clusters can be constructed with any number of gateways, and any internal
+topology of connections between gateways. 
+
+There must always be a path from any gateway to all nodes of the cluster.
+
+It's best to avoid there being multiple paths to a node that go via
+different gateways, since all paths will be tried in parallel when eg,
+uploading a key to the cluster.
