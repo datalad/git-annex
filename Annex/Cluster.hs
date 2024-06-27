@@ -27,6 +27,7 @@ import qualified Types.Remote as Remote
 
 import qualified Data.Map as M
 import qualified Data.Set as S
+import System.Random
 
 {- Proxy to a cluster. -}
 proxyCluster 
@@ -75,7 +76,7 @@ clusterProxySelector clusteruuid protocolversion (Bypass bypass) = do
 	nodeuuids <- (fromMaybe S.empty . M.lookup clusteruuid . clusterUUIDs)
 		<$> getClusters
 	myclusters <- annexClusters <$> Annex.getGitConfig
-	allremotes <- remoteList
+	allremotes <- concat . Remote.byCost <$> remoteList
 	hereu <- getUUID
 	let bypass' = S.insert hereu bypass
 	let clusterremotes = filter (isnode bypass' allremotes nodeuuids myclusters) allremotes
@@ -94,8 +95,8 @@ clusterProxySelector clusteruuid protocolversion (Bypass bypass) = do
 		-- skipping nodes where it's not preferred content.
 		, proxyPUT = \af k -> do
 			locs <- S.fromList <$> loggedLocations k
-			let l = filter (flip S.notMember locs . remoteUUID) nodes
-			l' <- filterM (\n -> isPreferredContent (Just (remoteUUID n)) mempty (Just k) af True) l
+			let l = filter (flip S.notMember locs . Remote.uuid . remote) nodes
+			l' <- filterM (\n -> isPreferredContent (Just (Remote.uuid (remote n))) mempty (Just k) af True) l
 			-- PUT to no nodes doesn't work, so fall
 			-- back to all nodes.
 			return $ nonempty [l', l] nodes
@@ -146,11 +147,19 @@ clusterProxySelector clusteruuid protocolversion (Bypass bypass) = do
 	
 	nodecontaining nodes k = do
 		locs <- S.fromList <$> loggedLocations k
-		case filter (flip S.member locs . remoteUUID) nodes of
-			-- For now, pick the first node that has the
-			-- content. Load balancing would be nice..
-			(r:_) -> return (Just r)
+		case filter (flip S.member locs . Remote.uuid . remote) nodes of
 			[] -> return Nothing
+			(node:[]) -> return (Just node)
+			(node:rest) ->
+				-- The list of nodes is ordered by cost.
+				-- Use any of the ones with equally low
+				-- cost.
+				let lowestcost = Remote.cost (remote node)
+				    samecost = node : takeWhile (\n -> Remote.cost (remote n) == lowestcost) rest
+				in do
+					n <- getStdRandom $
+						randomR (0, length samecost - 1)
+					return (Just (samecost !! n))
 		
 	nonempty (l:ls) fallback
 		| null l = nonempty ls fallback

@@ -18,6 +18,7 @@ import Utility.Metered
 import Git.FilePath
 import Types.Concurrency
 import Annex.Concurrent
+import qualified Remote
 
 import Data.Either
 import Control.Concurrent.STM
@@ -32,14 +33,14 @@ type ProtoCloser = Annex ()
 data ClientSide = ClientSide RunState P2PConnection
 
 data RemoteSide = RemoteSide
-	{ remoteUUID :: UUID
+	{ remote :: Remote
 	, remoteConnect :: Annex (Maybe (RunState, P2PConnection, ProtoCloser))
 	, remoteTMVar :: TMVar (RunState, P2PConnection, ProtoCloser)
 	}
 
-mkRemoteSide :: UUID -> Annex (Maybe (RunState, P2PConnection, ProtoCloser)) -> Annex RemoteSide
-mkRemoteSide remoteuuid remoteconnect = RemoteSide
-	<$> pure remoteuuid
+mkRemoteSide :: Remote -> Annex (Maybe (RunState, P2PConnection, ProtoCloser)) -> Annex RemoteSide
+mkRemoteSide r remoteconnect = RemoteSide
+	<$> pure r
 	<*> pure remoteconnect
 	<*> liftIO (atomically newEmptyTMVar)
 
@@ -328,9 +329,9 @@ proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) remo
 				net $ sendMessage message
 				net receiveMessage >>= return . \case
 					Just SUCCESS ->
-						Just (True, [remoteUUID r])
+						Just (True, [Remote.uuid (remote r)])
 					Just (SUCCESS_PLUS us) -> 
-						Just (True, remoteUUID r:us)
+						Just (True, Remote.uuid (remote r):us)
 					Just FAILURE ->
 						Just (False, [])
 					Just (FAILURE_PLUS us) ->
@@ -355,7 +356,7 @@ proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) remo
 		withDATA (relayGET remoteside)
 
 	handlePUT (remoteside:[]) k message
-		| remoteUUID remoteside == remoteuuid =
+		| Remote.uuid (remote remoteside) == remoteuuid =
 			getresponse (runRemoteSide remoteside) message $ \resp -> case resp of
 				ALREADY_HAVE -> protoerrhandler proxynextclientmessage $
 					client $ net $ sendMessage resp
@@ -390,10 +391,10 @@ proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) remo
 			proxynextclientmessage ()
 
 	relayPUTRecord k remoteside SUCCESS = do
-		addedContent proxymethods (remoteUUID remoteside) k
-		return $ Just [remoteUUID remoteside]
+		addedContent proxymethods (Remote.uuid (remote remoteside)) k
+		return $ Just [Remote.uuid (remote remoteside)]
 	relayPUTRecord k remoteside (SUCCESS_PLUS us) = do
-		let us' = remoteUUID remoteside : us
+		let us' = (Remote.uuid (remote remoteside)) : us
 		forM_ us' $ \u ->
 			addedContent proxymethods u k
 		return $ Just us'
@@ -425,7 +426,7 @@ proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) remo
 				else protoerrhandler proxynextclientmessage $
 					client $ net $ sendMessage $ ALREADY_HAVE_PLUS $
 						filter (/= remoteuuid) $
-							map remoteUUID (lefts (rights l))
+							map (Remote.uuid . remote) (lefts (rights l))
 			else if null (rights l)
 				-- no response from any remote
 				then proxydone
@@ -439,11 +440,11 @@ proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) remo
 		let totallen = datalen + minoffset
 		-- Tell each remote how much data to expect, depending
 		-- on the remote's offset.
-		rs <- forMC concurrencyconfig remotes $ \remote@(remoteside, remoteoffset) ->
+		rs <- forMC concurrencyconfig remotes $ \r@(remoteside, remoteoffset) ->
 			runRemoteSideOrSkipFailed remoteside $ do
 				net $ sendMessage $ DATA $ Len $
 					totallen - remoteoffset
-				return remote
+				return r
 		protoerrhandler (send (catMaybes rs) minoffset) $
 			client $ net $ receiveBytes (Len datalen) nullMeterUpdate
 	  where

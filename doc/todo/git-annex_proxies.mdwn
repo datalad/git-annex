@@ -36,10 +36,19 @@ For June's work on [[design/passthrough_proxy]], remaining todos:
 * Indirect uploads when proxying for special remote
   (to be considered). See design.
 
-* Getting a key from a cluster currently always selects the lowest cost
-  remote, and always the same remote if cost is the same. Should
-  round-robin amoung remotes, and prefer to avoid using remotes that
-  other git-annex processes are currently using.
+* Getting a key from a cluster currently picks from amoung
+  the lowest cost remotes at random. This could be smarter,
+  eg prefer to avoid using remotes that are doing other transfers at the
+  same time.
+
+* The cost of a cluster and of its proxied nodes is currently all the same.
+  It would make sense for proxied nodes that are accessed via an intermedia
+  gateway to have a higher cost than proxied nodes that are accessed via
+  the remote gateway. And proxied nodes should generally have a higher cost
+  than the cluster, so that git-annex defaults to using the cluster.
+  (The cost of accessing a proxied node vs using the cluster is the same,
+  but using the cluster allows smarter load-balancing to be done on the
+  cluster. It also makes the UI not mention individual nodes.)
 
 * Optimise proxy speed. See design for ideas.
 

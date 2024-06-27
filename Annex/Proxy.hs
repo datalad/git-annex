@@ -11,18 +11,16 @@ import Annex.Common
 import P2P.Proxy
 import P2P.Protocol
 import P2P.IO
-import qualified Remote
 import Remote.Helper.Ssh (openP2PShellConnection', closeP2PShellConnection)
 
 -- FIXME: Support special remotes.
 proxySshRemoteSide :: ProtocolVersion -> Bypass -> Remote -> Annex RemoteSide
-proxySshRemoteSide clientmaxversion bypass remote = 
-	mkRemoteSide (Remote.uuid remote) $
-		openP2PShellConnection' remote clientmaxversion bypass >>= \case
-			Just conn@(OpenConnection (remoterunst, remoteconn, _)) ->
-				return $ Just 
-					( remoterunst
-					, remoteconn
-					, void $ liftIO $ closeP2PShellConnection conn
-					)
-			_  -> return Nothing
+proxySshRemoteSide clientmaxversion bypass r = mkRemoteSide r $
+	openP2PShellConnection' r clientmaxversion bypass >>= \case
+		Just conn@(OpenConnection (remoterunst, remoteconn, _)) ->
+			return $ Just 
+				( remoterunst
+				, remoteconn
+				, void $ liftIO $ closeP2PShellConnection conn
+				)
+		_  -> return Nothing
