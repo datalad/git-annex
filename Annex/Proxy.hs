@@ -15,13 +15,14 @@ import qualified Remote
 import Remote.Helper.Ssh (openP2PShellConnection', closeP2PShellConnection)
 
 -- FIXME: Support special remotes.
-proxySshRemoteSide :: ProtocolVersion -> Remote -> Annex RemoteSide
-proxySshRemoteSide clientmaxversion remote = mkRemoteSide (Remote.uuid remote) $
-	openP2PShellConnection' remote clientmaxversion >>= \case
-		Just conn@(OpenConnection (remoterunst, remoteconn, _)) ->
-			return $ Just 
-				( remoterunst
-				, remoteconn
-				, void $ liftIO $ closeP2PShellConnection conn
-				)
-		_  -> return Nothing
+proxySshRemoteSide :: ProtocolVersion -> Bypass -> Remote -> Annex RemoteSide
+proxySshRemoteSide clientmaxversion bypass remote = 
+	mkRemoteSide (Remote.uuid remote) $
+		openP2PShellConnection' remote clientmaxversion bypass >>= \case
+			Just conn@(OpenConnection (remoterunst, remoteconn, _)) ->
+				return $ Just 
+					( remoterunst
+					, remoteconn
+					, void $ liftIO $ closeP2PShellConnection conn
+					)
+			_  -> return Nothing

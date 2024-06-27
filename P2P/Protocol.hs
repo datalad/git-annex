@@ -9,6 +9,7 @@
 
 {-# LANGUAGE DeriveFunctor, TemplateHaskell, FlexibleContexts #-}
 {-# LANGUAGE TypeSynonymInstances, FlexibleInstances, RankNTypes #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module P2P.Protocol where
@@ -37,6 +38,7 @@ import System.IO
 import qualified System.FilePath.ByteString as P
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
+import qualified Data.Set as S
 import Data.Char
 import Control.Applicative
 import Prelude
@@ -65,6 +67,9 @@ data Service = UploadPack | ReceivePack
 
 data Validity = Valid | Invalid
 	deriving (Show)
+	
+newtype Bypass = Bypass (S.Set UUID)
+	deriving (Show, Monoid, Semigroup)
 
 -- | Messages in the protocol. The peer that makes the connection
 -- always initiates requests, and the other peer makes responses to them.
@@ -90,6 +95,7 @@ data Message
 	| SUCCESS_PLUS [UUID]
 	| FAILURE
 	| FAILURE_PLUS [UUID]
+	| BYPASS Bypass
 	| DATA Len -- followed by bytes of data
 	| VALIDITY Validity
 	| ERROR String
@@ -117,6 +123,7 @@ instance Proto.Sendable Message where
 	formatMessage (SUCCESS_PLUS uuids) = ("SUCCESS-PLUS":map Proto.serialize uuids)
 	formatMessage FAILURE = ["FAILURE"]
 	formatMessage (FAILURE_PLUS uuids) = ("FAILURE-PLUS":map Proto.serialize uuids)
+	formatMessage (BYPASS (Bypass uuids)) = ("BYPASS":map Proto.serialize (S.toList uuids))
 	formatMessage (VALIDITY Valid) = ["VALID"]
 	formatMessage (VALIDITY Invalid) = ["INVALID"]
 	formatMessage (DATA len) = ["DATA", Proto.serialize len]
@@ -144,6 +151,7 @@ instance Proto.Receivable Message where
 	parseCommand "SUCCESS-PLUS" = Proto.parseList SUCCESS_PLUS
 	parseCommand "FAILURE" = Proto.parse0 FAILURE
 	parseCommand "FAILURE-PLUS" = Proto.parseList FAILURE_PLUS
+	parseCommand "BYPASS" = Proto.parseList (BYPASS . Bypass . S.fromList)
 	parseCommand "DATA" = Proto.parse1 DATA
 	parseCommand "ERROR" = Proto.parse1 ERROR
 	parseCommand "VALID" = Proto.parse0 (VALIDITY Valid)
@@ -336,6 +344,15 @@ negotiateProtocolVersion preferredversion = do
 		Just (ERROR _) -> return ()
 		_ -> net $ sendMessage (ERROR "expected VERSION")
 
+sendBypass :: Bypass -> Proto ()
+sendBypass bypass@(Bypass s)
+	| S.null s = return ()
+	| otherwise = do
+		ver <- net getProtocolVersion
+		if ver >= ProtocolVersion 2
+			then net $ sendMessage (BYPASS bypass)
+			else return ()
+
 checkPresent :: Key -> Proto Bool
 checkPresent key = do
 	net $ sendMessage (CHECKPRESENT key)
@@ -505,6 +522,7 @@ serveAuthed servermode myuuid = void $ serverLoop handler
 		refs <- local waitRefChange
 		net $ sendMessage (CHANGED refs)
 		return ServerContinue
+	handler (BYPASS _) = return ServerContinue
 	handler _ = return ServerUnexpected
 
 	handleput af key = do

@@ -24,6 +24,7 @@ import Control.Concurrent.STM
 import Control.Concurrent.Async
 import qualified Control.Concurrent.MSem as MSem
 import qualified Data.ByteString.Lazy as L
+import qualified Data.Set as S
 import GHC.Conc
 
 type ProtoCloser = Annex ()
@@ -104,7 +105,7 @@ type ProtoErrorHandled r =
 {- This is the first thing run when proxying with a client. 
  - The client has already authenticated. Most clients will send a
  - VERSION message, although version 0 clients will not and will send
- - some other message.
+ - some other message, which is returned to handle later.
  -
  - But before the client will send VERSION, it needs to see AUTH_SUCCESS.
  - So send that, although the connection with the remote is not actually
@@ -137,8 +138,47 @@ getClientProtocolVersion' remoteuuid = do
 		Just othermsg -> return
 			(Just (defaultProtocolVersion, Just othermsg))
 
+{- Send negotiated protocol version to the client.
+ - With a version 0 client, preserves the other protocol message
+ - received in getClientProtocolVersion. -}
+sendClientProtocolVersion
+	:: ClientSide
+	-> Maybe Message
+	-> ProtocolVersion
+	-> (Maybe Message -> Annex r)
+	-> ProtoErrorHandled r
+sendClientProtocolVersion (ClientSide clientrunst clientconn) othermsg protocolversion cont protoerrhandler = 
+	case othermsg of
+		Nothing -> protoerrhandler (\() -> cont Nothing) $ 
+			client $ net $ sendMessage $ VERSION protocolversion
+		Just _ -> cont othermsg
+  where
+	client = liftIO . runNetProto clientrunst clientconn
+
+{- When speaking to a version 2 client, get the BYPASS message which may be
+ - sent immediately after VERSION. Returns any other message to be handled
+ - later. -}
+getClientBypass
+	:: ClientSide
+	-> ProtocolVersion
+	-> Maybe Message
+	-> ((Bypass, Maybe Message) -> Annex r)
+	-> ProtoErrorHandled r
+getClientBypass (ClientSide clientrunst clientconn) (ProtocolVersion protocolversion) Nothing cont protoerrhandler
+	| protocolversion < 2 = cont (Bypass S.empty, Nothing)
+	| otherwise = protoerrhandler cont $
+		client $ net receiveMessage >>= return . \case
+			Just (BYPASS bypass) -> (bypass, Nothing)
+			Just othermsg -> (Bypass S.empty, Just othermsg)
+			Nothing -> (Bypass S.empty, Nothing)
+  where
+	client = liftIO . runNetProto clientrunst clientconn
+getClientBypass _ _ (Just othermsg) cont _ =
+	-- Pass along non-BYPASS message from version 0 client.
+	cont (Bypass S.empty, (Just othermsg))
+
 {- Proxy between the client and the remote. This picks up after
- - getClientProtocolVersion.
+ - sendClientProtocolVersion.
  -}
 proxy 
 	:: Annex r
@@ -156,10 +196,9 @@ proxy
 	-- ^ non-VERSION message that was received from the client when
 	-- negotiating protocol version, and has not been responded to yet
 	-> ProtoErrorHandled r
-proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) remoteuuid proxyselector concurrencyconfig (ProtocolVersion protocolversion) othermessage protoerrhandler = do
-	case othermessage of
-		Nothing -> protoerrhandler proxynextclientmessage $ 
-			client $ net $ sendMessage $ VERSION $ ProtocolVersion protocolversion
+proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) remoteuuid proxyselector concurrencyconfig (ProtocolVersion protocolversion) othermsg protoerrhandler = do
+	case othermsg of
+		Nothing -> proxynextclientmessage ()
 		Just message -> proxyclientmessage (Just message)
   where
 	client = liftIO . runNetProto clientrunst clientconn
@@ -209,6 +248,7 @@ proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) remo
 			remotesides <- proxyPUT proxyselector af k
 			servermodechecker checkPUTServerMode $
 				handlePUT remotesides k message
+		BYPASS _ -> proxynextclientmessage ()
 		-- These messages involve the git repository, not the
 		-- annex. So they affect the git repository of the proxy,
 		-- not the remote.

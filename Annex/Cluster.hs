@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE RankNTypes, OverloadedStrings #-}
 
 module Annex.Cluster where
 
@@ -17,6 +17,7 @@ import P2P.Proxy
 import P2P.Protocol
 import P2P.IO
 import Annex.Proxy
+import Annex.UUID
 import Logs.Location
 import Logs.PreferredContent
 import Types.Command
@@ -50,24 +51,40 @@ proxyCluster clusteruuid proxydone servermode clientside protoerrhandler = do
 		-- determine. Instead, pick the newest protocol version
 		-- that we and the client both speak. The proxy code
 		-- checks protocol versions when operating on multiple
-		-- nodes.
+		-- nodes, and allows nodes to have different protocol
+		-- versions.
 		let protocolversion = min maxProtocolVersion clientmaxversion
-		selectnode <- clusterProxySelector clusteruuid protocolversion
+		sendClientProtocolVersion clientside othermsg protocolversion
+			(getclientbypass protocolversion) protoerrhandler
+	withclientversion Nothing = proxydone
+
+	getclientbypass protocolversion othermsg =
+		getClientBypass clientside protocolversion othermsg
+			(withclientbypass protocolversion) protoerrhandler
+
+	withclientbypass protocolversion (bypassuuids, othermsg) = do
+		selectnode <- clusterProxySelector clusteruuid protocolversion bypassuuids
 		concurrencyconfig <- getConcurrencyConfig
 		proxy proxydone proxymethods servermode clientside 
 			(fromClusterUUID clusteruuid)
 			selectnode concurrencyconfig protocolversion
 			othermsg protoerrhandler
-	withclientversion Nothing = proxydone
 
-clusterProxySelector :: ClusterUUID -> ProtocolVersion -> Annex ProxySelector
-clusterProxySelector clusteruuid protocolversion = do
+clusterProxySelector :: ClusterUUID -> ProtocolVersion -> Bypass -> Annex ProxySelector
+clusterProxySelector clusteruuid protocolversion (Bypass bypass) = do
 	nodeuuids <- (fromMaybe S.empty . M.lookup clusteruuid . clusterUUIDs)
 		<$> getClusters
-	clusternames <- annexClusters <$> Annex.getGitConfig
+	myclusters <- annexClusters <$> Annex.getGitConfig
 	allremotes <- remoteList
-	let clusterremotes = filter (isnode allremotes nodeuuids clusternames) allremotes
-	nodes <- mapM (proxySshRemoteSide protocolversion) clusterremotes
+	hereu <- getUUID
+	let bypass' = S.insert hereu bypass
+	let clusterremotes = filter (isnode bypass' allremotes nodeuuids myclusters) allremotes
+	fastDebug "Annex.Cluster" $ unwords
+		[ "cluster gateway at", fromUUID hereu
+		, "connecting to", show (map Remote.name clusterremotes)
+		, "bypass", show (S.toList bypass)
+		]
+	nodes <- mapM (proxySshRemoteSide protocolversion (Bypass bypass')) clusterremotes
 	return $ ProxySelector
 		{ proxyCHECKPRESENT = nodecontaining nodes
 		, proxyGET = nodecontaining nodes
@@ -95,27 +112,37 @@ clusterProxySelector clusteruuid protocolversion = do
 		}
   where
 	-- Nodes of the cluster have remote.name.annex-cluster-node
-	-- containing its name. Or they are proxied by a remote
-	-- that has remote.name.annex-cluster-gateway
-	-- containing the cluster's UUID.
-	isnode rs nodeuuids clusternames r = 
+	-- containing its name. 
+	--
+	-- Or, a node can be the cluster proxied by another gateway.
+	isnode bypass' rs nodeuuids myclusters r = 
 		case remoteAnnexClusterNode (Remote.gitconfig r) of
 			Just names
-				| any (isclustername clusternames) names ->
+				| any (isclustername myclusters) names ->
 					flip S.member nodeuuids $ 
 						ClusterNodeUUID $ Remote.uuid r
 				| otherwise -> False
-			Nothing -> case remoteAnnexProxiedBy (Remote.gitconfig r) of
-				Just proxyuuid
-					| Remote.uuid r /= fromClusterUUID clusteruuid -> 
-						not $ null $
-							filter (== clusteruuid) $
-							concatMap (remoteAnnexClusterGateway . Remote.gitconfig) $
-							filter (\p -> Remote.uuid p == proxyuuid) rs
-				_ -> False
+			Nothing -> isclusterviagateway bypass' rs r
 	
-	isclustername clusternames name = 
-		M.lookup name clusternames == Just clusteruuid
+	-- Is this remote the same cluster, proxied via another gateway?
+	--
+	-- Must avoid bypassed gateways to prevent cycles.
+	isclusterviagateway bypass' rs r = 
+		case mkClusterUUID (Remote.uuid r) of
+			Just cu | cu == clusteruuid ->
+				case remoteAnnexProxiedBy (Remote.gitconfig r) of
+					Just proxyuuid | proxyuuid `S.notMember` bypass' ->
+						not $ null $
+							filter isclustergateway $
+							filter (\p -> Remote.uuid p == proxyuuid) rs
+					_ -> False
+			_ -> False
+	
+	isclustergateway r = any (== clusteruuid) $ 
+		remoteAnnexClusterGateway $ Remote.gitconfig r
+
+	isclustername myclusters name = 
+		M.lookup name myclusters == Just clusteruuid
 	
 	nodecontaining nodes k = do
 		locs <- S.fromList <$> loggedLocations k

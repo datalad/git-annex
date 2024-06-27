@@ -233,7 +233,7 @@ storeP2PShellConnection connpool conn = atomically $ modifyTVar' connpool $ \cas
 -- the connection pool.
 openP2PShellConnection :: Remote -> P2PShellConnectionPool -> Annex (Maybe P2PShellConnection)
 openP2PShellConnection r connpool =
-	openP2PShellConnection' r P2P.maxProtocolVersion >>= \case
+	openP2PShellConnection' r P2P.maxProtocolVersion mempty >>= \case
 		Just conn -> return (Just conn)
 		Nothing -> do
 			liftIO $ rememberunsupported
@@ -243,8 +243,8 @@ openP2PShellConnection r connpool =
 		modifyTVar' connpool $
 			maybe (Just P2PShellUnsupported) Just
 
-openP2PShellConnection' :: Remote -> P2P.ProtocolVersion -> Annex (Maybe P2PShellConnection)
-openP2PShellConnection' r maxprotoversion = do
+openP2PShellConnection' :: Remote -> P2P.ProtocolVersion -> P2P.Bypass -> Annex (Maybe P2PShellConnection)
+openP2PShellConnection' r maxprotoversion bypass = do
 	u <- getUUID
 	let ps = [Param (fromUUID u)]
 	repo <- getRepo r
@@ -271,8 +271,9 @@ openP2PShellConnection' r maxprotoversion = do
 		let c = P2P.OpenConnection (runst, conn, pid)
 		-- When the connection is successful, the remote
 		-- will send an AUTH_SUCCESS with its uuid.
-		let proto = P2P.postAuth $
+		let proto = P2P.postAuth $ do
 			P2P.negotiateProtocolVersion maxprotoversion
+			P2P.sendBypass bypass
 		tryNonAsync (P2P.runNetProto runst conn proto) >>= \case
 			Right (Right (Just theiruuid)) | theiruuid == uuid r ->
 				return $ Just c

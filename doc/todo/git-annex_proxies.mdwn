@@ -29,13 +29,6 @@ For June's work on [[design/passthrough_proxy]], remaining todos:
 * Since proxying to special remotes is not supported yet, and won't be for
   the first release, make it fail in a reasonable way.
 
-* Support distributed clusters: Make a proxy for a cluster repeat
-  protocol messages on to any remotes that have the same UUID as
-  the cluster. Needs VIA extension to P2P protocol to avoid cycles.
-
-  Status: works, but needs VIA extension to avoid ugly messages and extra
-  work
-
 * Getting a key from a cluster currently always selects the lowest cost
   remote, and always the same remote if cost is the same. Should
   round-robin amoung remotes, and prefer to avoid using remotes that
@@ -111,3 +104,8 @@ For June's work on [[design/passthrough_proxy]], remaining todos:
 
 * Support proxying for a remote that is proxied by another gateway of
   a cluster. (done)
+
+* Support distributed clusters: Make a proxy for a cluster repeat
+  protocol messages on to any remotes that have the same UUID as
+  the cluster. Needs extension to P2P protocol to avoid cycles.
+  (done)

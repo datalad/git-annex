@@ -55,7 +55,7 @@ any authentication.
 
 The client sends the highest protocol version it supports:
 
-	VERSION 3
+	VERSION 2
 
 The server responds with the highest protocol version it supports
 that is less than or equal to the version the client sent:
@@ -63,6 +63,19 @@ that is less than or equal to the version the client sent:
 	VERSION 1
 
 Now both client and server should use version 1.
+
+## Cluster cycle prevention
+
+In protocol version 2, immediately after VERSION, the
+client can send an additional message that is used to
+prevent cycles when accessing clusters.
+
+    BYPASS UUID1 UUID2 ...
+
+The UUIDs are cluster gateways to avoid connecting to when
+serving a cluster.
+
+The server makes no response to this message.
 
 ## Binary data
 

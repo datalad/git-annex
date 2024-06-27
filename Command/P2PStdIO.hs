@@ -67,7 +67,7 @@ performProxy clientuuid servermode remote = do
 		p2pErrHandler
   where
 	withclientversion clientside (Just (clientmaxversion, othermsg)) = do
-		remoteside <- proxySshRemoteSide clientmaxversion remote
+		remoteside <- proxySshRemoteSide clientmaxversion mempty remote
 		protocolversion <- either (const (min P2P.maxProtocolVersion clientmaxversion)) id
 			<$> runRemoteSide remoteside 
 				(P2P.net P2P.getProtocolVersion)
@@ -75,11 +75,14 @@ performProxy clientuuid servermode remote = do
 			closeRemoteSide remoteside
 			p2pDone
 		concurrencyconfig <- noConcurrencyConfig
-		proxy closer proxymethods servermode clientside
+		let runproxy othermsg' = proxy closer proxymethods
+			servermode clientside
 			(Remote.uuid remote)
 			(singleProxySelector remoteside)
 			concurrencyconfig
-			protocolversion othermsg p2pErrHandler
+			protocolversion othermsg' p2pErrHandler
+		sendClientProtocolVersion clientside othermsg protocolversion
+			runproxy p2pErrHandler
 	withclientversion _ Nothing = p2pDone
 	
 	proxymethods = ProxyMethods
