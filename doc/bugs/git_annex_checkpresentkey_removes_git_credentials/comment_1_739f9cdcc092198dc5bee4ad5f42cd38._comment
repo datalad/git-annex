@@ -1,0 +1,56 @@
+[[!comment format=mdwn
+ username="m.risse@77eac2c22d673d5f10305c0bade738ad74055f92"
+ nickname="m.risse"
+ avatar="http://cdn.libravatar.org/avatar/59541f50d845e5f81aff06e88a38b9de"
+ subject="comment 1"
+ date="2024-06-26T10:20:29Z"
+ content="""
+This seems to depend on if the remote has the key or not. If it doesn't have it the above happens, if it does have it this happens:
+
+```
+$ git annex --debug checkpresentkey MD5E-s22--9fd0423717d1802f35d83d0663fa6074 origin
+[2024-06-26 12:16:17.884306746] (Utility.Process) process [790839] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"show-ref\",\"git-annex\"]
+[2024-06-26 12:16:17.889865682] (Utility.Process) process [790839] done ExitSuccess
+[2024-06-26 12:16:17.890586682] (Utility.Process) process [790840] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2024-06-26 12:16:17.896089346] (Utility.Process) process [790840] done ExitSuccess
+[2024-06-26 12:16:17.897505598] (Utility.Process) process [790841] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"cat-file\",\"--batch\"]
+[2024-06-26 12:16:17.917494738] (Utility.Url) Request {
+  host                 = \"localhost\"
+  port                 = 3000
+  secure               = False
+  requestHeaders       = [(\"Accept-Encoding\",\"\"),(\"User-Agent\",\"git-annex/10.20240430\")]
+  path                 = \"/forgejo/test1234.git/annex/objects/b9f/209/MD5E-s22--9fd0423717d1802f35d83d0663fa6074/MD5E-s22--9fd0423717d1802f35d83d0663fa6074\"
+  queryString          = \"\"
+  method               = \"HEAD\"
+  proxy                = Nothing
+  rawBody              = False
+  redirectCount        = 10
+  responseTimeout      = ResponseTimeoutDefault
+  requestVersion       = HTTP/1.1
+  proxySecureMode      = ProxySecureWithConnect
+}
+
+[2024-06-26 12:16:17.919583503] (Utility.Process) process [790842] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"credential\",\"fill\"]
+[2024-06-26 12:16:17.948527204] (Utility.Process) process [790842] done ExitSuccess
+[2024-06-26 12:16:17.94870605] (Utility.Url) Request {
+  host                 = \"localhost\"
+  port                 = 3000
+  secure               = False
+  requestHeaders       = [(\"Accept-Encoding\",\"\"),(\"Authorization\",\"<REDACTED>\"),(\"User-Agent\",\"git-annex/10.20240430\")]
+  path                 = \"/forgejo/test1234.git/annex/objects/b9f/209/MD5E-s22--9fd0423717d1802f35d83d0663fa6074/MD5E-s22--9fd0423717d1802f35d83d0663fa6074\"
+  queryString          = \"\"
+  method               = \"HEAD\"
+  proxy                = Nothing
+  rawBody              = False
+  redirectCount        = 10
+  responseTimeout      = ResponseTimeoutDefault
+  requestVersion       = HTTP/1.1
+  proxySecureMode      = ProxySecureWithConnect
+}
+
+[2024-06-26 12:16:18.071744964] (Utility.Process) process [790850] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"credential\",\"approve\"]
+[2024-06-26 12:16:18.132959059] (Utility.Process) process [790850] done ExitSuccess
+```
+
+Does git-annex interpret the 404 in the case of the key not being on the remote as an authentication failure and then rejects the credentials? I think that should only happen on a 401...
+"""]]
