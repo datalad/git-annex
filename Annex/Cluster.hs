@@ -147,7 +147,8 @@ clusterProxySelector clusteruuid protocolversion (Bypass bypass) = do
 	nodecontaining nodes k = do
 		locs <- S.fromList <$> loggedLocations k
 		case filter (flip S.member locs . remoteUUID) nodes of
-			-- TODO: Avoid always using same remote
+			-- For now, pick the first node that has the
+			-- content. Load balancing would be nice..
 			(r:_) -> return (Just r)
 			[] -> return Nothing
 		
