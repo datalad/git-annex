@@ -38,14 +38,6 @@ For June's work on [[design/passthrough_proxy]], remaining todos:
   round-robin amoung remotes, and prefer to avoid using remotes that
   other git-annex processes are currently using.
 
-* When a cluster has multiple gateways, and a key is uploaded via one
-  gateway, that gateway learns about every node where the key is stored.
-  But other gateways do not, they only learn about nodes reached via them
-  where the key is stored. This means that another user, syncing with
-  the other gateway, won't know how many copies exist, or necessarily
-  that the key is in the cluster at all. Should gateways broadcast
-  location change messages to other gateways?
-
 * Optimise proxy speed. See design for ideas.
 
 * Use `sendfile()` to avoid data copying overhead when

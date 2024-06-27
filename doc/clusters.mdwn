@@ -192,13 +192,27 @@ Notice that remotes for cluster nodes have names indicating the path through
 the cluster used to access them. For example, "AMS-NYC-node3" is accessed via
 the AMS gateway, which then relays to NYC where node3 is located.
 
-## cluster topologies
+## considerations for multi-gateway clusters
+
+When a cluster has multiple gateways, nothing keeps the git repositories on
+the gateways in sync. A branch pushed to one gateway will not be able to
+be pulled from another one. And gateways only learn about the locations of
+keys that are uploaded to the cluster via them. So in the example above,
+after an upload to AMS-mycluster, NYC-mycluster will only know that the
+key is stored in its nodes, but won't know that it's stored in nodes
+behind AMS. So, it's best to have a single git repository that is synced
+with, or perhaps run [[git-annex-remotedaemon]] on each gateway to keep
+its git repository in sync with the other gateways.
 
 Clusters can be constructed with any number of gateways, and any internal
-topology of connections between gateways. 
-
-There must always be a path from any gateway to all nodes of the cluster.
+topology of connections between gateways. But there must always be a path
+from any gateway to all nodes of the cluster, otherwise a key won't
+be able to be stored from, or retrieved from some nodes.
 
 It's best to avoid there being multiple paths to a node that go via
 different gateways, since all paths will be tried in parallel when eg,
 uploading a key to the cluster.
+
+A breakdown in communication between gateways will temporarily split the
+cluster. When communication resumes, some keys may need to be copied to
+additional nodes.
