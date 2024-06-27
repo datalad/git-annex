@@ -17,8 +17,12 @@ The `clustername` parameter is the name of the cluster.
 
 The next step after running this command is to configure
 any additional cluster nodes that this gateway serves to the cluster,
-then run [[git-annex-updatecluster]] on each gateway. 
-See the documentation of that command for details about configuring nodes.
+then run [[git-annex-updatecluster]]. See the documentation of that
+command for details about configuring nodes.
+
+After running this command in the new gateway repository, it typically
+also needs to be run in the other gateway repositories as well, 
+after adding the new gateway repository as a remote.
 
 # OPTIONS
 

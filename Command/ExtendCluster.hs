@@ -15,6 +15,7 @@ import Types.Cluster
 import Config
 import Types.GitConfig
 import qualified Remote
+import qualified Command.UpdateCluster
 
 import qualified Data.Map as M
 
@@ -27,7 +28,9 @@ seek (remotename:clustername:[]) = Remote.byName (Just clusterremotename) >>= \c
 	Just clusterremote -> Remote.byName (Just remotename) >>= \case
 		Just gatewayremote -> 
 			case mkClusterUUID (Remote.uuid clusterremote) of
-				Just cu -> commandAction $ start cu clustername gatewayremote
+				Just cu -> do
+					commandAction $ start cu clustername gatewayremote
+					Command.UpdateCluster.seek []
 				Nothing -> giveup $ clusterremotename 
 					++ " is not a cluster remote."
 		Nothing -> giveup $ "No remote named " ++ remotename ++ " exists."

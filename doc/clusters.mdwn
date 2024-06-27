@@ -168,7 +168,6 @@ for NYC, and extending the cluster to there as well:
     AMS$ git remote add NYC me@nyc.example.com:annex
     AMS$ git-annex sync NYC
     NYC$ git-annex extendcluster NYC mycluster
-    AMS$ git-annex updatecluster
 
 A user can now add either AMS or NYC as a remote, and will have access
 to the entire cluster as either `AMS-mycluster` or `NYC-mycluster`.
