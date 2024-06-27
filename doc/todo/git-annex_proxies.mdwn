@@ -50,9 +50,6 @@ For June's work on [[design/passthrough_proxy]], remaining todos:
 * Support using a proxy when its url is a P2P address.
   (Eg tor-annex remotes.)
 
-* `viconfig` support for setting preferred content, group, 
-  and description of clusters
-
 # completed items for June's work on [[design/passthrough_proxy]]:
 
 * UUID discovery via git-annex branch. Add a log file listing UUIDs
