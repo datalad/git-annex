@@ -11,7 +11,7 @@ repositories.
 Joey has received funding to work on this.
 Planned schedule of work:
 
-* June: git-annex proxy
+* June: git-annex proxies and clusters
 * July, part 1: git-annex proxy support for exporttree
 * July, part 2: p2p protocol over http
 * August: balanced preferred content
@@ -29,9 +29,12 @@ For June's work on [[design/passthrough_proxy]], remaining todos:
 * Since proxying to special remotes is not supported yet, and won't be for
   the first release, make it fail in a reasonable way.
 
-* Proxying for special remotes.
+- or -
 
-* Encryption and chunking. See design for issues.
+* Proxying for special remotes.
+  Including encryption and chunking. See design for issues.
+
+# items deferred until later for [[design/passthrough_proxy]]
 
 * Indirect uploads when proxying for special remote
   (to be considered). See design.
@@ -79,7 +82,7 @@ For June's work on [[design/passthrough_proxy]], remaining todos:
 * Proxy should update location tracking information for proxied remotes,
   so it is available to other users who sync with it. (done)
 
-* Implement `git-annex updatecluster` command (done)
+* Implement `git-annex initcluster` and `git-annex updatecluster` commands (done)
 
 * Implement cluster UUID insertation on location log load, and removal
   on location log store. (done)
