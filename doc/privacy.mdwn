@@ -38,9 +38,6 @@ does not sanitize `--debug` output at all, so it may include the names of
 files or other repository details. You should review any debug or other
 output you post, and feel free to remove identifying information.
 
-Note that the git-annex assistant *does* sanitize XMPP protocol information
-logged when debugging is enabled.
-
 If you prefer not to post information publically, you can send a GPG
 encrypted mail to Joey Hess <id@joeyh.name> (gpg key ID 2512E3C7).
 Or you can post a public bug report, and send a followup email with private
