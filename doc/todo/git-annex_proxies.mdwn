@@ -22,8 +22,6 @@ Planned schedule of work:
 
 # work notes
 
-In development on the `proxy` branch.
-
 For June's work on [[design/passthrough_proxy]], remaining todos:
 
 * Since proxying to special remotes is not supported yet, and won't be for
