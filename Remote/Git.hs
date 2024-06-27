@@ -176,6 +176,7 @@ configRead autoinit r = do
 			Just r' -> return r'
 		_ -> return r
 
+
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u rc gc rs
 	-- Remote.GitLFS may be used with a repo that is also encrypted
@@ -186,10 +187,9 @@ gen r u rc gc rs
 		Nothing -> do
 			st <- mkState r u gc
 			c <- parsedRemoteConfig remote rc
-			go st c <$> remoteCost gc c defcst
+			go st c <$> remoteCost gc c (defaultRepoCost r)
 		Just addr -> Remote.P2P.chainGen addr r u rc gc rs
   where
-	defcst = if repoCheap r then cheapRemoteCost else expensiveRemoteCost
 	go st c cst = Just new
 	  where
 		new = Remote 
@@ -228,6 +228,11 @@ gen r u rc gc rs
 			, checkUrl = Nothing
 			, remoteStateHandle = rs
 			}
+
+defaultRepoCost :: Git.Repo -> Cost
+defaultRepoCost r
+	| repoCheap r = cheapRemoteCost
+	| otherwise = expensiveRemoteCost
 
 unavailable :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 unavailable r = gen r'
@@ -854,12 +859,17 @@ listProxied proxies rs = concat <$> mapM go rs
 		-- that cluster does not need to be synced with
 		-- by default, because syncing with the cluster will
 		-- effectively sync with all of its nodes.
+		--
+		-- Also, give it a slightly higher cost than the
+		-- cluster by default, to encourage using the cluster.
 		adjustclusternode clusters =
 			case M.lookup (ClusterNodeUUID (proxyRemoteUUID p)) (clusterNodeUUIDs clusters) of
 				Just cs
 					| any (\c -> S.member (fromClusterUUID c) proxieduuids) (S.toList cs) ->
 						addremoteannexfield SyncField
 							[Git.ConfigValue $ Git.Config.boolConfig' False]
+						. addremoteannexfield CostField 
+							[Git.ConfigValue $ encodeBS $ show $ defaultRepoCost r + 0.1]
 				_ -> id
 
 		proxieduuids = S.map proxyRemoteUUID proxied

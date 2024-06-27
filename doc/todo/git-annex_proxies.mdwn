@@ -41,14 +41,17 @@ For June's work on [[design/passthrough_proxy]], remaining todos:
   eg prefer to avoid using remotes that are doing other transfers at the
   same time.
 
-* The cost of a cluster and of its proxied nodes is currently all the same.
-  It would make sense for proxied nodes that are accessed via an intermedia
-  gateway to have a higher cost than proxied nodes that are accessed via
-  the remote gateway. And proxied nodes should generally have a higher cost
-  than the cluster, so that git-annex defaults to using the cluster.
-  (The cost of accessing a proxied node vs using the cluster is the same,
-  but using the cluster allows smarter load-balancing to be done on the
-  cluster. It also makes the UI not mention individual nodes.)
+* The cost of a proxied node that is accessed via an intermediate gateway
+  is currently the same as a node accessed via the cluster gateway.
+  To fix this, there needs to be some way to tell how many hops through
+  gateways it takes to get to a node. Currently the only way is to
+  guess based on number of dashes in the node name, which is not satisfying.
+
+  Even counting hops is not very satisfying, one cluster gateway could
+  be much more expensive to traverse than another one.
+
+  If seriously tackling this, it might be worth making enough information
+  available to use spanning tree protocol for routing inside clusters.
 
 * Optimise proxy speed. See design for ideas.
 
@@ -117,3 +120,6 @@ For June's work on [[design/passthrough_proxy]], remaining todos:
   protocol messages on to any remotes that have the same UUID as
   the cluster. Needs extension to P2P protocol to avoid cycles.
   (done)
+
+* Proxied cluster nodes should have slightly higher cost than the cluster
+  gateway. (done)
