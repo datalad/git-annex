@@ -35,7 +35,7 @@ after adding the new gateway repository as a remote.
 [[git-annex-updatecluster]](1)
 [[git-annex-updateproxy]](1)
 
-<https://git-annex.branchable.com/clusters/>
+<https://git-annex.branchable.com/tips/clusters/>
 
 # AUTHOR
 

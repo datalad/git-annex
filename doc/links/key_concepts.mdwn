@@ -4,6 +4,10 @@
 * [[how_it_works]]
 * [[special_remotes]]
 * [[workflows|workflow]]
-* [[sync]]
 * [[preferred_content]]
-* [[clusters]]
+* [[sync]]
+
+### new features
+
+* [[tips/clusters]]
+* [[git-remote-annex|tips/storing_a_git_repository_on_any_special_remote]]
