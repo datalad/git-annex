@@ -21,6 +21,7 @@ import Remote.Helper.Messages
 import Utility.Metered
 import Utility.Rsync
 import Utility.SshHost
+import Utility.Debug
 import Types.Remote
 import Types.Transfer
 import Config
@@ -61,9 +62,10 @@ git_annex_shell cs r command params fields
 	shellcmd = "git-annex-shell"
 	getshellopts = do
 		debugenabled <- Annex.getRead Annex.debugenabled
-		let params' = if debugenabled
-			then Param "--debug" : params
-			else params
+		debugselector <- Annex.getRead Annex.debugselector
+		let params' = case (debugenabled, debugselector) of
+			(True, NoDebugSelector) -> Param "--debug" : params
+			_ -> params
 		return (Param command : File (fromRawFilePath dir) : params')
 	uuidcheck NoUUID = []
 	uuidcheck u@(UUID _) = ["--uuid", fromUUID u]
