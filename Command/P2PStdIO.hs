@@ -11,7 +11,6 @@ import Command
 import P2P.IO
 import P2P.Annex
 import qualified P2P.Protocol as P2P
-import qualified Annex
 import Annex.UUID
 import qualified CmdLine.GitAnnexShell.Checks as Checks
 
