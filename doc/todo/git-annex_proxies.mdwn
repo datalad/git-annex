@@ -45,6 +45,13 @@ For June's work on [[design/passthrough_proxy]], remaining todos:
   rather than PUT-FROM or ALREADY-HAVE. Verify that the client processes
   that ok and displays it to the user.
 
+* If a special remote outputs to stdout, or reads from stdin, that will
+  mess up the P2P protocol. Move the special remote proxying into a
+  separate process perhaps, which can be run with stdout and stdin
+  redirected? Or, fix any special remotes that might do that. Are
+  there any left? External special remotes certainly don't since that would
+  mess up their own protocol. Hook special remotes can though.
+
 * Streaming download from proxied special remotes. See design.
 
 * Check annex.diskreserve when proxying for special remotes.
