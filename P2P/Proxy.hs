@@ -58,7 +58,7 @@ runRemoteSide remoteside a =
 
 closeRemoteSide :: RemoteSide -> Annex ()
 closeRemoteSide remoteside = 
-	liftIO (atomically $ tryReadTMVar $ remoteTMVar remoteside) >>= \case
+	liftIO (atomically $ tryTakeTMVar $ remoteTMVar remoteside) >>= \case
 		Just (_, _, closer) -> closer
 		Nothing -> return ()
 

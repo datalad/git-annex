@@ -35,11 +35,11 @@ proxyCluster
 	-> CommandPerform
 	-> ServerMode
 	-> ClientSide
-	-> (forall a. ((a -> CommandPerform) -> Annex (Either ProtoFailure a) -> CommandPerform))
+	-> (forall a. Annex () -> ((a -> CommandPerform) -> Annex (Either ProtoFailure a) -> CommandPerform))
 	-> CommandPerform
 proxyCluster clusteruuid proxydone servermode clientside protoerrhandler = do
 	getClientProtocolVersion (fromClusterUUID clusteruuid) clientside
-		withclientversion protoerrhandler
+		withclientversion (protoerrhandler noop)
   where
 	proxymethods = ProxyMethods
 		{ removedContent = \u k -> logChange k u InfoMissing
@@ -56,22 +56,23 @@ proxyCluster clusteruuid proxydone servermode clientside protoerrhandler = do
 		-- versions.
 		let protocolversion = min maxProtocolVersion clientmaxversion
 		sendClientProtocolVersion clientside othermsg protocolversion
-			(getclientbypass protocolversion) protoerrhandler
+			(getclientbypass protocolversion) (protoerrhandler noop)
 	withclientversion Nothing = proxydone
 
 	getclientbypass protocolversion othermsg =
 		getClientBypass clientside protocolversion othermsg
-			(withclientbypass protocolversion) protoerrhandler
+			(withclientbypass protocolversion) (protoerrhandler noop)
 
 	withclientbypass protocolversion (bypassuuids, othermsg) = do
-		selectnode <- clusterProxySelector clusteruuid protocolversion bypassuuids
+		(selectnode, closenodes) <- clusterProxySelector clusteruuid
+			protocolversion bypassuuids
 		concurrencyconfig <- getConcurrencyConfig
 		proxy proxydone proxymethods servermode clientside 
 			(fromClusterUUID clusteruuid)
 			selectnode concurrencyconfig protocolversion
-			othermsg protoerrhandler
+			othermsg (protoerrhandler closenodes)
 
-clusterProxySelector :: ClusterUUID -> ProtocolVersion -> Bypass -> Annex ProxySelector
+clusterProxySelector :: ClusterUUID -> ProtocolVersion -> Bypass -> Annex (ProxySelector, Annex ())
 clusterProxySelector clusteruuid protocolversion (Bypass bypass) = do
 	nodeuuids <- (fromMaybe S.empty . M.lookup clusteruuid . clusterUUIDs)
 		<$> getClusters
@@ -85,8 +86,9 @@ clusterProxySelector clusteruuid protocolversion (Bypass bypass) = do
 		, "connecting to", show (map Remote.name clusterremotes)
 		, "bypass", show (S.toList bypass)
 		]
-	nodes <- mapM (proxySshRemoteSide protocolversion (Bypass bypass')) clusterremotes
-	return $ ProxySelector
+	nodes <- mapM (proxyRemoteSide protocolversion (Bypass bypass')) clusterremotes
+	let closenodes = mapM_ closeRemoteSide nodes
+	let proxyselector = ProxySelector
 		{ proxyCHECKPRESENT = nodecontaining nodes
 		, proxyGET = nodecontaining nodes
 		-- The key is sent to multiple nodes at the same time,
@@ -111,6 +113,7 @@ clusterProxySelector clusteruuid protocolversion (Bypass bypass) = do
 		, proxyLOCKCONTENT = const (pure Nothing)
 		, proxyUNLOCKCONTENT = pure Nothing
 		}
+	return (proxyselector, closenodes)
   where
 	-- Nodes of the cluster have remote.name.annex-cluster-node
 	-- containing its name. 

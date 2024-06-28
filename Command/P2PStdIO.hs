@@ -57,32 +57,33 @@ performLocal theiruuid servermode = do
 		P2P.net $ P2P.sendMessage (P2P.AUTH_SUCCESS myuuid)
 		P2P.serveAuthed servermode myuuid
 	runst <- liftIO $ mkRunState $ Serving theiruuid Nothing
-	p2pErrHandler (const p2pDone) (runFullProto runst conn server)
+	p2pErrHandler noop (const p2pDone) (runFullProto runst conn server)
 
 performProxy :: UUID -> P2P.ServerMode -> Remote -> CommandPerform
 performProxy clientuuid servermode r = do
 	clientside <- proxyClientSide clientuuid
 	getClientProtocolVersion (Remote.uuid r) clientside 
 		(withclientversion clientside)
-		p2pErrHandler
+		(p2pErrHandler noop)
   where
 	withclientversion clientside (Just (clientmaxversion, othermsg)) = do
 		remoteside <- proxyRemoteSide clientmaxversion mempty r
 		protocolversion <- either (const (min P2P.maxProtocolVersion clientmaxversion)) id
 			<$> runRemoteSide remoteside 
 				(P2P.net P2P.getProtocolVersion)
+		concurrencyconfig <- noConcurrencyConfig
 		let closer = do
 			closeRemoteSide remoteside
 			p2pDone
-		concurrencyconfig <- noConcurrencyConfig
+		let errhandler = p2pErrHandler (closeRemoteSide remoteside)
 		let runproxy othermsg' = proxy closer proxymethods
 			servermode clientside
 			(Remote.uuid r)
 			(singleProxySelector remoteside)
 			concurrencyconfig
-			protocolversion othermsg' p2pErrHandler
+			protocolversion othermsg' errhandler
 		sendClientProtocolVersion clientside othermsg protocolversion
-			runproxy p2pErrHandler
+			runproxy errhandler
 	withclientversion _ Nothing = p2pDone
 	
 	proxymethods = ProxyMethods
@@ -100,11 +101,15 @@ proxyClientSide clientuuid = do
 	clientrunst <- liftIO (mkRunState $ Serving clientuuid Nothing)
 	return $ ClientSide clientrunst (stdioP2PConnection Nothing)
 
-p2pErrHandler :: (a -> CommandPerform) -> Annex (Either ProtoFailure a) -> CommandPerform
-p2pErrHandler cont a = a >>= \case
+p2pErrHandler :: Annex () -> (a -> CommandPerform) -> Annex (Either ProtoFailure a) -> CommandPerform
+p2pErrHandler closeconn cont a = a >>= \case
 	-- Avoid displaying an error when the client hung up on us.
-	Left (ProtoFailureIOError e) | isEOFError e -> p2pDone
-	Left e -> giveup (describeProtoFailure e)
+	Left (ProtoFailureIOError e) | isEOFError e -> do
+		closeconn
+		p2pDone
+	Left e -> do
+		closeconn
+		giveup (describeProtoFailure e)
 	Right v -> cont v
 
 p2pDone :: CommandPerform
