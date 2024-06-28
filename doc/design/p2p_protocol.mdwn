@@ -149,7 +149,7 @@ spaces, since it's not the last token in the line. Use '%' to indicate
 whitespace.)
 
 The server may respond with ALREADY-HAVE if it already
-had the conent of that key. 
+had the content of that key. 
 
 In protocol version 2, the server can optionally reply with
 ALREADY-HAVE-PLUS. The subsequent list of UUIDs are additional

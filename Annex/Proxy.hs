@@ -15,8 +15,8 @@ import qualified Remote
 import qualified Types.Remote as Remote
 import qualified Remote.Git
 import Remote.Helper.Ssh (openP2PShellConnection', closeP2PShellConnection)
+import Annex.Content
 import Annex.Concurrent
-import Annex.Verify
 import Annex.Tmp
 import Utility.Tmp.Dir
 import Utility.Metered
@@ -51,14 +51,16 @@ proxySpecialRemoteSide clientmaxversion r = mkRemoteSide r $ do
 		liftIO (newTVarIO protoversion)
 	ihdl <- liftIO newEmptyTMVarIO
 	ohdl <- liftIO newEmptyTMVarIO
+	iwaitv <- liftIO newEmptyTMVarIO
+	owaitv <- liftIO newEmptyTMVarIO
 	endv <- liftIO newEmptyTMVarIO
 	worker <- liftIO . async =<< forkState
-		(proxySpecialRemote protoversion r ihdl ohdl endv)
+		(proxySpecialRemote protoversion r ihdl ohdl owaitv endv)
 	let remoteconn = P2PConnection
 		{ connRepo = Nothing
 		, connCheckAuth = const False
-		, connIhdl = P2PHandleTMVar ihdl
-		, connOhdl = P2PHandleTMVar ohdl
+		, connIhdl = P2PHandleTMVar ihdl iwaitv
+		, connOhdl = P2PHandleTMVar ohdl owaitv
 		, connIdent = ConnIdent (Just (Remote.name r))
 		}
 	let closeremoteconn = do
@@ -77,8 +79,9 @@ proxySpecialRemote
 	-> TMVar (Either L.ByteString Message)
 	-> TMVar (Either L.ByteString Message)
 	-> TMVar ()
+	-> TMVar ()
 	-> Annex ()
-proxySpecialRemote protoversion r ihdl ohdl endv = go
+proxySpecialRemote protoversion r ihdl ohdl owaitv endv = go
   where
 	go :: Annex ()
 	go = liftIO receivemessage >>= \case
@@ -97,7 +100,9 @@ proxySpecialRemote protoversion r ihdl ohdl endv = go
 				Right () -> liftIO $ sendmessage SUCCESS
 				Left err -> liftIO $ propagateerror err
 			go
-		Just (PUT af k) -> giveup "TODO PUT" -- XXX
+		Just (PUT (ProtoAssociatedFile af) k) -> do
+			proxyput af k
+			go
 		Just (GET offset (ProtoAssociatedFile af) k) -> do
 			proxyget offset af k
 			go
@@ -122,9 +127,10 @@ proxySpecialRemote protoversion r ihdl ohdl endv = go
 		Right (Right m) -> return (Just m)
 		Right (Left _b) -> giveup "unexpected ByteString received from P2P MVar"
 		Left () -> return Nothing
-	--receivebytestring = liftIO (atomically $ takeTMVar ohdl) >>= \case
-	--	Left b -> return b
-	--	Right _m -> giveup "did not receive ByteString from P2P MVar"
+	
+	receivebytestring = atomically (takeTMVar ohdl) >>= \case
+		Left b -> return b
+		Right _m -> giveup "did not receive ByteString from P2P MVar"
 
 	sendmessage m = atomically $ putTMVar ihdl (Right m)
 	
@@ -141,6 +147,59 @@ proxySpecialRemote protoversion r ihdl ohdl endv = go
 	withproxytmpfile k a = withOtherTmp $ \othertmpdir ->
 		withTmpDirIn (fromRawFilePath othertmpdir) "proxy" $ \tmpdir ->
 			a (toRawFilePath tmpdir P.</> keyFile k)
+			
+	proxyput af k = do
+		-- In order to send to the special remote, the key will
+		-- need to be inserted into the object directory.
+		-- It will be dropped again afterwards. Unless it's already
+		-- present there.
+		ifM (inAnnex k)
+			( tryNonAsync (Remote.storeKey r k af nullMeterUpdate) >>= \case
+				Right () -> liftIO $ sendmessage ALREADY_HAVE
+				Left err -> liftIO $ propagateerror err
+			, do
+				liftIO $ sendmessage $ PUT_FROM (Offset 0)
+				ifM receivedata
+					( do
+						tryNonAsync (Remote.storeKey r k af nullMeterUpdate) >>= \case
+							Right () -> do
+								depopulateobjectfile
+								liftIO $ sendmessage SUCCESS
+							Left err -> do
+								depopulateobjectfile
+								liftIO $ propagateerror err
+					, liftIO $ sendmessage FAILURE
+					)
+			)
+	  where
+		receivedata = withproxytmpfile k $ \tmpfile ->
+			liftIO receivemessage >>= \case
+				Just (DATA (Len _)) -> do
+					b <- liftIO receivebytestring
+					liftIO $ L.writeFile (fromRawFilePath tmpfile) b
+					-- Signal that the whole bytestring
+					-- has been stored.
+					liftIO $ atomically $ putTMVar owaitv ()
+					if protoversion > ProtocolVersion 1
+						then do
+							liftIO receivemessage >>= \case
+								Just (VALIDITY Valid) ->
+									populateobjectfile tmpfile
+								Just (VALIDITY Invalid) -> return False
+								_ -> giveup "protocol error"
+						else populateobjectfile tmpfile
+				_ -> giveup "protocol error"
+					
+		populateobjectfile tmpfile = 
+			getViaTmpFromDisk Remote.RetrievalAllKeysSecure Remote.DefaultVerify k af $ \dest -> do
+				unVerified $ do
+					liftIO $ renameFile
+						(fromRawFilePath tmpfile)
+						(fromRawFilePath dest)
+					return True
+						
+		depopulateobjectfile = void $ tryNonAsync $ 
+			lockContentForRemoval k noop removeAnnex
 
 	proxyget offset af k = withproxytmpfile k $ \tmpfile -> do
 		-- Don't verify the content from the remote,
@@ -148,7 +207,7 @@ proxySpecialRemote protoversion r ihdl ohdl endv = go
 		let vc = Remote.NoVerify
 		tryNonAsync (Remote.retrieveKeyFile r k af (fromRawFilePath tmpfile) nullMeterUpdate vc) >>= \case
 			Right v ->
-				ifM (verifyKeyContentPostRetrieval Remote.RetrievalAllKeysSecure vc v k tmpfile)
+				ifM (verifyKeyContentPostRetrieval Remote.RetrievalVerifiableKeysSecure vc v k tmpfile)
 					( liftIO $ senddata offset tmpfile
 					, liftIO $ sendmessage $
 						ERROR "verification of content failed"

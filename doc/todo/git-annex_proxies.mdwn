@@ -29,13 +29,25 @@ For June's work on [[design/passthrough_proxy]], remaining todos:
   object files around when the client does not send SUCCESS. This would
   use more disk, but without streaming, proxying a special remote already
   needs some disk. And it could minimize to eg, the last 2 or so.
+  The design doc has some more thoughts about this.
 
 * If GET from a proxied special remote sends an ERROR with a message
   from the special remote, currently the user sees "protocol error".
 
-* Implement PUT to proxied special remotes.
+* convert Remote.storeKey to take the path of the object file to send.
+  It's too ugly that PUT to a proxied special remote currently has to
+  temporarily populate the proxy's annex object file. There are too many
+  ways that could lead to surprising behavior, like an interrupted PUT
+  leaving it populated, or simulantaneous PUTs.
+
+* PUT to a proxied special remote, in the case where the proxy contains
+  the key, and the special remote is not accessible, sends back ERROR
+  rather than PUT-FROM or ALREADY-HAVE. Verify that the client processes
+  that ok and displays it to the user.
 
 * Streaming download from proxied special remotes. See design.
+
+* Check annex.diskreserve when proxying for special remotes.
 
 # items deferred until later for [[design/passthrough_proxy]]
 

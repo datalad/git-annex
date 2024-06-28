@@ -77,7 +77,7 @@ mkRunState mk = do
 
 data P2PHandle
 	= P2PHandle Handle
-	| P2PHandleTMVar (TMVar (Either L.ByteString Message))
+	| P2PHandleTMVar (TMVar (Either L.ByteString Message)) (TMVar ())
 
 data P2PConnection = P2PConnection
 	{ connRepo :: Maybe Repo
@@ -122,7 +122,7 @@ closeConnection conn = do
 	closehandle (connOhdl conn)
   where
 	closehandle (P2PHandle h) = hClose h
-	closehandle (P2PHandleTMVar _) = return ()
+	closehandle (P2PHandleTMVar _ _) = return ()
 
 -- Serves the protocol on a unix socket.
 --
@@ -190,7 +190,7 @@ runNet runst conn runner f = case f of
 				P2PHandle h -> tryNonAsync $ do
 					hPutStrLn h $ unwords (formatMessage m)
 					hFlush h
-				P2PHandleTMVar mv ->
+				P2PHandleTMVar mv _ ->
 					ifM (atomically (tryPutTMVar mv (Right m)))
 						( return $ Right ()
 						, return $ Left $ toException $
@@ -214,7 +214,7 @@ runNet runst conn runner f = case f of
 					Right (Just l) -> case parseMessage l of
 						Just m -> gotmessage m
 						Nothing -> runner (next Nothing)
-			P2PHandleTMVar mv -> 
+			P2PHandleTMVar mv _ -> 
 				liftIO (atomically (takeTMVar mv)) >>= \case
 					Right m -> gotmessage m
 					Left _b -> protoerr
@@ -230,8 +230,11 @@ runNet runst conn runner f = case f of
 					Right False -> return $ Left $
 						ProtoFailureMessage "short data write"
 					Left e -> return $ Left $ ProtoFailureException e
-			P2PHandleTMVar mv -> do
+			P2PHandleTMVar mv waitv -> do
 				liftIO $ atomically $ putTMVar mv (Left b)
+				-- Wait for the whole bytestring to be
+				-- processed. Necessary due to lazyiness.
+				liftIO $ atomically $ takeTMVar waitv
 				runner next
 	ReceiveBytes len p next ->
 		case connIhdl conn of
@@ -241,7 +244,7 @@ runNet runst conn runner f = case f of
 					Right b -> runner (next b)
 					Left e -> return $ Left $
 						ProtoFailureException e
-			P2PHandleTMVar mv ->
+			P2PHandleTMVar mv _ ->
 				liftIO (atomically (takeTMVar mv)) >>= \case
 					Left b -> runner (next b)
 					Right _ -> return $ Left $
