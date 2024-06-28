@@ -353,10 +353,10 @@ sendBypass bypass@(Bypass s)
 			then net $ sendMessage (BYPASS bypass)
 			else return ()
 
-checkPresent :: Key -> Proto Bool
+checkPresent :: Key -> Proto (Either String Bool)
 checkPresent key = do
 	net $ sendMessage (CHECKPRESENT key)
-	checkSuccess
+	checkSuccess'
 
 {- Locks content to prevent it from being dropped, while running an action.
  -
@@ -628,14 +628,18 @@ receiveContent mm p sizer storer mkmsg = do
 			return observeFailure
 
 checkSuccess :: Proto Bool
-checkSuccess = do
+checkSuccess = either (const False) id <$> checkSuccess'
+
+checkSuccess' :: Proto (Either String Bool)
+checkSuccess' = do
 	ack <- net receiveMessage
 	case ack of
-		Just SUCCESS -> return True
-		Just FAILURE -> return False
+		Just SUCCESS -> return (Right True)
+		Just FAILURE -> return (Right False)
+		Just (ERROR err) -> return (Left err)
 		_ -> do
 			net $ sendMessage (ERROR "expected SUCCESS or FAILURE")
-			return False
+			return (Right False)
 
 checkSuccessPlus :: Proto (Maybe [UUID])
 checkSuccessPlus =

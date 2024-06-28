@@ -1,6 +1,6 @@
 {- Helpers for remotes using the git-annex P2P protocol.
  -
- - Copyright 2016-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2016-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -20,6 +20,7 @@ import Utility.Tuple
 import Types.NumCopies
 import Annex.Verify
 import Logs.Location
+import Utility.SafeOutput
 
 import Control.Concurrent
 
@@ -74,8 +75,13 @@ remove remoteuuid runner k = runner (P2P.remove k) >>= \case
 			when (u /= remoteuuid) $
 				logChange k u InfoMissing
 
-checkpresent :: ProtoRunner Bool -> Key -> Annex Bool
-checkpresent runner k = maybe remoteUnavail return =<< runner (P2P.checkPresent k)
+checkpresent :: ProtoRunner (Either String Bool) -> Key -> Annex Bool
+checkpresent runner k =
+	runner (P2P.checkPresent k)
+		>>= \case
+			Nothing -> remoteUnavail
+			Just (Right b) -> return b
+			Just (Left err) -> giveup (safeOutput err)
 
 lock :: WithConn a c -> ProtoConnRunner c -> UUID -> Key -> (VerifiedCopy -> Annex a) -> Annex a
 lock withconn connrunner u k callback = withconn $ \conn -> do

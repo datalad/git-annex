@@ -81,7 +81,7 @@ proxySpecialRemote protoversion r ihdl ohdl endv = go
 			tryNonAsync (Remote.checkPresent r k) >>= \case
 				Right True -> sendmessage SUCCESS
 				Right False -> sendmessage FAILURE
-				Left err -> sendmessage (ERROR (show err))
+				Left err -> propagateerror err
 			go
 		Just (LOCKCONTENT _) -> do
 			-- Special remotes do not support locking content.
@@ -119,3 +119,6 @@ proxySpecialRemote protoversion r ihdl ohdl endv = go
 
 	sendmessage m = liftIO $ atomically $ putTMVar ihdl (Right m)
 	sendbytestring b = liftIO $ atomically $ putTMVar ihdl (Left b)
+
+	propagateerror err = sendmessage $ ERROR $
+		"proxied special remote reports: " ++ show err
