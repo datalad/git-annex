@@ -329,13 +329,15 @@ proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) remo
 				net $ sendMessage message
 				net receiveMessage >>= return . \case
 					Just SUCCESS ->
-						Just (True, [Remote.uuid (remote r)])
+						Just ((True, Nothing), [Remote.uuid (remote r)])
 					Just (SUCCESS_PLUS us) -> 
-						Just (True, Remote.uuid (remote r):us)
+						Just ((True, Nothing), Remote.uuid (remote r):us)
 					Just FAILURE ->
-						Just (False, [])
+						Just ((False, Nothing), [])
 					Just (FAILURE_PLUS us) ->
-						Just (False, us)
+						Just ((False, Nothing), us)
+					Just (ERROR err) ->
+						Just ((False, Just err), [])
 					_ -> Nothing
 		let v' = map join v
 		let us = concatMap snd $ catMaybes v'
@@ -344,12 +346,14 @@ proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) remo
 			client $ net $ sendMessage $
 				let nonplussed = all (== remoteuuid) us 
 					|| protocolversion < 2
-				in if all (maybe False fst) v'
+				in if all (maybe False (fst . fst)) v'
 					then if nonplussed
 						then SUCCESS
 						else SUCCESS_PLUS us
 					else if nonplussed
-						then FAILURE
+						then case mapMaybe (snd . fst) (catMaybes v') of
+							[] -> FAILURE
+							(err:_) -> ERROR err
 						else FAILURE_PLUS us
 
 	handleGET remoteside message = getresponse (runRemoteSide remoteside) message $

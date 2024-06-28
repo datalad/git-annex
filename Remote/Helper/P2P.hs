@@ -60,12 +60,14 @@ retrieve gc runner k af dest p verifyconfig = do
 			Just (False, _) -> giveup "Transfer failed"
 			Nothing -> remoteUnavail
 
-remove :: UUID -> ProtoRunner (Bool, Maybe [UUID]) -> Key -> Annex ()
+remove :: UUID -> ProtoRunner (Either String Bool, Maybe [UUID]) -> Key -> Annex ()
 remove remoteuuid runner k = runner (P2P.remove k) >>= \case
-	Just (True, alsoremoveduuids) -> note alsoremoveduuids
-	Just (False, alsoremoveduuids) -> do
+	Just (Right True, alsoremoveduuids) -> note alsoremoveduuids
+	Just (Right False, alsoremoveduuids) -> do
 		note alsoremoveduuids
 		giveup "removing content from remote failed"
+	Just (Left err, _) -> do
+		giveup (safeOutput err)
 	Nothing -> remoteUnavail
   where
 	-- The remote reports removal from other UUIDs than its own,

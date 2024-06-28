@@ -378,7 +378,7 @@ lockContentWhile runproto key a = bracket setup cleanup a
 	cleanup True = runproto () $ net $ sendMessage UNLOCKCONTENT
 	cleanup False = return ()
 
-remove :: Key -> Proto (Bool, Maybe [UUID])
+remove :: Key -> Proto (Either String Bool, Maybe [UUID])
 remove key = do
 	net $ sendMessage (REMOVE key)
 	checkSuccessFailurePlus
@@ -644,28 +644,30 @@ checkSuccess' = do
 checkSuccessPlus :: Proto (Maybe [UUID])
 checkSuccessPlus =
 	checkSuccessFailurePlus >>= return . \case
-		(True, v) -> v
-		(False, _) -> Nothing
+		(Right True, v) -> v
+		(Right False, _) -> Nothing
+		(Left _, _) -> Nothing
 
-checkSuccessFailurePlus :: Proto (Bool, Maybe [UUID])
+checkSuccessFailurePlus :: Proto (Either String Bool, Maybe [UUID])
 checkSuccessFailurePlus = do
 	ver <- net getProtocolVersion
 	if ver >= ProtocolVersion 2
 		then do
 			ack <- net receiveMessage
 			case ack of
-				Just SUCCESS -> return (True, Just [])
-				Just (SUCCESS_PLUS l) -> return (True, Just l)
-				Just FAILURE -> return (False, Nothing)
-				Just (FAILURE_PLUS l) -> return (False, Just l)
+				Just SUCCESS -> return (Right True, Just [])
+				Just (SUCCESS_PLUS l) -> return (Right True, Just l)
+				Just FAILURE -> return (Right False, Nothing)
+				Just (FAILURE_PLUS l) -> return (Right False, Just l)
+				Just (ERROR err) -> return (Left err, Nothing)
 				_ -> do
 					net $ sendMessage (ERROR "expected SUCCESS or SUCCESS-PLUS or FAILURE or FAILURE-PLUS")
-					return (False, Nothing)
+					return (Right False, Nothing)
 		else do
 			ok <- checkSuccess
 			if ok
-				then return (True, Just [])
-				else return (False, Nothing)
+				then return (Right True, Just [])
+				else return (Right False, Nothing)
 
 sendSuccess :: Bool -> Proto ()
 sendSuccess True = net $ sendMessage SUCCESS

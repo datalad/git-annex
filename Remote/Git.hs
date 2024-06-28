@@ -456,7 +456,7 @@ dropKey' repo r st@(State connpool duc _ _ _) key
 		)
 	| Git.repoIsHttp repo = giveup "dropping from http remote not supported"
 	| otherwise = P2PHelper.remove (uuid r) 
-		(Ssh.runProto r connpool (return (False, Nothing))) key
+		(Ssh.runProto r connpool (return (Right False, Nothing))) key
 
 lockKey :: Remote -> State -> Key -> (VerifiedCopy -> Annex r) -> Annex r
 lockKey r st key callback = do

@@ -76,7 +76,6 @@ proxySpecialRemote
 proxySpecialRemote protoversion r ihdl ohdl endv = go
   where
 	go = receivemessage >>= \case
-		Just (BYPASS _) -> go
 		Just (CHECKPRESENT k) -> do
 			tryNonAsync (Remote.checkPresent r k) >>= \case
 				Right True -> sendmessage SUCCESS
@@ -90,10 +89,11 @@ proxySpecialRemote protoversion r ihdl ohdl endv = go
 		Just (REMOVE k) -> do
 			tryNonAsync (Remote.removeKey r k) >>= \case
 				Right () -> sendmessage SUCCESS
-				Left _ -> sendmessage FAILURE
+				Left err -> propagateerror err
 			go
 		Just (PUT af k) -> giveup "TODO PUT" -- XXX
 		Just (GET offset af k) -> giveup "TODO GET" -- XXX
+		Just (BYPASS _) -> go
 		Just (CONNECT _) -> 
 			-- Not supported and the protocol ends here.
 			sendmessage $ CONNECTDONE (ExitFailure 1)	
