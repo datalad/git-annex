@@ -24,13 +24,18 @@ Planned schedule of work:
 
 For June's work on [[design/passthrough_proxy]], remaining todos:
 
-* Since proxying to special remotes is not supported yet, and won't be for
-  the first release, make it fail in a reasonable way.
+* Resuming an interrupted download from proxied special remote makes the proxy
+  re-download the whole content. It could instead keep some of the 
+  object files around when the client does not send SUCCESS. This would
+  use more disk, but without streaming, proxying a special remote already
+  needs some disk. And it could minimize to eg, the last 2 or so.
 
-- or -
+* If GET from a proxied special remote sends an ERROR with a message
+  from the special remote, currently the user sees "protocol error".
 
-* Proxying for special remotes.
-  Including encryption and chunking. See design for issues.
+* Implement PUT to proxied special remotes.
+
+* Streaming download from proxied special remotes. See design.
 
 # items deferred until later for [[design/passthrough_proxy]]
 
@@ -124,3 +129,6 @@ For June's work on [[design/passthrough_proxy]], remaining todos:
 
 * Proxied cluster nodes should have slightly higher cost than the cluster
   gateway. (done)
+
+* Basic support for proxying special remotes. (But not exporttree=yes ones
+  yet.) (done)

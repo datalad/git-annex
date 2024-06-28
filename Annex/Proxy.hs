@@ -16,10 +16,15 @@ import qualified Types.Remote as Remote
 import qualified Remote.Git
 import Remote.Helper.Ssh (openP2PShellConnection', closeP2PShellConnection)
 import Annex.Concurrent
+import Annex.Verify
+import Annex.Tmp
+import Utility.Tmp.Dir
+import Utility.Metered
 
 import Control.Concurrent.STM
 import Control.Concurrent.Async
 import qualified Data.ByteString.Lazy as L
+import qualified System.FilePath.ByteString as P
 
 proxyRemoteSide :: ProtocolVersion -> Bypass -> Remote -> Annex RemoteSide
 proxyRemoteSide clientmaxversion bypass r
@@ -75,30 +80,34 @@ proxySpecialRemote
 	-> Annex ()
 proxySpecialRemote protoversion r ihdl ohdl endv = go
   where
-	go = receivemessage >>= \case
+	go :: Annex ()
+	go = liftIO receivemessage >>= \case
 		Just (CHECKPRESENT k) -> do
 			tryNonAsync (Remote.checkPresent r k) >>= \case
-				Right True -> sendmessage SUCCESS
-				Right False -> sendmessage FAILURE
-				Left err -> propagateerror err
+				Right True -> liftIO $ sendmessage SUCCESS
+				Right False -> liftIO $ sendmessage FAILURE
+				Left err -> liftIO $ propagateerror err
 			go
 		Just (LOCKCONTENT _) -> do
 			-- Special remotes do not support locking content.
-			sendmessage FAILURE
+			liftIO $ sendmessage FAILURE
 			go
 		Just (REMOVE k) -> do
 			tryNonAsync (Remote.removeKey r k) >>= \case
-				Right () -> sendmessage SUCCESS
-				Left err -> propagateerror err
+				Right () -> liftIO $ sendmessage SUCCESS
+				Left err -> liftIO $ propagateerror err
 			go
 		Just (PUT af k) -> giveup "TODO PUT" -- XXX
-		Just (GET offset af k) -> giveup "TODO GET" -- XXX
+		Just (GET offset (ProtoAssociatedFile af) k) -> do
+			proxyget offset af k
+			go
 		Just (BYPASS _) -> go
 		Just (CONNECT _) -> 
 			-- Not supported and the protocol ends here.
-			sendmessage $ CONNECTDONE (ExitFailure 1)	
+			liftIO $ sendmessage $ CONNECTDONE (ExitFailure 1)	
 		Just NOTIFYCHANGE -> do
-			sendmessage (ERROR "NOTIFYCHANGE unsupported for a special remote")
+			liftIO $ sendmessage $
+				ERROR "NOTIFYCHANGE unsupported for a special remote"
 			go
 		Just _ -> giveup "protocol error"
 		Nothing -> return ()
@@ -107,7 +116,7 @@ proxySpecialRemote protoversion r ihdl ohdl endv = go
 		liftIO $ atomically $ 
 			(Right <$> takeTMVar ohdl)
 				`orElse`
-			(Left <$> takeTMVar endv)
+			(Left <$> readTMVar endv)
 
 	receivemessage = getnextmessageorend >>= \case
 		Right (Right m) -> return (Just m)
@@ -117,8 +126,57 @@ proxySpecialRemote protoversion r ihdl ohdl endv = go
 	--	Left b -> return b
 	--	Right _m -> giveup "did not receive ByteString from P2P MVar"
 
-	sendmessage m = liftIO $ atomically $ putTMVar ihdl (Right m)
-	sendbytestring b = liftIO $ atomically $ putTMVar ihdl (Left b)
+	sendmessage m = atomically $ putTMVar ihdl (Right m)
+	
+	sendbytestring b = atomically $ putTMVar ihdl (Left b)
 
 	propagateerror err = sendmessage $ ERROR $
 		"proxied special remote reports: " ++ show err
+
+	-- Not using gitAnnexTmpObjectLocation because there might be
+	-- several concurrent GET and PUTs of the same key being proxied
+	-- from this special remote or others, and each needs to happen
+	-- independently. Also, this key is not getting added into the
+	-- local annex objects.
+	withproxytmpfile k a = withOtherTmp $ \othertmpdir ->
+		withTmpDirIn (fromRawFilePath othertmpdir) "proxy" $ \tmpdir ->
+			a (toRawFilePath tmpdir P.</> keyFile k)
+
+	proxyget offset af k = withproxytmpfile k $ \tmpfile -> do
+		-- Don't verify the content from the remote,
+		-- because the client will do its own verification.
+		let vc = Remote.NoVerify
+		tryNonAsync (Remote.retrieveKeyFile r k af (fromRawFilePath tmpfile) nullMeterUpdate vc) >>= \case
+			Right v ->
+				ifM (verifyKeyContentPostRetrieval Remote.RetrievalAllKeysSecure vc v k tmpfile)
+					( liftIO $ senddata offset tmpfile
+					, liftIO $ sendmessage $
+						ERROR "verification of content failed"
+					)
+			Left err -> liftIO $ propagateerror err
+	
+	senddata (Offset offset) f = do
+		size <- fromIntegral <$> getFileSize f
+		let n = max 0 (size - offset)
+		sendmessage $ DATA (Len n)
+		withBinaryFile (fromRawFilePath f) ReadMode $ \h -> do
+			hSeek h AbsoluteSeek offset
+			sendbs =<< L.hGetContents h
+			-- Important to keep the handle open until
+			-- the client responds. The bytestring
+			-- could still be lazily streaming out to
+			-- the client.
+			waitclientresponse
+	  where
+		sendbs bs = do
+			sendbytestring bs
+			when (protoversion > ProtocolVersion 0) $
+				sendmessage (VALIDITY Valid)
+			
+		waitclientresponse = 
+			receivemessage >>= \case
+				Just SUCCESS -> return ()
+				Just FAILURE -> return ()
+				Just _ -> giveup "protocol error"
+				Nothing -> return ()
+						

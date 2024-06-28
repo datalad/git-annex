@@ -241,10 +241,10 @@ runNet runst conn runner f = case f of
 					Right b -> runner (next b)
 					Left e -> return $ Left $
 						ProtoFailureException e
-			P2PHandleTMVar mv -> 
+			P2PHandleTMVar mv ->
 				liftIO (atomically (takeTMVar mv)) >>= \case
 					Left b -> runner (next b)
-					Right _m -> return $ Left $
+					Right _ -> return $ Left $
 						ProtoFailureMessage "protocol error"
 	CheckAuthToken _u t next -> do
 		let authed = connCheckAuth conn t
