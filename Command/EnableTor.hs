@@ -135,8 +135,8 @@ checkHiddenService = bracket setup cleanup go
 		let conn = P2PConnection
 			{ connRepo = Nothing
 			, connCheckAuth = const False
-			, connIhdl = h
-			, connOhdl = h
+			, connIhdl = P2PHandle h
+			, connOhdl = P2PHandle h
 			, connIdent = ConnIdent Nothing
 			}
 		runst <- mkRunState Client

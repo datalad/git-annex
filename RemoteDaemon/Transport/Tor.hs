@@ -113,8 +113,8 @@ serveClient th@(TransportHandle _ _ rd) u r q = bracket setup cleanup start
 			let conn = P2PConnection
 				{ connRepo = Just r
 				, connCheckAuth = (`isAllowedAuthToken` allowed)
-				, connIhdl = h
-				, connOhdl = h
+				, connIhdl = P2PHandle h
+				, connOhdl = P2PHandle h
 				, connIdent = ConnIdent $ Just "tor remotedaemon"
 				}
 			-- not really Client, but we don't know their uuid yet

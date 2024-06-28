@@ -264,8 +264,8 @@ openP2PShellConnection' r maxprotoversion bypass = do
 		let conn = P2P.P2PConnection
 			{ P2P.connRepo = Nothing
 			, P2P.connCheckAuth = const False
-			, P2P.connIhdl = to
-			, P2P.connOhdl = from
+			, P2P.connIhdl = P2P.P2PHandle to
+			, P2P.connOhdl = P2P.P2PHandle from
 			, P2P.connIdent = P2P.ConnIdent $
 				Just $ "git-annex-shell connection " ++ show pidnum
 			}
