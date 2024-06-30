@@ -1,0 +1,188 @@
+### Please describe the problem.
+
+Our DataLad test which explicitly tests that we are not breeding commits in git-annex branch while adding files/urls to point to datalad-archive special remote started to fail going from git-annex 10.20240532-gf9ce7a452cc0fd5cdd2d58739741f7264fdbc598 to 10.20240532-g28f5c47b5a0daf96e5ed9aa719ff1e2763d3cc8b
+(invocation: `python -m pytest -s -v datalad/local/tests/test_add_archive_content.py::TestAddArchiveOptions::test_add_delete_after_and_drop_subdir`)
+
+If before we had a single commit
+<details>
+<summary></summary> 
+
+```shell
+❯ git log -p git-annex^..git-annex
+commit b42433cab9f671d206fe937ee7b68b53f11a0c54 (git-annex)
+Author: DataLad Tester <test@example.com>
+Date:   Sun Jun 30 10:48:16 2024 -0400
+
+    update
+
+diff --git a/d77/a0b/MD5E-s4--ec4d1eb36b22d19728e9d1d23ca84d1c.txt.log b/d77/a0b/MD5E-s4--ec4d1eb36b22d19728e9d1d23ca84d1c.txt.log
+new file mode 100644
+index 0000000..cc638db
+--- /dev/null
++++ b/d77/a0b/MD5E-s4--ec4d1eb36b22d19728e9d1d23ca84d1c.txt.log
+@@ -0,0 +1,2 @@
++1719758896s 1 c04eb54b-4b4e-5755-8436-866b043170fa
++1719758897s 0 d53ab0e3-21a9-4084-806f-bf9f5812f34e
+diff --git a/d77/a0b/MD5E-s4--ec4d1eb36b22d19728e9d1d23ca84d1c.txt.log.web b/d77/a0b/MD5E-s4--ec4d1eb36b22d19728e9d1d23ca84d1c.txt.log.web
+new file mode 100644
+index 0000000..8ef0f1f
+--- /dev/null
++++ b/d77/a0b/MD5E-s4--ec4d1eb36b22d19728e9d1d23ca84d1c.txt.log.web
+@@ -0,0 +1 @@
++1719758896s 1 :dl+archive:MD5E-s3584--2f350c3650d5e3a21785d55f5a94ce70.tar#path=1/file.txt&size=4
+diff --git a/f45/7f1/MD5E-s5--db87ebcba59a8c9f34b68e713c08a718.dat.log b/f45/7f1/MD5E-s5--db87ebcba59a8c9f34b68e713c08a718.dat.log
+new file mode 100644
+index 0000000..cc638db
+--- /dev/null
++++ b/f45/7f1/MD5E-s5--db87ebcba59a8c9f34b68e713c08a718.dat.log
+@@ -0,0 +1,2 @@
++1719758896s 1 c04eb54b-4b4e-5755-8436-866b043170fa
++1719758897s 0 d53ab0e3-21a9-4084-806f-bf9f5812f34e
+diff --git a/f45/7f1/MD5E-s5--db87ebcba59a8c9f34b68e713c08a718.dat.log.web b/f45/7f1/MD5E-s5--db87ebcba59a8c9f34b68e713c08a718.dat.log.web
+new file mode 100644
+index 0000000..30bb5e9
+--- /dev/null
++++ b/f45/7f1/MD5E-s5--db87ebcba59a8c9f34b68e713c08a718.dat.log.web
+@@ -0,0 +1 @@
++1719758896s 1 :dl+archive:MD5E-s3584--2f350c3650d5e3a21785d55f5a94ce70.tar#path=1/1.dat&size=5
+
+```
+</details>
+
+<details>
+<summary>now we got two</summary> 
+
+```shell
+Author: DataLad Tester <test@example.com>
+Date:   Sun Jun 30 10:45:12 2024 -0400
+
+    update
+
+diff --git a/d77/a0b/MD5E-s4--ec4d1eb36b22d19728e9d1d23ca84d1c.txt.log b/d77/a0b/MD5E-s4--ec4d1eb36b22d19728e9d1d23ca84d1c.txt.log
+new file mode 100644
+index 0000000..97acf53
+--- /dev/null
++++ b/d77/a0b/MD5E-s4--ec4d1eb36b22d19728e9d1d23ca84d1c.txt.log
+@@ -0,0 +1,2 @@
++1719758713s 0 86661c7b-0604-49e7-8d65-1baf4ca9f469
++1719758712s 1 c04eb54b-4b4e-5755-8436-866b043170fa
+diff --git a/d77/a0b/MD5E-s4--ec4d1eb36b22d19728e9d1d23ca84d1c.txt.log.web b/d77/a0b/MD5E-s4--ec4d1eb36b22d19728e9d1d23ca84d1c.txt.log.web
+new file mode 100644
+index 0000000..e5bafba
+--- /dev/null
++++ b/d77/a0b/MD5E-s4--ec4d1eb36b22d19728e9d1d23ca84d1c.txt.log.web
+@@ -0,0 +1 @@
++1719758712s 1 :dl+archive:MD5E-s3584--de6498c9ca26fee011f289f5f5972ed0.tar#path=1/file.txt&size=4
+diff --git a/f45/7f1/MD5E-s5--db87ebcba59a8c9f34b68e713c08a718.dat.log b/f45/7f1/MD5E-s5--db87ebcba59a8c9f34b68e713c08a718.dat.log
+index 11934b6..97acf53 100644
+--- a/f45/7f1/MD5E-s5--db87ebcba59a8c9f34b68e713c08a718.dat.log
++++ b/f45/7f1/MD5E-s5--db87ebcba59a8c9f34b68e713c08a718.dat.log
+@@ -1,2 +1,2 @@
+-1719758712s 1 86661c7b-0604-49e7-8d65-1baf4ca9f469
++1719758713s 0 86661c7b-0604-49e7-8d65-1baf4ca9f469
+ 1719758712s 1 c04eb54b-4b4e-5755-8436-866b043170fa
+
+commit 8c4fdbadb4b1735cbb47f833ef99235790b8bcbf
+Author: DataLad Tester <test@example.com>
+Date:   Sun Jun 30 10:45:12 2024 -0400
+
+    update
+
+diff --git a/f45/7f1/MD5E-s5--db87ebcba59a8c9f34b68e713c08a718.dat.log b/f45/7f1/MD5E-s5--db87ebcba59a8c9f34b68e713c08a718.dat.log
+new file mode 100644
+index 0000000..11934b6
+--- /dev/null
++++ b/f45/7f1/MD5E-s5--db87ebcba59a8c9f34b68e713c08a718.dat.log
+@@ -0,0 +1,2 @@
++1719758712s 1 86661c7b-0604-49e7-8d65-1baf4ca9f469
++1719758712s 1 c04eb54b-4b4e-5755-8436-866b043170fa
+diff --git a/f45/7f1/MD5E-s5--db87ebcba59a8c9f34b68e713c08a718.dat.log.web b/f45/7f1/MD5E-s5--db87ebcba59a8c9f34b68e713c08a718.dat.log.web
+new file mode 100644
+index 0000000..107c66f
+--- /dev/null
++++ b/f45/7f1/MD5E-s5--db87ebcba59a8c9f34b68e713c08a718.dat.log.web
+@@ -0,0 +1 @@
++1719758712s 1 :dl+archive:MD5E-s3584--de6498c9ca26fee011f289f5f5972ed0.tar#path=1/1.dat&size=5
+```
+</details>
+
+for the same effect.  And I believe the command which triggers them is `['git', '-c', 'diff.ignoreSubmodules=none', '-c', 'core.quotepath=false', 'annex', 'addurl', '--with-files', '--json', '--json-error-messages', '--batch']` which before (for years?!) resulted in expected single commit.
+
+<details>
+<summary>Here is the full set of datalad logs for the steps triggering that </summary> 
+
+```shell
+[DEBUG  ] Determined class of decorated function: <class 'datalad.local.add_archive_content.AddArchiveContent'> 
+[DEBUG  ] Resolved dataset to add-archive-content: /home/yoh/.tmp/datalad_temp_tree_rsua9kmg 
+[DEBUG  ] Determined class of decorated function: <class 'datalad.core.local.status.Status'> 
+[DEBUG  ] Resolved dataset to report status: /home/yoh/.tmp/datalad_temp_tree_rsua9kmg 
+[DEBUG  ] Querying AnnexRepo(/home/yoh/.tmp/datalad_temp_tree_rsua9kmg).diffstatus() for paths: [PosixPath('/home/yoh/.tmp/datalad_temp_tree_rsua9kmg/subdir/1.tar')] 
+[DEBUG  ] Run ['git', '-c', 'diff.ignoreSubmodules=none', '-c', 'core.quotepath=false', 'rev-parse', '--quiet', '--verify', 'HEAD^{commit}'] (protocol_class=GeneratorStdOutErrCapture) (cwd=/home/yoh/.tmp/datalad_temp_tree_rsua9kmg) 
+[DEBUG  ] AnnexRepo(/home/yoh/.tmp/datalad_temp_tree_rsua9kmg).get_content_info(...) 
+[DEBUG  ] Query repo: ['ls-files', '--stage', '-z', '--exclude-standard', '-o', '--directory', '--no-empty-directory'] 
+[DEBUG  ] Run ['git', '-c', 'diff.ignoreSubmodules=none', '-c', 'core.quotepath=false', 'ls-files', '--stage', '-z', '--exclude-standard', '-o', '--directory', '--no-empty-directory', '--', 'subdir/1.tar'] (protocol_class=GeneratorStdOutErrCapture) (cwd=/home/yoh/.tmp/datalad_temp_tree_rsua9kmg) 
+[DEBUG  ] Done query repo: ['ls-files', '--stage', '-z', '--exclude-standard', '-o', '--directory', '--no-empty-directory'] 
+[DEBUG  ] Done AnnexRepo(/home/yoh/.tmp/datalad_temp_tree_rsua9kmg).get_content_info(...) 
+[DEBUG  ] Run ['git', '-c', 'diff.ignoreSubmodules=none', '-c', 'core.quotepath=false', 'ls-files', '-z', '-m', '-d', '--', 'subdir/1.tar'] (protocol_class=GeneratorStdOutErrCapture) (cwd=/home/yoh/.tmp/datalad_temp_tree_rsua9kmg) 
+[DEBUG  ] AnnexRepo(/home/yoh/.tmp/datalad_temp_tree_rsua9kmg).get_content_info(...) 
+[DEBUG  ] Query repo: ['ls-tree', 'HEAD', '-z', '-r', '--full-tree', '-l'] 
+[DEBUG  ] Run ['git', '-c', 'diff.ignoreSubmodules=none', '-c', 'core.quotepath=false', 'ls-tree', 'HEAD', '-z', '-r', '--full-tree', '-l', '--', 'subdir/1.tar'] (protocol_class=GeneratorStdOutErrCapture) (cwd=/home/yoh/.tmp/datalad_temp_tree_rsua9kmg) 
+[DEBUG  ] Done query repo: ['ls-tree', 'HEAD', '-z', '-r', '--full-tree', '-l'] 
+[DEBUG  ] Done AnnexRepo(/home/yoh/.tmp/datalad_temp_tree_rsua9kmg).get_content_info(...) 
+[DEBUG  ] Run ['git', '-c', 'diff.ignoreSubmodules=none', '-c', 'core.quotepath=false', 'status', '--porcelain', '--untracked-files=normal', '--ignore-submodules=none'] (protocol_class=GeneratorStdOutErrCapture) (cwd=/home/yoh/.tmp/datalad_temp_tree_rsua9kmg) 
+[DEBUG  ] Run ['git', '-c', 'diff.ignoreSubmodules=none', '-c', 'core.quotepath=false', 'annex', 'find', '--anything', '--json', '--json-error-messages', '-c', 'annex.dotfiles=true', '--', 'subdir/1.tar'] (protocol_class=AnnexJsonProtocol) (cwd=/home/yoh/.tmp/datalad_temp_tree_rsua9kmg) 
+[DEBUG  ] Finished ['git', '-c', 'diff.ignoreSubmodules=none', '-c', 'core.quotepath=false', 'annex', 'find', '--anything', '--json', '--json-error-messages', '-c', 'annex.dotfiles=true', '--', 'subdir/1.tar'] with status 0 
+[DEBUG  ] Run ['git', '-c', 'diff.ignoreSubmodules=none', '-c', 'core.quotepath=false', 'annex', 'contentlocation', 'MD5E-s3584--bb87b72d411b7415410da27950d2a165.tar', '-c', 'annex.dotfiles=true'] (protocol_class=GeneratorStdOutErrCapture) (cwd=/home/yoh/.tmp/datalad_temp_tree_rsua9kmg) 
+[INFO   ] Adding content of the archive subdir/1.tar into annex AnnexRepo(/home/yoh/.tmp/datalad_temp_tree_rsua9kmg) 
+[DEBUG  ] Initiating clean cache for the archives under /home/yoh/.tmp/datalad_temp_tree_rsua9kmg/.git/datalad/tmp/archives 
+[DEBUG  ] Cache initialized 
+[DEBUG  ] Not initiating existing cache for the archives under /home/yoh/.tmp/datalad_temp_tree_rsua9kmg/.git/datalad/tmp/archives 
+[DEBUG  ] Cached directory for archive /home/yoh/.tmp/datalad_temp_tree_rsua9kmg/.git/annex/objects/gg/zf/MD5E-s3584--bb87b72d411b7415410da27950d2a165.tar/MD5E-s3584--bb87b72d411b7415410da27950d2a165.tar is fbab09b98e 
+[DEBUG  ] Run ['git', '-c', 'diff.ignoreSubmodules=none', '-c', 'core.quotepath=false', 'cat-file', 'blob', 'git-annex:remote.log'] (protocol_class=GeneratorStdOutErrCapture) (cwd=/home/yoh/.tmp/datalad_temp_tree_rsua9kmg) 
+[Level 11] CommandError: 'git -c diff.ignoreSubmodules=none -c core.quotepath=false cat-file blob git-annex:remote.log' failed with exitcode 128 [err: 'fatal: path 'remote.log' does not exist in 'git-annex''] 
+[DEBUG  ] Run ['git', '-c', 'diff.ignoreSubmodules=none', '-c', 'core.quotepath=false', 'cat-file', 'blob', 'git-annex:trust.log'] (protocol_class=GeneratorStdOutErrCapture) (cwd=/home/yoh/.tmp/datalad_temp_tree_rsua9kmg) 
+[Level 11] CommandError: 'git -c diff.ignoreSubmodules=none -c core.quotepath=false cat-file blob git-annex:trust.log' failed with exitcode 128 [err: 'fatal: path 'trust.log' does not exist in 'git-annex''] 
+[INFO   ] Initializing special remote datalad-archives 
+[DEBUG  ] Run ['git', '-c', 'diff.ignoreSubmodules=none', '-c', 'core.quotepath=false', 'annex', 'initremote', 'datalad-archives', 'encryption=none', 'type=external', 'autoenable=true', 'externaltype=datalad-archives', 'uuid=c04eb54b-4b4e-5755-8436-866b043170fa', '-c', 'annex.dotfiles=true'] (protocol_class=StdOutErrCapture) (cwd=/home/yoh/.tmp/datalad_temp_tree_rsua9kmg) 
+[DEBUG  ] Finished ['git', '-c', 'diff.ignoreSubmodules=none', '-c', 'core.quotepath=false', 'annex', 'initremote', 'datalad-archives', 'encryption=none', 'type=external', 'autoenable=true', 'externaltype=datalad-archives', 'uuid=c04eb54b-4b4e-5755-8436-866b043170fa', '-c', 'annex.dotfiles=true'] with status 0 
+[DEBUG  ] Run ['git', 'config', '-z', '-l', '--show-origin'] (protocol_class=StdOutErrCapture) (cwd=/home/yoh/.tmp/datalad_temp_tree_rsua9kmg) 
+[DEBUG  ] Finished ['git', 'config', '-z', '-l', '--show-origin'] with status 0 
+[DEBUG  ] Acquiring a lock /home/yoh/.tmp/datalad_temp_tree_rsua9kmg/.git/datalad/tmp/archives/fbab09b98e.extract-lck 
+[DEBUG  ] Acquired? lock /home/yoh/.tmp/datalad_temp_tree_rsua9kmg/.git/datalad/tmp/archives/fbab09b98e.extract-lck: True 
+[DEBUG  ] Extracting /home/yoh/.tmp/datalad_temp_tree_rsua9kmg/.git/annex/objects/gg/zf/MD5E-s3584--bb87b72d411b7415410da27950d2a165.tar/MD5E-s3584--bb87b72d411b7415410da27950d2a165.tar under /home/yoh/.tmp/datalad_temp_tree_rsua9kmg/.git/datalad/tmp/archives/fbab09b98e 
+[DEBUG  ] Run ['7z', 'x', '/home/yoh/.tmp/datalad_temp_tree_rsua9kmg/.git/annex/objects/gg/zf/MD5E-s3584--bb87b72d411b7415410da27950d2a165.tar/MD5E-s3584--bb87b72d411b7415410da27950d2a165.tar'] (protocol_class=KillOutput) (cwd=/home/yoh/.tmp/datalad_temp_tree_rsua9kmg/.git/datalad/tmp/archives/fbab09b98e) 
+[DEBUG  ] Finished ['7z', 'x', '/home/yoh/.tmp/datalad_temp_tree_rsua9kmg/.git/annex/objects/gg/zf/MD5E-s3584--bb87b72d411b7415410da27950d2a165.tar/MD5E-s3584--bb87b72d411b7415410da27950d2a165.tar'] with status 0 
+[DEBUG  ] Releasing lock /home/yoh/.tmp/datalad_temp_tree_rsua9kmg/.git/datalad/tmp/archives/fbab09b98e.extract-lck 
+[INFO   ] Start Extracting archive 
+[DEBUG  ] Adding /home/yoh/.tmp/datalad_temp_tree_rsua9kmg/subdir/.dataladiwgxvqzi/1/1.dat to annex pointing to dl+archive:MD5E-s3584--bb87b72d411b7415410da27950d2a165.tar#path=1/1.dat&size=5 and with options None 
+[DEBUG  ] Starting new runner for BatchedAnnex(command=['git', '-c', 'diff.ignoreSubmodules=none', '-c', 'core.quotepath=false', 'annex', 'addurl', '--with-files', '--json', '--json-error-messages', '--batch'], encoding=None, exception_on_timeout=False, last_request=None, output_proc=<function readline_json at 0x7f165f5adf80>, path=/home/yoh/.tmp/datalad_temp_tree_rsua9kmg, return_code=None, runner=None, stderr_output=b'', timeout=None, wait_timed_out=None) 
+[DEBUG  ] Run ['git', '-c', 'diff.ignoreSubmodules=none', '-c', 'core.quotepath=false', 'annex', 'addurl', '--with-files', '--json', '--json-error-messages', '--batch'] (protocol_class=BatchedCommandProtocol) (cwd=/home/yoh/.tmp/datalad_temp_tree_rsua9kmg) 
+[DEBUG  ] Starting new runner for BatchedAnnex(command=['git', '-c', 'diff.ignoreSubmodules=none', '-c', 'core.quotepath=false', 'annex', 'dropkey', '--force', '--json', '--json-error-messages', '--batch'], encoding=None, exception_on_timeout=False, last_request=None, output_proc=<function readline_json at 0x7f165f5adf80>, path=/home/yoh/.tmp/datalad_temp_tree_rsua9kmg, return_code=None, runner=None, stderr_output=b'', timeout=None, wait_timed_out=None) 
+[DEBUG  ] Run ['git', '-c', 'diff.ignoreSubmodules=none', '-c', 'core.quotepath=false', 'annex', 'dropkey', '--force', '--json', '--json-error-messages', '--batch'] (protocol_class=BatchedCommandProtocol) (cwd=/home/yoh/.tmp/datalad_temp_tree_rsua9kmg) 
+[DEBUG  ] Adding /home/yoh/.tmp/datalad_temp_tree_rsua9kmg/subdir/.dataladiwgxvqzi/1/file.txt to annex pointing to dl+archive:MD5E-s3584--bb87b72d411b7415410da27950d2a165.tar#path=1/file.txt&size=4 and with options None 
+[INFO   ] Finished adding subdir/1.tar: Files processed: 2, renamed: 2, removed: 2, +annex: 2 
+[DEBUG  ] Removing extracted and annexed files under /home/yoh/.tmp/datalad_temp_tree_rsua9kmg/subdir/.dataladiwgxvqzi 
+[DEBUG  ] Run ['git', '-c', 'diff.ignoreSubmodules=none', '-c', 'core.quotepath=false', 'rm', '--force', '-r', '--', 'subdir/.dataladiwgxvqzi'] (protocol_class=GeneratorStdOutErrCapture) (cwd=/home/yoh/.tmp/datalad_temp_tree_rsua9kmg) 
+[DEBUG  ] Query status of AnnexRepo('/home/yoh/.tmp/datalad_temp_tree_rsua9kmg') for all paths 
+[DEBUG  ] Run ['git', '-c', 'diff.ignoreSubmodules=none', '-c', 'core.quotepath=false', 'rev-parse', '--quiet', '--verify', 'HEAD^{commit}'] (protocol_class=GeneratorStdOutErrCapture) (cwd=/home/yoh/.tmp/datalad_temp_tree_rsua9kmg) 
+[DEBUG  ] AnnexRepo(/home/yoh/.tmp/datalad_temp_tree_rsua9kmg).get_content_info(...) 
+[DEBUG  ] Query repo: ['ls-files', '--stage', '-z'] 
+[DEBUG  ] Run ['git', '-c', 'diff.ignoreSubmodules=none', '-c', 'core.quotepath=false', 'ls-files', '--stage', '-z'] (protocol_class=GeneratorStdOutErrCapture) (cwd=/home/yoh/.tmp/datalad_temp_tree_rsua9kmg) 
+[DEBUG  ] Done query repo: ['ls-files', '--stage', '-z'] 
+[DEBUG  ] Done AnnexRepo(/home/yoh/.tmp/datalad_temp_tree_rsua9kmg).get_content_info(...) 
+[DEBUG  ] Run ['git', '-c', 'diff.ignoreSubmodules=none', '-c', 'core.quotepath=false', 'ls-files', '-z', '-m', '-d'] (protocol_class=GeneratorStdOutErrCapture) (cwd=/home/yoh/.tmp/datalad_temp_tree_rsua9kmg) 
+[DEBUG  ] AnnexRepo(/home/yoh/.tmp/datalad_temp_tree_rsua9kmg).get_content_info(...) 
+[DEBUG  ] Query repo: ['ls-tree', 'HEAD', '-z', '-r', '--full-tree', '-l'] 
+[DEBUG  ] Run ['git', '-c', 'diff.ignoreSubmodules=none', '-c', 'core.quotepath=false', 'ls-tree', 'HEAD', '-z', '-r', '--full-tree', '-l'] (protocol_class=GeneratorStdOutErrCapture) (cwd=/home/yoh/.tmp/datalad_temp_tree_rsua9kmg) 
+[DEBUG  ] Done query repo: ['ls-tree', 'HEAD', '-z', '-r', '--full-tree', '-l'] 
+[DEBUG  ] Done AnnexRepo(/home/yoh/.tmp/datalad_temp_tree_rsua9kmg).get_content_info(...) 
+[INFO   ]  Extracting archive 2 Files done in 0.872975 sec at 2.29102 Files/sec 
+[DEBUG  ] Cleaning up the cache for /home/yoh/.tmp/datalad_temp_tree_rsua9kmg/.git/annex/objects/gg/zf/MD5E-s3584--bb87b72d411b7415410da27950d2a165.tar/MD5E-s3584--bb87b72d411b7415410da27950d2a165.tar under /home/yoh/.tmp/datalad_temp_tree_rsua9kmg/.git/datalad/tmp/archives/fbab09b98e 
+[DEBUG  ] Cleaning up the stamp file for /home/yoh/.tmp/datalad_temp_tree_rsua9kmg/.git/annex/objects/gg/zf/MD5E-s3584--bb87b72d411b7415410da27950d2a165.tar/MD5E-s3584--bb87b72d411b7415410da27950d2a165.tar under /home/yoh/.tmp/datalad_temp_tree_rsua9kmg/.git/datalad/tmp/archives/fbab09b98e.stamp 
+add-archive-content(ok): /home/yoh/.tmp/datalad_temp_tree_rsua9kmg (dataset)
+
+```
+</details>
+
+[[!meta author=yoh]]
+[[!tag projects/repronim]]
