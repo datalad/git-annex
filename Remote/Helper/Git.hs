@@ -1,6 +1,6 @@
 {- Utilities for git remotes.
  -
- - Copyright 2011-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -14,9 +14,13 @@ import Types.Availability
 import qualified Types.Remote as Remote
 import qualified Utility.RawFilePath as R
 import qualified Git.Config
+import Logs.Proxy
+import Types.Cluster
 
 import Data.Time.Clock.POSIX
 import System.PosixCompat.Files (modificationTime)
+import qualified Data.Map as M
+import qualified Data.Set as S
 
 repoCheap :: Git.Repo -> Bool
 repoCheap = not . Git.repoIsUrl
@@ -62,9 +66,26 @@ gitRepoInfo r = do
 		[] -> "never"
 		_ -> show $ posixSecondsToUTCTime $ realToFrac $ maximum mtimes
 	repo <- Remote.getRepo r
-	return
-		[ ("repository location", Git.repoLocation repo)
-		, ("proxied", Git.Config.boolConfig 
-			(isJust (remoteAnnexProxiedBy (Remote.gitconfig r))))
-		, ("last synced", lastsynctime)
+	let proxied = Git.Config.boolConfig $ isJust $
+		remoteAnnexProxiedBy (Remote.gitconfig r)
+	proxies <- getProxies
+	let proxying = S.toList $ fromMaybe mempty $
+		M.lookup (Remote.uuid r) proxies
+	let iscluster = isClusterUUID . proxyRemoteUUID
+	let proxyname p = Remote.name r ++ "-" ++ proxyRemoteName p
+	let proxynames = map proxyname $ filter (not . iscluster) proxying
+	let clusternames = map proxyname $ filter iscluster proxying
+	return $ catMaybes
+		[ Just ("repository location", Git.repoLocation repo)
+		, Just ("last synced", lastsynctime)
+		, Just ("proxied", proxied)
+		, if isClusterUUID (Remote.uuid r)
+			then Just ("cluster", Git.Config.boolConfig True)
+			else Nothing
+		, if null clusternames
+			then Nothing
+			else Just ("gateway to cluster", unwords clusternames)
+		, if null proxynames
+			then Nothing
+			else Just ("proxying", unwords proxynames)
 		]
