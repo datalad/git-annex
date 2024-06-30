@@ -40,6 +40,10 @@ command name section desc paramdesc mkparser =
 withParams :: (CmdParams -> v) -> CmdParamsDesc -> Parser v
 withParams mkseek paramdesc = mkseek <$> cmdParams paramdesc
 
+withParams' :: (CmdParams -> v) -> Mod ArgumentFields String -> String -> Parser v
+withParams' mkseek completers paramdesc = mkseek
+	<$> cmdParamsWithCompleter paramdesc completers
+
 {- Uses the supplied option parser, which yields a deferred parse,
  - and calls finishParse on the result before passing it to the
  - CommandSeek constructor. -}

@@ -20,7 +20,7 @@ import qualified Data.Map as M
 
 cmd :: Command
 cmd = noMessages $ command "group" SectionSetup "add a repository to a group"
-	(paramPair paramRemote paramDesc) (seek <$$> optParser)
+	(paramPair paramRepository paramDesc) (seek <$$> optParser)
 
 data GroupOptions = GroupOptions
 	{ cmdparams :: CmdParams
@@ -29,7 +29,7 @@ data GroupOptions = GroupOptions
 
 optParser :: CmdParamsDesc -> Parser GroupOptions
 optParser desc = GroupOptions
-	<$> cmdParams desc
+	<$> cmdParamsWithCompleter desc completeRemotes
 	<*> switch
 		( long "list"
 		<> help "list all currently defined groups"

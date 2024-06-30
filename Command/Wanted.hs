@@ -27,7 +27,8 @@ cmd'
 	-> (UUID -> PreferredContentExpression -> Annex ())
 	-> Command
 cmd' name desc getter setter = noMessages $ 
-	command name SectionSetup desc pdesc (withParams seek)
+	command name SectionSetup desc pdesc
+		(withParams' seek completeRemotes)
   where
 	pdesc = paramPair paramRemote (paramOptional paramExpression)
 

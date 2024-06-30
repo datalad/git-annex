@@ -14,8 +14,8 @@ import Logs.UUID
 cmd :: Command
 cmd = command "describe" SectionSetup
 	"change description of a repository"
-	(paramPair paramRemote paramDesc)
-	(withParams seek)
+	(paramPair paramRepository paramDesc)
+	(withParams' seek completeRemotes)
 
 seek :: CmdParams -> CommandSeek
 seek = withWords (commandAction . start)

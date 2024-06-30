@@ -19,7 +19,8 @@ import qualified Data.Set as S
 cmd :: Command
 cmd = withAnnexOptions [jsonOptions] $
 	command "trust" SectionSetup "trust a repository"
-		(paramRepeating paramRepository) (withParams seek)
+		(paramRepeating paramRepository)
+		(withParams' seek completeRemotes)
 
 seek :: CmdParams -> CommandSeek
 seek = trustCommand "trust" Trusted

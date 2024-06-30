@@ -1,6 +1,6 @@
 {- git-annex command-line option parsing
  -
- - Copyright 2010-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -109,9 +109,12 @@ gitAnnexCommonOptions = commonOptions ++
 
 {- Parser that accepts all non-option params. -}
 cmdParams :: CmdParamsDesc -> Parser CmdParams
-cmdParams paramdesc = many $ argument str
+cmdParams paramdesc = cmdParamsWithCompleter paramdesc completeFiles
+
+cmdParamsWithCompleter :: String -> Mod ArgumentFields String -> Parser CmdParams
+cmdParamsWithCompleter paramdesc completers = many $ argument str
 	( metavar paramdesc
-	<> action "file"
+	<> completers
 	)
 
 parseAutoOption :: Parser Bool
@@ -597,3 +600,7 @@ completeRemotes' g input = do
 completeBackends :: HasCompleter f => Mod f a
 completeBackends = completeWith $
 	map (decodeBS . formatKeyVariety . Backend.backendVariety) Backend.builtinList
+
+completeFiles :: HasCompleter f => Mod f a
+completeFiles = action "file"
+
