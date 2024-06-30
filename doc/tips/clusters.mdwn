@@ -12,16 +12,21 @@ To use a cluster, your repository needs to have its gateway configured as a
 remote. Clusters can currently only be accessed via ssh. This gateway
 remote is added the same as any other git remote:
 
-    git remote add bigserver me@bigserver:annex
+    $ git remote add bigserver me@bigserver:annex
 
 The gateway publishes information about the cluster to the git-annex
 branch. So you may need to fetch from it to learn about the cluster:
 
-    git fetch bigserver
+    $ git fetch bigserver
 
 That will make available an additional remote for the cluster, eg
-"bigserver-mycluster", as well as some remotes for each node eg
-"bigserver-node1", "bigserver-node2", etc.
+"bigserver-mycluster", as well as some remotes for each node.
+
+	$ git annex info bigserver
+	...
+    gateway to cluster: bigserver-mycluster
+    proxying: bigserver-node1 bigserver-node2 bigserver-node3
+	...
 
 You can get files from the cluster without caring which node it comes
 from:
