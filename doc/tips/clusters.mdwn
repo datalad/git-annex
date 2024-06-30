@@ -76,7 +76,7 @@ For example:
 
 By default, when a file is uploaded to a cluster, it is stored on every node of
 the cluster. To control which nodes to store to, the [[preferred_content]] of
-each node can be configured.
+each individual node can be configured.
 
 It's also a good idea to configure the preferred content of the cluster's
 gateway. To avoid files redundantly being stored on the gateway
@@ -119,8 +119,8 @@ in the git-annex branch. That tells other repositories about the cluster.
 	Started proxying for node3
 
 Operations that affect multiple nodes of a cluster can often be sped up by
-configuring annex.jobs in the repository that will serve the cluster to
-clients. In the example above, the nodes are all disk bound, so operating
+configuring annex.jobs in the gateway repository.
+In the example above, the nodes are all disk bound, so operating
 on more than one at a time will likely be faster.
 
     $ git config annex.jobs cpus
