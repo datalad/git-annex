@@ -1,0 +1,92 @@
+### Please describe the problem.
+
+I do not remember trying to add that file "unlocked" anyhow, but git-annex, upon 2nd invocation of `git status` flips the file claiming it should get to the "unlocked" git link from original symlink:
+
+```
+❯ git annex version
+git-annex version: 10.20240531+git214-g28f5c47b5a-1~ndall+1
+
+❯ git status
+On branch master
+Your branch is ahead of 'origin/master' by 1 commit.
+  (use "git push" to publish your local commits)
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   samples/UK_gla_3T_fMRI_consent_form_v3.0.docx
+
+no changes added to commit (use "git add" and/or "git commit -a")
+
+❯ git reset --hard
+HEAD is now at 8700315 BF: fix leftover merge conflict in CONTRIBUTING.rst
+```
+
+so here from a clean state on first `git status` we get to dirty on subsequent:
+
+
+```
+❯ git status
+git-annex: git status will show samples/UK_gla_3T_fMRI_consent_form_v3.0.docx to be modified, since content availability has changed and git-annex was unable to update the index. This is only a cosmetic problem affecting git status; git add, git commit, etc won't be affected. To fix the git status display, you can run: git-annex restage
+On branch master
+Your branch is ahead of 'origin/master' by 1 commit.
+  (use "git push" to publish your local commits)
+
+nothing to commit, working tree clean
+
+❯ git status
+On branch master
+Your branch is ahead of 'origin/master' by 1 commit.
+  (use "git push" to publish your local commits)
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   samples/UK_gla_3T_fMRI_consent_form_v3.0.docx
+
+no changes added to commit (use "git add" and/or "git commit -a")
+
+❯ git diff
+diff --git a/samples/UK_gla_3T_fMRI_consent_form_v3.0.docx b/samples/UK_gla_3T_fMRI_consent_form_v3.0.docx
+index 3215574..488e63f 100644
+--- a/samples/UK_gla_3T_fMRI_consent_form_v3.0.docx
++++ b/samples/UK_gla_3T_fMRI_consent_form_v3.0.docx
+@@ -1 +1 @@
+-../.git/annex/objects/5M/wv/MD5E-s591826--1ca9251906259623f73a3aba47ef6369.0.docx/MD5E-s591826--1ca9251906259623f73a3aba47ef6369.0.docx
+\ No newline at end of file
++/annex/objects/MD5E-s591826--1ca9251906259623f73a3aba47ef6369.0.docx
+
+❯ git annex restage
+restage  ok
+
+❯ git diff
+
+❯ git status
+On branch master
+Your branch is ahead of 'origin/master' by 1 commit.
+  (use "git push" to publish your local commits)
+
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	modified:   samples/UK_gla_3T_fMRI_consent_form_v3.0.docx
+
+❯ git diff --cached
+diff --git a/samples/UK_gla_3T_fMRI_consent_form_v3.0.docx b/samples/UK_gla_3T_fMRI_consent_form_v3.0.docx
+index 3215574..488e63f 100644
+--- a/samples/UK_gla_3T_fMRI_consent_form_v3.0.docx
++++ b/samples/UK_gla_3T_fMRI_consent_form_v3.0.docx
+@@ -1 +1 @@
+-../.git/annex/objects/5M/wv/MD5E-s591826--1ca9251906259623f73a3aba47ef6369.0.docx/MD5E-s591826--1ca9251906259623f73a3aba47ef6369.0.docx
+\ No newline at end of file
++/annex/objects/MD5E-s591826--1ca9251906259623f73a3aba47ef6369.0.docx
+
+```
+
+This is on a local long-lived clone of http://github.com/con/open-brain-consent but seems to not happen on a fresh clone. So must be something about local "state".
+
+Not sure if relates to the following issue under current investigation (but not yet addressed):
+
+- [https://git-annex.branchable.com/bugs/assistant___40__webapp__41___commited_unlocked_link_to_annex/](https://git-annex.branchable.com/bugs/assistant___40__webapp__41___commited_unlocked_link_to_annex/)
+
+[[!meta author=yoh]]
+[[!tag projects/repronim]]
