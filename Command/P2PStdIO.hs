@@ -99,7 +99,7 @@ performProxyCluster clientuuid clusteruuid servermode = do
 proxyClientSide :: UUID -> Annex ClientSide
 proxyClientSide clientuuid = do
 	clientrunst <- liftIO (mkRunState $ Serving clientuuid Nothing)
-	return $ ClientSide clientrunst (stdioP2PConnection Nothing)
+	ClientSide clientrunst <$> liftIO (stdioP2PConnectionDupped Nothing)
 
 p2pErrHandler :: Annex () -> (a -> CommandPerform) -> Annex (Either ProtoFailure a) -> CommandPerform
 p2pErrHandler closeconn cont a = a >>= \case

@@ -1,6 +1,6 @@
 {- P2P protocol, IO implementation
  -
- - Copyright 2016-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2016-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -16,6 +16,7 @@ module P2P.IO
 	, ConnIdent(..)
 	, ClosableConnection(..)
 	, stdioP2PConnection
+	, stdioP2PConnectionDupped
 	, connectPeer
 	, closeConnection
 	, serveUnixSocket
@@ -103,6 +104,20 @@ stdioP2PConnection g = P2PConnection
 	, connOhdl = P2PHandle stdout
 	, connIdent = ConnIdent Nothing
 	}
+
+-- P2PConnection using stdio, but with the handles first duplicated,
+-- to avoid anything that might output to stdio (eg a program run by a
+-- special remote) from interfering with the connection.
+stdioP2PConnectionDupped :: Maybe Git.Repo -> IO P2PConnection
+stdioP2PConnectionDupped g = do
+	(readh, writeh) <- dupIoHandles
+	return $ P2PConnection
+		{ connRepo = g
+		, connCheckAuth = const False
+		, connIhdl = P2PHandle readh
+		, connOhdl = P2PHandle writeh
+		, connIdent = ConnIdent Nothing
+		}
 
 -- Opens a connection to a peer. Does not authenticate with it.
 connectPeer :: Maybe Git.Repo -> P2PAddress -> IO P2PConnection
