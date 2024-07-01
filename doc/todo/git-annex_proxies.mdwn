@@ -8,6 +8,12 @@ repositories.
 4. [[todo/track_free_space_in_repos_via_git-annex_branch]]
 5. [[todo/proving_preferred_content_behavior]]
 
+## table of contents
+
+[[!toc ]]
+
+## planned schedule
+
 Joey has received funding to work on this.
 Planned schedule of work:
 
@@ -20,9 +26,7 @@ Planned schedule of work:
 
 [[!tag projects/openneuro]]
 
-[[!toc ]]
-
-# work notes
+## work notes
 
 For June's work on [[design/passthrough_proxy]], remaining todos:
 
@@ -30,7 +34,7 @@ For June's work on [[design/passthrough_proxy]], remaining todos:
   to avoid the proxy's disk filling up with the temporary object file
   cached there.
 
-# items deferred until later for [[design/passthrough_proxy]]
+## items deferred until later for [[design/passthrough_proxy]]
 
 * Resuming an interrupted download from proxied special remote makes the proxy
   re-download the whole content. It could instead keep some of the 
@@ -78,7 +82,7 @@ For June's work on [[design/passthrough_proxy]], remaining todos:
 * Support using a proxy when its url is a P2P address.
   (Eg tor-annex remotes.)
 
-# completed items for June's work on [[design/passthrough_proxy]]:
+## completed items for June's work on [[design/passthrough_proxy]]:
 
 * UUID discovery via git-annex branch. Add a log file listing UUIDs
   accessible via proxy UUIDs. It also will contain the names
