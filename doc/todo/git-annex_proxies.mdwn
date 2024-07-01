@@ -40,6 +40,12 @@ For June's work on [[design/passthrough_proxy]], remaining todos:
 * Streaming download from proxied special remotes. See design.
   (Planned for September)
 
+* When an upload to a cluster is distributed to multiple special remotes,
+  a temporary file is written for each one, which may even happen in
+  parallel. This is a lot of extra work and may use excess disk space.
+  It should be possible to only write a single temp file.
+  (With streaming this won't be an issue.)
+
 * Indirect uploads when proxying for special remote
   (to be considered). See design.
 
