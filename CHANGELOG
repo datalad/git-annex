@@ -1,4 +1,4 @@
-git-annex (10.20240532) UNRELEASED; urgency=medium
+git-annex (10.20240701) upstream; urgency=medium
 
   * git-annex remotes can now act as proxies that provide access to
     their remotes. Configure this with remote.name.annex-proxy
@@ -20,7 +20,7 @@ git-annex (10.20240532) UNRELEASED; urgency=medium
   * When --debugfilter or annex.debugfilter is set, avoid propigating
     debug output from git-annex-shell, since it cannot be filtered.
 
- -- Joey Hess <id@joeyh.name>  Mon, 03 Jun 2024 13:03:21 -0400
+ -- Joey Hess <id@joeyh.name>  Mon, 01 Jul 2024 15:11:48 -0400
 
 git-annex (10.20240531) upstream; urgency=medium
 
