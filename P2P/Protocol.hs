@@ -623,6 +623,8 @@ receiveContent mm p sizer storer mkmsg = do
 				validitycheck
 			sendSuccess (observeBool v)
 			return v
+		Just (ERROR _err) ->
+			return observeFailure
 		_ -> do
 			net $ sendMessage (ERROR "expected DATA")
 			return observeFailure

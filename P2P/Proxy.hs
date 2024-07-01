@@ -315,8 +315,8 @@ proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) remo
 					to $ net $ sendMessage message
 	
 	protoerr = do
-		_ <- client $ net $ sendMessage (ERROR "protocol error")
-		giveup "protocol error"
+		_ <- client $ net $ sendMessage (ERROR "protocol error X")
+		giveup "protocol error M"
 	
 	handleREMOVE [] _ _ =
 		-- When no places are provided to remove from,
@@ -357,7 +357,10 @@ proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) remo
 						else FAILURE_PLUS us
 
 	handleGET remoteside message = getresponse (runRemoteSide remoteside) message $
-		withDATA (relayGET remoteside)
+		withDATA (relayGET remoteside) $ \case
+			ERROR err -> protoerrhandler proxynextclientmessage $
+				client $ net $ sendMessage (ERROR err)
+			_ -> protoerr
 
 	handlePUT (remoteside:[]) k message
 		| Remote.uuid (remote remoteside) == remoteuuid =
@@ -368,7 +371,9 @@ proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) remo
 					client $ net $ sendMessage resp
 				PUT_FROM _ -> 
 					getresponse client resp $ 
-						withDATA (relayPUT remoteside k)
+						withDATA
+							(relayPUT remoteside k)
+							(const protoerr)
 				_ -> protoerr
 	handlePUT [] _ _ = 
 		protoerrhandler proxynextclientmessage $
@@ -376,8 +381,8 @@ proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) remo
 	handlePUT remotesides k message = 
 		handlePutMulti remotesides k message
 
-	withDATA a message@(DATA len) = a len message
-	withDATA _ _ = protoerr
+	withDATA a _ message@(DATA len) = a len message
+	withDATA _ a message = a message
 	
 	relayGET remoteside len = relayDATAStart client $
 		relayDATACore len (runRemoteSide remoteside) client $
@@ -438,7 +443,8 @@ proxy proxydone proxymethods servermode (ClientSide clientrunst clientconn) remo
 					let l' = rights (rights l)
 					let minoffset = minimum (map snd l')
 					getresponse client (PUT_FROM (Offset minoffset)) $
-						withDATA (relayPUTMulti minoffset l' k)	
+						withDATA (relayPUTMulti minoffset l' k)
+							(const protoerr)
 	
 	relayPUTMulti minoffset remotes k (Len datalen) _ = do
 		let totallen = datalen + minoffset

@@ -216,7 +216,7 @@ runNet runst conn runner f = case f of
 			Right () -> runner next
 	ReceiveMessage next ->
 		let protoerr = return $ Left $
-			ProtoFailureMessage "protocol error"
+			ProtoFailureMessage "protocol error 1"
 		    gotmessage m = do
 			liftIO $ debugMessage conn "P2P <" m
 			runner (next (Just m))
@@ -263,7 +263,7 @@ runNet runst conn runner f = case f of
 				liftIO (atomically (takeTMVar mv)) >>= \case
 					Left b -> runner (next b)
 					Right _ -> return $ Left $
-						ProtoFailureMessage "protocol error"
+						ProtoFailureMessage "protocol error 2"
 	CheckAuthToken _u t next -> do
 		let authed = connCheckAuth conn t
 		runner (next authed)
