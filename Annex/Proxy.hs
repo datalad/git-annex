@@ -149,57 +149,27 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv endv = go
 			a (toRawFilePath tmpdir P.</> keyFile k)
 			
 	proxyput af k = do
-		-- In order to send to the special remote, the key will
-		-- need to be inserted into the object directory.
-		-- It will be dropped again afterwards. Unless it's already
-		-- present there.
-		ifM (inAnnex k)
-			( tryNonAsync (Remote.storeKey r k af Nothing nullMeterUpdate) >>= \case
-				Right () -> liftIO $ sendmessage ALREADY_HAVE
+		liftIO $ sendmessage $ PUT_FROM (Offset 0)
+		withproxytmpfile k $ \tmpfile -> do
+			let store = tryNonAsync (Remote.storeKey r k af (Just (decodeBS tmpfile)) nullMeterUpdate) >>= \case
+				Right () -> liftIO $ sendmessage SUCCESS
 				Left err -> liftIO $ propagateerror err
-			, do
-				liftIO $ sendmessage $ PUT_FROM (Offset 0)
-				ifM receivedata
-					( do
-						tryNonAsync (Remote.storeKey r k af Nothing nullMeterUpdate) >>= \case
-							Right () -> do
-								depopulateobjectfile
-								liftIO $ sendmessage SUCCESS
-							Left err -> do
-								depopulateobjectfile
-								liftIO $ propagateerror err
-					, liftIO $ sendmessage FAILURE
-					)
-			)
-	  where
-		receivedata = withproxytmpfile k $ \tmpfile ->
 			liftIO receivemessage >>= \case
 				Just (DATA (Len _)) -> do
 					b <- liftIO receivebytestring
 					liftIO $ L.writeFile (fromRawFilePath tmpfile) b
 					-- Signal that the whole bytestring
-					-- has been stored.
+					-- has been received.
 					liftIO $ atomically $ putTMVar owaitv ()
 					if protoversion > ProtocolVersion 1
-						then do
-							liftIO receivemessage >>= \case
-								Just (VALIDITY Valid) ->
-									populateobjectfile tmpfile
-								Just (VALIDITY Invalid) -> return False
-								_ -> giveup "protocol error"
-						else populateobjectfile tmpfile
+						then liftIO receivemessage >>= \case
+							Just (VALIDITY Valid) ->
+								store
+							Just (VALIDITY Invalid) ->
+								return ()
+							_ -> giveup "protocol error"
+						else store
 				_ -> giveup "protocol error"
-					
-		populateobjectfile tmpfile = 
-			getViaTmpFromDisk Remote.RetrievalAllKeysSecure Remote.DefaultVerify k af $ \dest -> do
-				unVerified $ do
-					liftIO $ renameFile
-						(fromRawFilePath tmpfile)
-						(fromRawFilePath dest)
-					return True
-						
-		depopulateobjectfile = void $ tryNonAsync $ 
-			lockContentForRemoval k noop removeAnnex
 
 	proxyget offset af k = withproxytmpfile k $ \tmpfile -> do
 		-- Don't verify the content from the remote,

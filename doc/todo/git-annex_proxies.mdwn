@@ -34,17 +34,6 @@ For June's work on [[design/passthrough_proxy]], remaining todos:
 * If GET from a proxied special remote sends an ERROR with a message
   from the special remote, currently the user sees "protocol error".
 
-* convert Remote.storeKey to take the path of the object file to send.
-  It's too ugly that PUT to a proxied special remote currently has to
-  temporarily populate the proxy's annex object file. There are too many
-  ways that could lead to surprising behavior, like an interrupted PUT
-  leaving it populated, or simulantaneous PUTs.
-
-* PUT to a proxied special remote, in the case where the proxy contains
-  the key, and the special remote is not accessible, sends back ERROR
-  rather than PUT-FROM or ALREADY-HAVE. Verify that the client processes
-  that ok and displays it to the user.
-
 * Streaming download from proxied special remotes. See design.
 
 * Check annex.diskreserve when proxying for special remotes.
