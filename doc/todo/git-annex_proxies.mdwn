@@ -20,6 +20,8 @@ Planned schedule of work:
 
 [[!tag projects/openneuro]]
 
+[[!toc ]]
+
 # work notes
 
 For June's work on [[design/passthrough_proxy]], remaining todos:
