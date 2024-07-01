@@ -4,6 +4,9 @@ form a single logical repository.
 A cluster is accessed via a gateway repository. The gateway is not itself
 a node of the cluster.
 
+A cluster's nodes can be any combination of git-annex repositories and
+special remotes.
+
 [[!toc ]]
 
 ## using a cluster

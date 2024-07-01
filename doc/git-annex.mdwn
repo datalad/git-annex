@@ -1677,7 +1677,7 @@ Remotes are configured using these settings in `.git/config`.
 * `remote.<name>.annex-proxy`
 
   Set to "true" to make the local repository able to act as a proxy to this
-  remote. 
+  remote. The remote can be a git-annex repository or a special remote.
 
   After configuring this, run [[git-annex-updateproxy](1) to store
   the new configuration in the git-annex branch.
