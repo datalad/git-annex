@@ -24,6 +24,12 @@ Planned schedule of work:
 
 For June's work on [[design/passthrough_proxy]], remaining todos:
 
+* Check annex.diskreserve when proxying for special remotes
+  to avoid the proxy's disk filling up with the temporary object file
+  cached there.
+
+# items deferred until later for [[design/passthrough_proxy]]
+
 * Resuming an interrupted download from proxied special remote makes the proxy
   re-download the whole content. It could instead keep some of the 
   object files around when the client does not send SUCCESS. This would
@@ -32,10 +38,7 @@ For June's work on [[design/passthrough_proxy]], remaining todos:
   The design doc has some more thoughts about this.
 
 * Streaming download from proxied special remotes. See design.
-
-* Check annex.diskreserve when proxying for special remotes.
-
-# items deferred until later for [[design/passthrough_proxy]]
+  (Planned for September)
 
 * Indirect uploads when proxying for special remote
   (to be considered). See design.
@@ -130,3 +133,7 @@ For June's work on [[design/passthrough_proxy]], remaining todos:
 
 * Basic support for proxying special remotes. (But not exporttree=yes ones
   yet.) (done)
+
+* Tab complete remotes in all relevant commands (done)
+
+* Display cluster and proxy information in git-annex info (done)
