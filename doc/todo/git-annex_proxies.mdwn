@@ -18,8 +18,8 @@ Joey has received funding to work on this.
 Planned schedule of work:
 
 * June: git-annex proxies and clusters
-* July, part 1: git-annex proxy support for exporttree
-* July, part 2: p2p protocol over http
+* July, part 1: p2p protocol over http
+* July, part 2: git-annex proxy support for exporttree
 * August: balanced preferred content
 * September: streaming through proxy to special remotes (especially S3)
 * October: proving behavior of balanced preferred content with proxies
