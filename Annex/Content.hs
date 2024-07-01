@@ -552,8 +552,8 @@ unlinkAnnex key = do
  - If this happens, runs the rollback action and throws an exception.
  - The rollback action should remove the data that was transferred.
  -}
-sendAnnex :: Key -> Annex () -> (FilePath -> FileSize -> Annex a) -> Annex a
-sendAnnex key rollback sendobject = go =<< prepSendAnnex' key
+sendAnnex :: Key -> Maybe FilePath -> Annex () -> (FilePath -> FileSize -> Annex a) -> Annex a
+sendAnnex key o rollback sendobject = go =<< prepSendAnnex' key o
   where
 	go (Just (f, sz, check)) = do
 		r <- sendobject f sz
@@ -575,10 +575,10 @@ sendAnnex key rollback sendobject = go =<< prepSendAnnex' key
  - Annex monad of the remote that is receiving the object, rather than
  - the sender. So it cannot rely on Annex state.
  -}
-prepSendAnnex :: Key -> Annex (Maybe (FilePath, FileSize, Annex Bool))
-prepSendAnnex key = withObjectLoc key $ \f -> do
+prepSendAnnex :: Key -> Maybe FilePath -> Annex (Maybe (FilePath, FileSize, Annex Bool))
+prepSendAnnex key Nothing = withObjectLoc key $ \f -> do
 	let retval c cs = return $ Just 
-		(fromRawFilePath f
+		( fromRawFilePath f
 		, inodeCacheFileSize c
 		, sameInodeCache f cs
 		)
@@ -601,9 +601,22 @@ prepSendAnnex key = withObjectLoc key $ \f -> do
 				, return Nothing
 				)
 			Nothing -> return Nothing
+-- If the provided object file is the annex object file, handle as above.
+prepSendAnnex key (Just o) = withObjectLoc key $ \aof ->
+	let o' = toRawFilePath o
+	in if aof == o'
+		then prepSendAnnex key Nothing
+		else do
+			withTSDelta (liftIO . genInodeCache o') >>= \case
+				Nothing -> return Nothing
+				Just c -> return $ Just
+					( o
+					, inodeCacheFileSize c
+					, sameInodeCache o' [c]
+					)
 
-prepSendAnnex' :: Key -> Annex (Maybe (FilePath, FileSize, Annex (Maybe String)))
-prepSendAnnex' key = prepSendAnnex key >>= \case
+prepSendAnnex' :: Key -> Maybe FilePath -> Annex (Maybe (FilePath, FileSize, Annex (Maybe String)))
+prepSendAnnex' key o = prepSendAnnex key o >>= \case
 	Just (f, sz, checksuccess) -> 
 		let checksuccess' = ifM checksuccess
 			( return Nothing

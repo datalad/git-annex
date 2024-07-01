@@ -34,8 +34,8 @@ addHooks' r Nothing Nothing = r
 addHooks' r starthook stophook = r'
   where
 	r' = r
-		{ storeKey = \k f p -> 
-			wrapper $ storeKey r k f p
+		{ storeKey = \k af o p -> 
+			wrapper $ storeKey r k af o p
 		, retrieveKeyFile = \k f d p vc -> 
 			wrapper $ retrieveKeyFile r k f d p vc
 		, retrieveKeyFileCheap = case retrieveKeyFileCheap r of

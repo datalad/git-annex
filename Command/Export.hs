@@ -304,7 +304,7 @@ performExport r db ek af contentsha loc allfilledvar = do
 				alwaysUpload (uuid r) ek af Nothing stdRetry $ \pm -> do
 					let rollback = void $
 						performUnexport r db [ek] loc
-					sendAnnex ek rollback $ \f _sz ->
+					sendAnnex ek Nothing rollback $ \f _sz ->
 						Remote.action $
 							storer f ek loc pm
 			, do

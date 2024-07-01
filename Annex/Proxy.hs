@@ -154,14 +154,14 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv endv = go
 		-- It will be dropped again afterwards. Unless it's already
 		-- present there.
 		ifM (inAnnex k)
-			( tryNonAsync (Remote.storeKey r k af nullMeterUpdate) >>= \case
+			( tryNonAsync (Remote.storeKey r k af Nothing nullMeterUpdate) >>= \case
 				Right () -> liftIO $ sendmessage ALREADY_HAVE
 				Left err -> liftIO $ propagateerror err
 			, do
 				liftIO $ sendmessage $ PUT_FROM (Offset 0)
 				ifM receivedata
 					( do
-						tryNonAsync (Remote.storeKey r k af nullMeterUpdate) >>= \case
+						tryNonAsync (Remote.storeKey r k af Nothing nullMeterUpdate) >>= \case
 							Right () -> do
 								depopulateobjectfile
 								liftIO $ sendmessage SUCCESS

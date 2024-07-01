@@ -134,8 +134,8 @@ fileRetriever' a k m miv callback = do
  - but they are never actually used (since specialRemote replaces them).
  - Here are some dummy ones.
  -}
-storeKeyDummy :: Key -> AssociatedFile -> MeterUpdate -> Annex ()
-storeKeyDummy _ _ _ = error "missing storeKey implementation"
+storeKeyDummy :: Key -> AssociatedFile -> Maybe FilePath -> MeterUpdate -> Annex ()
+storeKeyDummy _ _ _ _ = error "missing storeKey implementation"
 retrieveKeyFileDummy :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification
 retrieveKeyFileDummy _ _ _ _ _ = error "missing retrieveKeyFile implementation"
 removeKeyDummy :: Key -> Annex ()
@@ -181,7 +181,7 @@ specialRemote' :: SpecialRemoteCfg -> RemoteModifier
 specialRemote' cfg c storer retriever remover checkpresent baser = encr
   where
 	encr = baser
-		{ storeKey = \k _f p -> cip >>= storeKeyGen k p
+		{ storeKey = \k _af o p -> cip >>= storeKeyGen k o p
 		, retrieveKeyFile = \k _f d p vc -> cip >>= retrieveKeyFileGen k d p vc
 		, retrieveKeyFileCheap = case retrieveKeyFileCheap baser of
 			Nothing -> Nothing
@@ -222,7 +222,7 @@ specialRemote' cfg c storer retriever remover checkpresent baser = encr
 	isencrypted = isEncrypted c
 
 	-- chunk, then encrypt, then feed to the storer
-	storeKeyGen k p enc = sendAnnex k rollback $ \src _sz ->
+	storeKeyGen k o p enc = sendAnnex k o rollback $ \src _sz ->
 		displayprogress uploadbwlimit p k (Just src) $ \p' ->
 			storeChunks (uuid baser) chunkconfig enck k src p'
 				enc encr storer checkpresent

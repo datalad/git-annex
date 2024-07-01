@@ -38,20 +38,20 @@ start = do
 	runRequests readh writeh runner
 	stop
   where
-	runner (TransferRequest direction remote key file)
-		| direction == Upload = notifyTransfer direction file $
-			upload' (Remote.uuid remote) key file Nothing stdRetry $ \p -> do
-				tryNonAsync (Remote.storeKey remote key file p) >>= \case
+	runner (TransferRequest direction remote key af)
+		| direction == Upload = notifyTransfer direction af $
+			upload' (Remote.uuid remote) key af Nothing stdRetry $ \p -> do
+				tryNonAsync (Remote.storeKey remote key af Nothing p) >>= \case
 					Left e -> do
 						warning (UnquotedString (show e))
 						return False
 					Right () -> do
 						Remote.logStatus remote key InfoPresent
 						return True
-		| otherwise = notifyTransfer direction file $
-			download' (Remote.uuid remote) key file Nothing stdRetry $ \p ->
-				logStatusAfter key $ getViaTmp (Remote.retrievalSecurityPolicy remote) (RemoteVerify remote) key file Nothing $ \t -> do
-					r <- tryNonAsync (Remote.retrieveKeyFile remote key file (fromRawFilePath t) p (RemoteVerify remote)) >>= \case
+		| otherwise = notifyTransfer direction af $
+			download' (Remote.uuid remote) key af Nothing stdRetry $ \p ->
+				logStatusAfter key $ getViaTmp (Remote.retrievalSecurityPolicy remote) (RemoteVerify remote) key af Nothing $ \t -> do
+					r <- tryNonAsync (Remote.retrieveKeyFile remote key af (fromRawFilePath t) p (RemoteVerify remote)) >>= \case
 						Left e -> do
 							warning (UnquotedString (show e))
 							return (False, UnVerified)

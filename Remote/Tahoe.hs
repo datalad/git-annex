@@ -138,8 +138,8 @@ tahoeSetup _ mu _ c _ = do
   where
 	missingfurl = giveup "Set TAHOE_FURL to the introducer furl to use."
 
-store :: RemoteStateHandle -> TahoeHandle -> Key -> AssociatedFile -> MeterUpdate -> Annex ()
-store rs hdl k _f _p = sendAnnex k noop $ \src _sz ->
+store :: RemoteStateHandle -> TahoeHandle -> Key -> AssociatedFile -> Maybe FilePath -> MeterUpdate -> Annex ()
+store rs hdl k _af o _p = sendAnnex k o noop $ \src _sz ->
 	parsePut <$> liftIO (readTahoe hdl "put" [File src]) >>= maybe
 		(giveup "tahoe failed to store content")
 		(\cap -> storeCapability rs k cap)

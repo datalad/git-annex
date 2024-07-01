@@ -118,8 +118,8 @@ downloadKey key _file dest p _ = do
 		unless ok $
 			get []
 
-uploadKey :: Key -> AssociatedFile -> MeterUpdate -> Annex ()
-uploadKey _ _ _ = giveup "upload to bittorrent not supported"
+uploadKey :: Key -> AssociatedFile -> Maybe FilePath -> MeterUpdate -> Annex ()
+uploadKey _ _ _ _ = giveup "upload to bittorrent not supported"
 
 dropKey :: Key -> Annex ()
 dropKey k = mapM_ (setUrlMissing k) =<< getBitTorrentUrls k

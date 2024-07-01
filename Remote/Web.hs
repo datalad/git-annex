@@ -181,8 +181,8 @@ downloadKey urlincludeexclude key _af dest p vc =
 					setEquivilantKey key ek
 				return (Just Verified)
 
-uploadKey :: Key -> AssociatedFile -> MeterUpdate -> Annex ()
-uploadKey _ _ _ = giveup "upload to web not supported"
+uploadKey :: Key -> AssociatedFile -> Maybe FilePath -> MeterUpdate -> Annex ()
+uploadKey _ _ _ _ = giveup "upload to web not supported"
 
 dropKey :: UrlIncludeExclude -> Key -> Annex ()
 dropKey urlincludeexclude k = mapM_ (setUrlMissing k) =<< getWebUrls' urlincludeexclude k

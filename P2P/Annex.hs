@@ -51,7 +51,7 @@ runLocal runst runner a = case a of
 		let getsize = liftIO . catchMaybeIO . getFileSize
 		size <- inAnnex' isJust Nothing getsize k
 		runner (next (Len <$> size))
-	ReadContent k af o sender next -> do
+	ReadContent k af o offset sender next -> do
 		let proceed c = do
 			r <- tryNonAsync c
 			case r of
@@ -62,12 +62,12 @@ runLocal runst runner a = case a of
 		-- run for any other reason, the sender action still must
 		-- be run, so is given empty and Invalid data.
 		let fallback = runner (sender mempty (return Invalid))
-		v <- tryNonAsync $ prepSendAnnex k
+		v <- tryNonAsync $ prepSendAnnex k o
 		case v of
 			Right (Just (f, _sz, checkchanged)) -> proceed $ do
 				-- alwaysUpload to allow multiple uploads of the same key.
 				let runtransfer ti = transfer alwaysUpload k af Nothing $ \p ->
-					sinkfile f o checkchanged sender p ti
+					sinkfile f offset checkchanged sender p ti
 				checktransfer runtransfer fallback
  			Right Nothing -> proceed fallback
 			Left e -> return $ Left $ ProtoFailureException e

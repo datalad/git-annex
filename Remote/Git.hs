@@ -504,7 +504,7 @@ copyFromRemote'' repo r st@(State connpool _ _ _ _) key file dest meterupdate vc
 		let bwlimit = remoteAnnexBwLimitDownload (gitconfig r)
 			<|> remoteAnnexBwLimit (gitconfig r)
 		-- run copy from perspective of remote
-		onLocalFast st $ Annex.Content.prepSendAnnex' key >>= \case
+		onLocalFast st $ Annex.Content.prepSendAnnex' key Nothing >>= \case
 			Just (object, _sz, check) -> do
 				let checksuccess = check >>= \case
 					Just err -> giveup err
@@ -543,22 +543,22 @@ copyFromRemoteCheap _ _ = Nothing
 #endif
 
 {- Tries to copy a key's content to a remote's annex. -}
-copyToRemote :: Remote -> State -> Key -> AssociatedFile -> MeterUpdate -> Annex ()
-copyToRemote r st key file meterupdate = do
+copyToRemote :: Remote -> State -> Key -> AssociatedFile -> Maybe FilePath -> MeterUpdate -> Annex ()
+copyToRemote r st key af o meterupdate = do
 	repo <- getRepo r
-	copyToRemote' repo r st key file meterupdate
+	copyToRemote' repo r st key af o meterupdate
 
-copyToRemote' :: Git.Repo -> Remote -> State -> Key -> AssociatedFile -> MeterUpdate -> Annex ()
-copyToRemote' repo r st@(State connpool duc _ _ _) key file meterupdate
+copyToRemote' :: Git.Repo -> Remote -> State -> Key -> AssociatedFile -> Maybe FilePath -> MeterUpdate -> Annex ()
+copyToRemote' repo r st@(State connpool duc _ _ _) key af o meterupdate
 	| not $ Git.repoIsUrl repo = ifM duc
 		( guardUsable repo (giveup "cannot access remote") $ commitOnCleanup repo r st $
-			copylocal =<< Annex.Content.prepSendAnnex' key
+			copylocal =<< Annex.Content.prepSendAnnex' key o
 		, giveup "remote does not have expected annex.uuid value"
 		)
 	| Git.repoIsSsh repo =
 		P2PHelper.store (uuid r) (gitconfig r)
 			(Ssh.runProto r connpool (return Nothing))
-			key file meterupdate
+			key af o meterupdate
 		
 	| otherwise = giveup "copying to non-ssh repo not supported"
   where
@@ -575,14 +575,14 @@ copyToRemote' repo r st@(State connpool duc _ _ _) key file meterupdate
 		-- run copy from perspective of remote
 		res <- onLocalFast st $ ifM (Annex.Content.inAnnex key)
 			( return True
-			, runTransfer (Transfer Download u (fromKey id key)) Nothing file Nothing stdRetry $ \p -> do
+			, runTransfer (Transfer Download u (fromKey id key)) Nothing af Nothing stdRetry $ \p -> do
 				let verify = RemoteVerify r
 				copier <- mkFileCopier hardlink st
 				let rsp = RetrievalAllKeysSecure
 				let checksuccess = liftIO checkio >>= \case
 					Just err -> giveup err
 					Nothing -> return True
-				logStatusAfter key $ Annex.Content.getViaTmp rsp verify key file (Just sz) $ \dest ->
+				logStatusAfter key $ Annex.Content.getViaTmp rsp verify key af (Just sz) $ \dest ->
 					metered (Just (combineMeterUpdate meterupdate p)) key bwlimit $ \_ p' -> 
 						copier object (fromRawFilePath dest) key p' checksuccess verify
 			)

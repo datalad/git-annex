@@ -91,7 +91,7 @@ data RemoteA a = Remote
 	-- The key should not appear to be present on the remote until
 	-- all of its contents have been transferred.
 	-- Throws exception on failure.
-	, storeKey :: Key -> AssociatedFile -> MeterUpdate -> a ()
+	, storeKey :: Key -> AssociatedFile -> Maybe FilePath -> MeterUpdate -> a ()
 	-- Retrieves a key's contents to a file.
 	-- (The MeterUpdate does not need to be used if it writes
 	-- sequentially to the file.)

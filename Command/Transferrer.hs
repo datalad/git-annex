@@ -42,27 +42,27 @@ start = do
 	runRequests readh writeh runner
 	stop
   where
-	runner (UploadRequest _ key (TransferAssociatedFile file)) remote =
+	runner (UploadRequest _ key (TransferAssociatedFile af)) remote =
 		-- This is called by eg, Annex.Transfer.upload,
 		-- so caller is responsible for doing notification,
 		-- and for retrying, and updating location log,
 		-- and stall canceling.
-		upload' (Remote.uuid remote) key file Nothing noRetry
-			(Remote.action . Remote.storeKey remote key file)
+		upload' (Remote.uuid remote) key af Nothing noRetry
+			(Remote.action . Remote.storeKey remote key af Nothing)
 			noNotification
-	runner (DownloadRequest _ key (TransferAssociatedFile file)) remote =
+	runner (DownloadRequest _ key (TransferAssociatedFile af)) remote =
 		-- This is called by eg, Annex.Transfer.download
 		-- so caller is responsible for doing notification
 		-- and for retrying, and updating location log,
 		-- and stall canceling.
-		let go p = getViaTmp (Remote.retrievalSecurityPolicy remote) (RemoteVerify remote) key file Nothing $ \t -> do
-			Remote.verifiedAction (Remote.retrieveKeyFile remote key file (fromRawFilePath t) p (RemoteVerify remote))
-		in download' (Remote.uuid remote) key file Nothing noRetry go 
+		let go p = getViaTmp (Remote.retrievalSecurityPolicy remote) (RemoteVerify remote) key af Nothing $ \t -> do
+			Remote.verifiedAction (Remote.retrieveKeyFile remote key af (fromRawFilePath t) p (RemoteVerify remote))
+		in download' (Remote.uuid remote) key af Nothing noRetry go 
 			noNotification
-	runner (AssistantUploadRequest _ key (TransferAssociatedFile file)) remote =
-		notifyTransfer Upload file $
-			upload' (Remote.uuid remote) key file Nothing stdRetry $ \p -> do
-				tryNonAsync (Remote.storeKey remote key file p) >>= \case
+	runner (AssistantUploadRequest _ key (TransferAssociatedFile af)) remote =
+		notifyTransfer Upload af $
+			upload' (Remote.uuid remote) key af Nothing stdRetry $ \p -> do
+				tryNonAsync (Remote.storeKey remote key af Nothing p) >>= \case
 					Left e -> do
 						warning (UnquotedString (show e))
 						return False

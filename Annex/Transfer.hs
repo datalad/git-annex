@@ -55,13 +55,13 @@ import Data.Ord
 
 -- Upload, supporting canceling detected stalls.
 upload :: Remote -> Key -> AssociatedFile -> RetryDecider -> NotifyWitness -> Annex Bool
-upload r key f d witness = 
+upload r key af d witness = 
 	case getStallDetection Upload r of
 		Nothing -> go (Just ProbeStallDetection)
 		Just StallDetectionDisabled -> go Nothing
-		Just sd -> runTransferrer sd r key f d Upload witness
+		Just sd -> runTransferrer sd r key af d Upload witness
   where
- 	go sd = upload' (Remote.uuid r) key f sd d (action . Remote.storeKey r key f) witness
+ 	go sd = upload' (Remote.uuid r) key af sd d (action . Remote.storeKey r key af Nothing) witness
 
 -- Upload, not supporting canceling detected stalls
 upload' :: Observable v => UUID -> Key -> AssociatedFile -> Maybe StallDetection -> RetryDecider -> (MeterUpdate -> Annex v) -> NotifyWitness -> Annex v

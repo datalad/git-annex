@@ -302,7 +302,7 @@ test runannex mkr mkk =
 		tryNonAsync (Remote.retrieveKeyFile r k (AssociatedFile Nothing) (fromRawFilePath dest) nullMeterUpdate (RemoteVerify r)) >>= \case
 			Right v -> return (True, v)
 			Left _ -> return (False, UnVerified)
-	store r k = Remote.storeKey r k (AssociatedFile Nothing) nullMeterUpdate
+	store r k = Remote.storeKey r k (AssociatedFile Nothing) Nothing nullMeterUpdate
 	remove r k = Remote.removeKey r k
 
 testExportTree :: RunAnnex -> Annex (Maybe Remote) -> Annex Key -> Annex Key -> [TestTree]
@@ -368,7 +368,7 @@ testUnavailable runannex mkr mkk =
 	[ check isLeft "removeKey" $ \r k ->
 		Remote.removeKey r k
 	, check isLeft "storeKey" $ \r k -> 
-		Remote.storeKey r k (AssociatedFile Nothing) nullMeterUpdate
+		Remote.storeKey r k (AssociatedFile Nothing) Nothing nullMeterUpdate
 	, check (`notElem` [Right True, Right False]) "checkPresent" $ \r k ->
 		Remote.checkPresent r k
 	, check (== Right False) "retrieveKeyFile" $ \r k ->

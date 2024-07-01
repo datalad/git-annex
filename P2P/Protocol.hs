@@ -264,7 +264,7 @@ data LocalF c
 	| ContentSize Key (Maybe Len -> c)
 	-- ^ Gets size of the content of a key, when the full content is
 	-- present.
-	| ReadContent Key AssociatedFile Offset (L.ByteString -> Proto Validity -> Proto (Maybe [UUID])) (Maybe [UUID] -> c)
+	| ReadContent Key AssociatedFile (Maybe FilePath) Offset (L.ByteString -> Proto Validity -> Proto (Maybe [UUID])) (Maybe [UUID] -> c)
 	-- ^ Reads the content of a key and sends it to the callback.
 	-- Must run the callback, or terminate the protocol connection.
 	--
@@ -396,7 +396,7 @@ put key af p = do
 	net $ sendMessage (PUT (ProtoAssociatedFile af) key)
 	r <- net receiveMessage
 	case r of
-		Just (PUT_FROM offset) -> sendContent key af offset p
+		Just (PUT_FROM offset) -> sendContent key af Nothing offset p
 		Just ALREADY_HAVE -> return (Just [])
 		Just (ALREADY_HAVE_PLUS uuids) -> return (Just uuids)
 		_ -> do
@@ -502,7 +502,7 @@ serveAuthed servermode myuuid = void $ serverLoop handler
 				notallowed
 				return ServerContinue
 	handler (GET offset (ProtoAssociatedFile af) key) = do
-		void $ sendContent key af offset nullMeterUpdate
+		void $ sendContent key af Nothing offset nullMeterUpdate
 		-- setPresent not called because the peer may have
 		-- requested the data but not permanently stored it.
 		return ServerContinue
@@ -570,14 +570,14 @@ checkCONNECTServerMode service servermode a =
 		(ServeReadOnly, UploadPack) -> a Nothing
 		(ServeReadOnly, ReceivePack) -> a (Just sendReadOnlyError)
 
-sendContent :: Key -> AssociatedFile -> Offset -> MeterUpdate -> Proto (Maybe [UUID])
-sendContent key af offset@(Offset n) p = go =<< local (contentSize key)
+sendContent :: Key -> AssociatedFile -> Maybe FilePath -> Offset -> MeterUpdate -> Proto (Maybe [UUID])
+sendContent key af o offset@(Offset n) p = go =<< local (contentSize key)
   where
 	go (Just (Len totallen)) = do
 		let len = totallen - n
 		if len <= 0
 			then sender (Len 0) L.empty (return Valid)
-			else local $ readContent key af offset $
+			else local $ readContent key af o offset $
 				sender (Len len)
 	-- Content not available to send. Indicate this by sending
 	-- empty data and indlicate it's invalid.
@@ -711,3 +711,4 @@ relayToPeer (RelayToPeer b) = do
 	sendMessage (DATA len)
 	sendBytes len b nullMeterUpdate
 relayToPeer (RelayFromPeer _) = return ()
+

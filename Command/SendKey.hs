@@ -32,7 +32,7 @@ start (_, key) = do
 		<$> getField "RsyncOptions"
 	ifM (inAnnex key)
 		( fieldTransfer Upload key $ \_p ->
-			sendAnnex key rollback $ \f _sz -> 
+			sendAnnex key Nothing rollback $ \f _sz -> 
 				liftIO $ rsyncServerSend (map Param opts) f
 		, do
 			warning "requested key is not present"

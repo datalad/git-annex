@@ -44,8 +44,8 @@ adjustReadOnly r
 		}
 	| otherwise = r
 
-readonlyStoreKey :: Key -> AssociatedFile -> MeterUpdate -> Annex ()
-readonlyStoreKey _ _ _ = readonlyFail
+readonlyStoreKey :: Key -> AssociatedFile -> Maybe FilePath -> MeterUpdate -> Annex ()
+readonlyStoreKey _ _ _ _ = readonlyFail
 
 readonlyRemoveKey :: Key -> Annex ()
 readonlyRemoveKey _ = readonlyFail
