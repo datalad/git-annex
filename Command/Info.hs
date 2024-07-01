@@ -116,7 +116,7 @@ data InfoOptions = InfoOptions
 
 optParser :: CmdParamsDesc -> Parser InfoOptions
 optParser desc = InfoOptions
-	<$> cmdParams desc
+	<$> cmdParamsWithCompleter desc (completeFiles <> completeRemotes)
 	<*> switch
 		( long "bytes"
 		<> help "display file sizes in bytes"

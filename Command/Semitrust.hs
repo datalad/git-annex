@@ -15,7 +15,8 @@ cmd :: Command
 cmd = withAnnexOptions [jsonOptions] $
 	command "semitrust" SectionSetup 
 		"return repository to default trust level"
-		(paramRepeating paramRepository) (withParams seek)
+		(paramRepeating paramRepository)
+		(withParams' seek completeRemotes)
 
 seek :: CmdParams -> CommandSeek
 seek = trustCommand "semitrust" SemiTrusted

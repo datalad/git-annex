@@ -56,6 +56,7 @@ optParser :: CmdParamsDesc -> Parser UnusedOptions
 optParser _ = UnusedOptions
 	<$> optional (strOption
 		( long "from" <> short 'f' <> metavar paramRemote
+		<> completeRemotes
 		<> help "remote to check for unused content"
 		))
 	<*> optional (option (eitherReader parseRefSpec)

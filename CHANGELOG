@@ -12,6 +12,8 @@ git-annex (10.20240532) UNRELEASED; urgency=medium
     complaining about missing tree objects.
   * Tab completion of options like --from now includes special remotes,
     as well as proxied remotes and clusters.
+  * Tab completion of many commands like info and trust now includes
+    remotes.
   * P2P protocol version 2.
   * Fix Windows build with Win32 2.13.4+
     Thanks, Oleg Tolmatcev

@@ -22,7 +22,7 @@ cmd = withAnnexOptions [jsonOptions] $
 data DeadOptions = DeadRemotes [RemoteName] | DeadKeys [Key]
 
 optParser :: CmdParamsDesc -> Parser DeadOptions
-optParser desc = (DeadRemotes <$> cmdParams desc)
+optParser desc = (DeadRemotes <$> cmdParamsWithCompleter desc completeRemotes)
 	<|> (DeadKeys <$> many (option (str >>= parseKey)
 		( long "key" <> metavar paramKey
 		<> help "keys whose content has been irretrievably lost"

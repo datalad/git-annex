@@ -14,7 +14,8 @@ import Command.Trust (trustCommand)
 cmd :: Command
 cmd = withAnnexOptions [jsonOptions] $
 	command "untrust" SectionSetup "do not trust a repository"
-		(paramRepeating paramRepository) (withParams seek)
+		(paramRepeating paramRepository)
+		(withParams' seek completeRemotes)
 
 seek :: CmdParams -> CommandSeek
 seek = trustCommand "untrust" UnTrusted
