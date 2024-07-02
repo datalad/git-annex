@@ -160,7 +160,7 @@ clusterProxySelector clusteruuid protocolversion (Bypass bypass) = do
 				let lowestcost = Remote.cost (remote node)
 				    samecost = node : takeWhile (\n -> Remote.cost (remote n) == lowestcost) rest
 				in do
-					n <- getStdRandom $
+					n <- liftIO $ getStdRandom $
 						randomR (0, length samecost - 1)
 					return (Just (samecost !! n))
 		
