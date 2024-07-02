@@ -196,11 +196,8 @@ shouldRestage :: DaemonStatus -> Bool
 shouldRestage ds = scanComplete ds || forceRestage ds
 
 onAddFile :: Bool -> Handler
-onAddFile symlinkssupported f fs = do
-	mk <- liftIO $ isPointerFile $ toRawFilePath f
-	case mk of
-		Nothing -> onAddFile' contentchanged addassociatedfile addlink samefilestatus symlinkssupported f fs
-		Just k -> addlink f k
+onAddFile symlinkssupported f fs =
+	onAddFile' contentchanged addassociatedfile addlink samefilestatus symlinkssupported f fs
   where
 	addassociatedfile key file = 
 		Database.Keys.addAssociatedFile key

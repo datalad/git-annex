@@ -1,3 +1,10 @@
+git-annex (10.20240702) UNRELEASED; urgency=medium
+
+  * assistant: Fix a race condition that could cause a pointer file to
+    get ingested into the annex.
+
+ -- Joey Hess <id@joeyh.name>  Tue, 02 Jul 2024 12:14:53 -0400
+
 git-annex (10.20240701) upstream; urgency=medium
 
   * git-annex remotes can now act as proxies that provide access to
