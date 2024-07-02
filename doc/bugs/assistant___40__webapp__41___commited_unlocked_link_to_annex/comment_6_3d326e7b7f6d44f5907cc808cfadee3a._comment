@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2024-07-02T14:33:03Z"
+ content="""
+Added a 60 second sleep right after the assistant checks isPointerFile,
+then started the assistant and ran:
+
+	touch new
+	sleep 10
+	echo '/annex/objects/SHA256E-s30--93c16dbf65b7b66e479bd484398c09c920338e4a1df1fe352b245078d04645f4' > new
+
+Result was 2 commits, first:
+
+	+/annex/objects/SHA256E-s93--574defb13589618ec26c2516f9f62a5a1353cbea41d619034e60a697f16bd921
+
+Followed by:
+
+	-/annex/objects/SHA256E-s93--574defb13589618ec26c2516f9f62a5a1353cbea41d619034e60a697f16bd921
+	+/annex/objects/SHA256E-s30--93c16dbf65b7b66e479bd484398c09c920338e4a1df1fe352b245078d04645f4
+
+574def is the sha256sum of the annex link that I wrote to the file. So this
+does replicate the bug. Although it's odd that it then put back the annex
+link in the subsequent commit.
+"""]]
