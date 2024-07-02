@@ -28,13 +28,16 @@ Planned schedule of work:
 
 ## work notes
 
-For June's work on [[design/passthrough_proxy]], remaining todos:
+* websockets or something else for LOCKCONTENT over http?
+
+* will client notice promptly when http connection with server
+  is closed in LOCKCONTENT?
+
+## items deferred until later for [[design/passthrough_proxy]]
 
 * Check annex.diskreserve when proxying for special remotes
   to avoid the proxy's disk filling up with the temporary object file
   cached there.
-
-## items deferred until later for [[design/passthrough_proxy]]
 
 * Resuming an interrupted download from proxied special remote makes the proxy
   re-download the whole content. It could instead keep some of the 
