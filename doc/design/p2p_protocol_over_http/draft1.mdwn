@@ -1,0 +1,273 @@
+[[!toc ]]
+
+Draft 1 of a complete [[P2P_protocol]] over HTTP.
+
+## git-annex protocol endpoint and version
+
+The git-annex protocol endpoint is "/git-annex" appended to the HTTP
+url of a git remote.
+
+## authentication
+
+A git-annex protocol endpoint can optionally operate in readonly mode without
+authentication.
+
+Authentication is required to make any changes.
+
+Authentication is done using HTTP basic auth. 
+
+The user is recommended to only authenticate over HTTPS, since otherwise
+HTTP basic auth (as well as git-annex data) can be snooped. But some users
+may want git-annex to use HTTP in eg a LAN.
+
+## protocol version
+
+Each request in the protocol is versioned. The versions correspond
+to P2P protocol versions, but for simplicity, the minimum version supported
+over HTTP is version 2. Every implementation of the HTTP protocol must
+support version 2.
+
+The protocol version comes before the request. Eg: `/git-annex/v2/put`
+
+If the server does not support a particular protocol version, the
+request will fail with a 404, and the client should fall back to an earlier
+protocol version, eg version 2.
+
+## common request parameters
+
+Every request has some common parameters that are always included:
+
+* `clientuuid`  
+
+  The value is the UUID of the git-annex repository of the client.
+
+* `serveruuid`
+
+  The value is the UUID of the git-annex repository that the server
+  should serve.
+
+Any request may also optionally include these parameters:
+
+* `bypass`
+
+  The value is the UUID of a cluster gateway, which the server should avoid
+  connecting to when serving a cluster. This is the equivilant of the
+  `BYPASS` message in the [[P2P_Protocol]].
+
+  This parameter can be given multiple times to list several cluster
+  gateway UUIDs.
+
+[Internally, git-annex can use these common parameters, plus the protocol
+version, to create a P2P session. The P2P session is driven through
+the AUTH, VERSION, and BYPASS messages, leaving the session ready to
+service requests.]
+
+## request messages
+
+All the requests below are sent with the HTTP POST method.
+
+### checkpresent
+
+Checks if a key is currently present on the server.
+
+Example:
+
+    > POST /git-annex/v2/checkpresent?key=SHA1--foo&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.1
+    < SUCCESS
+
+There is one required additional parameter, `key`.
+
+The body of the request is empty.
+
+The server responds with "SUCCESS" if the key is present
+or "FAILURE" if it is not present.
+
+### lockcontent
+
+Locks the content of a key on the server, preventing it from being removed.
+
+There is one required additional parameter, `key`.
+
+This request opens a websocket between the client and the server.
+The server sends "SUCCESS" over the websocket once it has locked
+the content. Or it sends "FAILURE" if it is unable to lock the content.
+
+Once the server has sent "SUCCESS", the content remains locked as long as
+the client remains connected to the websocket. When the client disconnects,
+or closes the websocket, the server unlocks the content.
+
+XXX What happens if the connection times out? Will the client notice that
+in time? How does this work with P2P over ssh?
+
+### remove
+
+Remove a key's content from the server.
+
+Example:
+
+    > POST /git-annex/v2/remove?key=SHA1--foo&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.1
+    < SUCCESS
+
+There is one required additional parameter, `key`.
+
+The body of the request is empty.
+
+The server responds with "SUCCESS" if the key was removed,
+or "FAILURE" if the key was not able to be removed.
+
+The server can also respond with "SUCCESS-PLUS" or "FAILURE-PLUS".
+Each has a subsequent list of UUIDs of repositories
+that the content was removed from. For example:
+
+    SUCCESS-PLUS 702ce472-38a1-11ef-864f-23851a2edf71 707dea20-38a1-11ef-96a4-fb7e8c8369f0
+
+If the server was prevented from trying to remove the key due to a policy
+(eg due to being read-only or append-only, it will respond with "ERROR",
+followed by a space and an error message.
+
+### put
+
+Store content on the server.
+
+Example:
+
+    > POST /git-annex/v2/put?key=SHA1--foo&associatedfile=bar&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.1
+    > Content-Type: application/octet-stream
+    > Content-Length: 4
+    > foo1
+    < SUCCESS
+
+There is one required additional parameter, `key`.
+
+There is are also these optional parameters:
+
+* `associatedfile`
+
+  The name of a file in the git repository, for informational purposes
+  only.
+
+* `offset`
+
+  Number of bytes that have been omitted from the beginning of the file. 
+  Usually this will be determined by making a `putoffset` request.
+
+The body of the request is the content of the key, starting from the
+specified offset or from the beginning. After the content of the key,
+there is one more byte. 
+
+The additional byte is "1" to indicate that the content was not changed
+while it was being sent, or "0" to indicate that modified content was sent
+and should be disregarded by the server. (This corresponds
+to the `VALID` and `INVALID` messages in the P2P protocol.)
+
+The `Content-Type` header should be `application/octet-stream`.
+
+The `Content-Length` header should be set to the length of the body.
+
+The server responds with `SUCCESS` if it received the data and stored the
+content. If it was unable to do so, it responds with `FAILURE`.
+
+The server can also reply with `SUCCESS-PLUS`, which has a subsequent list of
+UUIDs of repositories that the content was stored to. For example:
+
+    SUCCESS-PLUS 702ce472-38a1-11ef-864f-23851a2edf71 707dea20-38a1-11ef-96a4-fb7e8c8369f0
+
+If the server was prevented from storing the key due to a policy
+(eg due to being read-only), it will respond with "ERROR", followed
+by a space and an error message.
+
+### putoffset
+
+Asks the server what `offset` can be used in a `put` of a key.
+
+This should usually be used right before sending a `put` request.
+The offset may not be valid after some point in time, which could result in
+the `put` request failing.
+
+Example:
+
+    > POST /git-annex/v2/putoffset?key=SHA1--foo&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.1
+    < 10
+
+There is one required additional parameter, `key`.
+
+The body of the request is empty.
+
+The server responds with the largest allowable offset.
+
+If the server was prevented from storing the key due to a policy
+(eg due to being read-only), it will respond with "ERROR", followed
+by a space and an error message.
+
+[Implementation note: This will be implemented by sending `PUT` and
+returning the `PUT-FROM` offset. To avoid leaving the P2P protocol stuck
+part way through a `PUT`, a synthetic empty `DATA` followed by `INVALID`
+will be used to get the P2P protocol back into a state where it will accept
+any request.]
+
+### get
+
+Get content from the server.
+
+Example:
+
+    > POST /git-annex/v2/get?key=SHA1--foo&associatedfile=bar&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.1
+    < Content-Type: application/octet-stream
+    < Content-Length: 4
+    < foo1
+
+There is one required additional parameter, `key`.
+
+There is are also these optional parameters:
+
+* `associatedfile`
+
+  The name of a file in the git repository, for informational purposes
+  only.
+
+* `offset`
+
+  Number of bytes to skip sending from the beginning of the file. 
+
+The body of the request is empty.
+
+The server's response will have a `Content-Type` header of
+`application/octet-stream`.
+
+The server's response will have a `Content-Length` header 
+set to the length of the body.
+
+The server's response body is the content of the key, from the specified
+offset. After the content of the key, there is one more byte. 
+
+The additional byte is "1" to indicate that the content was not changed
+while it was being sent, or "0" to indicate that modified content was sent
+and should be discarded by the client. (This corresponds
+to the `VALID` and `INVALID` messages in the P2P protocol.)
+
+Note that, if the server is not able to send the content of the requested
+key, its response body will consist of "0", eg 0 bytes of content which is
+not valid. On the other hand, a response body of "1" is used for an empty
+key which is valid.
+
+## simple HTTP GET
+
+The git-annex protocol endpoint also supports a regular HTTP get
+of a key. This is not part of the P2P protocol, but is provided for
+convenience, to allow other clients than git-annex to easily download
+the content of a key.
+
+    > GET /git-annex/key/SHA1--foo HTTP/1.1
+    < Content-Type: application/octet-stream
+    < Content-Length: 3
+    < foo
+
+## parts of P2P protocol that are not supported over HTTP
+
+`NOTIFYCHANGE` is not supported, but it would be possible to extend
+this HTTP protocol to support it.
+
+`CONNECT` is not supported, and due to the bi-directional message passing
+nature of it, it cannot easily be done over HTTP. It should not be
+necessary anyway, because the git repository itself can be accessed over
+HTTP.

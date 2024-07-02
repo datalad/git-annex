@@ -201,6 +201,9 @@ was being sent.
 
 The client replies with SUCCESS or FAILURE.
 
+Note that the client responding with SUCCESS does not indicate to the
+server that it has stored the content. It may receive it and throw it away.
+
 ## Connection to services
 
 This is used to connect to services like git-upload-pack and
