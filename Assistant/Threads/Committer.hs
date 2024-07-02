@@ -290,19 +290,34 @@ handleAdds lockdowndir havelsof largefilematcher annexdotfiles delayadd cs = ret
 		refillChanges postponed
 
 	returnWhen (null toadd) $ do
+		(addedpointerfiles, toaddrest) <- partitionEithers
+			<$> mapM checkpointerfile toadd
 		(toaddannexed, toaddsmall) <- partitionEithers
-			<$> mapM checksmall toadd
+			<$> mapM checksmall toaddrest
 		addsmall toaddsmall
 		addedannexed <- addaction toadd $
 			catMaybes <$> addannexed toaddannexed
-		return $ addedannexed ++ toaddsmall ++ otherchanges
+		return $ addedannexed ++ toaddsmall ++ addedpointerfiles ++ otherchanges
   where
 	(incomplete, otherchanges) = partition (\c -> isPendingAddChange c || isInProcessAddChange c) cs
 
 	returnWhen c a
 		| c = return otherchanges
 		| otherwise = a
-
+	
+	checkpointerfile change = do
+		let file = toRawFilePath $ changeFile change
+		mk <- liftIO $ isPointerFile file
+		case mk of
+			Nothing -> return (Right change)
+			Just key -> do
+				mode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus file
+				liftAnnex $ stagePointerFile file mode =<< hashPointerFile key
+				return $ Left $ Change
+					(changeTime change)
+					(changeFile change)
+					(LinkChange (Just key))
+	
 	checksmall change
 		| not annexdotfiles && dotfile f =
 			return (Right change)

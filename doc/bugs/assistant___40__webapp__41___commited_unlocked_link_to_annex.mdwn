@@ -104,3 +104,6 @@ on laptop where I dive into inception: 10.20240129
 
 [[!meta author=yoh]]
 [[!tag projects/repronim]]
+
+[[!meta title="inception: pointer file can be ingested into the annex due to assistant bug or manually"]]
+

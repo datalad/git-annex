@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2024-07-02T16:15:28Z"
+ content="""
+I've fixed this race in the assistant.
+
+Question now is, can this bug be closed, or does it need to be left open,
+and git-annex made to recover from this situation? Given the complexity
+of making git-annex notice this, I'm sort of inclined to not have it
+auto-recover. Manual recovery seems pretty simple, just delete the file and
+re-add it with the right key. 
+
+Thoughts?
+"""]]
