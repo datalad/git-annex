@@ -256,7 +256,7 @@ verifyEnoughCopiesToDrop nolocmsg key dropfrom removallock neednum needmin skip 
 				Right proof -> dropaction proof
 				Left stillhave -> helper bad missing stillhave (c:cs) lockunsupported
 		| otherwise = case c of
-			UnVerifiedHere -> lockContentShared key contverified
+			UnVerifiedHere -> lockContentShared key Nothing contverified
 			UnVerifiedRemote r
 				-- Skip cluster uuids because locking is
 				-- not supported with them, instead will

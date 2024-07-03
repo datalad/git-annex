@@ -1,6 +1,6 @@
 {- git-annex file locations
  -
- - Copyright 2010-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -20,6 +20,8 @@ module Annex.Locations (
 	gitAnnexLink,
 	gitAnnexLinkCanonical,
 	gitAnnexContentLock,
+	gitAnnexContentRetentionTimestamp,
+	gitAnnexContentRetentionTimestampLock,
 	gitAnnexContentLockLock,
 	gitAnnexInodeSentinal,
 	gitAnnexInodeSentinalCache,
@@ -253,6 +255,19 @@ gitAnnexContentLock :: Key -> Git.Repo -> GitConfig -> IO RawFilePath
 gitAnnexContentLock key r config = do
 	loc <- gitAnnexLocation key r config
 	return $ loc <> ".lck"
+
+{- File used to indicate a key's content should not be dropped until after
+ - a specified time. -}
+gitAnnexContentRetentionTimestamp :: Key -> Git.Repo -> GitConfig -> IO RawFilePath
+gitAnnexContentRetentionTimestamp key r config = do
+	loc <- gitAnnexLocation key r config
+	return $ loc <> ".rtm"
+
+{- Lock file for gitAnnexContentRetentionTimestamp -}
+gitAnnexContentRetentionTimestampLock :: Key -> Git.Repo -> GitConfig -> IO RawFilePath
+gitAnnexContentRetentionTimestampLock key r config = do
+	loc <- gitAnnexLocation key r config
+	return $ loc <> ".rtl"
 
 {- Lock that is held when taking the gitAnnexContentLock to support the v10
  - upgrade.

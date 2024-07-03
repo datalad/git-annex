@@ -62,4 +62,7 @@ git-annex gets installed, a user is likely to have been using git-annex
 
 OTOH putting the timestamp in the lock file may be hard (eg on Windows).
 
+> Status: Content retention files implemented. P2P LOCKCONTENT uses a 10
+> minute retention in case it gets killed. Need to implement PRE-REMOVE.
+
 --[[Joey]]

@@ -1,6 +1,6 @@
 {- git-annex file content managing
  -
- - Copyright 2010-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -88,6 +88,7 @@ import Git.FilePath
 import Annex.Perms
 import Annex.Link
 import Annex.LockPool
+import Annex.LockFile
 import Annex.UUID
 import Annex.InodeSentinal
 import Annex.ReplaceFile
@@ -103,6 +104,8 @@ import Logs.Location
 import Utility.InodeCache
 import Utility.CopyFile
 import Utility.Metered
+import Utility.HumanTime
+import Utility.TimeStamp
 #ifndef mingw32_HOST_OS
 import Utility.FileMode
 #endif
@@ -110,38 +113,102 @@ import qualified Utility.RawFilePath as R
 
 import qualified System.FilePath.ByteString as P
 import System.PosixCompat.Files (isSymbolicLink, linkCount)
+import Data.Time.Clock.POSIX
 
 {- Prevents the content from being removed while the action is running.
  - Uses a shared lock.
  -
  - If locking fails, or the content is not present, throws an exception
  - rather than running the action.
+ -
+ - When a Duration is provided, the content is prevented from being removed
+ - for that amount of time, even if the current process is terminated.
+ - (This is only done when using a separate lock file from the content
+ - file eg in v10 and higher repositories.)
  -}
-lockContentShared :: Key -> (VerifiedCopy -> Annex a) -> Annex a
-lockContentShared key a = lockContentUsing lock key notpresent $
-	ifM (inAnnex key)
-		( do
-			u <- getUUID
-			withVerifiedCopy LockedCopy u (return True) a
-		, notpresent
-		)
+lockContentShared :: Key -> Maybe Duration -> (VerifiedCopy -> Annex a) -> Annex a
+lockContentShared key mduration a = do
+	retention <- case mduration of
+		Nothing -> pure Nothing
+		Just duration -> do
+			rt <- calcRepo (gitAnnexContentRetentionTimestamp key)
+			now <- liftIO getPOSIXTime
+			pure $ Just
+				( rt
+				, now + fromIntegral (durationSeconds duration)
+				)
+	lockContentUsing (lock retention) key notpresent $
+		ifM (inAnnex key)
+			( do
+				u <- getUUID
+				withVerifiedCopy LockedCopy u (return True) a
+			, notpresent
+			)
   where
 	notpresent = giveup $ "failed to lock content: not present"
 #ifndef mingw32_HOST_OS
-	lock _ (Just lockfile) = 
-		( posixLocker tryLockShared lockfile
-		, Just (posixLocker tryLockExclusive lockfile)
+	lock retention _ (Just lockfile) = 
+		( posixLocker tryLockShared lockfile >>= \case
+			Just lck -> do
+				writeretention retention
+				return (Just lck)
+			Nothing -> return Nothing
+		, Just $ posixLocker tryLockExclusive lockfile >>= \case
+			Just lck -> do
+				dropretention retention
+				return (Just lck)
+			Nothing -> return Nothing
 		)
-	lock contentfile Nothing =
+	lock _ contentfile Nothing =
 		( tryLockShared Nothing contentfile
 		, Nothing
 		)
 #else
-	lock = winLocker lockShared
-#endif
+	lock retention v = 
+		let (locker, postunlock) = winLocker lockShared v
+		in 
+			( locker >>= \case
+				Just lck -> do
+					writeretention retention
+					return (Just lck)
+				Nothing -> return Nothing
+			, \lckfile -> do
+				maybe noop (\a -> a lckfile) postunlock
+				lockdropretention retention
+			)
 
-{- Exclusively locks content, while performing an action that
- - might remove it.
+	lockdropretention Nothing = noop
+	lockdropretention retention@(Just _) =
+		-- In order to dropretention, have to
+		-- take an exclusive lock.
+		let (exlocker, expostunlock) =
+			winLocker lockExclusive v
+		exlocker >>= \case
+			Nothing -> noop
+			Just lck -> do
+				dropretention retention
+				liftIO $ dropLock lck
+		fromMaybe noop expostunlock
+#endif
+	
+	writeretention Nothing = noop
+	writeretention (Just (rt, retentionts)) = 
+		writeContentRetentionTimestamp key rt retentionts
+	
+	-- When this is called, an exclusive lock has been taken, so no other
+	-- processes can be writing to the retention time stamp file.
+	-- The timestamp in the file may have been written by this
+	-- call to lockContentShared or a later call. Only delete the file
+	-- in the former case.
+	dropretention Nothing = noop
+	dropretention (Just (rt, retentionts)) =
+		readContentRetentionTimestamp rt >>= \case
+			Just ts | ts == retentionts ->
+				removeRetentionTimeStamp key rt
+			_ -> noop
+
+{- Exclusively locks content, including checking the retention timestamp, 
+ - while performing an action that might remove it.
  -
  - If locking fails, throws an exception rather than running the action.
  -
@@ -155,7 +222,11 @@ lockContentForRemoval key fallback a = lockContentUsing lock key fallback $
 	a (ContentRemovalLock key)
   where
 #ifndef mingw32_HOST_OS
-	lock _ (Just lockfile) = (posixLocker tryLockExclusive lockfile, Nothing)
+	lock _ (Just lockfile) =
+		( checkRetentionTimestamp key
+			(posixLocker tryLockExclusive lockfile)
+		, Nothing
+		)
 	{- No lock file, so the content file itself is locked. 
 	 - Since content files are stored with the write bit
 	 - disabled, have to fiddle with permissions to open
@@ -167,12 +238,30 @@ lockContentForRemoval key fallback a = lockContentUsing lock key fallback $
 			(tryLockExclusive Nothing contentfile)
 		in (lck, Nothing)
 #else
-	lock = winLocker lockExclusive
+	lock = checkRetentionTimestamp key
+		(winLocker lockExclusive)
 #endif
 
 {- Passed the object content file, and maybe a separate lock file to use,
  - when the content file itself should not be locked. -}
-type ContentLocker = RawFilePath -> Maybe LockFile -> (Annex (Maybe LockHandle), Maybe (Annex (Maybe LockHandle)))
+type ContentLocker 
+	= RawFilePath
+	-> Maybe LockFile 
+	->
+		( Annex (Maybe LockHandle)
+		-- ^ Takes the lock, which may be shared or exclusive.
+#ifndef mingw32_HOST_OS
+		, Maybe (Annex (Maybe LockHandle))
+		-- ^ When the above takes a shared lock, this is used
+		-- to take an exclusive lock, after dropping the shared lock,
+		-- and prior to deleting the lock file, in order to 
+		-- ensure that no other processes also have a shared lock.
+#else
+		, Maybe (RawFilePath -> Annex ())
+		-- ^ On Windows, this is called after the lock is dropped,
+		-- but before the lock file is cleaned up.
+#endif
+		)
 
 #ifndef mingw32_HOST_OS
 posixLocker :: (Maybe ModeSetter -> LockFile -> Annex (Maybe LockHandle)) -> LockFile -> Annex (Maybe LockHandle)
@@ -264,13 +353,17 @@ lockContentUsing contentlocker key fallback a = withContentLockFile key $ \mlock
 			maybe noop cleanuplockfile mlockfile
 			liftIO $ dropLock lck
 #else
-	unlock _ mlockfile lck = do
+	unlock postunlock mlockfile lck = do
 		-- Can't delete a locked file on Windows,
 		-- so close our lock first. If there are other shared
-		-- locks, they will prevent the file deletion from
+		-- locks, they will prevent the lock file deletion from
 		-- happening.
 		liftIO $ dropLock lck
-		maybe noop cleanuplockfile mlockfile
+		case mlockfile of
+			Nothing -> noop -- never reached
+			Just lockfile -> do
+				maybe noop (\a -> a lockfile) postunlock
+				cleanuplockfile
 #endif
 
 	cleanuplockfile lockfile = void $ tryNonAsync $ do
@@ -960,3 +1053,60 @@ contentSize key = catchDefaultIO Nothing $
 			( isUnmodifiedCheap' key ic
 			, return True
 			)
+
+{- Avoids writing a timestamp when the file already contains a later
+ - timestamp. The file is written atomically, so when it contained an
+ - earlier timestamp, a reader will always see one or the other timestamp.
+ -}
+writeContentRetentionTimestamp :: Key -> RawFilePath -> POSIXTime -> Annex ()
+writeContentRetentionTimestamp key rt t = do
+	lckfile <- calcRepo (gitAnnexContentRetentionTimestampLock key)
+	modifyContentDirWhenExists lckfile $ bracket (lock lckfile) unlock $ \_ ->
+		readContentRetentionTimestamp rt >>= \case
+			Just ts | ts >= t -> return ()
+			_ -> replaceFile (const noop) (fromRawFilePath rt) $ \tmp ->
+				liftIO $ writeFile (fromRawFilePath tmp) $ show t
+  where
+	lock = takeExclusiveLock
+	unlock = liftIO . dropLock
+
+{- Does not need locking because the file is written atomically. -}
+readContentRetentionTimestamp :: RawFilePath -> Annex (Maybe POSIXTime)
+readContentRetentionTimestamp rt =
+	liftIO $ join <$> tryWhenExists 
+		(parsePOSIXTime <$> readFile (fromRawFilePath rt))
+
+{- Checks if the retention timestamp is in the future, if so returns
+ - Nothing.
+ -
+ - If the retention timestamp is in the past, the retention timestamp file
+ - is deleted. This cleans up stale retention timestamps.
+ -
+ - The locker should take a lock that prevents any other processes from
+ - writing to the retention timestamp. So the retention timestamp lock
+ - is not used here and can also be deleted when deleting the retention
+ - timestamp file.
+ -}
+checkRetentionTimestamp :: Key -> Annex (Maybe LockHandle) -> Annex (Maybe LockHandle)
+checkRetentionTimestamp key locker = do
+	rt <- calcRepo (gitAnnexContentRetentionTimestamp key)
+	readContentRetentionTimestamp rt >>= \case
+	 	Nothing -> locker
+		Just ts -> do
+			now <- liftIO getPOSIXTime
+			if now > ts
+				then locker >>= \case
+					Nothing -> return Nothing
+					Just lock -> do
+						removeRetentionTimeStamp key rt
+						return (Just lock)
+				else return Nothing
+
+{- Remove the retention timestamp and its lock file. Another lock must
+ - be held, that prevents anything else writing to the file at the same
+ - time. -}
+removeRetentionTimeStamp :: Key -> RawFilePath -> Annex ()
+removeRetentionTimeStamp key rt = modifyContentDirWhenExists rt $ do
+	liftIO $ removeWhenExistsWith R.removeLink rt
+	rtl <- calcRepo (gitAnnexContentRetentionTimestampLock key)
+	liftIO $ removeWhenExistsWith R.removeLink rtl

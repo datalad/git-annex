@@ -290,7 +290,7 @@ fromPerform' present updatelocationlog src key afile = do
 		next $ return True -- copy complete
 	finish deststartedwithcopy True RemoveSafe = do
 		destuuid <- getUUID
-		lockContentShared key $ \_lck ->
+		lockContentShared key Nothing $ \_lck ->
 			fromDrop src destuuid deststartedwithcopy key afile id
 
 fromDrop :: Remote -> UUID -> DestStartedWithCopy -> Key -> AssociatedFile -> ([UnVerifiedCopy] -> [UnVerifiedCopy])-> CommandPerform

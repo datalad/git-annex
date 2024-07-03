@@ -85,6 +85,13 @@ checkpresent runner k =
 			Just (Right b) -> return b
 			Just (Left err) -> giveup (safeOutput err)
 
+{- Locks the content on the remote while running an action with a
+ - LockedCopy.
+ -
+ - Note that this only guarantees that the content is locked as long as the
+ - connection to the peer remains up. If the connection is unexpectededly
+ - dropped, the peer will then unlock the content.
+ -}
 lock :: WithConn a c -> ProtoConnRunner c -> UUID -> Key -> (VerifiedCopy -> Annex a) -> Annex a
 lock withconn connrunner u k callback = withconn $ \conn -> do
 	connv <- liftIO $ newMVar conn

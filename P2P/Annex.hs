@@ -1,6 +1,6 @@
 {- P2P protocol, Annex implementation
  -
- - Copyright 2016-2022 Joey Hess <id@joeyh.name>
+ - Copyright 2016-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -23,6 +23,7 @@ import P2P.IO
 import Logs.Location
 import Types.NumCopies
 import Utility.Metered
+import Utility.HumanTime
 import Annex.Verify
 
 import Control.Monad.Free
@@ -124,7 +125,7 @@ runLocal runst runner a = case a of
 			Left e -> return $ Left $ ProtoFailureException e
 			Right result -> runner (next result)
 	TryLockContent k protoaction next -> do
-		v <- tryNonAsync $ lockContentShared k $ \verifiedcopy -> 
+		v <- tryNonAsync $ lockContentShared k (Just (Duration (60*10))) $ \verifiedcopy -> 
 			case verifiedcopy of
 				LockedCopy _ -> runner (protoaction True)
 				_ -> runner (protoaction False)

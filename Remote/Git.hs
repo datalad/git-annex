@@ -472,7 +472,7 @@ lockKey' repo r st@(State connpool duc _ _ _) key callback
 			-- and then run the callback in the original
 			-- annex monad, not the remote's.
 			onLocalFast st $ 
-				Annex.Content.lockContentShared key $
+				Annex.Content.lockContentShared key Nothing $
 					liftIO . inorigrepo . callback
 		, failedlock
 		)
