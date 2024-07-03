@@ -17,6 +17,7 @@ I'm inclined to agree with past me. While the P2P protocol could be
 extended with a way to verify that the connection is still open, there
 is a point where git-annex has told the remote to drop, and is relying on
 the locks remaining locked until the drop finishes.
+--[[Joey]]
 
 Worst case, I can imagine that the local git-annex process takes the remote
 locks. Then it's put to sleep for a day. Then it wakes up and drops from
@@ -24,11 +25,11 @@ the other remote. The P2P connections for the locks have long since closed.
 Consider for example, a ssh password prompt on connection to the remote to
 drop the content, and the user taking a long time to respond.
 
-It seems that lockContentWhile needs to guarantee that the content remains
+It seems that LOCKCONTENT needs to guarantee that the content remains
 locked for some amount of time. Then local git-annex would know it
 has at most that long to drop the content. But it's the remote that's
 dropping that really needs to know. So, extend the P2P protocol with a
-PRE-REMOVE step. After receiving PRE-REMOVE N, a REMOVE of that key is only
+PRE-REMOVE step. After receiving PRE-REMOVE N Key, a REMOVE of that key is only
 allowed until N seconds later. Sending PRE-REMOVE first, followed by
 LOCKCONTENT will guarantee the content remains locked for the full amount
 of time.
@@ -62,7 +63,52 @@ git-annex gets installed, a user is likely to have been using git-annex
 
 OTOH putting the timestamp in the lock file may be hard (eg on Windows).
 
-> Status: Content retention files implemented. P2P LOCKCONTENT uses a 10
-> minute retention in case it gets killed. Need to implement PRE-REMOVE.
+> Status: Content retention files implemented on `p2p_locking` branch.
+> P2P LOCKCONTENT uses a 10 minute retention in case it gets killed,
+> but other values can be used in the future safely.
 
---[[Joey]]
+----
+
+Extending the P2P protocol is a bit tricky, because the same P2P
+protocol connection could be used for several different things at
+the same time. A PRE-REMOVE N Key might be followed by removals of other
+keys, and eventually a removal of the requested key. There are
+sometimes pools of P2P connections that get used like this.
+So the server would need to cache some number of PRE-REMOVE timestamps.
+How many?
+
+Certainly care would need to be taken to send PRE-REMOVE to the same
+connection as REMOVE. How?
+
+Could this be done without extending the REMOVE side of the P2P protocol?
+
+1. check start time
+2. LOCKCONTENT
+3. prepare to remove
+4. in checkVerifiedCopy, 
+   check current time.. fail if more than 10 minutes from start
+5. REMOVE
+
+The issue with this is that git-annex could be paused for any amount of
+time between steps 4 and 5. Usually it won't pause.. 
+mkSafeDropProof calls checkVerifiedCopy and constructs the proof,
+and then it immediately sends REMOVE. But of course sending REMOVE
+could take arbitrarily long. Or git-annex could be paused at just the wrong
+point.
+
+Ok, let's reconsider... Add GETTIMESTAMP which causes the server to
+return its current timestamp. The same timestamp must be returned on any
+connection to the server, eg the server must have a single clock.
+That can be called before LOCKCONTENT.
+Then REMOVE Key Timestamp can fail if the current time is past the
+specified timestamp. 
+
+How to handle this when proxying to a cluster? In a cluster, each node
+has a different clock. So GETTIMESTAMP will return a bunch of times.
+The cluster can get its own current time, and return that to the client.
+Then REMOVE Key Timestamp can have the timestamp adjusted when it's sent
+out to each client, by calling GETTIMESTAMP again and applying the offsets
+between the cluster's clock and each node's clock.
+
+This approach would need to use a monotonic clock!
+>>>>>>> master

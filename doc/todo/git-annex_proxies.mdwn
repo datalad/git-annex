@@ -32,6 +32,9 @@ Planned schedule of work:
   because it will involve protocol changes and we need to get locking
   right in the http protocol from the beginning.
 
+  Status: Content retention files implemented. P2P LOCKCONTENT uses a 10
+  minute retention in case it gets killed. Need to implement PRE-REMOVE.
+
 * websockets or something else for LOCKCONTENT over http?
 
 * will client notice promptly when http connection with server
