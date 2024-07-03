@@ -25,6 +25,7 @@ module P2P.IO
 	, describeProtoFailure
 	, runNetProto
 	, runNet
+	, getMonotonicTimestampIO
 	) where
 
 import Common
@@ -53,6 +54,11 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import qualified Network.Socket as S
 import System.PosixCompat.Files (groupReadMode, groupWriteMode, otherReadMode, otherWriteMode)
+#if MIN_VERSION_clock(0,3,0)
+import qualified System.Clock as Clock
+#else
+import qualified System.Posix.Clock as Clock
+#endif
 
 -- Type of interpreters of the Proto free monad.
 type RunProto m = forall a. Proto a -> m (Either ProtoFailure a)
@@ -282,6 +288,8 @@ runNet runst conn runner f = case f of
 		runner next
 	GetProtocolVersion next ->
 		liftIO (readTVarIO versiontvar) >>= runner . next
+	GetMonotonicTimestamp next ->
+		liftIO getMonotonicTimestampIO >>= runner . next
   where
 	-- This is only used for running Net actions when relaying,
 	-- so it's ok to use runNetProto, despite it not supporting
@@ -452,3 +460,7 @@ relayReader v hout = loop
 			else getsome (b:bs)
 	
 	chunk = 65536
+
+getMonotonicTimestampIO :: IO MonotonicTimestamp
+getMonotonicTimestampIO = (MonotonicTimestamp . fromIntegral . Clock.sec)
+	<$> Clock.getTime Clock.Monotonic

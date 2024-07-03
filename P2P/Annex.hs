@@ -110,15 +110,24 @@ runLocal runst runner a = case a of
 		case v of
 			Left e -> return $ Left $ ProtoFailureException e
 			Right result -> runner (next result)
-	RemoveContent k next -> do
+	RemoveContent k mts next -> do
 		let cleanup = do
 			logStatus k InfoMissing
 			return True
+		let checkts = case mts of
+			Nothing -> return True
+			Just ts -> do
+				now <- liftIO getMonotonicTimestampIO
+				return (now < ts)
 		v <- tryNonAsync $
 			ifM (Annex.Content.inAnnex k)
-				( lockContentForRemoval k cleanup $ \contentlock -> do
-					removeAnnex contentlock
-					cleanup
+				( lockContentForRemoval k cleanup $ \contentlock ->
+					ifM checkts
+						( do
+							removeAnnex contentlock
+							cleanup
+						, return False
+						)
 				, return True
 				)
 		case v of

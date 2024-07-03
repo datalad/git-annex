@@ -111,4 +111,3 @@ out to each client, by calling GETTIMESTAMP again and applying the offsets
 between the cluster's clock and each node's clock.
 
 This approach would need to use a monotonic clock!
->>>>>>> master

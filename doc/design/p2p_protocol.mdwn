@@ -55,7 +55,7 @@ any authentication.
 
 The client sends the highest protocol version it supports:
 
-	VERSION 2
+	VERSION 3
 
 The server responds with the highest protocol version it supports
 that is less than or equal to the version the client sent:
@@ -133,6 +133,32 @@ The server responds with either SUCCESS or FAILURE.
 In protocol version 2, the server can optionally reply with SUCCESS-PLUS
 or FAILURE-PLUS. Each has a subsequent list of UUIDs of repositories
 that the content was removed from.
+
+## Removing content before a specified time
+
+This is only available in protocol version 3 and above.
+
+To remove a key's content from the server, but only before a specified time,
+the client sends:
+
+    REMOVE-BEFORE Timestamp Key
+
+The server responds to the message in the same way as to REMOVE.
+
+If the server receives the message at a time after the specified timestamp,
+the remove must fail.  This is used to avoid removing content after a point
+in time where it is no longer locked in other repostitories.
+
+## Getting a timestamp
+
+This is only available in protocol version 3 and above.
+
+To get the current timestamp from the server, the client sends:
+
+    GETTIMESTAMP
+
+The server responds with TIMESTAMP followed by its current time, as a
+number of seconds. Note that this uses a monotonic clock.
 
 ## Storing content on the server
 

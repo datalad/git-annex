@@ -84,6 +84,7 @@ Build-Depends:
 	libghc-filepath-bytestring-dev,
 	libghc-git-lfs-dev (>= 1.2.0),
 	libghc-criterion-dev,
+	libghc-clock-dev,
 	lsof [linux-any],
 	ikiwiki,
 	libimage-magick-perl,

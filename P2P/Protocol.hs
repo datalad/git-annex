@@ -56,7 +56,7 @@ defaultProtocolVersion :: ProtocolVersion
 defaultProtocolVersion = ProtocolVersion 0
 
 maxProtocolVersion :: ProtocolVersion
-maxProtocolVersion = ProtocolVersion 2
+maxProtocolVersion = ProtocolVersion 3
 
 newtype ProtoAssociatedFile = ProtoAssociatedFile AssociatedFile
 	deriving (Show)
@@ -70,6 +70,9 @@ data Validity = Valid | Invalid
 	
 newtype Bypass = Bypass (S.Set UUID)
 	deriving (Show, Monoid, Semigroup)
+
+newtype MonotonicTimestamp = MonotonicTimestamp Integer
+	deriving (Show, Eq, Ord)
 
 -- | Messages in the protocol. The peer that makes the connection
 -- always initiates requests, and the other peer makes responses to them.
@@ -86,6 +89,8 @@ data Message
 	| LOCKCONTENT Key
 	| UNLOCKCONTENT
 	| REMOVE Key
+	| REMOVE_BEFORE MonotonicTimestamp Key
+	| GETTIMESTAMP
 	| GET Offset ProtoAssociatedFile Key
 	| PUT ProtoAssociatedFile Key
 	| PUT_FROM Offset
@@ -98,6 +103,7 @@ data Message
 	| BYPASS Bypass
 	| DATA Len -- followed by bytes of data
 	| VALIDITY Validity
+	| TIMESTAMP MonotonicTimestamp
 	| ERROR String
 	deriving (Show)
 
@@ -114,6 +120,8 @@ instance Proto.Sendable Message where
 	formatMessage (LOCKCONTENT key) = ["LOCKCONTENT", Proto.serialize key]
 	formatMessage UNLOCKCONTENT = ["UNLOCKCONTENT"]
 	formatMessage (REMOVE key) = ["REMOVE", Proto.serialize key]
+	formatMessage (REMOVE_BEFORE ts key) = ["REMOVE-BEFORE", Proto.serialize ts, Proto.serialize key]
+	formatMessage GETTIMESTAMP = ["GETTIMESTAMP"]
 	formatMessage (GET offset af key) = ["GET", Proto.serialize offset, Proto.serialize af, Proto.serialize key]
 	formatMessage (PUT af key) = ["PUT", Proto.serialize af, Proto.serialize key]
 	formatMessage (PUT_FROM offset) = ["PUT-FROM", Proto.serialize offset]
@@ -124,9 +132,10 @@ instance Proto.Sendable Message where
 	formatMessage FAILURE = ["FAILURE"]
 	formatMessage (FAILURE_PLUS uuids) = ("FAILURE-PLUS":map Proto.serialize uuids)
 	formatMessage (BYPASS (Bypass uuids)) = ("BYPASS":map Proto.serialize (S.toList uuids))
+	formatMessage (DATA len) = ["DATA", Proto.serialize len]
 	formatMessage (VALIDITY Valid) = ["VALID"]
 	formatMessage (VALIDITY Invalid) = ["INVALID"]
-	formatMessage (DATA len) = ["DATA", Proto.serialize len]
+	formatMessage (TIMESTAMP ts) = ["TIMESTAMP", Proto.serialize ts]
 	formatMessage (ERROR err) = ["ERROR", Proto.serialize err]
 
 instance Proto.Receivable Message where
@@ -142,6 +151,8 @@ instance Proto.Receivable Message where
 	parseCommand "LOCKCONTENT" = Proto.parse1 LOCKCONTENT
 	parseCommand "UNLOCKCONTENT" = Proto.parse0 UNLOCKCONTENT
 	parseCommand "REMOVE" = Proto.parse1 REMOVE
+	parseCommand "REMOVE-BEFORE" = Proto.parse2 REMOVE_BEFORE
+	parseCommand "GETTIMESTAMP" = Proto.parse0 GETTIMESTAMP
 	parseCommand "GET" = Proto.parse3 GET
 	parseCommand "PUT" = Proto.parse2 PUT
 	parseCommand "PUT-FROM" = Proto.parse1 PUT_FROM
@@ -153,9 +164,10 @@ instance Proto.Receivable Message where
 	parseCommand "FAILURE-PLUS" = Proto.parseList FAILURE_PLUS
 	parseCommand "BYPASS" = Proto.parseList (BYPASS . Bypass . S.fromList)
 	parseCommand "DATA" = Proto.parse1 DATA
-	parseCommand "ERROR" = Proto.parse1 ERROR
 	parseCommand "VALID" = Proto.parse0 (VALIDITY Valid)
 	parseCommand "INVALID" = Proto.parse0 (VALIDITY Invalid)
+	parseCommand "TIMESTAMP" = Proto.parse1 TIMESTAMP
+	parseCommand "ERROR" = Proto.parse1 ERROR
 	parseCommand _ = Proto.parseFail
 
 instance Proto.Serializable ProtocolVersion where
@@ -169,6 +181,10 @@ instance Proto.Serializable Offset where
 instance Proto.Serializable Len where
 	serialize (Len n) = show n
 	deserialize = Len <$$> readish
+
+instance Proto.Serializable MonotonicTimestamp where
+	serialize (MonotonicTimestamp n) = show n
+	deserialize = MonotonicTimestamp <$$> readish
 
 instance Proto.Serializable Service where
 	serialize UploadPack = "git-upload-pack"
@@ -249,6 +265,7 @@ data NetF c
 	| SetProtocolVersion ProtocolVersion c
 	--- ^ Called when a new protocol version has been negotiated.
 	| GetProtocolVersion (ProtocolVersion -> c)
+	| GetMonotonicTimestamp (MonotonicTimestamp -> c)
 	deriving (Functor)
 
 type Net = Free NetF
@@ -294,9 +311,11 @@ data LocalF c
 	| SetPresent Key UUID c
 	| CheckContentPresent Key (Bool -> c)
 	-- ^ Checks if the whole content of the key is locally present.
-	| RemoveContent Key (Bool -> c)
+	| RemoveContent Key (Maybe MonotonicTimestamp) (Bool -> c)
 	-- ^ If the content is not present, still succeeds.
 	-- May fail if not enough copies to safely drop, etc.
+	-- After locking the content for removal, checks if it's later
+	-- than the MonotonicTimestamp, and fails.
 	| TryLockContent Key (Bool -> Proto ()) c
 	-- ^ Try to lock the content of a key,  preventing it
 	-- from being deleted, while running the provided protocol
@@ -488,13 +507,13 @@ serveAuthed servermode myuuid = void $ serverLoop handler
 		sendSuccess =<< local (checkContentPresent key)
 		return ServerContinue
 	handler (REMOVE key) =
-		checkREMOVEServerMode servermode $ \case
-			Nothing -> do
-				sendSuccess =<< local (removeContent key)
-				return ServerContinue			
-			Just notallowed -> do
-				notallowed
-				return ServerContinue
+		handleremove key Nothing
+	handler (REMOVE_BEFORE ts key) =
+		handleremove key (Just ts)
+	handler GETTIMESTAMP = do
+		ts <- net getMonotonicTimestamp
+		net $ sendMessage $ TIMESTAMP ts
+		return ServerContinue
 	handler (PUT (ProtoAssociatedFile af) key) =
 		checkPUTServerMode servermode $ \case
 			Nothing -> handleput af key
@@ -536,6 +555,15 @@ serveAuthed servermode myuuid = void $ serverLoop handler
 				when (observeBool v) $
 					local $ setPresent key myuuid
 		return ServerContinue
+		
+	handleremove key mts =
+		checkREMOVEServerMode servermode $ \case
+			Nothing -> do
+				sendSuccess =<< local (removeContent key mts)
+				return ServerContinue			
+			Just notallowed -> do
+				notallowed
+				return ServerContinue
 
 sendReadOnlyError :: Proto ()
 sendReadOnlyError = net $ sendMessage $

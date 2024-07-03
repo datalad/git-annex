@@ -278,7 +278,8 @@ Executable git-annex
    DAV (>= 1.0),
    network (>= 3.0.0.0),
    network-bsd,
-   git-lfs (>= 1.2.0)
+   git-lfs (>= 1.2.0),
+   clock (>= 0.2.0.0)
   CC-Options: -Wall
   GHC-Options: -Wall -fno-warn-tabs  -Wincomplete-uni-patterns
   Default-Language: Haskell2010

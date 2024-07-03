@@ -24,14 +24,14 @@ may want git-annex to use HTTP in eg a LAN.
 
 Each request in the protocol is versioned. The versions correspond
 to P2P protocol versions, but for simplicity, the minimum version supported
-over HTTP is version 2. Every implementation of the HTTP protocol must
-support version 2.
+over HTTP is version 3. Every implementation of the HTTP protocol must
+support version 3.
 
-The protocol version comes before the request. Eg: `/git-annex/v2/put`
+The protocol version comes before the request. Eg: `/git-annex/v3/put`
 
 If the server does not support a particular protocol version, the
 request will fail with a 404, and the client should fall back to an earlier
-protocol version, eg version 2.
+protocol version.
 
 ## common request parameters
 
@@ -72,7 +72,7 @@ Checks if a key is currently present on the server.
 
 Example:
 
-    > POST /git-annex/v2/checkpresent?key=SHA1--foo&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.1
+    > POST /git-annex/v3/checkpresent?key=SHA1--foo&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.1
     < SUCCESS
 
 There is one required additional parameter, `key`.
@@ -99,13 +99,32 @@ or closes the websocket, the server unlocks the content.
 XXX What happens if the connection times out? Will the client notice that
 in time? How does this work with P2P over ssh?
 
+### limit-remove
+
+Limit the next requested removal of a key to occur within a specified
+number of seconds.
+
+Example:
+
+    > POST /git-annex/v3/limit-remove?seconds=600&key=SHA1--foo&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.1
+    < SUCCESS
+
+There are two required additional parameters, `key` and `seconds`.
+
+The body of the request is empty.
+
+The server responds with "SUCCESS".
+
+The server will check the next `remove` request, and if it's for the same key,
+and more time has elapsed, it will refuse to remove the key's content.
+
 ### remove
 
 Remove a key's content from the server.
 
 Example:
 
-    > POST /git-annex/v2/remove?key=SHA1--foo&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.1
+    > POST /git-annex/v3/remove?key=SHA1--foo&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.1
     < SUCCESS
 
 There is one required additional parameter, `key`.
@@ -125,13 +144,46 @@ If the server was prevented from trying to remove the key due to a policy
 (eg due to being read-only or append-only, it will respond with "ERROR",
 followed by a space and an error message.
 
+## remove-before
+
+Remove a key's content from the server, but only before a specified time.
+
+Example:
+
+    > POST /git-annex/v3/remove-before?timestamp=4949292929&key=SHA1--foo&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.1
+    < SUCCESS
+
+This is the same as the `remove` request, but with an additional parameter,
+`timestamp`.
+
+If the server's clock is past the specified timestamp, the removal will
+fail. This is used to avoid removing content after a point in time where it
+is no longer locked in other repostitories.
+
+## gettimestamp
+
+Gets the current timestamp from the server.
+
+Example:
+
+    > POST /git-annex/v3/gettimestamp?clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.1
+    < TIMESTAMP 59459392
+
+The body of the request is empty.
+
+The server responds with "TIMESTAMP" followed by a space and the current
+value of its monotonic clock, as a number of seconds.
+
+Important: If multiple servers are serving this protocol for the same
+repository, they MUST all use the same monotonic clock.
+
 ### put
 
 Store content on the server.
 
 Example:
 
-    > POST /git-annex/v2/put?key=SHA1--foo&associatedfile=bar&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.1
+    > POST /git-annex/v3/put?key=SHA1--foo&associatedfile=bar&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.1
     > Content-Type: application/octet-stream
     > Content-Length: 4
     > foo1
@@ -186,7 +238,7 @@ the `put` request failing.
 
 Example:
 
-    > POST /git-annex/v2/putoffset?key=SHA1--foo&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.1
+    > POST /git-annex/v3/putoffset?key=SHA1--foo&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.1
     < 10
 
 There is one required additional parameter, `key`.
@@ -211,7 +263,7 @@ Get content from the server.
 
 Example:
 
-    > POST /git-annex/v2/get?key=SHA1--foo&associatedfile=bar&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.1
+    > POST /git-annex/v3/get?key=SHA1--foo&associatedfile=bar&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.1
     < Content-Type: application/octet-stream
     < Content-Length: 4
     < foo1
