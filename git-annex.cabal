@@ -1009,6 +1009,7 @@ Executable git-annex
     Utility.Base64
     Utility.Batch
     Utility.Bloom
+    Utility.MonotonicClock
     Utility.CoProcess
     Utility.CopyFile
     Utility.Daemon

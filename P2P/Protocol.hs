@@ -26,6 +26,7 @@ import Utility.Applicative
 import Utility.PartialPrelude
 import Utility.Metered
 import Utility.FileSystemEncoding
+import Utility.MonotonicClock
 import Git.FilePath
 import Annex.ChangedRefs (ChangedRefs)
 
@@ -70,9 +71,6 @@ data Validity = Valid | Invalid
 	
 newtype Bypass = Bypass (S.Set UUID)
 	deriving (Show, Monoid, Semigroup)
-
-newtype MonotonicTimestamp = MonotonicTimestamp Integer
-	deriving (Show, Eq, Ord)
 
 -- | Messages in the protocol. The peer that makes the connection
 -- always initiates requests, and the other peer makes responses to them.

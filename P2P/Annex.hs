@@ -24,6 +24,7 @@ import Logs.Location
 import Types.NumCopies
 import Utility.Metered
 import Utility.HumanTime
+import Utility.MonotonicClock
 import Annex.Verify
 
 import Control.Monad.Free
@@ -117,7 +118,7 @@ runLocal runst runner a = case a of
 		let checkts = case mts of
 			Nothing -> return True
 			Just ts -> do
-				now <- liftIO getMonotonicTimestampIO
+				now <- liftIO currentMonotonicTimestamp
 				return (now < ts)
 		v <- tryNonAsync $
 			ifM (Annex.Content.inAnnex k)
