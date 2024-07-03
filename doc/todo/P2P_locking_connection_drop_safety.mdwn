@@ -1,0 +1,65 @@
+The P2P protocol's LOCKCONTENT assumes that the P2P connection does not get
+closed unexpectedly. If the P2P connection does close before the drop
+happens, the remote's lock will be released, but the git-annex that is
+doing the dropping does not have a way to find that out.
+
+This in particular affects drops from remotes. Drops from the local
+repository have a ContentRemovalLock that doesn't have this problem.
+
+This was discussed in [[!commit 73a6b9b51455f2ae8483a86a98e9863fffe9ebac]]
+(2016). There I concluded:
+
+	Probably this needs to be fixed by eg, making lockContentWhile catch any
+	exceptions due to the connection closing, and in that case, wait a
+	significantly long time before dropping the lock.
+
+I'm inclined to agree with past me. While the P2P protocol could be
+extended with a way to verify that the connection is still open, there
+is a point where git-annex has told the remote to drop, and is relying on
+the locks remaining locked until the drop finishes.
+
+Worst case, I can imagine that the local git-annex process takes the remote
+locks. Then it's put to sleep for a day. Then it wakes up and drops from
+the other remote. The P2P connections for the locks have long since closed.
+Consider for example, a ssh password prompt on connection to the remote to
+drop the content, and the user taking a long time to respond.
+
+It seems that lockContentWhile needs to guarantee that the content remains
+locked for some amount of time. Then local git-annex would know it
+has at most that long to drop the content. But it's the remote that's
+dropping that really needs to know. So, extend the P2P protocol with a
+PRE-REMOVE step. After receiving PRE-REMOVE N, a REMOVE of that key is only
+allowed until N seconds later. Sending PRE-REMOVE first, followed by
+LOCKCONTENT will guarantee the content remains locked for the full amount
+of time.
+
+How long? 10 minutes is arbitrary, but seems in the right ballpark. Since
+this will cause drops to fail if they timeout sitting at a ssh password
+prompt, it needs to be more than a few minutes. But making it too long, eg
+an hour can result in content being stuck locked on a remote for a long
+time, preventing a later legitimate drop. It could be made configurable, if
+needed, by extending the P2P protocol so LOCKCONTENT was passed the amount
+of time.
+
+Having lockContentWhile catch all exceptions and keep the content locked
+for the time period won't work though. Systemd reaps processes on ssh
+connection close. And if the P2P protocol is served by `git annex
+remotedaemon` for tor, or something similar for future P2P over HTTP
+(either a HTTP daemon or a CGI script), nothing guarantees that such a
+process is kept running. An admin may bounce the HTTP server at any point,
+or the whole system reboot.
+
+----
+
+So, this needs a way to make lockContentShared guarentee it remains
+locked for an amount of time even after the process has exited.
+
+In a v10 repo, the content lock file is separate from the content file,
+and it is currently an empty file. So a timestamp could be put in there.
+It seems ok to only fix this in v10, because by the time the fixed
+git-annex gets installed, a user is likely to have been using git-annex
+10.x long enough (1 year) for their repo to have been upgraded to v10.
+
+OTOH putting the timestamp in the lock file may be hard (eg on Windows).
+
+--[[Joey]]

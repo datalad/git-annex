@@ -28,6 +28,10 @@ Planned schedule of work:
 
 ## work notes
 
+* [[todo/P2P_locking_connection_drop_safety]] is blocking http protocol,
+  because it will involve protocol changes and we need to get locking
+  right in the http protocol from the beginning.
+
 * websockets or something else for LOCKCONTENT over http?
 
 * will client notice promptly when http connection with server
