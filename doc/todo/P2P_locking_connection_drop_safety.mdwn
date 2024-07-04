@@ -73,7 +73,7 @@ Then REMOVE Key Timestamp can have the timestamp adjusted when it's sent
 out to each client, by calling GETTIMESTAMP again and applying the offsets
 between the cluster's clock and each node's clock.
 
-TODO
+> done
 
 ## future flag day
 
@@ -94,3 +94,5 @@ those remotes. This problem is not likely enough to occur to seem worth
 that disruption.
 
 A flag day might be worth doing in a couple of years though. --[[Joey]]
+
+> [[done]] --[[Joey]]

@@ -67,7 +67,8 @@ proxyCluster clusteruuid proxydone servermode clientside protoerrhandler = do
 		(selectnode, closenodes) <- clusterProxySelector clusteruuid
 			protocolversion bypassuuids
 		concurrencyconfig <- getConcurrencyConfig
-		proxy proxydone proxymethods servermode clientside 
+		proxystate <- liftIO mkProxyState
+		proxy proxydone proxymethods proxystate servermode clientside 
 			(fromClusterUUID clusteruuid)
 			selectnode concurrencyconfig protocolversion
 			othermsg (protoerrhandler closenodes)
@@ -107,6 +108,7 @@ clusterProxySelector clusteruuid protocolversion (Bypass bypass) = do
 		-- could be out of date, actually try to remove from every
 		-- node.
 		, proxyREMOVE = const (pure nodes)
+		, proxyGETTIMESTAMP = pure nodes
 		-- Content is not locked on the cluster as a whole,
 		-- instead it can be locked on individual nodes that are
 		-- proxied to the client.

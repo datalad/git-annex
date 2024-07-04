@@ -76,7 +76,9 @@ performProxy clientuuid servermode r = do
 			closeRemoteSide remoteside
 			p2pDone
 		let errhandler = p2pErrHandler (closeRemoteSide remoteside)
-		let runproxy othermsg' = proxy closer proxymethods
+		proxystate <- liftIO mkProxyState
+		let runproxy othermsg' = proxy closer
+			proxymethods proxystate
 			servermode clientside
 			(Remote.uuid r)
 			(singleProxySelector remoteside)
