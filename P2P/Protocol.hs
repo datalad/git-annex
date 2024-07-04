@@ -42,6 +42,7 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Set as S
 import Data.Char
+import Data.Time.Clock.POSIX
 import Control.Applicative
 import Prelude
 
@@ -327,6 +328,8 @@ data LocalF c
 	-- not known until the data is being received.
 	| RunValidityCheck (Annex Validity) (Validity -> c)
 	-- ^ Runs a deferred validity check.
+	| GetLocalCurrentTime (POSIXTime -> c)
+	-- ^ Gets the local time.
 	deriving (Functor)
 
 type Local = Free LocalF
@@ -397,9 +400,49 @@ lockContentWhile runproto key a = bracket setup cleanup a
 	cleanup False = return ()
 
 remove :: Maybe SafeDropProof -> Key -> Proto (Either String Bool, Maybe [UUID])
-remove proof key = do
-	net $ sendMessage (REMOVE key)
-	checkSuccessFailurePlus
+remove proof key = 
+	case safeDropProofEndTime =<< proof of
+		Nothing -> removeanytime
+		Just endtime -> do
+			ver <- net getProtocolVersion
+			if ver >= ProtocolVersion 3
+				then removeBefore endtime key
+				-- Peer is too old to support REMOVE-BEFORE
+				else removeanytime
+  where
+	removeanytime = do
+		net $ sendMessage (REMOVE key)
+		checkSuccessFailurePlus
+
+{- The endtime is the last local time at which the key can be removed.
+ - To tell the remote how long it has to remove the key, get its current
+ - timestamp, and add to it the number of seconds from the current local
+ - time until the endtime.
+ -
+ - Order of retrieving timestamps matters. Getting the local time after the
+ - remote timestamp means that, if there is some delay in getting the
+ - response from the remote, that is reflected in the local time, and so
+ - reduces the allowed time.
+ -}
+removeBefore :: POSIXTime -> Key -> Proto (Either String Bool, Maybe [UUID])
+removeBefore endtime key = do
+	net $ sendMessage GETTIMESTAMP
+	net receiveMessage >>= \case
+		Just (TIMESTAMP remotetime) -> do
+			localtime <- local getLocalCurrentTime
+			let timeleft = endtime - localtime
+			let timeleft' = MonotonicTimestamp (floor timeleft)
+			let remoteendtime = remotetime + timeleft'
+			if timeleft <= 0
+				then return (Right False, Nothing)
+				else do
+					net $ sendMessage $
+						REMOVE_BEFORE remoteendtime key
+					checkSuccessFailurePlus	
+		Just (ERROR err) -> return (Left err, Nothing)
+		_ -> do
+			net $ sendMessage (ERROR "expected TIMESTAMP")
+			return (Right False, Nothing)
 
 get :: FilePath -> Key -> Maybe IncrementalVerifier -> AssociatedFile -> Meter -> MeterUpdate -> Proto (Bool, Verification)
 get dest key iv af m p = 

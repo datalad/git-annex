@@ -28,6 +28,7 @@ import Annex.Verify
 
 import Control.Monad.Free
 import Control.Concurrent.STM
+import Data.Time.Clock.POSIX
 import qualified Data.ByteString as S
 
 -- Full interpreter for Proto, that can receive and send objects.
@@ -156,7 +157,10 @@ runLocal runst runner a = case a of
 	UpdateMeterTotalSize m sz next -> do
 		liftIO $ setMeterTotalSize m sz
 		runner next
-	RunValidityCheck checkaction next -> runner . next =<< checkaction
+	RunValidityCheck checkaction next ->
+		runner . next =<< checkaction
+	GetLocalCurrentTime next ->
+		runner . next =<< liftIO getPOSIXTime
   where
 	transfer mk k af sd ta = case runst of
 		-- Update transfer logs when serving.

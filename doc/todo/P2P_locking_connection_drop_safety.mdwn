@@ -47,7 +47,7 @@ remotedaemon` for tor, or something similar for future P2P over HTTP
 process is kept running. An admin may bounce the HTTP server at any point,
 or the whole system reboot.
 
-----
+## retention locking
 
 So, this needs a way to make lockContentShared guarentee it remains
 locked for an amount of time even after the process has exited.
@@ -64,41 +64,7 @@ OTOH putting the timestamp in the lock file may be hard (eg on Windows).
 > P2P LOCKCONTENT uses a 10 minute retention in case it gets killed,
 > but other values can be used in the future safely.
 
-----
-
-Extending the P2P protocol is a bit tricky, because the same P2P
-protocol connection could be used for several different things at
-the same time. A PRE-REMOVE N Key might be followed by removals of other
-keys, and eventually a removal of the requested key. There are
-sometimes pools of P2P connections that get used like this.
-So the server would need to cache some number of PRE-REMOVE timestamps.
-How many?
-
-Certainly care would need to be taken to send PRE-REMOVE to the same
-connection as REMOVE. How?
-
-Could this be done without extending the REMOVE side of the P2P protocol?
-
-1. check start time
-2. LOCKCONTENT
-3. prepare to remove
-4. in checkVerifiedCopy, 
-   check current time.. fail if more than 10 minutes from start
-5. REMOVE
-
-The issue with this is that git-annex could be paused for any amount of
-time between steps 4 and 5. Usually it won't pause.. 
-mkSafeDropProof calls checkVerifiedCopy and constructs the proof,
-and then it immediately sends REMOVE. But of course sending REMOVE
-could take arbitrarily long. Or git-annex could be paused at just the wrong
-point.
-
-Ok, let's reconsider... Add GETTIMESTAMP which causes the server to
-return its current timestamp. The same timestamp must be returned on any
-connection to the server, eg the server must have a single clock.
-That can be called before LOCKCONTENT.
-Then REMOVE Key Timestamp can fail if the current time is past the
-specified timestamp. 
+## clusters
 
 How to handle this when proxying to a cluster? In a cluster, each node
 has a different clock. So GETTIMESTAMP will return a bunch of times.
@@ -107,13 +73,24 @@ Then REMOVE Key Timestamp can have the timestamp adjusted when it's sent
 out to each client, by calling GETTIMESTAMP again and applying the offsets
 between the cluster's clock and each node's clock.
 
-This approach would need to use a monotonic clock!
+TODO
 
----
+## future flag day
 
 There is a potential future flag day where
 p2pDefaultLockContentRetentionDuration is not assumed, but is probed
 using the P2P protocol, and peers that don't support it can no longer
-produce a LockedCopy. Until that happens, when git-annex is
+produce a LockedCopy. And P2P.Protocol.remove does not fall back to REMOVE
+when the peer does not support REMOVE-WHEN and there's a proof expiry time.
+
+Until that flag day, when git-annex is
 communicating with older peers there is a risk of data loss when
 a ssh connection closes during LOCKCONTENT.
+
+I think that now is not the right time for that flag day, because it will
+cause disruption. Everyone would have to upgrade remote git-annex versions
+in order to drop content from those remotes, or with content locked on
+those remotes. This problem is not likely enough to occur to seem worth
+that disruption.
+
+A flag day might be worth doing in a couple of years though. --[[Joey]]

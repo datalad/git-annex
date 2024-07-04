@@ -23,12 +23,12 @@ safeDropProofExpired :: Annex ()
 safeDropProofExpired = do
 	showNote "unsafe"
 	showLongNote $ UnquotedString
-		"Dropping took too long, and locks on remotes may have expired."
+		"Dropping took too long, and locks may have expired."
 
 checkSafeDropProofEndTime :: Maybe SafeDropProof -> IO Bool
 checkSafeDropProofEndTime p = case safeDropProofEndTime =<< p of
 	Nothing -> return True
-	Just t -> do
+	Just endtime -> do
 		now <- getPOSIXTime
-		return (t < now)
+		return (endtime > now)
 

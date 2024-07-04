@@ -5,6 +5,7 @@
  - License: BSD-2-clause
  -}
 
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE CPP #-}
 
 module Utility.MonotonicClock where
@@ -19,7 +20,7 @@ import Utility.Exception
 #endif
 
 newtype MonotonicTimestamp = MonotonicTimestamp Integer
-	deriving (Show, Eq, Ord)
+	deriving (Show, Eq, Ord, Num)
 
 -- On linux, this uses a clock that advances while the system is suspended,
 -- except for on very old kernels (eg 2.6.32).
