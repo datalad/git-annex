@@ -151,7 +151,7 @@ performRemote pcc key afile numcopies mincopies remote ud = do
 				, "proof:"
 				, show proof
 				]
-			ok <- Remote.action (Remote.removeKey remote key)
+			ok <- Remote.action (Remote.removeKey remote proof key)
 			next $ cleanupRemote key remote ud ok
 		, stop
 		)

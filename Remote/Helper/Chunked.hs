@@ -226,10 +226,10 @@ seekResume h encryptor chunkkeys checker = do
  -
  - This action may be called on a chunked key. It will simply remove it.
  -}
-removeChunks :: Remover -> UUID -> ChunkConfig -> EncKey -> Key -> Annex ()
-removeChunks remover u chunkconfig encryptor k = do
+removeChunks :: Remover -> UUID -> ChunkConfig -> EncKey -> Maybe SafeDropProof -> Key -> Annex ()
+removeChunks remover u chunkconfig encryptor proof k = do
 	ls <- map chunkKeyList <$> chunkKeys u chunkconfig k
-	mapM_ (remover . encryptor) (concat ls)
+	mapM_ (remover proof . encryptor) (concat ls)
 	let chunksizes = catMaybes $ map (fromKey keyChunkSize <=< headMaybe) ls
 	forM_ chunksizes $ chunksRemoved u k . FixedSizeChunks . fromIntegral
 

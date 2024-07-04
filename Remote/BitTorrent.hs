@@ -121,8 +121,8 @@ downloadKey key _file dest p _ = do
 uploadKey :: Key -> AssociatedFile -> Maybe FilePath -> MeterUpdate -> Annex ()
 uploadKey _ _ _ _ = giveup "upload to bittorrent not supported"
 
-dropKey :: Key -> Annex ()
-dropKey k = mapM_ (setUrlMissing k) =<< getBitTorrentUrls k
+dropKey :: Maybe SafeDropProof -> Key -> Annex ()
+dropKey _ k = mapM_ (setUrlMissing k) =<< getBitTorrentUrls k
 
 {- We punt and don't try to check if a torrent has enough seeders
  - with all the pieces etc. That would be quite hard.. and even if

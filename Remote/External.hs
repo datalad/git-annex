@@ -259,7 +259,7 @@ retrieveKeyFileM external = fileRetriever $ \d k p ->
 			_ -> Nothing
 
 removeKeyM :: External -> Remover
-removeKeyM external k = either giveup return =<< go
+removeKeyM external _proof k = either giveup return =<< go
   where
 	go = handleRequestKey external REMOVE k Nothing $ \resp ->
 		case resp of

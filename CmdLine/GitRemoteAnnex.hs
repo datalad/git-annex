@@ -996,7 +996,7 @@ dropKey rmt k = tryNonAsync (dropKey' rmt k) >>= \case
 
 dropKey' :: Remote -> Key -> Annex ()
 dropKey' rmt k = getKeyExportLocations rmt k >>= \case
-	Nothing -> Remote.removeKey rmt k
+	Nothing -> Remote.removeKey rmt Nothing k
 	Just locs -> forM_ locs $ \loc -> 
 		Remote.removeExport (Remote.exportActions rmt) k loc
 

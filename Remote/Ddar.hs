@@ -180,7 +180,7 @@ retrieve ddarrepo = byteRetriever $ \k sink -> do
 	go _ _ _ = error "internal"
 
 remove :: DdarRepo -> Remover
-remove ddarrepo key = do
+remove ddarrepo _proof key = do
 	(cmd, params) <- ddarRemoteCall NoConsumeStdin ddarrepo 'd'
 		[Param $ serializeKey key]
 	unlessM (liftIO $ boolSystem cmd params) $

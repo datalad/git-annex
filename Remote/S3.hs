@@ -449,7 +449,7 @@ retrieveHelper' h f p iv req = liftIO $ runResourceT $ do
 	Url.sinkResponseFile p iv zeroBytesProcessed f WriteMode rsp
 
 remove :: S3HandleVar -> Remote -> S3Info -> Remover
-remove hv r info k = withS3HandleOrFail (uuid r) hv $ \h -> do
+remove hv r info _proof k = withS3HandleOrFail (uuid r) hv $ \h -> do
 	S3.DeleteObjectResponse <- liftIO $ runResourceT $ sendS3Handle h $
 		S3.DeleteObject (T.pack $ bucketObject info k) (bucket info)
 	return ()
@@ -462,7 +462,7 @@ lockContentS3 hv r rs c info
 	| versioning info = Just $ \k callback -> do
 		checkVersioning info rs k
 		ifM (checkKey hv r rs c info k)
-			( withVerifiedCopy LockedCopy (uuid r) (return True) callback
+			( withVerifiedCopy LockedCopy (uuid r) (return (Right True)) callback
 			, giveup $ "content seems to be missing from " ++ name r ++ " despite S3 versioning being enabled"
 			)
 	| otherwise = Nothing

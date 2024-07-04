@@ -270,7 +270,7 @@ retrieveKeyFileCheapM _ _ = Nothing
 #endif
 
 removeKeyM :: RawFilePath -> Remover
-removeKeyM d k = liftIO $ removeDirGeneric True
+removeKeyM d _proof k = liftIO $ removeDirGeneric True
 	(fromRawFilePath d)
 	(fromRawFilePath (storeDir d k))
 

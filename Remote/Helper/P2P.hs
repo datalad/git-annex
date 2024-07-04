@@ -21,8 +21,10 @@ import Types.NumCopies
 import Annex.Verify
 import Logs.Location
 import Utility.SafeOutput
+import Utility.HumanTime
 
 import Control.Concurrent
+import Data.Time.Clock.POSIX
 
 -- Runs a Proto action using a connection it sets up.
 type ProtoRunner a = P2P.Proto a -> Annex (Maybe a)
@@ -60,8 +62,8 @@ retrieve gc runner k af dest p verifyconfig = do
 			Just (False, _) -> giveup "Transfer failed"
 			Nothing -> remoteUnavail
 
-remove :: UUID -> ProtoRunner (Either String Bool, Maybe [UUID]) -> Key -> Annex ()
-remove remoteuuid runner k = runner (P2P.remove k) >>= \case
+remove :: UUID -> ProtoRunner (Either String Bool, Maybe [UUID]) -> Maybe SafeDropProof -> Key -> Annex ()
+remove remoteuuid runner proof k = runner (P2P.remove proof k) >>= \case
 	Just (Right True, alsoremoveduuids) -> note alsoremoveduuids
 	Just (Right False, alsoremoveduuids) -> do
 		note alsoremoveduuids
@@ -94,18 +96,23 @@ checkpresent runner k =
  -}
 lock :: WithConn a c -> ProtoConnRunner c -> UUID -> Key -> (VerifiedCopy -> Annex a) -> Annex a
 lock withconn connrunner u k callback = withconn $ \conn -> do
+	starttime <- liftIO getPOSIXTime
 	connv <- liftIO $ newMVar conn
 	let runproto d p = do
 		c <- liftIO $ takeMVar connv
 		(c', mr) <- connrunner p c
 		liftIO $ putMVar connv c'
 		return (fromMaybe d mr)
-	r <- P2P.lockContentWhile runproto k go
+	r <- P2P.lockContentWhile runproto k (go starttime)
 	conn' <- liftIO $ takeMVar connv
 	return (conn', r)
   where
-	go False = giveup "can't lock content"
-	go True = withVerifiedCopy LockedCopy u (return True) callback
+	go _ False = giveup "can't lock content"
+	go starttime True = do
+		let check = return $ Left $ starttime + retentionduration
+		withVerifiedCopy LockedCopy u check callback
+	retentionduration = fromIntegral $
+		durationSeconds p2pDefaultLockContentRetentionDuration
 
 remoteUnavail :: a
 remoteUnavail = giveup "can't connect to remote"

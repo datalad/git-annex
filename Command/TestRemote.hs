@@ -303,7 +303,7 @@ test runannex mkr mkk =
 			Right v -> return (True, v)
 			Left _ -> return (False, UnVerified)
 	store r k = Remote.storeKey r k (AssociatedFile Nothing) Nothing nullMeterUpdate
-	remove r k = Remote.removeKey r k
+	remove r k = Remote.removeKey r Nothing k
 
 testExportTree :: RunAnnex -> Annex (Maybe Remote) -> Annex Key -> Annex Key -> [TestTree]
 testExportTree runannex mkr mkk1 mkk2 =
@@ -366,7 +366,7 @@ testExportTree runannex mkr mkk1 mkk2 =
 testUnavailable :: RunAnnex -> Annex (Maybe Remote) -> Annex Key -> [TestTree]
 testUnavailable runannex mkr mkk =
 	[ check isLeft "removeKey" $ \r k ->
-		Remote.removeKey r k
+		Remote.removeKey r Nothing k
 	, check isLeft "storeKey" $ \r k -> 
 		Remote.storeKey r k (AssociatedFile Nothing) Nothing nullMeterUpdate
 	, check (`notElem` [Right True, Right False]) "checkPresent" $ \r k ->
@@ -397,7 +397,7 @@ cleanup :: [Remote] -> [Key] -> Bool -> CommandCleanup
 cleanup rs ks ok
 	| all Remote.readonly rs = return ok
 	| otherwise = do
-		forM_ rs $ \r -> forM_ ks (Remote.removeKey r)
+		forM_ rs $ \r -> forM_ ks (Remote.removeKey r Nothing)
 		forM_ ks $ \k -> lockContentForRemoval k noop removeAnnex
 		return ok
 

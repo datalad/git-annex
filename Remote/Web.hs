@@ -184,8 +184,8 @@ downloadKey urlincludeexclude key _af dest p vc =
 uploadKey :: Key -> AssociatedFile -> Maybe FilePath -> MeterUpdate -> Annex ()
 uploadKey _ _ _ _ = giveup "upload to web not supported"
 
-dropKey :: UrlIncludeExclude -> Key -> Annex ()
-dropKey urlincludeexclude k = mapM_ (setUrlMissing k) =<< getWebUrls' urlincludeexclude k
+dropKey :: UrlIncludeExclude -> Maybe SafeDropProof -> Key -> Annex ()
+dropKey urlincludeexclude _proof k = mapM_ (setUrlMissing k) =<< getWebUrls' urlincludeexclude k
 
 checkKey :: UrlIncludeExclude -> Key -> Annex Bool
 checkKey urlincludeexclude key = do

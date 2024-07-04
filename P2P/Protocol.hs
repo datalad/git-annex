@@ -29,6 +29,7 @@ import Utility.FileSystemEncoding
 import Utility.MonotonicClock
 import Git.FilePath
 import Annex.ChangedRefs (ChangedRefs)
+import Types.NumCopies
 
 import Control.Monad
 import Control.Monad.Free
@@ -395,8 +396,8 @@ lockContentWhile runproto key a = bracket setup cleanup a
 	cleanup True = runproto () $ net $ sendMessage UNLOCKCONTENT
 	cleanup False = return ()
 
-remove :: Key -> Proto (Either String Bool, Maybe [UUID])
-remove key = do
+remove :: Maybe SafeDropProof -> Key -> Proto (Either String Bool, Maybe [UUID])
+remove proof key = do
 	net $ sendMessage (REMOVE key)
 	checkSuccessFailurePlus
 

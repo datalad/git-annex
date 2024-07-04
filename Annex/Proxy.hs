@@ -96,7 +96,7 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv endv = go
 			liftIO $ sendmessage FAILURE
 			go
 		Just (REMOVE k) -> do
-			tryNonAsync (Remote.removeKey r k) >>= \case
+			tryNonAsync (Remote.removeKey r Nothing k) >>= \case
 				Right () -> liftIO $ sendmessage SUCCESS
 				Left err -> liftIO $ propagateerror err
 			go

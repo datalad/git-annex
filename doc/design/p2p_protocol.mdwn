@@ -115,8 +115,8 @@ the client sends:
 
 The server responds with either SUCCESS or FAILURE.
 The former indicates the content is locked. It will remain
-locked until the connection is broken, or the client
-sends:
+locked until 10 minutes after the connection is broken, or until
+the client sends:
 
 	UNLOCKCONTENT Key
 
@@ -146,7 +146,7 @@ the client sends:
 The server responds to the message in the same way as to REMOVE.
 
 If the server receives the message at a time after the specified timestamp,
-the remove must fail.  This is used to avoid removing content after a point
+the remove must fail.This is used to avoid removing content after a point
 in time where it is no longer locked in other repostitories.
 
 ## Getting a timestamp

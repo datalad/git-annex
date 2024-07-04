@@ -432,12 +432,12 @@ retrieve' repo r rsyncopts accessmethod
 	retrieversync = fileRetriever $ Remote.Rsync.retrieve rsyncopts
 
 remove :: Remote -> Remote.Rsync.RsyncOpts -> AccessMethod -> Remover
-remove r rsyncopts accessmethod k = do
+remove r rsyncopts accessmethod proof k = do
 	repo <- getRepo r
-	remove' repo r rsyncopts accessmethod k
+	remove' repo r rsyncopts accessmethod proof k
 
 remove' :: Git.Repo -> Remote -> Remote.Rsync.RsyncOpts -> AccessMethod -> Remover
-remove' repo r rsyncopts accessmethod k
+remove' repo r rsyncopts accessmethod proof k
 	| not $ Git.repoIsUrl repo = guardUsable repo (giveup "cannot access remote") $
 		liftIO $ Remote.Directory.removeDirGeneric True
 			(gCryptTopDir repo)
@@ -446,8 +446,8 @@ remove' repo r rsyncopts accessmethod k
 	| accessmethod == AccessRsyncOverSsh = removersync
 	| otherwise = unsupportedUrl
   where
-	removersync = Remote.Rsync.remove rsyncopts k
-	removeshell = Ssh.dropKey repo k
+	removersync = Remote.Rsync.remove rsyncopts proof k
+	removeshell = Ssh.dropKey repo proof k
 
 checkKey :: Remote -> Remote.Rsync.RsyncOpts -> AccessMethod -> CheckPresent
 checkKey r rsyncopts accessmethod k = do

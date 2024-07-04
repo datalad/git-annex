@@ -29,18 +29,15 @@ It seems that LOCKCONTENT needs to guarantee that the content remains
 locked for some amount of time. Then local git-annex would know it
 has at most that long to drop the content. But it's the remote that's
 dropping that really needs to know. So, extend the P2P protocol with a
-PRE-REMOVE step. After receiving PRE-REMOVE N Key, a REMOVE of that key is only
-allowed until N seconds later. Sending PRE-REMOVE first, followed by
-LOCKCONTENT will guarantee the content remains locked for the full amount
-of time.
+REMOVE-BEFORE Timestamp Key and a GETTIMESTAMP.
 
-How long? 10 minutes is arbitrary, but seems in the right ballpark. Since
-this will cause drops to fail if they timeout sitting at a ssh password
-prompt, it needs to be more than a few minutes. But making it too long, eg
-an hour can result in content being stuck locked on a remote for a long
-time, preventing a later legitimate drop. It could be made configurable, if
-needed, by extending the P2P protocol so LOCKCONTENT was passed the amount
-of time.
+How long to lock for? 10 minutes is arbitrary, but seems in the right
+ballpark. Since this will cause drops to fail if they timeout sitting at a
+ssh password prompt, it needs to be more than a few minutes. But making it
+too long, eg an hour can result in content being stuck locked on a remote
+for a long time, preventing a later legitimate drop. It could be made
+configurable, if needed, by extending the P2P protocol so LOCKCONTENT was
+passed the amount of time.
 
 Having lockContentWhile catch all exceptions and keep the content locked
 for the time period won't work though. Systemd reaps processes on ssh
@@ -111,3 +108,12 @@ out to each client, by calling GETTIMESTAMP again and applying the offsets
 between the cluster's clock and each node's clock.
 
 This approach would need to use a monotonic clock!
+
+---
+
+There is a potential future flag day where
+p2pDefaultLockContentRetentionDuration is not assumed, but is probed
+using the P2P protocol, and peers that don't support it can no longer
+produce a LockedCopy. Until that happens, when git-annex is
+communicating with older peers there is a risk of data loss when
+a ssh connection closes during LOCKCONTENT.

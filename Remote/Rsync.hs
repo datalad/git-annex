@@ -265,7 +265,7 @@ retrieveCheap o k _af f = ifM (preseedTmp k f)
 	)
 
 remove :: RsyncOpts -> Remover
-remove o k = removeGeneric o includes
+remove o _proof k = removeGeneric o includes
   where
 	includes = concatMap use dirHashes
 	use h = let dir = fromRawFilePath (h def k) in

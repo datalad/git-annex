@@ -41,7 +41,8 @@ addHooks' r starthook stophook = r'
 		, retrieveKeyFileCheap = case retrieveKeyFileCheap r of
 			Just a -> Just $ \k af f -> wrapper $ a k af f
 			Nothing -> Nothing
-		, removeKey = wrapper . removeKey r
+		, removeKey = \proof k ->
+			wrapper $ removeKey r proof k
 		, checkPresent = wrapper . checkPresent r
 		}
 	  where

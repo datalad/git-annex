@@ -29,6 +29,7 @@ module Annex.NumCopies (
 
 import Annex.Common
 import qualified Annex
+import Annex.SafeDropProof
 import Types.NumCopies
 import Logs.NumCopies
 import Logs.Trust
@@ -227,6 +228,10 @@ data UnVerifiedCopy = UnVerifiedRemote Remote | UnVerifiedHere
 {- Verifies that enough copies of a key exist among the listed remotes,
  - to safely drop it, running an action with a proof if so, and
  - printing an informative message if not.
+ -
+ - Note that the proof is checked to still be valid at the current time
+ - before running the action, but when dropping the key may take some time,
+ - the proof's time may need to be checked again.
  -}
 verifyEnoughCopiesToDrop
 	:: String -- message to print when there are no known locations
@@ -246,14 +251,14 @@ verifyEnoughCopiesToDrop nolocmsg key dropfrom removallock neednum needmin skip 
   where
 	helper bad missing have [] lockunsupported =
 		liftIO (mkSafeDropProof neednum needmin have removallock) >>= \case
-			Right proof -> dropaction proof
+			Right proof -> checkprooftime proof
 			Left stillhave -> do
 				notEnoughCopies key dropfrom neednum needmin stillhave (skip++missing) bad nolocmsg lockunsupported
 				nodropaction
 	helper bad missing have (c:cs) lockunsupported
 		| isSafeDrop neednum needmin have removallock =
 			liftIO (mkSafeDropProof neednum needmin have removallock) >>= \case
-				Right proof -> dropaction proof
+				Right proof -> checkprooftime proof
 				Left stillhave -> helper bad missing stillhave (c:cs) lockunsupported
 		| otherwise = case c of
 			UnVerifiedHere -> lockContentShared key Nothing contverified
@@ -294,6 +299,14 @@ verifyEnoughCopiesToDrop nolocmsg key dropfrom removallock neednum needmin skip 
 				, MC.Handler (\ (_e :: SomeException) -> fallback)
 				]
 		Nothing -> fallback
+	
+	checkprooftime proof = 
+		ifM (liftIO $ checkSafeDropProofEndTime (Just proof))
+			( dropaction proof
+			, do
+				safeDropProofExpired
+				nodropaction
+			)
 
 data DropException = DropException SomeException
 	deriving (Typeable, Show)

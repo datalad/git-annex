@@ -185,7 +185,7 @@ retrieveHelper loc d p iv = do
 		withContentM $ httpBodyRetriever d p iv
 
 remove :: DavHandleVar -> Remover
-remove hv k = withDavHandle hv $ \dav -> liftIO $ goDAV dav $
+remove hv _proof k = withDavHandle hv $ \dav -> liftIO $ goDAV dav $
 	-- Delete the key's whole directory, including any
 	-- legacy chunked files, etc, in a single action.
 	removeHelper (keyDir k)

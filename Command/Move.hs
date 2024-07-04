@@ -296,23 +296,26 @@ fromPerform' present updatelocationlog src key afile = do
 fromDrop :: Remote -> UUID -> DestStartedWithCopy -> Key -> AssociatedFile -> ([UnVerifiedCopy] -> [UnVerifiedCopy])-> CommandPerform
 fromDrop src destuuid deststartedwithcopy key afile adjusttocheck =
 	willDropMakeItWorse (Remote.uuid src) destuuid deststartedwithcopy key afile >>= \case
-		DropAllowed -> dropremote "moved"
+		DropAllowed -> dropremote Nothing "moved"
 		DropCheckNumCopies -> do
 			(numcopies, mincopies) <- getSafestNumMinCopies afile key
 			(tocheck, verified) <- verifiableCopies key [Remote.uuid src]
 			verifyEnoughCopiesToDrop "" key (Just (Remote.uuid src)) Nothing numcopies mincopies [Remote.uuid src] verified
-				(adjusttocheck tocheck) (dropremote . showproof) faileddropremote
+				(adjusttocheck tocheck) dropremotewithproof faileddropremote
 		DropWorse -> faileddropremote
   where
 	showproof proof = "proof: " ++ show proof
 
-	dropremote reason = do
+	dropremotewithproof proof = 
+		dropremote (Just proof) (showproof proof)
+
+	dropremote mproof reason = do
 		fastDebug "Command.Move" $ unwords
 			[ "Dropping from remote"
 			, show src
 			, "(" ++ reason ++ ")"
 			]
-		ok <- Remote.action (Remote.removeKey src key)
+		ok <- Remote.action (Remote.removeKey src mproof key)
 		when ok $
 			logMoveCleanup deststartedwithcopy
 		next $ Command.Drop.cleanupRemote key src (Command.Drop.DroppingUnused False) ok

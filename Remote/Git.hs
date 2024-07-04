@@ -61,6 +61,7 @@ import P2P.Address
 import Annex.Path
 import Creds
 import Types.NumCopies
+import Annex.SafeDropProof
 import Types.ProposedAccepted
 import Annex.Action
 import Messages.Progress
@@ -437,26 +438,43 @@ keyUrls gc repo r key = map tourl locs'
 #endif
 	remoteconfig = gitconfig r
 
-dropKey :: Remote -> State -> Key -> Annex ()
-dropKey r st key = do
+dropKey :: Remote -> State -> Maybe SafeDropProof -> Key -> Annex ()
+dropKey r st proof key = do
 	repo <- getRepo r
-	dropKey' repo r st key
+	dropKey' repo r st proof key
 
-dropKey' :: Git.Repo -> Remote -> State -> Key -> Annex ()
-dropKey' repo r st@(State connpool duc _ _ _) key
+dropKey' :: Git.Repo -> Remote -> State -> Maybe SafeDropProof -> Key -> Annex ()
+dropKey' repo r st@(State connpool duc _ _ _) proof key
 	| not $ Git.repoIsUrl repo = ifM duc
-		( guardUsable repo (giveup "cannot access remote") $
-			commitOnCleanup repo r st $ onLocalFast st $ do
-				whenM (Annex.Content.inAnnex key) $ do
-					let cleanup = logStatus key InfoMissing
-					Annex.Content.lockContentForRemoval key cleanup $ \lock -> do
-						Annex.Content.removeAnnex lock
-						cleanup
+		( guardUsable repo (giveup "cannot access remote") removelocal
 		, giveup "remote does not have expected annex.uuid value"
 		)
 	| Git.repoIsHttp repo = giveup "dropping from http remote not supported"
-	| otherwise = P2PHelper.remove (uuid r) 
-		(Ssh.runProto r connpool (return (Right False, Nothing))) key
+	| otherwise = P2PHelper.remove (uuid r) p2prunner proof key
+  where
+	p2prunner = Ssh.runProto r connpool (return (Right False, Nothing))
+
+	-- It could take a long time to eg, automount a drive containing
+	-- the repo, so check the proof for expiry again after locking the
+	-- content for removal.
+	removelocal = do
+		proofunexpired <- commitOnCleanup repo r st $ onLocalFast st $ do
+			ifM (Annex.Content.inAnnex key)
+				( do
+					let cleanup = do
+						logStatus key InfoMissing
+						return True
+					Annex.Content.lockContentForRemoval key cleanup $ \lock ->
+						ifM (liftIO $ checkSafeDropProofEndTime proof) 
+							( do
+								Annex.Content.removeAnnex lock
+								cleanup
+							, return False
+							)
+				, return True
+				)
+		unless proofunexpired
+			safeDropProofExpired
 
 lockKey :: Remote -> State -> Key -> (VerifiedCopy -> Annex r) -> Annex r
 lockKey r st key callback = do

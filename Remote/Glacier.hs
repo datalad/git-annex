@@ -214,7 +214,7 @@ retrieve' r k sink = go =<< glacierEnv c gc u
 	go' _ _ = error "internal"
 
 remove :: Remote -> Remover
-remove r k = unlessM go $
+remove r _proof k = unlessM go $
 	giveup "removal from glacier failed"
   where
 	go = glacierAction r

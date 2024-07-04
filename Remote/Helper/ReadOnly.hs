@@ -47,8 +47,8 @@ adjustReadOnly r
 readonlyStoreKey :: Key -> AssociatedFile -> Maybe FilePath -> MeterUpdate -> Annex ()
 readonlyStoreKey _ _ _ _ = readonlyFail
 
-readonlyRemoveKey :: Key -> Annex ()
-readonlyRemoveKey _ = readonlyFail
+readonlyRemoveKey :: Maybe SafeDropProof -> Key -> Annex ()
+readonlyRemoveKey _ _ = readonlyFail
 
 readonlyStorer :: Storer
 readonlyStorer _ _ _ = readonlyFail

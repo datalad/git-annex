@@ -166,7 +166,7 @@ retrieve h = fileRetriever $ \d k _p ->
 		giveup "failed to retrieve content"
 
 remove :: HookName -> Remover
-remove h k = 
+remove h _proof k = 
 	unlessM (runHook' h "remove" k Nothing $ return True) $
 		giveup "failed to remove content"
 

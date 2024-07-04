@@ -10,6 +10,7 @@
 module Types.StoreRetrieve where
 
 import Annex.Common
+import Types.NumCopies
 import Utility.Metered
 import Utility.Hash (IncrementalVerifier)
 
@@ -44,8 +45,9 @@ type Retriever = forall a.
 
 -- Action that removes a Key's content from a remote.
 -- Succeeds if key is already not present.
--- Throws an exception if the remote is not accessible.
-type Remover = Key -> Annex ()
+-- Throws an exception if the remote is not accessible
+-- or the proof has expired.
+type Remover = Maybe SafeDropProof -> Key -> Annex ()
 
 -- Checks if a Key's content is present on a remote.
 -- Throws an exception if the remote is not accessible.

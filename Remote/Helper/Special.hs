@@ -138,8 +138,8 @@ storeKeyDummy :: Key -> AssociatedFile -> Maybe FilePath -> MeterUpdate -> Annex
 storeKeyDummy _ _ _ _ = error "missing storeKey implementation"
 retrieveKeyFileDummy :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification
 retrieveKeyFileDummy _ _ _ _ _ = error "missing retrieveKeyFile implementation"
-removeKeyDummy :: Key -> Annex ()
-removeKeyDummy _ = error "missing removeKey implementation"
+removeKeyDummy :: Maybe SafeDropProof -> Key -> Annex ()
+removeKeyDummy _ _ = error "missing removeKey implementation"
 checkPresentDummy :: Key -> Annex Bool
 checkPresentDummy _ = error "missing checkPresent implementation"
 
@@ -197,7 +197,7 @@ specialRemote' cfg c storer retriever remover checkpresent baser = encr
 		, retrievalSecurityPolicy = if isencrypted
 			then mkRetrievalVerifiableKeysSecure (gitconfig baser)
 			else retrievalSecurityPolicy baser
-		, removeKey = \k -> cip >>= removeKeyGen k
+		, removeKey = \k proof -> cip >>= removeKeyGen k proof
 		, checkPresent = \k -> cip >>= checkPresentGen k
 		, cost = if isencrypted
 			then cost baser + encryptedRemoteCostAdj
@@ -227,7 +227,7 @@ specialRemote' cfg c storer retriever remover checkpresent baser = encr
 			storeChunks (uuid baser) chunkconfig enck k src p'
 				enc encr storer checkpresent
 	  where
-		rollback = void $ removeKey encr k
+		rollback = void $ removeKey encr Nothing k
 		enck = maybe id snd enc
 
 	-- call retriever to get chunks; decrypt them; stream to dest file
@@ -238,8 +238,8 @@ specialRemote' cfg c storer retriever remover checkpresent baser = encr
 	  where
 		enck = maybe id snd enc
 
-	removeKeyGen k enc = 
-		removeChunks remover (uuid baser) chunkconfig enck k
+	removeKeyGen proof k enc = 
+		removeChunks remover (uuid baser) chunkconfig enck proof k
 	  where
 		enck = maybe id snd enc
 

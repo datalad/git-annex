@@ -155,8 +155,8 @@ retrieve rs hdl k _f d _p _ = do
 	go (Just cap) = unlessM (liftIO $ requestTahoe hdl "get" [Param cap, File d]) $
 		giveup "tahoe failed to reteieve content"
 
-remove :: Key -> Annex ()
-remove _k = giveup "content cannot be removed from tahoe remote"
+remove :: Maybe SafeDropProof -> Key -> Annex ()
+remove _ _ = giveup "content cannot be removed from tahoe remote"
 
 -- Since content cannot be removed from tahoe (by git-annex),
 -- nothing needs to be done to lock content there, except for checking that
@@ -164,7 +164,7 @@ remove _k = giveup "content cannot be removed from tahoe remote"
 lockKey :: UUID -> RemoteStateHandle -> TahoeHandle -> Key -> (VerifiedCopy -> Annex a) -> Annex a
 lockKey u rs hrl k callback = 
 	ifM (checkKey rs hrl k)
-		( withVerifiedCopy LockedCopy u (return True) callback
+		( withVerifiedCopy LockedCopy u (return (Right True)) callback
 		, giveup $ "content seems to be missing from tahoe remote"
 		)
 

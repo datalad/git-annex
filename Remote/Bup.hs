@@ -210,7 +210,7 @@ retrieve r buprepo = byteRetriever $ \k sink -> lockBup True r $ do
  - We can, however, remove the git branch that bup created for the key.
  -}
 remove :: BupRepo -> Remover
-remove buprepo k = do
+remove buprepo _proof k = do
 	go =<< liftIO (bup2GitRemote buprepo)
 	warning "content cannot be completely removed from bup remote"
   where

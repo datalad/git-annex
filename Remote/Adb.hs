@@ -210,7 +210,7 @@ retrieve' serial src dest =
 			]
 
 remove :: AndroidSerial -> AndroidPath -> Remover
-remove serial adir k =
+remove serial adir _proof k =
 	unlessM (remove' serial (androidLocation adir k)) $
 		giveup "adb failed"
 

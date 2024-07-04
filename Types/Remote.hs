@@ -2,7 +2,7 @@
  -
  - Most things should not need this, using Types instead
  -
- - Copyright 2011-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -25,6 +25,7 @@ module Types.Remote
 	, ExportActions(..)
 	, ImportActions(..)
 	, ByteSize
+	, SafeDropProof
 	)
 	where
 
@@ -105,8 +106,14 @@ data RemoteA a = Remote
 	, retrievalSecurityPolicy :: RetrievalSecurityPolicy
 	-- Removes a key's contents (succeeds even the contents are not present)
 	-- Can throw exception if unable to access remote, or if remote
-	-- refuses to remove the content.
-	, removeKey :: Key -> a ()
+	-- refuses to remove the content, or if the proof is expired.
+	--
+	-- The proof is verified not to have expired shortly
+	-- before calling this. But, if the remote's lockContent returns
+	-- LockedCopy, the proof's expiry should be checked on the remote,
+	-- so that a delay in communicating with the remote does not
+	-- cause the removal to happen after the proof expires.
+	, removeKey :: Maybe SafeDropProof -> Key -> a ()
 	-- Uses locking to prevent removal of a key's contents,
 	-- thus producing a VerifiedCopy, which is passed to the callback.
 	-- If unable to lock, does not run the callback, and throws an

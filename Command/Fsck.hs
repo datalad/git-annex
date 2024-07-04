@@ -639,7 +639,7 @@ badContentRemote remote localcopy key = do
 					)
 		)
 
-	dropped <- tryNonAsync (Remote.removeKey remote key)
+	dropped <- tryNonAsync (Remote.removeKey remote Nothing key)
 	when (isRight dropped) $
 		Remote.logStatus remote key InfoMissing
 	return $ case (movedbad, dropped) of

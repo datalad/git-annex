@@ -141,7 +141,7 @@ lockContentShared key mduration a = do
 		ifM (inAnnex key)
 			( do
 				u <- getUUID
-				withVerifiedCopy LockedCopy u (return True) a
+				withVerifiedCopy LockedCopy u (return (Right True)) a
 			, notpresent
 			)
   where

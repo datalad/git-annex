@@ -105,13 +105,17 @@ inAnnex r k = onRemote NoConsumeStdin r (runcheck, cantCheck r) "inannex"
 	dispatch (ExitFailure 1) = return False
 	dispatch _ = cantCheck r
 
-{- Removes a key from a remote. -}
-dropKey :: Git.Repo -> Key -> Annex ()
-dropKey r key = unlessM (dropKey' r key) $
+{- Removes a key from a remote using the legacy git-annex-shell dropkey,
+ - rather than the P2P protocol.
+ -
+ - The proof is not checked for expire on the remote, so this should only
+ - be used by remotes that do not have lockContent return a LockedCopy. -}
+dropKey :: Git.Repo -> Maybe SafeDropProof -> Key -> Annex ()
+dropKey r proof key = unlessM (dropKey' r proof key) $
 	giveup "unable to remove key from remote"
 
-dropKey' :: Git.Repo -> Key -> Annex Bool
-dropKey' r key = onRemote NoConsumeStdin r (\f p -> liftIO (boolSystem f p), return False) "dropkey"
+dropKey' :: Git.Repo -> Maybe SafeDropProof -> Key -> Annex Bool
+dropKey' r _proof key = onRemote NoConsumeStdin r (\f p -> liftIO (boolSystem f p), return False) "dropkey"
 	[ Param "--quiet", Param "--force"
 	, Param $ serializeKey key
 	]

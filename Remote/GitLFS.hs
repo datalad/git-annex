@@ -504,7 +504,7 @@ retrieve rs h = fileRetriever' $ \dest k p iv -> getLFSEndpoint LFS.RequestDownl
 lockKey :: Remote -> RemoteStateHandle -> TVar LFSHandle -> Key -> (VerifiedCopy -> Annex a) -> Annex a
 lockKey r rs h key callback = 
 	ifM (checkKey rs h key)
-		( withVerifiedCopy LockedCopy (uuid r) (return True) callback
+		( withVerifiedCopy LockedCopy (uuid r) (return (Right True)) callback
 		, giveup $ "content seems to be missing from " ++ name r
 		)
 
