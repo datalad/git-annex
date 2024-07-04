@@ -92,31 +92,12 @@ This request opens a websocket between the client and the server.
 The server sends "SUCCESS" over the websocket once it has locked
 the content. Or it sends "FAILURE" if it is unable to lock the content.
 
-Once the server has sent "SUCCESS", the content remains locked as long as
-the client remains connected to the websocket. When the client disconnects,
-or closes the websocket, the server unlocks the content.
+Once the server has sent "SUCCESS", the content remains locked 
+until the client sends "UNLOCKCONTENT" over the websocket.
 
-XXX What happens if the connection times out? Will the client notice that
-in time? How does this work with P2P over ssh?
-
-### limit-remove
-
-Limit the next requested removal of a key to occur within a specified
-number of seconds.
-
-Example:
-
-    > POST /git-annex/v3/limit-remove?seconds=600&key=SHA1--foo&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.1
-    < SUCCESS
-
-There are two required additional parameters, `key` and `seconds`.
-
-The body of the request is empty.
-
-The server responds with "SUCCESS".
-
-The server will check the next `remove` request, and if it's for the same key,
-and more time has elapsed, it will refuse to remove the key's content.
+If the client disconnects without sending "UNLOCKCONTENT", or the web
+server gets shut down before it can receive that, the content will remain
+locked for at least 10 minutes from when the server sent "SUCCESS".
 
 ### remove
 
@@ -156,9 +137,9 @@ Example:
 This is the same as the `remove` request, but with an additional parameter,
 `timestamp`.
 
-If the server's clock is past the specified timestamp, the removal will
-fail. This is used to avoid removing content after a point in time where it
-is no longer locked in other repostitories.
+If the server's monotonic clock is past the specified timestamp, the
+removal will fail. This is used to avoid removing content after a point in
+time where it is no longer locked in other repostitories.
 
 ## gettimestamp
 

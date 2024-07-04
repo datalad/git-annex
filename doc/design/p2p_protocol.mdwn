@@ -115,12 +115,15 @@ the client sends:
 
 The server responds with either SUCCESS or FAILURE.
 The former indicates the content is locked. It will remain
-locked until 10 minutes after the connection is broken, or until
-the client sends:
+locked until the client sends:
 
 	UNLOCKCONTENT Key
 
 The server makes no response to that.
+
+If the connection is broken before the client sends UNLOCKCONTENT,
+the content will remain locked for at least 10 minutes from when the server
+sent SUCCESS.
 
 ## Removing content
 
