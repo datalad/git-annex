@@ -28,17 +28,7 @@ Planned schedule of work:
 
 ## work notes
 
-* [[todo/P2P_locking_connection_drop_safety]] is blocking http protocol,
-  because it will involve protocol changes and we need to get locking
-  right in the http protocol from the beginning.
-
-  Status: Content retention files implemented. P2P LOCKCONTENT uses a 10
-  minute retention in case it gets killed. P2P protocol changes started.
-
 * websockets or something else for LOCKCONTENT over http?
-
-* will client notice promptly when http connection with server
-  is closed in LOCKCONTENT?
 
 * Should integrate into an existing web server similarly to git
   smart http server. May as well also support it as a standalone
@@ -46,6 +36,10 @@ Planned schedule of work:
 
 * endpoint versioning should include v1 and v0 to support connections
   proxied from older clients
+
+## completed items for July's work on p2p protocol over http
+
+* addressed [[doc/todo/P2P_locking_connection_drop_safety]]
 
 ## items deferred until later for [[design/passthrough_proxy]]
 
