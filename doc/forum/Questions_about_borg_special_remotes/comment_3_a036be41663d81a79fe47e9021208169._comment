@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="git-annex@4a0625db6ced1ac00744697d5bac41393bcde646"
+ nickname="git-annex"
+ avatar="http://cdn.libravatar.org/avatar/d9fd8db33996d9a1da6b31045c43accf"
+ subject="comment 3"
+ date="2024-07-05T10:22:45Z"
+ content="""
+Is there a way to configure a certain BORG_PASSCOMMAND to always be used for a given remote. In general, is there a way to set environment variables per remote?
+"""]]
