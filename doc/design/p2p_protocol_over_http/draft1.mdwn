@@ -73,14 +73,14 @@ Checks if a key is currently present on the server.
 Example:
 
     > POST /git-annex/v3/checkpresent?key=SHA1--foo&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.1
-    < SUCCESS
+    < {"present": true}
 
 There is one required additional parameter, `key`.
 
 The body of the request is empty.
 
-The server responds with "SUCCESS" if the key is present
-or "FAILURE" if it is not present.
+The server responds with a JSON object with a "present" field that is true
+if the key is present, or false if it is not present.
 
 ### lockcontent
 
@@ -106,24 +106,22 @@ Remove a key's content from the server.
 Example:
 
     > POST /git-annex/v3/remove?key=SHA1--foo&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.1
-    < SUCCESS
+    < {"removed": true}
 
 There is one required additional parameter, `key`.
 
 The body of the request is empty.
 
-The server responds with "SUCCESS" if the key was removed,
-or "FAILURE" if the key was not able to be removed.
+The server responds with a JSON object with a "removed" field that is true
+if the key was removed (or was not present on the server), 
+or false if the key was not able to be removed.
 
-The server can also respond with "SUCCESS-PLUS" or "FAILURE-PLUS".
-Each has a subsequent list of UUIDs of repositories
-that the content was removed from. For example:
+The JSON object can have an additional field "plusuuids" that is a list of
+UUIDs of other repositories that the content was removed from.
 
-    SUCCESS-PLUS 702ce472-38a1-11ef-864f-23851a2edf71 707dea20-38a1-11ef-96a4-fb7e8c8369f0
-
-If the server was prevented from trying to remove the key due to a policy
-(eg due to being read-only or append-only, it will respond with "ERROR",
-followed by a space and an error message.
+If the server does not allow removing the key due to a policy
+(eg due to being read-only or append-only), it will respond with a JSON
+object with an "error" field that has an error message as its value.
 
 ## remove-before
 
@@ -132,13 +130,15 @@ Remove a key's content from the server, but only before a specified time.
 Example:
 
     > POST /git-annex/v3/remove-before?timestamp=4949292929&key=SHA1--foo&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.1
-    < SUCCESS
+    < {"removed": true}
 
 This is the same as the `remove` request, but with an additional parameter,
 `timestamp`.
 
 If the server's monotonic clock is past the specified timestamp, the
-removal will fail. This is used to avoid removing content after a point in
+removal will fail and the server will respond with: `{"removed": false}`
+
+This is used to avoid removing content after a point in 
 time where it is no longer locked in other repostitories.
 
 ## gettimestamp
@@ -148,12 +148,12 @@ Gets the current timestamp from the server.
 Example:
 
     > POST /git-annex/v3/gettimestamp?clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.1
-    < TIMESTAMP 59459392
+    < {"timestamp": 59459392}
 
 The body of the request is empty.
 
-The server responds with "TIMESTAMP" followed by a space and the current
-value of its monotonic clock, as a number of seconds.
+The server responds with JSON object with a timestmap field that has the
+current value of its monotonic clock, as a number of seconds.
 
 Important: If multiple servers are serving this protocol for the same
 repository, they MUST all use the same monotonic clock.
@@ -166,13 +166,14 @@ Example:
 
     > POST /git-annex/v3/put?key=SHA1--foo&associatedfile=bar&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.1
     > Content-Type: application/octet-stream
-    > Content-Length: 4
-    > foo1
-    < SUCCESS
+    > Content-Length: 20
+    > foo
+    > {"valid": true}
+    < {"stored": true}
 
 There is one required additional parameter, `key`.
 
-There is are also these optional parameters:
+There are are also these optional parameters:
 
 * `associatedfile`
 
@@ -186,28 +187,27 @@ There is are also these optional parameters:
 
 The body of the request is the content of the key, starting from the
 specified offset or from the beginning. After the content of the key,
-there is one more byte. 
+there is a newline, followed by a JSON object.
 
-The additional byte is "1" to indicate that the content was not changed
-while it was being sent, or "0" to indicate that modified content was sent
-and should be disregarded by the server. (This corresponds
+The JSON object has a field "valid" that is true when the content 
+was not changed while it was being sent, or false when modified
+content was sent and should be disregarded by the server. (This corresponds
 to the `VALID` and `INVALID` messages in the P2P protocol.)
 
 The `Content-Type` header should be `application/octet-stream`.
 
 The `Content-Length` header should be set to the length of the body.
 
-The server responds with `SUCCESS` if it received the data and stored the
-content. If it was unable to do so, it responds with `FAILURE`.
+The server responds with a JSON object with a field "stored"
+that is true if it received the data and stored the
+content.
 
-The server can also reply with `SUCCESS-PLUS`, which has a subsequent list of
-UUIDs of repositories that the content was stored to. For example:
+The JSON object can have an additional field "plusuuids" that is a list of
+UUIDs of other repositories that the content was stored to.
 
-    SUCCESS-PLUS 702ce472-38a1-11ef-864f-23851a2edf71 707dea20-38a1-11ef-96a4-fb7e8c8369f0
-
-If the server was prevented from storing the key due to a policy
-(eg due to being read-only), it will respond with "ERROR", followed
-by a space and an error message.
+If the server does not allow storing the key due to a policy
+(eg due to being read-only or append-only), it will respond with a JSON
+object with an "error" field that has an error message as its value.
 
 ### putoffset
 
@@ -220,17 +220,18 @@ the `put` request failing.
 Example:
 
     > POST /git-annex/v3/putoffset?key=SHA1--foo&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.1
-    < 10
+    < {"offset": 10}
 
 There is one required additional parameter, `key`.
 
 The body of the request is empty.
 
-The server responds with the largest allowable offset.
+The server responds with a JSON object with an "offset" field that 
+is the largest allowable offset.
 
-If the server was prevented from storing the key due to a policy
-(eg due to being read-only), it will respond with "ERROR", followed
-by a space and an error message.
+If the server does not allow storing the key due to a policy
+(eg due to being read-only or append-only), it will respond with a JSON
+object with an "error" field that has an error message as its value.
 
 [Implementation note: This will be implemented by sending `PUT` and
 returning the `PUT-FROM` offset. To avoid leaving the P2P protocol stuck
@@ -246,8 +247,9 @@ Example:
 
     > POST /git-annex/v3/get?key=SHA1--foo&associatedfile=bar&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.1
     < Content-Type: application/octet-stream
-    < Content-Length: 4
-    < foo1
+    > Content-Length: 20
+    > foo
+    > {"valid": true}
 
 There is one required additional parameter, `key`.
 
@@ -271,17 +273,14 @@ The server's response will have a `Content-Length` header
 set to the length of the body.
 
 The server's response body is the content of the key, from the specified
-offset. After the content of the key, there is one more byte. 
+offset. After the content of the key, there is a newline, followed by a
+JSON object.
 
-The additional byte is "1" to indicate that the content was not changed
-while it was being sent, or "0" to indicate that modified content was sent
-and should be discarded by the client. (This corresponds
-to the `VALID` and `INVALID` messages in the P2P protocol.)
-
-Note that, if the server is not able to send the content of the requested
-key, its response body will consist of "0", eg 0 bytes of content which is
-not valid. On the other hand, a response body of "1" is used for an empty
-key which is valid.
+The JSON object has a field "valid" that is true when the content 
+was not changed while it was being sent, or false when whatever
+content was sent is not the actual content of the key and should be
+disregared. (This corresponds to the `VALID` and `INVALID` messages
+in the P2P protocol.)
 
 ## simple HTTP GET
 
@@ -301,6 +300,6 @@ the content of a key.
 this HTTP protocol to support it.
 
 `CONNECT` is not supported, and due to the bi-directional message passing
-nature of it, it cannot easily be done over HTTP. It should not be
-necessary anyway, because the git repository itself can be accessed over
-HTTP.
+nature of it, it cannot easily be done over HTTP (would need websockets).
+It should not be necessary anyway, because the git repository itself can be
+accessed over HTTP.

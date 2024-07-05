@@ -18,72 +18,80 @@ With the [[passthrough_proxy]], this would let clients configure a single
 http remote that accesses a more complicated network of git-annex
 repositories.
 
-## approach 1: encapsulation
+## integration with git
 
-One approach is to encapsulate the P2P protocol inside HTTP. This has the
-benefit of being simple to think about. It is not very web-native though.
+A webserver that is configured to serve a git repository either serves the
+files in the repository with dumb http, or uses the git-http-backend CGI
+program for url paths under eg `/git/`.
 
-There would be a single API endpoint. The client connects and sends a
-request that encapsulates one or more lines in the P2P protocol. The server
-sends a response that encapsulates one or more lines in the P2P
-protocol.
+To integrate with that, git-annex would need a git-annex-http-backend CGI
+program, that the webserver is configured to run for url paths under
+`/git/.*/annex/`.
 
-For example (eliding the full HTTP responses, only showing the data):
+So, for a remote with an url `http://example.com/git/foo`, git-annex would
+use paths under `http://example.com/git/foo/annex/` to run its CGI.
 
-    > POST /git-annex HTTP/1.0
-    > Content-Type: x-git-annex-p2p
-    > Content-Length: ...
-    > 
-    > AUTH 79a5a1f4-07e8-11ef-873d-97f93ca91925 
-    < AUTH-SUCCESS ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6
+But, the CGI interface is a poor match for the P2P protocol. 
 
-    > POST /git-annex HTTP/1.0
-    > Content-Type: x-git-annex-p2p
-    > Content-Length: ...
-    > 
-    > VERSION 1
-    < VERSION 1
+A particular problem is that `LOCKCONTENT` would need to be in one CGI
+request, followed by another request to `UNLOCKCONTENT`. Unless
+git-annex-http-backend forked a daemon to keep the content locked, it would
+not be able to retain a file lock across the 2 requests. While the 10
+minute retention lock would paper over that, UNLOCKCONTENT would not be
+able to delete the retention lock, because there is no way to know if
+another LOCKCONTENT was received later. So LOCKCONTENT would always lock
+content for 10 minutes. Which would result in some undesirable behaviors.
 
-    > POST /git-annex HTTP/1.0
-    > Content-Type: x-git-annex-p2p
-    > Content-Length: ...
-    > 
-    > CHECKPRESENT SHA1--foo
-    < SUCCESS
+Another problem is with proxies and clusters. The CGI would need to open
+ssh (or http) connections to the proxied repositories and cluster nodes
+each time it is run. That would add a lot of latency to every request.
 
-    > POST /git-annex HTTP/1.0
-    > Content-Type: x-git-annex-p2p
-    > Content-Length: ...
-    > 
-    > PUT bar SHA1--bar
-    < PUT-FROM 0
+And running a git-annex process once per CGI request also makes git-annex's
+own startup speed, which is ok but not great, add latency. And each time
+the CGI needed to change the git-annex branch, it would have to commit on
+shutdown. Lots of time and space optimisations would be prevented by using
+the CGI interface.
 
-    > POST /git-annex HTTP/1.0
-    > Content-Type: x-git-annex-p2p
-    > Content-Length: ...
-    > 
-    > DATA 3
-    > foo
-    > VALID
-    < SUCCESS
+So, rather than having the CGI program do anything in the repository
+itself, have it pass each request through to a long-running server.
+(This does have the downside that files would get double-copied
+through the CGI, which adds some overhead.)
+A reasonable way to do that would be to have a webserver speaking a
+HTTP version of the git-annex P2P protocol and the CGI just talks to that.
 
-Note that, since VERSION is negotiated in one request, the HTTP server
-needs to know that a series of requests are part of the same P2P protocol
-session. In the example above, it would not have a good way to do that.
-One solution would be to add a session identifier UUID to each request.
+The CGI program then becomes tiny, and just needs to know the url to
+connect to the git-annex HTTP server.
 
-## approach 2: websockets
+Alternatively, a remote's configuration could include that url, and
+then we don't need the complication and overhead of the CGI program at all.
+Eg:
+
+    git config remote.origin.annex-url http://example.com:8080/
+
+So, the rest of this design will focus on implementing that. The CGI
+program can be added later if desired, so avoid users needing to configure
+an additional thing.
+
+Note that, one nice benefit of having a separate annex-url is it allows
+having remote.origin.url on eg github, but with an annex-url configured
+that remote can also be used as a git-annex repository.
+
+## approach 1: websockets
 
 The client connects to the server over a websocket. From there on,
 the protocol is encapsulated in websockets.
 
-This seems nice and simple, but again not very web native. 
+This seems nice and simple to implement, but not very web native. Anyone
+wanting to talk to this web server would need to understand the P2P
+protocol. Just to upload a file would need to deal with AUTH,
+AUTH-SUCCESS, AUTH-FAILURE, VERSION, PUT, ALREADY-HAVE, PUT-FROM, DATA,
+INVALID, VALID, SUCCESS, and FAILURE messages. Seems like a lot.
 
-Some requests like `LOCKCONTENT` seem likely to need full duplex
-communication like websockets provide. But, it might be more web native to
-only use websockets for that request, and not for everything.
+Some requests like `LOCKCONTENT` do need full duplex communication like
+websockets provide. But, it might be more web native to only use websockets
+for that request, and not for everything.
 
-## approach 3: HTTP API
+## approach 2: web-native API
 
 Another approach is to define a web-native API with endpoints that
 correspond to each action in the P2P protocol. 
@@ -101,13 +109,13 @@ Something like this:
 
     > POST /git-annex/v1/PUT?key=SHA1--foo&associatedfile=bar&put-from=0&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.0
     > Content-Type: application/octet-stream
-    > Content-Length: 4
-    > foo1
-    < SUCCESS
+    > Content-Length: 20
+    > foo
+    > {"valid": true}
+    < {"stored": true}
 
-(In the last example above "foo" is the content, there is an additional byte at the end that
-is 1 for VALID and 0 for INVALID. This seems better than needing an entire
-other request to indicate validitity.)
+(In the last example above "foo" is the content, it is followed by a line of json.
+This seems better than needing an entire other request to indicate validitity.)
 
 This needs a more complex spec. But it's easier for others to implement,
 especially since it does not need a session identifier, so the HTTP server can 

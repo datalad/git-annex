@@ -133,6 +133,8 @@ To remove a key's content from the server, the client sends:
 
 The server responds with either SUCCESS or FAILURE.
 
+Note that if the content was not present, SUCCESS will be returned.
+
 In protocol version 2, the server can optionally reply with SUCCESS-PLUS
 or FAILURE-PLUS. Each has a subsequent list of UUIDs of repositories
 that the content was removed from.
