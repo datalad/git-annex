@@ -28,18 +28,19 @@ Planned schedule of work:
 
 ## work notes
 
-* websockets or something else for LOCKCONTENT over http?
+* Next step: Ready to begin implementing in servant. I have a file
+  `servant.hs` in the httpproto branch that works through some of the
+  bytestring streaming issues.
 
-* Should integrate into an existing web server similarly to git
-  smart http server. May as well also support it as a standalone
-  webserver.
-
-* endpoint versioning should include v1 and v0 to support connections
-  proxied from older clients
+* Perhaps: Support cgi program that proxies over to a webserver
+  speaking the http protocol.
 
 ## completed items for July's work on p2p protocol over http
 
 * addressed [[doc/todo/P2P_locking_connection_drop_safety]]
+
+* finalized HTTP P2P protocol draft 1,
+  [[design/p2p_protocol_over_http/draft1]]
 
 ## items deferred until later for [[design/passthrough_proxy]]
 

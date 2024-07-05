@@ -18,9 +18,7 @@ may want git-annex to use HTTP in eg a LAN.
 ## protocol version
 
 Each request in the protocol is versioned. The versions correspond
-to P2P protocol versions, but for simplicity, the minimum version supported
-over HTTP is version 3. Every implementation of the HTTP protocol must
-support version 3.
+to P2P protocol versions.
 
 The protocol version comes before the request. Eg: `/git-annex/v3/put`
 
@@ -53,6 +51,8 @@ Any request may also optionally include these parameters:
   This parameter can be given multiple times to list several cluster
   gateway UUIDs.
 
+  This parameter is only available for v3 and above.
+
 [Internally, git-annex can use these common parameters, plus the protocol
 version, to create a P2P session. The P2P session is driven through
 the AUTH, VERSION, and BYPASS messages, leaving the session ready to
@@ -67,8 +67,10 @@ It is not part of the P2P protocol per se, but is provided to let
 other clients than git-annex easily download the content of keys from the
 http server.
 
-This behaves the same as `GET /git-annex/v3/key/$key`, although its
+This behaves almost the same as `GET /git-annex/v3/key/$key`, although its
 behavior may change in later versions.
+
+When the key is not present on the server, this returns a 404 Not Found.
 
 ### GET /git-annex/v3/key/$key
 
@@ -118,7 +120,21 @@ X-git-annex-data-length header indicated, then the data is invalid and
 should not be used. This can happen when eg, the data was being sent from
 an unlocked annexed file, which got modified while it was being sent.
 
-When the content is not present, the server will respond with 404.
+When the content is not present, the server will respond with 
+422 Unprocessable Content.
+
+### GET /git-annex/v2/key/$key
+
+Identical to v3.
+
+### GET /git-annex/v1/key/$key
+
+Identical to v3.
+
+### GET /git-annex/v0/key/$key
+
+Same as v3, except there is no X-git-annex-data-length header.
+Additional checking client-side will be required to validate the data.
 
 ### POST /git-annex/v3/checkpresent
 
@@ -135,6 +151,18 @@ The body of the request is empty.
 
 The server responds with a JSON object with a "present" field that is true
 if the key is present, or false if it is not present.
+
+### POST /git-annex/v2/checkpresent
+
+Identical to v3.
+
+### POST /git-annex/v1/checkpresent
+
+Identical to v3.
+
+### POST /git-annex/v0/checkpresent
+
+Identical to v3.
 
 ### POST /git-annex/v3/lockcontent
 
@@ -160,6 +188,18 @@ If the client disconnects without sending "UNLOCKCONTENT", or the web
 server gets shut down before it can receive that, the content will remain
 locked for at least 10 minutes from when the server sent "SUCCESS".
 
+### POST /git-annex/v2/lockcontent
+
+Identical to v3.
+
+### POST /git-annex/v1/lockcontent
+
+Identical to v3.
+
+### POST /git-annex/v0/lockcontent
+
+Identical to v3.
+
 ### POST /git-annex/v3/remove
 
 Remove a key's content from the server.
@@ -183,6 +223,18 @@ UUIDs of other repositories that the content was removed from.
 If the server does not allow removing the key due to a policy
 (eg due to being read-only or append-only), it will respond with a JSON
 object with an "error" field that has an error message as its value.
+
+### POST /git-annex/v2/remove
+
+Identical to v3.
+
+### POST /git-annex/v1/remove
+
+Same as v3, except the JSON will not include "plusuuids".
+
+### POST /git-annex/v0/remove
+
+Identival to v1.
 
 ## POST /git-annex/v3/remove-before
 
@@ -269,6 +321,19 @@ If the server does not allow storing the key due eg to a policy
 invalid, or because it ran out of disk space, it will respond with a
 JSON object with an "error" field that has an error message as its value.
 
+### POST /git-annex/v2/put
+
+Identical to v3.
+
+### POST /git-annex/v1/put
+
+Same as v3, except the JSON will not include "plusuuids".
+
+### POST /git-annex/v0/put
+
+Same as v1, except there is no X-git-annex-data-length header.
+Additional checking client-side will be required to validate the data.
+
 ### POST /git-annex/v3/putoffset
 
 Asks the server what `offset` can be used in a `put` of a key.
@@ -289,6 +354,12 @@ The body of the request is empty.
 The server responds with a JSON object with an "offset" field that 
 is the largest allowable offset.
 
+If the server already has the content of the key, it will respond with a
+JSON object with an "alreadyhave" field that is set to true. This JSON
+object may also have a field "plusuuids" that lists 
+the UUIDs of other repositories where the content is stored, in addition to
+the serveruuid.
+
 If the server does not allow storing the key due to a policy
 (eg due to being read-only or append-only), it will respond with a JSON
 object with an "error" field that has an error message as its value.
@@ -298,6 +369,14 @@ returning the `PUT-FROM` offset. To avoid leaving the P2P protocol stuck
 part way through a `PUT`, a synthetic empty `DATA` followed by `INVALID`
 will be used to get the P2P protocol back into a state where it will accept
 any request.]
+
+### POST /git-annex/v2/putoffset
+
+Identical to v3.
+
+### POST /git-annex/v1/putoffset
+
+Same as v3, except the JSON will not include "plusuuids".
 
 ## parts of P2P protocol that are not supported over HTTP
 
