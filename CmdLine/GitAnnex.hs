@@ -1,6 +1,6 @@
 {- git-annex main program
  -
- - Copyright 2010-2022 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -118,6 +118,9 @@ import qualified Command.Upgrade
 import qualified Command.Forget
 import qualified Command.OldKeys
 import qualified Command.P2P
+#ifdef WITH_SERVANT
+import qualified Command.P2PHttp
+#endif
 import qualified Command.Proxy
 import qualified Command.DiffDriver
 import qualified Command.Smudge
@@ -245,6 +248,9 @@ cmds testoptparser testrunner mkbenchmarkgenerator = map addGitAnnexCommonOption
 	, Command.Forget.cmd
 	, Command.OldKeys.cmd
 	, Command.P2P.cmd
+#ifdef WITH_SERVANT
+	, Command.P2PHttp.cmd
+#endif
 	, Command.Proxy.cmd
 	, Command.DiffDriver.cmd
 	, Command.Smudge.cmd

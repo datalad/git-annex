@@ -212,6 +212,13 @@ content from the key-value store.
 
   See [[git-annex-webapp]](1) for details.
 
+* `p2phttp`
+
+  Allows a git-annex repository to be accessed over HTTP using git-annex
+  p2p protocol.
+
+  See [[git-annex-p2phttp]](1) for details.
+
 * `remotedaemon`
 
   Persistant communication with remotes.

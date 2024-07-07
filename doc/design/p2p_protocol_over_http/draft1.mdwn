@@ -2,6 +2,18 @@
 
 Draft 1 of a complete [[P2P_protocol]] over HTTP.
 
+## base64 encoding of keys, uuids, and filenames
+
+A git-annex key can contain text in any encoding. So can a filename,
+and it's even possible, though unlikely, that the UUID of a git-annex
+repository might.
+
+But this protocol requires that UTF-8 be used throughout, except 
+where bodies use `Content-Type: application/octet-stream`.
+
+So, all git-annex keys, uuids, and filenames in this protocol are
+base64 encoded.
+
 ## authentication
 
 A git-annex protocol endpoint can optionally operate in readonly mode without
@@ -227,7 +239,7 @@ Example:
 
     > POST /git-annex/v3/put?key=SHA1--foo&associatedfile=bar&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.1
     > Content-Type: application/octet-stream
-    > X-git-annex-object-size: 3
+    > X-git-annex-data-length: 3
     > 
     > foo
     < {"stored": true}

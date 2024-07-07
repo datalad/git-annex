@@ -1,0 +1,31 @@
+# NAME
+
+git-annex-p2phttp - HTTP server for git-annex P2P protocol
+
+# SYNOPSIS
+
+git-annex p2phttp [params ...]
+
+# DESCRIPTION
+
+This allows a git-annex repository to be accessed over HTTP.
+It is the git-annex equivilant of git-http-backend(1), for serving
+a repository over HTTP with write access for authenticated users.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+git-http-backend(1)
+
+[[git-annex-shell]](1)
+
+<https://git-annex.branchable.com/design/p2p_protocol_over_http/>
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+<http://git-annex.branchable.com/>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care

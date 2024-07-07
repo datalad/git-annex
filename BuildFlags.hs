@@ -52,6 +52,11 @@ buildFlags = filter (not . null)
 #ifdef WITH_MAGICMIME
 	, "MagicMime"
 #endif
+#ifdef WITH_SERVANT
+	, "Servant"
+#else
+#warning Building without servant, no git-annex p2phttp.
+#endif
 #ifdef WITH_BENCHMARK
 	, "Benchmark"
 #endif
