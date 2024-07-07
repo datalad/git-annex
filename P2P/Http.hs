@@ -20,6 +20,7 @@ import Utility.Base64
 import Utility.MonotonicClock
 
 import Servant
+import Servant.Client.Streaming
 import qualified Servant.Types.SourceT as S
 import Servant.API.WebSocket
 import qualified Network.WebSockets as Websocket
@@ -32,8 +33,7 @@ import Text.Read
 import Data.Aeson hiding (Key)
 
 type P2PHttpAPI
-	= "git-annex" :> "key" :> CaptureKey :> GetAPI '[]
-	:<|> "git-annex" :> "v3" :> "key" :> CaptureKey
+	= "git-annex" :> "v3" :> "key" :> CaptureKey
 		:> GetAPI '[DataLengthHeader]
 	:<|> "git-annex" :> "v2" :> "key" :> CaptureKey
 		:> GetAPI '[DataLengthHeader]
@@ -45,10 +45,11 @@ type P2PHttpAPI
 	:<|> "git-annex" :> "v2" :> "checkpresent" :> CheckPresentAPI
 	:<|> "git-annex" :> "v1" :> "checkpresent" :> CheckPresentAPI
 	:<|> "git-annex" :> "v0" :> "checkpresent" :> CheckPresentAPI
-	:<|> "git-annex" :> "v3" :> "lockcontent" :> LockContentAPI
-	:<|> "git-annex" :> "v2" :> "lockcontent" :> LockContentAPI
-	:<|> "git-annex" :> "v1" :> "lockcontent" :> LockContentAPI
-	:<|> "git-annex" :> "v0" :> "lockcontent" :> LockContentAPI
+	-- XXX disabled until I can implement HasClient ClientM WebSocket
+	-- :<|> "git-annex" :> "v3" :> "lockcontent" :> LockContentAPI
+	-- :<|> "git-annex" :> "v2" :> "lockcontent" :> LockContentAPI
+	-- :<|> "git-annex" :> "v1" :> "lockcontent" :> LockContentAPI
+	-- :<|> "git-annex" :> "v0" :> "lockcontent" :> LockContentAPI
 	:<|> "git-annex" :> "v3" :> "remove" :> RemoveAPI RemoveResultPlus
 	:<|> "git-annex" :> "v2" :> "remove" :> RemoveAPI RemoveResultPlus
 	:<|> "git-annex" :> "v1" :> "remove" :> RemoveAPI RemoveResult
@@ -69,6 +70,7 @@ type P2PHttpAPI
 		:> PutOffsetAPI PutOffsetResultPlus
 	:<|> "git-annex" :> "v1" :> "putoffset"
 		:> PutOffsetAPI PutOffsetResult
+	:<|> "git-annex" :> "key" :> CaptureKey :> GetAPI '[]
 
 p2pHttpAPI :: Proxy P2PHttpAPI
 p2pHttpAPI = Proxy
@@ -78,8 +80,7 @@ p2pHttp = serve p2pHttpAPI serveP2pHttp
 
 serveP2pHttp :: Server P2PHttpAPI
 serveP2pHttp
-	= serveGet0
-	:<|> serveGet
+	= serveGet
 	:<|> serveGet
 	:<|> serveGet
 	:<|> serveGet0
@@ -87,10 +88,10 @@ serveP2pHttp
 	:<|> serveCheckPresent
 	:<|> serveCheckPresent
 	:<|> serveCheckPresent
-	:<|> serveLockContent
-	:<|> serveLockContent
-	:<|> serveLockContent
-	:<|> serveLockContent
+	-- :<|> serveLockContent
+	-- :<|> serveLockContent
+	-- :<|> serveLockContent
+	-- :<|> serveLockContent
 	:<|> serveRemove id
 	:<|> serveRemove id
 	:<|> serveRemove dePlus
@@ -100,10 +101,11 @@ serveP2pHttp
 	:<|> servePut id
 	:<|> servePut id
 	:<|> servePut dePlus
-	:<|> servePut0
+	:<|> servePut dePlus Nothing
 	:<|> servePutOffset id
 	:<|> servePutOffset id
 	:<|> servePutOffset dePlus
+	:<|> serveGet0
 
 type GetAPI headers
 	= ClientUUID Optional
@@ -134,6 +136,24 @@ serveGet0
 	-> Handler (Headers '[] (S.SourceT IO B.ByteString))
 serveGet0 = undefined
 
+clientGet
+	:: P2P.ProtocolVersion
+	-> B64Key
+	-> Maybe (B64UUID ClientSide)
+	-> Maybe (B64UUID ServerSide)
+	-> [B64UUID Bypass]
+	-> Maybe B64FilePath
+	-> Maybe Offset
+	-> ClientM (Headers '[DataLengthHeader] (S.SourceT IO B.ByteString))
+clientGet (P2P.ProtocolVersion ver) k cu su bypass af o = case ver of
+	3 -> v3 k cu su bypass af o
+	2 -> v2 k cu su bypass af o
+	1 -> error "XXX" -- TODO v1  
+	0 -> error "XXX" -- TODO v0
+	_ -> error "unsupported protocol version"
+  where
+	_ :<|> v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
+
 type CheckPresentAPI
 	= KeyParam
 	:> ClientUUID Required
@@ -148,6 +168,23 @@ serveCheckPresent
 	-> [B64UUID Bypass]
 	-> Handler CheckPresentResult
 serveCheckPresent = undefined
+
+clientCheckPresent
+	:: P2P.ProtocolVersion
+	-> B64Key
+	-> B64UUID ClientSide
+	-> B64UUID ServerSide
+	-> [B64UUID Bypass]
+	-> ClientM CheckPresentResult
+clientCheckPresent (P2P.ProtocolVersion ver) = case ver of
+	3 -> v3
+	2 -> v2
+	1 -> v1
+	0 -> v0
+	_ -> error "unsupported protocol version"
+  where
+	_ :<|> _ :<|> _ :<|> _ :<|>
+		v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
 
 type LockContentAPI
 	= KeyParam
@@ -165,6 +202,9 @@ serveLockContent
 	-> Handler ()
 serveLockContent = undefined
 
+-- TODO
+--clientLockContent
+
 type RemoveAPI result
 	= KeyParam
 	:> ClientUUID Required
@@ -180,6 +220,24 @@ serveRemove
 	-> [B64UUID Bypass]
 	-> Handler t
 serveRemove = undefined
+
+clientRemove
+	:: P2P.ProtocolVersion
+	-> B64Key
+	-> B64UUID ClientSide
+	-> B64UUID ServerSide
+	-> [B64UUID Bypass]
+	-> ClientM RemoveResultPlus
+clientRemove (P2P.ProtocolVersion ver) k cu su bypass = case ver of
+	3 -> v3 k cu su bypass
+	2 -> v2 k cu su bypass
+	1 -> plus <$> v1 k cu su bypass
+	0 -> plus <$> v0 k cu su bypass
+	_ -> error "unsupported protocol version"
+  where
+	_ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|> _ :<|> _ :<|> _ :<|>
+		v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
 	
 type RemoveBeforeAPI
 	= KeyParam
@@ -198,6 +256,24 @@ serveRemoveBefore
 	-> Handler RemoveResult
 serveRemoveBefore = undefined
 
+clientRemoveBefore
+	:: P2P.ProtocolVersion
+	-> B64Key
+	-> B64UUID ClientSide
+	-> B64UUID ServerSide
+	-> [B64UUID Bypass]
+	-> Timestamp
+	-> ClientM RemoveResult
+clientRemoveBefore (P2P.ProtocolVersion ver) = case ver of
+	3 -> v3
+	_ -> error "unsupported protocol version"
+  where
+	_ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|> _ :<|> _ :<|> _ :<|>
+		v3 :<|> _ = client p2pHttpAPI
+
+
 type GetTimestampAPI
 	= ClientUUID Required
 	:> ServerUUID Required
@@ -210,6 +286,22 @@ serveGetTimestamp
 	-> [B64UUID Bypass]
 	-> Handler GetTimestampResult
 serveGetTimestamp = undefined
+
+clientGetTimestamp
+	:: P2P.ProtocolVersion
+	-> B64UUID ClientSide
+	-> B64UUID ServerSide
+	-> [B64UUID Bypass]
+	-> ClientM GetTimestampResult
+clientGetTimestamp (P2P.ProtocolVersion ver) = case ver of
+	3 -> v3
+	_ -> error "unsupported protocol version"
+  where
+	_ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|>
+		v3 :<|> _ = client p2pHttpAPI
 
 type PutAPI result
 	= KeyParam
@@ -236,8 +328,10 @@ servePut
 	-> Handler t
 servePut = undefined
 
-servePut0
-	:: B64Key
+clientPut
+	:: P2P.ProtocolVersion
+	-> Maybe Integer
+	-> B64Key
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
@@ -245,8 +339,20 @@ servePut0
 	-> Maybe Offset
 	-> DataLength
 	-> S.SourceT IO B.ByteString
-	-> Handler PutResult
-servePut0 = undefined
+	-> ClientM PutResultPlus
+clientPut (P2P.ProtocolVersion ver) sz k cu su bypass af o l src = case ver of
+	3 -> v3 sz k cu su bypass af o l src
+	2 -> v2 sz k cu su bypass af o l src
+	1 -> plus <$> v1 sz k cu su bypass af o l src
+	0 -> plus <$> v0 k cu su bypass af o l src
+	_ -> error "unsupported protocol version"
+  where
+	_ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|>
+		_ :<|>
+		v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
 
 type PutOffsetAPI result
 	= KeyParam
@@ -263,6 +369,27 @@ servePutOffset
 	-> [B64UUID Bypass]
 	-> Handler t
 servePutOffset = undefined
+
+clientPutOffset
+	:: P2P.ProtocolVersion
+	-> B64Key
+	-> B64UUID ClientSide
+	-> B64UUID ServerSide
+	-> [B64UUID Bypass]
+	-> ClientM PutOffsetResultPlus
+clientPutOffset (P2P.ProtocolVersion ver) = case ver of
+	3 -> v3
+	2 -> v2
+	_ -> error "unsupported protocol version"
+  where
+	_ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|>
+		_ :<|>
+		_ :<|> _ :<|> _ :<|> _ :<|>
+		v3 :<|> v2 :<|> _ = client p2pHttpAPI
+
 
 type ClientUUID req = QueryParam' '[req] "clientuuid" (B64UUID ClientSide)
 
@@ -315,23 +442,35 @@ newtype Offset = Offset P2P.Offset
 
 newtype Timestamp = Timestamp MonotonicTimestamp
 
-class DePlus plus unplus where
+class Plus plus unplus where
 	dePlus :: plus -> unplus
+	plus :: unplus -> plus
 
-instance DePlus RemoveResultPlus RemoveResult where
+instance Plus RemoveResultPlus RemoveResult where
 	dePlus (RemoveResultPlus b _) = RemoveResult b
+	plus (RemoveResult b) = RemoveResultPlus b mempty
 
-instance DePlus PutResultPlus PutResult where
+instance Plus PutResultPlus PutResult where
 	dePlus (PutResultPlus b _) = PutResult b
+	plus (PutResult b) = PutResultPlus b mempty
 
-instance DePlus PutOffsetResultPlus PutOffsetResult where
+instance Plus PutOffsetResultPlus PutOffsetResult where
 	dePlus (PutOffsetResultPlus o _) = PutOffsetResult o
+	plus (PutOffsetResult o) = PutOffsetResultPlus o mempty
+
+instance ToHttpApiData B64Key where
+	toUrlPiece (B64Key k) = TE.decodeUtf8Lenient $
+		toB64 (serializeKey' k)
 
 instance FromHttpApiData B64Key where
 	parseUrlPiece t = case fromB64Maybe (TE.encodeUtf8 t) of
 		Nothing -> Left "unable to base64 decode key"
 		Just b -> maybe (Left "key parse error") (Right . B64Key)
 			(deserializeKey' b)
+
+instance ToHttpApiData (B64UUID t) where
+	toUrlPiece (B64UUID u) = TE.decodeUtf8Lenient $
+		toB64 (fromUUID u)
 
 instance FromHttpApiData (B64UUID t) where
 	parseUrlPiece t = case fromB64Maybe (TE.encodeUtf8 t) of
@@ -340,20 +479,32 @@ instance FromHttpApiData (B64UUID t) where
 			u@(UUID _) -> Right (B64UUID u)
 			NoUUID -> Left "empty UUID"
 
+instance ToHttpApiData B64FilePath where
+	toUrlPiece (B64FilePath f) = TE.decodeUtf8Lenient $ toB64 f
+
 instance FromHttpApiData B64FilePath where
 	parseUrlPiece t = case fromB64Maybe (TE.encodeUtf8 t) of
 		Nothing -> Left "unable to base64 decode filename"
 		Just b -> Right (B64FilePath b)
+
+instance ToHttpApiData Offset where
+	toUrlPiece (Offset (P2P.Offset n)) = T.pack (show n)
 
 instance FromHttpApiData Offset where
 	parseUrlPiece t = case readMaybe (T.unpack t) of
 		Nothing -> Left "offset parse error"
 		Just n -> Right (Offset (P2P.Offset n))
 
+instance ToHttpApiData Timestamp where
+	toUrlPiece (Timestamp (MonotonicTimestamp n)) = T.pack (show n)
+
 instance FromHttpApiData Timestamp where
 	parseUrlPiece t = case readMaybe (T.unpack t) of
 		Nothing -> Left "timestamp parse error"
 		Just n -> Right (Timestamp (MonotonicTimestamp n))
+
+instance ToHttpApiData DataLength where
+	toUrlPiece (DataLength n) = T.pack (show n)
 
 instance FromHttpApiData DataLength where
 	parseUrlPiece t = case readMaybe (T.unpack t) of
