@@ -63,7 +63,7 @@ Any request may also optionally include these parameters:
   This parameter can be given multiple times to list several cluster
   gateway UUIDs.
 
-  This parameter is only available for v3 and above.
+  This parameter is only available for v2 and above.
 
 [Internally, git-annex can use these common parameters, plus the protocol
 version, to create a P2P session. The P2P session is driven through
@@ -79,7 +79,7 @@ It is not part of the P2P protocol per se, but is provided to let
 other clients than git-annex easily download the content of keys from the
 http server.
 
-This behaves almost the same as `GET /git-annex/v3/key/$key`, although its
+This behaves almost the same as `GET /git-annex/v0/key/$key`, although its
 behavior may change in later versions.
 
 When the key is not present on the server, this returns a 404 Not Found.

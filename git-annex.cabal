@@ -324,6 +324,7 @@ Executable git-annex
     CPP-Options: -DWITH_SERVANT
     Other-Modules:
       Command.P2PHttp
+      P2P.Http
 
   if (os(windows))
     Build-Depends:
