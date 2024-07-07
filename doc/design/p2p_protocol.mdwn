@@ -66,7 +66,7 @@ Now both client and server should use version 1.
 
 ## Cluster cycle prevention
 
-In protocol version 2, immediately after VERSION, the
+In protocol version 2 and above, immediately after VERSION, the
 client can send an additional message that is used to
 prevent cycles when accessing clusters.
 
@@ -135,9 +135,9 @@ The server responds with either SUCCESS or FAILURE.
 
 Note that if the content was not present, SUCCESS will be returned.
 
-In protocol version 2, the server can optionally reply with SUCCESS-PLUS
-or FAILURE-PLUS. Each has a subsequent list of UUIDs of repositories
-that the content was removed from.
+In protocol version 2 and above, the server can optionally reply with
+SUCCESS-PLUS or FAILURE-PLUS. Each has a subsequent list of UUIDs of
+repositories that the content was removed from.
 
 ## Removing content before a specified time
 
