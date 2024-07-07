@@ -317,6 +317,7 @@ Executable git-annex
 
   if flag(Servant)
     Build-Depends:
+      servant,
       servant-server,
       servant-client,
       servant-websockets,
