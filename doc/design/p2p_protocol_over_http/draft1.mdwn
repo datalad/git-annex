@@ -79,9 +79,6 @@ It is not part of the P2P protocol per se, but is provided to let
 other clients than git-annex easily download the content of keys from the
 http server.
 
-This behaves almost the same as `GET /git-annex/v0/key/$key`, although its
-behavior may change in later versions.
-
 When the key is not present on the server, this returns a 404 Not Found.
 
 ### GET /git-annex/v3/key/$key
@@ -145,7 +142,7 @@ Identical to v3.
 
 ### GET /git-annex/v0/key/$key
 
-Same as v3, except there is no X-git-annex-data-length header.
+Same as v3, except the X-git-annex-data-length header is not used.
 Additional checking client-side will be required to validate the data.
 
 ### POST /git-annex/v3/checkpresent

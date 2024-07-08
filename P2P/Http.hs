@@ -38,14 +38,10 @@ import Control.Concurrent.STM
 import GHC.Generics
 
 type P2PHttpAPI
-	= "git-annex" :> "v3" :> "key" :> CaptureKey
-		:> GetAPI '[DataLengthHeader]
-	:<|> "git-annex" :> "v2" :> "key" :> CaptureKey
-		:> GetAPI '[DataLengthHeader]
-	:<|> "git-annex" :> "v1" :> "key" :> CaptureKey
-		:> GetAPI '[DataLengthHeader]
-	:<|> "git-annex" :> "v0" :> "key" :> CaptureKey
-		:> GetAPI '[]
+	= "git-annex" :> "v3" :> "key" :> CaptureKey :> GetAPI
+	:<|> "git-annex" :> "v2" :> "key" :> CaptureKey :> GetAPI
+	:<|> "git-annex" :> "v1" :> "key" :> CaptureKey :> GetAPI
+	:<|> "git-annex" :> "v0" :> "key" :> CaptureKey :> GetAPI
 	:<|> "git-annex" :> "v3" :> "checkpresent" :> CheckPresentAPI
 	:<|> "git-annex" :> "v2" :> "checkpresent" :> CheckPresentAPI
 	:<|> "git-annex" :> "v1" :> "checkpresent" :> CheckPresentAPI
@@ -78,7 +74,7 @@ type P2PHttpAPI
 	:<|> "git-annex" :> "v2" :> "keeplocked" :> KeepLockedAPI
 	:<|> "git-annex" :> "v1" :> "keeplocked" :> KeepLockedAPI
 	:<|> "git-annex" :> "v0" :> "keeplocked" :> KeepLockedAPI
-	:<|> "git-annex" :> "key" :> CaptureKey :> GetAPI '[]
+	:<|> "git-annex" :> "key" :> CaptureKey :> GetGenericAPI
 
 p2pHttpAPI :: Proxy P2PHttpAPI
 p2pHttpAPI = Proxy
@@ -91,7 +87,7 @@ serveP2pHttp
 	= serveGet
 	:<|> serveGet
 	:<|> serveGet
-	:<|> serveGet0
+	:<|> serveGet
 	:<|> serveCheckPresent
 	:<|> serveCheckPresent
 	:<|> serveCheckPresent
@@ -117,16 +113,21 @@ serveP2pHttp
 	:<|> serveKeepLocked
 	:<|> serveKeepLocked
 	:<|> serveKeepLocked
-	:<|> serveGet0
+	:<|> serveGetGeneric
 
-type GetAPI headers
+type GetGenericAPI = StreamGet NoFraming OctetStream (SourceIO B.ByteString)
+
+serveGetGeneric :: B64Key -> Handler (S.SourceT IO B.ByteString)
+serveGetGeneric = undefined
+
+type GetAPI
 	= ClientUUID Optional
 	:> ServerUUID Optional
 	:> BypassUUIDs
 	:> AssociatedFileParam
 	:> OffsetParam
 	:> StreamGet NoFraming OctetStream
-		(Headers headers (SourceIO B.ByteString))
+		(Headers '[DataLengthHeader] (SourceIO B.ByteString))
 
 serveGet
 	:: B64Key
@@ -138,16 +139,6 @@ serveGet
 	-> Handler (Headers '[DataLengthHeader] (S.SourceT IO B.ByteString))
 serveGet = undefined
 
-serveGet0
-	:: B64Key
-	-> Maybe (B64UUID ClientSide)
-	-> Maybe (B64UUID ServerSide)
-	-> [B64UUID Bypass]
-	-> Maybe B64FilePath
-	-> Maybe Offset
-	-> Handler (Headers '[] (S.SourceT IO B.ByteString))
-serveGet0 = undefined
-
 clientGet
 	:: P2P.ProtocolVersion
 	-> B64Key
@@ -157,14 +148,14 @@ clientGet
 	-> Maybe B64FilePath
 	-> Maybe Offset
 	-> ClientM (Headers '[DataLengthHeader] (S.SourceT IO B.ByteString))
-clientGet (P2P.ProtocolVersion ver) k cu su bypass af o = case ver of
-	3 -> v3 k cu su bypass af o
-	2 -> v2 k cu su bypass af o
-	1 -> error "XXX" -- TODO v1  
-	0 -> error "XXX" -- TODO v0
+clientGet (P2P.ProtocolVersion ver) = case ver of
+	3 -> v3
+	2 -> v2
+	1 -> v1
+	0 -> v0
 	_ -> error "unsupported protocol version"
   where
-	_ :<|> v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
+	v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
 
 type CheckPresentAPI
 	= KeyParam
