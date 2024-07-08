@@ -44,10 +44,11 @@ import qualified Data.Set as S
 import Data.Char
 import Data.Time.Clock.POSIX
 import Control.Applicative
+import Control.DeepSeq
 import Prelude
 
 newtype Offset = Offset Integer
-	deriving (Show)
+	deriving (Show, NFData)
 
 newtype Len = Len Integer
 	deriving (Show)

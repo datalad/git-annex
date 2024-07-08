@@ -9,6 +9,10 @@
 
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 
@@ -21,16 +25,21 @@ import Utility.MonotonicClock
 
 import Servant
 import Servant.Client.Streaming
+import Servant.Client.Core.RunClient
 import qualified Servant.Types.SourceT as S
 import Servant.API.WebSocket
 import qualified Network.WebSockets as Websocket
 import Network.Wai
 import Network.Wai.Handler.Warp
+import Network.HTTP.Client (newManager, defaultManagerSettings)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.ByteString as B
-import Text.Read
+import Text.Read (readMaybe)
 import Data.Aeson hiding (Key)
+import Data.Maybe
+import Control.DeepSeq
+import GHC.Generics
 
 type P2PHttpAPI
 	= "git-annex" :> "v3" :> "key" :> CaptureKey
@@ -45,11 +54,6 @@ type P2PHttpAPI
 	:<|> "git-annex" :> "v2" :> "checkpresent" :> CheckPresentAPI
 	:<|> "git-annex" :> "v1" :> "checkpresent" :> CheckPresentAPI
 	:<|> "git-annex" :> "v0" :> "checkpresent" :> CheckPresentAPI
-	-- XXX disabled until I can implement HasClient ClientM WebSocket
-	-- :<|> "git-annex" :> "v3" :> "lockcontent" :> LockContentAPI
-	-- :<|> "git-annex" :> "v2" :> "lockcontent" :> LockContentAPI
-	-- :<|> "git-annex" :> "v1" :> "lockcontent" :> LockContentAPI
-	-- :<|> "git-annex" :> "v0" :> "lockcontent" :> LockContentAPI
 	:<|> "git-annex" :> "v3" :> "remove" :> RemoveAPI RemoveResultPlus
 	:<|> "git-annex" :> "v2" :> "remove" :> RemoveAPI RemoveResultPlus
 	:<|> "git-annex" :> "v1" :> "remove" :> RemoveAPI RemoveResult
@@ -70,6 +74,10 @@ type P2PHttpAPI
 		:> PutOffsetAPI PutOffsetResultPlus
 	:<|> "git-annex" :> "v1" :> "putoffset"
 		:> PutOffsetAPI PutOffsetResult
+	:<|> "git-annex" :> "v3" :> "lockcontent" :> LockContentAPI
+	:<|> "git-annex" :> "v2" :> "lockcontent" :> LockContentAPI
+	:<|> "git-annex" :> "v1" :> "lockcontent" :> LockContentAPI
+	:<|> "git-annex" :> "v0" :> "lockcontent" :> LockContentAPI
 	:<|> "git-annex" :> "key" :> CaptureKey :> GetAPI '[]
 
 p2pHttpAPI :: Proxy P2PHttpAPI
@@ -88,10 +96,6 @@ serveP2pHttp
 	:<|> serveCheckPresent
 	:<|> serveCheckPresent
 	:<|> serveCheckPresent
-	-- :<|> serveLockContent
-	-- :<|> serveLockContent
-	-- :<|> serveLockContent
-	-- :<|> serveLockContent
 	:<|> serveRemove id
 	:<|> serveRemove id
 	:<|> serveRemove dePlus
@@ -105,6 +109,10 @@ serveP2pHttp
 	:<|> servePutOffset id
 	:<|> servePutOffset id
 	:<|> servePutOffset dePlus
+	:<|> serveLockContent
+	:<|> serveLockContent
+	:<|> serveLockContent
+	:<|> serveLockContent
 	:<|> serveGet0
 
 type GetAPI headers
@@ -185,25 +193,6 @@ clientCheckPresent (P2P.ProtocolVersion ver) = case ver of
   where
 	_ :<|> _ :<|> _ :<|> _ :<|>
 		v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
-
-type LockContentAPI
-	= KeyParam
-	:> ClientUUID Required
-	:> ServerUUID Required
-	:> BypassUUIDs
-	:> WebSocket
-
-serveLockContent
-	:: B64Key
-	-> B64UUID ClientSide
-	-> B64UUID ServerSide
-	-> [B64UUID Bypass]
-	-> Websocket.Connection
-	-> Handler ()
-serveLockContent = undefined
-
--- TODO
---clientLockContent
 
 type RemoveAPI result
 	= KeyParam
@@ -390,18 +379,81 @@ clientPutOffset (P2P.ProtocolVersion ver) = case ver of
 		_ :<|> _ :<|> _ :<|> _ :<|>
 		v3 :<|> v2 :<|> _ = client p2pHttpAPI
 
+type LockContentAPI
+	= KeyParam
+	:> ClientUUID Required
+	:> ServerUUID Required
+	:> BypassUUIDs
+	:> WebSocket
+
+serveLockContent
+	:: B64Key
+	-> B64UUID ClientSide
+	-> B64UUID ServerSide
+	-> [B64UUID Bypass]
+	-> Websocket.Connection
+	-> Handler ()
+serveLockContent = undefined
+
+data WebSocketClient = WebSocketClient deriving (Eq, Show, Bounded, Enum)
+
+-- XXX this is enough to let servant-client work, but it's not yet
+-- possible to run a WebSocketClient.
+instance RunClient m => HasClient m WebSocket where
+	type Client m WebSocket = WebSocketClient
+	clientWithRoute _pm Proxy _ = WebSocketClient
+	hoistClientMonad _ _ _ WebSocketClient = WebSocketClient
+
+clientLockContent
+	:: B64Key
+	-> B64UUID ClientSide
+	-> B64UUID ServerSide
+	-> [B64UUID Bypass]
+	-> WebSocketClient
+clientLockContent = v3
+  where
+	_ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|>
+		_ :<|>
+		_ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|> _ :<|> _ :<|>
+		v3 :<|> _ = client p2pHttpAPI
+	-- XXX add other protocol versions
+
+--XXX test code
+query :: ClientM PutOffsetResultPlus
+query = do
+	clientPutOffset (P2P.ProtocolVersion 3)
+		(B64Key (fromJust $ deserializeKey "WORM--foo"))
+		(B64UUID (toUUID ("client" :: String)))	
+		(B64UUID (toUUID ("server" :: String)))	
+		[]
+
+--XXX test code
+query' :: WebSocketClient
+query' = do
+	clientLockContent (B64Key (fromJust $ deserializeKey "WORM--foo"))
+		(B64UUID (toUUID ("client" :: String)))	
+		(B64UUID (toUUID ("server" :: String)))	
+		[]
+
+--XXX test code
+run :: IO ()
+run = do
+  manager' <- newManager defaultManagerSettings
+  res <- runClientM query (mkClientEnv manager' (BaseUrl Http "localhost" 8081 ""))
+  case res of
+    Left err -> putStrLn $ "Error: " ++ show err
+    Right res' -> do
+      print res'
 
 type ClientUUID req = QueryParam' '[req] "clientuuid" (B64UUID ClientSide)
 
-data ClientSide
-
 type ServerUUID req = QueryParam' '[req] "serveruuid" (B64UUID ServerSide)
 
-data ServerSide
-
 type BypassUUIDs = QueryParams "bypass" (B64UUID Bypass)
-
-data Bypass
 
 type CaptureKey = Capture "key" B64Key
 
@@ -413,50 +465,55 @@ type OffsetParam = QueryParam "offset" Offset
 
 type DataLengthHeader = Header "X-git-annex-data-length" Integer
 
+-- Phantom types for B64UIID
+data ClientSide
+data ServerSide
+data Bypass
+data Plus
+
 -- Keys, UUIDs, and filenames are base64 encoded since Servant uses 
 -- Text and so needs UTF-8.
 newtype B64Key = B64Key Key
+	deriving (Show)
+
 newtype B64UUID t = B64UUID UUID
+	deriving (Show, Generic, NFData)
+
 newtype B64FilePath = B64FilePath RawFilePath
+	deriving (Show)
 
 newtype DataLength = DataLength Integer
+	deriving (Show)
 
 newtype CheckPresentResult = CheckPresentResult Bool
+	deriving (Show)
 
 newtype RemoveResult = RemoveResult Bool
+	deriving (Show)
 
-data RemoveResultPlus = RemoveResultPlus Bool [UUID]
+data RemoveResultPlus = RemoveResultPlus Bool [B64UUID Plus]
+	deriving (Show)
 
 newtype GetTimestampResult = GetTimestampResult Timestamp
+	deriving (Show)
 
 newtype PutResult = PutResult Bool
 	deriving (Eq, Show)
 
-data PutResultPlus = PutResultPlus Bool [UUID]
+data PutResultPlus = PutResultPlus Bool [B64UUID Plus]
+	deriving (Show)
 
 newtype PutOffsetResult = PutOffsetResult Offset
+	deriving (Show)
 
-data PutOffsetResultPlus = PutOffsetResultPlus Offset [UUID]
+data PutOffsetResultPlus = PutOffsetResultPlus Offset [B64UUID Plus]
+	deriving (Show, Generic, NFData)
 
 newtype Offset = Offset P2P.Offset
+	deriving (Show, Generic, NFData)
 
 newtype Timestamp = Timestamp MonotonicTimestamp
-
-class Plus plus unplus where
-	dePlus :: plus -> unplus
-	plus :: unplus -> plus
-
-instance Plus RemoveResultPlus RemoveResult where
-	dePlus (RemoveResultPlus b _) = RemoveResult b
-	plus (RemoveResult b) = RemoveResultPlus b mempty
-
-instance Plus PutResultPlus PutResult where
-	dePlus (PutResultPlus b _) = PutResult b
-	plus (PutResult b) = PutResultPlus b mempty
-
-instance Plus PutOffsetResultPlus PutOffsetResult where
-	dePlus (PutOffsetResultPlus o _) = PutOffsetResult o
-	plus (PutOffsetResult o) = PutOffsetResultPlus o mempty
+	deriving (Show)
 
 instance ToHttpApiData B64Key where
 	toUrlPiece (B64Key k) = TE.decodeUtf8Lenient $
@@ -522,7 +579,7 @@ instance FromJSON PutResult where
 instance ToJSON PutResultPlus where
 	toJSON (PutResultPlus b us) = object
 		[ "stored" .= b
-		, "plusuuids" .= map (fromUUID :: UUID -> String) us
+		, "plusuuids" .= plusList us
 		]
 
 instance FromJSON PutResultPlus where
@@ -549,7 +606,7 @@ instance FromJSON RemoveResult where
 instance ToJSON RemoveResultPlus where
 	toJSON (RemoveResultPlus b us) = object
 		[ "removed" .= b
-		, "plusuuids" .= map (fromUUID :: UUID -> String) us
+		, "plusuuids" .= plusList us
 		]
 
 instance FromJSON RemoveResultPlus where
@@ -578,7 +635,7 @@ instance FromJSON PutOffsetResult where
 instance ToJSON PutOffsetResultPlus where
 	toJSON (PutOffsetResultPlus (Offset (P2P.Offset o)) us) = object
 		[ "offset" .= o
-		, "plusuuids" .= map (fromUUID :: UUID -> String) us
+		, "plusuuids" .= plusList us
 		]
 
 instance FromJSON PutOffsetResultPlus where
@@ -586,3 +643,28 @@ instance FromJSON PutOffsetResultPlus where
 		PutOffsetResultPlus
 			<$> (Offset . P2P.Offset <$> v .: "offset")
 			<*> v .: "plusuuids"
+
+instance FromJSON (B64UUID t) where
+	parseJSON (String t) = case fromB64Maybe (TE.encodeUtf8 t) of
+		Just s -> pure (B64UUID (toUUID s))
+		_ -> mempty
+	parseJSON _ = mempty
+
+plusList :: [B64UUID Plus] -> [String]
+plusList = map (\(B64UUID u) -> fromUUID u)
+
+class PlusClass plus unplus where
+	dePlus :: plus -> unplus
+	plus :: unplus -> plus
+
+instance PlusClass RemoveResultPlus RemoveResult where
+	dePlus (RemoveResultPlus b _) = RemoveResult b
+	plus (RemoveResult b) = RemoveResultPlus b mempty
+
+instance PlusClass PutResultPlus PutResult where
+	dePlus (PutResultPlus b _) = PutResult b
+	plus (PutResult b) = PutResultPlus b mempty
+
+instance PlusClass PutOffsetResultPlus PutOffsetResult where
+	dePlus (PutOffsetResultPlus o _) = PutOffsetResult o
+	plus (PutOffsetResult o) = PutOffsetResultPlus o mempty

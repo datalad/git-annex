@@ -320,6 +320,7 @@ Executable git-annex
       servant,
       servant-server,
       servant-client,
+      servant-client-core,
       servant-websockets,
       websockets
     CPP-Options: -DWITH_SERVANT
