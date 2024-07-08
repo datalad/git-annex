@@ -79,45 +79,45 @@ type P2PHttpAPI
 p2pHttpAPI :: Proxy P2PHttpAPI
 p2pHttpAPI = Proxy
 
-p2pHttpApp :: Application
-p2pHttpApp = serve p2pHttpAPI serveP2pHttp
+p2pHttpApp :: P2PHttpServerState -> Application
+p2pHttpApp = serve p2pHttpAPI . serveP2pHttp
 
-serveP2pHttp :: Server P2PHttpAPI
-serveP2pHttp
-	= serveGet
-	:<|> serveGet
-	:<|> serveGet
-	:<|> serveGet
-	:<|> serveCheckPresent
-	:<|> serveCheckPresent
-	:<|> serveCheckPresent
-	:<|> serveCheckPresent
-	:<|> serveRemove id
-	:<|> serveRemove id
-	:<|> serveRemove dePlus
-	:<|> serveRemove dePlus
-	:<|> serveRemoveBefore
-	:<|> serveGetTimestamp
-	:<|> servePut id
-	:<|> servePut id
-	:<|> servePut dePlus
-	:<|> servePut dePlus Nothing
-	:<|> servePutOffset id
-	:<|> servePutOffset id
-	:<|> servePutOffset dePlus
-	:<|> serveLockContent
-	:<|> serveLockContent
-	:<|> serveLockContent
-	:<|> serveLockContent
-	:<|> serveKeepLocked
-	:<|> serveKeepLocked
-	:<|> serveKeepLocked
-	:<|> serveKeepLocked
-	:<|> serveGetGeneric
+serveP2pHttp :: P2PHttpServerState -> Server P2PHttpAPI
+serveP2pHttp st
+	= serveGet st
+	:<|> serveGet st
+	:<|> serveGet st
+	:<|> serveGet st
+	:<|> serveCheckPresent st
+	:<|> serveCheckPresent st
+	:<|> serveCheckPresent st
+	:<|> serveCheckPresent st
+	:<|> serveRemove st id
+	:<|> serveRemove st id
+	:<|> serveRemove st dePlus
+	:<|> serveRemove st dePlus
+	:<|> serveRemoveBefore st
+	:<|> serveGetTimestamp st
+	:<|> servePut st id
+	:<|> servePut st id
+	:<|> servePut st dePlus
+	:<|> servePut st dePlus Nothing
+	:<|> servePutOffset st id
+	:<|> servePutOffset st id
+	:<|> servePutOffset st dePlus
+	:<|> serveLockContent st
+	:<|> serveLockContent st
+	:<|> serveLockContent st
+	:<|> serveLockContent st
+	:<|> serveKeepLocked st
+	:<|> serveKeepLocked st
+	:<|> serveKeepLocked st
+	:<|> serveKeepLocked st
+	:<|> serveGetGeneric st
 
 type GetGenericAPI = StreamGet NoFraming OctetStream (SourceIO B.ByteString)
 
-serveGetGeneric :: B64Key -> Handler (S.SourceT IO B.ByteString)
+serveGetGeneric :: P2PHttpServerState -> B64Key -> Handler (S.SourceT IO B.ByteString)
 serveGetGeneric = undefined
 
 type GetAPI
@@ -130,7 +130,8 @@ type GetAPI
 		(Headers '[DataLengthHeader] (SourceIO B.ByteString))
 
 serveGet
-	:: B64Key
+	:: P2PHttpServerState
+	-> B64Key
 	-> Maybe (B64UUID ClientSide)
 	-> Maybe (B64UUID ServerSide)
 	-> [B64UUID Bypass]
@@ -165,7 +166,8 @@ type CheckPresentAPI
 	:> Post '[JSON] CheckPresentResult
 
 serveCheckPresent
-	:: B64Key
+	:: P2PHttpServerState
+	-> B64Key
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
@@ -197,7 +199,8 @@ type RemoveAPI result
 	:> Post '[JSON] result
 	
 serveRemove
-	:: (RemoveResultPlus -> t)
+	:: P2PHttpServerState
+	-> (RemoveResultPlus -> t)
 	-> B64Key
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
@@ -232,7 +235,8 @@ type RemoveBeforeAPI
 	:> Post '[JSON] RemoveResult
 
 serveRemoveBefore
-	:: B64Key
+	:: P2PHttpServerState
+	-> B64Key
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
@@ -265,7 +269,8 @@ type GetTimestampAPI
 	:> Post '[JSON] GetTimestampResult
 
 serveGetTimestamp
-	:: B64UUID ClientSide
+	:: P2PHttpServerState
+	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
 	-> Handler GetTimestampResult
@@ -299,7 +304,8 @@ type PutAPI result
 	:> Post '[JSON] result
 
 servePut
-	:: (PutResultPlus -> t)
+	:: P2PHttpServerState
+	-> (PutResultPlus -> t)
 	-> Maybe Integer
 	-> B64Key
 	-> B64UUID ClientSide
@@ -346,7 +352,8 @@ type PutOffsetAPI result
 	:> Post '[JSON] result
 
 servePutOffset
-	:: (PutOffsetResultPlus -> t)
+	:: P2PHttpServerState
+	-> (PutOffsetResultPlus -> t)
 	-> B64Key
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
@@ -382,7 +389,8 @@ type LockContentAPI
 	:> Post '[JSON] LockResult
 
 serveLockContent
-	:: B64Key
+	:: P2PHttpServerState
+	-> B64Key
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
@@ -423,7 +431,8 @@ type KeepLockedAPI
 	:> Post '[JSON] LockResult
 
 serveKeepLocked
-	:: B64Key
+	:: P2PHttpServerState
+	-> B64Key
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
@@ -431,7 +440,7 @@ serveKeepLocked
 	-> Maybe KeepAlive
 	-> S.SourceT IO UnlockRequest
 	-> Handler LockResult
-serveKeepLocked k cu su _ _ _ unlockrequeststream = do
+serveKeepLocked _st k cu su _ _ _ unlockrequeststream = do
 	_ <- liftIO $ S.unSourceT unlockrequeststream go
 	return (LockResult False)
   where
@@ -517,6 +526,11 @@ testClientLock = do
 		(B64UUID (toUUID ("su" :: String)))
 		[]
 		keeplocked
+
+data P2PHttpServerState = P2PHttpServerState
+
+mkP2PHttpServerState :: IO P2PHttpServerState
+mkP2PHttpServerState = return P2PHttpServerState
 
 type ClientUUID req = QueryParam' '[req] "clientuuid" (B64UUID ClientSide)
 

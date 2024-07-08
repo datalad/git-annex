@@ -22,5 +22,7 @@ cmd = command "p2phttp" SectionPlumbing
 	paramNothing (withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek ["server"] = liftIO $ Warp.run 8080 p2pHttpApp
+seek ["server"] = liftIO $ do
+	st <- mkP2PHttpServerState
+	Warp.run 8080 (p2pHttpApp st)
 seek ["client"] = liftIO testClientLock
