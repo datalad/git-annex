@@ -26,6 +26,7 @@ import Utility.MonotonicClock
 import Servant
 import Servant.Client.Streaming
 import Servant.Client.Core.RunClient
+import qualified Servant.Client.Core.Request
 import qualified Servant.Types.SourceT as S
 import Servant.API.WebSocket
 import qualified Network.WebSockets as Websocket
@@ -395,14 +396,14 @@ serveLockContent
 	-> Handler ()
 serveLockContent = undefined
 
-data WebSocketClient = WebSocketClient deriving (Eq, Show, Bounded, Enum)
+data WebSocketClient = WebSocketClient Servant.Client.Core.Request.Request
 
 -- XXX this is enough to let servant-client work, but it's not yet
 -- possible to run a WebSocketClient.
 instance RunClient m => HasClient m WebSocket where
 	type Client m WebSocket = WebSocketClient
-	clientWithRoute _pm Proxy _ = WebSocketClient
-	hoistClientMonad _ _ _ WebSocketClient = WebSocketClient
+	clientWithRoute _pm Proxy req = WebSocketClient req
+	hoistClientMonad _ _ _ w = w
 
 clientLockContent
 	:: B64Key
@@ -443,7 +444,10 @@ query' = do
 run :: IO ()
 run = do
   manager' <- newManager defaultManagerSettings
-  res <- runClientM query (mkClientEnv manager' (BaseUrl Http "localhost" 8081 ""))
+  let WebSocketClient wscreq = query'
+  res <- runClientM (runRequestAcceptStatus Nothing wscreq) 
+  	(mkClientEnv manager' (BaseUrl Http "localhost" 8081 ""))
+  -- res <- runClientM query (mkClientEnv manager' (BaseUrl Http "localhost" 8081 ""))
   case res of
     Left err -> putStrLn $ "Error: " ++ show err
     Right res' -> do
