@@ -14,10 +14,13 @@ module Command.P2PHttp where
 import Command
 import P2P.Http
 
+import qualified Network.Wai.Handler.Warp as Warp
+
 cmd :: Command
 cmd = command "p2phttp" SectionPlumbing
 	"communicate in P2P protocol over http"
 	paramNothing (withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek _ = liftIO $ P2P.Http.run
+seek ["server"] = liftIO $ Warp.run 8080 p2pHttpApp
+seek ["client"] = liftIO testClientLock

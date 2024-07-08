@@ -183,22 +183,15 @@ Locks the content of a key on the server, preventing it from being removed.
 Example:
 
     > POST /git-annex/v3/lockcontent?key=SHA1--foo&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.1
-    [websocket protocol follows]
-    < SUCCESS
-    > UNLOCKCONTENT
+    < {"locked": true}
 
 There is one required additional parameter, `key`.
 
-This request opens a websocket between the client and the server.
-The server sends "SUCCESS" over the websocket once it has locked
-the content. Or it sends "FAILURE" if it is unable to lock the content.
+The server will return `{"locked": true}` if it was able to lock the key,
+or `{"locked": false}` if it was not.
 
-Once the server has sent "SUCCESS", the content remains locked 
-until the client sends "UNLOCKCONTENT" over the websocket.
-
-If the client disconnects without sending "UNLOCKCONTENT", or the web
-server gets shut down before it can receive that, the content will remain
-locked for at least 10 minutes from when the server sent "SUCCESS".
+The key will remain locked for 10 minutes. But, usually `keeplocked`
+is used to control the lifetime of the lock. (See below.)
 
 ### POST /git-annex/v2/lockcontent
 
@@ -209,6 +202,52 @@ Identical to v3.
 Identical to v3.
 
 ### POST /git-annex/v0/lockcontent
+
+Identical to v3.
+
+### POST /git-annex/v3/keeplocked
+
+Controls the lifetime of a lock on a key that was earlier obtained
+with `lockcontent`.
+
+Example:
+
+    > POST /git-annex/v3/keeplocked?key=SHA1--foo&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.1
+    > Connection: Keep-Alive
+    > Keep-Alive: timeout=1200
+    [some time later]
+    > {"unlock": true}
+    < {"locked": false}
+
+There is one required additional parameter, `key`.
+
+This uses long polling. So it's important to use 
+Connection and Keep-Alive headers.
+
+This keeps an active lock from expiring until the client sends
+`{"unlock": true}`, and then it immediately unlocks it.
+
+The client can send `{"unlock": false}` any number of times first.
+This has no effect, but may be useful to keep the connection alive.
+
+This must be called within ten minutes of `lockcontent`, otherwise
+the lock will have already expired when this runs. Note that this
+does not indicate if the lock expired, it always returns 
+`{"locked": false}`.
+
+If the connection is closed before the client sends `{"unlock": true},
+or even if the web server gets shut down, the content will remain
+locked for 10 minutes from the time it was first locked.
+
+### POST /git-annex/v2/keeplocked
+
+Identical to v3.
+
+### POST /git-annex/v1/keeplocked
+
+Identical to v3.
+
+### POST /git-annex/v0/keeplocked
 
 Identical to v3.
 

@@ -320,9 +320,7 @@ Executable git-annex
       servant,
       servant-server,
       servant-client,
-      servant-client-core,
-      servant-websockets,
-      websockets
+      servant-client-core
     CPP-Options: -DWITH_SERVANT
     Other-Modules:
       Command.P2PHttp

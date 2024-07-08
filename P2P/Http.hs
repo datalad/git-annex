@@ -25,24 +25,16 @@ import Utility.MonotonicClock
 
 import Servant
 import Servant.Client.Streaming
-import Servant.Client.Core.RunClient
-import qualified Servant.Client.Core.Request as R
 import qualified Servant.Types.SourceT as S
-import Servant.API.WebSocket
-import qualified Network.WebSockets as Websocket
-import qualified Network.WebSockets.Client as Websocket
-import Network.Wai
-import Network.Wai.Handler.Warp
-import Network.HTTP.Client (newManager, defaultManagerSettings, path)
+import Network.HTTP.Client (defaultManagerSettings, newManager)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.ByteString as B
 import Text.Read (readMaybe)
 import Data.Aeson hiding (Key)
-import Data.Maybe
-import Data.Foldable
-import Control.Monad.Reader
 import Control.DeepSeq
+import Control.Concurrent
+import Control.Concurrent.STM
 import GHC.Generics
 
 type P2PHttpAPI
@@ -82,13 +74,17 @@ type P2PHttpAPI
 	:<|> "git-annex" :> "v2" :> "lockcontent" :> LockContentAPI
 	:<|> "git-annex" :> "v1" :> "lockcontent" :> LockContentAPI
 	:<|> "git-annex" :> "v0" :> "lockcontent" :> LockContentAPI
+	:<|> "git-annex" :> "v3" :> "keeplocked" :> KeepLockedAPI
+	:<|> "git-annex" :> "v2" :> "keeplocked" :> KeepLockedAPI
+	:<|> "git-annex" :> "v1" :> "keeplocked" :> KeepLockedAPI
+	:<|> "git-annex" :> "v0" :> "keeplocked" :> KeepLockedAPI
 	:<|> "git-annex" :> "key" :> CaptureKey :> GetAPI '[]
 
 p2pHttpAPI :: Proxy P2PHttpAPI
 p2pHttpAPI = Proxy
 
-p2pHttp :: Application
-p2pHttp = serve p2pHttpAPI serveP2pHttp
+p2pHttpApp :: Application
+p2pHttpApp = serve p2pHttpAPI serveP2pHttp
 
 serveP2pHttp :: Server P2PHttpAPI
 serveP2pHttp
@@ -117,6 +113,10 @@ serveP2pHttp
 	:<|> serveLockContent
 	:<|> serveLockContent
 	:<|> serveLockContent
+	:<|> serveKeepLocked
+	:<|> serveKeepLocked
+	:<|> serveKeepLocked
+	:<|> serveKeepLocked
 	:<|> serveGet0
 
 type GetAPI headers
@@ -388,33 +388,29 @@ type LockContentAPI
 	:> ClientUUID Required
 	:> ServerUUID Required
 	:> BypassUUIDs
-	:> WebSocket
+	:> Post '[JSON] LockResult
 
 serveLockContent
 	:: B64Key
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
-	-> Websocket.Connection
-	-> Handler ()
+	-> Handler LockResult
 serveLockContent = undefined
 
-data WebSocketClient = WebSocketClient R.Request
-
--- XXX this is enough to let servant-client work, but it's not yet
--- possible to run a WebSocketClient.
-instance RunClient m => HasClient m WebSocket where
-	type Client m WebSocket = WebSocketClient
-	clientWithRoute _pm Proxy req = WebSocketClient req
-	hoistClientMonad _ _ _ w = w
-
 clientLockContent
-	:: B64Key
+	:: P2P.ProtocolVersion
+	-> B64Key
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
-	-> WebSocketClient
-clientLockContent = v3
+	-> ClientM LockResult
+clientLockContent (P2P.ProtocolVersion ver) = case ver of
+	3 -> v3
+	2 -> v2
+	1 -> v1
+	0 -> v0
+	_ -> error "unsupported protocol version"
   where
 	_ :<|> _ :<|> _ :<|> _ :<|>
 		_ :<|> _ :<|> _ :<|> _ :<|>
@@ -423,49 +419,113 @@ clientLockContent = v3
 		_ :<|>
 		_ :<|> _ :<|> _ :<|> _ :<|>
 		_ :<|> _ :<|> _ :<|>
-		v3 :<|> _ = client p2pHttpAPI
-	-- XXX add other protocol versions
+		v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
 
---XXX test code
-query :: ClientM PutOffsetResultPlus
-query = do
-	clientPutOffset (P2P.ProtocolVersion 3)
-		(B64Key (fromJust $ deserializeKey "WORM--foo"))
-		(B64UUID (toUUID ("client" :: String)))	
-		(B64UUID (toUUID ("server" :: String)))	
-		[]
+type KeepLockedAPI
+	= KeyParam
+	:> ClientUUID Required
+	:> ServerUUID Required
+	:> BypassUUIDs
+	:> Header "Connection" ConnectionKeepAlive
+	:> Header "Keep-Alive" KeepAlive
+	:> StreamBody NewlineFraming JSON (SourceIO UnlockRequest)
+	:> Post '[JSON] LockResult
 
---XXX test code
-query' :: WebSocketClient
-query' = do
-	clientLockContent (B64Key (fromJust $ deserializeKey "WORM--foo"))
-		(B64UUID (toUUID ("client" :: String)))	
-		(B64UUID (toUUID ("server" :: String)))	
-		[]
-
-runWebSocketClient :: WebSocketClient -> Websocket.ClientApp a -> ClientM a
-runWebSocketClient (WebSocketClient req) app = do
-	clientenv <- ask
-	let burl = baseUrl clientenv
-	let creq = defaultMakeClientRequest burl req
-	case baseUrlScheme burl of
-		Http -> liftIO $ Websocket.runClient 
-			(baseUrlHost burl)
-			(baseUrlPort burl)
-			(decodeBS (path creq))
-			app
-		Https -> error "TODO" -- XXX
-
---XXX test code
-run :: IO ()
-run = do
-  manager' <- newManager defaultManagerSettings
-  let WebSocketClient wscreq = query'
-  _ <- runClientM (runWebSocketClient query' wsapp) 
-  	(mkClientEnv manager' (BaseUrl Http "localhost" 8081 ""))
-  return ()
+serveKeepLocked
+	:: B64Key
+	-> B64UUID ClientSide
+	-> B64UUID ServerSide
+	-> [B64UUID Bypass]
+	-> Maybe ConnectionKeepAlive
+	-> Maybe KeepAlive
+	-> S.SourceT IO UnlockRequest
+	-> Handler LockResult
+serveKeepLocked k cu su _ _ _ unlockrequeststream = do
+	_ <- liftIO $ S.unSourceT unlockrequeststream go
+	return (LockResult False)
   where
-	wsapp conn = Websocket.sendTextData conn ("hello, world" :: T.Text)
+	go S.Stop = do
+		print "lost connection to client, drop lock here" -- XXX TODO
+	go (S.Error err) = do
+		print ("Error", err)
+		print "error, drop lock here" -- XXX TODO
+	go (S.Skip s)    = go s
+	go (S.Effect ms) = ms >>= go
+	go (S.Yield (UnlockRequest False) s) = go s
+	go (S.Yield (UnlockRequest True) _) = do
+		print ("got unlock request, drop lock here") -- XXX TODO
+
+clientKeepLocked
+	:: P2P.ProtocolVersion
+	-> B64Key
+	-> B64UUID ClientSide
+	-> B64UUID ServerSide
+	-> [B64UUID Bypass]
+	-> Maybe ConnectionKeepAlive
+	-> Maybe KeepAlive
+	-> S.SourceT IO UnlockRequest
+	-> ClientM LockResult
+clientKeepLocked (P2P.ProtocolVersion ver) = case ver of
+	3 -> v3
+	2 -> v2
+	1 -> v1
+	0 -> v0
+	_ -> error "unsupported protocol version"
+  where
+	_ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|>
+		_ :<|>
+		_ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|> _ :<|> _ :<|>
+		_ :<|> _ :<|> _ :<|> _ :<|>
+		v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
+
+clientKeepLocked'
+	:: ClientEnv
+	-> P2P.ProtocolVersion
+	-> B64Key
+	-> B64UUID ClientSide
+	-> B64UUID ServerSide
+	-> [B64UUID Bypass]
+	-> TMVar Bool
+	-> IO ()
+clientKeepLocked' clientenv protover key cu su bypass keeplocked = do
+	let cli = clientKeepLocked protover key cu su bypass
+		(Just connectionKeepAlive) (Just keepAlive)
+		(S.fromStepT unlocksender)
+	withClientM cli clientenv $ \case
+		Left err  -> throwM err
+		Right (LockResult _) ->
+			liftIO $ print "end of lock connection to server"
+  where
+	unlocksender =
+		S.Yield (UnlockRequest False) $ S.Effect $ do
+			liftIO $ print "sent keep locked request"
+			return $ S.Effect $ do
+				stilllock <- liftIO $ atomically $ takeTMVar keeplocked
+				if stilllock
+					then return unlocksender
+					else do
+						liftIO $ print "sending unlock request"
+						return $ S.Yield (UnlockRequest True) S.Stop
+
+testClientLock = do
+	mgr <- newManager defaultManagerSettings
+	burl <- parseBaseUrl "http://localhost:8080/"
+	keeplocked <- newEmptyTMVarIO
+	_ <- forkIO $ do
+		print "running, press enter to drop lock"
+		_ <- getLine
+		atomically $ writeTMVar keeplocked False
+	clientKeepLocked' (mkClientEnv mgr burl)
+		(P2P.ProtocolVersion 3)
+		(B64Key (fromJust $ deserializeKey "WORM--foo"))
+		(B64UUID (toUUID ("cu" :: String)))
+		(B64UUID (toUUID ("su" :: String)))
+		[]
+		keeplocked
 
 type ClientUUID req = QueryParam' '[req] "clientuuid" (B64UUID ClientSide)
 
@@ -532,6 +592,34 @@ newtype Offset = Offset P2P.Offset
 
 newtype Timestamp = Timestamp MonotonicTimestamp
 	deriving (Show)
+
+newtype LockResult = LockResult Bool
+	deriving (Show, Generic, NFData)
+
+newtype UnlockRequest = UnlockRequest Bool
+	deriving (Show, Generic, NFData)
+
+newtype ConnectionKeepAlive = ConnectionKeepAlive T.Text
+
+connectionKeepAlive :: ConnectionKeepAlive
+connectionKeepAlive = ConnectionKeepAlive "Keep-Alive"
+
+newtype KeepAlive = KeepAlive T.Text
+
+keepAlive :: KeepAlive
+keepAlive = KeepAlive "timeout=1200"
+
+instance ToHttpApiData ConnectionKeepAlive where
+	toUrlPiece (ConnectionKeepAlive t) = t
+
+instance FromHttpApiData ConnectionKeepAlive where
+	parseUrlPiece = Right . ConnectionKeepAlive
+
+instance ToHttpApiData KeepAlive where
+	toUrlPiece (KeepAlive t) = t
+
+instance FromHttpApiData KeepAlive where
+	parseUrlPiece = Right . KeepAlive
 
 instance ToHttpApiData B64Key where
 	toUrlPiece (B64Key k) = TE.decodeUtf8Lenient $
@@ -667,6 +755,22 @@ instance FromJSON (B64UUID t) where
 		Just s -> pure (B64UUID (toUUID s))
 		_ -> mempty
 	parseJSON _ = mempty
+
+instance ToJSON LockResult where
+	toJSON (LockResult v) = object
+		["locked" .= v]
+
+instance FromJSON LockResult where
+	parseJSON = withObject "LockResult" $ \v -> LockResult
+		<$> v .: "locked"
+
+instance ToJSON UnlockRequest where
+	toJSON (UnlockRequest v) = object
+		["unlock" .= v]
+
+instance FromJSON UnlockRequest where
+	parseJSON = withObject "UnlockRequest" $ \v -> UnlockRequest
+		<$> v .: "unlock"
 
 plusList :: [B64UUID Plus] -> [String]
 plusList = map (\(B64UUID u) -> fromUUID u)
