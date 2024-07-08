@@ -20,4 +20,4 @@ cmd = command "p2phttp" SectionPlumbing
 	paramNothing (withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek = error "TODO"
+seek _ = liftIO $ P2P.Http.run

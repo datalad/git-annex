@@ -26,19 +26,22 @@ import Utility.MonotonicClock
 import Servant
 import Servant.Client.Streaming
 import Servant.Client.Core.RunClient
-import qualified Servant.Client.Core.Request
+import qualified Servant.Client.Core.Request as R
 import qualified Servant.Types.SourceT as S
 import Servant.API.WebSocket
 import qualified Network.WebSockets as Websocket
+import qualified Network.WebSockets.Client as Websocket
 import Network.Wai
 import Network.Wai.Handler.Warp
-import Network.HTTP.Client (newManager, defaultManagerSettings)
+import Network.HTTP.Client (newManager, defaultManagerSettings, path)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.ByteString as B
 import Text.Read (readMaybe)
 import Data.Aeson hiding (Key)
 import Data.Maybe
+import Data.Foldable
+import Control.Monad.Reader
 import Control.DeepSeq
 import GHC.Generics
 
@@ -396,7 +399,7 @@ serveLockContent
 	-> Handler ()
 serveLockContent = undefined
 
-data WebSocketClient = WebSocketClient Servant.Client.Core.Request.Request
+data WebSocketClient = WebSocketClient R.Request
 
 -- XXX this is enough to let servant-client work, but it's not yet
 -- possible to run a WebSocketClient.
@@ -440,18 +443,29 @@ query' = do
 		(B64UUID (toUUID ("server" :: String)))	
 		[]
 
+runWebSocketClient :: WebSocketClient -> Websocket.ClientApp a -> ClientM a
+runWebSocketClient (WebSocketClient req) app = do
+	clientenv <- ask
+	let burl = baseUrl clientenv
+	let creq = defaultMakeClientRequest burl req
+	case baseUrlScheme burl of
+		Http -> liftIO $ Websocket.runClient 
+			(baseUrlHost burl)
+			(baseUrlPort burl)
+			(decodeBS (path creq))
+			app
+		Https -> error "TODO" -- XXX
+
 --XXX test code
 run :: IO ()
 run = do
   manager' <- newManager defaultManagerSettings
   let WebSocketClient wscreq = query'
-  res <- runClientM (runRequestAcceptStatus Nothing wscreq) 
+  _ <- runClientM (runWebSocketClient query' wsapp) 
   	(mkClientEnv manager' (BaseUrl Http "localhost" 8081 ""))
-  -- res <- runClientM query (mkClientEnv manager' (BaseUrl Http "localhost" 8081 ""))
-  case res of
-    Left err -> putStrLn $ "Error: " ++ show err
-    Right res' -> do
-      print res'
+  return ()
+  where
+	wsapp conn = Websocket.sendTextData conn ("hello, world" :: T.Text)
 
 type ClientUUID req = QueryParam' '[req] "clientuuid" (B64UUID ClientSide)
 
