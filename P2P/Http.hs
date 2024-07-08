@@ -30,10 +30,12 @@ import Network.HTTP.Client (defaultManagerSettings, newManager)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.ByteString as B
+import qualified Data.Map as M
 import Text.Read (readMaybe)
 import Data.Aeson hiding (Key)
 import Control.DeepSeq
 import Control.Concurrent
+import Control.Concurrent.Async
 import Control.Concurrent.STM
 import GHC.Generics
 
@@ -84,7 +86,7 @@ p2pHttpApp = serve p2pHttpAPI . serveP2pHttp
 
 serveP2pHttp :: P2PHttpServerState -> Server P2PHttpAPI
 serveP2pHttp st
-	= serveGet st
+	=    serveGet st
 	:<|> serveGet st
 	:<|> serveGet st
 	:<|> serveGet st
@@ -440,20 +442,18 @@ serveKeepLocked
 	-> Maybe KeepAlive
 	-> S.SourceT IO UnlockRequest
 	-> Handler LockResult
-serveKeepLocked _st k cu su _ _ _ unlockrequeststream = do
+serveKeepLocked st key cu su _ _ _ unlockrequeststream = do
 	_ <- liftIO $ S.unSourceT unlockrequeststream go
 	return (LockResult False)
   where
-	go S.Stop = do
-		print "lost connection to client, drop lock here" -- XXX TODO
-	go (S.Error err) = do
-		print ("Error", err)
-		print "error, drop lock here" -- XXX TODO
+	go S.Stop = dropLock lckid st
+	go (S.Error _err) = dropLock lckid st
 	go (S.Skip s)    = go s
 	go (S.Effect ms) = ms >>= go
 	go (S.Yield (UnlockRequest False) s) = go s
-	go (S.Yield (UnlockRequest True) _) = do
-		print ("got unlock request, drop lock here") -- XXX TODO
+	go (S.Yield (UnlockRequest True) _) = dropLock lckid st
+
+	lckid = undefined -- FIXME
 
 clientKeepLocked
 	:: P2P.ProtocolVersion
@@ -527,10 +527,28 @@ testClientLock = do
 		[]
 		keeplocked
 
+
 data P2PHttpServerState = P2PHttpServerState
+	{ openLocks :: TMVar (M.Map LockID Locker)
+	}
 
 mkP2PHttpServerState :: IO P2PHttpServerState
-mkP2PHttpServerState = return P2PHttpServerState
+mkP2PHttpServerState = P2PHttpServerState
+	<$> newTMVarIO mempty
+
+type LockID = B64UUID Lock
+
+data Locker = Locker
+	{ lockerThread :: Async ()
+	, lockerVar :: TMVar Bool
+	}
+
+storeLock :: LockID -> P2PHttpServerState -> IO ()
+storeLock lckid st = error "TODO" -- XXX
+
+dropLock :: LockID -> P2PHttpServerState -> IO ()
+dropLock lckid st = error "TODO" -- XXX
+
 
 type ClientUUID req = QueryParam' '[req] "clientuuid" (B64UUID ClientSide)
 
@@ -553,6 +571,7 @@ data ClientSide
 data ServerSide
 data Bypass
 data Plus
+data Lock
 
 -- Keys, UUIDs, and filenames are base64 encoded since Servant uses 
 -- Text and so needs UTF-8.
@@ -560,7 +579,7 @@ newtype B64Key = B64Key Key
 	deriving (Show)
 
 newtype B64UUID t = B64UUID UUID
-	deriving (Show, Generic, NFData)
+	deriving (Show, Ord, Eq, Generic, NFData)
 
 newtype B64FilePath = B64FilePath RawFilePath
 	deriving (Show)
