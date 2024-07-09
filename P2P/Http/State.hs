@@ -118,21 +118,31 @@ withLocalP2PConnections a = do
 		resp <- if connectionServerUUID connparams /= myuuid
 			then return $ Left $ ConnectionFailed "unknown uuid"
 			else do
+				hdl1 <- liftIO newEmptyTMVarIO
+				hdl2 <- liftIO newEmptyTMVarIO
+				waitv1 <- liftIO newEmptyTMVarIO
+				waitv2 <- liftIO newEmptyTMVarIO
+				let h1 = P2PHandleTMVar hdl1 waitv1
+				let h2 = P2PHandleTMVar hdl2 waitv2 
+				let serverconn = P2PConnection Nothing
+					(const True) h1 h2
+					(ConnIdent (Just "http server"))
+				let clientconn = P2PConnection Nothing
+					(const True) h2 h1
+					(ConnIdent (Just "http client"))
 				runst <- liftIO $ mkrunst connparams
-				-- TODO not this, need one with MVars.
-				let conn = stdioP2PConnection Nothing
 				-- TODO is this right? It needs to exit
 				-- when the client stops sending messages.
 				let server = P2P.serveAuthed
 					(connectionServerMode connparams)
 					(connectionServerUUID connparams)
 				let protorunner = void $
-					runFullProto runst conn server
+					runFullProto runst serverconn server
 				asyncworker <- liftIO . async 
 					=<< forkState protorunner
 				let releaseconn = atomically $ putTMVar relv $
 					join (liftIO (wait asyncworker))
-				return $ Right (runst, conn, releaseconn)
+				return $ Right (runst, clientconn, releaseconn)
 		liftIO $ atomically $ putTMVar respvar resp
 
 	mkrunst connparams = do
