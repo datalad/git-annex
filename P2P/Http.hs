@@ -7,39 +7,32 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE DeriveAnyClass #-}
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module P2P.Http where
+module P2P.Http (
+	module P2P.Http,
+	module P2P.Http.Types,
+	module P2P.Http.State,
+) where
 
 import Annex.Common
+import P2P.Http.Types
+import P2P.Http.State
 import Annex.UUID (genUUID)
 import qualified P2P.Protocol as P2P
-import Utility.Base64
-import Utility.MonotonicClock
 
 import Servant
 import Servant.Client.Streaming
 import qualified Servant.Types.SourceT as S
 import Network.HTTP.Client (defaultManagerSettings, newManager)
-import qualified Data.Text as T
-import qualified Data.Text.Encoding as TE
 import qualified Data.ByteString as B
 import qualified Data.Map as M
-import Text.Read (readMaybe)
-import Data.Aeson hiding (Key)
-import Control.DeepSeq
 import Control.Concurrent
 import Control.Concurrent.Async
 import Control.Concurrent.STM
-import GHC.Generics
 
 type P2PHttpAPI
 	= "git-annex" :> "v3" :> "key" :> CaptureKey :> GetAPI
@@ -528,73 +521,6 @@ testClientLock = do
 		keeplocked
 
 
-data P2PHttpServerState = P2PHttpServerState
-	{ openLocks :: TMVar (M.Map LockID Locker)
-	}
-
-mkP2PHttpServerState :: IO P2PHttpServerState
-mkP2PHttpServerState = P2PHttpServerState
-	<$> newTMVarIO mempty
-
-type LockID = B64UUID Lock
-
-data Locker = Locker
-	{ lockerThread :: Async ()
-	, lockerVar :: TMVar Bool
-	-- ^ Left empty until the thread has taken the lock
-	-- (or failed to do so), then True while the lock is held,
-	-- and setting to False causes the lock to be released.
-	}
-
-mkLocker :: IO () -> IO () -> IO (Maybe (Locker, LockID))
-mkLocker lock unlock = do
-	lv <- newEmptyTMVarIO
-	let setlocked = putTMVar lv
-	tid <- async $
-		tryNonAsync lock >>= \case
-			Left _ -> do
-				atomically $ setlocked False
-				unlock
-			Right () -> do
-				atomically $ setlocked True
-				atomically $ do
-					v <- takeTMVar lv
-					if v
-						then retry
-						else setlocked False
-				unlock
-	locksuccess <- atomically $ readTMVar lv
-	if locksuccess
-		then do
-			lckid <- B64UUID <$> genUUID
-			return (Just (Locker tid lv, lckid))
-		else do
-			wait tid
-			return Nothing
-
-storeLock :: LockID -> Locker -> P2PHttpServerState -> IO ()
-storeLock lckid locker st = atomically $ do
-	m <- takeTMVar (openLocks st)
-	let !m' = M.insert lckid locker m
-	putTMVar (openLocks st) m'
-
-dropLock :: LockID -> P2PHttpServerState -> IO ()
-dropLock lckid st = do
-	v <- atomically $ do
-		m <- takeTMVar (openLocks st)
-		let (mlocker, !m') =
-			M.updateLookupWithKey (\_ _ -> Nothing) lckid m
-		putTMVar (openLocks st) m'
-		case mlocker of
-			Nothing -> return Nothing
-			-- Signal to the locker's thread that it can release the lock.
-			Just locker -> do
-				_ <- swapTMVar (lockerVar locker) False
-				return (Just locker)
-	case v of
-		Nothing -> return ()
-		Just locker -> wait (lockerThread locker)
-
 type ClientUUID req = QueryParam' '[req] "clientuuid" (B64UUID ClientSide)
 
 type ServerUUID req = QueryParam' '[req] "serveruuid" (B64UUID ServerSide)
@@ -612,258 +538,3 @@ type OffsetParam = QueryParam "offset" Offset
 type DataLengthHeader = Header "X-git-annex-data-length" Integer
 
 type LockIDParam = QueryParam' '[Required] "lockid" LockID
-
--- Phantom types for B64UIID
-data ClientSide
-data ServerSide
-data Bypass
-data Plus
-data Lock
-
--- Keys, UUIDs, and filenames are base64 encoded since Servant uses 
--- Text and so needs UTF-8.
-newtype B64Key = B64Key Key
-	deriving (Show)
-
-newtype B64UUID t = B64UUID UUID
-	deriving (Show, Ord, Eq, Generic, NFData)
-
-newtype B64FilePath = B64FilePath RawFilePath
-	deriving (Show)
-
-newtype DataLength = DataLength Integer
-	deriving (Show)
-
-newtype CheckPresentResult = CheckPresentResult Bool
-	deriving (Show)
-
-newtype RemoveResult = RemoveResult Bool
-	deriving (Show)
-
-data RemoveResultPlus = RemoveResultPlus Bool [B64UUID Plus]
-	deriving (Show)
-
-newtype GetTimestampResult = GetTimestampResult Timestamp
-	deriving (Show)
-
-newtype PutResult = PutResult Bool
-	deriving (Eq, Show)
-
-data PutResultPlus = PutResultPlus Bool [B64UUID Plus]
-	deriving (Show)
-
-newtype PutOffsetResult = PutOffsetResult Offset
-	deriving (Show)
-
-data PutOffsetResultPlus = PutOffsetResultPlus Offset [B64UUID Plus]
-	deriving (Show, Generic, NFData)
-
-newtype Offset = Offset P2P.Offset
-	deriving (Show, Generic, NFData)
-
-newtype Timestamp = Timestamp MonotonicTimestamp
-	deriving (Show)
-
-data LockResult = LockResult Bool (Maybe LockID)
-	deriving (Show, Generic, NFData)
-
-newtype UnlockRequest = UnlockRequest Bool
-	deriving (Show, Generic, NFData)
-
-newtype ConnectionKeepAlive = ConnectionKeepAlive T.Text
-
-connectionKeepAlive :: ConnectionKeepAlive
-connectionKeepAlive = ConnectionKeepAlive "Keep-Alive"
-
-newtype KeepAlive = KeepAlive T.Text
-
-keepAlive :: KeepAlive
-keepAlive = KeepAlive "timeout=1200"
-
-instance ToHttpApiData ConnectionKeepAlive where
-	toUrlPiece (ConnectionKeepAlive t) = t
-
-instance FromHttpApiData ConnectionKeepAlive where
-	parseUrlPiece = Right . ConnectionKeepAlive
-
-instance ToHttpApiData KeepAlive where
-	toUrlPiece (KeepAlive t) = t
-
-instance FromHttpApiData KeepAlive where
-	parseUrlPiece = Right . KeepAlive
-
-instance ToHttpApiData B64Key where
-	toUrlPiece (B64Key k) = TE.decodeUtf8Lenient $
-		toB64 (serializeKey' k)
-
-instance FromHttpApiData B64Key where
-	parseUrlPiece t = case fromB64Maybe (TE.encodeUtf8 t) of
-		Nothing -> Left "unable to base64 decode key"
-		Just b -> maybe (Left "key parse error") (Right . B64Key)
-			(deserializeKey' b)
-
-instance ToHttpApiData (B64UUID t) where
-	toUrlPiece (B64UUID u) = TE.decodeUtf8Lenient $
-		toB64 (fromUUID u)
-
-instance FromHttpApiData (B64UUID t) where
-	parseUrlPiece t = case fromB64Maybe (TE.encodeUtf8 t) of
-		Nothing -> Left "unable to base64 decode UUID"
-		Just b -> case toUUID b of
-			u@(UUID _) -> Right (B64UUID u)
-			NoUUID -> Left "empty UUID"
-
-instance ToHttpApiData B64FilePath where
-	toUrlPiece (B64FilePath f) = TE.decodeUtf8Lenient $ toB64 f
-
-instance FromHttpApiData B64FilePath where
-	parseUrlPiece t = case fromB64Maybe (TE.encodeUtf8 t) of
-		Nothing -> Left "unable to base64 decode filename"
-		Just b -> Right (B64FilePath b)
-
-instance ToHttpApiData Offset where
-	toUrlPiece (Offset (P2P.Offset n)) = T.pack (show n)
-
-instance FromHttpApiData Offset where
-	parseUrlPiece t = case readMaybe (T.unpack t) of
-		Nothing -> Left "offset parse error"
-		Just n -> Right (Offset (P2P.Offset n))
-
-instance ToHttpApiData Timestamp where
-	toUrlPiece (Timestamp (MonotonicTimestamp n)) = T.pack (show n)
-
-instance FromHttpApiData Timestamp where
-	parseUrlPiece t = case readMaybe (T.unpack t) of
-		Nothing -> Left "timestamp parse error"
-		Just n -> Right (Timestamp (MonotonicTimestamp n))
-
-instance ToHttpApiData DataLength where
-	toUrlPiece (DataLength n) = T.pack (show n)
-
-instance FromHttpApiData DataLength where
-	parseUrlPiece t = case readMaybe (T.unpack t) of
-		Nothing -> Left "X-git-annex-data-length parse error"
-		Just n -> Right (DataLength n)
-
-instance ToJSON PutResult where
-	toJSON (PutResult b) =
-		object ["stored" .= b]
-
-instance FromJSON PutResult where
-	parseJSON = withObject "PutResult" $ \v -> PutResult
-		<$> v .: "stored"
-
-instance ToJSON PutResultPlus where
-	toJSON (PutResultPlus b us) = object
-		[ "stored" .= b
-		, "plusuuids" .= plusList us
-		]
-
-instance FromJSON PutResultPlus where
-	parseJSON = withObject "PutResultPlus" $ \v -> PutResultPlus
-		<$> v .: "stored"
-		<*> v .: "plusuuids"
-
-instance ToJSON CheckPresentResult where
-	toJSON (CheckPresentResult b) = object
-		["present" .= b]
-
-instance FromJSON CheckPresentResult where
-	parseJSON = withObject "CheckPresentResult" $ \v -> CheckPresentResult
-		<$> v .: "present"
-
-instance ToJSON RemoveResult where
-	toJSON (RemoveResult b) = object
-		["removed" .= b]
-
-instance FromJSON RemoveResult where
-	parseJSON = withObject "RemoveResult" $ \v -> RemoveResult
-		<$> v .: "removed"
-
-instance ToJSON RemoveResultPlus where
-	toJSON (RemoveResultPlus b us) = object
-		[ "removed" .= b
-		, "plusuuids" .= plusList us
-		]
-
-instance FromJSON RemoveResultPlus where
-	parseJSON = withObject "RemoveResultPlus" $ \v -> RemoveResultPlus
-		<$> v .: "removed"
-		<*> v .: "plusuuids"
-
-instance ToJSON GetTimestampResult where
-	toJSON (GetTimestampResult (Timestamp (MonotonicTimestamp t))) = object
-		["timestamp" .= t]
-
-instance FromJSON GetTimestampResult where
-	parseJSON = withObject "GetTimestampResult" $ \v ->
-		GetTimestampResult . Timestamp . MonotonicTimestamp
-			<$> v .: "timestamp"
-
-instance ToJSON PutOffsetResult where
-	toJSON (PutOffsetResult (Offset (P2P.Offset o))) = object
-		["offset" .= o]
-
-instance FromJSON PutOffsetResult where
-	parseJSON = withObject "PutOffsetResult" $ \v ->
-		PutOffsetResult
-			<$> (Offset . P2P.Offset <$> v .: "offset")
-
-instance ToJSON PutOffsetResultPlus where
-	toJSON (PutOffsetResultPlus (Offset (P2P.Offset o)) us) = object
-		[ "offset" .= o
-		, "plusuuids" .= plusList us
-		]
-
-instance FromJSON PutOffsetResultPlus where
-	parseJSON = withObject "PutOffsetResultPlus" $ \v ->
-		PutOffsetResultPlus
-			<$> (Offset . P2P.Offset <$> v .: "offset")
-			<*> v .: "plusuuids"
-
-instance FromJSON (B64UUID t) where
-	parseJSON (String t) = case fromB64Maybe (TE.encodeUtf8 t) of
-		Just s -> pure (B64UUID (toUUID s))
-		_ -> mempty
-	parseJSON _ = mempty
-
-instance ToJSON LockResult where
-	toJSON (LockResult v (Just (B64UUID lck))) = object
-		[ "locked" .= v
-		, "lockid" .= TE.decodeUtf8Lenient (toB64 (fromUUID lck))
-		]
-	toJSON (LockResult v Nothing) = object
-		[ "locked" .= v
-		]
-
-instance FromJSON LockResult where
-	parseJSON = withObject "LockResult" $ \v -> LockResult
-		<$> v .: "locked"
-		<*> v .:? "lockid"
-
-instance ToJSON UnlockRequest where
-	toJSON (UnlockRequest v) = object
-		["unlock" .= v]
-
-instance FromJSON UnlockRequest where
-	parseJSON = withObject "UnlockRequest" $ \v -> UnlockRequest
-		<$> v .: "unlock"
-
-plusList :: [B64UUID Plus] -> [String]
-plusList = map (\(B64UUID u) -> fromUUID u)
-
-class PlusClass plus unplus where
-	dePlus :: plus -> unplus
-	plus :: unplus -> plus
-
-instance PlusClass RemoveResultPlus RemoveResult where
-	dePlus (RemoveResultPlus b _) = RemoveResult b
-	plus (RemoveResult b) = RemoveResultPlus b mempty
-
-instance PlusClass PutResultPlus PutResult where
-	dePlus (PutResultPlus b _) = PutResult b
-	plus (PutResult b) = PutResultPlus b mempty
-
-instance PlusClass PutOffsetResultPlus PutOffsetResult where
-	dePlus (PutOffsetResultPlus o _) = PutOffsetResult o
-	plus (PutOffsetResult o) = PutOffsetResultPlus o mempty
