@@ -423,7 +423,7 @@ clientLockContent (P2P.ProtocolVersion ver) = case ver of
 		v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
 
 type KeepLockedAPI
-	= KeyParam
+	= LockIDParam
 	:> ClientUUID Required
 	:> ServerUUID Required
 	:> BypassUUIDs
@@ -434,7 +434,7 @@ type KeepLockedAPI
 
 serveKeepLocked
 	:: P2PHttpServerState
-	-> B64Key
+	-> LockID
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
@@ -442,9 +442,9 @@ serveKeepLocked
 	-> Maybe KeepAlive
 	-> S.SourceT IO UnlockRequest
 	-> Handler LockResult
-serveKeepLocked st key cu su _ _ _ unlockrequeststream = do
+serveKeepLocked st lckid cu su _ _ _ unlockrequeststream = do
 	_ <- liftIO $ S.unSourceT unlockrequeststream go
-	return (LockResult False)
+	return (LockResult False Nothing)
   where
 	go S.Stop = dropLock lckid st
 	go (S.Error _err) = dropLock lckid st
@@ -453,11 +453,9 @@ serveKeepLocked st key cu su _ _ _ unlockrequeststream = do
 	go (S.Yield (UnlockRequest False) s) = go s
 	go (S.Yield (UnlockRequest True) _) = dropLock lckid st
 
-	lckid = undefined -- FIXME
-
 clientKeepLocked
 	:: P2P.ProtocolVersion
-	-> B64Key
+	-> LockID
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
@@ -485,19 +483,19 @@ clientKeepLocked (P2P.ProtocolVersion ver) = case ver of
 clientKeepLocked'
 	:: ClientEnv
 	-> P2P.ProtocolVersion
-	-> B64Key
+	-> LockID
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
 	-> TMVar Bool
 	-> IO ()
-clientKeepLocked' clientenv protover key cu su bypass keeplocked = do
-	let cli = clientKeepLocked protover key cu su bypass
+clientKeepLocked' clientenv protover lckid cu su bypass keeplocked = do
+	let cli = clientKeepLocked protover lckid cu su bypass
 		(Just connectionKeepAlive) (Just keepAlive)
 		(S.fromStepT unlocksender)
 	withClientM cli clientenv $ \case
 		Left err  -> throwM err
-		Right (LockResult _) ->
+		Right (LockResult _ _) ->
 			liftIO $ print "end of lock connection to server"
   where
 	unlocksender =
@@ -521,7 +519,7 @@ testClientLock = do
 		atomically $ writeTMVar keeplocked False
 	clientKeepLocked' (mkClientEnv mgr burl)
 		(P2P.ProtocolVersion 3)
-		(B64Key (fromJust $ deserializeKey "WORM--foo"))
+		(B64UUID (toUUID ("lck" :: String)))
 		(B64UUID (toUUID ("cu" :: String)))
 		(B64UUID (toUUID ("su" :: String)))
 		[]
@@ -549,7 +547,6 @@ storeLock lckid st = error "TODO" -- XXX
 dropLock :: LockID -> P2PHttpServerState -> IO ()
 dropLock lckid st = error "TODO" -- XXX
 
-
 type ClientUUID req = QueryParam' '[req] "clientuuid" (B64UUID ClientSide)
 
 type ServerUUID req = QueryParam' '[req] "serveruuid" (B64UUID ServerSide)
@@ -565,6 +562,8 @@ type AssociatedFileParam = QueryParam "associatedfile" B64FilePath
 type OffsetParam = QueryParam "offset" Offset
 
 type DataLengthHeader = Header "X-git-annex-data-length" Integer
+
+type LockIDParam = QueryParam' '[Required] "lockid" LockID
 
 -- Phantom types for B64UIID
 data ClientSide
@@ -617,7 +616,7 @@ newtype Offset = Offset P2P.Offset
 newtype Timestamp = Timestamp MonotonicTimestamp
 	deriving (Show)
 
-newtype LockResult = LockResult Bool
+data LockResult = LockResult Bool (Maybe LockID)
 	deriving (Show, Generic, NFData)
 
 newtype UnlockRequest = UnlockRequest Bool
@@ -781,12 +780,18 @@ instance FromJSON (B64UUID t) where
 	parseJSON _ = mempty
 
 instance ToJSON LockResult where
-	toJSON (LockResult v) = object
-		["locked" .= v]
+	toJSON (LockResult v (Just (B64UUID lck))) = object
+		[ "locked" .= v
+		, "lockid" .= TE.decodeUtf8Lenient (toB64 (fromUUID lck))
+		]
+	toJSON (LockResult v Nothing) = object
+		[ "locked" .= v
+		]
 
 instance FromJSON LockResult where
 	parseJSON = withObject "LockResult" $ \v -> LockResult
 		<$> v .: "locked"
+		<*> v .:? "lockid"
 
 instance ToJSON UnlockRequest where
 	toJSON (UnlockRequest v) = object

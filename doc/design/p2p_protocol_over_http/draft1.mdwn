@@ -14,6 +14,9 @@ where bodies use `Content-Type: application/octet-stream`.
 So, all git-annex keys, uuids, and filenames in this protocol are
 base64 encoded.
 
+Examples in this document use non-base64-encoded values to show that the
+underlying data is.
+
 ## authentication
 
 A git-annex protocol endpoint can optionally operate in readonly mode without
@@ -180,15 +183,16 @@ Locks the content of a key on the server, preventing it from being removed.
 Example:
 
     > POST /git-annex/v3/lockcontent?key=SHA1--foo&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.1
-    < {"locked": true}
+    < {"locked": true, "lockid": "foo"}
 
 There is one required additional parameter, `key`.
 
-The server will return `{"locked": true}` if it was able to lock the key,
-or `{"locked": false}` if it was not.
+The server will reply with `{"locked": true}` if it was able
+to lock the key, or `{"locked": false}` if it was not.
 
 The key will remain locked for 10 minutes. But, usually `keeplocked`
-is used to control the lifetime of the lock. (See below.)
+is used to control the lifetime of the lock, using the "lockid"
+parameter from the server's reply. (See below.)
 
 ### POST /git-annex/v2/lockcontent
 
@@ -209,14 +213,14 @@ with `lockcontent`.
 
 Example:
 
-    > POST /git-annex/v3/keeplocked?key=SHA1--foo&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.1
+    > POST /git-annex/v3/keeplocked?lockid=foo&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.1
     > Connection: Keep-Alive
     > Keep-Alive: timeout=1200
     [some time later]
     > {"unlock": true}
     < {"locked": false}
 
-There is one required additional parameter, `key`.
+There is one required additional parameter, `lockid`.
 
 This uses long polling. So it's important to use 
 Connection and Keep-Alive headers.
