@@ -131,9 +131,7 @@ withLocalP2PConnections a = do
 					(const True) h2 h1
 					(ConnIdent (Just "http client"))
 				runst <- liftIO $ mkrunst connparams
-				-- TODO is this right? It needs to exit
-				-- when the client stops sending messages.
-				let server = P2P.serveAuthed
+				let server = P2P.serveOneCommandAuthed
 					(connectionServerMode connparams)
 					(connectionServerUUID connparams)
 				let protorunner = void $

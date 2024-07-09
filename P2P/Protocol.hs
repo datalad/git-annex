@@ -42,6 +42,7 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Set as S
 import Data.Char
+import Data.Maybe
 import Data.Time.Clock.POSIX
 import Control.Applicative
 import Control.DeepSeq
@@ -472,7 +473,14 @@ data ServerHandler a
 
 -- Server loop, getting messages from the client and handling them
 serverLoop :: (Message -> Proto (ServerHandler a)) -> Proto (Maybe a)
-serverLoop a = do
+serverLoop a = serveOneMessage a serverLoop
+
+-- Get one message from the client and handle it.
+serveOneMessage
+	:: (Message -> Proto (ServerHandler a))
+	-> ((Message -> Proto (ServerHandler a)) -> Proto (Maybe a)) 
+	-> Proto (Maybe a)
+serveOneMessage a cont = do
 	mcmd <- net receiveMessage
 	case mcmd of
 		-- When the client sends ERROR to the server, the server
@@ -480,16 +488,16 @@ serverLoop a = do
 		-- is in, and so not possible to recover.
 		Just (ERROR _) -> return Nothing
 		-- When the client sends an unparsable message, the server
-		-- responds with an error message, and loops. This allows
+		-- responds with an error message, and continues. This allows
 		-- expanding the protocol with new messages.
 		Nothing -> do
 			net $ sendMessage (ERROR "unknown command")
-			serverLoop a
+			cont a
 		Just cmd -> do
 			v <- a cmd
 			case v of
 				ServerGot r -> return (Just r)
-				ServerContinue -> serverLoop a
+				ServerContinue -> cont a
 				-- If the client sends an unexpected message,
 				-- the server will respond with ERROR, and
 				-- always continues processing messages.
@@ -501,7 +509,7 @@ serverLoop a = do
 				-- support some new feature, and fall back.
 				ServerUnexpected -> do
 					net $ sendMessage (ERROR "unexpected command")
-					serverLoop a
+					cont a
 
 -- | Serve the protocol, with an unauthenticated peer. Once the peer
 -- successfully authenticates, returns their UUID.
@@ -530,7 +538,18 @@ data ServerMode
 
 -- | Serve the protocol, with a peer that has authenticated.
 serveAuthed :: ServerMode -> UUID -> Proto ()
-serveAuthed servermode myuuid = void $ serverLoop handler
+serveAuthed servermode myuuid = void $ serverLoop $
+	serverHandler servermode myuuid
+
+-- | Serve a single command in the protocol, the same as serveAuthed,
+-- but without looping to handle the next command.
+serveOneCommandAuthed :: ServerMode -> UUID -> Proto ()
+serveOneCommandAuthed servermode myuuid = fromMaybe () <$>
+	serveOneMessage (serverHandler servermode myuuid) 
+		(const $ pure Nothing)
+
+serverHandler :: ServerMode -> UUID -> Message -> Proto (ServerHandler ())
+serverHandler servermode myuuid = handler
   where
 	handler (VERSION theirversion) = do
 		let v = min theirversion maxProtocolVersion
