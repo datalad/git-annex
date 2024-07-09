@@ -28,13 +28,22 @@ Planned schedule of work:
 
 ## work notes
 
-* I have a file `servant.hs` in the httpproto branch that works through some of the
-  bytestring streaming issues.
+* http server and client are working, server API endpoints need wiring up
+  and testing. So far checkpresent works.
+
+* I have a file `servant.hs` in the httpproto branch that works through some
+  of the bytestring streaming issues.
 
 * A Locker should expire the lock on its own after 10 minutes initially.
 
 * Since each held lock needs a connection to a proxy, the Locker
   could reference count, and avoid holding more than one lock per key.
+
+* Make Remote.Git use http client when annex.url is configured.
+
+* withLocalP2PConnections could use a worker pool.
+
+* Make http server support proxies and clusters.
 
 * Perhaps: Support cgi program that proxies over to a webserver
   speaking the http protocol.
