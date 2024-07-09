@@ -19,16 +19,15 @@ underlying data is.
 
 ## authentication
 
-A git-annex protocol endpoint can optionally operate in readonly mode without
-authentication.
+Some requests need authentication. Which requests do depends on the
+configuration of the HTTP server. When a request needs authentication,
+it will fail with 401 Unauthorized.
 
-Authentication is required to make any changes.
+Authentication is done using HTTP basic auth. The realm to use when
+authenticating is "git-annex".
 
-Authentication is done using HTTP basic auth. 
-
-The user is recommended to only authenticate over HTTPS, since otherwise
-HTTP basic auth (as well as git-annex data) can be snooped. But some users
-may want git-annex to use HTTP in eg a LAN.
+Note that HTTP basic auth is not encrypted so is only secure when used
+over HTTPS.
 
 ## protocol version
 
@@ -82,14 +81,12 @@ It is not part of the P2P protocol per se, but is provided to let
 other clients than git-annex easily download the content of keys from the
 http server.
 
-When the key is not present on the server, this returns a 404 Not Found.
+When the key is not present on the server, it will respond
+with 404 Not Found.
 
 ### GET /git-annex/v3/key/$key
 
 Get the content of a key from the server.
-
-This is designed so it can be used both by a peer in the P2P protocol,
-and by a regular HTTP client that just wants to download a file.
 
 Example:
 

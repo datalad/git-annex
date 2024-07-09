@@ -98,6 +98,12 @@ data LockResult = LockResult Bool (Maybe LockID)
 newtype UnlockRequest = UnlockRequest Bool
 	deriving (Show, Generic, NFData)
 
+-- Not using servant's build-in basic authentication support,
+-- because whether authentication is needed depends on server
+-- configuration.
+data Auth = Auth T.Text T.Text
+	deriving (Show, Generic, NFData)
+
 newtype ConnectionKeepAlive = ConnectionKeepAlive T.Text
 
 connectionKeepAlive :: ConnectionKeepAlive

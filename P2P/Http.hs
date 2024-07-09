@@ -119,6 +119,7 @@ type GetAPI
 	:> BypassUUIDs
 	:> AssociatedFileParam
 	:> OffsetParam
+	:> AuthHeader
 	:> StreamGet NoFraming OctetStream
 		(Headers '[DataLengthHeader] (SourceIO B.ByteString))
 
@@ -132,6 +133,7 @@ serveGet
 	-> [B64UUID Bypass]
 	-> Maybe B64FilePath
 	-> Maybe Offset
+	-> Maybe Auth
 	-> Handler (Headers '[DataLengthHeader] (S.SourceT IO B.ByteString))
 serveGet = undefined
 
@@ -143,6 +145,7 @@ clientGet
 	-> [B64UUID Bypass]
 	-> Maybe B64FilePath
 	-> Maybe Offset
+	-> Maybe Auth
 	-> ClientM (Headers '[DataLengthHeader] (S.SourceT IO B.ByteString))
 clientGet (ProtocolVersion ver) = case ver of
 	3 -> v3 V3
@@ -563,3 +566,5 @@ type OffsetParam = QueryParam "offset" Offset
 type DataLengthHeader = Header "X-git-annex-data-length" Integer
 
 type LockIDParam = QueryParam' '[Required] "lockid" LockID
+
+type AuthHeader = Header "Authorization" Auth

@@ -4,13 +4,52 @@ git-annex-p2phttp - HTTP server for git-annex P2P protocol
 
 # SYNOPSIS
 
-git-annex p2phttp [params ...]
+git-annex p2phttp
 
 # DESCRIPTION
 
 This allows a git-annex repository to be accessed over HTTP.
 It is the git-annex equivilant of git-http-backend(1), for serving
 a repository over HTTP with write access for authenticated users.
+
+# OPTIONS
+
+* `--authenv`
+
+  Allows users to be authenticated with a username and password.
+  For security, this only allows authentication when the user connects over
+  HTTPS.
+
+  To configure the passwords, set environment variables
+  like `GIT_ANNEX_P2PHTTP_PASSWORD_alice=foo123`
+
+  The permissions of users can also be configured by setting
+  environment variables like 
+  `GIT_ANNEX_P2PHTTP_PERMISSIONS_alice=readonly`. The value
+  can be either "readonly" or "appendonly". When this is not set,
+  the default is to give the user full write access.
+
+* `--authenv-http`
+
+  Like `--authenv`, but allows authentication when the user connects
+  over HTTP. This is not secure, since HTTP basic authentication is not
+  encrypted.
+
+* `--readonly`
+
+  Allows unauthenticated users to read the repository, but not make
+  modifications to it.
+
+* `--appendonly`
+
+  Allows unauthenticated users to read the repository, and store data in
+  it, but not remove data from it.
+
+* `--wideopen`
+
+  Gives unauthenticated users full access to the repository.
+
+  Please think carefully before enabling this option.
 
 # SEE ALSO
 

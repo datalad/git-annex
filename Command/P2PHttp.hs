@@ -24,7 +24,16 @@ import Control.Concurrent.STM
 cmd :: Command
 cmd = command "p2phttp" SectionPlumbing
 	"communicate in P2P protocol over http"
-	paramNothing (withParams seek)
+	paramNothing (seek <$$> optParser)
+
+data Options = Options
+	{ cmdParams :: CmdParams
+	, authEnvOption :: Bool
+	, authEnvHttpOption :: Bool
+	, readOnlyOption :: Bool
+	, appendOnlyOption :: Bool
+	, wideOpenOption :: Bool
+	}
 
 seek :: CmdParams -> CommandSeek
 seek ["server"] = startConcurrency commandStages $

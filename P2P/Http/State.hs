@@ -26,12 +26,14 @@ import Control.Concurrent.STM
 
 data P2PHttpServerState = P2PHttpServerState
 	{ acquireP2PConnection :: AcquireP2PConnection
+	, getServerMode :: GetServerMode
 	, openLocks :: TMVar (M.Map LockID Locker)
 	}
 
-mkP2PHttpServerState :: AcquireP2PConnection -> IO P2PHttpServerState
-mkP2PHttpServerState acquireconn = P2PHttpServerState
+mkP2PHttpServerState :: AcquireP2PConnection -> GetServerMode -> IO P2PHttpServerState
+mkP2PHttpServerState acquireconn getservermode = P2PHttpServerState
 	<$> pure acquireconn
+	<*> pure getservermode
 	<*> newTMVarIO mempty
 
 withP2PConnection
@@ -60,6 +62,8 @@ withP2PConnection apiver st cu su bypass connaction = do
 		, connectionBypass = map fromB64UUID bypass
 		, connectionServerMode = P2P.ServeReadWrite -- XXX auth
 		}
+
+type GetServerMode = IsSecure -> Maybe BasicAuthData -> Maybe P2P.ServerMode
 
 data ConnectionParams = ConnectionParams
 	{ connectionProtocolVersion :: P2P.ProtocolVersion
