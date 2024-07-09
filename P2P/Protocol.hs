@@ -526,7 +526,7 @@ data ServerMode
 	-- ^ Allow reading, and storing new objects, but not deleting objects.
 	| ServeReadWrite
 	-- ^ Full read and write access.
-	deriving (Eq, Ord)
+	deriving (Show, Eq, Ord)
 
 -- | Serve the protocol, with a peer that has authenticated.
 serveAuthed :: ServerMode -> UUID -> Proto ()

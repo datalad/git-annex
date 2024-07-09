@@ -21,14 +21,13 @@ module P2P.Http (
 import Annex.Common
 import P2P.Http.Types
 import P2P.Http.State
-import qualified P2P.Protocol as P2P
+import P2P.Protocol hiding (Offset, Bypass)
+import P2P.IO
 
 import Servant
 import Servant.Client.Streaming
 import qualified Servant.Types.SourceT as S
-import Network.HTTP.Client (defaultManagerSettings, newManager)
 import qualified Data.ByteString as B
-import Control.Concurrent
 import Control.Concurrent.STM
 
 type P2PHttpAPI
@@ -137,7 +136,7 @@ serveGet
 serveGet = undefined
 
 clientGet
-	:: P2P.ProtocolVersion
+	:: ProtocolVersion
 	-> B64Key
 	-> Maybe (B64UUID ClientSide)
 	-> Maybe (B64UUID ServerSide)
@@ -145,7 +144,7 @@ clientGet
 	-> Maybe B64FilePath
 	-> Maybe Offset
 	-> ClientM (Headers '[DataLengthHeader] (S.SourceT IO B.ByteString))
-clientGet (P2P.ProtocolVersion ver) = case ver of
+clientGet (ProtocolVersion ver) = case ver of
 	3 -> v3 V3
 	2 -> v2 V2
 	1 -> v1 V1
@@ -171,22 +170,21 @@ serveCheckPresent
 	-> [B64UUID Bypass]
 	-> Handler CheckPresentResult
 serveCheckPresent st apiver (B64Key k) cu su bypass = do
-	res <- liftIO $ inP2PConnection st cu su bypass $ P2P.checkPresent k
+	res <- withP2PConnection apiver st cu su bypass $ \runst conn ->
+		liftIO $ runNetProto runst conn $ checkPresent k
 	case res of
 		Right (Right b) -> return (CheckPresentResult b)
-		Right (Left err) ->
-			throwError $ err500 { errBody = encodeBL err }
-		Left err ->
-			throwError $ err500 { errBody = encodeBL err }
+		Right (Left err) -> throwError $ err500 { errBody = encodeBL err }
+		Left err -> throwError $ err500 { errBody = encodeBL (describeProtoFailure err) }
 
-clientCheckPresent
-	:: P2P.ProtocolVersion
+clientCheckPresent'
+	:: ProtocolVersion
 	-> B64Key
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
 	-> ClientM CheckPresentResult
-clientCheckPresent (P2P.ProtocolVersion ver) = case ver of
+clientCheckPresent' (ProtocolVersion ver) = case ver of
 	3 -> v3 V3
 	2 -> v2 V2
 	1 -> v1 V1
@@ -195,6 +193,20 @@ clientCheckPresent (P2P.ProtocolVersion ver) = case ver of
   where
 	_ :<|> _ :<|> _ :<|> _ :<|>
 		v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
+
+clientCheckPresent
+	:: ClientEnv
+	-> ProtocolVersion
+	-> B64Key
+	-> B64UUID ClientSide
+	-> B64UUID ServerSide
+	-> [B64UUID Bypass]
+	-> IO Bool
+clientCheckPresent clientenv protover key cu su bypass = do
+	let cli = clientCheckPresent' protover key cu su bypass
+	withClientM cli clientenv $ \case
+		Left err -> throwM err
+		Right (CheckPresentResult res) -> return res
 
 type RemoveAPI result
 	= KeyParam
@@ -216,13 +228,13 @@ serveRemove
 serveRemove = undefined
 
 clientRemove
-	:: P2P.ProtocolVersion
+	:: ProtocolVersion
 	-> B64Key
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
 	-> ClientM RemoveResultPlus
-clientRemove (P2P.ProtocolVersion ver) k cu su bypass = case ver of
+clientRemove (ProtocolVersion ver) k cu su bypass = case ver of
 	3 -> v3 V3 k cu su bypass
 	2 -> v2 V2 k cu su bypass
 	1 -> plus <$> v1 V1 k cu su bypass
@@ -254,14 +266,14 @@ serveRemoveBefore
 serveRemoveBefore = undefined
 
 clientRemoveBefore
-	:: P2P.ProtocolVersion
+	:: ProtocolVersion
 	-> B64Key
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
 	-> Timestamp
 	-> ClientM RemoveResult
-clientRemoveBefore (P2P.ProtocolVersion ver) = case ver of
+clientRemoveBefore (ProtocolVersion ver) = case ver of
 	3 -> v3 V3
 	_ -> error "unsupported protocol version"
   where
@@ -288,12 +300,12 @@ serveGetTimestamp
 serveGetTimestamp = undefined
 
 clientGetTimestamp
-	:: P2P.ProtocolVersion
+	:: ProtocolVersion
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
 	-> ClientM GetTimestampResult
-clientGetTimestamp (P2P.ProtocolVersion ver) = case ver of
+clientGetTimestamp (ProtocolVersion ver) = case ver of
 	3 -> v3 V3
 	_ -> error "unsupported protocol version"
   where
@@ -332,7 +344,7 @@ servePut
 servePut = undefined
 
 clientPut
-	:: P2P.ProtocolVersion
+	:: ProtocolVersion
 	-> Maybe Integer
 	-> B64Key
 	-> B64UUID ClientSide
@@ -343,7 +355,7 @@ clientPut
 	-> DataLength
 	-> S.SourceT IO B.ByteString
 	-> ClientM PutResultPlus
-clientPut (P2P.ProtocolVersion ver) sz k cu su bypass af o l src = case ver of
+clientPut (ProtocolVersion ver) sz k cu su bypass af o l src = case ver of
 	3 -> v3 V3 sz k cu su bypass af o l src
 	2 -> v2 V2 sz k cu su bypass af o l src
 	1 -> plus <$> v1 V1 sz k cu su bypass af o l src
@@ -377,13 +389,13 @@ servePutOffset
 servePutOffset = undefined
 
 clientPutOffset
-	:: P2P.ProtocolVersion
+	:: ProtocolVersion
 	-> B64Key
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
 	-> ClientM PutOffsetResultPlus
-clientPutOffset (P2P.ProtocolVersion ver) = case ver of
+clientPutOffset (ProtocolVersion ver) = case ver of
 	3 -> v3 V3
 	2 -> v2 V2
 	_ -> error "unsupported protocol version"
@@ -415,13 +427,13 @@ serveLockContent
 serveLockContent = undefined
 
 clientLockContent
-	:: P2P.ProtocolVersion
+	:: ProtocolVersion
 	-> B64Key
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
 	-> ClientM LockResult
-clientLockContent (P2P.ProtocolVersion ver) = case ver of
+clientLockContent (ProtocolVersion ver) = case ver of
 	3 -> v3 V3
 	2 -> v2 V2
 	1 -> v1 V1
@@ -470,8 +482,8 @@ serveKeepLocked st apiver lckid cu su _ _ _ unlockrequeststream = do
 	go (S.Yield (UnlockRequest False) s) = go s
 	go (S.Yield (UnlockRequest True) _) = dropLock lckid st
 
-clientKeepLocked
-	:: P2P.ProtocolVersion
+clientKeepLocked'
+	:: ProtocolVersion
 	-> LockID
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
@@ -480,7 +492,7 @@ clientKeepLocked
 	-> Maybe KeepAlive
 	-> S.SourceT IO UnlockRequest
 	-> ClientM LockResult
-clientKeepLocked (P2P.ProtocolVersion ver) = case ver of
+clientKeepLocked' (ProtocolVersion ver) = case ver of
 	3 -> v3 V3
 	2 -> v2 V2
 	1 -> v1 V1
@@ -497,17 +509,17 @@ clientKeepLocked (P2P.ProtocolVersion ver) = case ver of
 		_ :<|> _ :<|> _ :<|> _ :<|>
 		v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
 
-clientKeepLocked'
+clientKeepLocked
 	:: ClientEnv
-	-> P2P.ProtocolVersion
+	-> ProtocolVersion
 	-> LockID
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
 	-> TMVar Bool
 	-> IO ()
-clientKeepLocked' clientenv protover lckid cu su bypass keeplocked = do
-	let cli = clientKeepLocked protover lckid cu su bypass
+clientKeepLocked clientenv protover lckid cu su bypass keeplocked = do
+	let cli = clientKeepLocked' protover lckid cu su bypass
 		(Just connectionKeepAlive) (Just keepAlive)
 		(S.fromStepT unlocksender)
 	withClientM cli clientenv $ \case
@@ -525,22 +537,6 @@ clientKeepLocked' clientenv protover lckid cu su bypass keeplocked = do
 					else do
 						liftIO $ print "sending unlock request"
 						return $ S.Yield (UnlockRequest True) S.Stop
-
-testClientLock = do
-	mgr <- newManager defaultManagerSettings
-	burl <- parseBaseUrl "http://localhost:8080/"
-	keeplocked <- newEmptyTMVarIO
-	_ <- forkIO $ do
-		print "running, press enter to drop lock"
-		_ <- getLine
-		atomically $ writeTMVar keeplocked False
-	clientKeepLocked' (mkClientEnv mgr burl)
-		(P2P.ProtocolVersion 3)
-		(B64UUID (toUUID ("lck" :: String)))
-		(B64UUID (toUUID ("cu" :: String)))
-		(B64UUID (toUUID ("su" :: String)))
-		[]
-		keeplocked
 
 type PV3 = Capture "v3" V3
 
