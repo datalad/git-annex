@@ -28,16 +28,13 @@ Planned schedule of work:
 
 ## work notes
 
-* Next step: Ready to begin implementing in servant. I have a file
-  `servant.hs` in the httpproto branch that works through some of the
+* I have a file `servant.hs` in the httpproto branch that works through some of the
   bytestring streaming issues.
 
-* P2P.Http has LockContent disabled, needs `HasClient ClientM WebSocket`
-  implementation, or redesign not to use websockets
+* A Locker should expire the lock on its own after 10 minutes.
 
-* P2P.Http.clientGet needs to call v1 and v0, which needs a way to
-  add a DataLengthHeader to the type of them. 
-  Or add it to the API for those versions, but document that it's not checked?
+* Since each held lock needs a connection to a proxy, the Locker
+  could reference count, and avoid holding more than one lock per key.
 
 * Perhaps: Support cgi program that proxies over to a webserver
   speaking the http protocol.
