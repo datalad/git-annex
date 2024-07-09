@@ -38,8 +38,8 @@ to P2P protocol versions.
 The protocol version comes before the request. Eg: `/git-annex/v3/put`
 
 If the server does not support a particular protocol version, the
-request will fail with a 404, and the client should fall back to an earlier
-protocol version.
+request will fail with a 400 Bad Request, and the client should fall
+back to an earlier protocol version.
 
 ## common request parameters
 

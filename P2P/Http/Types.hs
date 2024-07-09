@@ -24,7 +24,20 @@ import qualified Data.Text.Encoding as TE
 import Text.Read (readMaybe)
 import Data.Aeson hiding (Key)
 import Control.DeepSeq
-import GHC.Generics
+import GHC.Generics (Generic)
+
+data V3 = V3 deriving (Show)
+data V2 = V2 deriving (Show)
+data V1 = V1 deriving (Show)
+data V0 = V0 deriving (Show)
+
+class APIVersion v where
+	protocolVersion :: v -> P2P.ProtocolVersion
+
+instance APIVersion V3 where protocolVersion _ = P2P.ProtocolVersion 3
+instance APIVersion V2 where protocolVersion _ = P2P.ProtocolVersion 2
+instance APIVersion V1 where protocolVersion _ = P2P.ProtocolVersion 1
+instance APIVersion V0 where protocolVersion _ = P2P.ProtocolVersion 0
 
 -- Keys, UUIDs, and filenames are base64 encoded since Servant uses 
 -- Text and so needs UTF-8.
@@ -34,7 +47,7 @@ newtype B64Key = B64Key Key
 newtype B64FilePath = B64FilePath RawFilePath
 	deriving (Show)
 
-newtype B64UUID t = B64UUID UUID
+newtype B64UUID t = B64UUID { fromB64UUID :: UUID }
 	deriving (Show, Ord, Eq, Generic, NFData)
 
 -- Phantom types for B64UIID
@@ -106,6 +119,21 @@ instance ToHttpApiData KeepAlive where
 
 instance FromHttpApiData KeepAlive where
 	parseUrlPiece = Right . KeepAlive
+
+instance ToHttpApiData V3 where toUrlPiece _ = "v3"
+instance ToHttpApiData V2 where toUrlPiece _ = "v2"
+instance ToHttpApiData V1 where toUrlPiece _ = "v1"
+instance ToHttpApiData V0 where toUrlPiece _ = "v0"
+
+instance FromHttpApiData V3 where parseUrlPiece = parseAPIVersion V3 "v3"
+instance FromHttpApiData V2 where parseUrlPiece = parseAPIVersion V2 "v2"
+instance FromHttpApiData V1 where parseUrlPiece = parseAPIVersion V1 "v1"
+instance FromHttpApiData V0 where parseUrlPiece = parseAPIVersion V0 "v0"
+
+parseAPIVersion :: v -> T.Text -> T.Text -> Either T.Text v
+parseAPIVersion v need t
+	| t == need = Right v
+	| otherwise = Left "bad version"
 
 instance ToHttpApiData B64Key where
 	toUrlPiece (B64Key k) = TE.decodeUtf8Lenient $
