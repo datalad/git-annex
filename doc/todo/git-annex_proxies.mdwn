@@ -31,7 +31,7 @@ Planned schedule of work:
 * I have a file `servant.hs` in the httpproto branch that works through some of the
   bytestring streaming issues.
 
-* A Locker should expire the lock on its own after 10 minutes.
+* A Locker should expire the lock on its own after 10 minutes initially.
 
 * Since each held lock needs a connection to a proxy, the Locker
   could reference count, and avoid holding more than one lock per key.

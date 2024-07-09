@@ -14,6 +14,7 @@ module P2P.Http.State where
 import Annex.Common
 import P2P.Http.Types
 import Annex.UUID (genUUID)
+import qualified P2P.Protocol as P2P
 
 import qualified Data.Map as M
 import Control.Concurrent.Async
@@ -26,6 +27,15 @@ data P2PHttpServerState = P2PHttpServerState
 mkP2PHttpServerState :: IO P2PHttpServerState
 mkP2PHttpServerState = P2PHttpServerState
 	<$> newTMVarIO mempty
+
+inP2PConnection
+	:: P2PHttpServerState
+	-> B64UUID ClientSide
+	-> B64UUID ServerSide
+	-> [B64UUID Bypass]
+	-> P2P.Proto a
+	-> IO (Either String a)
+inP2PConnection st cu su bypass a = undefined
 
 data Locker = Locker
 	{ lockerThread :: Async ()

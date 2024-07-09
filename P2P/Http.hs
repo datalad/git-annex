@@ -21,7 +21,6 @@ module P2P.Http (
 import Annex.Common
 import P2P.Http.Types
 import P2P.Http.State
-import Annex.UUID (genUUID)
 import qualified P2P.Protocol as P2P
 
 import Servant
@@ -29,9 +28,7 @@ import Servant.Client.Streaming
 import qualified Servant.Types.SourceT as S
 import Network.HTTP.Client (defaultManagerSettings, newManager)
 import qualified Data.ByteString as B
-import qualified Data.Map as M
 import Control.Concurrent
-import Control.Concurrent.Async
 import Control.Concurrent.STM
 
 type P2PHttpAPI
@@ -169,7 +166,14 @@ serveCheckPresent
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
 	-> Handler CheckPresentResult
-serveCheckPresent = undefined
+serveCheckPresent st (B64Key k) cu su bypass = do
+	res <- liftIO $ inP2PConnection st cu su bypass $ P2P.checkPresent k
+	case res of
+		Right (Right b) -> return (CheckPresentResult b)
+		Right (Left err) ->
+			throwError $ err500 { errBody = encodeBL err }
+		Left err ->
+			throwError $ err500 { errBody = encodeBL err }
 
 clientCheckPresent
 	:: P2P.ProtocolVersion
@@ -519,7 +523,6 @@ testClientLock = do
 		(B64UUID (toUUID ("su" :: String)))
 		[]
 		keeplocked
-
 
 type ClientUUID req = QueryParam' '[req] "clientuuid" (B64UUID ClientSide)
 
