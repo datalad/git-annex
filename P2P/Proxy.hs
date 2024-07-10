@@ -349,18 +349,8 @@ proxy proxydone proxymethods proxystate servermode (ClientSide clientrunst clien
 		_ <- client $ net $ sendMessage (ERROR "protocol error X")
 		giveup "protocol error M"
 	
-	-- When there is a single remote, reply with its timestamp,
-	-- to avoid needing timestamp translation.
-	handleGETTIMESTAMP (remoteside:[]) = do
-		liftIO $ atomically $ do
-			writeTVar (proxyRemoteLatestTimestamps proxystate)
-				mempty
-			writeTVar (proxyRemoteLatestLocalTimestamp proxystate)
-				Nothing
-		proxyresponse remoteside GETTIMESTAMP
-			(const proxynextclientmessage)
-	-- When there are multiple remotes, reply with our local timestamp,
-	-- and do timestamp translation when sending REMOVE-FROM.
+	-- Reply with our local timestamp, and do timestamp translation
+	-- when sending REMOVE-BEFORE.
 	handleGETTIMESTAMP remotesides = do
 		-- Order of getting timestamps matters.
 		-- Getting the local time after the time of the remotes
@@ -385,11 +375,11 @@ proxy proxydone proxymethods proxystate servermode (ClientSide clientrunst clien
 						Just (remoteSideId r, ts)
 					_ -> Nothing
 
-	proxyTimestamp ts _ _ Nothing = ts -- not proxying timestamps
 	proxyTimestamp ts r tsm (Just correspondinglocaltime) =
 		case M.lookup (remoteSideId r) tsm of
 			Just oldts -> oldts + (ts - correspondinglocaltime)
 			Nothing -> ts -- not reached
+	proxyTimestamp ts _ _ Nothing = ts -- not proxying timestamps
 
 	handleREMOVE [] _ _ =
 		-- When no places are provided to remove from,
