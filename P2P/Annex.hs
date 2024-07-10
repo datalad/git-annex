@@ -101,6 +101,26 @@ runLocal runst runner a = case a of
 			Left e -> return $ Left $ ProtoFailureException e
 			Right (Left e) -> return $ Left e
 			Right (Right ok) -> runner (next ok)
+	SendContentWith consumer getb validitycheck next -> do
+		v <- tryNonAsync $ do
+			let fallback = return $ Left $
+				ProtoFailureMessage "Transfer failed"
+			let consumer' b ti = do
+				validator <- consumer b
+				indicatetransferred ti
+				return validator
+			runner getb >>= \case
+				Left e -> giveup $ describeProtoFailure e
+				Right b -> checktransfer (\ti -> Right <$> consumer' b ti) fallback >>= \case
+					Left e -> return (Left e)
+					Right validator ->
+						runner validitycheck >>= \case
+							Right v -> Right <$> validator v
+							_ -> Right <$> validator Nothing
+		case v of
+			Left e -> return $ Left $ ProtoFailureException e
+			Right (Left e) -> return $ Left e
+			Right (Right ok) -> runner (next ok)
 	SetPresent k u next -> do
 		v <- tryNonAsync $ logChange k u InfoPresent
 		case v of

@@ -9,6 +9,7 @@
 
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 module P2P.Http.State where
 
@@ -63,7 +64,29 @@ withP2PConnection
 	-> ActionClass
 	-> (RunState -> P2PConnection -> Handler (Either ProtoFailure a))
 	-> Handler a
-withP2PConnection apiver st cu su bypass sec auth actionclass connaction =
+withP2PConnection apiver st cu su bypass sec auth actionclass connaction = do
+	(runst, conn, releaseconn) <- 
+		getP2PConnection apiver st cu su bypass sec auth actionclass
+	connaction' runst conn
+		`finally` liftIO releaseconn
+  where
+	connaction' runst conn = connaction runst conn >>= \case
+		Right r -> return r
+		Left err -> throwError $
+			err500 { errBody = encodeBL (describeProtoFailure err) }
+
+getP2PConnection
+	:: APIVersion v
+	=> v
+	-> P2PHttpServerState
+	-> B64UUID ClientSide
+	-> B64UUID ServerSide
+	-> [B64UUID Bypass]
+	-> IsSecure
+	-> Maybe Auth
+	-> ActionClass
+	-> Handler (RunState, P2PConnection, ReleaseP2PConnection)
+getP2PConnection apiver st cu su bypass sec auth actionclass =
 	case (getServerMode st sec auth, actionclass) of
 		(Just P2P.ServeReadWrite, _) -> go P2P.ServeReadWrite
 		(Just P2P.ServeAppendOnly, RemoveAction) -> throwError err403
@@ -77,9 +100,7 @@ withP2PConnection apiver st cu su bypass sec auth actionclass connaction =
 			throwError err502 { errBody = encodeBL err }
 		Left TooManyConnections ->
 			throwError err503
-		Right (runst, conn, releaseconn) ->
-			connaction' runst conn
-				`finally` liftIO releaseconn
+		Right v -> return v
 	  where
 		cp = ConnectionParams
 			{ connectionProtocolVersion = protocolVersion apiver
@@ -88,11 +109,6 @@ withP2PConnection apiver st cu su bypass sec auth actionclass connaction =
 			, connectionBypass = map fromB64UUID bypass
 			, connectionServerMode = servermode
 			}
-	
-	connaction' runst conn = connaction runst conn >>= \case
-		Right r -> return r
-		Left err -> throwError $
-			err500 { errBody = encodeBL (describeProtoFailure err) }
 
 basicAuthRequired :: ServerError
 basicAuthRequired = err401 { errHeaders = [(h, v)] }
@@ -119,11 +135,13 @@ type AcquireP2PConnection =
 		( Either ConnectionProblem
 			( RunState
 			, P2PConnection
-			, IO () -- ^ release connection
+			, ReleaseP2PConnection -- ^ release connection
 			)
 		)
 
-{- Runs P2P actions in the local repository only. -}
+type ReleaseP2PConnection = IO ()
+
+{- Acquire P2P connections to the local repository. -}
 -- TODO need worker pool, this can only service a single request at
 -- a time.
 -- TODO proxies
@@ -137,8 +155,8 @@ withLocalP2PConnections a = do
   where
 	acquireconn reqv connparams = do
 		respvar <- newEmptyTMVarIO
-		liftIO $ atomically $ putTMVar reqv (connparams, respvar)
-		liftIO $ atomically $ takeTMVar respvar
+		atomically $ putTMVar reqv (connparams, respvar)
+		atomically $ takeTMVar respvar
 
 	servicer reqv relv = do
 		reqrel <- liftIO $

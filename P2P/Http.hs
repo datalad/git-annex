@@ -10,6 +10,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module P2P.Http (
@@ -23,6 +24,7 @@ import P2P.Http.Types
 import P2P.Http.State
 import P2P.Protocol hiding (Offset, Bypass, auth)
 import P2P.IO
+import P2P.Annex
 import Annex.WorkerPool
 import Types.WorkerPool
 import Types.Direction
@@ -30,9 +32,15 @@ import Utility.Metered
 
 import Servant
 import Servant.Client.Streaming
+import Servant.API
 import qualified Servant.Types.SourceT as S
 import qualified Data.ByteString as B
+import qualified Data.ByteString.Lazy as L
+import qualified Data.ByteString.Lazy.Internal as LI
 import Control.Concurrent.STM
+import Control.Concurrent.Async
+import Control.Concurrent
+import System.IO.Unsafe
 
 type P2PHttpAPI
 	=    "git-annex" :> PV3 :> "key" :> CaptureKey :> GetAPI
@@ -142,23 +150,66 @@ serveGet
 	-> Maybe Auth
 	-> Handler (Headers '[DataLengthHeader] (S.SourceT IO B.ByteString))
 serveGet st apiver (B64Key k) cu su bypass baf startat sec auth = do
-	res <- withP2PConnection apiver st cu su bypass sec auth ReadAction
-		$ \runst conn -> do
-			liftIO $ inAnnexWorker st $
-				enteringStage (TransferStage Upload) $ do
-					liftIO $ print "IN ANNEX WORKER!"
-			{-
-			let storer offset len getdata checkvalidity = do
-				undefined -- FIXME
-			-- XXX needs to run in annex monad to runFullProto
-			liftIO $ runNetProto runst conn $
-				receiveContent Nothing nullMeterUpdate
+	(runst, conn, releaseconn) <- 
+		getP2PConnection apiver st cu su bypass sec auth ReadAction
+	bsv <- liftIO newEmptyTMVarIO
+	endv <- liftIO newEmptyTMVarIO
+	validityv <- liftIO newEmptyTMVarIO
+	aid <- liftIO $ async $ inAnnexWorker st $ do
+		let consumer bs = do
+			liftIO $ atomically $ putTMVar bsv bs
+			liftIO $ atomically $ takeTMVar endv
+			return $ \v -> do
+				liftIO $ atomically $
+					putTMVar validityv v
+				return True
+		let storer _offset _len getdata checkvalidity =
+			sendContentWith consumer getdata checkvalidity
+		enteringStage (TransferStage Upload) $
+			runFullProto runst conn $
+				void $ receiveContent Nothing nullMeterUpdate
 					sizer storer getreq
-			-}
-			undefined
-	undefined -- XXX fixme streaming out
+	bs <- liftIO $ atomically $ takeTMVar bsv
+	bv <- liftIO $ newMVar (L.toChunks bs)
+	let streamer = S.SourceT $ \s -> s =<< return 
+		(stream (releaseconn, bv, endv, validityv, aid))
+ 	return $ addHeader 111111 streamer
   where
-	sizer = Len $ case startat of
+	stream (releaseconn, bv, endv, validityv, aid) =
+		S.fromActionStep B.null $ do
+			print "chunk"
+			modifyMVar bv $ \case
+				(b:bs) -> return (bs, b)
+				[] -> do
+					endbit <- cleanup (releaseconn, endv, validityv, aid)
+					return ([], endbit)
+	
+	cleanup (releaseconn, endv, validityv, aid) =
+		ifM (atomically $ isEmptyTMVar endv)
+			( pure mempty
+			, do
+				atomically $ putTMVar endv ()
+				validity <- atomically $ takeTMVar validityv
+				print ("got validity", validity)
+				wait aid >>= \case
+					Left ex -> throwM ex
+					Right (Left err) -> error $
+						describeProtoFailure err
+					Right (Right ()) -> return ()
+				() <- releaseconn
+				-- When the key's content is invalid,
+				-- indicate that to the client by padding
+				-- the response, so it is not the same
+				-- length indicated by the DataLengthHeader.
+				return $ case validity of
+					Nothing -> mempty
+					Just Valid -> mempty
+					Just Invalid -> "XXXXXXX"
+					-- FIXME: need to count bytes and emit
+					-- something to make it invalid
+			)
+
+	sizer = pure $ Len $ case startat of
 		Just (Offset o) -> fromIntegral o
 		Nothing -> 0
 	
@@ -169,6 +220,43 @@ serveGet st apiver (B64Key k) cu su bypass baf startat sec auth = do
 		Nothing -> Nothing
 
 clientGet
+	:: ClientEnv
+	-> ProtocolVersion
+	-> B64Key
+	-> B64UUID ClientSide
+	-> B64UUID ServerSide
+	-> [B64UUID Bypass]
+	-> Maybe B64FilePath
+	-> Maybe Offset
+	-> Maybe Auth
+	-> IO ()
+clientGet clientenv ver k cu su bypass af o auth =
+	withClientM (clientGet' ver k cu su bypass af o auth) clientenv $ \case
+		Left err -> throwM err
+		Right respheaders -> do
+			let dl = case lookupResponseHeader @DataLengthHeader' respheaders of
+				Header h -> h
+				_ -> error "missing data length header"
+			liftIO $ print ("datalength", dl :: Integer)
+			b <- S.unSourceT (getResponse respheaders) gatherbytestring
+			liftIO $ print "got it all, writing to file 'got'"
+			L.writeFile "got" b
+
+gatherbytestring :: S.StepT IO B.ByteString -> IO L.ByteString
+gatherbytestring x = do
+	l <- unsafeInterleaveIO $ go x
+	return l
+  where
+	go S.Stop        = return LI.Empty
+	go (S.Error err) = error $ show ("ERROR", err)
+	go (S.Skip s)    = do
+		go s
+	go (S.Effect ms) = do
+		ms >>= go
+	go (S.Yield v s) = do
+		LI.Chunk v <$> unsafeInterleaveIO (go s)
+
+clientGet'
 	:: ProtocolVersion
 	-> B64Key
 	-> B64UUID ClientSide
@@ -178,7 +266,7 @@ clientGet
 	-> Maybe Offset
 	-> Maybe Auth
 	-> ClientM (Headers '[DataLengthHeader] (S.SourceT IO B.ByteString))
-clientGet (ProtocolVersion ver) = case ver of
+clientGet' (ProtocolVersion ver) = case ver of
 	3 -> v3 V3
 	2 -> v2 V2
 	1 -> v1 V1
@@ -647,7 +735,9 @@ type AssociatedFileParam = QueryParam "associatedfile" B64FilePath
 	
 type OffsetParam = QueryParam "offset" Offset
 
-type DataLengthHeader = Header "X-git-annex-data-length" Integer
+type DataLengthHeader = Header DataLengthHeader' Integer
+
+type DataLengthHeader' = "X-git-annex-data-length"
 
 type LockIDParam = QueryParam' '[Required] "lockid" LockID
 

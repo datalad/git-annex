@@ -310,6 +310,10 @@ data LocalF c
 	-- content been transferred.
 	| StoreContentTo FilePath (Maybe IncrementalVerifier) Offset Len (Proto L.ByteString) (Proto (Maybe Validity)) ((Bool, Verification) -> c)
 	-- ^ Like StoreContent, but stores the content to a temp file.
+	| SendContentWith (L.ByteString -> Annex (Maybe Validity -> Annex Bool)) (Proto L.ByteString) (Proto (Maybe Validity)) (Bool -> c)
+	-- ^ Reads content from the Proto L.ByteString and sends it to the
+	-- callback. The callback must consume the whole lazy ByteString,
+	-- before it returns a validity checker.
 	| SetPresent Key UUID c
 	| CheckContentPresent Key (Bool -> c)
 	-- ^ Checks if the whole content of the key is locally present.
