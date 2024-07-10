@@ -21,6 +21,8 @@ import Utility.MonotonicClock
 import Servant
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
+import qualified Data.ByteString as B
+import Data.Char
 import Text.Read (readMaybe)
 import Data.Aeson hiding (Key)
 import Control.DeepSeq
@@ -101,8 +103,27 @@ newtype UnlockRequest = UnlockRequest Bool
 -- Not using servant's build-in basic authentication support,
 -- because whether authentication is needed depends on server
 -- configuration.
-data Auth = Auth T.Text T.Text
+data Auth = Auth B.ByteString B.ByteString
 	deriving (Show, Generic, NFData)
+
+instance ToHttpApiData Auth where
+	toHeader (Auth u p) = "Basic " <> toB64 (u <> ":" <> p)
+	toUrlPiece = TE.decodeUtf8Lenient . toHeader
+
+instance FromHttpApiData Auth where
+	parseHeader h =
+		let (b, rest) = B.break (isSpace . chr . fromIntegral) h
+		in if map toLower (decodeBS b) == "basic"
+			then case fromB64Maybe (B.dropWhile (isSpace . chr . fromIntegral) rest) of
+				Just v -> case B.split (fromIntegral (ord ':')) v of
+					(u:ps) -> Right $
+						Auth u (B.intercalate ":" ps)
+					_ -> bad
+				Nothing -> bad
+			else bad
+	  where
+		bad = Left "invalid basic auth header"
+	parseUrlPiece = parseHeader . encodeBS . T.unpack
 
 newtype ConnectionKeepAlive = ConnectionKeepAlive T.Text
 
