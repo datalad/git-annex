@@ -28,8 +28,11 @@ Planned schedule of work:
 
 ## work notes
 
-* http server and client are working, server API endpoints need wiring up
-  and testing. So far checkpresent works.
+* http server and client are working, remaining 
+  server API endpoints need wiring up and testing. 
+
+* serveGet works as proof of concept, but is very buggy.
+  See commit 1e0f92a5a1ccf7ff4c51c67c27a826709a99301b
 
 * I have a file `servant.hs` in the httpproto branch that works through some
   of the bytestring streaming issues.
