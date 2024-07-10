@@ -352,7 +352,6 @@ proxy proxydone proxymethods proxystate servermode (ClientSide clientrunst clien
 	-- When there is a single remote, reply with its timestamp,
 	-- to avoid needing timestamp translation.
 	handleGETTIMESTAMP (remoteside:[]) = do
-		liftIO $ hPutStrLn stderr "!!!! single remote side"
 		liftIO $ atomically $ do
 			writeTVar (proxyRemoteLatestTimestamps proxystate)
 				mempty
