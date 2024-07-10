@@ -71,7 +71,7 @@ seek o = startConcurrency commandStages $ do
 	-- XXX remove this
 	when (isNothing (portOption o)) $ do
 		liftIO $ putStrLn "test begins"
-		testCheckPresent
+		testRemove
 		giveup "TEST DONE" 
 	withLocalP2PConnections $ \acquireconn -> liftIO $ do
 		authenv <- getAuthEnv
@@ -155,3 +155,16 @@ testCheckPresent = do
 		[]
 		Nothing
 	liftIO $ print res
+
+testRemove = do
+	mgr <- httpManager <$> getUrlOptions
+	burl <- liftIO $ parseBaseUrl "http://localhost:8080/"
+	res <- liftIO $ clientRemove (mkClientEnv mgr burl)
+		(P2P.ProtocolVersion 3)
+		(B64Key (fromJust $ deserializeKey ("WORM-s30-m1720547401--foo" :: String)))
+		(B64UUID (toUUID ("cu" :: String)))
+		(B64UUID (toUUID ("f11773f0-11e1-45b2-9805-06db16768efe" :: String)))
+		[]
+		Nothing
+	liftIO $ print res
+

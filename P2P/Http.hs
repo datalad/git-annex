@@ -240,20 +240,26 @@ serveRemove st resultmangle apiver (B64Key k) cu su bypass sec auth = do
 			err500 { errBody = encodeBL err }
 
 clientRemove
-	:: ProtocolVersion
+	:: ClientEnv
+	-> ProtocolVersion
 	-> B64Key
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
 	-> Maybe Auth
-	-> ClientM RemoveResultPlus
-clientRemove (ProtocolVersion ver) k cu su bypass auth = case ver of
-	3 -> v3 V3 k cu su bypass auth
-	2 -> v2 V2 k cu su bypass auth
-	1 -> plus <$> v1 V1 k cu su bypass auth
-	0 -> plus <$> v0 V0 k cu su bypass auth
-	_ -> error "unsupported protocol version"
+	-> IO RemoveResultPlus
+clientRemove clientenv (ProtocolVersion ver) key cu su bypass auth =
+	withClientM cli clientenv $ \case
+		Left err -> throwM err
+		Right res -> return res
   where
+	cli = case ver of
+		3 -> v3 V3 key cu su bypass auth
+		2 -> v2 V2 key cu su bypass auth
+		1 -> plus <$> v1 V1 key cu su bypass auth
+		0 -> plus <$> v0 V0 key cu su bypass auth
+		_ -> error "unsupported protocol version"
+	
 	_ :<|> _ :<|> _ :<|> _ :<|>
 		_ :<|> _ :<|> _ :<|> _ :<|>
 		v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
