@@ -325,6 +325,8 @@ type GetTimestampAPI
 	= ClientUUID Required
 	:> ServerUUID Required
 	:> BypassUUIDs
+	:> IsSecure
+	:> AuthHeader
 	:> Post '[JSON] GetTimestampResult
 
 serveGetTimestamp
@@ -334,19 +336,35 @@ serveGetTimestamp
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
+	-> IsSecure
+	-> Maybe Auth
 	-> Handler GetTimestampResult
-serveGetTimestamp = undefined -- TODO
+serveGetTimestamp st apiver cu su bypass sec auth = do
+	res <- withP2PConnection apiver st cu su bypass sec auth ReadAction
+		$ \runst conn ->
+			liftIO $ runNetProto runst conn getTimestamp
+	case res of
+		Right ts -> return $ GetTimestampResult (Timestamp ts)
+		Left err -> throwError $
+			err500 { errBody = encodeBL err }
 
 clientGetTimestamp
-	:: ProtocolVersion
+	:: ClientEnv
+	-> ProtocolVersion
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
-	-> ClientM GetTimestampResult
-clientGetTimestamp (ProtocolVersion ver) = case ver of
-	3 -> v3 V3
-	_ -> error "unsupported protocol version"
+	-> Maybe Auth
+	-> IO GetTimestampResult
+clientGetTimestamp clientenv (ProtocolVersion ver) cu su bypass auth = 
+	withClientM (cli cu su bypass auth) clientenv $ \case
+		Left err -> throwM err
+		Right res -> return res
   where
+	cli = case ver of
+		3 -> v3 V3
+		_ -> error "unsupported protocol version"
+	
 	_ :<|> _ :<|> _ :<|> _ :<|>
 		_ :<|> _ :<|> _ :<|> _ :<|>
 		_ :<|> _ :<|> _ :<|> _ :<|>

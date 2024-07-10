@@ -73,7 +73,7 @@ seek o = startConcurrency commandStages $ do
 	-- XXX remove this
 	when (isNothing (portOption o)) $ do
 		liftIO $ putStrLn "test begins"
-		testRemoveBefore
+		testGetTimestamp
 		giveup "TEST DONE" 
 	withLocalP2PConnections $ \acquireconn -> liftIO $ do
 		authenv <- getAuthEnv
@@ -184,6 +184,17 @@ testRemoveBefore = do
 		(B64UUID (toUUID ("f11773f0-11e1-45b2-9805-06db16768efe" :: String)))
 		[]
 		(Timestamp ts)
+		Nothing
+	liftIO $ print res
+
+testGetTimestamp = do
+	mgr <- httpManager <$> getUrlOptions
+	burl <- liftIO $ parseBaseUrl "http://localhost:8080/"
+	res <- liftIO $ clientGetTimestamp (mkClientEnv mgr burl)
+		(P2P.ProtocolVersion 3)
+		(B64UUID (toUUID ("cu" :: String)))
+		(B64UUID (toUUID ("f11773f0-11e1-45b2-9805-06db16768efe" :: String)))
+		[]
 		Nothing
 	liftIO $ print res
 
