@@ -49,7 +49,7 @@ import Control.DeepSeq
 import Prelude
 
 newtype Offset = Offset Integer
-	deriving (Show, NFData)
+	deriving (Show, Eq, NFData, Num, Real, Ord, Enum, Integral)
 
 newtype Len = Len Integer
 	deriving (Show)

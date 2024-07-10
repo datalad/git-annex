@@ -23,6 +23,10 @@ import P2P.Http.Types
 import P2P.Http.State
 import P2P.Protocol hiding (Offset, Bypass, auth)
 import P2P.IO
+import Annex.WorkerPool
+import Types.WorkerPool
+import Types.Direction
+import Utility.Metered
 
 import Servant
 import Servant.Client.Streaming
@@ -114,11 +118,12 @@ serveGetGeneric :: P2PHttpServerState -> B64Key -> Handler (S.SourceT IO B.ByteS
 serveGetGeneric = undefined -- TODO
 
 type GetAPI
-	= ClientUUID Optional
-	:> ServerUUID Optional
+	= ClientUUID Required
+	:> ServerUUID Required
 	:> BypassUUIDs
 	:> AssociatedFileParam
 	:> OffsetParam
+	:> IsSecure
 	:> AuthHeader
 	:> StreamGet NoFraming OctetStream
 		(Headers '[DataLengthHeader] (SourceIO B.ByteString))
@@ -128,20 +133,46 @@ serveGet
 	=> P2PHttpServerState
 	-> v
 	-> B64Key
-	-> Maybe (B64UUID ClientSide)
-	-> Maybe (B64UUID ServerSide)
+	-> B64UUID ClientSide
+	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
 	-> Maybe B64FilePath
 	-> Maybe Offset
+	-> IsSecure
 	-> Maybe Auth
 	-> Handler (Headers '[DataLengthHeader] (S.SourceT IO B.ByteString))
-serveGet = undefined -- TODO
+serveGet st apiver (B64Key k) cu su bypass baf startat sec auth = do
+	res <- withP2PConnection apiver st cu su bypass sec auth ReadAction
+		$ \runst conn -> do
+			liftIO $ inAnnexWorker st $
+				enteringStage (TransferStage Upload) $ do
+					liftIO $ print "IN ANNEX WORKER!"
+			{-
+			let storer offset len getdata checkvalidity = do
+				undefined -- FIXME
+			-- XXX needs to run in annex monad to runFullProto
+			liftIO $ runNetProto runst conn $
+				receiveContent Nothing nullMeterUpdate
+					sizer storer getreq
+			-}
+			undefined
+	undefined -- XXX fixme streaming out
+  where
+	sizer = Len $ case startat of
+		Just (Offset o) -> fromIntegral o
+		Nothing -> 0
+	
+	getreq offset = P2P.Protocol.GET offset (ProtoAssociatedFile af) k
+	
+	af = AssociatedFile $ case baf of
+		Just (B64FilePath f) -> Just f
+		Nothing -> Nothing
 
 clientGet
 	:: ProtocolVersion
 	-> B64Key
-	-> Maybe (B64UUID ClientSide)
-	-> Maybe (B64UUID ServerSide)
+	-> B64UUID ClientSide
+	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
 	-> Maybe B64FilePath
 	-> Maybe Offset

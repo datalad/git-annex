@@ -28,7 +28,7 @@ import Network.Socket (PortNumber)
 import qualified Data.Map as M
 
 cmd :: Command
-cmd = command "p2phttp" SectionPlumbing
+cmd = withAnnexOptions [jobsOption] $ command "p2phttp" SectionPlumbing
 	"communicate in P2P protocol over http"
 	paramNothing (seek <$$> optParser)
 
@@ -69,7 +69,7 @@ optParser _ = Options
 		)
 
 seek :: Options -> CommandSeek
-seek o = startConcurrency commandStages $ do
+seek o = getAnnexWorkerPool $ \workerpool -> do
 	-- XXX remove this
 	when (isNothing (portOption o)) $ do
 		liftIO $ putStrLn "test begins"
@@ -77,7 +77,7 @@ seek o = startConcurrency commandStages $ do
 		giveup "TEST DONE" 
 	withLocalP2PConnections $ \acquireconn -> liftIO $ do
 		authenv <- getAuthEnv
-		st <- mkP2PHttpServerState acquireconn $
+		st <- mkP2PHttpServerState acquireconn workerpool $
 			mkGetServerMode authenv o
 		Warp.run (fromIntegral port) (p2pHttpApp st)
   where

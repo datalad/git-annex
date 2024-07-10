@@ -13,12 +13,16 @@
 module P2P.Http.State where
 
 import Annex.Common
+import qualified Annex
 import P2P.Http.Types
 import qualified P2P.Protocol as P2P
 import P2P.IO
 import P2P.Annex
 import Annex.UUID
 import Annex.Concurrent
+import Types.WorkerPool
+import Annex.WorkerPool
+import CmdLine.Action (startConcurrency)
 
 import Servant
 import qualified Data.Map as M
@@ -27,13 +31,20 @@ import Control.Concurrent.STM
 
 data P2PHttpServerState = P2PHttpServerState
 	{ acquireP2PConnection :: AcquireP2PConnection
+	, annexWorkerPool :: AnnexWorkerPool
 	, getServerMode :: GetServerMode
 	, openLocks :: TMVar (M.Map LockID Locker)
 	}
 
-mkP2PHttpServerState :: AcquireP2PConnection -> GetServerMode -> IO P2PHttpServerState
-mkP2PHttpServerState acquireconn getservermode = P2PHttpServerState
+type AnnexWorkerPool = TMVar (WorkerPool (Annex.AnnexState, Annex.AnnexRead))
+
+-- Nothing when the server is not allowed to serve any requests.
+type GetServerMode = IsSecure -> Maybe Auth -> Maybe P2P.ServerMode
+
+mkP2PHttpServerState :: AcquireP2PConnection -> AnnexWorkerPool -> GetServerMode -> IO P2PHttpServerState
+mkP2PHttpServerState acquireconn annexworkerpool getservermode = P2PHttpServerState
 	<$> pure acquireconn
+	<*> pure annexworkerpool
 	<*> pure getservermode
 	<*> newTMVarIO mempty
 
@@ -88,9 +99,6 @@ basicAuthRequired = err401 { errHeaders = [(h, v)] }
   where
 	h = "WWW-Authenticate"
 	v = "Basic realm=\"git-annex\", charset=\"UTF-8\""
-
--- Nothing when the server is not allowed to serve any requests.
-type GetServerMode = IsSecure -> Maybe Auth -> Maybe P2P.ServerMode
 
 data ConnectionParams = ConnectionParams
 	{ connectionProtocolVersion :: P2P.ProtocolVersion
@@ -237,3 +245,33 @@ dropLock lckid st = do
 	case v of
 		Nothing -> return ()
 		Just locker -> wait (lockerThread locker)
+
+getAnnexWorkerPool :: (AnnexWorkerPool -> Annex a) -> Annex a
+getAnnexWorkerPool a = startConcurrency transferStages $
+	Annex.getState Annex.workers >>= \case
+		Nothing -> giveup "Use -Jn or set annex.jobs to configure the number of worker threads."
+		Just wp -> a wp
+
+inAnnexWorker :: P2PHttpServerState -> Annex a -> IO (Either SomeException a)
+inAnnexWorker st annexaction = do
+	(workerstrd, workerstage) <- atomically $
+		waitStartWorkerSlot (annexWorkerPool st)
+	resv <- newEmptyTMVarIO
+	aid <- async $ do
+		(res, strd) <- Annex.run workerstrd annexaction
+		atomically $ putTMVar resv res
+		return strd
+	atomically $ do
+		pool <- takeTMVar (annexWorkerPool st)
+		let !pool' = addWorkerPool (ActiveWorker aid workerstage) pool
+		putTMVar (annexWorkerPool st) pool'
+	(res, workerstrd') <- waitCatch aid >>= \case
+		Right strd -> do
+			r <- atomically $ takeTMVar resv
+			return (Right r, strd)
+		Left err -> return (Left err, workerstrd)
+	atomically $ do
+		pool <- takeTMVar (annexWorkerPool st)
+		let !pool' = deactivateWorker pool aid workerstrd'
+		putTMVar (annexWorkerPool st) pool'
+	return res

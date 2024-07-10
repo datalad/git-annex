@@ -87,9 +87,8 @@ commandAction start = do
 
 	runconcurrent sizelimit Nothing = runnonconcurrent sizelimit
 	runconcurrent sizelimit (Just tv) = 
-		liftIO (atomically (waitStartWorkerSlot tv)) >>= maybe
-			(runnonconcurrent sizelimit)
-			(runconcurrent' sizelimit tv)
+		liftIO (atomically (waitStartWorkerSlot tv))
+			>>= runconcurrent' sizelimit tv
 	runconcurrent' sizelimit tv (workerstrd, workerstage) = do
 		aid <- liftIO $ async $ snd 
 			<$> Annex.run workerstrd

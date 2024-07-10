@@ -14,6 +14,14 @@ a repository over HTTP with write access for authenticated users.
 
 # OPTIONS
 
+* `--jobs=N`
+
+  Use this or annex.jobs must be set to configure the number of worker
+  threads.
+  
+  Since the webserver itself uses one thread, this needs to be set to
+  2 or more.
+
 * `--port=N`
 
   Port to listen on. Default is port 80.
