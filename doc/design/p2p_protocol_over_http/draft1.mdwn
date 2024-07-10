@@ -26,6 +26,9 @@ it will fail with 401 Unauthorized.
 Authentication is done using HTTP basic auth. The realm to use when
 authenticating is "git-annex".
 
+When authentication is successful but does not allow a request to be
+performed, it will fail with 403 Forbidden.
+
 Note that HTTP basic auth is not encrypted so is only secure when used
 over HTTPS.
 

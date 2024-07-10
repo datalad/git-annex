@@ -36,6 +36,9 @@ mkP2PHttpServerState acquireconn getservermode = P2PHttpServerState
 	<*> pure getservermode
 	<*> newTMVarIO mempty
 
+data ActionClass = ReadAction | WriteAction | RemoveAction
+	deriving (Eq)
+
 withP2PConnection
 	:: APIVersion v
 	=> v
@@ -43,10 +46,20 @@ withP2PConnection
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
+	-> Maybe Auth
+	-> ActionClass
 	-> (RunState -> P2PConnection -> Handler a)
 	-> Handler a
-withP2PConnection apiver st cu su bypass connaction = do
-	liftIO (acquireP2PConnection st cp) >>= \case
+withP2PConnection apiver st cu su bypass auth actionclass connaction =
+	case (getServerMode st auth, actionclass) of
+		(Just P2P.ServeReadWrite, _) -> go P2P.ServeReadWrite
+		(Just P2P.ServeAppendOnly, RemoveAction) -> throwError err403
+		(Just P2P.ServeAppendOnly, _) -> go P2P.ServeAppendOnly
+		(Just P2P.ServeReadOnly, ReadAction) -> go P2P.ServeReadOnly
+		(Just P2P.ServeReadOnly, _) -> throwError err403
+		(Nothing, _) -> throwError err401
+  where
+	go servermode = liftIO (acquireP2PConnection st cp) >>= \case
 		Left (ConnectionFailed err) -> 
 			throwError err502 { errBody = encodeBL err }
 		Left TooManyConnections ->
@@ -54,16 +67,17 @@ withP2PConnection apiver st cu su bypass connaction = do
 		Right (runst, conn, releaseconn) ->
 			connaction runst conn
 				`finally` liftIO releaseconn
-  where
-	cp = ConnectionParams
-		{ connectionProtocolVersion = protocolVersion apiver
-		, connectionServerUUID = fromB64UUID su
-		, connectionClientUUID = fromB64UUID cu
-		, connectionBypass = map fromB64UUID bypass
-		, connectionServerMode = P2P.ServeReadWrite -- XXX auth
-		}
+	  where
+		cp = ConnectionParams
+			{ connectionProtocolVersion = protocolVersion apiver
+			, connectionServerUUID = fromB64UUID su
+			, connectionClientUUID = fromB64UUID cu
+			, connectionBypass = map fromB64UUID bypass
+			, connectionServerMode = servermode
+			}
 
-type GetServerMode = IsSecure -> Maybe BasicAuthData -> Maybe P2P.ServerMode
+-- Nothing when the server is not allowed to serve any requests.
+type GetServerMode = Maybe Auth -> Maybe P2P.ServerMode
 
 data ConnectionParams = ConnectionParams
 	{ connectionProtocolVersion :: P2P.ProtocolVersion

@@ -161,6 +161,7 @@ type CheckPresentAPI
 	:> ClientUUID Required
 	:> ServerUUID Required
 	:> BypassUUIDs
+	:> AuthHeader
 	:> Post '[JSON] CheckPresentResult
 
 serveCheckPresent
@@ -171,10 +172,12 @@ serveCheckPresent
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
+	-> Maybe Auth
 	-> Handler CheckPresentResult
-serveCheckPresent st apiver (B64Key k) cu su bypass = do
-	res <- withP2PConnection apiver st cu su bypass $ \runst conn ->
-		liftIO $ runNetProto runst conn $ checkPresent k
+serveCheckPresent st apiver (B64Key k) cu su bypass auth = do
+	res <- withP2PConnection apiver st cu su bypass auth ReadAction
+		$ \runst conn ->
+			liftIO $ runNetProto runst conn $ checkPresent k
 	case res of
 		Right (Right b) -> return (CheckPresentResult b)
 		Right (Left err) -> throwError $ err500 { errBody = encodeBL err }
@@ -186,6 +189,7 @@ clientCheckPresent'
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
+	-> Maybe Auth
 	-> ClientM CheckPresentResult
 clientCheckPresent' (ProtocolVersion ver) = case ver of
 	3 -> v3 V3
@@ -204,9 +208,10 @@ clientCheckPresent
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
+	-> Maybe Auth
 	-> IO Bool
-clientCheckPresent clientenv protover key cu su bypass = do
-	let cli = clientCheckPresent' protover key cu su bypass
+clientCheckPresent clientenv protover key cu su bypass auth = do
+	let cli = clientCheckPresent' protover key cu su bypass auth
 	withClientM cli clientenv $ \case
 		Left err -> throwM err
 		Right (CheckPresentResult res) -> return res
@@ -216,6 +221,7 @@ type RemoveAPI result
 	:> ClientUUID Required
 	:> ServerUUID Required
 	:> BypassUUIDs
+	:> AuthHeader
 	:> Post '[JSON] result
 	
 serveRemove
@@ -227,6 +233,7 @@ serveRemove
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
+	-> Maybe Auth
 	-> Handler t
 serveRemove = undefined
 
@@ -236,12 +243,13 @@ clientRemove
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
+	-> Maybe Auth
 	-> ClientM RemoveResultPlus
-clientRemove (ProtocolVersion ver) k cu su bypass = case ver of
-	3 -> v3 V3 k cu su bypass
-	2 -> v2 V2 k cu su bypass
-	1 -> plus <$> v1 V1 k cu su bypass
-	0 -> plus <$> v0 V0 k cu su bypass
+clientRemove (ProtocolVersion ver) k cu su bypass auth = case ver of
+	3 -> v3 V3 k cu su bypass auth
+	2 -> v2 V2 k cu su bypass auth
+	1 -> plus <$> v1 V1 k cu su bypass auth
+	0 -> plus <$> v0 V0 k cu su bypass auth
 	_ -> error "unsupported protocol version"
   where
 	_ :<|> _ :<|> _ :<|> _ :<|>
