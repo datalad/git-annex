@@ -21,7 +21,7 @@ module P2P.Http (
 import Annex.Common
 import P2P.Http.Types
 import P2P.Http.State
-import P2P.Protocol hiding (Offset, Bypass)
+import P2P.Protocol hiding (Offset, Bypass, auth)
 import P2P.IO
 
 import Servant
@@ -181,9 +181,8 @@ serveCheckPresent st apiver (B64Key k) cu su bypass sec auth = do
 		$ \runst conn ->
 			liftIO $ runNetProto runst conn $ checkPresent k
 	case res of
-		Right (Right b) -> return (CheckPresentResult b)
-		Right (Left err) -> throwError $ err500 { errBody = encodeBL err }
-		Left err -> throwError $ err500 { errBody = encodeBL (describeProtoFailure err) }
+		Right b -> return (CheckPresentResult b)
+		Left err -> throwError $ err500 { errBody = encodeBL err }
 
 clientCheckPresent
 	:: ClientEnv
@@ -214,6 +213,7 @@ type RemoveAPI result
 	:> ClientUUID Required
 	:> ServerUUID Required
 	:> BypassUUIDs
+	:> IsSecure
 	:> AuthHeader
 	:> Post '[JSON] result
 	
@@ -226,9 +226,18 @@ serveRemove
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
+	-> IsSecure
 	-> Maybe Auth
 	-> Handler t
-serveRemove = undefined
+serveRemove st resultmangle apiver (B64Key k) cu su bypass sec auth = do
+	res <- withP2PConnection apiver st cu su bypass sec auth RemoveAction
+		$ \runst conn ->
+			liftIO $ runNetProto runst conn $ remove Nothing k
+	case res of
+		(Right b, plus) -> return $ resultmangle $ 
+			RemoveResultPlus b (map B64UUID (fromMaybe [] plus))
+		(Left err, _) -> throwError $
+			err500 { errBody = encodeBL err }
 
 clientRemove
 	:: ProtocolVersion
@@ -248,7 +257,7 @@ clientRemove (ProtocolVersion ver) k cu su bypass auth = case ver of
 	_ :<|> _ :<|> _ :<|> _ :<|>
 		_ :<|> _ :<|> _ :<|> _ :<|>
 		v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
-	
+
 type RemoveBeforeAPI
 	= KeyParam
 	:> ClientUUID Required

@@ -8,6 +8,7 @@
  -}
 
 {-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module P2P.Http.State where
 
@@ -49,7 +50,7 @@ withP2PConnection
 	-> IsSecure
 	-> Maybe Auth
 	-> ActionClass
-	-> (RunState -> P2PConnection -> Handler a)
+	-> (RunState -> P2PConnection -> Handler (Either ProtoFailure a))
 	-> Handler a
 withP2PConnection apiver st cu su bypass sec auth actionclass connaction =
 	case (getServerMode st sec auth, actionclass) of
@@ -58,7 +59,7 @@ withP2PConnection apiver st cu su bypass sec auth actionclass connaction =
 		(Just P2P.ServeAppendOnly, _) -> go P2P.ServeAppendOnly
 		(Just P2P.ServeReadOnly, ReadAction) -> go P2P.ServeReadOnly
 		(Just P2P.ServeReadOnly, _) -> throwError err403
-		(Nothing, _) -> throwError err401
+		(Nothing, _) -> throwError basicAuthRequired
   where
 	go servermode = liftIO (acquireP2PConnection st cp) >>= \case
 		Left (ConnectionFailed err) -> 
@@ -66,7 +67,7 @@ withP2PConnection apiver st cu su bypass sec auth actionclass connaction =
 		Left TooManyConnections ->
 			throwError err503
 		Right (runst, conn, releaseconn) ->
-			connaction runst conn
+			connaction' runst conn
 				`finally` liftIO releaseconn
 	  where
 		cp = ConnectionParams
@@ -76,6 +77,17 @@ withP2PConnection apiver st cu su bypass sec auth actionclass connaction =
 			, connectionBypass = map fromB64UUID bypass
 			, connectionServerMode = servermode
 			}
+	
+	connaction' runst conn = connaction runst conn >>= \case
+		Right r -> return r
+		Left err -> throwError $
+			err500 { errBody = encodeBL (describeProtoFailure err) }
+
+basicAuthRequired :: ServerError
+basicAuthRequired = err401 { errHeaders = [(h, v)] }
+  where
+	h = "WWW-Authenticate"
+	v = "Basic realm=\"git-annex\", charset=\"UTF-8\""
 
 -- Nothing when the server is not allowed to serve any requests.
 type GetServerMode = IsSecure -> Maybe Auth -> Maybe P2P.ServerMode

@@ -67,7 +67,12 @@ optParser _ = Options
 		)
 
 seek :: Options -> CommandSeek
-seek o = startConcurrency commandStages $
+seek o = startConcurrency commandStages $ do
+	-- XXX remove this
+	when (isNothing (portOption o)) $ do
+		liftIO $ putStrLn "test begins"
+		testCheckPresent
+		giveup "TEST DONE" 
 	withLocalP2PConnections $ \acquireconn -> liftIO $ do
 		authenv <- getAuthEnv
 		st <- mkP2PHttpServerState acquireconn $

@@ -24,7 +24,7 @@ configuration of the HTTP server. When a request needs authentication,
 it will fail with 401 Unauthorized.
 
 Authentication is done using HTTP basic auth. The realm to use when
-authenticating is "git-annex".
+authenticating is "git-annex". The charset is UTF-8.
 
 When authentication is successful but does not allow a request to be
 performed, it will fail with 403 Forbidden.
