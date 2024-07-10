@@ -111,7 +111,7 @@ serveP2pHttp st
 type GetGenericAPI = StreamGet NoFraming OctetStream (SourceIO B.ByteString)
 
 serveGetGeneric :: P2PHttpServerState -> B64Key -> Handler (S.SourceT IO B.ByteString)
-serveGetGeneric = undefined
+serveGetGeneric = undefined -- TODO
 
 type GetAPI
 	= ClientUUID Optional
@@ -135,7 +135,7 @@ serveGet
 	-> Maybe Offset
 	-> Maybe Auth
 	-> Handler (Headers '[DataLengthHeader] (S.SourceT IO B.ByteString))
-serveGet = undefined
+serveGet = undefined -- TODO
 
 clientGet
 	:: ProtocolVersion
@@ -234,8 +234,8 @@ serveRemove st resultmangle apiver (B64Key k) cu su bypass sec auth = do
 		$ \runst conn ->
 			liftIO $ runNetProto runst conn $ remove Nothing k
 	case res of
-		(Right b, plus) -> return $ resultmangle $ 
-			RemoveResultPlus b (map B64UUID (fromMaybe [] plus))
+		(Right b, plusuuids) -> return $ resultmangle $ 
+			RemoveResultPlus b (map B64UUID (fromMaybe [] plusuuids))
 		(Left err, _) -> throwError $
 			err500 { errBody = encodeBL err }
 
@@ -270,7 +270,9 @@ type RemoveBeforeAPI
 	:> ServerUUID Required
 	:> BypassUUIDs
 	:> QueryParam' '[Required] "timestamp" Timestamp
-	:> Post '[JSON] RemoveResult
+	:> IsSecure
+	:> AuthHeader
+	:> Post '[JSON] RemoveResultPlus
 
 serveRemoveBefore
 	:: APIVersion v
@@ -281,26 +283,43 @@ serveRemoveBefore
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
 	-> Timestamp
-	-> Handler RemoveResult
-serveRemoveBefore = undefined
+	-> IsSecure
+	-> Maybe Auth
+	-> Handler RemoveResultPlus
+serveRemoveBefore st apiver (B64Key k) cu su bypass (Timestamp ts) sec auth = do
+	res <- withP2PConnection apiver st cu su bypass sec auth RemoveAction
+		$ \runst conn ->
+			liftIO $ runNetProto runst conn $
+				removeBeforeRemoteEndTime ts k
+	case res of
+		(Right b, plusuuids) -> return $ 
+			RemoveResultPlus b (map B64UUID (fromMaybe [] plusuuids))
+		(Left err, _) -> throwError $
+			err500 { errBody = encodeBL err }
 
 clientRemoveBefore
-	:: ProtocolVersion
+	:: ClientEnv
+	-> ProtocolVersion
 	-> B64Key
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
 	-> Timestamp
-	-> ClientM RemoveResult
-clientRemoveBefore (ProtocolVersion ver) = case ver of
-	3 -> v3 V3
-	_ -> error "unsupported protocol version"
+	-> Maybe Auth
+	-> IO RemoveResultPlus
+clientRemoveBefore clientenv (ProtocolVersion ver) key cu su bypass ts auth =
+	withClientM (cli key cu su bypass ts auth) clientenv $ \case
+		Left err -> throwM err
+		Right res -> return res
   where
+	cli = case ver of
+		3 -> v3 V3
+		_ -> error "unsupported protocol version"
+	
 	_ :<|> _ :<|> _ :<|> _ :<|>
 		_ :<|> _ :<|> _ :<|> _ :<|>
 		_ :<|> _ :<|> _ :<|> _ :<|>
 		v3 :<|> _ = client p2pHttpAPI
-
 
 type GetTimestampAPI
 	= ClientUUID Required
@@ -316,7 +335,7 @@ serveGetTimestamp
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
 	-> Handler GetTimestampResult
-serveGetTimestamp = undefined
+serveGetTimestamp = undefined -- TODO
 
 clientGetTimestamp
 	:: ProtocolVersion
@@ -360,7 +379,7 @@ servePut
 	-> DataLength
 	-> S.SourceT IO B.ByteString
 	-> Handler t
-servePut = undefined
+servePut = undefined -- TODO
 
 clientPut
 	:: ProtocolVersion
@@ -405,7 +424,7 @@ servePutOffset
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
 	-> Handler t
-servePutOffset = undefined
+servePutOffset = undefined -- TODO
 
 clientPutOffset
 	:: ProtocolVersion
@@ -443,7 +462,7 @@ serveLockContent
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
 	-> Handler LockResult
-serveLockContent = undefined
+serveLockContent = undefined -- TODO
 
 clientLockContent
 	:: ProtocolVersion

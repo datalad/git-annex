@@ -437,14 +437,17 @@ removeBefore endtime key = do
 			let remoteendtime = remotetime + timeleft'
 			if timeleft <= 0
 				then return (Right False, Nothing)
-				else do
-					net $ sendMessage $
-						REMOVE_BEFORE remoteendtime key
-					checkSuccessFailurePlus	
+				else removeBeforeRemoteEndTime remoteendtime key
 		Just (ERROR err) -> return (Left err, Nothing)
 		_ -> do
 			net $ sendMessage (ERROR "expected TIMESTAMP")
 			return (Right False, Nothing)
+
+removeBeforeRemoteEndTime :: MonotonicTimestamp -> Key -> Proto (Either String Bool, Maybe [UUID])
+removeBeforeRemoteEndTime remoteendtime key = do
+	net $ sendMessage $
+		REMOVE_BEFORE remoteendtime key
+	checkSuccessFailurePlus	
 
 get :: FilePath -> Key -> Maybe IncrementalVerifier -> AssociatedFile -> Meter -> MeterUpdate -> Proto (Bool, Verification)
 get dest key iv af m p = 

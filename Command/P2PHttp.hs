@@ -16,6 +16,8 @@ import P2P.Http
 import qualified P2P.Protocol as P2P
 import Annex.Url
 import Utility.Env
+import Utility.ThreadScheduler
+import Utility.MonotonicClock
 
 import qualified Network.Wai.Handler.Warp as Warp
 import Servant
@@ -71,7 +73,7 @@ seek o = startConcurrency commandStages $ do
 	-- XXX remove this
 	when (isNothing (portOption o)) $ do
 		liftIO $ putStrLn "test begins"
-		testRemove
+		testRemoveBefore
 		giveup "TEST DONE" 
 	withLocalP2PConnections $ \acquireconn -> liftIO $ do
 		authenv <- getAuthEnv
@@ -149,7 +151,7 @@ testCheckPresent = do
 	burl <- liftIO $ parseBaseUrl "http://localhost:8080/"
 	res <- liftIO $ clientCheckPresent (mkClientEnv mgr burl)
 		(P2P.ProtocolVersion 3)
-		(B64Key (fromJust $ deserializeKey ("WORM-s30-m1720547401--foo" :: String)))
+		(B64Key (fromJust $ deserializeKey ("WORM-s30-m1720617630--bar" :: String)))
 		(B64UUID (toUUID ("cu" :: String)))
 		(B64UUID (toUUID ("f11773f0-11e1-45b2-9805-06db16768efe" :: String)))
 		[]
@@ -165,6 +167,23 @@ testRemove = do
 		(B64UUID (toUUID ("cu" :: String)))
 		(B64UUID (toUUID ("f11773f0-11e1-45b2-9805-06db16768efe" :: String)))
 		[]
+		Nothing
+	liftIO $ print res
+
+testRemoveBefore = do
+	mgr <- httpManager <$> getUrlOptions
+	burl <- liftIO $ parseBaseUrl "http://localhost:8080/"
+	MonotonicTimestamp t <- liftIO currentMonotonicTimestamp
+	--liftIO $ threadDelaySeconds (Seconds 10)
+	let ts = MonotonicTimestamp (t + 10)
+	liftIO $ print ("running with timestamp", ts)
+	res <- liftIO $ clientRemoveBefore (mkClientEnv mgr burl)
+		(P2P.ProtocolVersion 3)
+		(B64Key (fromJust $ deserializeKey ("WORM-s30-m1720617630--bar" :: String)))
+		(B64UUID (toUUID ("cu" :: String)))
+		(B64UUID (toUUID ("f11773f0-11e1-45b2-9805-06db16768efe" :: String)))
+		[]
+		(Timestamp ts)
 		Nothing
 	liftIO $ print res
 

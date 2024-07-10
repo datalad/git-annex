@@ -272,10 +272,6 @@ or false if the key was not able to be removed.
 The JSON object can have an additional field "plusuuids" that is a list of
 UUIDs of other repositories that the content was removed from.
 
-If the server does not allow removing the key due to a policy
-(eg due to being read-only or append-only), it will respond with a JSON
-object with an "error" field that has an error message as its value.
-
 ### POST /git-annex/v2/remove
 
 Identical to v3.
@@ -362,16 +358,10 @@ should not be used. This can happen when eg, the data was being sent from
 an unlocked annexed file, which got modified while it was being sent.
 
 The server responds with a JSON object with a field "stored"
-that is true if it received the data and stored the
-content.
+that is true if it received the data and stored the content.
 
 The JSON object can have an additional field "plusuuids" that is a list of
 UUIDs of other repositories that the content was stored to.
-
-If the server does not allow storing the key due eg to a policy
-(eg due to being read-only or append-only), or due to the data being
-invalid, or because it ran out of disk space, it will respond with a
-JSON object with an "error" field that has an error message as its value.
 
 ### POST /git-annex/v2/put
 
@@ -411,10 +401,6 @@ JSON object with an "alreadyhave" field that is set to true. This JSON
 object may also have a field "plusuuids" that lists 
 the UUIDs of other repositories where the content is stored, in addition to
 the serveruuid.
-
-If the server does not allow storing the key due to a policy
-(eg due to being read-only or append-only), it will respond with a JSON
-object with an "error" field that has an error message as its value.
 
 [Implementation note: This will be implemented by sending `PUT` and
 returning the `PUT-FROM` offset. To avoid leaving the P2P protocol stuck
