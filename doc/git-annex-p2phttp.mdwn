@@ -14,6 +14,10 @@ a repository over HTTP with write access for authenticated users.
 
 # OPTIONS
 
+* `--port=N`
+
+  Port to listen on. Default is port 80.
+
 * `--authenv`
 
   Allows users to be authenticated with a username and password.
@@ -35,19 +39,19 @@ a repository over HTTP with write access for authenticated users.
   over HTTP. This is not secure, since HTTP basic authentication is not
   encrypted.
 
-* `--readonly`
+* `--unauth-readonly`
 
   Allows unauthenticated users to read the repository, but not make
   modifications to it.
 
-* `--appendonly`
+* `--unauth-appendonly`
 
   Allows unauthenticated users to read the repository, and store data in
   it, but not remove data from it.
 
 * `--wideopen`
 
-  Gives unauthenticated users full access to the repository.
+  Gives unauthenticated users full read+write access to the repository.
 
   Please think carefully before enabling this option.
 

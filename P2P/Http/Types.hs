@@ -100,11 +100,11 @@ data LockResult = LockResult Bool (Maybe LockID)
 newtype UnlockRequest = UnlockRequest Bool
 	deriving (Show, Generic, NFData)
 
--- Not using servant's build-in basic authentication support,
+-- Not using servant's built-in basic authentication support,
 -- because whether authentication is needed depends on server
 -- configuration.
 data Auth = Auth B.ByteString B.ByteString
-	deriving (Show, Generic, NFData)
+	deriving (Show, Generic, NFData, Eq, Ord)
 
 instance ToHttpApiData Auth where
 	toHeader (Auth u p) = "Basic " <> toB64 (u <> ":" <> p)

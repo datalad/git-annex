@@ -46,12 +46,13 @@ withP2PConnection
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
+	-> IsSecure
 	-> Maybe Auth
 	-> ActionClass
 	-> (RunState -> P2PConnection -> Handler a)
 	-> Handler a
-withP2PConnection apiver st cu su bypass auth actionclass connaction =
-	case (getServerMode st auth, actionclass) of
+withP2PConnection apiver st cu su bypass sec auth actionclass connaction =
+	case (getServerMode st sec auth, actionclass) of
 		(Just P2P.ServeReadWrite, _) -> go P2P.ServeReadWrite
 		(Just P2P.ServeAppendOnly, RemoveAction) -> throwError err403
 		(Just P2P.ServeAppendOnly, _) -> go P2P.ServeAppendOnly
@@ -77,7 +78,7 @@ withP2PConnection apiver st cu su bypass auth actionclass connaction =
 			}
 
 -- Nothing when the server is not allowed to serve any requests.
-type GetServerMode = Maybe Auth -> Maybe P2P.ServerMode
+type GetServerMode = IsSecure -> Maybe Auth -> Maybe P2P.ServerMode
 
 data ConnectionParams = ConnectionParams
 	{ connectionProtocolVersion :: P2P.ProtocolVersion

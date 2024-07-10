@@ -161,6 +161,7 @@ type CheckPresentAPI
 	:> ClientUUID Required
 	:> ServerUUID Required
 	:> BypassUUIDs
+	:> IsSecure
 	:> AuthHeader
 	:> Post '[JSON] CheckPresentResult
 
@@ -172,34 +173,17 @@ serveCheckPresent
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
+	-> IsSecure
 	-> Maybe Auth
 	-> Handler CheckPresentResult
-serveCheckPresent st apiver (B64Key k) cu su bypass auth = do
-	res <- withP2PConnection apiver st cu su bypass auth ReadAction
+serveCheckPresent st apiver (B64Key k) cu su bypass sec auth = do
+	res <- withP2PConnection apiver st cu su bypass sec auth ReadAction
 		$ \runst conn ->
 			liftIO $ runNetProto runst conn $ checkPresent k
 	case res of
 		Right (Right b) -> return (CheckPresentResult b)
 		Right (Left err) -> throwError $ err500 { errBody = encodeBL err }
 		Left err -> throwError $ err500 { errBody = encodeBL (describeProtoFailure err) }
-
-clientCheckPresent'
-	:: ProtocolVersion
-	-> B64Key
-	-> B64UUID ClientSide
-	-> B64UUID ServerSide
-	-> [B64UUID Bypass]
-	-> Maybe Auth
-	-> ClientM CheckPresentResult
-clientCheckPresent' (ProtocolVersion ver) = case ver of
-	3 -> v3 V3
-	2 -> v2 V2
-	1 -> v1 V1
-	0 -> v0 V0
-	_ -> error "unsupported protocol version"
-  where
-	_ :<|> _ :<|> _ :<|> _ :<|>
-		v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
 
 clientCheckPresent
 	:: ClientEnv
@@ -210,11 +194,20 @@ clientCheckPresent
 	-> [B64UUID Bypass]
 	-> Maybe Auth
 	-> IO Bool
-clientCheckPresent clientenv protover key cu su bypass auth = do
-	let cli = clientCheckPresent' protover key cu su bypass auth
-	withClientM cli clientenv $ \case
+clientCheckPresent clientenv (ProtocolVersion ver) key cu su bypass auth =
+	withClientM (cli key cu su bypass auth) clientenv $ \case
 		Left err -> throwM err
 		Right (CheckPresentResult res) -> return res
+  where
+	cli = case ver of
+		3 -> v3 V3
+		2 -> v2 V2
+		1 -> v1 V1
+		0 -> v0 V0
+		_ -> error "unsupported protocol version"
+	
+	_ :<|> _ :<|> _ :<|> _ :<|>
+		v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
 
 type RemoveAPI result
 	= KeyParam
