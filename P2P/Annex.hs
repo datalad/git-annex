@@ -107,16 +107,23 @@ runLocal runst runner a = case a of
 				ProtoFailureMessage "Transfer failed"
 			let consumer' b ti = do
 				validator <- consumer b
+				liftIO $ print "got validator"
 				indicatetransferred ti
+				liftIO $ print "indicatetransferred ti done"
 				return validator
 			runner getb >>= \case
 				Left e -> giveup $ describeProtoFailure e
 				Right b -> checktransfer (\ti -> Right <$> consumer' b ti) fallback >>= \case
 					Left e -> return (Left e)
-					Right validator ->
+					Right validator -> do
+						liftIO $ print "running validity check"
 						runner validitycheck >>= \case
-							Right v -> Right <$> validator v
-							_ -> Right <$> validator Nothing
+							Right v -> do
+								liftIO $ print ("calling validator 1", v)
+								Right <$> validator v
+							_ -> do
+								liftIO $ print "calling validator nothing"
+								Right <$> validator Nothing
 		case v of
 			Left e -> return $ Left $ ProtoFailureException e
 			Right (Left e) -> return $ Left e

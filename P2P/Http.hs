@@ -158,8 +158,11 @@ serveGet st apiver (B64Key k) cu su bypass baf startat sec auth = do
 	aid <- liftIO $ async $ inAnnexWorker st $ do
 		let consumer bs = do
 			liftIO $ atomically $ putTMVar bsv bs
+			liftIO $ print "consumer waiting for endv"
 			liftIO $ atomically $ takeTMVar endv
+			liftIO $ print "consumer took endv"
 			return $ \v -> do
+				liftIO $ print "consumer put validityv"
 				liftIO $ atomically $
 					putTMVar validityv v
 				return True
@@ -178,17 +181,22 @@ serveGet st apiver (B64Key k) cu su bypass baf startat sec auth = do
 	stream (releaseconn, bv, endv, validityv, aid) =
 		S.fromActionStep B.null $ do
 			print "chunk"
-			modifyMVar bv $ \case
-				(b:bs) -> return (bs, b)
-				[] -> do
-					endbit <- cleanup (releaseconn, endv, validityv, aid)
-					return ([], endbit)
+			modifyMVar bv $ nextchunk $
+				cleanup (releaseconn, endv, validityv, aid)
 	
+	nextchunk atend (b:bs)
+		| not (B.null b) = return (bs, b)
+		| otherwise = nextchunk atend bs
+	nextchunk atend [] = do
+		endbit <- atend
+		return ([], endbit)
+
 	cleanup (releaseconn, endv, validityv, aid) =
 		ifM (atomically $ isEmptyTMVar endv)
-			( pure mempty
-			, do
+			( do
+				print "at end"
 				atomically $ putTMVar endv ()
+				print "signaled end"
 				validity <- atomically $ takeTMVar validityv
 				print ("got validity", validity)
 				wait aid >>= \case
@@ -207,6 +215,7 @@ serveGet st apiver (B64Key k) cu su bypass baf startat sec auth = do
 					Just Invalid -> "XXXXXXX"
 					-- FIXME: need to count bytes and emit
 					-- something to make it invalid
+			, pure mempty
 			)
 
 	sizer = pure $ Len $ case startat of

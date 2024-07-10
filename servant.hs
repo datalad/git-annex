@@ -32,23 +32,33 @@ import System.IO.Unsafe
 import qualified Network.Wai.Handler.Warp     as Warp
 
 type API = "readme" :> StreamGet NoFraming OctetStream (SourceIO BS.ByteString)
+	:<|> "writeme" :> StreamBody NoFraming OctetStream (SourceIO BS.ByteString) :> Post '[JSON] Bool
 
 api :: Proxy API
 api = Proxy
 
 server :: Server API
-server = readme where
+server = readme :<|> writeme where
     readme = liftIO $ do
         putStrLn "/proxy"
         return $ S.SourceT $ \k -> do
 		k =<< readfilelazy "README.md"
 		k =<< readfilelazy "another"
 
+writeme :: SourceIO BS.ByteString -> Handler Bool
+writeme src = do
+	liftIO $ print "gathering lazy bytestring"
+	b <- liftIO $ S.unSourceT src gatherbytestring
+	liftIO $ print "got lazy bytestring, writing to file"
+	liftIO$ BL.writeFile "writem" b
+	liftIO$ print "write complete"
+	return True
+
 app :: Application
 app = serve api server
 
 cli :: ClientM (S.SourceT IO BS.ByteString)
-cli = client api
+cli :<|> writecli = client api
 
 main :: IO ()
 main = do
@@ -61,17 +71,17 @@ main = do
         ("client":ns:_) -> do
             mgr <- newManager defaultManagerSettings
             burl <- parseBaseUrl "http://localhost:8000/"
-            withClientM cli (mkClientEnv mgr burl) $ \me -> case me of
+            withClientM (writecli getit) (mkClientEnv mgr burl) $ \me -> case me of
                 Left err  -> print err
-                Right src -> do
-                	b <- S.unSourceT src gatherbytestring
-			liftIO $ print "got it all, writing"
-			BL.writeFile "got" (BL.init b)
+                Right src -> print src
         _ -> do
             putStrLn "Try:"
             putStrLn "cabal new-run cookbook-basic-streaming server"
             putStrLn "cabal new-run cookbook-basic-streaming client 10"
             putStrLn "time curl -H 'Accept: application/json' localhost:8000/slow/5"
+  where
+	getit = S.SourceT $ \k -> do
+                k =<< readfilelazy "/home/joey/README.md"
 
 readfilelazy :: FilePath -> IO (S.StepT IO BS.ByteString)
 readfilelazy file = do
