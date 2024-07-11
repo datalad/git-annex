@@ -164,8 +164,8 @@ testGet = do
 	res <- liftIO $ clientGet (mkClientEnv mgr burl)
 		(P2P.ProtocolVersion 3)
 		(B64Key (fromJust $ deserializeKey ("SHA256E-s1048576000--e3b67ce72aa2571c799d6419e3e36828461ac1c78f8ef300c7f9c8ae671c517f" :: String)))
-		(B64UUID (toUUID ("cu" :: String)))
 		(B64UUID (toUUID ("f11773f0-11e1-45b2-9805-06db16768efe" :: String)))
+		(B64UUID (toUUID ("cu" :: String)))
 		[]
 		Nothing
 		Nothing

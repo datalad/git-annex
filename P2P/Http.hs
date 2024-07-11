@@ -12,6 +12,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE BangPatterns #-}
 
 module P2P.Http (
 	module P2P.Http,
@@ -188,38 +189,45 @@ serveGet st su apiver (B64Key k) cu bypass baf startat sec auth = do
 	void $ liftIO $ forkIO $ waitfinal endv finalv conn annexworker
 	(Len len, bs) <- liftIO $ atomically $ takeTMVar bsv
 	bv <- liftIO $ newMVar (L.toChunks bs)
+	szv <- liftIO $ newMVar 0
 	let streamer = S.SourceT $ \s -> s =<< return 
-		(stream (bv, endv, validityv, finalv))
+		(stream (bv, szv, len, endv, validityv, finalv))
  	return $ addHeader len streamer
   where
-	stream (bv, endv, validityv, finalv) =
+	stream (bv, szv, len, endv, validityv, finalv) =
 		S.fromActionStep B.null $
-			modifyMVar bv $ nextchunk $
-				checkvalidity (endv, validityv, finalv)
+			modifyMVar bv $ nextchunk szv $
+				checkvalidity szv len endv validityv finalv
 	
-	nextchunk atend (b:bs)
-		| not (B.null b) = return (bs, b)
-		| otherwise = nextchunk atend bs
-	nextchunk atend [] = do
+	nextchunk szv atend (b:bs)
+		| not (B.null b) = do
+			modifyMVar szv $ \sz ->
+				let !sz' = sz + fromIntegral (B.length b)
+				in return (sz', ())
+			return (bs, b)
+		| otherwise = nextchunk szv atend bs
+	nextchunk _szv atend [] = do
 		endbit <- atend
 		return ([], endbit)
 
-	checkvalidity (endv, validityv, finalv) =
+	checkvalidity szv len endv validityv finalv =
 		ifM (atomically $ isEmptyTMVar endv)
 			( do
 				atomically $ putTMVar endv ()
 				validity <- atomically $ takeTMVar validityv
+				sz <- takeMVar szv
 				atomically $ putTMVar finalv ()
 				-- When the key's content is invalid,
 				-- indicate that to the client by padding
-				-- the response, so it is not the same
-				-- length indicated by the DataLengthHeader.
+				-- the response if necessary, so it is not
+				-- the same length indicated by the
+				-- DataLengthHeader.
 				return $ case validity of
 					Nothing -> mempty
 					Just Valid -> mempty
-					Just Invalid -> "XXXXXXX"
-					-- FIXME: need to count bytes and emit
-					-- something to make it invalid
+					Just Invalid
+						| sz == len -> "X"
+						| otherwise -> mempty
 			, pure mempty
 			)
 	
