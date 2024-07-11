@@ -42,43 +42,43 @@ import Control.Concurrent
 import System.IO.Unsafe
 
 type P2PHttpAPI
-	=    "git-annex" :> PV3 :> "key" :> CaptureKey :> GetAPI
-	:<|> "git-annex" :> PV2 :> "key" :> CaptureKey :> GetAPI
-	:<|> "git-annex" :> PV1 :> "key" :> CaptureKey :> GetAPI
-	:<|> "git-annex" :> PV0 :> "key" :> CaptureKey :> GetAPI
-	:<|> "git-annex" :> PV3 :> "checkpresent" :> CheckPresentAPI
-	:<|> "git-annex" :> PV2 :> "checkpresent" :> CheckPresentAPI
-	:<|> "git-annex" :> PV1 :> "checkpresent" :> CheckPresentAPI
-	:<|> "git-annex" :> PV0 :> "checkpresent" :> CheckPresentAPI
-	:<|> "git-annex" :> PV3 :> "remove" :> RemoveAPI RemoveResultPlus
-	:<|> "git-annex" :> PV2 :> "remove" :> RemoveAPI RemoveResultPlus
-	:<|> "git-annex" :> PV1 :> "remove" :> RemoveAPI RemoveResult
-	:<|> "git-annex" :> PV0 :> "remove" :> RemoveAPI RemoveResult
-	:<|> "git-annex" :> PV3 :> "remove-before" :> RemoveBeforeAPI
-	:<|> "git-annex" :> PV3 :> "gettimestamp" :> GetTimestampAPI
-	:<|> "git-annex" :> PV3 :> "put" :> DataLengthHeader
+	=    "git-annex" :> SU :> PV3 :> "key" :> GetAPI
+	:<|> "git-annex" :> SU :> PV2 :> "key" :> GetAPI
+	:<|> "git-annex" :> SU :> PV1 :> "key" :> GetAPI
+	:<|> "git-annex" :> SU :> PV0 :> "key" :> GetAPI
+	:<|> "git-annex" :> SU :> PV3 :> "checkpresent" :> CheckPresentAPI
+	:<|> "git-annex" :> SU :> PV2 :> "checkpresent" :> CheckPresentAPI
+	:<|> "git-annex" :> SU :> PV1 :> "checkpresent" :> CheckPresentAPI
+	:<|> "git-annex" :> SU :> PV0 :> "checkpresent" :> CheckPresentAPI
+	:<|> "git-annex" :> SU :> PV3 :> "remove" :> RemoveAPI RemoveResultPlus
+	:<|> "git-annex" :> SU :> PV2 :> "remove" :> RemoveAPI RemoveResultPlus
+	:<|> "git-annex" :> SU :> PV1 :> "remove" :> RemoveAPI RemoveResult
+	:<|> "git-annex" :> SU :> PV0 :> "remove" :> RemoveAPI RemoveResult
+	:<|> "git-annex" :> SU :> PV3 :> "remove-before" :> RemoveBeforeAPI
+	:<|> "git-annex" :> SU :> PV3 :> "gettimestamp" :> GetTimestampAPI
+	:<|> "git-annex" :> SU :> PV3 :> "put" :> DataLengthHeader
 		:> PutAPI PutResultPlus
-	:<|> "git-annex" :> PV2 :> "put" :> DataLengthHeader
+	:<|> "git-annex" :> SU :> PV2 :> "put" :> DataLengthHeader
 		:> PutAPI PutResultPlus
-	:<|> "git-annex" :> PV1 :> "put" :> DataLengthHeader
+	:<|> "git-annex" :> SU :> PV1 :> "put" :> DataLengthHeader
 		:> PutAPI PutResult
-	:<|> "git-annex" :> PV0 :> "put"
+	:<|> "git-annex" :> SU :> PV0 :> "put"
 		:> PutAPI PutResult
-	:<|> "git-annex" :> PV3 :> "putoffset"
+	:<|> "git-annex" :> SU :> PV3 :> "putoffset"
 		:> PutOffsetAPI PutOffsetResultPlus
-	:<|> "git-annex" :> PV2 :> "putoffset"
+	:<|> "git-annex" :> SU :> PV2 :> "putoffset"
 		:> PutOffsetAPI PutOffsetResultPlus
-	:<|> "git-annex" :> PV1 :> "putoffset"
+	:<|> "git-annex" :> SU :> PV1 :> "putoffset"
 		:> PutOffsetAPI PutOffsetResult
-	:<|> "git-annex" :> PV3 :> "lockcontent" :> LockContentAPI
-	:<|> "git-annex" :> PV2 :> "lockcontent" :> LockContentAPI
-	:<|> "git-annex" :> PV1 :> "lockcontent" :> LockContentAPI
-	:<|> "git-annex" :> PV0 :> "lockcontent" :> LockContentAPI
-	:<|> "git-annex" :> PV3 :> "keeplocked" :> KeepLockedAPI
-	:<|> "git-annex" :> PV2 :> "keeplocked" :> KeepLockedAPI
-	:<|> "git-annex" :> PV1 :> "keeplocked" :> KeepLockedAPI
-	:<|> "git-annex" :> PV0 :> "keeplocked" :> KeepLockedAPI
-	:<|> "git-annex" :> "key" :> CaptureKey :> GetGenericAPI
+	:<|> "git-annex" :> SU :> PV3 :> "lockcontent" :> LockContentAPI
+	:<|> "git-annex" :> SU :> PV2 :> "lockcontent" :> LockContentAPI
+	:<|> "git-annex" :> SU :> PV1 :> "lockcontent" :> LockContentAPI
+	:<|> "git-annex" :> SU :> PV0 :> "lockcontent" :> LockContentAPI
+	:<|> "git-annex" :> SU :> PV3 :> "keeplocked" :> KeepLockedAPI
+	:<|> "git-annex" :> SU :> PV2 :> "keeplocked" :> KeepLockedAPI
+	:<|> "git-annex" :> SU :> PV1 :> "keeplocked" :> KeepLockedAPI
+	:<|> "git-annex" :> SU :> PV0 :> "keeplocked" :> KeepLockedAPI
+	:<|> "git-annex" :> SU :> "key" :> GetGenericAPI
 
 p2pHttpAPI :: Proxy P2PHttpAPI
 p2pHttpAPI = Proxy
@@ -105,7 +105,7 @@ serveP2pHttp st
 	:<|> servePut st id
 	:<|> servePut st id
 	:<|> servePut st dePlus
-	:<|> (\v -> servePut st dePlus v Nothing)
+	:<|> (\su v -> servePut st dePlus su v Nothing)
 	:<|> servePutOffset st id
 	:<|> servePutOffset st id
 	:<|> servePutOffset st dePlus
@@ -119,14 +119,20 @@ serveP2pHttp st
 	:<|> serveKeepLocked st
 	:<|> serveGetGeneric st
 
-type GetGenericAPI = StreamGet NoFraming OctetStream (SourceIO B.ByteString)
+type GetGenericAPI
+	= CaptureKey
+	:> StreamGet NoFraming OctetStream (SourceIO B.ByteString)
 
-serveGetGeneric :: P2PHttpServerState -> B64Key -> Handler (S.SourceT IO B.ByteString)
-serveGetGeneric = undefined -- TODO
+serveGetGeneric
+	:: P2PHttpServerState
+	-> B64UUID ServerSide
+	-> B64Key
+	-> Handler (S.SourceT IO B.ByteString)
+serveGetGeneric st su k = undefined -- serveGet st V0 k
 
 type GetAPI
-	= ClientUUID Required
-	:> ServerUUID Required
+	= CaptureKey
+	:> CU Required
 	:> BypassUUIDs
 	:> AssociatedFileParam
 	:> OffsetParam
@@ -138,17 +144,17 @@ type GetAPI
 serveGet
 	:: APIVersion v
 	=> P2PHttpServerState
+	-> B64UUID ServerSide
 	-> v
 	-> B64Key
 	-> B64UUID ClientSide
-	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
 	-> Maybe B64FilePath
 	-> Maybe Offset
 	-> IsSecure
 	-> Maybe Auth
 	-> Handler (Headers '[DataLengthHeader] (S.SourceT IO B.ByteString))
-serveGet st apiver (B64Key k) cu su bypass baf startat sec auth = do
+serveGet st su apiver (B64Key k) cu bypass baf startat sec auth = do
 	conn <- getP2PConnection apiver st cu su bypass sec auth ReadAction
 	bsv <- liftIO newEmptyTMVarIO
 	endv <- liftIO newEmptyTMVarIO
@@ -232,15 +238,15 @@ clientGet
 	:: ClientEnv
 	-> ProtocolVersion
 	-> B64Key
-	-> B64UUID ClientSide
 	-> B64UUID ServerSide
+	-> B64UUID ClientSide
 	-> [B64UUID Bypass]
 	-> Maybe B64FilePath
 	-> Maybe Offset
 	-> Maybe Auth
 	-> IO ()
-clientGet clientenv ver k cu su bypass af o auth =
-	withClientM (clientGet' ver k cu su bypass af o auth) clientenv $ \case
+clientGet clientenv ver k su cu bypass af o auth =
+	withClientM (clientGet' su ver k cu bypass af o auth) clientenv $ \case
 		Left err -> throwM err
 		Right respheaders -> do
 			let dl = case lookupResponseHeader @DataLengthHeader' respheaders of
@@ -261,28 +267,27 @@ gatherByteString = unsafeInterleaveIO . go
 	go (S.Yield v s) = LI.Chunk v <$> unsafeInterleaveIO (go s)
 
 clientGet'
-	:: ProtocolVersion
+	:: B64UUID ServerSide
+	-> ProtocolVersion
 	-> B64Key
 	-> B64UUID ClientSide
-	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
 	-> Maybe B64FilePath
 	-> Maybe Offset
 	-> Maybe Auth
 	-> ClientM (Headers '[DataLengthHeader] (S.SourceT IO B.ByteString))
-clientGet' (ProtocolVersion ver) = case ver of
-	3 -> v3 V3
-	2 -> v2 V2
-	1 -> v1 V1
-	0 -> v0 V0
+clientGet' su (ProtocolVersion ver) = case ver of
+	3 -> v3 su V3
+	2 -> v2 su V2
+	1 -> v1 su V1
+	0 -> v0 su V0
 	_ -> error "unsupported protocol version"
   where
 	v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
 
 type CheckPresentAPI
 	= KeyParam
-	:> ClientUUID Required
-	:> ServerUUID Required
+	:> CU Required
 	:> BypassUUIDs
 	:> IsSecure
 	:> AuthHeader
@@ -291,15 +296,15 @@ type CheckPresentAPI
 serveCheckPresent
 	:: APIVersion v
 	=> P2PHttpServerState
+	-> B64UUID ServerSide
 	-> v
 	-> B64Key
 	-> B64UUID ClientSide
-	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
 	-> IsSecure
 	-> Maybe Auth
 	-> Handler CheckPresentResult
-serveCheckPresent st apiver (B64Key k) cu su bypass sec auth = do
+serveCheckPresent st su apiver (B64Key k) cu bypass sec auth = do
 	res <- withP2PConnection apiver st cu su bypass sec auth ReadAction
 		$ \conn -> liftIO $ proxyClientNetProto conn $ checkPresent k
 	case res of
@@ -316,15 +321,15 @@ clientCheckPresent
 	-> Maybe Auth
 	-> IO Bool
 clientCheckPresent clientenv (ProtocolVersion ver) key cu su bypass auth =
-	withClientM (cli key cu su bypass auth) clientenv $ \case
+	withClientM (cli su key cu bypass auth) clientenv $ \case
 		Left err -> throwM err
 		Right (CheckPresentResult res) -> return res
   where
 	cli = case ver of
-		3 -> v3 V3
-		2 -> v2 V2
-		1 -> v1 V1
-		0 -> v0 V0
+		3 -> flip v3 V3
+		2 -> flip v2 V2
+		1 -> flip v1 V1
+		0 -> flip v0 V0
 		_ -> error "unsupported protocol version"
 	
 	_ :<|> _ :<|> _ :<|> _ :<|>
@@ -332,8 +337,7 @@ clientCheckPresent clientenv (ProtocolVersion ver) key cu su bypass auth =
 
 type RemoveAPI result
 	= KeyParam
-	:> ClientUUID Required
-	:> ServerUUID Required
+	:> CU Required
 	:> BypassUUIDs
 	:> IsSecure
 	:> AuthHeader
@@ -343,15 +347,15 @@ serveRemove
 	:: APIVersion v
 	=> P2PHttpServerState
 	-> (RemoveResultPlus -> t)
+	-> B64UUID ServerSide
 	-> v
 	-> B64Key
 	-> B64UUID ClientSide
-	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
 	-> IsSecure
 	-> Maybe Auth
 	-> Handler t
-serveRemove st resultmangle apiver (B64Key k) cu su bypass sec auth = do
+serveRemove st resultmangle su apiver (B64Key k) cu bypass sec auth = do
 	res <- withP2PConnection apiver st cu su bypass sec auth RemoveAction
 		$ \conn ->
 			liftIO $ proxyClientNetProto conn $ remove Nothing k
@@ -376,10 +380,10 @@ clientRemove clientenv (ProtocolVersion ver) key cu su bypass auth =
 		Right res -> return res
   where
 	cli = case ver of
-		3 -> v3 V3 key cu su bypass auth
-		2 -> v2 V2 key cu su bypass auth
-		1 -> plus <$> v1 V1 key cu su bypass auth
-		0 -> plus <$> v0 V0 key cu su bypass auth
+		3 -> v3 su V3 key cu bypass auth
+		2 -> v2 su V2 key cu bypass auth
+		1 -> plus <$> v1 su V1 key cu bypass auth
+		0 -> plus <$> v0 su V0 key cu bypass auth
 		_ -> error "unsupported protocol version"
 	
 	_ :<|> _ :<|> _ :<|> _ :<|>
@@ -388,8 +392,7 @@ clientRemove clientenv (ProtocolVersion ver) key cu su bypass auth =
 
 type RemoveBeforeAPI
 	= KeyParam
-	:> ClientUUID Required
-	:> ServerUUID Required
+	:> CU Required
 	:> BypassUUIDs
 	:> QueryParam' '[Required] "timestamp" Timestamp
 	:> IsSecure
@@ -399,16 +402,16 @@ type RemoveBeforeAPI
 serveRemoveBefore
 	:: APIVersion v
 	=> P2PHttpServerState
+	-> B64UUID ServerSide
 	-> v
 	-> B64Key
 	-> B64UUID ClientSide
-	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
 	-> Timestamp
 	-> IsSecure
 	-> Maybe Auth
 	-> Handler RemoveResultPlus
-serveRemoveBefore st apiver (B64Key k) cu su bypass (Timestamp ts) sec auth = do
+serveRemoveBefore st su apiver (B64Key k) cu bypass (Timestamp ts) sec auth = do
 	res <- withP2PConnection apiver st cu su bypass sec auth RemoveAction
 		$ \conn ->
 			liftIO $ proxyClientNetProto conn $
@@ -430,12 +433,12 @@ clientRemoveBefore
 	-> Maybe Auth
 	-> IO RemoveResultPlus
 clientRemoveBefore clientenv (ProtocolVersion ver) key cu su bypass ts auth =
-	withClientM (cli key cu su bypass ts auth) clientenv $ \case
+	withClientM (cli su key cu bypass ts auth) clientenv $ \case
 		Left err -> throwM err
 		Right res -> return res
   where
 	cli = case ver of
-		3 -> v3 V3
+		3 -> flip v3 V3
 		_ -> error "unsupported protocol version"
 	
 	_ :<|> _ :<|> _ :<|> _ :<|>
@@ -444,8 +447,7 @@ clientRemoveBefore clientenv (ProtocolVersion ver) key cu su bypass ts auth =
 		v3 :<|> _ = client p2pHttpAPI
 
 type GetTimestampAPI
-	= ClientUUID Required
-	:> ServerUUID Required
+	= CU Required
 	:> BypassUUIDs
 	:> IsSecure
 	:> AuthHeader
@@ -454,14 +456,14 @@ type GetTimestampAPI
 serveGetTimestamp
 	:: APIVersion v
 	=> P2PHttpServerState
+	-> B64UUID ServerSide
 	-> v
 	-> B64UUID ClientSide
-	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
 	-> IsSecure
 	-> Maybe Auth
 	-> Handler GetTimestampResult
-serveGetTimestamp st apiver cu su bypass sec auth = do
+serveGetTimestamp st su apiver cu bypass sec auth = do
 	res <- withP2PConnection apiver st cu su bypass sec auth ReadAction
 		$ \conn ->
 			liftIO $ proxyClientNetProto conn getTimestamp
@@ -479,12 +481,12 @@ clientGetTimestamp
 	-> Maybe Auth
 	-> IO GetTimestampResult
 clientGetTimestamp clientenv (ProtocolVersion ver) cu su bypass auth = 
-	withClientM (cli cu su bypass auth) clientenv $ \case
+	withClientM (cli su cu bypass auth) clientenv $ \case
 		Left err -> throwM err
 		Right res -> return res
   where
 	cli = case ver of
-		3 -> v3 V3
+		3 -> flip v3 V3
 		_ -> error "unsupported protocol version"
 	
 	_ :<|> _ :<|> _ :<|> _ :<|>
@@ -495,8 +497,7 @@ clientGetTimestamp clientenv (ProtocolVersion ver) cu su bypass auth =
 
 type PutAPI result
 	= KeyParam
-	:> ClientUUID Required
-	:> ServerUUID Required
+	:> CU Required
 	:> BypassUUIDs
 	:> AssociatedFileParam
 	:> OffsetParam
@@ -508,11 +509,11 @@ servePut
 	:: APIVersion v
 	=> P2PHttpServerState
 	-> (PutResultPlus -> t)
+	-> B64UUID ServerSide
 	-> v
 	-> Maybe Integer
 	-> B64Key
 	-> B64UUID ClientSide
-	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
 	-> Maybe B64FilePath
 	-> Maybe Offset
@@ -534,10 +535,10 @@ clientPut
 	-> S.SourceT IO B.ByteString
 	-> ClientM PutResultPlus
 clientPut (ProtocolVersion ver) sz k cu su bypass af o l src = case ver of
-	3 -> v3 V3 sz k cu su bypass af o l src
-	2 -> v2 V2 sz k cu su bypass af o l src
-	1 -> plus <$> v1 V1 sz k cu su bypass af o l src
-	0 -> plus <$> v0 V0 k cu su bypass af o l src
+	3 -> v3 su V3 sz k cu bypass af o l src
+	2 -> v2 su V2 sz k cu bypass af o l src
+	1 -> plus <$> v1 su V1 sz k cu bypass af o l src
+	0 -> plus <$> v0 su V0 k cu bypass af o l src
 	_ -> error "unsupported protocol version"
   where
 	_ :<|> _ :<|> _ :<|> _ :<|>
@@ -549,8 +550,7 @@ clientPut (ProtocolVersion ver) sz k cu su bypass af o l src = case ver of
 
 type PutOffsetAPI result
 	= KeyParam
-	:> ClientUUID Required
-	:> ServerUUID Required
+	:> CU Required
 	:> BypassUUIDs
 	:> Post '[JSON] result
 
@@ -558,24 +558,24 @@ servePutOffset
 	:: APIVersion v
 	=> P2PHttpServerState
 	-> (PutOffsetResultPlus -> t)
+	-> B64UUID ServerSide
 	-> v
 	-> B64Key
 	-> B64UUID ClientSide
-	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
 	-> Handler t
 servePutOffset = undefined -- TODO
 
 clientPutOffset
-	:: ProtocolVersion
+	:: B64UUID ServerSide
+	-> ProtocolVersion
 	-> B64Key
 	-> B64UUID ClientSide
-	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
 	-> ClientM PutOffsetResultPlus
-clientPutOffset (ProtocolVersion ver) = case ver of
-	3 -> v3 V3
-	2 -> v2 V2
+clientPutOffset su (ProtocolVersion ver) = case ver of
+	3 -> v3 su V3
+	2 -> v2 su V2
 	_ -> error "unsupported protocol version"
   where
 	_ :<|> _ :<|> _ :<|> _ :<|>
@@ -588,34 +588,33 @@ clientPutOffset (ProtocolVersion ver) = case ver of
 
 type LockContentAPI
 	= KeyParam
-	:> ClientUUID Required
-	:> ServerUUID Required
+	:> CU Required
 	:> BypassUUIDs
 	:> Post '[JSON] LockResult
 
 serveLockContent
 	:: APIVersion v
 	=> P2PHttpServerState
+	-> B64UUID ServerSide
 	-> v
 	-> B64Key
 	-> B64UUID ClientSide
-	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
 	-> Handler LockResult
 serveLockContent = undefined -- TODO
 
 clientLockContent
-	:: ProtocolVersion
+	:: B64UUID ServerSide
+	-> ProtocolVersion
 	-> B64Key
 	-> B64UUID ClientSide
-	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
 	-> ClientM LockResult
-clientLockContent (ProtocolVersion ver) = case ver of
-	3 -> v3 V3
-	2 -> v2 V2
-	1 -> v1 V1
-	0 -> v0 V0
+clientLockContent su (ProtocolVersion ver) = case ver of
+	3 -> v3 su V3
+	2 -> v2 su V2
+	1 -> v1 su V1
+	0 -> v0 su V0
 	_ -> error "unsupported protocol version"
   where
 	_ :<|> _ :<|> _ :<|> _ :<|>
@@ -629,8 +628,7 @@ clientLockContent (ProtocolVersion ver) = case ver of
 
 type KeepLockedAPI
 	= LockIDParam
-	:> ClientUUID Required
-	:> ServerUUID Required
+	:> CU Required
 	:> BypassUUIDs
 	:> Header "Connection" ConnectionKeepAlive
 	:> Header "Keep-Alive" KeepAlive
@@ -640,16 +638,16 @@ type KeepLockedAPI
 serveKeepLocked
 	:: APIVersion v
 	=> P2PHttpServerState
+	-> B64UUID ServerSide
 	-> v
 	-> LockID
 	-> B64UUID ClientSide
-	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
 	-> Maybe ConnectionKeepAlive
 	-> Maybe KeepAlive
 	-> S.SourceT IO UnlockRequest
 	-> Handler LockResult
-serveKeepLocked st apiver lckid cu su _ _ _ unlockrequeststream = do
+serveKeepLocked st su apiver lckid cu _ _ _ unlockrequeststream = do
 	_ <- liftIO $ S.unSourceT unlockrequeststream go
 	return (LockResult False Nothing)
   where
@@ -661,20 +659,20 @@ serveKeepLocked st apiver lckid cu su _ _ _ unlockrequeststream = do
 	go (S.Yield (UnlockRequest True) _) = dropLock lckid st
 
 clientKeepLocked'
-	:: ProtocolVersion
+	:: B64UUID ServerSide
+	-> ProtocolVersion
 	-> LockID
 	-> B64UUID ClientSide
-	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
 	-> Maybe ConnectionKeepAlive
 	-> Maybe KeepAlive
 	-> S.SourceT IO UnlockRequest
 	-> ClientM LockResult
-clientKeepLocked' (ProtocolVersion ver) = case ver of
-	3 -> v3 V3
-	2 -> v2 V2
-	1 -> v1 V1
-	0 -> v0 V0
+clientKeepLocked' su (ProtocolVersion ver) = case ver of
+	3 -> v3 su V3
+	2 -> v2 su V2
+	1 -> v1 su V1
+	0 -> v0 su V0
 	_ -> error "unsupported protocol version"
   where
 	_ :<|> _ :<|> _ :<|> _ :<|>
@@ -697,7 +695,7 @@ clientKeepLocked
 	-> TMVar Bool
 	-> IO ()
 clientKeepLocked clientenv protover lckid cu su bypass keeplocked = do
-	let cli = clientKeepLocked' protover lckid cu su bypass
+	let cli = clientKeepLocked' su protover lckid cu bypass
 		(Just connectionKeepAlive) (Just keepAlive)
 		(S.fromStepT unlocksender)
 	withClientM cli clientenv $ \case
@@ -724,9 +722,9 @@ type PV1 = Capture "v1" V1
 
 type PV0 = Capture "v0" V0
 
-type ClientUUID req = QueryParam' '[req] "clientuuid" (B64UUID ClientSide)
+type SU = Capture "serveruuid" (B64UUID ServerSide)
 
-type ServerUUID req = QueryParam' '[req] "serveruuid" (B64UUID ServerSide)
+type CU req = QueryParam' '[req] "clientuuid" (B64UUID ClientSide)
 
 type BypassUUIDs = QueryParams "bypass" (B64UUID Bypass)
 
