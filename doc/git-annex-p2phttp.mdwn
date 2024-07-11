@@ -12,6 +12,13 @@ This allows a git-annex repository to be accessed over HTTP.
 It is the git-annex equivilant of git-http-backend(1), for serving
 a repository over HTTP with write access for authenticated users.
 
+As well as serving the git-annex HTTP API, this server provides a
+convenient way to download the content of any key, by using the path
+"/git-annex/$uuid/$key". For example:
+
+	$ curl http://localhost:8080/git-annex/f11773f0-11e1-45b2-9805-06db16768efe/key/SHA256E-s6--5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03
+	hello
+
 # OPTIONS
 
 * `--jobs=N`

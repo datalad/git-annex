@@ -11,11 +11,13 @@ repository might.
 But this protocol requires that UTF-8 be used throughout, except 
 where bodies use `Content-Type: application/octet-stream`.
 
-So, all git-annex keys, uuids, and filenames in this protocol are
-[base64url](https://datatracker.ietf.org/doc/html/rfc4648#section-5) encoded.
+So this protocol allows using 
+[base64url](https://datatracker.ietf.org/doc/html/rfc4648#section-5)
+encoding for such values. Any key, filename, or UUID wrapped in square
+brackets is a base64url encoded value. 
+For example, "[Zm9v]" is the same as "foo".
 
-Examples in this document use non-base64url-encoded values to show the
-underlying data.
+A filename like "[foo]" will need to itself be encoded that way: "[W2Zvb10=]"
 
 ## authentication
 

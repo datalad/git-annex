@@ -41,7 +41,7 @@ instance APIVersion V2 where protocolVersion _ = P2P.ProtocolVersion 2
 instance APIVersion V1 where protocolVersion _ = P2P.ProtocolVersion 1
 instance APIVersion V0 where protocolVersion _ = P2P.ProtocolVersion 0
 
--- Keys, UUIDs, and filenames are base64 encoded since Servant uses 
+-- Keys, UUIDs, and filenames can be base64 encoded since Servant uses 
 -- Text and so needs UTF-8.
 newtype B64Key = B64Key Key
 	deriving (Show)
@@ -52,7 +52,32 @@ newtype B64FilePath = B64FilePath RawFilePath
 newtype B64UUID t = B64UUID { fromB64UUID :: UUID }
 	deriving (Show, Ord, Eq, Generic, NFData)
 
--- Phantom types for B64UIID
+encodeB64Text :: B.ByteString -> T.Text
+encodeB64Text b = case TE.decodeUtf8' b of
+	Right t
+		| (snd <$> B.unsnoc b) == Just closebracket 
+			&& (fst <$> B.uncons b) == Just openbracket ->
+				b64wrapped
+		| otherwise -> t
+	Left _ -> b64wrapped
+  where
+	b64wrapped = TE.decodeUtf8Lenient $ "[" <> B64.encode b <> "]"
+	openbracket = fromIntegral (ord '[')
+	closebracket = fromIntegral (ord ']')
+
+decodeB64Text :: T.Text -> Either T.Text B.ByteString
+decodeB64Text t = 
+	case T.unsnoc t of
+		Just (t', lastc) | lastc == ']' ->
+			case T.uncons t' of
+				Just (firstc, t'') | firstc == '[' ->
+					case B64.decode (TE.encodeUtf8 t'') of
+						Right b -> Right b
+						Left _ -> Left "unable to base64 decode [] wrapped value"
+				_ -> Right (TE.encodeUtf8 t)
+		_ -> Right (TE.encodeUtf8 t)
+
+-- Phantom types.
 data ClientSide
 data ServerSide
 data Bypass
@@ -163,33 +188,31 @@ parseAPIVersion v need t
 	| otherwise = Left "bad version"
 
 instance ToHttpApiData B64Key where
-	toUrlPiece (B64Key k) = TE.decodeUtf8Lenient $
-		B64.encode (serializeKey' k)
+	toUrlPiece (B64Key k) = encodeB64Text (serializeKey' k)
 
 instance FromHttpApiData B64Key where
-	parseUrlPiece t = case B64.decode (TE.encodeUtf8 t) of
-		Left _ -> Left "unable to base64 decode key"
+	parseUrlPiece t = case decodeB64Text t of
 		Right b -> maybe (Left "key parse error") (Right . B64Key)
 			(deserializeKey' b)
+		Left err -> Left err
 
 instance ToHttpApiData (B64UUID t) where
-	toUrlPiece (B64UUID u) = TE.decodeUtf8Lenient $
-		B64.encode (fromUUID u)
+	toUrlPiece (B64UUID u) = encodeB64Text (fromUUID u)
 
 instance FromHttpApiData (B64UUID t) where
-	parseUrlPiece t = case B64.decode (TE.encodeUtf8 t) of
-		Left _ -> Left "unable to base64 decode UUID"
+	parseUrlPiece t = case decodeB64Text t of
 		Right b -> case toUUID b of
 			u@(UUID _) -> Right (B64UUID u)
 			NoUUID -> Left "empty UUID"
+		Left err -> Left err
 
 instance ToHttpApiData B64FilePath where
-	toUrlPiece (B64FilePath f) = TE.decodeUtf8Lenient $ B64.encode f
+	toUrlPiece (B64FilePath f) = encodeB64Text f
 
 instance FromHttpApiData B64FilePath where
-	parseUrlPiece t = case B64.decode (TE.encodeUtf8 t) of
-		Left _ -> Left "unable to base64 decode filename"
+	parseUrlPiece t = case decodeB64Text t of
 		Right b -> Right (B64FilePath b)
+		Left err -> Left err
 
 instance ToHttpApiData Offset where
 	toUrlPiece (Offset (P2P.Offset n)) = T.pack (show n)
@@ -292,7 +315,7 @@ instance FromJSON PutOffsetResultPlus where
 			<*> v .: "plusuuids"
 
 instance FromJSON (B64UUID t) where
-	parseJSON (String t) = case B64.decode (TE.encodeUtf8 t) of
+	parseJSON (String t) = case decodeB64Text t of
 		Right s -> pure (B64UUID (toUUID s))
 		Left _ -> mempty
 	parseJSON _ = mempty
@@ -300,7 +323,7 @@ instance FromJSON (B64UUID t) where
 instance ToJSON LockResult where
 	toJSON (LockResult v (Just (B64UUID lck))) = object
 		[ "locked" .= v
-		, "lockid" .= TE.decodeUtf8Lenient (B64.encode (fromUUID lck))
+		, "lockid" .= encodeB64Text (fromUUID lck)
 		]
 	toJSON (LockResult v Nothing) = object
 		[ "locked" .= v
