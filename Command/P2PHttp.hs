@@ -75,7 +75,7 @@ seek o = getAnnexWorkerPool $ \workerpool -> do
 		liftIO $ putStrLn "test begins"
 		testGet
 		giveup "TEST DONE" 
-	withLocalP2PConnections $ \acquireconn -> liftIO $ do
+	withLocalP2PConnections workerpool $ \acquireconn -> liftIO $ do
 		authenv <- getAuthEnv
 		st <- mkP2PHttpServerState acquireconn workerpool $
 			mkGetServerMode authenv o

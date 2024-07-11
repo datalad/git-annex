@@ -40,8 +40,6 @@ Planned schedule of work:
 
 * Make Remote.Git use http client when annex.url is configured.
 
-* withLocalP2PConnections could use a worker pool.
-
 * Make http server support proxies and clusters.
 
 * Perhaps: Support cgi program that proxies over to a webserver
