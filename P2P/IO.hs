@@ -25,6 +25,7 @@ module P2P.IO
 	, describeProtoFailure
 	, runNetProto
 	, runNet
+	, signalFullyConsumedByteString
 	) where
 
 import Common
@@ -79,7 +80,12 @@ mkRunState mk = do
 
 data P2PHandle
 	= P2PHandle Handle
-	| P2PHandleTMVar (TMVar (Either L.ByteString Message)) (Maybe (TMVar ()))
+	| P2PHandleTMVar (TMVar (Either L.ByteString Message)) (TMVar ())
+
+signalFullyConsumedByteString :: P2PHandle -> IO ()
+signalFullyConsumedByteString (P2PHandle _) = return ()
+signalFullyConsumedByteString (P2PHandleTMVar _ waitv) = 
+	atomically $ putTMVar waitv ()
 
 data P2PConnection = P2PConnection
 	{ connRepo :: Maybe Repo
@@ -246,14 +252,11 @@ runNet runst conn runner f = case f of
 					Right False -> return $ Left $
 						ProtoFailureMessage "short data write"
 					Left e -> return $ Left $ ProtoFailureException e
-			P2PHandleTMVar mv mwaitv -> do
+			P2PHandleTMVar mv waitv -> do
 				liftIO $ atomically $ putTMVar mv (Left b)
-				case mwaitv of
-					-- Wait for the whole bytestring to
-					-- be processed.
-					Just waitv -> liftIO $ atomically $
-						takeTMVar waitv
-					Nothing -> return ()
+				-- Wait for the whole bytestring to
+				-- be processed.
+				liftIO $ atomically $ takeTMVar waitv
 				runner next
 	ReceiveBytes len p next ->
 		case connIhdl conn of

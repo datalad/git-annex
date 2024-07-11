@@ -17,6 +17,7 @@ import Annex.Common
 import qualified Annex
 import P2P.Http.Types
 import qualified P2P.Protocol as P2P
+import qualified P2P.IO as P2P
 import P2P.IO
 import P2P.Annex
 import Annex.UUID
@@ -62,15 +63,14 @@ withP2PConnection
 	-> IsSecure
 	-> Maybe Auth
 	-> ActionClass
-	-> (RunState -> P2PConnection -> Handler (Either ProtoFailure a))
+	-> (P2PConnectionPair -> Handler (Either ProtoFailure a))
 	-> Handler a
 withP2PConnection apiver st cu su bypass sec auth actionclass connaction = do
-	(runst, conn, releaseconn) <- 
-		getP2PConnection apiver st cu su bypass sec auth actionclass
-	connaction' runst conn
-		`finally` liftIO releaseconn
+	conn <- getP2PConnection apiver st cu su bypass sec auth actionclass
+	connaction' conn
+		`finally` liftIO (releaseP2PConnection conn)
   where
-	connaction' runst conn = connaction runst conn >>= \case
+	connaction' conn = connaction conn >>= \case
 		Right r -> return r
 		Left err -> throwError $
 			err500 { errBody = encodeBL (describeProtoFailure err) }
@@ -85,7 +85,7 @@ getP2PConnection
 	-> IsSecure
 	-> Maybe Auth
 	-> ActionClass
-	-> Handler (RunState, P2PConnection, ReleaseP2PConnection)
+	-> Handler P2PConnectionPair
 getP2PConnection apiver st cu su bypass sec auth actionclass =
 	case (getServerMode st sec auth, actionclass) of
 		(Just P2P.ServeReadWrite, _) -> go P2P.ServeReadWrite
@@ -130,16 +130,20 @@ data ConnectionProblem
 	| TooManyConnections
 	deriving (Show, Eq)
 
-type AcquireP2PConnection = 
-	ConnectionParams -> IO
-		( Either ConnectionProblem
-			( RunState
-			, P2PConnection
-			, ReleaseP2PConnection -- ^ release connection
-			)
-		)
+data P2PConnectionPair = P2PConnectionPair
+	{ clientRunState :: RunState
+	, clientP2PConnection :: P2PConnection
+	, serverP2PConnection :: P2PConnection
+	, releaseP2PConnection :: IO ()
+	}
 
-type ReleaseP2PConnection = IO ()
+proxyClientNetProto :: P2PConnectionPair -> P2P.Proto a -> IO (Either P2P.ProtoFailure a)
+proxyClientNetProto conn = runNetProto
+	(clientRunState conn) (clientP2PConnection conn)
+
+type AcquireP2PConnection
+	= ConnectionParams
+	-> IO (Either ConnectionProblem P2PConnectionPair)
 
 {- Acquire P2P connections to the local repository. -}
 -- TODO need worker pool, this can only service a single request at
@@ -177,8 +181,10 @@ withLocalP2PConnections a = do
 			else do
 				hdl1 <- liftIO newEmptyTMVarIO
 				hdl2 <- liftIO newEmptyTMVarIO
-				let h1 = P2PHandleTMVar hdl1 Nothing
-				let h2 = P2PHandleTMVar hdl2 Nothing
+				wait1 <- liftIO newEmptyTMVarIO
+				wait2 <- liftIO newEmptyTMVarIO
+				let h1 = P2PHandleTMVar hdl1 wait1
+				let h2 = P2PHandleTMVar hdl2 wait2
 				let serverconn = P2PConnection Nothing
 					(const True) h1 h2
 					(ConnIdent (Just "http server"))
@@ -196,7 +202,12 @@ withLocalP2PConnections a = do
 					=<< forkState protorunner
 				let releaseconn = atomically $ putTMVar relv $
 					join (liftIO (wait asyncworker))
-				return $ Right (clientrunst, clientconn, releaseconn)
+				return $ Right $ P2PConnectionPair
+					{ clientRunState = clientrunst
+					, clientP2PConnection = clientconn
+					, serverP2PConnection = serverconn
+					, releaseP2PConnection = releaseconn
+					}
 		liftIO $ atomically $ putTMVar respvar resp
 
 	mkserverrunst connparams = do

@@ -32,7 +32,6 @@ import Utility.Metered
 
 import Servant
 import Servant.Client.Streaming
-import Servant.API
 import qualified Servant.Types.SourceT as S
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
@@ -150,8 +149,7 @@ serveGet
 	-> Maybe Auth
 	-> Handler (Headers '[DataLengthHeader] (S.SourceT IO B.ByteString))
 serveGet st apiver (B64Key k) cu su bypass baf startat sec auth = do
-	(runst, conn, releaseconn) <- 
-		getP2PConnection apiver st cu su bypass sec auth ReadAction
+	conn <- getP2PConnection apiver st cu su bypass sec auth ReadAction
 	bsv <- liftIO newEmptyTMVarIO
 	endv <- liftIO newEmptyTMVarIO
 	validityv <- liftIO newEmptyTMVarIO
@@ -160,15 +158,17 @@ serveGet st apiver (B64Key k) cu su bypass baf startat sec auth = do
 		let storer _offset len = sendContentWith $ \bs -> do
 			liftIO $ atomically $ putTMVar bsv (len, bs)
 			liftIO $ atomically $ takeTMVar endv
+			liftIO $ signalFullyConsumedByteString $
+				connOhdl $ serverP2PConnection conn
 			return $ \v -> do
 				liftIO $ atomically $ putTMVar validityv v
 				return True
 		v <- enteringStage (TransferStage Upload) $
-			runFullProto runst conn $
+			runFullProto (clientRunState conn) (clientP2PConnection conn) $
 				void $ receiveContent Nothing nullMeterUpdate
 					sizer storer getreq
 		return v
-	liftIO $ forkIO $ waitfinal endv finalv releaseconn annexworker
+	void $ liftIO $ forkIO $ waitfinal endv finalv conn annexworker
 	(Len len, bs) <- liftIO $ atomically $ takeTMVar bsv
 	bv <- liftIO $ newMVar (L.toChunks bs)
 	let streamer = S.SourceT $ \s -> s =<< return 
@@ -206,7 +206,7 @@ serveGet st apiver (B64Key k) cu su bypass baf startat sec auth = do
 			, pure mempty
 			)
 	
-	waitfinal endv finalv releaseconn annexworker = do
+	waitfinal endv finalv conn annexworker = do
 		-- Wait for everything to be transferred before
 		-- stopping the annexworker. The validityv will usually
 		-- be written to at the end. If the client disconnects
@@ -215,8 +215,8 @@ serveGet st apiver (B64Key k) cu su bypass baf startat sec auth = do
 		-- Make sure the annexworker is not left blocked on endv
 		-- if the client disconnected early.
 		liftIO $ atomically $ tryPutTMVar endv ()
-		void $ tryNonAsync $ wait annexworker
-		void $ tryNonAsync releaseconn
+		void $ void $ tryNonAsync $ wait annexworker
+		void $ tryNonAsync $ releaseP2PConnection conn
 	
 	sizer = pure $ Len $ case startat of
 		Just (Offset o) -> fromIntegral o
@@ -301,8 +301,7 @@ serveCheckPresent
 	-> Handler CheckPresentResult
 serveCheckPresent st apiver (B64Key k) cu su bypass sec auth = do
 	res <- withP2PConnection apiver st cu su bypass sec auth ReadAction
-		$ \runst conn ->
-			liftIO $ runNetProto runst conn $ checkPresent k
+		$ \conn -> liftIO $ proxyClientNetProto conn $ checkPresent k
 	case res of
 		Right b -> return (CheckPresentResult b)
 		Left err -> throwError $ err500 { errBody = encodeBL err }
@@ -354,8 +353,8 @@ serveRemove
 	-> Handler t
 serveRemove st resultmangle apiver (B64Key k) cu su bypass sec auth = do
 	res <- withP2PConnection apiver st cu su bypass sec auth RemoveAction
-		$ \runst conn ->
-			liftIO $ runNetProto runst conn $ remove Nothing k
+		$ \conn ->
+			liftIO $ proxyClientNetProto conn $ remove Nothing k
 	case res of
 		(Right b, plusuuids) -> return $ resultmangle $ 
 			RemoveResultPlus b (map B64UUID (fromMaybe [] plusuuids))
@@ -411,8 +410,8 @@ serveRemoveBefore
 	-> Handler RemoveResultPlus
 serveRemoveBefore st apiver (B64Key k) cu su bypass (Timestamp ts) sec auth = do
 	res <- withP2PConnection apiver st cu su bypass sec auth RemoveAction
-		$ \runst conn ->
-			liftIO $ runNetProto runst conn $
+		$ \conn ->
+			liftIO $ proxyClientNetProto conn $
 				removeBeforeRemoteEndTime ts k
 	case res of
 		(Right b, plusuuids) -> return $ 
@@ -464,8 +463,8 @@ serveGetTimestamp
 	-> Handler GetTimestampResult
 serveGetTimestamp st apiver cu su bypass sec auth = do
 	res <- withP2PConnection apiver st cu su bypass sec auth ReadAction
-		$ \runst conn ->
-			liftIO $ runNetProto runst conn getTimestamp
+		$ \conn ->
+			liftIO $ proxyClientNetProto conn getTimestamp
 	case res of
 		Right ts -> return $ GetTimestampResult (Timestamp ts)
 		Left err -> throwError $
