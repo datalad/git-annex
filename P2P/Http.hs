@@ -264,8 +264,8 @@ clientGet
 	-> Maybe Offset
 	-> Maybe Auth
 	-> IO ()
-clientGet clientenv ver k su cu bypass af o auth =
-	withClientM (clientGet' su ver k cu bypass af o auth) clientenv $ \case
+clientGet clientenv (ProtocolVersion ver) k su cu bypass af o auth =
+	withClientM (cli k cu bypass af o auth) clientenv $ \case
 		Left err -> throwM err
 		Right respheaders -> do
 			let dl = case lookupResponseHeader @DataLengthHeader' respheaders of
@@ -275,6 +275,15 @@ clientGet clientenv ver k su cu bypass af o auth =
 			b <- S.unSourceT (getResponse respheaders) gatherByteString
 			liftIO $ print "got it all, writing to file 'got'"
 			L.writeFile "got" b
+  where
+	cli =case ver of
+		3 -> v3 su V3
+		2 -> v2 su V2
+		1 -> v1 su V1
+		0 -> v0 su V0
+		_ -> error "unsupported protocol version"
+	
+	v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
 
 gatherByteString :: S.StepT IO B.ByteString -> IO L.ByteString
 gatherByteString = unsafeInterleaveIO . go
@@ -284,25 +293,6 @@ gatherByteString = unsafeInterleaveIO . go
 	go (S.Skip s) = go s
 	go (S.Effect ms) = ms >>= go
 	go (S.Yield v s) = LI.Chunk v <$> unsafeInterleaveIO (go s)
-
-clientGet'
-	:: B64UUID ServerSide
-	-> ProtocolVersion
-	-> B64Key
-	-> B64UUID ClientSide
-	-> [B64UUID Bypass]
-	-> Maybe B64FilePath
-	-> Maybe Offset
-	-> Maybe Auth
-	-> ClientM (Headers '[DataLengthHeader] (S.SourceT IO B.ByteString))
-clientGet' su (ProtocolVersion ver) = case ver of
-	3 -> v3 su V3
-	2 -> v2 su V2
-	1 -> v1 su V1
-	0 -> v0 su V0
-	_ -> error "unsupported protocol version"
-  where
-	v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
 
 type CheckPresentAPI
 	= KeyParam

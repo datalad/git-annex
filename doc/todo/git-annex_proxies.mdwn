@@ -28,8 +28,7 @@ Planned schedule of work:
 
 ## work notes
 
-* http server and client are working, remaining 
-  server API endpoints need wiring up and testing. 
+* Implement: servePut, servePutOffset, serveLockContent
 
 * I have a file `servant.hs` in the httpproto branch that works through some
   of the bytestring streaming issues.
@@ -54,6 +53,8 @@ Planned schedule of work:
 
 * finalized HTTP P2P protocol draft 1,
   [[design/p2p_protocol_over_http/draft1]]
+
+* implemented server and client for HTTP P2P protocol
 
 ## items deferred until later for [[design/passthrough_proxy]]
 
