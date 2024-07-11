@@ -156,31 +156,24 @@ serveGet st apiver (B64Key k) cu su bypass baf startat sec auth = do
 	endv <- liftIO newEmptyTMVarIO
 	validityv <- liftIO newEmptyTMVarIO
 	aid <- liftIO $ async $ inAnnexWorker st $ do
-		let consumer bs = do
-			liftIO $ atomically $ putTMVar bsv bs
-			liftIO $ print "consumer waiting for endv"
+		let storer _offset len = sendContentWith $ \bs -> do
+			liftIO $ atomically $ putTMVar bsv (len, bs)
 			liftIO $ atomically $ takeTMVar endv
-			liftIO $ print "consumer took endv"
 			return $ \v -> do
-				liftIO $ print "consumer put validityv"
-				liftIO $ atomically $
-					putTMVar validityv v
+				liftIO $ atomically $ putTMVar validityv v
 				return True
-		let storer _offset _len getdata checkvalidity =
-			sendContentWith consumer getdata checkvalidity
 		enteringStage (TransferStage Upload) $
 			runFullProto runst conn $
 				void $ receiveContent Nothing nullMeterUpdate
 					sizer storer getreq
-	bs <- liftIO $ atomically $ takeTMVar bsv
+	(Len len, bs) <- liftIO $ atomically $ takeTMVar bsv
 	bv <- liftIO $ newMVar (L.toChunks bs)
 	let streamer = S.SourceT $ \s -> s =<< return 
 		(stream (releaseconn, bv, endv, validityv, aid))
- 	return $ addHeader 111111 streamer
+ 	return $ addHeader len streamer
   where
 	stream (releaseconn, bv, endv, validityv, aid) =
-		S.fromActionStep B.null $ do
-			print "chunk"
+		S.fromActionStep B.null $
 			modifyMVar bv $ nextchunk $
 				cleanup (releaseconn, endv, validityv, aid)
 	
@@ -194,11 +187,8 @@ serveGet st apiver (B64Key k) cu su bypass baf startat sec auth = do
 	cleanup (releaseconn, endv, validityv, aid) =
 		ifM (atomically $ isEmptyTMVar endv)
 			( do
-				print "at end"
 				atomically $ putTMVar endv ()
-				print "signaled end"
 				validity <- atomically $ takeTMVar validityv
-				print ("got validity", validity)
 				wait aid >>= \case
 					Left ex -> throwM ex
 					Right (Left err) -> error $
@@ -263,6 +253,7 @@ gatherbytestring x = do
 	go (S.Effect ms) = do
 		ms >>= go
 	go (S.Yield v s) = do
+		liftIO $ print ("chunk", B.length v)
 		LI.Chunk v <$> unsafeInterleaveIO (go s)
 
 clientGet'

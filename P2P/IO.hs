@@ -79,7 +79,7 @@ mkRunState mk = do
 
 data P2PHandle
 	= P2PHandle Handle
-	| P2PHandleTMVar (TMVar (Either L.ByteString Message)) (TMVar ())
+	| P2PHandleTMVar (TMVar (Either L.ByteString Message)) (Maybe (TMVar ()))
 
 data P2PConnection = P2PConnection
 	{ connRepo :: Maybe Repo
@@ -217,7 +217,7 @@ runNet runst conn runner f = case f of
 			Right () -> runner next
 	ReceiveMessage next ->
 		let protoerr = return $ Left $
-			ProtoFailureMessage "protocol error 1"
+			ProtoFailureMessage "protocol error"
 		    gotmessage m = do
 			liftIO $ debugMessage conn "P2P <" m
 			runner (next (Just m))
@@ -246,11 +246,14 @@ runNet runst conn runner f = case f of
 					Right False -> return $ Left $
 						ProtoFailureMessage "short data write"
 					Left e -> return $ Left $ ProtoFailureException e
-			P2PHandleTMVar mv waitv -> do
+			P2PHandleTMVar mv mwaitv -> do
 				liftIO $ atomically $ putTMVar mv (Left b)
-				-- Wait for the whole bytestring to be
-				-- processed. Necessary due to lazyiness.
-				liftIO $ atomically $ takeTMVar waitv
+				case mwaitv of
+					-- Wait for the whole bytestring to
+					-- be processed.
+					Just waitv -> liftIO $ atomically $
+						takeTMVar waitv
+					Nothing -> return ()
 				runner next
 	ReceiveBytes len p next ->
 		case connIhdl conn of
@@ -264,7 +267,7 @@ runNet runst conn runner f = case f of
 				liftIO (atomically (takeTMVar mv)) >>= \case
 					Left b -> runner (next b)
 					Right _ -> return $ Left $
-						ProtoFailureMessage "protocol error 2"
+						ProtoFailureMessage "protocol error"
 	CheckAuthToken _u t next -> do
 		let authed = connCheckAuth conn t
 		runner (next authed)

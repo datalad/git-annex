@@ -177,35 +177,38 @@ withLocalP2PConnections a = do
 			else do
 				hdl1 <- liftIO newEmptyTMVarIO
 				hdl2 <- liftIO newEmptyTMVarIO
-				waitv1 <- liftIO newEmptyTMVarIO
-				waitv2 <- liftIO newEmptyTMVarIO
-				let h1 = P2PHandleTMVar hdl1 waitv1
-				let h2 = P2PHandleTMVar hdl2 waitv2 
+				let h1 = P2PHandleTMVar hdl1 Nothing
+				let h2 = P2PHandleTMVar hdl2 Nothing
 				let serverconn = P2PConnection Nothing
 					(const True) h1 h2
 					(ConnIdent (Just "http server"))
 				let clientconn = P2PConnection Nothing
 					(const True) h2 h1
 					(ConnIdent (Just "http client"))
-				runst <- liftIO $ mkrunst connparams
+				clientrunst <- liftIO $ mkclientrunst connparams
+				serverrunst <- liftIO $ mkserverrunst connparams
 				let server = P2P.serveOneCommandAuthed
 					(connectionServerMode connparams)
 					(connectionServerUUID connparams)
 				let protorunner = void $
-					runFullProto runst serverconn server
+					runFullProto serverrunst serverconn server
 				asyncworker <- liftIO . async 
 					=<< forkState protorunner
 				let releaseconn = atomically $ putTMVar relv $
 					join (liftIO (wait asyncworker))
-				return $ Right (runst, clientconn, releaseconn)
+				return $ Right (clientrunst, clientconn, releaseconn)
 		liftIO $ atomically $ putTMVar respvar resp
 
-	mkrunst connparams = do
+	mkserverrunst connparams = do
 		prototvar <- newTVarIO $ connectionProtocolVersion connparams
 		mkRunState $ const $ Serving 
 			(connectionClientUUID connparams)
 			Nothing
 			prototvar
+	
+	mkclientrunst connparams = do
+		prototvar <- newTVarIO $ connectionProtocolVersion connparams
+		mkRunState $ const $ Client prototvar
 
 data Locker = Locker
 	{ lockerThread :: Async ()
