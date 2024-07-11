@@ -319,8 +319,7 @@ Executable git-annex
     Build-Depends:
       servant,
       servant-server,
-      servant-client,
-      servant-client-core
+      servant-client
     CPP-Options: -DWITH_SERVANT
     Other-Modules:
       Command.P2PHttp
