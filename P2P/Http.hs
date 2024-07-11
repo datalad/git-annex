@@ -510,7 +510,6 @@ type PutAPI result
 	:> BypassUUIDs
 	:> AssociatedFileParam
 	:> OffsetParam
-	:> Header' '[Required] "X-git-annex-data-length" DataLength
 	:> StreamBody NoFraming OctetStream (SourceIO B.ByteString)
 	:> Post '[JSON] result
 
@@ -526,28 +525,26 @@ servePut
 	-> [B64UUID Bypass]
 	-> Maybe B64FilePath
 	-> Maybe Offset
-	-> DataLength
 	-> S.SourceT IO B.ByteString
 	-> Handler t
 servePut = undefined -- st resultmangle su apiver datalength k cu bypass af offset 
 
 clientPut
 	:: ProtocolVersion
-	-> Maybe DataLength
+	-> DataLength
 	-> B64Key
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
 	-> Maybe B64FilePath
 	-> Maybe Offset
-	-> DataLength
 	-> S.SourceT IO B.ByteString
 	-> ClientM PutResultPlus
-clientPut (ProtocolVersion ver) sz k cu su bypass af o l src = case ver of
-	3 -> v3 su V3 sz k cu bypass af o l src
-	2 -> v2 su V2 sz k cu bypass af o l src
-	1 -> plus <$> v1 su V1 sz k cu bypass af o l src
-	0 -> plus <$> v0 su V0 k cu bypass af o l src
+clientPut (ProtocolVersion ver) sz k cu su bypass af o src = case ver of
+	3 -> v3 su V3 (Just sz) k cu bypass af o src
+	2 -> v2 su V2 (Just sz) k cu bypass af o src
+	1 -> plus <$> v1 su V1 (Just sz) k cu bypass af o src
+	0 -> plus <$> v0 su V0 k cu bypass af o src
 	_ -> error "unsupported protocol version"
   where
 	_ :<|> _ :<|> _ :<|> _ :<|>
