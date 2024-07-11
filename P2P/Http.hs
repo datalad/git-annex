@@ -511,6 +511,8 @@ type PutAPI result
 	:> AssociatedFileParam
 	:> OffsetParam
 	:> StreamBody NoFraming OctetStream (SourceIO B.ByteString)
+	:> IsSecure
+	:> AuthHeader
 	:> Post '[JSON] result
 
 servePut
@@ -526,8 +528,18 @@ servePut
 	-> Maybe B64FilePath
 	-> Maybe Offset
 	-> S.SourceT IO B.ByteString
+	-> IsSecure
+	-> Maybe Auth
 	-> Handler t
-servePut = undefined -- st resultmangle su apiver datalength k cu bypass af offset 
+servePut st resultmangle su apiver datalen k cu bypass af offset stream sec auth = do
+	res <- withP2PConnection apiver st cu su bypass sec auth WriteAction
+		$ \conn ->
+			liftIO $ proxyClientNetProto conn undefined
+	case res of
+		Right (stored, plusuuids) -> return $ resultmangle $
+			PutResultPlus stored plusuuids
+		Left err -> throwError $
+			err500 { errBody = encodeBL err }
 
 clientPut
 	:: ProtocolVersion
@@ -539,12 +551,13 @@ clientPut
 	-> Maybe B64FilePath
 	-> Maybe Offset
 	-> S.SourceT IO B.ByteString
+	-> Maybe Auth
 	-> ClientM PutResultPlus
-clientPut (ProtocolVersion ver) sz k cu su bypass af o src = case ver of
-	3 -> v3 su V3 (Just sz) k cu bypass af o src
-	2 -> v2 su V2 (Just sz) k cu bypass af o src
-	1 -> plus <$> v1 su V1 (Just sz) k cu bypass af o src
-	0 -> plus <$> v0 su V0 k cu bypass af o src
+clientPut (ProtocolVersion ver) sz k cu su bypass af o src auth = case ver of
+	3 -> v3 su V3 (Just sz) k cu bypass af o src auth
+	2 -> v2 su V2 (Just sz) k cu bypass af o src auth
+	1 -> plus <$> v1 su V1 (Just sz) k cu bypass af o src auth
+	0 -> plus <$> v0 su V0 k cu bypass af o src auth
 	_ -> error "unsupported protocol version"
   where
 	_ :<|> _ :<|> _ :<|> _ :<|>
