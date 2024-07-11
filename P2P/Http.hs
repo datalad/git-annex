@@ -155,27 +155,30 @@ serveGet st apiver (B64Key k) cu su bypass baf startat sec auth = do
 	bsv <- liftIO newEmptyTMVarIO
 	endv <- liftIO newEmptyTMVarIO
 	validityv <- liftIO newEmptyTMVarIO
-	aid <- liftIO $ async $ inAnnexWorker st $ do
+	finalv <- liftIO newEmptyTMVarIO
+	annexworker <- liftIO $ async $ inAnnexWorker st $ do
 		let storer _offset len = sendContentWith $ \bs -> do
 			liftIO $ atomically $ putTMVar bsv (len, bs)
 			liftIO $ atomically $ takeTMVar endv
 			return $ \v -> do
 				liftIO $ atomically $ putTMVar validityv v
 				return True
-		enteringStage (TransferStage Upload) $
+		v <- enteringStage (TransferStage Upload) $
 			runFullProto runst conn $
 				void $ receiveContent Nothing nullMeterUpdate
 					sizer storer getreq
+		return v
+	liftIO $ forkIO $ waitfinal endv finalv releaseconn annexworker
 	(Len len, bs) <- liftIO $ atomically $ takeTMVar bsv
 	bv <- liftIO $ newMVar (L.toChunks bs)
 	let streamer = S.SourceT $ \s -> s =<< return 
-		(stream (releaseconn, bv, endv, validityv, aid))
+		(stream (bv, endv, validityv, finalv))
  	return $ addHeader len streamer
   where
-	stream (releaseconn, bv, endv, validityv, aid) =
+	stream (bv, endv, validityv, finalv) =
 		S.fromActionStep B.null $
 			modifyMVar bv $ nextchunk $
-				cleanup (releaseconn, endv, validityv, aid)
+				checkvalidity (endv, validityv, finalv)
 	
 	nextchunk atend (b:bs)
 		| not (B.null b) = return (bs, b)
@@ -184,17 +187,12 @@ serveGet st apiver (B64Key k) cu su bypass baf startat sec auth = do
 		endbit <- atend
 		return ([], endbit)
 
-	cleanup (releaseconn, endv, validityv, aid) =
+	checkvalidity (endv, validityv, finalv) =
 		ifM (atomically $ isEmptyTMVar endv)
 			( do
 				atomically $ putTMVar endv ()
 				validity <- atomically $ takeTMVar validityv
-				wait aid >>= \case
-					Left ex -> throwM ex
-					Right (Left err) -> error $
-						describeProtoFailure err
-					Right (Right ()) -> return ()
-				() <- releaseconn
+				atomically $ putTMVar finalv ()
 				-- When the key's content is invalid,
 				-- indicate that to the client by padding
 				-- the response, so it is not the same
@@ -207,7 +205,19 @@ serveGet st apiver (B64Key k) cu su bypass baf startat sec auth = do
 					-- something to make it invalid
 			, pure mempty
 			)
-
+	
+	waitfinal endv finalv releaseconn annexworker = do
+		-- Wait for everything to be transferred before
+		-- stopping the annexworker. The validityv will usually
+		-- be written to at the end. If the client disconnects
+		-- early that does not happen, so catch STM exception.
+		liftIO $ void $ tryNonAsync $ atomically $ takeTMVar finalv
+		-- Make sure the annexworker is not left blocked on endv
+		-- if the client disconnected early.
+		liftIO $ atomically $ tryPutTMVar endv ()
+		void $ tryNonAsync $ wait annexworker
+		void $ tryNonAsync releaseconn
+	
 	sizer = pure $ Len $ case startat of
 		Just (Offset o) -> fromIntegral o
 		Nothing -> 0
