@@ -121,14 +121,25 @@ serveP2pHttp st
 
 type GetGenericAPI
 	= CaptureKey
-	:> StreamGet NoFraming OctetStream (SourceIO B.ByteString)
+	:> IsSecure
+	:> AuthHeader
+	:> StreamGet NoFraming OctetStream
+		(Headers '[DataLengthHeader] (SourceIO B.ByteString))
 
 serveGetGeneric
 	:: P2PHttpServerState
 	-> B64UUID ServerSide
 	-> B64Key
-	-> Handler (S.SourceT IO B.ByteString)
-serveGetGeneric st su k = undefined -- serveGet st V0 k
+	-> IsSecure
+	-> Maybe Auth
+	-> Handler (Headers '[DataLengthHeader] (S.SourceT IO B.ByteString))
+serveGetGeneric st su@(B64UUID u) k =
+	-- Use V0 because it does not alter the returned data to indicate
+	-- InValid content.
+	serveGet st su V0 k cu [] Nothing Nothing
+  where
+	-- Reuse server UUID as client UUID.
+	cu = B64UUID u :: B64UUID ClientSide
 
 type GetAPI
 	= CaptureKey
@@ -220,7 +231,7 @@ serveGet st su apiver (B64Key k) cu bypass baf startat sec auth = do
 		liftIO $ void $ tryNonAsync $ atomically $ takeTMVar finalv
 		-- Make sure the annexworker is not left blocked on endv
 		-- if the client disconnected early.
-		liftIO $ atomically $ tryPutTMVar endv ()
+		void $ liftIO $ atomically $ tryPutTMVar endv ()
 		void $ void $ tryNonAsync $ wait annexworker
 		void $ tryNonAsync $ releaseP2PConnection conn
 	
