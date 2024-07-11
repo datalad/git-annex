@@ -192,7 +192,7 @@ serveGet st su apiver (B64Key k) cu bypass baf startat sec auth = do
 	szv <- liftIO $ newMVar 0
 	let streamer = S.SourceT $ \s -> s =<< return 
 		(stream (bv, szv, len, endv, validityv, finalv))
- 	return $ addHeader len streamer
+ 	return $ addHeader (DataLength len) streamer
   where
 	stream (bv, szv, len, endv, validityv, finalv) =
 		S.fromActionStep B.null $
@@ -271,7 +271,7 @@ clientGet clientenv (ProtocolVersion ver) k su cu bypass af o auth =
 			let dl = case lookupResponseHeader @DataLengthHeader' respheaders of
 				Header h -> h
 				_ -> error "missing data length header"
-			liftIO $ print ("datalength", dl :: Integer)
+			liftIO $ print ("datalength", dl :: DataLength)
 			b <- S.unSourceT (getResponse respheaders) gatherByteString
 			liftIO $ print "got it all, writing to file 'got'"
 			L.writeFile "got" b
@@ -520,7 +520,7 @@ servePut
 	-> (PutResultPlus -> t)
 	-> B64UUID ServerSide
 	-> v
-	-> Maybe Integer
+	-> Maybe DataLength
 	-> B64Key
 	-> B64UUID ClientSide
 	-> [B64UUID Bypass]
@@ -529,11 +529,11 @@ servePut
 	-> DataLength
 	-> S.SourceT IO B.ByteString
 	-> Handler t
-servePut = undefined -- TODO
+servePut = undefined -- st resultmangle su apiver datalength k cu bypass af offset 
 
 clientPut
 	:: ProtocolVersion
-	-> Maybe Integer
+	-> Maybe DataLength
 	-> B64Key
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
@@ -745,7 +745,7 @@ type AssociatedFileParam = QueryParam "associatedfile" B64FilePath
 	
 type OffsetParam = QueryParam "offset" Offset
 
-type DataLengthHeader = Header DataLengthHeader' Integer
+type DataLengthHeader = Header DataLengthHeader' DataLength
 
 type DataLengthHeader' = "X-git-annex-data-length"
 
