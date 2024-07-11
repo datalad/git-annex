@@ -237,24 +237,18 @@ clientGet clientenv ver k cu su bypass af o auth =
 				Header h -> h
 				_ -> error "missing data length header"
 			liftIO $ print ("datalength", dl :: Integer)
-			b <- S.unSourceT (getResponse respheaders) gatherbytestring
+			b <- S.unSourceT (getResponse respheaders) gatherByteString
 			liftIO $ print "got it all, writing to file 'got'"
 			L.writeFile "got" b
 
-gatherbytestring :: S.StepT IO B.ByteString -> IO L.ByteString
-gatherbytestring x = do
-	l <- unsafeInterleaveIO $ go x
-	return l
+gatherByteString :: S.StepT IO B.ByteString -> IO L.ByteString
+gatherByteString = unsafeInterleaveIO . go
   where
-	go S.Stop        = return LI.Empty
-	go (S.Error err) = error $ show ("ERROR", err)
-	go (S.Skip s)    = do
-		go s
-	go (S.Effect ms) = do
-		ms >>= go
-	go (S.Yield v s) = do
-		liftIO $ print ("chunk", B.length v)
-		LI.Chunk v <$> unsafeInterleaveIO (go s)
+	go S.Stop = return LI.Empty
+	go (S.Error err) = giveup err
+	go (S.Skip s) = go s
+	go (S.Effect ms) = ms >>= go
+	go (S.Yield v s) = LI.Chunk v <$> unsafeInterleaveIO (go s)
 
 clientGet'
 	:: ProtocolVersion
