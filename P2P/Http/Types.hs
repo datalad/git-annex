@@ -15,13 +15,13 @@ module P2P.Http.Types where
 
 import Annex.Common
 import qualified P2P.Protocol as P2P
-import Utility.Base64
 import Utility.MonotonicClock
 
 import Servant
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.ByteString as B
+import Codec.Binary.Base64Url as B64
 import Data.Char
 import Text.Read (readMaybe)
 import Data.Aeson hiding (Key)
@@ -107,19 +107,19 @@ data Auth = Auth B.ByteString B.ByteString
 	deriving (Show, Generic, NFData, Eq, Ord)
 
 instance ToHttpApiData Auth where
-	toHeader (Auth u p) = "Basic " <> toB64 (u <> ":" <> p)
+	toHeader (Auth u p) = "Basic " <> B64.encode (u <> ":" <> p)
 	toUrlPiece = TE.decodeUtf8Lenient . toHeader
 
 instance FromHttpApiData Auth where
 	parseHeader h =
 		let (b, rest) = B.break (isSpace . chr . fromIntegral) h
 		in if map toLower (decodeBS b) == "basic"
-			then case fromB64Maybe (B.dropWhile (isSpace . chr . fromIntegral) rest) of
-				Just v -> case B.split (fromIntegral (ord ':')) v of
+			then case B64.decode (B.dropWhile (isSpace . chr . fromIntegral) rest) of
+				Right v -> case B.split (fromIntegral (ord ':')) v of
 					(u:ps) -> Right $
 						Auth u (B.intercalate ":" ps)
 					_ -> bad
-				Nothing -> bad
+				Left _ -> bad
 			else bad
 	  where
 		bad = Left "invalid basic auth header"
@@ -164,32 +164,32 @@ parseAPIVersion v need t
 
 instance ToHttpApiData B64Key where
 	toUrlPiece (B64Key k) = TE.decodeUtf8Lenient $
-		toB64 (serializeKey' k)
+		B64.encode (serializeKey' k)
 
 instance FromHttpApiData B64Key where
-	parseUrlPiece t = case fromB64Maybe (TE.encodeUtf8 t) of
-		Nothing -> Left "unable to base64 decode key"
-		Just b -> maybe (Left "key parse error") (Right . B64Key)
+	parseUrlPiece t = case B64.decode (TE.encodeUtf8 t) of
+		Left _ -> Left "unable to base64 decode key"
+		Right b -> maybe (Left "key parse error") (Right . B64Key)
 			(deserializeKey' b)
 
 instance ToHttpApiData (B64UUID t) where
 	toUrlPiece (B64UUID u) = TE.decodeUtf8Lenient $
-		toB64 (fromUUID u)
+		B64.encode (fromUUID u)
 
 instance FromHttpApiData (B64UUID t) where
-	parseUrlPiece t = case fromB64Maybe (TE.encodeUtf8 t) of
-		Nothing -> Left "unable to base64 decode UUID"
-		Just b -> case toUUID b of
+	parseUrlPiece t = case B64.decode (TE.encodeUtf8 t) of
+		Left _ -> Left "unable to base64 decode UUID"
+		Right b -> case toUUID b of
 			u@(UUID _) -> Right (B64UUID u)
 			NoUUID -> Left "empty UUID"
 
 instance ToHttpApiData B64FilePath where
-	toUrlPiece (B64FilePath f) = TE.decodeUtf8Lenient $ toB64 f
+	toUrlPiece (B64FilePath f) = TE.decodeUtf8Lenient $ B64.encode f
 
 instance FromHttpApiData B64FilePath where
-	parseUrlPiece t = case fromB64Maybe (TE.encodeUtf8 t) of
-		Nothing -> Left "unable to base64 decode filename"
-		Just b -> Right (B64FilePath b)
+	parseUrlPiece t = case B64.decode (TE.encodeUtf8 t) of
+		Left _ -> Left "unable to base64 decode filename"
+		Right b -> Right (B64FilePath b)
 
 instance ToHttpApiData Offset where
 	toUrlPiece (Offset (P2P.Offset n)) = T.pack (show n)
@@ -292,15 +292,15 @@ instance FromJSON PutOffsetResultPlus where
 			<*> v .: "plusuuids"
 
 instance FromJSON (B64UUID t) where
-	parseJSON (String t) = case fromB64Maybe (TE.encodeUtf8 t) of
-		Just s -> pure (B64UUID (toUUID s))
-		_ -> mempty
+	parseJSON (String t) = case B64.decode (TE.encodeUtf8 t) of
+		Right s -> pure (B64UUID (toUUID s))
+		Left _ -> mempty
 	parseJSON _ = mempty
 
 instance ToJSON LockResult where
 	toJSON (LockResult v (Just (B64UUID lck))) = object
 		[ "locked" .= v
-		, "lockid" .= TE.decodeUtf8Lenient (toB64 (fromUUID lck))
+		, "lockid" .= TE.decodeUtf8Lenient (B64.encode (fromUUID lck))
 		]
 	toJSON (LockResult v Nothing) = object
 		[ "locked" .= v

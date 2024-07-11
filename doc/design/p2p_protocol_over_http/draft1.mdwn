@@ -12,10 +12,10 @@ But this protocol requires that UTF-8 be used throughout, except
 where bodies use `Content-Type: application/octet-stream`.
 
 So, all git-annex keys, uuids, and filenames in this protocol are
-base64 encoded.
+[base64url](https://datatracker.ietf.org/doc/html/rfc4648#section-5) encoded.
 
-Examples in this document use non-base64-encoded values to show that the
-underlying data is.
+Examples in this document use non-base64url-encoded values to show the
+underlying data.
 
 ## authentication
 
