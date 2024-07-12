@@ -13,7 +13,7 @@ Machine 2:
 
 Machine 1 is the "primary" in that it has all of the data available. Machine 2 is transient and may not necessarily have a copy of all the data.
 
-On machine 2, I set it up like this (cloning on machine 1):
+On machine 2, I set it up like this (cloning from machine 1):
  
 git clone E:\
 
