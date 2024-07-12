@@ -1,0 +1,26 @@
+I have a (hopefully) fairly common situation but I can't find anything concrete about what's recommended.
+
+I have two Windows machines (both running Windows 11, with git-annex installed). They can talk to each other over SMB.
+
+On each machine, I have a mapped network share pointing to the other machine's annex directory:
+
+Machine 1:
+    D:\ -> \\Machine2\annex
+Machine 2:
+    E:\ -> \\Machine1\annex
+
+Machine 1 is the "primary" in that it has all of the data available. Machine 2 is transient and may not necessarily have a copy of all the data.
+
+On machine 2, I set it up like this (cloning on machine 1):
+ 
+git clone E:\
+
+On machine 1, I added D:\ (pointing to machine 2) as a remote.
+
+This works, but I wonder if there's a better way given the constraints I have:
+
+- I tried to get ssh working, it was a mess. One machine is AzureAD enrolled, while the other is not which means authentication did not work well at all. I tried to get a third-party SSH server running (Bitvise) with a local account or a "virtual" account, but never quite got there.
+
+- I cannot run WSL. Well, I can. But I'd prefer not to because it's an obstruction/extra hurdle for some things I'm doing.
+
+How do others accomplish this?
