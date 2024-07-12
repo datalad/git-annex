@@ -6,6 +6,8 @@ On each machine, I have a mapped network share pointing to the other machine's a
 
 Machine 1:
     D:\ -> \\Machine2\annex
+
+
 Machine 2:
     E:\ -> \\Machine1\annex
 
