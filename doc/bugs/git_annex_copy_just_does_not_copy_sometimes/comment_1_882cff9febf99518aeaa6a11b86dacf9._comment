@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="m.risse@77eac2c22d673d5f10305c0bade738ad74055f92"
+ nickname="m.risse"
+ avatar="http://cdn.libravatar.org/avatar/59541f50d845e5f81aff06e88a38b9de"
+ subject="comment 1"
+ date="2024-07-15T15:18:28Z"
+ content="""
+Notice that `git annex findkeys --not --in origin-storage` will list all keys that are locally available, but not in `origin-storage`, while `git annex copy --not --in origin-storage --to origin-storage` will copy over all locally available files not in `origin-storage` _that are part of the currently checked out worktree_. I.e. one works on keys, while the other works on paths.
+
+This means your `findkeys` into `copy` pipe is not equivalent to the plain copy command.
+
+Instead, what the copy command does copy is what `git annex find --not --in origin-storage` would return.
+
+More concretely, if no file in the current worktree points to `MD5E-s7265--9885654f68b8e72de9b681c8783b3bf8.yaml` then what you observe is expected. If such a file does exist, then this is indeed a bug, I think.
+"""]]
