@@ -1,0 +1,7 @@
+This is in response to https://git-annex.branchable.com/special_remotes/webdav/#comment-cd53cf0276427cc924ae66553985ec5c where `httpalso` is recommended as an approach to get read-only access to a `webdav` remote.
+
+A use case not possible with that approach is *authenticated* read-only access. According to http://git-annex.branchable.com/special_remotes/httpalso/#comment-4f41f401d4b0133d2ef12912b9217e44 this is not supported right now, but could be added.
+
+Weighing the two approaches (read-only `webdav` vs authenticated `httpalso`), it appears that only the read-only `webdav` is compatible with [git-remote-annex](https://git-annex.branchable.com/git-remote-annex/), because a user would need to declare *one* special remote (configuration) to use for cloning.
+
+It would be great to have authenticated, read-only access to webdav shares. Thanks in advance for considering!
