@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="m.risse@77eac2c22d673d5f10305c0bade738ad74055f92"
+ nickname="m.risse"
+ avatar="http://cdn.libravatar.org/avatar/59541f50d845e5f81aff06e88a38b9de"
+ subject="comment 2"
+ date="2024-07-17T14:07:32Z"
+ content="""
+Thanks for the hints. Seeing that <https://git-annex.branchable.com/bugs/enableremote_fails_with___34__wrong_reason__34___stated/> is marked as fixed prompted me to check again and it turns out that I reported the wrong git-annex version above: while that is the local version, the remote system has 10.20230626-g8594d49 (the latest one available from conda-forge, unfortunately that is rather old now), and it makes sense that the relevant version in this case is the one running on the remote system.
+
+So I guess this is fixed already, my git-annex is just too old (although I haven't double checked, I don't see a convenient way right now to get a more recent git-annex version onto that remote system -- HPC, no root).
+"""]]
