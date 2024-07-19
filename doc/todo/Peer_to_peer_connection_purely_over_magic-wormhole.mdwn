@@ -1,0 +1,7 @@
+Currently peer to peer communication seems to be possible only over tor (requiring root privileges to setup). It would be great to have an alternative connection method that can easily be used as an unprivileged user as well.
+
+Magic-wormhole has an experimental feature called "dilation" (<https://magic-wormhole.readthedocs.io/en/latest/api.html#dilation>) which can be used to open a direct bidirectional TCP connection between two systems only using the usual magic-wormhole codes (which can be generated once and re-used, so essentially like a pre-shared key stored on each side).
+
+There is a project called fowl (<https://github.com/meejah/fowl>) that uses this feature to port-forward over such a tunnel, which could be used for this purpose or serve as a reference for how to use this feature in git-annex. This implementation has some issues, but I think the approach has potential.
+
+It would be great if `git annex remotedaemon` (I suppose? I am not too well-versed on the internals) could optionally be configured to establish such a tunnel to remotes and use it for communication. Or maybe this is already possible to implement from outside of git-annex and I just need a hint on how to do that?
