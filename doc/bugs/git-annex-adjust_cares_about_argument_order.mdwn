@@ -14,7 +14,7 @@ $ git annex adjust --hide-missing --unlock
 git-annex: Not in a git repository.
 ```
 
-(Yes, I've also tried this in a git repo. That doesn't seem to change the error the first (IMO buggy) command does, though obviously the second command gives different results.)
+(Yes, I've also tried this in a git repo. That doesn't seem to change the error the first (IMO buggy) command gives, though obviously the second command gives different results.)
 
 ### What version of git-annex are you using? On what operating system?
 
