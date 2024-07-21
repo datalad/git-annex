@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="m.risse@77eac2c22d673d5f10305c0bade738ad74055f92"
+ nickname="m.risse"
+ avatar="http://cdn.libravatar.org/avatar/59541f50d845e5f81aff06e88a38b9de"
+ subject="comment 2"
+ date="2024-07-21T12:38:12Z"
+ content="""
+Forwarding to port 22 shouldn't require root, e.g. the mentioned fowl tunnel could also be used to tunnel a local port to a remote ssh server on port 22. You just cannot listen on a local privileged port, but that shouldn't be a problem.
+
+There are a bunch of \"tunnelers\" like serveo, e.g. ngrok and zrok, but the disadvantage of that is that it still requires a running ssh server.
+
+My imagined use-case would be something like two phones or laptops behind NAT without tor or a ssh daemon. I think with magic-wormhole's dilation feature it would be possible to make it so that you could run `git annex remotedaemon` or `git annex assistant` on one or both devices (after pairing) and have them communicate without any further setup required.
+
+Since magic-wormhole is already used for pairing it wouldn't even be a new dependency.
+
+Maybe this is already implementable from outside git-annex as a custom git-remote though, I'd have to take a look at what git-remote-tor-annex is really doing...
+"""]]
