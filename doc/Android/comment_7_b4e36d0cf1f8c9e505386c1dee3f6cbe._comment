@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="adehnert"
+ avatar="http://cdn.libravatar.org/avatar/a4fc9cc6278919b6f40df8e3cc84355b"
+ subject="git-annex for managing music"
+ date="2024-07-21T19:08:45Z"
+ content="""
+I'm trying to use git-annex to manage music on my phone (surely a common-ish use case?), so I have a git-annex checkout under `/sdcard/Music/`. It sort of works? I did a clone under there (I think, it was a few weeks ago), it seemed to check out my files okay and set e.g. `core.symlinks = false` and `annex.sshcaching = true`. However, I keep getting warnings that I should run `git annex restage` or that some git hook didn't run because it wasn't executable. I'm also now using `git annex adjust --hide-missing --unlock` since I think locked files just don't work on exfat(?). Also, there's various characters that aren't supported that caused a lot of confusion when I was first setting it up... I think the Nix-on-Droid app-specific directory has a better filesystem, but I don't think my music player would be able to access that.
+
+Do folks have tips on using git-annex on Android? My suspicion is that because of the filesystem and maybe other things, there's a fair amount of details that don't apply to git-annex usage on a normal Linux machine, and I don't really understand Android, exfat, or git well enough to confidently compensate -- more of a howto or rundown of features/config that's likely to come up on Android would be really helpful for this page.
+"""]]
