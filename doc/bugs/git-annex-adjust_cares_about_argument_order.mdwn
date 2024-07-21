@@ -1,6 +1,6 @@
 ### Please describe the problem.
 
-If I run `git annex adjust --hide-missing --unlock`, that works. If I run `git annex adjust --unlock --hide-missing`, that tells me "Invalid option `--hide-missing'" and prints the whole list of git-annex commands (which itself makes it hard to see the more useful error). I would expect that the order of the options doesn't matter, and if it does, I'd get a `git annex adjust` specific usage message.
+If I run `git annex adjust --hide-missing --unlock`, that works. If I run `git annex adjust --unlock --hide-missing`, that tells me "Invalid option '--hide-missing'" and prints the whole list of git-annex commands (which itself makes it hard to see the more useful error). I would expect that the order of the options doesn't matter, and if it does, I'd get a `git annex adjust` specific usage message.
 
 ### What steps will reproduce the problem?
 
