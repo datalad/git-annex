@@ -35,6 +35,7 @@ Same behavior occurs in `git annex` 10.20230926 with Nix-On-Droid (https://git-a
 
 ### Please provide any additional information below.
 
+This is admittedly arguable consistent with https://git-annex.branchable.com/git-annex-adjust/, which suggests `git annex adjust --unlock|--lock|--fix|--hide-missing [--unlock|--lock|--fix]|--unlock-present` as the syntax (notably with `--unlock` after `--hide-missing`), but it's pretty unusual for a Linux command, and even if the decision is made to have one order be an error, the error message should be easier to understand.
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
