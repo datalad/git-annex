@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="adehnert"
+ avatar="http://cdn.libravatar.org/avatar/a4fc9cc6278919b6f40df8e3cc84355b"
+ subject="`git annex sync --ff-only`"
+ date="2024-07-21T01:04:44Z"
+ content="""
+It would be useful to have a `git annex sync --ff-only` option. I have an alias for `git pull --ff-only` that I use most of the time, and it seems like a `git annex` counterpart would be reasonable. If only one of my local repo and the remote repo have changed, I'm happy to resolve things automatically. If both have changed, then I'm going to want to think about what to do -- maybe rebase locally, maybe something else. Of course, I can manually check before running `git annex sync` or use `git pull --ff-only` myself, but especially with several remotes, that could take some effort, and this is what we have computers for. :)
+
+I guess there's a question of what to do when some remotes can be fast-forwarded to and others would need a merge. I think *think* my ideal behavior is that if some updates can't be done without merge commits, it doesn't update any branches. But it'd also be fine to do as many updates as it can without any merges. Or do some prefix of the fast-forward updates, and then error out when it gets to the first merge. Whichever of these apply, of course it should display something if it can't handle things with fast-forwards exclusively.
+"""]]
