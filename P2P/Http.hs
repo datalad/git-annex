@@ -575,9 +575,9 @@ servePut st resultmangle su apiver (DataLength len) (B64Key k) cu bypass baf mof
 				(L.drop (fromIntegral offsetdelta) content)
 				validitycheck
 			LT -> sendContent' nullMeterUpdate
-				(Len 0)
-				mempty
-				(return Invalid)
+				(Len len)
+				content
+				(validitycheck >>= \_ -> return Invalid)
 	
 	offset = case moffset of
 		Just (Offset o) -> o
