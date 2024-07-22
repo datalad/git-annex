@@ -169,7 +169,7 @@ testGet = do
 		[]
 		Nothing
 		Nothing
-		Nothing
+		"outfile"
 	liftIO $ print res
 
 testPut = do
