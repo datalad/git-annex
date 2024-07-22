@@ -482,6 +482,24 @@ put' key af sender = do
 			net $ sendMessage (ERROR "expected PUT_FROM or ALREADY_HAVE")
 			return Nothing
 
+-- The protocol does not have a way to get the PUT offset
+-- without sending DATA, so send an empty bytestring and indicate
+-- it is not valid.
+getPutOffset :: Key -> AssociatedFile -> Proto (Either [UUID] Offset)
+getPutOffset key af = do
+	net $ sendMessage (PUT (ProtoAssociatedFile af) key)
+	r <- net receiveMessage
+	case r of
+		Just (PUT_FROM offset) -> do
+			void $ sendContent' nullMeterUpdate (Len 0) L.empty $
+				return Invalid
+			return (Right offset)
+		Just ALREADY_HAVE -> return (Left [])
+		Just (ALREADY_HAVE_PLUS uuids) -> return (Left uuids)
+		_ -> do
+			net $ sendMessage (ERROR "expected PUT_FROM or ALREADY_HAVE")
+			return (Left [])
+
 data ServerHandler a
 	= ServerGot a
 	| ServerContinue
@@ -686,7 +704,7 @@ sendContent key af o offset@(Offset n) p = go =<< local (contentSize key)
 			else local $ readContent key af o offset $
 				sender (Len len)
 	-- Content not available to send. Indicate this by sending
-	-- empty data and indlicate it's invalid.
+	-- empty data and indicate it's invalid.
  	go Nothing = sender (Len 0) L.empty (return Invalid)
 
 	sender = sendContent' p'

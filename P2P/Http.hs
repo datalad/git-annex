@@ -720,6 +720,8 @@ type PutOffsetAPI result
 	= KeyParam
 	:> CU Required
 	:> BypassUUIDs
+	:> IsSecure
+	:> AuthHeader
 	:> Post '[JSON] result
 
 servePutOffset
@@ -731,29 +733,50 @@ servePutOffset
 	-> B64Key
 	-> B64UUID ClientSide
 	-> [B64UUID Bypass]
+	-> IsSecure
+	-> Maybe Auth
 	-> Handler t
-servePutOffset st resultmangle su apiver (B64Key k) cu bypass = undefined
-
+servePutOffset st resultmangle su apiver (B64Key k) cu bypass sec auth = do
+	res <- withP2PConnection apiver st cu su bypass sec auth WriteAction
+		(\cst -> cst { connectionWaitVar = False }) $ \conn ->
+			liftIO $ proxyClientNetProto conn $ getPutOffset k af
+	case res of
+		Right offset -> return $ resultmangle $
+			PutOffsetResultPlus (Offset offset)
+		Left plusuuids -> return $ resultmangle $
+			PutOffsetResultAlreadyHavePlus (map B64UUID plusuuids)
+  where
+	af = AssociatedFile Nothing
 
 clientPutOffset
-	:: B64UUID ServerSide
+	:: ClientEnv
 	-> ProtocolVersion
 	-> B64Key
+	-> B64UUID ServerSide
 	-> B64UUID ClientSide
 	-> [B64UUID Bypass]
-	-> ClientM PutOffsetResultPlus
-clientPutOffset su (ProtocolVersion ver) = case ver of
-	3 -> v3 su V3
-	2 -> v2 su V2
-	_ -> error "unsupported protocol version"
+	-> Maybe Auth
+	-> IO PutOffsetResultPlus
+clientPutOffset clientenv (ProtocolVersion ver) k su cu bypass auth
+	| ver == 0 = return (PutOffsetResultPlus (Offset 0))
+	| otherwise = 
+		withClientM cli clientenv $ \case
+			Left err -> throwM err
+			Right res -> return res
   where
+	cli = case ver of
+		3 -> v3 su V3 k cu bypass auth
+		2 -> v2 su V2 k cu bypass auth
+		1 -> plus <$> v1 su V1 k cu bypass auth
+		_ -> error "unsupported protocol version"
+	
 	_ :<|> _ :<|> _ :<|> _ :<|>
 		_ :<|> _ :<|> _ :<|> _ :<|>
 		_ :<|> _ :<|> _ :<|> _ :<|>
 		_ :<|>
 		_ :<|>
 		_ :<|> _ :<|> _ :<|> _ :<|>
-		v3 :<|> v2 :<|> _ = client p2pHttpAPI
+		v3 :<|> v2 :<|> v1 :<|> _ = client p2pHttpAPI
 
 type LockContentAPI
 	= KeyParam

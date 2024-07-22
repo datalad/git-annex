@@ -107,10 +107,14 @@ newtype PutResult = PutResult Bool
 data PutResultPlus = PutResultPlus Bool [B64UUID Plus]
 	deriving (Show)
 
-newtype PutOffsetResult = PutOffsetResult Offset
+data PutOffsetResult
+	= PutOffsetResult Offset
+	| PutOffsetResultAlreadyHave
 	deriving (Show)
 
-data PutOffsetResultPlus = PutOffsetResultPlus Offset [B64UUID Plus]
+data PutOffsetResultPlus 
+	= PutOffsetResultPlus Offset
+	| PutOffsetResultAlreadyHavePlus [B64UUID Plus]
 	deriving (Show, Generic, NFData)
 
 newtype Offset = Offset P2P.Offset
@@ -296,23 +300,37 @@ instance FromJSON GetTimestampResult where
 instance ToJSON PutOffsetResult where
 	toJSON (PutOffsetResult (Offset (P2P.Offset o))) = object
 		["offset" .= o]
+	toJSON PutOffsetResultAlreadyHave = object
+		["alreadyhave" .= True]
 
 instance FromJSON PutOffsetResult where
 	parseJSON = withObject "PutOffsetResult" $ \v ->
-		PutOffsetResult
-			<$> (Offset . P2P.Offset <$> v .: "offset")
+		(PutOffsetResult
+			<$> (Offset . P2P.Offset <$> v .: "offset"))
+		<|> (mkalreadyhave
+			<$> (v .: "alreadyhave"))
+	  where
+		mkalreadyhave :: Bool -> PutOffsetResult
+		mkalreadyhave _ = PutOffsetResultAlreadyHave
 
 instance ToJSON PutOffsetResultPlus where
-	toJSON (PutOffsetResultPlus (Offset (P2P.Offset o)) us) = object
-		[ "offset" .= o
+	toJSON (PutOffsetResultPlus (Offset (P2P.Offset o))) = object
+		[ "offset" .= o ]
+	toJSON (PutOffsetResultAlreadyHavePlus us) = object
+		[ "alreadyhave" .= True
 		, "plusuuids" .= plusList us
 		]
 
 instance FromJSON PutOffsetResultPlus where
 	parseJSON = withObject "PutOffsetResultPlus" $ \v ->
-		PutOffsetResultPlus
-			<$> (Offset . P2P.Offset <$> v .: "offset")
-			<*> v .: "plusuuids"
+		(PutOffsetResultPlus
+			<$> (Offset . P2P.Offset <$> v .: "offset"))
+		<|> (mkalreadyhave
+			<$> (v .: "alreadyhave")
+			<*> (v .: "plusuuids"))
+	  where
+		mkalreadyhave :: Bool -> [B64UUID Plus] -> PutOffsetResultPlus
+		mkalreadyhave _ us = PutOffsetResultAlreadyHavePlus us
 
 instance FromJSON (B64UUID t) where
 	parseJSON (String t) = case decodeB64Text t of
@@ -358,5 +376,8 @@ instance PlusClass PutResultPlus PutResult where
 	plus (PutResult b) = PutResultPlus b mempty
 
 instance PlusClass PutOffsetResultPlus PutOffsetResult where
-	dePlus (PutOffsetResultPlus o _) = PutOffsetResult o
-	plus (PutOffsetResult o) = PutOffsetResultPlus o mempty
+	dePlus (PutOffsetResultPlus o) = PutOffsetResult o
+	dePlus (PutOffsetResultAlreadyHavePlus _) = PutOffsetResultAlreadyHave
+	plus (PutOffsetResult o) = PutOffsetResultPlus o
+	plus PutOffsetResultAlreadyHave = PutOffsetResultAlreadyHavePlus []
+

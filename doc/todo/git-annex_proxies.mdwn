@@ -28,14 +28,17 @@ Planned schedule of work:
 
 ## work notes
 
-* Implement: servePutOffset, serveLockContent
+* servePutOffset crashes with "TMVar left full VALIDITY Invalid".
+  Seems nothing consumes the INVALID sent by the client, but why?
+
+* Implement serveLockContent
 
 * A Locker should expire the lock on its own after 10 minutes initially.
 
 * Since each held lock needs a connection to a proxy, the Locker
   could reference count, and avoid holding more than one lock per key.
 
-* Make Remote.Git use http client when annex.url is configured.
+* Make Remote.Git use http client when remote.name.annex-url is configured.
 
 * Make http server support proxies and clusters.
 
@@ -50,6 +53,8 @@ Planned schedule of work:
   [[design/p2p_protocol_over_http/draft1]]
 
 * implemented server and client for HTTP P2P protocol
+
+* added git-annex p2phttp command to serve HTTP P2P protocol
 
 ## items deferred until later for [[design/passthrough_proxy]]
 

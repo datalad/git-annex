@@ -276,7 +276,7 @@ Same as v3, except the JSON will not include "plusuuids".
 
 ### POST /git-annex/$uuid/v0/remove
 
-Identival to v1.
+Identical to v1.
 
 ## POST /git-annex/$uuid/v3/remove-before
 
@@ -389,8 +389,8 @@ The body of the request is empty.
 The server responds with a JSON object with an "offset" field that 
 is the largest allowable offset.
 
-If the server already has the content of the key, it will respond with a
-JSON object with an "alreadyhave" field that is set to true. This JSON
+If the server already has the content of the key, it will respond instead
+with a JSON object with an "alreadyhave" field that is set to true. This JSON
 object may also have a field "plusuuids" that lists 
 the UUIDs of other repositories where the content is stored, in addition to
 the serveruuid.
