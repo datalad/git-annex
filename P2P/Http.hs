@@ -185,7 +185,7 @@ serveGet st su apiver (B64Key k) cu bypass baf startat sec auth = do
 					sizer storer getreq
 	void $ liftIO $ forkIO $ waitfinal endv finalv conn annexworker
 	(Len len, bs) <- liftIO $ atomically $ takeTMVar bsv
-	bv <- liftIO $ newMVar (L.toChunks bs)
+	bv <- liftIO $ newMVar (filter (not . B.null) (L.toChunks bs))
 	szv <- liftIO $ newMVar 0
 	let streamer = S.SourceT $ \s -> s =<< return 
 		(stream (bv, szv, len, endv, validityv, finalv))
@@ -196,17 +196,35 @@ serveGet st su apiver (B64Key k) cu bypass baf startat sec auth = do
 			modifyMVar bv $ nextchunk szv $
 				checkvalidity szv len endv validityv finalv
 	
-	nextchunk szv atend (b:bs)
-		| not (B.null b) = do
-			modifyMVar szv $ \sz ->
-				let !sz' = sz + fromIntegral (B.length b)
-				in return (sz', ())
-			return (bs, b)
-		| otherwise = nextchunk szv atend bs
-	nextchunk _szv atend [] = do
-		endbit <- atend
-		return ([], endbit)
+	nextchunk szv checkvalid (b:[]) = do
+		updateszv szv b
+		ifM checkvalid
+			( return ([], b)
+			-- The key's content is invalid, but
+			-- the amount of data is the same as the
+			-- DataLengthHeader indicated. Truncate
+			-- the response by one byte to indicate
+			-- to the client that it's not valid.
+			, return ([], B.take (B.length b - 1) b)
+			)
+	nextchunk szv checkvalid (b:bs) = do
+		updateszv szv b
+		return (bs, b)
+	nextchunk _szv checkvalid [] = do
+		void checkvalid
+		-- Result ignored because 0 bytes of data are sent,
+		-- so even if the key is invalid, if that's the
+		-- amount of data that the DataLengthHeader indicates,
+		-- we've successfully served an empty key.
+		return ([], mempty)
+	
+	updateszv szv b = modifyMVar szv $ \sz ->
+		let !sz' = sz + fromIntegral (B.length b)
+		in return (sz', ())
 
+	-- Returns False when the key's content is invalid, but the
+	-- amount of data sent was the same as indicated by the
+	-- DataLengthHeader.
 	checkvalidity szv len endv validityv finalv =
 		ifM (atomically $ isEmptyTMVar endv)
 			( do
@@ -214,18 +232,11 @@ serveGet st su apiver (B64Key k) cu bypass baf startat sec auth = do
 				validity <- atomically $ takeTMVar validityv
 				sz <- takeMVar szv
 				atomically $ putTMVar finalv ()
-				-- When the key's content is invalid,
-				-- indicate that to the client by padding
-				-- the response if necessary, so it is not
-				-- the same length indicated by the
-				-- DataLengthHeader.
 				return $ case validity of
-					Nothing -> mempty
-					Just Valid -> mempty
-					Just Invalid
-						| sz == len -> "X"
-						| otherwise -> mempty
-			, pure mempty
+					Nothing -> True
+					Just Valid -> True
+					Just Invalid -> sz /= len
+			, pure True
 			)
 	
 	waitfinal endv finalv conn annexworker = do
@@ -540,7 +551,6 @@ servePut st resultmangle su apiver (DataLength len) (B64Key k) cu bypass baf mof
 		enteringStage (TransferStage Download) $
 			runFullProto (clientRunState conn) (clientP2PConnection conn) $
 				protoaction content validitycheck
-
 	case res of
 		Right (Right (Just plusuuids)) -> return $ resultmangle $
 			PutResultPlus True (map B64UUID plusuuids)
@@ -700,7 +710,8 @@ servePutOffset
 	-> B64UUID ClientSide
 	-> [B64UUID Bypass]
 	-> Handler t
-servePutOffset = undefined -- TODO
+servePutOffset st resultmangle su apiver (B64Key k) cu bypass = undefined
+
 
 clientPutOffset
 	:: B64UUID ServerSide

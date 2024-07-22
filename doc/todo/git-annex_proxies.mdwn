@@ -28,6 +28,10 @@ Planned schedule of work:
 
 ## work notes
 
+* servePut and clientPut pad the data to indicate when it's not valid.
+  That should not be necessary, they should always be able to truncate the
+  data. 
+
 * Implement: servePutOffset, serveLockContent
 
 * A Locker should expire the lock on its own after 10 minutes initially.
