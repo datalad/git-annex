@@ -544,13 +544,12 @@ servePut st resultmangle su apiver (DataLength len) (B64Key k) cu bypass baf mof
 	validityv <- liftIO newEmptyTMVarIO
 	let validitycheck = local $ runValidityCheck $
 		liftIO $ atomically $ readTMVar validityv
-	content <- liftIO $ S.unSourceT stream (gather validityv)
+	tooshortv <- liftIO newEmptyTMVarIO
+	content <- liftIO $ S.unSourceT stream (gather validityv tooshortv)
 	res <- withP2PConnection' apiver st cu su bypass sec auth WriteAction
 		(\st -> st { connectionWaitVar = False }) $ \conn ->
-			liftIO $ inAnnexWorker st $
-				enteringStage (TransferStage Download) $
-					runFullProto (clientRunState conn) (clientP2PConnection conn) $
-						protoaction content validitycheck
+			liftIO (protoaction conn content validitycheck)
+				`finally` checktooshort conn tooshortv
 	case res of
 		Right (Right (Just plusuuids)) -> return $ resultmangle $
 			PutResultPlus True (map B64UUID plusuuids)
@@ -561,7 +560,12 @@ servePut st resultmangle su apiver (DataLength len) (B64Key k) cu bypass baf mof
 		Left err -> throwError $
 			err500 { errBody = encodeBL (show err) }
   where
-	protoaction content validitycheck = put' k af $ \offset' ->
+	protoaction conn content validitycheck = inAnnexWorker st $
+		enteringStage (TransferStage Download) $
+			runFullProto (clientRunState conn) (clientP2PConnection conn) $
+				protoaction' content validitycheck
+	
+	protoaction' content validitycheck = put' k af $ \offset' ->
 		let offsetdelta = offset' - offset
 		in case compare offset' offset of
 			EQ -> sendContent' nullMeterUpdate (Len len)
@@ -584,36 +588,41 @@ servePut st resultmangle su apiver (DataLength len) (B64Key k) cu bypass baf mof
 		Nothing -> Nothing
 
 	-- Streams the ByteString from the client. Avoids returning a longer
-	-- or shorter than expected ByteString by truncating or padding;
-	-- in such cases the data is not Valid.
-	gather validityv = unsafeInterleaveIO . go 0
+	-- than expected ByteString by truncating to the expected length. 
+	-- Returns a shorter than expected ByteString when the data is not
+	-- valid.
+	gather validityv tooshortv = unsafeInterleaveIO . go 0
 	  where
-		go n S.Stop
-			| n == len = do
-				atomically $ writeTMVar validityv Valid
-				return LI.Empty
-			| otherwise = do
-				atomically $ writeTMVar validityv Invalid
-				padout n
+		go n S.Stop = do
+			atomically $ do
+				writeTMVar validityv $
+					if n == len then Valid else Invalid
+				writeTMVar tooshortv (n /= len)
+			return LI.Empty
 		go n (S.Error _err) = do
-			atomically $ writeTMVar validityv Invalid
-			padout n
+			atomically $ do
+				writeTMVar validityv Invalid
+				writeTMVar tooshortv (n /= len)
+			return LI.Empty
 		go n (S.Skip s) = go n s
 		go n (S.Effect ms) = ms >>= go n
 		go n (S.Yield v s) =
 			let !n' = n + fromIntegral (B.length v)
 			in if n' > len
 				then do
-					atomically $ writeTMVar validityv Invalid
+					atomically $ do
+						writeTMVar validityv Invalid
+						writeTMVar tooshortv True
 					return $ LI.Chunk
 						(B.take (fromIntegral (len - n')) v)
 						LI.Empty
 				else LI.Chunk v <$> unsafeInterleaveIO (go n' s)
-		
-		padout n =return $ LI.Chunk
-			(B.replicate (fromIntegral (len-n))
-				(fromIntegral (ord 'X')))
-			LI.Empty
+			
+	-- The connection can no longer be used when too short a DATA has
+	-- been written to it.
+	checktooshort conn tooshortv =
+		liftIO $ whenM (atomically $ fromMaybe True <$> tryTakeTMVar tooshortv) $
+			closeP2PConnection conn
 
 clientPut
 	:: ClientEnv
@@ -655,7 +664,7 @@ clientPut clientenv (ProtocolVersion ver) k su cu bypass auth moffset af content
 			modifyMVar v $ \case
 				(n, (b:[])) -> do
 					let !n' = n + B.length b
-					ifM (checkvalid n)
+					ifM (checkvalid n')
 						( return ((n', []), b)
 						-- The key's content is invalid, but
 						-- the amount of data is the same as the

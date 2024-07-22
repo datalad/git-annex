@@ -186,7 +186,7 @@ testPut = do
 		(AssociatedFile (Just "foo"))
 		"foocontent"
 		30
-		(liftIO (print "validity check") >> return True)
+		(liftIO (print "validity check") >> return False)
 	liftIO $ print res
 
 testRemove = do

@@ -154,6 +154,11 @@ data P2PConnectionPair = P2PConnectionPair
 	, clientP2PConnection :: P2PConnection
 	, serverP2PConnection :: P2PConnection
 	, releaseP2PConnection :: IO ()
+	-- ^ Releases a P2P connection, which can be reused for other
+	-- requests.
+	, closeP2PConnection :: IO ()
+	-- ^ Closes a P2P connection, which is in a state where it is no
+	-- longer usable.
 	}
 
 proxyClientNetProto :: P2PConnectionPair -> P2P.Proto a -> IO (Either P2P.ProtoFailure a)
@@ -229,7 +234,7 @@ mkP2PConnectionPair connparams relv startworker = do
 	serverrunst <- mkserverrunst
 	asyncworker <- async $
 		startworker serverrunst serverconn
-	let releaseconn = atomically $ putTMVar relv $
+	let releaseconn = atomically $ void $ tryPutTMVar relv $
 		liftIO $ wait asyncworker
 			>>= either throwM return
 	return $ Right $ P2PConnectionPair
@@ -237,6 +242,7 @@ mkP2PConnectionPair connparams relv startworker = do
 		, clientP2PConnection = clientconn
 		, serverP2PConnection = serverconn
 		, releaseP2PConnection = releaseconn
+		, closeP2PConnection = releaseconn
 		}
   where
 	mkserverrunst = do
