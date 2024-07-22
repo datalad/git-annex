@@ -832,7 +832,7 @@ serveLockContent st su apiver (B64Key k) cu bypass sec auth = do
 			_ -> return Nothing
 	let unlock (annexworker, unlockv) = do
 		atomically $ putTMVar unlockv ()
-		wait annexworker
+		void $ wait annexworker
 		releaseP2PConnection conn
 	liftIO $ mkLocker lock unlock >>= \case
 		Just (locker, lockid) -> do
@@ -874,6 +874,8 @@ type KeepLockedAPI
 	= LockIDParam
 	:> CU Required
 	:> BypassUUIDs
+	:> IsSecure
+	:> AuthHeader
 	:> Header "Connection" ConnectionKeepAlive
 	:> Header "Keep-Alive" KeepAlive
 	:> StreamBody NewlineFraming JSON (SourceIO UnlockRequest)
@@ -887,13 +889,16 @@ serveKeepLocked
 	-> LockID
 	-> B64UUID ClientSide
 	-> [B64UUID Bypass]
+	-> IsSecure
+	-> Maybe Auth
 	-> Maybe ConnectionKeepAlive
 	-> Maybe KeepAlive
 	-> S.SourceT IO UnlockRequest
 	-> Handler LockResult
-serveKeepLocked st su apiver lckid cu _ _ _ unlockrequeststream = do
-	_ <- liftIO $ S.unSourceT unlockrequeststream go
-	return (LockResult False Nothing)
+serveKeepLocked st _su _apiver lckid _cu _bypass sec auth _ _ unlockrequeststream = do
+	checkAuthActionClass st sec auth WriteAction $ \_ -> do
+		_ <- liftIO $ S.unSourceT unlockrequeststream go
+		return (LockResult False Nothing)
   where
 	go S.Stop = dropLock lckid st
 	go (S.Error _err) = dropLock lckid st
@@ -909,15 +914,16 @@ clientKeepLocked
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
+	-> Maybe Auth
 	-> (TMVar Bool -> IO ())
 	-- ^ The TMVar can be filled any number of times with True to send
 	-- repeated keep locked requests, eg to keep a connection alive.
 	-- Once filled with False, the lock will be dropped.
 	-> IO ()
-clientKeepLocked clientenv (ProtocolVersion ver) lckid cu su bypass a = do
+clientKeepLocked clientenv (ProtocolVersion ver) lckid cu su bypass auth a = do
 	keeplocked <- newEmptyTMVarIO
 	tid <- async $ a keeplocked
-	let cli' = cli lckid cu bypass
+	let cli' = cli lckid cu bypass auth
 		(Just connectionKeepAlive) (Just keepAlive)
 		(S.fromStepT (unlocksender keeplocked))
 	withClientM cli' clientenv $ \case

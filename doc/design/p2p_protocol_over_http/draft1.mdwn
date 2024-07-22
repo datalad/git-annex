@@ -234,6 +234,9 @@ If the connection is closed before the client sends `{"unlock": true},
 or even if the web server gets shut down, the content will remain
 locked for 10 minutes from the time it was first locked.
 
+Note that the common parameters bypass and clientuuid, while
+accepted, have no effect.
+
 ### POST /git-annex/$uuid/v2/keeplocked
 
 Identical to v3.

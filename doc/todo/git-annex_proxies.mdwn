@@ -32,9 +32,6 @@ Planned schedule of work:
 
 * A Locker should expire the lock on its own after 10 minutes initially.
 
-* serveKeepLocked should check auth just to be safe, although added
-  security is probably minimal.
-
 * Make Remote.Git use http client when remote.name.annex-url is configured.
 
 * Make http server support proxies and clusters.

@@ -138,7 +138,8 @@ testKeepLocked = do
 		(B64UUID (toUUID ("lck" :: String)))
 		(B64UUID (toUUID ("cu" :: String)))
 		(B64UUID (toUUID ("su" :: String)))
-		[] $ \keeplocked -> do
+		[] 
+		Nothing $ \keeplocked -> do
 			print "running, press enter to drop lock"
 			_ <- getLine
 			atomically $ writeTMVar keeplocked False

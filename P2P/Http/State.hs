@@ -104,13 +104,7 @@ getP2PConnection
 	-> (ConnectionParams -> ConnectionParams)
 	-> Handler P2PConnectionPair
 getP2PConnection apiver st cu su bypass sec auth actionclass fconnparams =
-	case (getServerMode st sec auth, actionclass) of
-		(Just P2P.ServeReadWrite, _) -> go P2P.ServeReadWrite
-		(Just P2P.ServeAppendOnly, RemoveAction) -> throwError err403
-		(Just P2P.ServeAppendOnly, _) -> go P2P.ServeAppendOnly
-		(Just P2P.ServeReadOnly, ReadAction) -> go P2P.ServeReadOnly
-		(Just P2P.ServeReadOnly, _) -> throwError err403
-		(Nothing, _) -> throwError basicAuthRequired
+	checkAuthActionClass st sec auth actionclass go
   where
 	go servermode = liftIO (acquireP2PConnection st cp) >>= \case
 		Left (ConnectionFailed err) -> 
@@ -127,6 +121,22 @@ getP2PConnection apiver st cu su bypass sec auth actionclass fconnparams =
 			, connectionServerMode = servermode
 			, connectionWaitVar = True
 			}
+
+checkAuthActionClass
+	:: P2PHttpServerState
+	-> IsSecure
+	-> Maybe Auth
+	-> ActionClass
+	-> (P2P.ServerMode -> Handler a)
+	-> Handler a
+checkAuthActionClass st sec auth actionclass go =
+	case (getServerMode st sec auth, actionclass) of
+		(Just P2P.ServeReadWrite, _) -> go P2P.ServeReadWrite
+		(Just P2P.ServeAppendOnly, RemoveAction) -> throwError err403
+		(Just P2P.ServeAppendOnly, _) -> go P2P.ServeAppendOnly
+		(Just P2P.ServeReadOnly, ReadAction) -> go P2P.ServeReadOnly
+		(Just P2P.ServeReadOnly, _) -> throwError err403
+		(Nothing, _) -> throwError basicAuthRequired
 
 basicAuthRequired :: ServerError
 basicAuthRequired = err401 { errHeaders = [(h, v)] }
