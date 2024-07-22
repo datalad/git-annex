@@ -322,7 +322,7 @@ serveCheckPresent
 	-> Maybe Auth
 	-> Handler CheckPresentResult
 serveCheckPresent st su apiver (B64Key k) cu bypass sec auth = do
-	res <- withP2PConnection apiver st cu su bypass sec auth ReadAction
+	res <- withP2PConnection apiver st cu su bypass sec auth ReadAction id
 		$ \conn -> liftIO $ proxyClientNetProto conn $ checkPresent k
 	case res of
 		Right b -> return (CheckPresentResult b)
@@ -373,7 +373,7 @@ serveRemove
 	-> Maybe Auth
 	-> Handler t
 serveRemove st resultmangle su apiver (B64Key k) cu bypass sec auth = do
-	res <- withP2PConnection apiver st cu su bypass sec auth RemoveAction
+	res <- withP2PConnection apiver st cu su bypass sec auth RemoveAction id
 		$ \conn ->
 			liftIO $ proxyClientNetProto conn $ remove Nothing k
 	case res of
@@ -429,7 +429,7 @@ serveRemoveBefore
 	-> Maybe Auth
 	-> Handler RemoveResultPlus
 serveRemoveBefore st su apiver (B64Key k) cu bypass (Timestamp ts) sec auth = do
-	res <- withP2PConnection apiver st cu su bypass sec auth RemoveAction
+	res <- withP2PConnection apiver st cu su bypass sec auth RemoveAction id
 		$ \conn ->
 			liftIO $ proxyClientNetProto conn $
 				removeBeforeRemoteEndTime ts k
@@ -481,7 +481,7 @@ serveGetTimestamp
 	-> Maybe Auth
 	-> Handler GetTimestampResult
 serveGetTimestamp st su apiver cu bypass sec auth = do
-	res <- withP2PConnection apiver st cu su bypass sec auth ReadAction
+	res <- withP2PConnection apiver st cu su bypass sec auth ReadAction id
 		$ \conn ->
 			liftIO $ proxyClientNetProto conn getTimestamp
 	case res of
@@ -545,12 +545,12 @@ servePut st resultmangle su apiver (DataLength len) (B64Key k) cu bypass baf mof
 	let validitycheck = local $ runValidityCheck $
 		liftIO $ atomically $ readTMVar validityv
 	content <- liftIO $ S.unSourceT stream (gather validityv)
-	conn <- getP2PConnection apiver st cu su bypass sec auth WriteAction $
-		\st -> st { connectionWaitVar = False }
-	res <- liftIO $ inAnnexWorker st $
-		enteringStage (TransferStage Download) $
-			runFullProto (clientRunState conn) (clientP2PConnection conn) $
-				protoaction content validitycheck
+	res <- withP2PConnection' apiver st cu su bypass sec auth WriteAction
+		(\st -> st { connectionWaitVar = False }) $ \conn ->
+			liftIO $ inAnnexWorker st $
+				enteringStage (TransferStage Download) $
+					runFullProto (clientRunState conn) (clientP2PConnection conn) $
+						protoaction content validitycheck
 	case res of
 		Right (Right (Just plusuuids)) -> return $ resultmangle $
 			PutResultPlus True (map B64UUID plusuuids)

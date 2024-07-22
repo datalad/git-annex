@@ -62,17 +62,34 @@ withP2PConnection
 	-> IsSecure
 	-> Maybe Auth
 	-> ActionClass
+	-> (ConnectionParams -> ConnectionParams)
 	-> (P2PConnectionPair -> Handler (Either ProtoFailure a))
 	-> Handler a
-withP2PConnection apiver st cu su bypass sec auth actionclass connaction = do
-	conn <- getP2PConnection apiver st cu su bypass sec auth actionclass id
-	connaction' conn
-		`finally` liftIO (releaseP2PConnection conn)
+withP2PConnection apiver st cu su bypass sec auth actionclass fconnparams connaction =
+	withP2PConnection' apiver st cu su bypass sec auth actionclass fconnparams connaction'
   where
 	connaction' conn = connaction conn >>= \case
 		Right r -> return r
 		Left err -> throwError $
 			err500 { errBody = encodeBL (describeProtoFailure err) }
+
+withP2PConnection'
+	:: APIVersion v
+	=> v
+	-> P2PHttpServerState
+	-> B64UUID ClientSide
+	-> B64UUID ServerSide
+	-> [B64UUID Bypass]
+	-> IsSecure
+	-> Maybe Auth
+	-> ActionClass
+	-> (ConnectionParams -> ConnectionParams)
+	-> (P2PConnectionPair -> Handler a)
+	-> Handler a
+withP2PConnection' apiver st cu su bypass sec auth actionclass fconnparams connaction = do
+	conn <- getP2PConnection apiver st cu su bypass sec auth actionclass fconnparams
+	connaction conn
+		`finally` liftIO (releaseP2PConnection conn)
 
 getP2PConnection
 	:: APIVersion v
