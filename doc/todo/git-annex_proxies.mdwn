@@ -32,6 +32,8 @@ Planned schedule of work:
   That should not be necessary, they should always be able to truncate the
   data. 
 
+* clientPut needs to seek to the requested offset in the file.
+
 * Implement: servePutOffset, serveLockContent
 
 * A Locker should expire the lock on its own after 10 minutes initially.

@@ -646,37 +646,44 @@ clientPut clientenv (ProtocolVersion ver) k su cu bypass auth moffset af content
 			return res
   where
 	stream checkv checkresultv = S.SourceT $ \a -> do
+		-- TODO seek to offset when requested
 		bl <- L.readFile contentfile
-		v <- newMVar (0, L.toChunks bl)
+		v <- newMVar (0, filter (not . B.null) (L.toChunks bl))
 		a (go v)
 	  where
-		go v = S.fromActionStep B.null $ do
-			res <- modifyMVar v $ pure . \case
-				(n, []) -> ((n, []), (n, Nothing))
-				(n, (b:bs)) -> 
+		go v = S.fromActionStep B.null $
+			modifyMVar v $ \case
+				(n, (b:[])) -> do
 					let !n' = n + B.length b
-					in ((n', bs), (n, Just b))
-			case res of
-				(_, Just b) -> return b
-				(n, Nothing) -> do
-					void $ liftIO $ atomically $ 
-						tryPutTMVar checkv ()
-					valid <- liftIO $ atomically $
-						readTMVar checkresultv
-					if not valid
-						then if n == fromIntegral contentfilesize
-							then do
-								modifyMVar_ v $ \(_n, l) ->
-									pure (n+1, l)
-								return "X"
-							else return B.empty
-						else return B.empty
+					ifM (checkvalid n)
+						( return ((n', []), b)
+						-- The key's content is invalid, but
+						-- the amount of data is the same as the
+						-- DataLengthHeader indicates. Truncate
+						-- the stream by one byte to indicate
+						-- to the server that it's not valid.
+						, return ((n' - 1, []), B.take (B.length b - 1) b)
+						)
+				(n, []) -> do
+					void $ checkvalid n
+					return ((n, []), mempty)
+				(n, (b:bs)) ->
+					let !n' = n + B.length b
+					in return ((n', bs), b)
+
+		checkvalid n = do
+			void $ liftIO $ atomically $ tryPutTMVar checkv ()
+			valid <- liftIO $ atomically $ readTMVar checkresultv
+			if not valid
+				then return (n /= fromIntegral nlen)
+				else return True
 
 	baf = case af of
 		AssociatedFile Nothing -> Nothing
 		AssociatedFile (Just f) -> Just (B64FilePath f)
 
-	len = DataLength $ case moffset of
+	len = DataLength nlen
+	nlen = case moffset of
 		Nothing -> contentfilesize
 		Just (Offset o) -> contentfilesize - fromIntegral o
 
