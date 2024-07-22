@@ -872,7 +872,7 @@ clientLockContent clientenv (ProtocolVersion ver) k su cu bypass auth =
 
 type KeepLockedAPI
 	= LockIDParam
-	:> CU Required
+	:> CU Optional
 	:> BypassUUIDs
 	:> IsSecure
 	:> AuthHeader
@@ -887,7 +887,7 @@ serveKeepLocked
 	-> B64UUID ServerSide
 	-> v
 	-> LockID
-	-> B64UUID ClientSide
+	-> Maybe (B64UUID ClientSide)
 	-> [B64UUID Bypass]
 	-> IsSecure
 	-> Maybe Auth
@@ -923,7 +923,7 @@ clientKeepLocked
 clientKeepLocked clientenv (ProtocolVersion ver) lckid su cu bypass auth a = do
 	keeplocked <- newEmptyTMVarIO
 	tid <- async $ a keeplocked
-	let cli' = cli lckid cu bypass auth
+	let cli' = cli lckid (Just cu) bypass auth
 		(Just connectionKeepAlive) (Just keepAlive)
 		(S.fromStepT (unlocksender keeplocked))
 	withClientM cli' clientenv $ \case
