@@ -798,6 +798,8 @@ type LockContentAPI
 	= KeyParam
 	:> CU Required
 	:> BypassUUIDs
+	:> IsSecure
+	:> AuthHeader
 	:> Post '[JSON] LockResult
 
 serveLockContent
@@ -808,8 +810,35 @@ serveLockContent
 	-> B64Key
 	-> B64UUID ClientSide
 	-> [B64UUID Bypass]
+	-> IsSecure
+	-> Maybe Auth
 	-> Handler LockResult
-serveLockContent = undefined -- TODO
+serveLockContent st su apiver (B64Key k) cu bypass sec auth = do
+	conn <- getP2PConnection apiver st cu su bypass sec auth WriteAction id
+	let lock = do
+		lockresv <- newEmptyTMVarIO
+		unlockv <- newEmptyTMVarIO
+		annexworker <- async $ inAnnexWorker st $ do
+			lockres <- runFullProto (clientRunState conn) (clientP2PConnection conn) $ do
+				net $ sendMessage (LOCKCONTENT k)
+				checkSuccess
+			liftIO $ atomically $ putTMVar lockresv lockres
+			-- TODO timeout
+			liftIO $ atomically $ takeTMVar unlockv
+			void $ runFullProto (clientRunState conn) (clientP2PConnection conn) $ do
+				net $ sendMessage UNLOCKCONTENT
+		atomically (takeTMVar lockresv) >>= \case
+			Right True -> return (Just (annexworker, unlockv))
+			_ -> return Nothing
+	let unlock (annexworker, unlockv) = do
+		atomically $ putTMVar unlockv ()
+		wait annexworker
+		releaseP2PConnection conn
+	liftIO $ mkLocker lock unlock >>= \case
+		Just (locker, lockid) -> do
+			liftIO $ storeLock lockid locker st
+			return $ LockResult True (Just lockid)
+		Nothing -> return $ LockResult False Nothing
 
 clientLockContent
 	:: B64UUID ServerSide
@@ -817,6 +846,7 @@ clientLockContent
 	-> B64Key
 	-> B64UUID ClientSide
 	-> [B64UUID Bypass]
+	-> Maybe Auth
 	-> ClientM LockResult
 clientLockContent su (ProtocolVersion ver) = case ver of
 	3 -> v3 su V3

@@ -264,23 +264,21 @@ data Locker = Locker
 	-- and setting to False causes the lock to be released.
 	}
 
-mkLocker :: IO () -> IO () -> IO (Maybe (Locker, LockID))
+mkLocker :: IO (Maybe a) -> (a -> IO ()) -> IO (Maybe (Locker, LockID))
 mkLocker lock unlock = do
 	lv <- newEmptyTMVarIO
 	let setlocked = putTMVar lv
-	tid <- async $
-		tryNonAsync lock >>= \case
-			Left _ -> do
-				atomically $ setlocked False
-				unlock
-			Right () -> do
-				atomically $ setlocked True
-				atomically $ do
-					v <- takeTMVar lv
-					if v
-						then retry
-						else setlocked False
-				unlock
+	tid <- async $ lock >>= \case
+		Nothing ->
+			atomically $ setlocked False
+		Just st -> do
+			atomically $ setlocked True
+			atomically $ do
+				v <- takeTMVar lv
+				if v
+					then retry
+					else setlocked False
+			unlock st
 	locksuccess <- atomically $ readTMVar lv
 	if locksuccess
 		then do
@@ -305,7 +303,8 @@ dropLock lckid st = do
 		putTMVar (openLocks st) m'
 		case mlocker of
 			Nothing -> return Nothing
-			-- Signal to the locker's thread that it can release the lock.
+			-- Signal to the locker's thread that it can
+			-- release the lock.
 			Just locker -> do
 				_ <- swapTMVar (lockerVar locker) False
 				return (Just locker)

@@ -28,12 +28,12 @@ Planned schedule of work:
 
 ## work notes
 
-* Implement serveLockContent
+* Test serveLockContent
 
 * A Locker should expire the lock on its own after 10 minutes initially.
 
-* Since each held lock needs a connection to a proxy, the Locker
-  could reference count, and avoid holding more than one lock per key.
+* serveKeepLocked should check auth just to be safe, although added
+  security is probably minimal.
 
 * Make Remote.Git use http client when remote.name.annex-url is configured.
 
