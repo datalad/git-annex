@@ -28,9 +28,9 @@ Planned schedule of work:
 
 ## work notes
 
-* Test serveLockContent
-
-* A Locker should expire the lock on its own after 10 minutes initially.
+* A Locker should expire the lock on its own after 10 minutes,
+  initially. Once keeplocked is called, the expiry should end with the end
+  of that call.
 
 * Make Remote.Git use http client when remote.name.annex-url is configured.
 
@@ -41,10 +41,9 @@ Planned schedule of work:
 
 ## completed items for July's work on p2p protocol over http
 
-* addressed [[doc/todo/P2P_locking_connection_drop_safety]]
+* HTTP P2P protocol document [[design/p2p_protocol_over_http]].
 
-* finalized HTTP P2P protocol draft 1,
-  [[design/p2p_protocol_over_http/draft1]]
+* addressed [[doc/todo/P2P_locking_connection_drop_safety]]
 
 * implemented server and client for HTTP P2P protocol
 
