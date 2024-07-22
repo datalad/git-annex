@@ -866,33 +866,6 @@ serveKeepLocked st su apiver lckid cu _ _ _ unlockrequeststream = do
 	go (S.Yield (UnlockRequest False) s) = go s
 	go (S.Yield (UnlockRequest True) _) = dropLock lckid st
 
-clientKeepLocked'
-	:: B64UUID ServerSide
-	-> ProtocolVersion
-	-> LockID
-	-> B64UUID ClientSide
-	-> [B64UUID Bypass]
-	-> Maybe ConnectionKeepAlive
-	-> Maybe KeepAlive
-	-> S.SourceT IO UnlockRequest
-	-> ClientM LockResult
-clientKeepLocked' su (ProtocolVersion ver) = case ver of
-	3 -> v3 su V3
-	2 -> v2 su V2
-	1 -> v1 su V1
-	0 -> v0 su V0
-	_ -> error "unsupported protocol version"
-  where
-	_ :<|> _ :<|> _ :<|> _ :<|>
-		_ :<|> _ :<|> _ :<|> _ :<|>
-		_ :<|> _ :<|> _ :<|> _ :<|>
-		_ :<|>
-		_ :<|>
-		_ :<|> _ :<|> _ :<|> _ :<|>
-		_ :<|> _ :<|> _ :<|>
-		_ :<|> _ :<|> _ :<|> _ :<|>
-		v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
-
 clientKeepLocked
 	:: ClientEnv
 	-> ProtocolVersion
@@ -902,11 +875,8 @@ clientKeepLocked
 	-> [B64UUID Bypass]
 	-> TMVar Bool
 	-> IO ()
-clientKeepLocked clientenv protover lckid cu su bypass keeplocked = do
-	let cli = clientKeepLocked' su protover lckid cu bypass
-		(Just connectionKeepAlive) (Just keepAlive)
-		(S.fromStepT unlocksender)
-	withClientM cli clientenv $ \case
+clientKeepLocked clientenv (ProtocolVersion ver) lckid cu su bypass keeplocked = do
+	withClientM cli' clientenv $ \case
 		Left err  -> throwM err
 		Right (LockResult _ _) ->
 			liftIO $ print "end of lock connection to server"
@@ -921,6 +891,27 @@ clientKeepLocked clientenv protover lckid cu su bypass keeplocked = do
 					else do
 						liftIO $ print "sending unlock request"
 						return $ S.Yield (UnlockRequest True) S.Stop
+
+	cli' = cli lckid cu bypass
+		(Just connectionKeepAlive) (Just keepAlive)
+		(S.fromStepT unlocksender)
+	
+	cli = case ver of
+		3 -> v3 su V3
+		2 -> v2 su V2
+		1 -> v1 su V1
+		0 -> v0 su V0
+		_ -> error "unsupported protocol version"
+	
+	_ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|>
+		_ :<|>
+		_ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|> _ :<|> _ :<|>
+		_ :<|> _ :<|> _ :<|> _ :<|>
+		v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
 
 type PV3 = Capture "v3" V3
 
