@@ -39,8 +39,6 @@ over HTTPS.
 Each request in the protocol is versioned. The versions correspond
 to P2P protocol versions.
 
-The protocol version comes before the request. Eg: `/git-annex/v3/put`
-
 If the server does not support a particular protocol version, the
 request will fail with a 400 Bad Request, and the client should fall
 back to an earlier protocol version.
@@ -369,8 +367,7 @@ Same as v3, except the JSON will not include "plusuuids".
 
 ### POST /git-annex/$uuid/v0/put
 
-Same as v1, except there is no X-git-annex-data-length header.
-Additional checking client-side will be required to validate the data.
+Same as v1, except additional checking is done to validate the data.
 
 ### POST /git-annex/$uuid/v3/putoffset
 

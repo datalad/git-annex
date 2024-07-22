@@ -80,11 +80,12 @@ mkRunState mk = do
 
 data P2PHandle
 	= P2PHandle Handle
-	| P2PHandleTMVar (TMVar (Either L.ByteString Message)) (TMVar ())
+	| P2PHandleTMVar (TMVar (Either L.ByteString Message)) (Maybe (TMVar ()))
 
 signalFullyConsumedByteString :: P2PHandle -> IO ()
 signalFullyConsumedByteString (P2PHandle _) = return ()
-signalFullyConsumedByteString (P2PHandleTMVar _ waitv) = 
+signalFullyConsumedByteString (P2PHandleTMVar _ Nothing) = return () 
+signalFullyConsumedByteString (P2PHandleTMVar _ (Just waitv)) = 
 	atomically $ putTMVar waitv ()
 
 data P2PConnection = P2PConnection
@@ -216,7 +217,7 @@ runNet runst conn runner f = case f of
 					ifM (atomically (tryPutTMVar mv (Right m)))
 						( return $ Right ()
 						, return $ Left $ toException $
-							P2PTMVarException "TMVar left full"
+							P2PTMVarException ("TMVar left full " ++ show m)
 						)
 		case v of
 			Left e -> return $ Left $ ProtoFailureException e
@@ -256,7 +257,7 @@ runNet runst conn runner f = case f of
 				liftIO $ atomically $ putTMVar mv (Left b)
 				-- Wait for the whole bytestring to
 				-- be processed.
-				liftIO $ atomically $ takeTMVar waitv
+				liftIO $ maybe noop (atomically . takeTMVar) waitv
 				runner next
 	ReceiveBytes len p next ->
 		case connIhdl conn of

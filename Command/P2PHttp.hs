@@ -73,7 +73,7 @@ seek o = getAnnexWorkerPool $ \workerpool -> do
 	-- XXX remove this
 	when (isNothing (portOption o)) $ do
 		liftIO $ putStrLn "test begins"
-		testGet
+		testPut
 		giveup "TEST DONE" 
 	withLocalP2PConnections workerpool $ \acquireconn -> liftIO $ do
 		authenv <- getAuthEnv
@@ -170,6 +170,23 @@ testGet = do
 		Nothing
 		Nothing
 		Nothing
+	liftIO $ print res
+
+testPut = do
+	mgr <- httpManager <$> getUrlOptions
+	burl <- liftIO $ parseBaseUrl "http://localhost:8080/"
+	res <- clientPut (mkClientEnv mgr burl)
+		(P2P.ProtocolVersion 3)
+		(B64Key (fromJust $ deserializeKey ("WORM-s30-m1720547401--foo")))
+		(B64UUID (toUUID ("f11773f0-11e1-45b2-9805-06db16768efe" :: String)))
+		(B64UUID (toUUID ("cu" :: String)))
+		[]
+		Nothing
+		Nothing
+		(AssociatedFile (Just "foo"))
+		"foocontent"
+		30
+		(liftIO (print "validity check") >> return True)
 	liftIO $ print res
 
 testRemove = do

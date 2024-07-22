@@ -65,7 +65,7 @@ withP2PConnection
 	-> (P2PConnectionPair -> Handler (Either ProtoFailure a))
 	-> Handler a
 withP2PConnection apiver st cu su bypass sec auth actionclass connaction = do
-	conn <- getP2PConnection apiver st cu su bypass sec auth actionclass
+	conn <- getP2PConnection apiver st cu su bypass sec auth actionclass id
 	connaction' conn
 		`finally` liftIO (releaseP2PConnection conn)
   where
@@ -84,8 +84,9 @@ getP2PConnection
 	-> IsSecure
 	-> Maybe Auth
 	-> ActionClass
+	-> (ConnectionParams -> ConnectionParams)
 	-> Handler P2PConnectionPair
-getP2PConnection apiver st cu su bypass sec auth actionclass =
+getP2PConnection apiver st cu su bypass sec auth actionclass fconnparams =
 	case (getServerMode st sec auth, actionclass) of
 		(Just P2P.ServeReadWrite, _) -> go P2P.ServeReadWrite
 		(Just P2P.ServeAppendOnly, RemoveAction) -> throwError err403
@@ -101,12 +102,13 @@ getP2PConnection apiver st cu su bypass sec auth actionclass =
 			throwError err503
 		Right v -> return v
 	  where
-		cp = ConnectionParams
+		cp = fconnparams $ ConnectionParams
 			{ connectionProtocolVersion = protocolVersion apiver
 			, connectionServerUUID = fromB64UUID su
 			, connectionClientUUID = fromB64UUID cu
 			, connectionBypass = map fromB64UUID bypass
 			, connectionServerMode = servermode
+			, connectionWaitVar = True
 			}
 
 basicAuthRequired :: ServerError
@@ -121,6 +123,7 @@ data ConnectionParams = ConnectionParams
 	, connectionClientUUID :: UUID
 	, connectionBypass :: [UUID]
 	, connectionServerMode :: P2P.ServerMode
+	, connectionWaitVar :: Bool
 	}
 	deriving (Show, Eq, Ord)
 
@@ -191,8 +194,14 @@ mkP2PConnectionPair connparams relv startworker = do
 	hdl2 <- newEmptyTMVarIO
 	wait1 <- newEmptyTMVarIO
 	wait2 <- newEmptyTMVarIO
-	let h1 = P2PHandleTMVar hdl1 wait1
-	let h2 = P2PHandleTMVar hdl2 wait2
+	let h1 = P2PHandleTMVar hdl1 $ 
+		if connectionWaitVar connparams
+			then Just wait1
+			else Nothing
+	let h2 = P2PHandleTMVar hdl2 $
+		if connectionWaitVar connparams
+			then Just wait2
+			else Nothing
 	let serverconn = P2PConnection Nothing
 		(const True) h1 h2
 		(ConnIdent (Just "http server"))

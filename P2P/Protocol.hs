@@ -467,11 +467,15 @@ get dest key iv af m p =
 	storer = storeContentTo dest iv
 
 put :: Key -> AssociatedFile -> MeterUpdate -> Proto (Maybe [UUID])
-put key af p = do
+put key af p = put' key af $ \offset ->
+	sendContent key af Nothing offset p
+
+put' :: Key -> AssociatedFile -> (Offset -> Proto (Maybe [UUID])) -> Proto (Maybe [UUID])
+put' key af sender = do
 	net $ sendMessage (PUT (ProtoAssociatedFile af) key)
 	r <- net receiveMessage
 	case r of
-		Just (PUT_FROM offset) -> sendContent key af Nothing offset p
+		Just (PUT_FROM offset) -> sender offset
 		Just ALREADY_HAVE -> return (Just [])
 		Just (ALREADY_HAVE_PLUS uuids) -> return (Just uuids)
 		_ -> do
@@ -684,14 +688,19 @@ sendContent key af o offset@(Offset n) p = go =<< local (contentSize key)
 	-- Content not available to send. Indicate this by sending
 	-- empty data and indlicate it's invalid.
  	go Nothing = sender (Len 0) L.empty (return Invalid)
-	sender len content validitycheck = do
-		let p' = offsetMeterUpdate p (toBytesProcessed n)
-		net $ sendMessage (DATA len)
-		net $ sendBytes len content p'
-		ver <- net getProtocolVersion
-		when (ver >= ProtocolVersion 1) $
-			net . sendMessage . VALIDITY =<< validitycheck
-		checkSuccessPlus
+
+	sender = sendContent' p'
+	
+	p' = offsetMeterUpdate p (toBytesProcessed n)
+
+sendContent' :: MeterUpdate -> Len -> L.ByteString -> Proto Validity -> Proto (Maybe [UUID])
+sendContent' p len content validitycheck = do
+	net $ sendMessage (DATA len)
+	net $ sendBytes len content p
+	ver <- net getProtocolVersion
+	when (ver >= ProtocolVersion 1) $
+		net . sendMessage . VALIDITY =<< validitycheck
+	checkSuccessPlus
 
 receiveContent
 	:: Observable t

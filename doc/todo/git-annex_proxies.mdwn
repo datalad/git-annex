@@ -28,10 +28,7 @@ Planned schedule of work:
 
 ## work notes
 
-* Implement: servePut, servePutOffset, serveLockContent
-
-* I have a file `servant.hs` in the httpproto branch that works through some
-  of the bytestring streaming issues.
+* Implement: servePutOffset, serveLockContent
 
 * A Locker should expire the lock on its own after 10 minutes initially.
 
