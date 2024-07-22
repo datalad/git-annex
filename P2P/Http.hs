@@ -841,20 +841,26 @@ serveLockContent st su apiver (B64Key k) cu bypass sec auth = do
 		Nothing -> return $ LockResult False Nothing
 
 clientLockContent
-	:: B64UUID ServerSide
+	:: ClientEnv
+	-> B64UUID ServerSide
 	-> ProtocolVersion
 	-> B64Key
 	-> B64UUID ClientSide
 	-> [B64UUID Bypass]
 	-> Maybe Auth
-	-> ClientM LockResult
-clientLockContent su (ProtocolVersion ver) = case ver of
-	3 -> v3 su V3
-	2 -> v2 su V2
-	1 -> v1 su V1
-	0 -> v0 su V0
-	_ -> error "unsupported protocol version"
+	-> IO LockResult
+clientLockContent clientenv su (ProtocolVersion ver) k cu bypass auth = 
+	withClientM (cli k cu bypass auth) clientenv $ \case
+		Left err -> throwM err
+		Right res -> return res
   where
+	cli = case ver of
+		3 -> v3 su V3
+		2 -> v2 su V2
+		1 -> v1 su V1
+		0 -> v0 su V0
+		_ -> error "unsupported protocol version"
+	
 	_ :<|> _ :<|> _ :<|> _ :<|>
 		_ :<|> _ :<|> _ :<|> _ :<|>
 		_ :<|> _ :<|> _ :<|> _ :<|>
