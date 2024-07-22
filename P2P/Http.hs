@@ -873,28 +873,31 @@ clientKeepLocked
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
-	-> TMVar Bool
+	-> (TMVar Bool -> IO ())
+	-- ^ The TMVar can be filled any number of times with True to send
+	-- repeated keep locked requests, eg to keep a connection alive.
+	-- Once filled with False, the lock will be dropped.
 	-> IO ()
-clientKeepLocked clientenv (ProtocolVersion ver) lckid cu su bypass keeplocked = do
+clientKeepLocked clientenv (ProtocolVersion ver) lckid cu su bypass a = do
+	keeplocked <- newEmptyTMVarIO
+	tid <- async $ a keeplocked
+	let cli' = cli lckid cu bypass
+		(Just connectionKeepAlive) (Just keepAlive)
+		(S.fromStepT (unlocksender keeplocked))
 	withClientM cli' clientenv $ \case
-		Left err  -> throwM err
 		Right (LockResult _ _) ->
-			liftIO $ print "end of lock connection to server"
+			wait tid
+		Left err  -> do
+			wait tid
+			throwM err
   where
-	unlocksender =
+	unlocksender keeplocked =
 		S.Yield (UnlockRequest False) $ S.Effect $ do
-			liftIO $ print "sent keep locked request"
 			return $ S.Effect $ do
 				stilllocked <- liftIO $ atomically $ takeTMVar keeplocked
-				if stilllocked
-					then return unlocksender
-					else do
-						liftIO $ print "sending unlock request"
-						return $ S.Yield (UnlockRequest True) S.Stop
-
-	cli' = cli lckid cu bypass
-		(Just connectionKeepAlive) (Just keepAlive)
-		(S.fromStepT unlocksender)
+				return $ if stilllocked
+					then unlocksender keeplocked
+					else S.Yield (UnlockRequest True) S.Stop
 	
 	cli = case ver of
 		3 -> v3 su V3
