@@ -28,9 +28,6 @@ Planned schedule of work:
 
 ## work notes
 
-* servePutOffset crashes with "TMVar left full VALIDITY Invalid".
-  Seems nothing consumes the INVALID sent by the client, but why?
-
 * Implement serveLockContent
 
 * A Locker should expire the lock on its own after 10 minutes initially.

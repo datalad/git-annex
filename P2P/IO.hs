@@ -195,11 +195,6 @@ runNetProto runst conn = go
 	go (Free (Local _)) = return $ Left $
 		ProtoFailureMessage "unexpected annex operation attempted"
 
-data P2PTMVarException = P2PTMVarException String
-	deriving (Show)
-
-instance Exception P2PTMVarException
-
 -- Interpreter of the Net part of Proto.
 --
 -- An interpreter of Proto has to be provided, to handle the rest of Proto
@@ -213,12 +208,8 @@ runNet runst conn runner f = case f of
 				P2PHandle h -> tryNonAsync $ do
 					hPutStrLn h $ unwords (formatMessage m)
 					hFlush h
-				P2PHandleTMVar mv _ ->
-					ifM (atomically (tryPutTMVar mv (Right m)))
-						( return $ Right ()
-						, return $ Left $ toException $
-							P2PTMVarException ("TMVar left full " ++ show m)
-						)
+				P2PHandleTMVar mv _ -> tryNonAsync $ do
+					atomically $ putTMVar mv (Right m)
 		case v of
 			Left e -> return $ Left $ ProtoFailureException e
 			Right () -> runner next
