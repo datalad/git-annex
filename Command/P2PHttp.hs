@@ -16,13 +16,11 @@ import P2P.Http
 import qualified P2P.Protocol as P2P
 import Annex.Url
 import Utility.Env
-import Utility.ThreadScheduler
 import Utility.MonotonicClock
 
 import qualified Network.Wai.Handler.Warp as Warp
 import Servant
 import Servant.Client.Streaming
-import Control.Concurrent
 import Control.Concurrent.STM
 import Network.Socket (PortNumber)
 import qualified Data.Map as M
@@ -73,7 +71,7 @@ seek o = getAnnexWorkerPool $ \workerpool -> do
 	-- XXX remove this
 	when (isNothing (portOption o)) $ do
 		liftIO $ putStrLn "test begins"
-		testPutOffset
+		testLocking
 		giveup "TEST DONE" 
 	withLocalP2PConnections workerpool $ \acquireconn -> liftIO $ do
 		authenv <- getAuthEnv
@@ -130,14 +128,51 @@ getAuthEnv = do
 			Nothing -> (auth, P2P.ServeReadWrite)
 			Just perms -> (auth, perms)
 
+testLocking = do
+	mgr <- httpManager <$> getUrlOptions
+	burl <- liftIO $ parseBaseUrl "http://localhost:8080/"
+	let k = B64Key (fromJust $ deserializeKey ("SHA256E-s6--5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03" :: String))
+	res <- liftIO $ clientLockContent (mkClientEnv mgr burl)
+		(P2P.ProtocolVersion 3)
+		k
+		(B64UUID (toUUID ("f11773f0-11e1-45b2-9805-06db16768efe" :: String)))
+		(B64UUID (toUUID ("cu" :: String)))
+		[] 
+		Nothing
+	case res of
+		LockResult True (Just lckid) ->
+			liftIO $ clientKeepLocked (mkClientEnv mgr burl)
+				(P2P.ProtocolVersion 3)
+				lckid
+				(B64UUID (toUUID ("f11773f0-11e1-45b2-9805-06db16768efe" :: String)))
+				(B64UUID (toUUID ("cu" :: String)))
+				[] 
+				Nothing $ \keeplocked -> do
+					print "running, press enter to drop lock"
+					_ <- getLine
+					atomically $ writeTMVar keeplocked False	
+		_ -> liftIO $ print ("lockin failed", res)
+
+testLockContent = do
+	mgr <- httpManager <$> getUrlOptions
+	burl <- liftIO $ parseBaseUrl "http://localhost:8080/"
+	res <- liftIO $ clientLockContent (mkClientEnv mgr burl)
+		(P2P.ProtocolVersion 3)
+		(B64Key (fromJust $ deserializeKey ("SHA256E-s6--5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03" :: String)))
+		(B64UUID (toUUID ("f11773f0-11e1-45b2-9805-06db16768efe" :: String)))
+		(B64UUID (toUUID ("cu" :: String)))
+		[] 
+		Nothing
+	liftIO $ print res
+
 testKeepLocked = do
 	mgr <- httpManager <$> getUrlOptions
 	burl <- liftIO $ parseBaseUrl "http://localhost:8080/"
 	liftIO $ clientKeepLocked (mkClientEnv mgr burl)
 		(P2P.ProtocolVersion 3)
 		(B64UUID (toUUID ("lck" :: String)))
+		(B64UUID (toUUID ("f11773f0-11e1-45b2-9805-06db16768efe" :: String)))
 		(B64UUID (toUUID ("cu" :: String)))
-		(B64UUID (toUUID ("su" :: String)))
 		[] 
 		Nothing $ \keeplocked -> do
 			print "running, press enter to drop lock"
@@ -150,8 +185,8 @@ testCheckPresent = do
 	res <- liftIO $ clientCheckPresent (mkClientEnv mgr burl)
 		(P2P.ProtocolVersion 3)
 		(B64Key (fromJust $ deserializeKey ("WORM-s30-m1720617630--bar" :: String)))
-		(B64UUID (toUUID ("cu" :: String)))
 		(B64UUID (toUUID ("f11773f0-11e1-45b2-9805-06db16768efe" :: String)))
+		(B64UUID (toUUID ("cu" :: String)))
 		[]
 		Nothing
 	liftIO $ print res
@@ -205,8 +240,8 @@ testRemove = do
 	res <- liftIO $ clientRemove (mkClientEnv mgr burl)
 		(P2P.ProtocolVersion 3)
 		(B64Key (fromJust $ deserializeKey ("WORM-s30-m1720547401--foo" :: String)))
-		(B64UUID (toUUID ("cu" :: String)))
 		(B64UUID (toUUID ("f11773f0-11e1-45b2-9805-06db16768efe" :: String)))
+		(B64UUID (toUUID ("cu" :: String)))
 		[]
 		Nothing
 	liftIO $ print res
@@ -221,8 +256,8 @@ testRemoveBefore = do
 	res <- liftIO $ clientRemoveBefore (mkClientEnv mgr burl)
 		(P2P.ProtocolVersion 3)
 		(B64Key (fromJust $ deserializeKey ("WORM-s30-m1720617630--bar" :: String)))
-		(B64UUID (toUUID ("cu" :: String)))
 		(B64UUID (toUUID ("f11773f0-11e1-45b2-9805-06db16768efe" :: String)))
+		(B64UUID (toUUID ("cu" :: String)))
 		[]
 		(Timestamp ts)
 		Nothing
@@ -233,8 +268,8 @@ testGetTimestamp = do
 	burl <- liftIO $ parseBaseUrl "http://localhost:8080/"
 	res <- liftIO $ clientGetTimestamp (mkClientEnv mgr burl)
 		(P2P.ProtocolVersion 3)
-		(B64UUID (toUUID ("cu" :: String)))
 		(B64UUID (toUUID ("f11773f0-11e1-45b2-9805-06db16768efe" :: String)))
+		(B64UUID (toUUID ("cu" :: String)))
 		[]
 		Nothing
 	liftIO $ print res

@@ -345,12 +345,12 @@ clientCheckPresent
 	:: ClientEnv
 	-> ProtocolVersion
 	-> B64Key
-	-> B64UUID ClientSide
 	-> B64UUID ServerSide
+	-> B64UUID ClientSide
 	-> [B64UUID Bypass]
 	-> Maybe Auth
 	-> IO Bool
-clientCheckPresent clientenv (ProtocolVersion ver) key cu su bypass auth =
+clientCheckPresent clientenv (ProtocolVersion ver) key su cu bypass auth =
 	withClientM (cli su key cu bypass auth) clientenv $ \case
 		Left err -> throwM err
 		Right (CheckPresentResult res) -> return res
@@ -399,12 +399,12 @@ clientRemove
 	:: ClientEnv
 	-> ProtocolVersion
 	-> B64Key
-	-> B64UUID ClientSide
 	-> B64UUID ServerSide
+	-> B64UUID ClientSide
 	-> [B64UUID Bypass]
 	-> Maybe Auth
 	-> IO RemoveResultPlus
-clientRemove clientenv (ProtocolVersion ver) key cu su bypass auth =
+clientRemove clientenv (ProtocolVersion ver) key su cu bypass auth =
 	withClientM cli clientenv $ \case
 		Left err -> throwM err
 		Right res -> return res
@@ -456,13 +456,13 @@ clientRemoveBefore
 	:: ClientEnv
 	-> ProtocolVersion
 	-> B64Key
-	-> B64UUID ClientSide
 	-> B64UUID ServerSide
+	-> B64UUID ClientSide
 	-> [B64UUID Bypass]
 	-> Timestamp
 	-> Maybe Auth
 	-> IO RemoveResultPlus
-clientRemoveBefore clientenv (ProtocolVersion ver) key cu su bypass ts auth =
+clientRemoveBefore clientenv (ProtocolVersion ver) key su cu bypass ts auth =
 	withClientM (cli su key cu bypass ts auth) clientenv $ \case
 		Left err -> throwM err
 		Right res -> return res
@@ -505,12 +505,12 @@ serveGetTimestamp st su apiver cu bypass sec auth = do
 clientGetTimestamp
 	:: ClientEnv
 	-> ProtocolVersion
-	-> B64UUID ClientSide
 	-> B64UUID ServerSide
+	-> B64UUID ClientSide
 	-> [B64UUID Bypass]
 	-> Maybe Auth
 	-> IO GetTimestampResult
-clientGetTimestamp clientenv (ProtocolVersion ver) cu su bypass auth = 
+clientGetTimestamp clientenv (ProtocolVersion ver) su cu bypass auth = 
 	withClientM (cli su cu bypass auth) clientenv $ \case
 		Left err -> throwM err
 		Right res -> return res
@@ -842,14 +842,14 @@ serveLockContent st su apiver (B64Key k) cu bypass sec auth = do
 
 clientLockContent
 	:: ClientEnv
-	-> B64UUID ServerSide
 	-> ProtocolVersion
 	-> B64Key
+	-> B64UUID ServerSide
 	-> B64UUID ClientSide
 	-> [B64UUID Bypass]
 	-> Maybe Auth
 	-> IO LockResult
-clientLockContent clientenv su (ProtocolVersion ver) k cu bypass auth = 
+clientLockContent clientenv (ProtocolVersion ver) k su cu bypass auth = 
 	withClientM (cli k cu bypass auth) clientenv $ \case
 		Left err -> throwM err
 		Right res -> return res
@@ -911,8 +911,8 @@ clientKeepLocked
 	:: ClientEnv
 	-> ProtocolVersion
 	-> LockID
-	-> B64UUID ClientSide
 	-> B64UUID ServerSide
+	-> B64UUID ClientSide
 	-> [B64UUID Bypass]
 	-> Maybe Auth
 	-> (TMVar Bool -> IO ())
@@ -920,7 +920,7 @@ clientKeepLocked
 	-- repeated keep locked requests, eg to keep a connection alive.
 	-- Once filled with False, the lock will be dropped.
 	-> IO ()
-clientKeepLocked clientenv (ProtocolVersion ver) lckid cu su bypass auth a = do
+clientKeepLocked clientenv (ProtocolVersion ver) lckid su cu bypass auth a = do
 	keeplocked <- newEmptyTMVarIO
 	tid <- async $ a keeplocked
 	let cli' = cli lckid cu bypass auth
