@@ -177,16 +177,16 @@ testPut = do
 	burl <- liftIO $ parseBaseUrl "http://localhost:8080/"
 	res <- clientPut (mkClientEnv mgr burl)
 		(P2P.ProtocolVersion 3)
-		(B64Key (fromJust $ deserializeKey ("WORM-s30-m1720547401--foo")))
+		(B64Key (fromJust $ deserializeKey ("SHA256E-s1048576000--b460ca923520db561d01b99483e9e2fe65ff9dfbdd52c17acba6ac4e874e27d5")))
 		(B64UUID (toUUID ("f11773f0-11e1-45b2-9805-06db16768efe" :: String)))
 		(B64UUID (toUUID ("cu" :: String)))
 		[]
 		Nothing
-		Nothing
+		(Just (Offset 584754208))
 		(AssociatedFile (Just "foo"))
-		"foocontent"
-		30
-		(liftIO (print "validity check") >> return False)
+		"bigfile3content"
+		1048576000
+		(liftIO (print "validity check") >> return True)
 	liftIO $ print res
 
 testRemove = do

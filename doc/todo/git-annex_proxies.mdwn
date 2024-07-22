@@ -28,8 +28,6 @@ Planned schedule of work:
 
 ## work notes
 
-* clientPut needs to seek to the requested offset in the file.
-
 * Implement: servePutOffset, serveLockContent
 
 * A Locker should expire the lock on its own after 10 minutes initially.

@@ -547,7 +547,7 @@ servePut st resultmangle su apiver (DataLength len) (B64Key k) cu bypass baf mof
 	tooshortv <- liftIO newEmptyTMVarIO
 	content <- liftIO $ S.unSourceT stream (gather validityv tooshortv)
 	res <- withP2PConnection' apiver st cu su bypass sec auth WriteAction
-		(\st -> st { connectionWaitVar = False }) $ \conn ->
+		(\cst -> cst { connectionWaitVar = False }) $ \conn ->
 			liftIO (protoaction conn content validitycheck)
 				`finally` checktooshort conn tooshortv
 	case res of
@@ -645,7 +645,11 @@ clientPut clientenv (ProtocolVersion ver) k su cu bypass auth moffset af content
 		liftIO $ atomically $ takeTMVar checkv
 		validitycheck >>= liftIO . atomically . putTMVar checkresultv
 	checkerthread <- liftIO . async =<< forkState checker
-	liftIO (withClientM (cli (stream checkv checkresultv)) clientenv return) >>= \case
+	v <- liftIO $ withBinaryFile contentfile ReadMode $ \h -> do
+		when (offset /= 0) $
+			hSeek h AbsoluteSeek offset
+		withClientM (cli (stream h checkv checkresultv)) clientenv return
+	case v of
 		Left err -> do
 			void $ liftIO $ atomically $ tryPutTMVar checkv ()
 			join $ liftIO (wait checkerthread)
@@ -654,9 +658,8 @@ clientPut clientenv (ProtocolVersion ver) k su cu bypass auth moffset af content
 			join $ liftIO (wait checkerthread)
 			return res
   where
-	stream checkv checkresultv = S.SourceT $ \a -> do
-		-- TODO seek to offset when requested
-		bl <- L.readFile contentfile
+	stream h checkv checkresultv = S.SourceT $ \a -> do
+		bl <- L.hGetContents h
 		v <- newMVar (0, filter (not . B.null) (L.toChunks bl))
 		a (go v)
 	  where
@@ -692,9 +695,12 @@ clientPut clientenv (ProtocolVersion ver) k su cu bypass auth moffset af content
 		AssociatedFile (Just f) -> Just (B64FilePath f)
 
 	len = DataLength nlen
-	nlen = case moffset of
-		Nothing -> contentfilesize
-		Just (Offset o) -> contentfilesize - fromIntegral o
+
+	nlen = contentfilesize - offset
+
+	offset = case moffset of
+		Nothing -> 0
+		Just (Offset o) -> fromIntegral o
 
 	cli src = case ver of
 		3 -> v3 su V3 len k cu bypass baf moffset src auth
