@@ -885,8 +885,8 @@ clientKeepLocked clientenv (ProtocolVersion ver) lckid cu su bypass keeplocked =
 		S.Yield (UnlockRequest False) $ S.Effect $ do
 			liftIO $ print "sent keep locked request"
 			return $ S.Effect $ do
-				stilllock <- liftIO $ atomically $ takeTMVar keeplocked
-				if stilllock
+				stilllocked <- liftIO $ atomically $ takeTMVar keeplocked
+				if stilllocked
 					then return unlocksender
 					else do
 						liftIO $ print "sending unlock request"
