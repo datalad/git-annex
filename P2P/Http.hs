@@ -272,26 +272,31 @@ clientGet
 	-> RawFilePath
 	-> IO Validity
 clientGet clientenv (ProtocolVersion ver) k su cu bypass af auth dest = do
-	sz <- tryWhenExists $ getFileSize dest
-	let mo = fmap (Offset . fromIntegral) sz
+	startsz <- tryWhenExists $ getFileSize dest
+	let mo = fmap (Offset . fromIntegral) startsz
 	withClientM (cli k cu bypass af mo auth) clientenv $ \case
 		Left err -> throwM err
 		Right respheaders -> do
-			let dl = case lookupResponseHeader @DataLengthHeader' respheaders of
-				Header h -> h
-				_ -> error "missing data length header"
-			liftIO $ print ("datalength", dl :: DataLength)
 			b <- S.unSourceT (getResponse respheaders) gatherByteString
 			liftIO $ withBinaryFile (fromRawFilePath dest) WriteMode $ \h -> do
-				case sz of
-					Just sz' | sz' /= 0 ->
-						hSeek h AbsoluteSeek sz'
+				case startsz of
+					Just startsz' | startsz' /= 0 ->
+						hSeek h AbsoluteSeek startsz'
 					_ -> noop
-				L.writeFile (fromRawFilePath dest) b
-			-- TODO compare dl with the number of bytes written
-			-- to the file
-			return Valid
+				len <- go 0 h (L.toChunks b)
+				let DataLength dl = case lookupResponseHeader @DataLengthHeader' respheaders of
+					Header hdr -> hdr
+					_ -> error "missing data length header"
+				if dl == len
+					then return Valid
+					else return Invalid
   where
+	go n _ [] = return n
+	go n h (b:bs) = do
+		let !n' = n + fromIntegral (B.length b)
+		B.hPut h b
+		go n' h bs
+
 	cli =case ver of
 		3 -> v3 su V3
 		2 -> v2 su V2
