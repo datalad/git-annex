@@ -21,11 +21,13 @@ import Utility.Env
 import Utility.MonotonicClock
 
 import qualified Network.Wai.Handler.Warp as Warp
+import qualified Network.Wai.Handler.WarpTLS as Warp
 import Servant
 import Servant.Client.Streaming
 import Control.Concurrent.STM
 import Network.Socket (PortNumber)
 import qualified Data.Map as M
+import Data.String
 
 cmd :: Command
 cmd = withAnnexOptions [jobsOption] $ command "p2phttp" SectionPlumbing
@@ -34,6 +36,7 @@ cmd = withAnnexOptions [jobsOption] $ command "p2phttp" SectionPlumbing
 
 data Options = Options
 	{ portOption :: Maybe PortNumber
+	, bindOption :: Maybe String
 	, authEnvOption :: Bool
 	, authEnvHttpOption :: Bool
 	, unauthReadOnlyOption :: Bool
@@ -46,6 +49,10 @@ optParser _ = Options
 	<$> optional (option auto
 		( long "port" <> metavar paramNumber
 		<> help "specify port to listen on"
+		))
+	<*> optional (strOption
+		( long "bind" <> metavar paramAddress
+		<> help "specify address to bind to"
 		))
 	<*> switch
 		( long "authenv"
@@ -74,11 +81,19 @@ seek o = getAnnexWorkerPool $ \workerpool ->
 		authenv <- getAuthEnv
 		st <- mkP2PHttpServerState acquireconn workerpool $
 			mkGetServerMode authenv o
-		Warp.run (fromIntegral port) (p2pHttpApp st)
+		let settings = Warp.setPort port $ Warp.setHost host $
+			Warp.defaultSettings
+		Warp.runSettings settings (p2pHttpApp st)
+		--Warp.runTLS settings (p2pHttpApp st)
   where
-	port = fromMaybe
+	port = maybe
 		(fromIntegral defaultP2PHttpProtocolPort)
+		fromIntegral
 		(portOption o)
+	host = maybe
+		(fromString "*") -- both ipv4 and ipv6
+		fromString
+		(bindOption o)
 
 mkGetServerMode :: M.Map Auth P2P.ServerMode -> Options -> GetServerMode
 mkGetServerMode _ o _ Nothing

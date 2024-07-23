@@ -48,6 +48,10 @@ convenient way to download the content of any key, by using the path
   use a low port like port 80. It will not drop permissions when run as
   root.
 
+* `--bind=address`
+
+  What address to bind to. The default is to bind to all addresses.
+
 * `--authenv`
 
   Allows users to be authenticated with a username and password.
