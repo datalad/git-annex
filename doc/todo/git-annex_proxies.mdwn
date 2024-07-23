@@ -30,6 +30,8 @@ Planned schedule of work:
 
 * Rest of Remote.Git needs implementing.
 
+* git-annex p2phttp serving .well-known for ACME.
+
 * git-annex p2phttp needs to support https. Including serving .well-known
   for ACME.
 
@@ -56,6 +58,8 @@ Planned schedule of work:
 * added git-annex p2phttp command to serve HTTP P2P protocol
 
 * Allow using annex+http urls in remote.name.annexUrl
+
+* Make git-annex p2phttp support https.
 
 ## items deferred until later for [[design/passthrough_proxy]]
 

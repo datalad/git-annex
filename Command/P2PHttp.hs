@@ -37,6 +37,9 @@ cmd = withAnnexOptions [jobsOption] $ command "p2phttp" SectionPlumbing
 data Options = Options
 	{ portOption :: Maybe PortNumber
 	, bindOption :: Maybe String
+	, certFileOption :: Maybe FilePath
+	, privateKeyFileOption :: Maybe FilePath
+	, chainFileOption :: [FilePath]
 	, authEnvOption :: Bool
 	, authEnvHttpOption :: Bool
 	, unauthReadOnlyOption :: Bool
@@ -53,6 +56,18 @@ optParser _ = Options
 	<*> optional (strOption
 		( long "bind" <> metavar paramAddress
 		<> help "specify address to bind to"
+		))
+	<*> optional (strOption
+		( long "certfile" <> metavar paramFile
+		<> help "TLS certificate file for HTTPS"
+		))
+	<*> optional (strOption
+		( long "privatekeyfile" <> metavar paramFile
+		<> help "TLS private key file for HTTPS"
+		))
+	<*> many (strOption
+		( long "chainfile" <> metavar paramFile
+		<> help "TLS chain file"
 		))
 	<*> switch
 		( long "authenv"
@@ -83,8 +98,13 @@ seek o = getAnnexWorkerPool $ \workerpool ->
 			mkGetServerMode authenv o
 		let settings = Warp.setPort port $ Warp.setHost host $
 			Warp.defaultSettings
-		Warp.runSettings settings (p2pHttpApp st)
-		--Warp.runTLS settings (p2pHttpApp st)
+		case (certFileOption o, privateKeyFileOption o) of
+			(Nothing, Nothing) -> Warp.runSettings settings (p2pHttpApp st)
+			(Just certfile, Just privatekeyfile) -> do
+				let tlssettings = Warp.tlsSettingsChain
+					certfile (chainFileOption o) privatekeyfile
+				Warp.runTLS tlssettings settings (p2pHttpApp st)
+			_ -> giveup "You must use both --certfile and --privatekeyfile options to enable HTTPS."
   where
 	port = maybe
 		(fromIntegral defaultP2PHttpProtocolPort)

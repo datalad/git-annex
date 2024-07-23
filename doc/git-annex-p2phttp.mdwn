@@ -52,6 +52,20 @@ convenient way to download the content of any key, by using the path
 
   What address to bind to. The default is to bind to all addresses.
 
+* `--certfile=filename` 
+
+  TLS certificate file to use. Combining this with `--privatekeyfile`
+  makes the server use HTTPS.
+
+* `--privatekeyfile=filename`
+  
+  TLS private key file to use. Combining this with `--certfile`
+  makes the server use HTTPS.
+
+* `--chainfile=filename`
+
+  TLS chain file to use. This option can be repeated any number of times.
+
 * `--authenv`
 
   Allows users to be authenticated with a username and password.
