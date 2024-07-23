@@ -58,6 +58,7 @@ import qualified Remote.GitLFS
 import qualified Remote.P2P
 import qualified Remote.Helper.P2P as P2PHelper
 import P2P.Address
+import P2P.Http.Url
 import Annex.Path
 import Creds
 import Types.NumCopies
@@ -107,10 +108,12 @@ list autoinit = do
 	tweakurl c r = do
 		let n = fromJust $ Git.remoteName r
 		case M.lookup (annexurl r) c of
-			Nothing -> return r
-			Just url -> inRepo $ \g ->
-				Git.Construct.remoteNamed n $
-					Git.Construct.fromRemoteLocation (Git.fromConfigValue url) False g
+			Just url | not (isP2PHttpProtocolUrl (Git.fromConfigValue url)) -> 
+				inRepo $ \g -> Git.Construct.remoteNamed n $
+					Git.Construct.fromRemoteLocation
+						(Git.fromConfigValue url)
+						False g
+			_ -> return r
 
 isGitRemoteAnnex :: Git.Repo -> Bool
 isGitRemoteAnnex r = "annex::" `isPrefixOf` Git.repoLocation r

@@ -13,6 +13,7 @@ module Command.P2PHttp where
 
 import Command
 import P2P.Http
+import P2P.Http.Url
 import qualified P2P.Protocol as P2P
 import Annex.Url
 import Utility.Env
@@ -79,7 +80,9 @@ seek o = getAnnexWorkerPool $ \workerpool -> do
 			mkGetServerMode authenv o
 		Warp.run (fromIntegral port) (p2pHttpApp st)
   where
-	port = fromMaybe (fromIntegral defaultHttpProtocolPort) (portOption o)
+	port = fromMaybe
+		(fromIntegral defaultP2PHttpProtocolPort)
+		(portOption o)
 
 mkGetServerMode :: M.Map Auth P2P.ServerMode -> Options -> GetServerMode
 mkGetServerMode _ o _ Nothing
