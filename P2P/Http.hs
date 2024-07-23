@@ -960,35 +960,3 @@ clientKeepLocked clientenv (ProtocolVersion ver) lckid su cu bypass auth a = do
 		_ :<|> _ :<|> _ :<|>
 		_ :<|> _ :<|> _ :<|> _ :<|>
 		v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
-
-type PV3 = Capture "v3" V3
-
-type PV2 = Capture "v2" V2
-
-type PV1 = Capture "v1" V1
-
-type PV0 = Capture "v0" V0
-
-type SU = Capture "serveruuid" (B64UUID ServerSide)
-
-type CU req = QueryParam' '[req] "clientuuid" (B64UUID ClientSide)
-
-type BypassUUIDs = QueryParams "bypass" (B64UUID Bypass)
-
-type CaptureKey = Capture "key" B64Key
-
-type KeyParam = QueryParam' '[Required] "key" B64Key
-
-type AssociatedFileParam = QueryParam "associatedfile" B64FilePath
-	
-type OffsetParam = QueryParam "offset" Offset
-
-type DataLengthHeader = Header DataLengthHeader' DataLength
-
-type DataLengthHeaderRequired = Header' '[Required] DataLengthHeader' DataLength
-
-type DataLengthHeader' = "X-git-annex-data-length"
-
-type LockIDParam = QueryParam' '[Required] "lockid" LockID
-
-type AuthHeader = Header "Authorization" Auth

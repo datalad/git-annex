@@ -10,6 +10,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DataKinds #-}
 
 module P2P.Http.Types where
 
@@ -27,6 +28,35 @@ import Text.Read (readMaybe)
 import Data.Aeson hiding (Key)
 import Control.DeepSeq
 import GHC.Generics (Generic)
+
+type SU = Capture "serveruuid" (B64UUID ServerSide)
+
+type CU req = QueryParam' '[req] "clientuuid" (B64UUID ClientSide)
+
+type BypassUUIDs = QueryParams "bypass" (B64UUID Bypass)
+
+type CaptureKey = Capture "key" B64Key
+
+type KeyParam = QueryParam' '[Required] "key" B64Key
+
+type AssociatedFileParam = QueryParam "associatedfile" B64FilePath
+
+type OffsetParam = QueryParam "offset" Offset
+
+type DataLengthHeader = Header DataLengthHeader' DataLength
+
+type DataLengthHeaderRequired = Header' '[Required] DataLengthHeader' DataLength
+
+type DataLengthHeader' = "X-git-annex-data-length"
+
+type LockIDParam = QueryParam' '[Required] "lockid" LockID
+
+type AuthHeader = Header "Authorization" Auth
+
+type PV3 = Capture "v3" V3
+type PV2 = Capture "v2" V2
+type PV1 = Capture "v1" V1
+type PV0 = Capture "v0" V0
 
 data V3 = V3 deriving (Show)
 data V2 = V2 deriving (Show)
