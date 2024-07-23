@@ -65,6 +65,15 @@ parseP2PHttpUrl us
 		case UUID.fromString p of
 			Nothing -> Nothing
 			Just _ -> return (UUID (encodeBS p)) 
+	
+	-- The servant server uses urls that start with "/git-annex/",
+	-- and so the servant client adds that to the base url. So remove
+	-- it from the url that the user provided. However, it may not be
+	-- present, eg if some other server is speaking the git-annex
+	-- protocol. The UUID is also removed from the end of the url.
+	basepath u = case drop 1 $ reverse $ P.splitDirectories (uriPath u) of
+		("git-annex":"/":rest) -> P.joinPath (reverse rest)
+		rest -> P.joinPath (reverse rest)
 
 #ifdef WITH_SERVANT
 	mkbaseurl s u = do
@@ -75,7 +84,7 @@ parseP2PHttpUrl us
 		return $ P2PHttpUrl us (extractuuid u) $ BaseUrl
 			{ baseUrlScheme = s
 			, baseUrlHost = uriRegName auth
-			, baseUrlPath = uriPath u
+			, baseUrlPath = basepath u
 			, baseUrlPort = port
 			}
 #endif

@@ -69,12 +69,7 @@ optParser _ = Options
 		)
 
 seek :: Options -> CommandSeek
-seek o = getAnnexWorkerPool $ \workerpool -> do
-	-- XXX remove this
-	when (isNothing (portOption o)) $ do
-		liftIO $ putStrLn "test begins"
-		testLocking
-		giveup "TEST DONE" 
+seek o = getAnnexWorkerPool $ \workerpool ->
 	withLocalP2PConnections workerpool $ \acquireconn -> liftIO $ do
 		authenv <- getAuthEnv
 		st <- mkP2PHttpServerState acquireconn workerpool $
