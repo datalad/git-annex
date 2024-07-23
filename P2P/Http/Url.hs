@@ -88,3 +88,6 @@ parseP2PHttpUrl us
 			, baseUrlPort = port
 			}
 #endif
+
+p2pHttpUrlWithoutUUID :: String -> String
+p2pHttpUrlWithoutUUID = reverse . dropWhile (/= '/') . reverse

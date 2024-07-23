@@ -24,7 +24,6 @@ import P2P.Http.Url
 import Annex.Common
 import P2P.Protocol hiding (Offset, Bypass, auth)
 import Annex.Concurrent
-import Messages
 import Utility.Url (BasicAuth(..))
 import qualified Git.Credential as Git
 
@@ -100,7 +99,9 @@ p2pHttpClient rmt fallback clientaction =
 		case p2pHttpUrlString <$> remoteAnnexP2PHttpUrl (gitconfig rmt) of
 			Nothing -> error "internal"
 			Just url -> do
-				cred <- prompt (inRepo $ Git.getUrlCredential url)
+				cred <- prompt $
+					inRepo $ Git.getUrlCredential $
+						p2pHttpUrlWithoutUUID url
 				let mauth = do
 					ba <- Git.credentialBasicAuth cred
 					return $ Auth
