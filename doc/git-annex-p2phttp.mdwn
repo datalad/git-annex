@@ -1,6 +1,6 @@
 # NAME
 
-git-annex-p2phttp - HTTP server for git-annex P2P protocol
+git-annex-p2phttp - HTTP server for the git-annex API
 
 # SYNOPSIS
 
@@ -8,15 +8,23 @@ git-annex p2phttp
 
 # DESCRIPTION
 
-This allows a git-annex repository to be accessed over HTTP.
+This is a HTTP server for the git-annex API.
 It is the git-annex equivilant of git-http-backend(1), for serving
 a repository over HTTP with write access for authenticated users.
+
+This does not serve the git repository over HTTP, only the git-annex
+API.
+
+Typically a remote will have `remote.name.url` set to a http url
+as usual, and `remote.name.annexUrl` set to an annex+http url such as
+`annex+http://example.com/`. The annex+http url is served by this
+server, and uses port 9417 by default.
 
 As well as serving the git-annex HTTP API, this server provides a
 convenient way to download the content of any key, by using the path
 "/git-annex/$uuid/$key". For example:
 
-	$ curl http://localhost:9417/git-annex/f11773f0-11e1-45b2-9805-06db16768efe/key/SHA256E-s6--5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03
+	$ curl http://example.com:9417/git-annex/f11773f0-11e1-45b2-9805-06db16768efe/key/SHA256E-s6--5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03
 	hello
 
 # OPTIONS
@@ -33,7 +41,8 @@ convenient way to download the content of any key, by using the path
 
 * `--port=N`
 
-  Port to listen on. Default is port 9417.
+  Port to listen on. The default is port 9417, which is the default
+  port used for an annex+http or annex+https url.
 
   It is not recommended to run this command as root in order to
   use a low port like port 80. It will not drop permissions when run as

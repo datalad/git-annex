@@ -7,6 +7,11 @@ connection (mostly). This is a translation of that protocol to HTTP.
 
 [[git-annex-p2phttp]] serves this protocol.
 
+To indicate that an url uses this protocol, use 
+`annex+http` or `annex+https` as the url scheme. Such an url uses
+port 9417 by default, although another port can be specified. For example,
+`annex+http://example.com/` or `annex+http://example.com:80/`
+
 ## base64 encoding of keys, uuids, and filenames
 
 A git-annex key can contain text in any encoding. So can a filename,

@@ -1537,8 +1537,13 @@ Remotes are configured using these settings in `.git/config`.
 * `remote.<name>.annexUrl`
 
   Can be used to specify a different url than the regular `remote.<name>.url`
-  for git-annex to use when talking with the remote. Similar to the `pushUrl`
+  for git-annex to use for accessing the remote. Similar to the `pushUrl`
   used by git-push.
+
+  When this is set to an annex+http or annex+https url, that url is used
+  for git-annex operations only, and the `remote.<name>.url` is used for
+  git operations. This allows using [[git-annex-p2phttp]] to serve a
+  git-annex repository over http.
 
 * `remote.<name>.annex-uuid`
 
