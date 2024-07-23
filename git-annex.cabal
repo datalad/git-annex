@@ -320,6 +320,7 @@ Executable git-annex
       servant,
       servant-server,
       servant-client,
+      servant-client-core,
       warp (>= 3.2.8),
       warp-tls (>= 3.2.2)
     CPP-Options: -DWITH_SERVANT

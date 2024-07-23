@@ -63,6 +63,15 @@ defaultProtocolVersion = ProtocolVersion 0
 maxProtocolVersion :: ProtocolVersion
 maxProtocolVersion = ProtocolVersion 3
 
+-- In order from newest to oldest.
+allProtocolVersions :: [ProtocolVersion]
+allProtocolVersions =
+	[ ProtocolVersion 3
+	, ProtocolVersion 2
+	, ProtocolVersion 1
+	, ProtocolVersion 0
+	] 
+
 newtype ProtoAssociatedFile = ProtoAssociatedFile AssociatedFile
 	deriving (Show)
 

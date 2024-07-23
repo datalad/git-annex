@@ -28,11 +28,14 @@ Planned schedule of work:
 
 ## work notes
 
+* Rest of Remote.Git needs implementing.
+
+* git-annex p2phttp needs to support https. Including serving .well-known
+  for ACME.
+
 * A Locker should expire the lock on its own after 10 minutes,
   initially. Once keeplocked is called, the expiry should end with the end
   of that call.
-
-* Allow using annex+http urls in remote.name.annexUrl
 
 * Make http server support proxies and clusters.
 
@@ -51,6 +54,8 @@ Planned schedule of work:
 * implemented server and client for HTTP P2P protocol
 
 * added git-annex p2phttp command to serve HTTP P2P protocol
+
+* Allow using annex+http urls in remote.name.annexUrl
 
 ## items deferred until later for [[design/passthrough_proxy]]
 

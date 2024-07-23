@@ -28,6 +28,8 @@ import Annex.Concurrent
 import Servant
 import Servant.Client.Streaming
 import qualified Servant.Types.SourceT as S
+import Network.HTTP.Types.Status
+import Network.HTTP.Client
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Lazy.Internal as LI
@@ -44,7 +46,7 @@ type ClientAction a
 	-> B64UUID ClientSide
 	-> [B64UUID Bypass]
 	-> Maybe Auth
-	-> Annex a
+	-> Annex (Either ClientError a)
 
 p2pHttpClient
 	:: Remote
@@ -54,22 +56,38 @@ p2pHttpClient
 #endif
 	-> Annex a
 #ifdef WITH_SERVANT
-p2pHttpClient rmt _fallback clientaction =
+p2pHttpClient rmt fallback clientaction =
 	case p2pHttpBaseUrl <$> remoteAnnexP2PHttpUrl (gitconfig rmt) of
 		Nothing -> error "internal"
 		Just baseurl -> do
-			myuuid <- getUUID
 			mgr <- httpManager <$> getUrlOptions
 			let clientenv = mkClientEnv mgr baseurl
-			-- TODO: try other protocol versions
+			go clientenv allProtocolVersions
+  where
+	go clientenv (v:vs) = do
+		myuuid <- getUUID
+		res <- clientaction clientenv v
+			(B64UUID (uuid rmt))
+			(B64UUID myuuid)
+			[]
+			Nothing
 			-- TODO: authentication
-			-- TODO: catch 404 etc
-			clientaction clientenv 
-				(ProtocolVersion 3)
-				(B64UUID (uuid rmt))
-				(B64UUID myuuid)
-				[]
-				Nothing
+		case res of
+			Right resp -> return resp
+			Left (FailureResponse _ resp)
+				| statusCode (responseStatusCode resp) == 404 && not (null vs) ->
+					go clientenv vs
+				| otherwise -> fallback $
+					show (statusCode (responseStatusCode resp))
+						++ " " ++
+					decodeBS (statusMessage (responseStatusCode resp))
+			Left (ConnectionError ex) -> case fromException ex of
+				Just (HttpExceptionRequest _ (ConnectionFailure err)) -> fallback $
+					"unable to connect to HTTP server: " ++ show err
+				_ -> fallback (show ex)
+			Left clienterror -> fallback $
+					"git-annex HTTP API server returned an unexpected response: " ++ show clienterror
+	go _ [] = error "internal"
 #else
 runP2PHttpClient rmt fallback = fallback "This remote uses an annex+http url, but this version of git-annex is not build with support for that."
 #endif
@@ -134,8 +152,8 @@ gatherByteString = unsafeInterleaveIO . go
 clientCheckPresent :: Key -> ClientAction Bool
 clientCheckPresent key clientenv (ProtocolVersion ver) su cu bypass auth =
 	liftIO $ withClientM (cli su (B64Key key) cu bypass auth) clientenv $ \case
-		Left err -> throwM err
-		Right (CheckPresentResult res) -> return res
+		Left err -> return (Left err)
+		Right (CheckPresentResult res) -> return (Right res)
   where
 	cli = case ver of
 		3 -> flip v3 V3
