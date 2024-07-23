@@ -42,7 +42,7 @@ getBasicAuthFromCredential r ccv u = do
 			Just c -> go (const noop) c
 			Nothing -> do
 				let storeincache = \c -> atomically $ do
-					(CredentialCache cc') <- takeTMVar ccv
+					CredentialCache cc' <- takeTMVar ccv
 					putTMVar ccv (CredentialCache (M.insert bu c cc'))
 				go storeincache =<< getUrlCredential u r
 		Nothing -> go (const noop) =<< getUrlCredential u r
@@ -113,7 +113,9 @@ data CredentialCache = CredentialCache (M.Map CredentialBaseURL Credential)
 -- when credential.useHttpPath is false, one Credential is cached
 -- for each git repo accessed, and there are a reasonably small number of
 -- those, so the cache will not grow too large.
-data CredentialBaseURL = CredentialBaseURL URI
+data CredentialBaseURL
+	= CredentialBaseURI URI
+	| CredentialBaseURL String
 	deriving (Show, Eq, Ord)
 
 mkCredentialBaseURL :: Repo -> URLString -> Maybe CredentialBaseURL
@@ -123,4 +125,4 @@ mkCredentialBaseURL r s = do
 		Config.get (ConfigKey "credential.useHttpPath") (ConfigValue "") r
 	if usehttppath
 		then Nothing
-		else Just $ CredentialBaseURL $ u { uriPath = "" }
+		else Just $ CredentialBaseURI $ u { uriPath = "" }
