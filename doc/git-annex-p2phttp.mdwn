@@ -16,22 +16,27 @@ As well as serving the git-annex HTTP API, this server provides a
 convenient way to download the content of any key, by using the path
 "/git-annex/$uuid/$key". For example:
 
-	$ curl http://localhost:8080/git-annex/f11773f0-11e1-45b2-9805-06db16768efe/key/SHA256E-s6--5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03
+	$ curl http://localhost:9417/git-annex/f11773f0-11e1-45b2-9805-06db16768efe/key/SHA256E-s6--5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03
 	hello
 
 # OPTIONS
 
-* `--jobs=N`
+* `--jobs=N` `-JN`
 
-  Use this or annex.jobs must be set to configure the number of worker
+  This or annex.jobs must be set to configure the number of worker
   threads.
   
   Since the webserver itself uses one thread, this needs to be set to
   2 or more.
 
+  A good choice is one worker per CPU core: `--jobs=cpus`
+
 * `--port=N`
 
-  Port to listen on. Default is port 80.
+  Port to listen on. Default is port 9417.
+
+  It is not recommended to run this command as root in order to
+  use a low port like port 80.
 
 * `--authenv`
 
@@ -46,7 +51,7 @@ convenient way to download the content of any key, by using the path
   environment variables like 
   `GIT_ANNEX_P2PHTTP_PERMISSIONS_alice=readonly`. The value
   can be either "readonly" or "appendonly". When this is not set,
-  the default is to give the user full write access.
+  the default is to give the user full read+write+remove access.
 
 * `--authenv-http`
 
@@ -66,7 +71,8 @@ convenient way to download the content of any key, by using the path
 
 * `--wideopen`
 
-  Gives unauthenticated users full read+write access to the repository.
+  Gives unauthenticated users full read+write+remove access to the
+  repository.
 
   Please think carefully before enabling this option.
 

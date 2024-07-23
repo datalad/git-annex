@@ -43,6 +43,9 @@ import Control.Concurrent.Async
 import Control.Concurrent
 import System.IO.Unsafe
 
+defaultHttpProtocolPort :: Int
+defaultHttpProtocolPort = 9417 -- Git protocol is 9418
+
 type P2PHttpAPI
 	=    "git-annex" :> SU :> PV3 :> "key" :> GetAPI
 	:<|> "git-annex" :> SU :> PV2 :> "key" :> GetAPI
