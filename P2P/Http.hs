@@ -342,16 +342,16 @@ serveCheckPresent st su apiver (B64Key k) cu bypass sec auth = do
 		Left err -> throwError $ err500 { errBody = encodeBL err }
 
 clientCheckPresent
-	:: ClientEnv
+	:: B64Key
+	-> ClientEnv
 	-> ProtocolVersion
-	-> B64Key
 	-> B64UUID ServerSide
 	-> B64UUID ClientSide
 	-> [B64UUID Bypass]
 	-> Maybe Auth
-	-> IO Bool
-clientCheckPresent clientenv (ProtocolVersion ver) key su cu bypass auth =
-	withClientM (cli su key cu bypass auth) clientenv $ \case
+	-> Annex Bool
+clientCheckPresent key clientenv (ProtocolVersion ver) su cu bypass auth =
+	liftIO $ withClientM (cli su key cu bypass auth) clientenv $ \case
 		Left err -> throwM err
 		Right (CheckPresentResult res) -> return res
   where

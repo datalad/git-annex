@@ -182,18 +182,6 @@ testKeepLocked = do
 			_ <- getLine
 			atomically $ writeTMVar keeplocked False
 
-testCheckPresent = do
-	mgr <- httpManager <$> getUrlOptions
-	burl <- liftIO $ parseBaseUrl "http://localhost:8080/"
-	res <- liftIO $ clientCheckPresent (mkClientEnv mgr burl)
-		(P2P.ProtocolVersion 3)
-		(B64Key (fromJust $ deserializeKey ("WORM-s30-m1720617630--bar" :: String)))
-		(B64UUID (toUUID ("f11773f0-11e1-45b2-9805-06db16768efe" :: String)))
-		(B64UUID (toUUID ("cu" :: String)))
-		[]
-		Nothing
-	liftIO $ print res
-
 testGet = do
 	mgr <- httpManager <$> getUrlOptions
 	burl <- liftIO $ parseBaseUrl "http://localhost:8080/"

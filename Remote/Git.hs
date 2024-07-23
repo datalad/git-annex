@@ -59,6 +59,10 @@ import qualified Remote.P2P
 import qualified Remote.Helper.P2P as P2PHelper
 import P2P.Address
 import P2P.Http.Url
+import P2P.Http.Client
+#ifdef WITH_SERVANT
+import P2P.Http
+#endif
 import Annex.Path
 import Creds
 import Types.NumCopies
@@ -104,16 +108,20 @@ list autoinit = do
 			proxied <- listProxied proxies rs'
 			return (proxied++rs')
   where
-	annexurl r = remoteConfig r "annexurl"
 	tweakurl c r = do
 		let n = fromJust $ Git.remoteName r
-		case M.lookup (annexurl r) c of
-			Just url | not (isP2PHttpProtocolUrl (Git.fromConfigValue url)) -> 
+		case getAnnexUrl r c of
+			Just url | not (isP2PHttpProtocolUrl url) -> 
 				inRepo $ \g -> Git.Construct.remoteNamed n $
-					Git.Construct.fromRemoteLocation
-						(Git.fromConfigValue url)
+					Git.Construct.fromRemoteLocation url
 						False g
 			_ -> return r
+
+getAnnexUrl :: Git.Repo -> M.Map Git.ConfigKey Git.ConfigValue -> Maybe String
+getAnnexUrl r c = Git.fromConfigValue <$> M.lookup (annexUrlConfigKey r) c
+
+annexUrlConfigKey :: Git.Repo -> Git.ConfigKey
+annexUrlConfigKey r = remoteConfig r "annexurl"
 
 isGitRemoteAnnex :: Git.Repo -> Bool
 isGitRemoteAnnex r = "annex::" `isPrefixOf` Git.repoLocation r
@@ -163,23 +171,42 @@ enableRemote Nothing _ = giveup "unable to enable git remote with no specified u
  - done each time git-annex is run in a way that uses remotes, unless
  - annex-checkuuid is false.
  -
- - Conversely, the config of an URL remote is only read when there is no
- - cached UUID value. -}
+ - An annex+http remote's UUID is part of the url,
+ - so the config does not have to be read, but it is verified that
+ - it matches the cached UUID.
+ -
+ - The config of other URL remotes is only read when there is no
+ - cached UUID value. 
+ -}
 configRead :: Bool -> Git.Repo -> Annex Git.Repo
 configRead autoinit r = do
 	gc <- Annex.getRemoteGitConfig r
 	hasuuid <- (/= NoUUID) <$> getRepoUUID r
 	annexignore <- liftIO $ getDynamicConfig (remoteAnnexIgnore gc)
-	case (repoCheap r, annexignore, hasuuid) of
-		(_, True, _) -> return r
-		(True, _, _)
+	c <- fromRepo Git.config
+	case (repoCheap r, annexignore, hasuuid, p2pHttpUUID =<< parseP2PHttpUrl =<< getAnnexUrl r c) of
+		(_, True, _, _) -> return r
+		(True, _, _, _)
 			| remoteAnnexCheckUUID gc -> tryGitConfigRead autoinit r hasuuid
 			| otherwise -> return r
-		(False, _, False) -> configSpecialGitRemotes r >>= \case
+		(_, _, _, Just p2phttpuuid) -> getRepoUUID r >>= \case
+			u@(UUID {})
+				| u == p2phttpuuid -> return r
+				| otherwise -> do
+					warning $ UnquotedString $ unwords
+						[ "Repository", Git.repoDescribe r
+						, "has different UUIDS in"
+						, Git.fromConfigKey (annexUrlConfigKey r)
+						, "and"
+						, Git.fromConfigKey (configRepoUUID r)
+						]
+					return r
+			NoUUID -> storeUpdatedRemote $
+				liftIO $ setUUID r p2phttpuuid
+		(False, _, False, _) -> configSpecialGitRemotes r >>= \case
 			Nothing -> tryGitConfigRead autoinit r False
 			Just r' -> return r'
 		_ -> return r
-
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u rc gc rs
@@ -408,10 +435,15 @@ inAnnex rmt st key = do
 
 inAnnex' :: Git.Repo -> Remote -> State -> Key -> Annex Bool
 inAnnex' repo rmt st@(State connpool duc _ _ _) key
+	| isP2PHttp rmt = checkp2phttp
 	| Git.repoIsHttp repo = checkhttp
 	| Git.repoIsUrl repo = checkremote
 	| otherwise = checklocal
   where
+	checkp2phttp = p2pHttpClient rmt giveup
+#ifdef WITH_SERVANT
+		(clientCheckPresent key)
+#endif
 	checkhttp = do
 		gc <- Annex.getGitConfig
 		Url.withUrlOptionsPromptingCreds $ \uo -> 
@@ -926,3 +958,7 @@ listProxied proxies rs = concat <$> mapM go rs
 		| Git.GCrypt.isEncrypted r = False
 		| Git.repoIsLocal r || Git.repoIsLocalUnknown r = False
 		| otherwise = isNothing (repoP2PAddress r)
+
+isP2PHttp :: Remote -> Bool
+isP2PHttp = isJust . remoteAnnexP2PHttpUrl . gitconfig
+
