@@ -185,26 +185,35 @@ withLocalP2PConnections workerpool a = do
 	myuuid <- getUUID
 	reqv <- liftIO newEmptyTMVarIO
 	relv <- liftIO newEmptyTMVarIO
-	asyncservicer <- liftIO $ async $ servicer myuuid reqv relv
-	a (acquireconn reqv) `finally` join (liftIO (wait asyncservicer))
+	endv <- liftIO newEmptyTMVarIO
+	asyncservicer <- liftIO $ async $ servicer myuuid reqv relv endv
+	let endit = do
+		liftIO $ atomically $ putTMVar endv ()
+		liftIO $ wait asyncservicer
+	a (acquireconn reqv) `finally` endit
   where
 	acquireconn reqv connparams = do
 		respvar <- newEmptyTMVarIO
 		atomically $ putTMVar reqv (connparams, respvar)
 		atomically $ takeTMVar respvar
 
-	servicer myuuid reqv relv = do
+	servicer myuuid reqv relv endv = do
 		reqrel <- liftIO $
 			atomically $ 
 				(Right <$> takeTMVar reqv)
 					`orElse` 
-				(Left <$> takeTMVar relv)
+				(Left . Right <$> takeTMVar relv)
+					`orElse` 
+				(Left . Left <$> takeTMVar endv)
 		case reqrel of
-			Right (connparams, respvar) ->
+			Right (connparams, respvar) -> do
 				servicereq myuuid relv connparams
 					>>= atomically . putTMVar respvar
-			Left releaseconn -> releaseconn
-		servicer myuuid reqv relv
+				servicer myuuid reqv relv endv
+			Left (Right releaseconn) -> do
+				releaseconn
+				servicer myuuid reqv relv endv
+			Left (Left ()) -> return ()
 	
 	servicereq myuuid relv connparams
 		| connectionServerUUID connparams /= myuuid =
