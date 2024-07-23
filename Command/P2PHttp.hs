@@ -79,7 +79,7 @@ seek o = getAnnexWorkerPool $ \workerpool -> do
 			mkGetServerMode authenv o
 		Warp.run (fromIntegral port) (p2pHttpApp st)
   where
-	port = fromMaybe defaultHttpProtocolPort (portOption o)
+	port = fromMaybe (fromIntegral defaultHttpProtocolPort) (portOption o)
 
 mkGetServerMode :: M.Map Auth P2P.ServerMode -> Options -> GetServerMode
 mkGetServerMode _ o _ Nothing
