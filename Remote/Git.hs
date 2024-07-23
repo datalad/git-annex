@@ -60,9 +60,6 @@ import qualified Remote.Helper.P2P as P2PHelper
 import P2P.Address
 import P2P.Http.Url
 import P2P.Http.Client
-#ifdef WITH_SERVANT
-import P2P.Http
-#endif
 import Annex.Path
 import Creds
 import Types.NumCopies

@@ -12,7 +12,8 @@
 module Command.P2PHttp where
 
 import Command
-import P2P.Http
+import P2P.Http.Server
+import P2P.Http.Client
 import P2P.Http.Url
 import qualified P2P.Protocol as P2P
 import Annex.Url

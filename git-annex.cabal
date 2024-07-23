@@ -326,6 +326,7 @@ Executable git-annex
     Other-Modules:
       Command.P2PHttp
       P2P.Http
+      P2P.Http.Server
       P2P.Http.State
       P2P.Http.Types
 
