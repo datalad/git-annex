@@ -174,7 +174,7 @@ Flag Crypton
   Description: Use the crypton library rather than the no longer maintained cryptonite
 
 Flag Servant
-  Description: Use the servant library, enabling git-annex p2phttp
+  Description: Use the servant library, enabling using annex+http urls and git-annex p2phttp
 
 Flag Benchmark
   Description: Enable benchmarking
@@ -319,7 +319,9 @@ Executable git-annex
     Build-Depends:
       servant,
       servant-server,
-      servant-client
+      servant-client,
+      warp (>= 3.2.8),
+      warp-tls (>= 3.2.2)
     CPP-Options: -DWITH_SERVANT
     Other-Modules:
       Command.P2PHttp
