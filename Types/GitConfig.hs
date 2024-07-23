@@ -55,6 +55,7 @@ import Utility.StatelessOpenPGP (SOPCmd(..), SOPProfile(..))
 import Utility.ThreadScheduler (Seconds(..))
 import Utility.Url (Scheme, mkScheme)
 import Network.Socket (PortNumber)
+import P2P.Http.Url
 
 import Control.Concurrent.STM
 import qualified Data.Set as S
@@ -395,6 +396,7 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexClusterNode :: Maybe [RemoteName]
 	, remoteAnnexClusterGateway :: [ClusterUUID]
 	, remoteUrl :: Maybe String
+	, remoteAnnexP2PHttpUrl :: Maybe P2PHttpUrl
 
 	{- These settings are specific to particular types of remotes
 	 - including special remotes. -}
@@ -493,6 +495,11 @@ extractRemoteGitConfig r remotename = do
 					| B.null b -> Nothing
 					| otherwise -> Just (decodeBS b)
 				_ -> Nothing
+		, remoteAnnexP2PHttpUrl =
+			case Git.Config.getMaybe (remoteConfig remotename (remoteGitConfigKey AnnexUrlField)) r of
+				Just (ConfigValue b) ->
+					parseP2PHttpUrl (decodeBS b)
+				_ -> Nothing
 		, remoteAnnexShell = getmaybe ShellField
 		, remoteAnnexSshOptions = getoptions SshOptionsField
 		, remoteAnnexRsyncOptions = getoptions RsyncOptionsField
@@ -569,6 +576,7 @@ data RemoteGitConfigField
 	| ClusterNodeField
 	| ClusterGatewayField
 	| UrlField
+	| AnnexUrlField
 	| ShellField
 	| SshOptionsField
 	| RsyncOptionsField
@@ -637,6 +645,7 @@ remoteGitConfigField = \case
 	ClusterNodeField -> uninherited "cluster-node"
 	ClusterGatewayField -> uninherited "cluster-gateway"
 	UrlField -> uninherited "url"
+	AnnexUrlField -> uninherited "annexurl"
 	ShellField -> inherited "shell"
 	SshOptionsField -> inherited "ssh-options"
 	RsyncOptionsField -> inherited "rsync-options"

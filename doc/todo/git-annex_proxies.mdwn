@@ -32,7 +32,7 @@ Planned schedule of work:
   initially. Once keeplocked is called, the expiry should end with the end
   of that call.
 
-* Make Remote.Git use http client when remote.name.annex-url is configured.
+* Allow using annex+http urls in remote.name.annexUrl
 
 * Make http server support proxies and clusters.
 
