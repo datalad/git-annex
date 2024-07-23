@@ -36,7 +36,8 @@ convenient way to download the content of any key, by using the path
   Port to listen on. Default is port 9417.
 
   It is not recommended to run this command as root in order to
-  use a low port like port 80.
+  use a low port like port 80. It will not drop permissions when run as
+  root.
 
 * `--authenv`
 

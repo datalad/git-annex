@@ -5,6 +5,8 @@
 The [[P2P protocol]] is a custom protocol that git-annex speaks over a ssh
 connection (mostly). This is a translation of that protocol to HTTP.
 
+[[git-annex-p2phttp]] serves this protocol.
+
 ## base64 encoding of keys, uuids, and filenames
 
 A git-annex key can contain text in any encoding. So can a filename,

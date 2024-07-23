@@ -36,6 +36,9 @@ Planned schedule of work:
 
 * Make http server support proxies and clusters.
 
+* `git-annex p2phttp` could support systemd socket activation. This would
+  allow making a systemd unit that listens on port 80.
+
 * Perhaps: Support cgi program that proxies over to a webserver
   speaking the http protocol.
 
