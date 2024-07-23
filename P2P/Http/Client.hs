@@ -24,8 +24,11 @@ import P2P.Http.Url
 import Annex.Common
 import P2P.Protocol hiding (Offset, Bypass, auth)
 import Annex.Concurrent
+import Messages
+import Utility.Url (BasicAuth(..))
+import qualified Git.Credential as Git
 
-import Servant
+import Servant hiding (BasicAuthData(..))
 import Servant.Client.Streaming
 import qualified Servant.Types.SourceT as S
 import Network.HTTP.Types.Status
@@ -62,32 +65,55 @@ p2pHttpClient rmt fallback clientaction =
 		Just baseurl -> do
 			mgr <- httpManager <$> getUrlOptions
 			let clientenv = mkClientEnv mgr baseurl
-			go clientenv allProtocolVersions
+			go clientenv Nothing Nothing allProtocolVersions
   where
-	go clientenv (v:vs) = do
+	go clientenv mcred mauth (v:vs) = do
 		myuuid <- getUUID
 		res <- clientaction clientenv v
 			(B64UUID (uuid rmt))
 			(B64UUID myuuid)
 			[]
-			Nothing
-			-- TODO: authentication
+			mauth
 		case res of
-			Right resp -> return resp
+			Right resp -> do
+				maybe noop (\cred -> inRepo $ Git.approveUrlCredential cred) mcred
+				return resp
 			Left (FailureResponse _ resp)
 				| statusCode (responseStatusCode resp) == 404 && not (null vs) ->
-					go clientenv vs
-				| otherwise -> fallback $
-					show (statusCode (responseStatusCode resp))
-						++ " " ++
-					decodeBS (statusMessage (responseStatusCode resp))
+					go clientenv mcred mauth vs
+				| statusCode (responseStatusCode resp) == 401 ->
+					case mcred of
+						Nothing -> authrequired clientenv (v:vs)
+						Just cred -> do
+							inRepo $ Git.rejectUrlCredential cred
+							fallback (showstatuscode resp)
+				| otherwise -> fallback (showstatuscode resp)
 			Left (ConnectionError ex) -> case fromException ex of
 				Just (HttpExceptionRequest _ (ConnectionFailure err)) -> fallback $
 					"unable to connect to HTTP server: " ++ show err
 				_ -> fallback (show ex)
 			Left clienterror -> fallback $
 					"git-annex HTTP API server returned an unexpected response: " ++ show clienterror
-	go _ [] = error "internal"
+	go _ _ _ [] = error "internal"
+
+	authrequired clientenv vs = 
+		case p2pHttpUrlString <$> remoteAnnexP2PHttpUrl (gitconfig rmt) of
+			Nothing -> error "internal"
+			Just url -> do
+				cred <- prompt (inRepo $ Git.getUrlCredential url)
+				let mauth = do
+					ba <- Git.credentialBasicAuth cred
+					return $ Auth
+						(encodeBS (basicAuthUser ba))
+						(encodeBS (basicAuthPassword ba))
+				let mcred = if isJust mauth then Just cred else Nothing
+				go clientenv mcred mauth vs
+
+	showstatuscode resp = 
+		show (statusCode (responseStatusCode resp))
+			++ " " ++
+		decodeBS (statusMessage (responseStatusCode resp))
+
 #else
 runP2PHttpClient rmt fallback = fallback "This remote uses an annex+http url, but this version of git-annex is not build with support for that."
 #endif
