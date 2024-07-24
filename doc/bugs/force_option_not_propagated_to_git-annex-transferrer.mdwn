@@ -4,3 +4,5 @@ setting, the message displayed says that --force will override the check.
 But that doesn't work in this case. 
 
 The --force option should be propagated to this command. --[[Joey]]
+
+> [[fixed|done]] --[[Joey]]

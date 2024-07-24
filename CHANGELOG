@@ -6,6 +6,7 @@ git-annex (10.20240702) UNRELEASED; urgency=medium
     git-annex remotedaemon is killed while locking a key to prevent its
     removal.
   * Added a dependency on clock.
+  * Propagate --force to git-annex transferrer.
 
  -- Joey Hess <id@joeyh.name>  Tue, 02 Jul 2024 12:14:53 -0400
 
