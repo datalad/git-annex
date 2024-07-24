@@ -13,6 +13,7 @@
 
 module P2P.Http.Client (
 	module P2P.Http.Client,
+	module P2P.Http.Types,
 	Validity(..),
 ) where
 
@@ -25,6 +26,7 @@ import Annex.UUID
 import Types.Remote
 import P2P.Http
 import P2P.Http.Url
+import P2P.Http.Types
 import Annex.Common
 import P2P.Protocol hiding (Offset, Bypass, auth)
 import Annex.Concurrent
@@ -286,20 +288,16 @@ clientGetTimestamp clientenv (ProtocolVersion ver) su cu bypass auth =
 
 #ifdef WITH_SERVANT
 clientPut
-	:: ClientEnv
-	-> ProtocolVersion
-	-> B64Key
-	-> B64UUID ServerSide
-	-> B64UUID ClientSide
-	-> [B64UUID Bypass]
-	-> Maybe Auth
+	:: MeterUpdate
+	-> Key
 	-> Maybe Offset
 	-> AssociatedFile
 	-> FilePath
 	-> FileSize
 	-> Annex Bool
-	-> Annex PutResultPlus
-clientPut clientenv (ProtocolVersion ver) k su cu bypass auth moffset af contentfile contentfilesize validitycheck = do
+	-- ^ Called after sending the file to check if it's valid.
+	-> ClientAction PutResultPlus
+clientPut meterupdate k moffset af contentfile contentfilesize validitycheck clientenv (ProtocolVersion ver) su cu bypass auth = do
 	checkv <- liftIO newEmptyTMVarIO
 	checkresultv <- liftIO newEmptyTMVarIO
 	let checker = do
@@ -314,10 +312,10 @@ clientPut clientenv (ProtocolVersion ver) k su cu bypass auth moffset af content
 		Left err -> do
 			void $ liftIO $ atomically $ tryPutTMVar checkv ()
 			join $ liftIO (wait checkerthread)
-			throwM err
+			return (Left err)
 		Right res -> do
 			join $ liftIO (wait checkerthread)
-			return res
+			return (Right res)
   where
 	stream h checkv checkresultv = S.SourceT $ \a -> do
 		bl <- L.hGetContents h
@@ -365,12 +363,14 @@ clientPut clientenv (ProtocolVersion ver) k su cu bypass auth moffset af content
 	offset = case moffset of
 		Nothing -> 0
 		Just (Offset o) -> fromIntegral o
+	
+	bk = B64Key k
 
 	cli src = case ver of
-		3 -> v3 su V3 len k cu bypass baf moffset src auth
-		2 -> v2 su V2 len k cu bypass baf moffset src auth
-		1 -> plus <$> v1 su V1 len k cu bypass baf moffset src auth
-		0 -> plus <$> v0 su V0 len k cu bypass baf moffset src auth
+		3 -> v3 su V3 len bk cu bypass baf moffset src auth
+		2 -> v2 su V2 len bk cu bypass baf moffset src auth
+		1 -> plus <$> v1 su V1 len bk cu bypass baf moffset src auth
+		0 -> plus <$> v0 su V0 len bk cu bypass baf moffset src auth
 		_ -> error "unsupported protocol version"
 
 	_ :<|> _ :<|> _ :<|> _ :<|>
@@ -379,29 +379,24 @@ clientPut clientenv (ProtocolVersion ver) k su cu bypass auth moffset af content
 		_ :<|>
 		_ :<|>
 		v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
+#else
+clientPut _ _ _ _ _ _ _ = ()
 #endif
 
 #ifdef WITH_SERVANT
 clientPutOffset
-	:: ClientEnv
-	-> ProtocolVersion
-	-> B64Key
-	-> B64UUID ServerSide
-	-> B64UUID ClientSide
-	-> [B64UUID Bypass]
-	-> Maybe Auth
-	-> IO PutOffsetResultPlus
-clientPutOffset clientenv (ProtocolVersion ver) k su cu bypass auth
-	| ver == 0 = return (PutOffsetResultPlus (Offset 0))
-	| otherwise = 
-		withClientM cli clientenv $ \case
-			Left err -> throwM err
-			Right res -> return res
+	:: Key
+	-> ClientAction PutOffsetResultPlus
+clientPutOffset k clientenv (ProtocolVersion ver) su cu bypass auth
+	| ver == 0 = return (Right (PutOffsetResultPlus (Offset 0)))
+	| otherwise = liftIO $ withClientM cli clientenv return
   where
+	bk = B64Key k
+
 	cli = case ver of
-		3 -> v3 su V3 k cu bypass auth
-		2 -> v2 su V2 k cu bypass auth
-		1 -> plus <$> v1 su V1 k cu bypass auth
+		3 -> v3 su V3 bk cu bypass auth
+		2 -> v2 su V2 bk cu bypass auth
+		1 -> plus <$> v1 su V1 bk cu bypass auth
 		_ -> error "unsupported protocol version"
 	
 	_ :<|> _ :<|> _ :<|> _ :<|>
@@ -411,6 +406,8 @@ clientPutOffset clientenv (ProtocolVersion ver) k su cu bypass auth
 		_ :<|>
 		_ :<|> _ :<|> _ :<|> _ :<|>
 		v3 :<|> v2 :<|> v1 :<|> _ = client p2pHttpAPI
+#else
+clientPutOffset _ = ()
 #endif
 
 #ifdef WITH_SERVANT

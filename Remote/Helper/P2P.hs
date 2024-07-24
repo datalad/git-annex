@@ -42,15 +42,18 @@ store remoteuuid gc runner k af o p = do
 	let bwlimit = remoteAnnexBwLimitUpload gc <|> remoteAnnexBwLimit gc
 	metered (Just p) sizer bwlimit $ \_ p' ->
 		runner (P2P.put k af p') >>= \case
-			Just (Just fanoutuuids) -> do
-				-- Storing on the remote can cause it
-				-- to be stored on additional UUIDs, 
-				-- so record those.
-				forM_ fanoutuuids $ \u ->
-					when (u /= remoteuuid) $
-						logChange k u InfoPresent
+			Just (Just fanoutuuids) -> 
+				storeFanout k remoteuuid fanoutuuids
 			Just Nothing -> giveup "Transfer failed"
 			Nothing -> remoteUnavail
+
+storeFanout :: Key -> UUID -> [UUID] -> Annex ()
+storeFanout k remoteuuid us = 
+	-- Storing on the remote can cause it to be stored on additional UUIDs, 
+	-- so record those.
+	forM_ us $ \u ->
+		when (u /= remoteuuid) $
+			logChange k u InfoPresent
 
 retrieve :: RemoteGitConfig -> (ProtoRunner (Bool, Verification)) -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification
 retrieve gc runner k af dest p verifyconfig = do

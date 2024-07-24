@@ -539,7 +539,7 @@ copyFromRemote r st key file dest meterupdate vc = do
 
 copyFromRemote'' :: Git.Repo -> Remote -> State -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification
 copyFromRemote'' repo r st@(State connpool _ _ _ _) key af dest meterupdate vc
-	| isP2PHttp r = p2phttp
+	| isP2PHttp r = copyp2phttp
 	| Git.repoIsHttp repo = verifyKeyContentIncrementally vc key $ \iv -> do
 		gc <- Annex.getGitConfig
 		ok <- Url.withUrlOptionsPromptingCreds $
@@ -574,7 +574,7 @@ copyFromRemote'' repo r st@(State connpool _ _ _ _) key af dest meterupdate vc
 	bwlimit = remoteAnnexBwLimitDownload (gitconfig r)
 		<|> remoteAnnexBwLimit (gitconfig r)
 		
-	p2phttp = verifyKeyContentIncrementally vc key $ \iv -> do
+	copyp2phttp = verifyKeyContentIncrementally vc key $ \iv -> do
 		startsz <- liftIO $ tryWhenExists $
 			getFileSize (toRawFilePath dest)
 		bracketIO (openBinaryFile dest ReadWriteMode) (hClose) $ \h -> do
@@ -614,9 +614,10 @@ copyToRemote r st key af o meterupdate = do
 
 copyToRemote' :: Git.Repo -> Remote -> State -> Key -> AssociatedFile -> Maybe FilePath -> MeterUpdate -> Annex ()
 copyToRemote' repo r st@(State connpool duc _ _ _) key af o meterupdate
+	| isP2PHttp r = prepsendwith copyp2phttp
 	| not $ Git.repoIsUrl repo = ifM duc
 		( guardUsable repo (giveup "cannot access remote") $ commitOnCleanup repo r st $
-			copylocal =<< Annex.Content.prepSendAnnex' key o
+			prepsendwith copylocal
 		, giveup "remote does not have expected annex.uuid value"
 		)
 	| Git.repoIsSsh repo =
@@ -624,18 +625,24 @@ copyToRemote' repo r st@(State connpool duc _ _ _) key af o meterupdate
 			(Ssh.runProto r connpool (return Nothing))
 			key af o meterupdate
 		
-	| otherwise = giveup "copying to non-ssh repo not supported"
+	| otherwise = giveup "copying to this remote is not supported"
   where
-	copylocal Nothing = giveup "content not available"
-	copylocal (Just (object, sz, check)) = do
+	prepsendwith a = Annex.Content.prepSendAnnex' key o >>= \case
+		Nothing -> giveup "content not available"
+		Just v -> a v
+		
+	bwlimit = remoteAnnexBwLimitUpload (gitconfig r)
+		<|> remoteAnnexBwLimit (gitconfig r)
+
+	failedsend = giveup "failed to send content to remote"
+
+	copylocal (object, sz, check) = do
 		-- The check action is going to be run in
 		-- the remote's Annex, but it needs access to the local
 		-- Annex monad's state.
 		checkio <- Annex.withCurrentState check
 		u <- getUUID
 		hardlink <- wantHardLink
-		let bwlimit = remoteAnnexBwLimitUpload (gitconfig r)
-			<|> remoteAnnexBwLimit (gitconfig r)
 		-- run copy from perspective of remote
 		res <- onLocalFast st $ ifM (Annex.Content.inAnnex key)
 			( return True
@@ -651,7 +658,28 @@ copyToRemote' repo r st@(State connpool duc _ _ _) key af o meterupdate
 						copier object (fromRawFilePath dest) key p' checksuccess verify
 			)
 		unless res $
-			giveup "failed to send content to remote"
+			failedsend
+
+	copyp2phttp (object, sz, check) =
+		let check' = check >>= \case
+			Just s -> do
+				warning (UnquotedString s)
+				return False
+			Nothing -> return True
+		in p2pHttpClient r (const $ pure $ PutOffsetResultPlus (Offset 0)) (clientPutOffset key) >>= \case
+			PutOffsetResultPlus offset -> 
+				metered (Just meterupdate) key bwlimit $ \_ p -> do
+					res <- p2pHttpClient r giveup $
+						clientPut p key (Just offset) af object sz check'
+					case res of
+						PutResultPlus False _ ->
+							failedsend
+						PutResultPlus True fanoutuuids ->
+							storefanout fanoutuuids
+			PutOffsetResultAlreadyHavePlus fanoutuuids ->
+				storefanout fanoutuuids
+	
+	storefanout = P2PHelper.storeFanout key (uuid r) . map fromB64UUID
 
 fsckOnRemote :: Git.Repo -> [CommandParam] -> Annex (IO Bool)
 fsckOnRemote r params
