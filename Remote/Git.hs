@@ -583,7 +583,9 @@ copyFromRemote'' repo r st@(State connpool _ _ _ _) key af dest meterupdate vc
 					Just startsz' -> liftIO $ do
 						resumeVerifyFromOffset startsz' iv p h 
 					_ -> return p
-				p2pHttpClient r giveup (clientGet p' iv key af h startsz) >>= \case
+				let consumer = meteredWrite' p' 
+					(writeVerifyChunk iv h)
+				p2pHttpClient r giveup (clientGet key af consumer startsz) >>= \case
 					Valid -> return ()
 					Invalid -> giveup "Transfer failed"
 

@@ -28,7 +28,6 @@ import P2P.Http.Url
 import Annex.Common
 import P2P.Protocol hiding (Offset, Bypass, auth)
 import Annex.Concurrent
-import Annex.Verify
 import Utility.Url (BasicAuth(..))
 import Utility.Metered
 import qualified Git.Credential as Git
@@ -144,27 +143,22 @@ runP2PHttpClient rmt fallback () = fallback
 #endif
 
 #ifdef WITH_SERVANT
--- Downloads and writes to the Handle. If the file already exists, provide
--- its starting size, and it will resume from that point. Note that the
--- IncrementalVerifier needs to have already been fed the existing content
--- of the file.
 clientGet
-	:: MeterUpdate
-	-> Maybe IncrementalVerifier
-	-> Key
+	:: Key
 	-> AssociatedFile
-	-> Handle
+	-> (L.ByteString -> IO BytesProcessed)
+	-- ^ Must consume the entire ByteString before returning its
+	-- total size.
 	-> Maybe FileSize
+	-- ^ Size of existing file, when resuming.
 	-> ClientAction Validity
-clientGet meterupdate iv k af h startsz clientenv (ProtocolVersion ver) su cu bypass auth = liftIO $ do
+clientGet k af consumer startsz clientenv (ProtocolVersion ver) su cu bypass auth = liftIO $ do
 	let offset = fmap (Offset . fromIntegral) startsz
 	withClientM (cli (B64Key k) cu bypass baf offset auth) clientenv $ \case
 		Left err -> return (Left err)
 		Right respheaders -> do
 			b <- S.unSourceT (getResponse respheaders) gather
-			BytesProcessed len <- meteredWrite'
-				meterupdate
-				(writeVerifyChunk iv h) b
+			BytesProcessed len <- consumer b
 			let DataLength dl = case lookupResponseHeader @DataLengthHeader' respheaders of
 				Header hdr -> hdr
 				_ -> error "missing data length header"
