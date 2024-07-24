@@ -24,6 +24,7 @@ import Annex.Url
 import qualified Annex
 import Annex.UUID
 import Types.Remote
+import Types.NumCopies
 import P2P.Http
 import P2P.Http.Url
 import P2P.Http.Types
@@ -32,6 +33,7 @@ import P2P.Protocol hiding (Offset, Bypass, auth)
 import Annex.Concurrent
 import Utility.Url (BasicAuth(..))
 import Utility.Metered
+import Utility.HumanTime
 import qualified Git.Credential as Git
 
 import Servant hiding (BasicAuthData(..))
@@ -43,6 +45,7 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Lazy.Internal as LI
 import qualified Data.Map as M
+import Data.Time.Clock.POSIX
 import Control.Concurrent.STM
 import Control.Concurrent.Async
 import Control.Concurrent
@@ -409,18 +412,10 @@ clientPutOffset _ = ()
 
 #ifdef WITH_SERVANT
 clientLockContent
-	:: ClientEnv
-	-> ProtocolVersion
-	-> B64Key
-	-> B64UUID ServerSide
-	-> B64UUID ClientSide
-	-> [B64UUID Bypass]
-	-> Maybe Auth
-	-> IO LockResult
-clientLockContent clientenv (ProtocolVersion ver) k su cu bypass auth = 
-	withClientM (cli k cu bypass auth) clientenv $ \case
-		Left err -> throwM err
-		Right res -> return res
+	:: Key
+	-> ClientAction LockResult
+clientLockContent k clientenv (ProtocolVersion ver) su cu bypass auth = 
+	liftIO $ withClientM (cli (B64Key k) cu bypass auth) clientenv return
   where
 	cli = case ver of
 		3 -> v3 su V3
@@ -437,41 +432,60 @@ clientLockContent clientenv (ProtocolVersion ver) k su cu bypass auth =
 		_ :<|> _ :<|> _ :<|> _ :<|>
 		_ :<|> _ :<|> _ :<|>
 		v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
+#else
+clientLockContent _ = ()
 #endif
 
 #ifdef WITH_SERVANT
 clientKeepLocked
-	:: ClientEnv
-	-> ProtocolVersion
-	-> LockID
-	-> B64UUID ServerSide
-	-> B64UUID ClientSide
-	-> [B64UUID Bypass]
-	-> Maybe Auth
-	-> (TMVar Bool -> IO ())
-	-- ^ The TMVar can be filled any number of times with True to send
-	-- repeated keep locked requests, eg to keep a connection alive.
-	-- Once filled with False, the lock will be dropped.
-	-> IO ()
-clientKeepLocked clientenv (ProtocolVersion ver) lckid su cu bypass auth a = do
-	keeplocked <- newEmptyTMVarIO
-	tid <- async $ a keeplocked
+	:: LockID
+	-> UUID
+	-> a
+	-> (VerifiedCopy -> Annex a)
+	-- ^ Callback is run only after successfully connecting to the http
+	-- server. The lock will remain held until the callback returns,
+	-- and then will be dropped.
+	-> ClientAction a
+clientKeepLocked lckid remoteuuid unablelock callback clientenv (ProtocolVersion ver) su cu bypass auth = do
+	readyv <- liftIO newEmptyTMVarIO
+	keeplocked <- liftIO newEmptyTMVarIO
 	let cli' = cli lckid (Just cu) bypass auth
 		(Just connectionKeepAlive) (Just keepAlive)
-		(S.fromStepT (unlocksender keeplocked))
-	withClientM cli' clientenv $ \case
-		Right (LockResult _ _) ->
-			wait tid
-		Left err  -> do
-			wait tid
-			throwM err
+		(S.fromStepT (unlocksender readyv keeplocked))
+	starttime <- liftIO getPOSIXTime
+	tid <- liftIO $ async $ withClientM cli' clientenv $ \case
+		Right (LockResult _ _) -> 
+			atomically $ writeTMVar readyv (Right False)
+		Left err -> 
+			atomically $ writeTMVar readyv (Left err)
+	let releaselock = liftIO $ do
+		atomically $ putTMVar keeplocked False
+		wait tid
+	liftIO (atomically $ takeTMVar readyv) >>= \case
+		Left err -> do
+			liftIO $ wait tid
+			return (Left err)
+		Right False -> do
+			liftIO $ wait tid
+			return (Right unablelock)
+		Right True -> do
+			let checker = return $ Left $ starttime + retentionduration
+			Right 
+				<$> withVerifiedCopy LockedCopy remoteuuid checker callback
+					`finally` releaselock
   where
-	unlocksender keeplocked =
+	retentionduration = fromIntegral $
+		durationSeconds p2pDefaultLockContentRetentionDuration
+
+	unlocksender readyv keeplocked =
 		S.Yield (UnlockRequest False) $ S.Effect $ do
 			return $ S.Effect $ do
-				stilllocked <- liftIO $ atomically $ takeTMVar keeplocked
+				liftIO $ atomically $ void $
+					tryPutTMVar readyv (Right True)
+				stilllocked <- liftIO $ atomically $
+					takeTMVar keeplocked
 				return $ if stilllocked
-					then unlocksender keeplocked
+					then unlocksender readyv keeplocked
 					else S.Yield (UnlockRequest True) S.Stop
 	
 	cli = case ver of
@@ -490,5 +504,6 @@ clientKeepLocked clientenv (ProtocolVersion ver) lckid su cu bypass auth a = do
 		_ :<|> _ :<|> _ :<|>
 		_ :<|> _ :<|> _ :<|> _ :<|>
 		v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
-
+#else
+clientKeepLocked _ _ _ _ = ()
 #endif

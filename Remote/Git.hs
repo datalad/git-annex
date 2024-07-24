@@ -521,6 +521,14 @@ lockKey r st key callback = do
 
 lockKey' :: Git.Repo -> Remote -> State -> Key -> (VerifiedCopy -> Annex r) -> Annex r
 lockKey' repo r st@(State connpool duc _ _ _) key callback
+	| isP2PHttp r = do
+		showLocking r
+		p2pHttpClient r giveup (clientLockContent key) >>= \case
+			LockResult True (Just lckid) ->
+				p2pHttpClient r failedlock $
+					clientKeepLocked lckid (uuid r)
+						failedlock callback
+			_ -> failedlock
 	| not $ Git.repoIsUrl repo = ifM duc
 		( guardUsable repo failedlock $ do
 			inorigrepo <- Annex.makeRunner
