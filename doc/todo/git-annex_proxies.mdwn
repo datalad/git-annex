@@ -31,10 +31,16 @@ Planned schedule of work:
 * Rest of Remote.Git needs implementing: drop, lock
 
 * A Locker should expire the lock on its own after 10 minutes,
-  initially. Once keeplocked is called, the expiry should end with the end
-  of that call.
+  initially. Once keeplocked is called, the lock will expire at the end 
+  of that call. But if keeplocked never gets called, the lock currently
+  persists forever.
 
 * Make http server support proxies and clusters.
+
+* Support proxying to git remotes using annex+http urls.
+  (Current documentation says proxying only works with ssh remotes,
+  so current state is not confusing, but this still needs to be done
+  eventually.)
 
 ## completed items for July's work on p2p protocol over http
 
