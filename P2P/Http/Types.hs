@@ -11,6 +11,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE CPP #-}
 
 module P2P.Http.Types where
 
@@ -18,14 +19,16 @@ import Annex.Common
 import qualified P2P.Protocol as P2P
 import Utility.MonotonicClock
 
+#ifdef WITH_SERVANT
 import Servant
+import Data.Aeson hiding (Key)
+import Text.Read (readMaybe)
+#endif
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.ByteString as B
 import Codec.Binary.Base64Url as B64
 import Data.Char
-import Text.Read (readMaybe)
-import Data.Aeson hiding (Key)
 import Control.DeepSeq
 import GHC.Generics (Generic)
 
@@ -143,6 +146,8 @@ newtype UnlockRequest = UnlockRequest Bool
 -- configuration.
 data Auth = Auth B.ByteString B.ByteString
 	deriving (Show, Generic, NFData, Eq, Ord)
+
+#ifdef WITH_SERVANT
 
 instance ToHttpApiData Auth where
 	toHeader (Auth u p) = "Basic " <> B64.encode (u <> ":" <> p)
@@ -390,3 +395,4 @@ instance PlusClass PutOffsetResultPlus PutOffsetResult where
 	plus (PutOffsetResult o) = PutOffsetResultPlus o
 	plus PutOffsetResultAlreadyHave = PutOffsetResultAlreadyHavePlus []
 
+#endif

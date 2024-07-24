@@ -329,7 +329,6 @@ Executable git-annex
       P2P.Http
       P2P.Http.Server
       P2P.Http.State
-      P2P.Http.Types
 
   if (os(windows))
     Build-Depends:
@@ -897,6 +896,7 @@ Executable git-annex
     P2P.Address
     P2P.Annex
     P2P.Auth
+    P2P.Http.Types
     P2P.Http.Client
     P2P.Http.Url
     P2P.IO
