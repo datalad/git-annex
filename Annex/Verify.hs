@@ -224,28 +224,29 @@ writeVerifyChunk Nothing h c = S.hPut h c
 
 {- Given a file handle that is open for reading (and likely also for writing),
  - and an offset, feeds the current content of the file up to the offset to
- - the  IncrementalVerifier. Leaves the file seeked to the offset. 
- - Also updates the meter to the offset. -}
+ - the  IncrementalVerifier. Leaves the file seeked to the offset.
+ - Returns the meter with the offset applied. -}
 resumeVerifyFromOffset
 	:: Integer
 	-> Maybe IncrementalVerifier
 	-> MeterUpdate
 	-> Handle
 	-> IO MeterUpdate
-resumeVerifyFromOffset o incrementalverifier p h
+resumeVerifyFromOffset o incrementalverifier meterupdate h
 	| o /= 0 = do
 		p' <- case incrementalverifier of
 			Just iv -> do
 				go iv o
-				return p
-			_ -> return $ offsetMeterUpdate p (toBytesProcessed o)
+				return offsetmeterupdate
+			_ -> return offsetmeterupdate
 		-- Make sure the handle is seeked to the offset.
 		-- (Reading the file probably left it there
 		-- when that was done, but let's be sure.)
 		hSeek h AbsoluteSeek o
 		return p'
-	| otherwise = return p
+	| otherwise = return meterupdate
   where
+	offsetmeterupdate = offsetMeterUpdate meterupdate (toBytesProcessed o)
 	go iv n
 		| n == 0 = return ()
 		| otherwise = do
