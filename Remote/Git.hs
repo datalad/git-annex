@@ -538,7 +538,12 @@ copyFromRemote r st key file dest meterupdate vc = do
 	copyFromRemote'' repo r st key file dest meterupdate vc
 
 copyFromRemote'' :: Git.Repo -> Remote -> State -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification
-copyFromRemote'' repo r st@(State connpool _ _ _ _) key file dest meterupdate vc
+copyFromRemote'' repo r st@(State connpool _ _ _ _) key af dest meterupdate vc
+	| isP2PHttp r = verifyKeyContentIncrementally vc key $ \iv ->
+		metered (Just meterupdate) key bwlimit $ \_ p ->
+		p2pHttpClient r giveup (clientGet p iv key af (encodeBS dest)) >>= \case
+			Valid -> return ()
+			Invalid -> giveup "Transfer failed"
 	| Git.repoIsHttp repo = verifyKeyContentIncrementally vc key $ \iv -> do
 		gc <- Annex.getGitConfig
 		ok <- Url.withUrlOptionsPromptingCreds $
@@ -556,7 +561,7 @@ copyFromRemote'' repo r st@(State connpool _ _ _ _) key file dest meterupdate vc
 					Nothing -> return True
 				copier <- mkFileCopier hardlink st
 				(ok, v) <- runTransfer (Transfer Download u (fromKey id key))
-					Nothing file Nothing stdRetry $ \p ->
+					Nothing af Nothing stdRetry $ \p ->
 						metered (Just (combineMeterUpdate p meterupdate)) key bwlimit $ \_ p' -> 
 							copier object dest key p' checksuccess vc
 				if ok
@@ -567,7 +572,7 @@ copyFromRemote'' repo r st@(State connpool _ _ _ _) key file dest meterupdate vc
 		P2PHelper.retrieve
 			(gitconfig r)
 			(Ssh.runProto r connpool (return (False, UnVerified)))
-			key file dest meterupdate vc
+			key af dest meterupdate vc
 	| otherwise = giveup "copying from non-ssh, non-http remote not supported"
   where
 	bwlimit = remoteAnnexBwLimitDownload (gitconfig r)

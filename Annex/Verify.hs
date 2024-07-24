@@ -21,6 +21,7 @@ module Annex.Verify (
 	finishVerifyKeyContentIncrementally,
 	verifyKeyContentIncrementally,
 	IncrementalVerifier(..),
+	writeVerifyChunk,
 	resumeVerifyFromOffset,
 	tailVerify,
 ) where
@@ -214,6 +215,12 @@ verifyKeyContentIncrementally verifyconfig k a = do
 	miv <- startVerifyKeyContentIncrementally verifyconfig k
 	a miv
 	snd <$> finishVerifyKeyContentIncrementally miv
+
+writeVerifyChunk :: Maybe IncrementalVerifier -> Handle -> S.ByteString -> IO ()
+writeVerifyChunk (Just iv) h c = do
+	S.hPut h c
+	updateIncrementalVerifier iv c
+writeVerifyChunk Nothing h c = S.hPut h c
 
 {- Given a file handle that is open for reading (and likely also for writing),
  - and an offset, feeds the current content of the file up to the offset to

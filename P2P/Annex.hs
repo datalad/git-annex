@@ -29,7 +29,6 @@ import Annex.Verify
 import Control.Monad.Free
 import Control.Concurrent.STM
 import Data.Time.Clock.POSIX
-import qualified Data.ByteString as S
 
 -- Full interpreter for Proto, that can receive and send objects.
 runFullProto :: RunState -> P2PConnection -> Proto a -> Annex (Either ProtoFailure a)
@@ -197,12 +196,7 @@ runLocal runst runner a = case a of
 			Right b -> do
 				liftIO $ withBinaryFile dest ReadWriteMode $ \h -> do
 					p' <- resumeVerifyFromOffset o incrementalverifier p h
-					let writechunk = case incrementalverifier of
-						Nothing -> \c -> S.hPut h c
-						Just iv -> \c -> do
-							S.hPut h c
-							updateIncrementalVerifier iv c
-					meteredWrite p' writechunk b
+					meteredWrite p' (writeVerifyChunk incrementalverifier h) b
 				indicatetransferred ti
 
 				rightsize <- do

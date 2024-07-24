@@ -175,6 +175,7 @@ serveGet st su apiver (B64Key k) cu bypass baf startat sec auth = do
 				validity <- atomically $ takeTMVar validityv
 				sz <- takeMVar szv
 				atomically $ putTMVar finalv ()
+				atomically $ putTMVar endv ()
 				return $ case validity of
 					Nothing -> True
 					Just Valid -> True
@@ -198,11 +199,9 @@ serveGet st su apiver (B64Key k) cu bypass baf startat sec auth = do
 		Just (Offset o) -> fromIntegral o
 		Nothing -> 0
 	
-	getreq offset = P2P.Protocol.GET offset (ProtoAssociatedFile af) k
+	getreq offset = P2P.Protocol.GET offset af k
 	
-	af = AssociatedFile $ case baf of
-		Just (B64FilePath f) -> Just f
-		Nothing -> Nothing
+	af = ProtoAssociatedFile $ b64FilePathToAssociatedFile baf
 
 serveCheckPresent
 	:: APIVersion v
@@ -345,9 +344,7 @@ servePut st resultmangle su apiver (DataLength len) (B64Key k) cu bypass baf mof
 		Just (Offset o) -> o
 		Nothing -> 0
 
-	af = AssociatedFile $ case baf of
-		Just (B64FilePath f) -> Just f
-		Nothing -> Nothing
+	af = b64FilePathToAssociatedFile baf
 
 	-- Streams the ByteString from the client. Avoids returning a longer
 	-- than expected ByteString by truncating to the expected length. 

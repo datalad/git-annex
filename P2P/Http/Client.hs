@@ -11,7 +11,10 @@
 {-# LANGUAGE DataKinds, TypeApplications #-}
 {-# LANGUAGE CPP #-}
 
-module P2P.Http.Client where
+module P2P.Http.Client (
+	module P2P.Http.Client,
+	Validity(..),
+) where
 
 import Types
 import Annex.Url
@@ -25,7 +28,9 @@ import P2P.Http.Url
 import Annex.Common
 import P2P.Protocol hiding (Offset, Bypass, auth)
 import Annex.Concurrent
+import Annex.Verify
 import Utility.Url (BasicAuth(..))
+import Utility.Metered
 import qualified Git.Credential as Git
 
 import Servant hiding (BasicAuthData(..))
@@ -140,42 +145,33 @@ runP2PHttpClient rmt fallback () = fallback
 
 #ifdef WITH_SERVANT
 clientGet
-	:: ClientEnv
-	-> ProtocolVersion
-	-> B64Key
-	-> B64UUID ServerSide
-	-> B64UUID ClientSide
-	-> [B64UUID Bypass]
-	-> Maybe B64FilePath
-	-> Maybe Auth
+	:: MeterUpdate
+	-> Maybe IncrementalVerifier
+	-> Key
+	-> AssociatedFile
 	-> RawFilePath
-	-> IO Validity
-clientGet clientenv (ProtocolVersion ver) k su cu bypass af auth dest = do
+	-> ClientAction Validity
+clientGet meterupdate iv k af dest clientenv (ProtocolVersion ver) su cu bypass auth = liftIO $ do
 	startsz <- tryWhenExists $ getFileSize dest
-	let mo = fmap (Offset . fromIntegral) startsz
-	withClientM (cli k cu bypass af mo auth) clientenv $ \case
-		Left err -> throwM err
-		Right respheaders -> do
-			b <- S.unSourceT (getResponse respheaders) gather
-			liftIO $ withBinaryFile (fromRawFilePath dest) WriteMode $ \h -> do
-				case startsz of
-					Just startsz' | startsz' /= 0 ->
-						hSeek h AbsoluteSeek startsz'
-					_ -> noop
-				len <- go 0 h (L.toChunks b)
+	let offset = fmap (Offset . fromIntegral) startsz
+	withClientM (cli (B64Key k) cu bypass baf offset auth) clientenv $ \case
+		Left err -> return (Left err)
+		Right respheaders ->
+			withBinaryFile (fromRawFilePath dest) ReadWriteMode $ \h -> do
+				meterupdate' <- case startsz of
+					Just startsz' ->
+						resumeVerifyFromOffset startsz' iv meterupdate h 
+					_ -> return meterupdate
+				b <- S.unSourceT (getResponse respheaders) gather
+				BytesProcessed len <- meteredWrite'
+					meterupdate'
+					(writeVerifyChunk iv h) b
 				let DataLength dl = case lookupResponseHeader @DataLengthHeader' respheaders of
 					Header hdr -> hdr
 					_ -> error "missing data length header"
-				if dl == len
-					then return Valid
-					else return Invalid
+				return $ Right $ 
+					if dl == len then Valid else Invalid
   where
-	go n _ [] = return n
-	go n h (b:bs) = do
-		let !n' = n + fromIntegral (B.length b)
-		B.hPut h b
-		go n' h bs
-
 	cli =case ver of
 		3 -> v3 su V3
 		2 -> v2 su V2
@@ -191,6 +187,10 @@ clientGet clientenv (ProtocolVersion ver) k su cu bypass af auth dest = do
 	gather' (S.Skip s) = gather' s
 	gather' (S.Effect ms) = ms >>= gather'
 	gather' (S.Yield v s) = LI.Chunk v <$> unsafeInterleaveIO (gather' s)
+	
+	baf = associatedFileToB64FilePath af
+#else
+clientGet _ _ _ = ()
 #endif
 
 clientCheckPresent :: Key -> ClientAction Bool

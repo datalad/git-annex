@@ -28,6 +28,13 @@ Planned schedule of work:
 
 ## work notes
 
+* Test resume of download of large file when large amount of file is
+  already downloaded and verification takes a long time. Will the http
+  connection be dropped due to inactivity? May need to do verification in a
+  separate thread that feeds in the existing file followed by the newly
+  downloaded data. Eg, a version of tailVerify that operates on a handle
+  open for read+write.
+
 * Rest of Remote.Git needs implementing.
 
 * git-annex p2phttp serving .well-known for ACME.

@@ -50,6 +50,14 @@ newtype B64Key = B64Key Key
 newtype B64FilePath = B64FilePath RawFilePath
 	deriving (Show)
 
+associatedFileToB64FilePath :: AssociatedFile -> Maybe B64FilePath
+associatedFileToB64FilePath (AssociatedFile Nothing) = Nothing
+associatedFileToB64FilePath (AssociatedFile (Just f)) = Just (B64FilePath f)
+
+b64FilePathToAssociatedFile :: Maybe B64FilePath -> AssociatedFile
+b64FilePathToAssociatedFile Nothing = AssociatedFile Nothing
+b64FilePathToAssociatedFile (Just (B64FilePath f)) = AssociatedFile (Just f)
+
 newtype B64UUID t = B64UUID { fromB64UUID :: UUID }
 	deriving (Show, Ord, Eq, Generic, NFData)
 
