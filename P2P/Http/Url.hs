@@ -91,3 +91,9 @@ parseP2PHttpUrl us
 
 p2pHttpUrlWithoutUUID :: String -> String
 p2pHttpUrlWithoutUUID = reverse . dropWhile (/= '/') . reverse
+
+unavailableP2PHttpUrl :: P2PHttpUrl -> P2PHttpUrl
+unavailableP2PHttpUrl p = p
+#ifdef WITH_SERVANT
+	{ p2pHttpBaseUrl = (p2pHttpBaseUrl p) { baseUrlHost = "!dne!" } }
+#endif

@@ -264,7 +264,7 @@ defaultRepoCost r
 	| otherwise = expensiveRemoteCost
 
 unavailable :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
-unavailable r = gen r'
+unavailable r u c gc = gen r' u c gc'
   where
 	r' = case Git.location r of
 		Git.Local { Git.gitdir = d } ->
@@ -275,6 +275,10 @@ unavailable r = gen r'
 				in r { Git.location = Git.Url (url { uriAuthority = Just auth' })}
 			Nothing -> r { Git.location = Git.Unknown }
 		_ -> r -- already unavailable
+	gc' = gc
+		{ remoteAnnexP2PHttpUrl =
+			unavailableP2PHttpUrl <$> remoteAnnexP2PHttpUrl gc
+		}
 
 {- Tries to read the config for a specified remote, updates state, and
  - returns the updated repo. -}
