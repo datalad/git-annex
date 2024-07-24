@@ -44,6 +44,7 @@ import System.IO.Unsafe
 #endif
 
 type ClientAction a
+#ifdef WITH_SERVANT
 	= ClientEnv
 	-> ProtocolVersion
 	-> B64UUID ServerSide
@@ -51,13 +52,14 @@ type ClientAction a
 	-> [B64UUID Bypass]
 	-> Maybe Auth
 	-> Annex (Either ClientError a)
+#else
+	= ()
+#endif
 
 p2pHttpClient
 	:: Remote
 	-> (String -> Annex a)
-#ifdef WITH_SERVANT
 	-> ClientAction a
-#endif
 	-> Annex a
 #ifdef WITH_SERVANT
 p2pHttpClient rmt fallback clientaction =
@@ -132,11 +134,11 @@ p2pHttpClient rmt fallback clientaction =
 					M.insert (Git.CredentialBaseURL credentialbaseurl) cred cc
 		Nothing -> noop
 #else
-runP2PHttpClient rmt fallback = fallback "This remote uses an annex+http url, but this version of git-annex is not build with support for that."
+runP2PHttpClient rmt fallback () = fallback
+	"This remote uses an annex+http url, but this version of git-annex is not build with support for that."
 #endif
 
 #ifdef WITH_SERVANT
-
 clientGet
 	:: ClientEnv
 	-> ProtocolVersion
@@ -154,7 +156,7 @@ clientGet clientenv (ProtocolVersion ver) k su cu bypass af auth dest = do
 	withClientM (cli k cu bypass af mo auth) clientenv $ \case
 		Left err -> throwM err
 		Right respheaders -> do
-			b <- S.unSourceT (getResponse respheaders) gatherByteString
+			b <- S.unSourceT (getResponse respheaders) gather
 			liftIO $ withBinaryFile (fromRawFilePath dest) WriteMode $ \h -> do
 				case startsz of
 					Just startsz' | startsz' /= 0 ->
@@ -183,16 +185,16 @@ clientGet clientenv (ProtocolVersion ver) k su cu bypass af auth dest = do
 	
 	v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
 
-gatherByteString :: S.StepT IO B.ByteString -> IO L.ByteString
-gatherByteString = unsafeInterleaveIO . go
-  where
-	go S.Stop = return LI.Empty
-	go (S.Error err) = giveup err
-	go (S.Skip s) = go s
-	go (S.Effect ms) = ms >>= go
-	go (S.Yield v s) = LI.Chunk v <$> unsafeInterleaveIO (go s)
+	gather = unsafeInterleaveIO . gather'
+	gather' S.Stop = return LI.Empty
+	gather' (S.Error err) = giveup err
+	gather' (S.Skip s) = gather' s
+	gather' (S.Effect ms) = ms >>= gather'
+	gather' (S.Yield v s) = LI.Chunk v <$> unsafeInterleaveIO (gather' s)
+#endif
 
 clientCheckPresent :: Key -> ClientAction Bool
+#ifdef WITH_SERVANT
 clientCheckPresent key clientenv (ProtocolVersion ver) su cu bypass auth =
 	liftIO $ withClientM (cli su (B64Key key) cu bypass auth) clientenv $ \case
 		Left err -> return (Left err)
@@ -207,7 +209,11 @@ clientCheckPresent key clientenv (ProtocolVersion ver) su cu bypass auth =
 	
 	_ :<|> _ :<|> _ :<|> _ :<|>
 		v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
+#else
+clientCheckPresent _ = ()
+#endif
 
+#ifdef WITH_SERVANT
 clientRemove
 	:: ClientEnv
 	-> ProtocolVersion
@@ -232,7 +238,9 @@ clientRemove clientenv (ProtocolVersion ver) key su cu bypass auth =
 	_ :<|> _ :<|> _ :<|> _ :<|>
 		_ :<|> _ :<|> _ :<|> _ :<|>
 		v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
+#endif
 
+#ifdef WITH_SERVANT
 clientRemoveBefore
 	:: ClientEnv
 	-> ProtocolVersion
@@ -256,7 +264,9 @@ clientRemoveBefore clientenv (ProtocolVersion ver) key su cu bypass ts auth =
 		_ :<|> _ :<|> _ :<|> _ :<|>
 		_ :<|> _ :<|> _ :<|> _ :<|>
 		v3 :<|> _ = client p2pHttpAPI
+#endif
 
+#ifdef WITH_SERVANT
 clientGetTimestamp
 	:: ClientEnv
 	-> ProtocolVersion
@@ -279,7 +289,9 @@ clientGetTimestamp clientenv (ProtocolVersion ver) su cu bypass auth =
 		_ :<|> _ :<|> _ :<|> _ :<|>
 		_ :<|>
 		v3 :<|> _ = client p2pHttpAPI
+#endif
 
+#ifdef WITH_SERVANT
 clientPut
 	:: ClientEnv
 	-> ProtocolVersion
@@ -374,7 +386,9 @@ clientPut clientenv (ProtocolVersion ver) k su cu bypass auth moffset af content
 		_ :<|>
 		_ :<|>
 		v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
+#endif
 
+#ifdef WITH_SERVANT
 clientPutOffset
 	:: ClientEnv
 	-> ProtocolVersion
@@ -404,7 +418,9 @@ clientPutOffset clientenv (ProtocolVersion ver) k su cu bypass auth
 		_ :<|>
 		_ :<|> _ :<|> _ :<|> _ :<|>
 		v3 :<|> v2 :<|> v1 :<|> _ = client p2pHttpAPI
+#endif
 
+#ifdef WITH_SERVANT
 clientLockContent
 	:: ClientEnv
 	-> ProtocolVersion
@@ -434,7 +450,9 @@ clientLockContent clientenv (ProtocolVersion ver) k su cu bypass auth =
 		_ :<|> _ :<|> _ :<|> _ :<|>
 		_ :<|> _ :<|> _ :<|>
 		v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
+#endif
 
+#ifdef WITH_SERVANT
 clientKeepLocked
 	:: ClientEnv
 	-> ProtocolVersion
@@ -487,4 +505,3 @@ clientKeepLocked clientenv (ProtocolVersion ver) lckid su cu bypass auth a = do
 		v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
 
 #endif
--- ^ WITH_SERVANT

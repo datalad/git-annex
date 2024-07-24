@@ -437,10 +437,7 @@ inAnnex' repo rmt st@(State connpool duc _ _ _) key
 	| Git.repoIsUrl repo = checkremote
 	| otherwise = checklocal
   where
-	checkp2phttp = p2pHttpClient rmt giveup
-#ifdef WITH_SERVANT
-		(clientCheckPresent key)
-#endif
+	checkp2phttp = p2pHttpClient rmt giveup (clientCheckPresent key)
 	checkhttp = do
 		gc <- Annex.getGitConfig
 		Url.withUrlOptionsPromptingCreds $ \uo -> 
@@ -551,8 +548,6 @@ copyFromRemote'' repo r st@(State connpool _ _ _ _) key file dest meterupdate vc
 	| not $ Git.repoIsUrl repo = guardUsable repo (giveup "cannot access remote") $ do
 		u <- getUUID
 		hardlink <- wantHardLink
-		let bwlimit = remoteAnnexBwLimitDownload (gitconfig r)
-			<|> remoteAnnexBwLimit (gitconfig r)
 		-- run copy from perspective of remote
 		onLocalFast st $ Annex.Content.prepSendAnnex' key Nothing >>= \case
 			Just (object, _sz, check) -> do
@@ -574,6 +569,9 @@ copyFromRemote'' repo r st@(State connpool _ _ _ _) key file dest meterupdate vc
 			(Ssh.runProto r connpool (return (False, UnVerified)))
 			key file dest meterupdate vc
 	| otherwise = giveup "copying from non-ssh, non-http remote not supported"
+  where
+	bwlimit = remoteAnnexBwLimitDownload (gitconfig r)
+		<|> remoteAnnexBwLimit (gitconfig r)
 
 copyFromRemoteCheap :: State -> Git.Repo -> Maybe (Key -> AssociatedFile -> FilePath -> Annex ())
 #ifndef mingw32_HOST_OS
