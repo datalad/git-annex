@@ -428,7 +428,6 @@ serveLockContent st su apiver (B64Key k) cu bypass sec auth = do
 				net $ sendMessage (LOCKCONTENT k)
 				checkSuccess
 			liftIO $ atomically $ putTMVar lockresv lockres
-			-- TODO timeout
 			liftIO $ atomically $ takeTMVar unlockv
 			void $ runFullProto (clientRunState conn) (clientP2PConnection conn) $ do
 				net $ sendMessage UNLOCKCONTENT
@@ -461,6 +460,7 @@ serveKeepLocked
 	-> Handler LockResult
 serveKeepLocked st _su _apiver lckid _cu _bypass sec auth _ _ unlockrequeststream = do
 	checkAuthActionClass st sec auth WriteAction $ \_ -> do
+		liftIO $ keepingLocked lckid st
 		_ <- liftIO $ S.unSourceT unlockrequeststream go
 		return (LockResult False Nothing)
   where

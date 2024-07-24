@@ -21,9 +21,12 @@ import qualified P2P.IO as P2P
 import P2P.IO
 import P2P.Annex
 import Annex.UUID
+import Types.NumCopies
 import Types.WorkerPool
 import Annex.WorkerPool
 import CmdLine.Action (startConcurrency)
+import Utility.ThreadScheduler
+import Utility.HumanTime
 
 import Servant
 import qualified Data.Map as M
@@ -281,13 +284,17 @@ data Locker = Locker
 	-- ^ Left empty until the thread has taken the lock
 	-- (or failed to do so), then True while the lock is held,
 	-- and setting to False causes the lock to be released.
+	, lockerTimeoutDisable :: TMVar ()
+	-- ^ Until this is filled, the lock will be subject to timeout.
+	-- Once filled the lock will remain held until explicitly dropped.
 	}
 
-mkLocker :: IO (Maybe a) -> (a -> IO ()) -> IO (Maybe (Locker, LockID))
+mkLocker :: (IO (Maybe a)) -> (a -> IO ()) -> IO (Maybe (Locker, LockID))
 mkLocker lock unlock = do
 	lv <- newEmptyTMVarIO
+	timeoutdisablev <- newEmptyTMVarIO
 	let setlocked = putTMVar lv
-	tid <- async $ lock >>= \case
+	locktid <- async $ lock >>= \case
 		Nothing ->
 			atomically $ setlocked False
 		Just st -> do
@@ -301,10 +308,20 @@ mkLocker lock unlock = do
 	locksuccess <- atomically $ readTMVar lv
 	if locksuccess
 		then do
+			timeouttid <- async $ do
+				threadDelaySeconds $ Seconds $ fromIntegral $
+					durationSeconds p2pDefaultLockContentRetentionDuration
+				atomically (tryReadTMVar timeoutdisablev) >>= \case
+					Nothing -> void $ atomically $
+						writeTMVar lv False
+					Just () -> noop
+			tid <- async $ do
+				wait locktid
+				cancel timeouttid
 			lckid <- B64UUID <$> genUUID
-			return (Just (Locker tid lv, lckid))
+			return (Just (Locker tid lv timeoutdisablev, lckid))
 		else do
-			wait tid
+			wait locktid
 			return Nothing
 
 storeLock :: LockID -> Locker -> P2PHttpServerState -> IO ()
@@ -312,6 +329,15 @@ storeLock lckid locker st = atomically $ do
 	m <- takeTMVar (openLocks st)
 	let !m' = M.insert lckid locker m
 	putTMVar (openLocks st) m'
+
+keepingLocked :: LockID -> P2PHttpServerState -> IO ()
+keepingLocked lckid st = do
+	m <- atomically $ readTMVar (openLocks st)
+	case M.lookup lckid m of
+		Nothing -> return ()
+		Just locker ->
+			atomically $ void $ 
+				tryPutTMVar (lockerTimeoutDisable locker) ()
 
 dropLock :: LockID -> P2PHttpServerState -> IO ()
 dropLock lckid st = do

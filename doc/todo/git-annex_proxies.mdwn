@@ -30,11 +30,6 @@ Planned schedule of work:
 
 * Drop needs to check the proof and use timestamps.
 
-* A Locker should expire the lock on its own after 10 minutes,
-  initially. Once keeplocked is called, the lock will expire at the end 
-  of that call. But if keeplocked never gets called, the lock currently
-  persists forever.
-
 * Make http server support proxies and clusters.
 
 * Support proxying to git remotes using annex+http urls.
