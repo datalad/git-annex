@@ -475,11 +475,17 @@ dropKey r st proof key = do
 
 dropKey' :: Git.Repo -> Remote -> State -> Maybe SafeDropProof -> Key -> Annex ()
 dropKey' repo r st@(State connpool duc _ _ _) proof key
+	| isP2PHttp r = p2pHttpClient r giveup (clientRemove proof key) >>= \case
+		RemoveResultPlus True fanoutuuids ->
+			storefanout fanoutuuids
+		RemoveResultPlus False fanoutuuids -> do
+			storefanout fanoutuuids
+			giveup "removing content from remote failed"
 	| not $ Git.repoIsUrl repo = ifM duc
 		( guardUsable repo (giveup "cannot access remote") removelocal
 		, giveup "remote does not have expected annex.uuid value"
 		)
-	| Git.repoIsHttp repo = giveup "dropping from http remote not supported"
+	| Git.repoIsHttp repo = giveup "dropping from this remote is not supported"
 	| otherwise = P2PHelper.remove (uuid r) p2prunner proof key
   where
 	p2prunner = Ssh.runProto r connpool (return (Right False, Nothing))
@@ -505,6 +511,8 @@ dropKey' repo r st@(State connpool duc _ _ _) proof key
 				)
 		unless proofunexpired
 			safeDropProofExpired
+			
+	storefanout = P2PHelper.storeFanout key InfoMissing (uuid r) . map fromB64UUID
 
 lockKey :: Remote -> State -> Key -> (VerifiedCopy -> Annex r) -> Annex r
 lockKey r st key callback = do
@@ -570,7 +578,7 @@ copyFromRemote'' repo r st@(State connpool _ _ _ _) key af dest meterupdate vc
 			(gitconfig r)
 			(Ssh.runProto r connpool (return (False, UnVerified)))
 			key af dest meterupdate vc
-	| otherwise = giveup "copying from non-ssh, non-http remote not supported"
+	| otherwise = giveup "copying from this remote is not supported"
   where
 	bwlimit = remoteAnnexBwLimitDownload (gitconfig r)
 		<|> remoteAnnexBwLimit (gitconfig r)
@@ -674,14 +682,15 @@ copyToRemote' repo r st@(State connpool duc _ _ _) key af o meterupdate
 					res <- p2pHttpClient r giveup $
 						clientPut p' key (Just offset) af object sz check'
 					case res of
-						PutResultPlus False _ ->
+						PutResultPlus False fanoutuuids -> do
+							storefanout fanoutuuids
 							failedsend
 						PutResultPlus True fanoutuuids ->
 							storefanout fanoutuuids
 			PutOffsetResultAlreadyHavePlus fanoutuuids ->
 				storefanout fanoutuuids
 	
-	storefanout = P2PHelper.storeFanout key (uuid r) . map fromB64UUID
+	storefanout = P2PHelper.storeFanout key InfoPresent (uuid r) . map fromB64UUID
 
 fsckOnRemote :: Git.Repo -> [CommandParam] -> Annex (IO Bool)
 fsckOnRemote r params

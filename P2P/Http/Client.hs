@@ -210,29 +210,26 @@ clientCheckPresent _ = ()
 
 #ifdef WITH_SERVANT
 clientRemove
-	:: ClientEnv
-	-> ProtocolVersion
-	-> B64Key
-	-> B64UUID ServerSide
-	-> B64UUID ClientSide
-	-> [B64UUID Bypass]
-	-> Maybe Auth
-	-> IO RemoveResultPlus
-clientRemove clientenv (ProtocolVersion ver) key su cu bypass auth =
-	withClientM cli clientenv $ \case
-		Left err -> throwM err
-		Right res -> return res
+	:: Maybe SafeDropProof
+	-> Key
+	-> ClientAction RemoveResultPlus
+clientRemove proof k clientenv (ProtocolVersion ver) su cu bypass auth =
+	liftIO $ withClientM cli clientenv return
   where
+	bk = B64Key k
+
 	cli = case ver of
-		3 -> v3 su V3 key cu bypass auth
-		2 -> v2 su V2 key cu bypass auth
-		1 -> plus <$> v1 su V1 key cu bypass auth
-		0 -> plus <$> v0 su V0 key cu bypass auth
+		3 -> v3 su V3 bk cu bypass auth
+		2 -> v2 su V2 bk cu bypass auth
+		1 -> plus <$> v1 su V1 bk cu bypass auth
+		0 -> plus <$> v0 su V0 bk cu bypass auth
 		_ -> error "unsupported protocol version"
 	
 	_ :<|> _ :<|> _ :<|> _ :<|>
 		_ :<|> _ :<|> _ :<|> _ :<|>
 		v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
+#else
+clientRemove _ _ = ()
 #endif
 
 #ifdef WITH_SERVANT
