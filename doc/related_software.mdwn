@@ -69,4 +69,6 @@ designed to interoperate with it.
   converts a sequence of borgbackup archives into a git-annex repository,
   storing nested Git repositories as subtrees or bundles.
 
+* [forgejo-aneksajo](https://codeberg.org/matrss/forgejo-aneksajo) is a soft-fork of Forgejo (a git forge) that integrates support for git-annex.
+
 See also [[not]] for software that is *not* related to git-annex, but similar.

@@ -1,0 +1,16 @@
+I was looking into why `annex get` and `annex copy` between local clones on NFS mounts don't utilize NFS4.2's server-side copy feature,
+which would be pretty relevant for a setup like ours (institutional compute cluster; big datalad datasets).
+This seems to boil down to not calling `copy_file_range`. However, `cp` generally does call `copy_file_range`, so that seemed confusing.
+Turns out the culprit is `--reflink=always` which does not work as expected on ZFS. `--reflink=auto` does, though.
+A summary of how that is, can be found here: https://github.com/openzfs/zfs/pull/13392#issuecomment-1742172842
+
+I am not sure why annex insists on `always` rather than `auto`, so not sure whether the solution actually would be to change that.
+Reading old issues it seems the reason was to let annex handle the fallback, which kinda is the problem in case of ZFS.
+Changing (back?) to `auto` may be an issue in other cases - I don't know. If annex' fallback when `cp --reflink=always` fails would end up calling `copy_file_range`, that would still solve the issue, though, as NFS would then end up performing a server-side copy rather than transferring big files back and forth.
+
+Just to be clear: It's specifically ZFS via NFS on linux that's the issue here.
+
+
+P.S.: Didn't want to call this a bug, mostly b/c the "real bug" isn't in annex exactly (see link above), so putting it here.
+
+[[!meta author=ben]]

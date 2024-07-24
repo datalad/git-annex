@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="m.risse@77eac2c22d673d5f10305c0bade738ad74055f92"
+ nickname="m.risse"
+ avatar="http://cdn.libravatar.org/avatar/59541f50d845e5f81aff06e88a38b9de"
+ subject="comment 1"
+ date="2024-07-16T09:21:54Z"
+ content="""
+I just want to say that this would be nice to have for https://codeberg.org/matrss/forgejo-aneksajo as well, since only being able to use ssh is a pain point in some places (e.g. outgoing ssh connections are forbidden on the HPC systems at FZ Jülich, which means an intermediary is necessary to copy data from the HPC systems to a forgejo-aneksajo instance, currently). Being able to read and write via https (possibly reusing the existing access tokens from forgejo? That would be on me to see if it is doable) would alleviate this problem entirely.
+"""]]

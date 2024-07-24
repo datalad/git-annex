@@ -1,0 +1,8 @@
+When downloading with annex.stalldetection configured, `git-annex
+transferrer` is used. If a download is prevented by annex.diskreserve
+setting, the message displayed says that --force will override the check.
+But that doesn't work in this case. 
+
+The --force option should be propagated to this command. --[[Joey]]
+
+> [[fixed|done]] --[[Joey]]

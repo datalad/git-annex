@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="Also Serveo.net"
+ date="2024-07-19T15:21:18Z"
+ content="""
+Don't know your use case excatly, but just today I stumbled upon [Serveo.net](https://serveo.net), which facilitates no-login, no-install reverse SSH tunnels, with with you can effectively break out of NAT'ed networks without root privileges. Together with `autossh` for persistence, maybe that can help you? Although I guess for forwarding to a privileged port 22 you would still need root privileges, meh...
+"""]]

@@ -85,7 +85,11 @@ gitAnnexChildProcess subcmd ps f a = do
 gitAnnexChildProcessParams :: String -> [CommandParam] -> Annex [CommandParam]
 gitAnnexChildProcessParams subcmd ps = do
 	cps <- gitAnnexGitConfigOverrides
-	return (Param subcmd : cps ++ ps)
+	force <- Annex.getRead Annex.force
+	let cps' = if force
+		then Param "--force" : cps
+		else cps
+	return (Param subcmd : cps' ++ ps)
 
 gitAnnexGitConfigOverrides :: Annex [CommandParam]
 gitAnnexGitConfigOverrides = concatMap (\c -> [Param "-c", Param c])

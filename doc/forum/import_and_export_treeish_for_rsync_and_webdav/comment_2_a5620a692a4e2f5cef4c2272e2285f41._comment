@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="m.risse@77eac2c22d673d5f10305c0bade738ad74055f92"
+ nickname="m.risse"
+ avatar="http://cdn.libravatar.org/avatar/59541f50d845e5f81aff06e88a38b9de"
+ subject="comment 2"
+ date="2024-07-19T08:26:30Z"
+ content="""
+> If you're importing and exporting to the same remote, what happens when there's a conflict? Eg, whatever else is writing files to the remote writes to a file, but you locally modify the same file, and export a tree, without importing the new version first. That would overwrite the modified file on the remote, losing data.
+
+The man page for git-annex-export states that this shouldn't be a problem, or at least shouldn't lead to data loss (might still require manual intervention):
+
+> When a file on a special remote has been modified by software other than git-annex, exporting to it will not overwrite the modified file, and the export will not succeed. You can resolve this conflict by using git annex import.
+
+Maybe this was improved after this forum post happened?
+
+There is probably some potential for issues when exporting and writing with another program _at the same time_, although that might be mitigated with webdav locks, for the webdav case. Also, you state that this is already a problem with the remotes that support export and import now.
+
+Is this concern outdated? I would love to be able to import and export to webdav, so that I could use a Nextcloud as a \"frontend\" to a git-annex repository, getting the \"best of both worlds\" so to speak.
+"""]]

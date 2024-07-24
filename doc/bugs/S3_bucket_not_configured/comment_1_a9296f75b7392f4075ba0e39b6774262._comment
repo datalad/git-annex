@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="xentac"
+ avatar="http://cdn.libravatar.org/avatar/773b6c7b0dc34f10b66aa46d2730a5b3"
+ subject="comment 1"
+ date="2024-07-12T23:49:33Z"
+ content="""
+I may have just fixed it by restarting the daemon from the webapp... Still weird that the webapp got into that stuck state.
+"""]]

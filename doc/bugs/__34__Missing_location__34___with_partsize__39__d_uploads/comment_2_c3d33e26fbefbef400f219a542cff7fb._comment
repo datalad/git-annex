@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="kdm9"
+ avatar="http://cdn.libravatar.org/avatar/b7b736335a0e9944a8169a582eb4c43d"
+ subject="comment 2"
+ date="2024-07-19T13:11:05Z"
+ content="""
+For future google searchers:
+
+When interfacing with Ceph storage via the S3 backend, I get errors like the following on larger files
+
+`XmlException {xmlErrorMessage = \"Missing ETag\"}`
+
+
+Like above, these 'errors' are actually successes with a non-compliant S3 backend that is missing either the Location or Etag file.
+
+
+I confirm that setting partsize > chunk works around this issue, in my case `chunk=4GiB partsize=5GiB`.
+
+Best,
+Kevin
+"""]]

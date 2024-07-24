@@ -1,0 +1,143 @@
+### Please describe the problem.
+
+A new kind of an Android device -- a new attempt to make use of git-annex on it ;)  This time BOOX Tablet Tab Ultra C Pro ePaper Tablet PC 10.3 with Termux installed from Google Play store and reporting
+
+```
+~ $ pwd
+/data/data/com.termux/files/home
+
+~ $ df . -h
+Filesystem       Size Used Avail Use% Mounted on
+/dev/block/dm-10 108G 3.9G  104G   4% /data/data/com.google.android.gms
+
+~ $ mount | grep data/data/com
+/dev/block/dm-10 on /data/data/com.termux type f2fs (rw,lazytime,seclabel,nosuid,nodev,noatime,background_gc=on,discard,no_h
+eap,user_xattr,inline_xattr,acl,inline_data,inline_dentry,flush_merge,extent_cache,mode=adaptive,active_logs=6,reserve_root=
+32768,resuid=0,resgid=1065,inlinecrypt,alloc_mode=default,fsync_mode=nobarrier)
+/dev/block/dm-10 on /data/data/com.google.android.gms type f2fs (rw,lazytime,seclabel,nosuid,nodev,noatime,background_gc=on,
+discard,no_heap,user_xattr,inline_xattr,acl,inline_data,inline_dentry,flush_merge,extent_cache,mode=adaptive,active_logs=6,r
+eserve_root=32768,resuid=0,resgid=1065,inlinecrypt,alloc_mode=default,fsync_mode=nobarrier)
+
+~ $ uname -a
+Linux localhost 4.14.190-perf-gb4109db-dirty #439 SMP PREEMPT Wed Apr 10 19:23:59 CST 2024 aarch64 Android
+```
+
+but installation failed with message similar to the one I get now if I try to install extracted git-annex:
+
+```
+~ $ git-annex.linux/runshell git-annex
+Running on Android.. Tuning for optimal behavior.
+/data/data/com.termux/files/home/git-annex.linux/bin/xargs: 2: exec: /data/data/com.termux/files/home/git-annex.linux/exe/xa
+rgs: Permission denied
+```
+
+<details>
+<summary>and here is via bash -x </summary> 
+
+```shell
+~ $ bash -x git-annex.linux/runshell git-annex
++ GIT_ANNEX_PACKAGE_INSTALL=
++ set -e
++ orig_IFS='
+'
++ unset IFS
+++ uname -o
++ os=Android
+++ dirname git-annex.linux/runshell
++ base=git-annex.linux
++ '[' '!' -d git-annex.linux ']'
++ '[' '!' -e git-annex.linux/bin/git-annex ']'
+++ pwd
++ orig=/data/data/com.termux/files/home
++ cd git-annex.linux
+++ pwd
++ base=/data/data/com.termux/files/home/git-annex.linux
++ cd /data/data/com.termux/files/home
++ echo /data/data/com.termux/files/home/git-annex.linux
++ grep -q '[:;]'
++ tbase=
++ '[' -z '' ']'
++ '[' '!' -e /data/data/com.termux/files/home/.ssh/git-annex-shell ']'
++ '[' '!' -e /data/data/com.termux/files/home/.ssh/git-annex-wrapper ']'
++ GIT_ANNEX_APP_BASE=/data/data/com.termux/files/home/git-annex.linux
++ export GIT_ANNEX_APP_BASE
++ ORIG_PATH=/data/data/com.termux/files/usr/bin:/product/bin:/apex/com.android.runtime/bin:/apex/com.android.art/bin:/system
+_ext/bin:/system/bin:/system/xbin:/odm/bin:/vendor/bin:/vendor/xbin
++ export ORIG_PATH
++ PATH=/data/data/com.termux/files/home/git-annex.linux/bin:/data/data/com.termux/files/usr/bin:/product/bin:/apex/com.andro
+id.runtime/bin:/apex/com.android.art/bin:/system_ext/bin:/system/bin:/system/xbin:/odm/bin:/vendor/bin:/vendor/xbin:/data/da
+ta/com.termux/files/home/git-annex.linux/extra
++ export PATH
+++ cat /data/data/com.termux/files/home/git-annex.linux/libdirs
++ for lib in $(cat "$base/libdirs")
++ GIT_ANNEX_LD_LIBRARY_PATH=/data/data/com.termux/files/home/git-annex.linux//lib/aarch64-linux-gnu:
++ export GIT_ANNEX_LD_LIBRARY_PATH
++ GIT_ANNEX_DIR=/data/data/com.termux/files/home/git-annex.linux
++ export GIT_ANNEX_DIR
++ ORIG_GCONV_PATH=
++ export ORIG_GCONV_PATH
+++ cat /data/data/com.termux/files/home/git-annex.linux/gconvdir
++ GCONV_PATH=/data/data/com.termux/files/home/git-annex.linux//usr/lib/aarch64-linux-gnu/gconv
++ export GCONV_PATH
++ ORIG_GIT_EXEC_PATH=
++ export ORIG_GIT_EXEC_PATH
++ GIT_EXEC_PATH=/data/data/com.termux/files/home/git-annex.linux/git-core
++ export GIT_EXEC_PATH
++ ORIG_GIT_TEMPLATE_DIR=
++ export ORIG_GIT_TEMPLATE_DIR
++ GIT_TEMPLATE_DIR=/data/data/com.termux/files/home/git-annex.linux/templates
++ export GIT_TEMPLATE_DIR
++ ORIG_MANPATH=
++ export ORIG_MANPATH
++ MANPATH=/data/data/com.termux/files/home/git-annex.linux/usr/share/man:
++ export MANPATH
++ unset LD_PRELOAD
++ ORIG_LOCPATH=
++ export ORIG_LOCPATH
++ '[' -z '' ']'
++ '[' -z '' ']'
+++ cat /data/data/com.termux/files/home/git-annex.linux/buildid
+++ echo /data/data/com.termux/files/home/git-annex.linux
+++ tr / _
++ locpathbase=fd647a438576b806711ffed585497e8d__data_data_com.termux_files_home_git-annex.linux
+++ echo fd647a438576b806711ffed585497e8d__data_data_com.termux_files_home_git-annex.linux
+++ md5sum
+++ cut -d ' ' -f 1
++ locpathmd5=01ac43587c3dc29b384e1f7525ef0eb8
++ '[' -n 01ac43587c3dc29b384e1f7525ef0eb8 ']'
++ locpathbase=01ac43587c3dc29b384e1f7525ef0eb8
++ LOCPATH=/data/data/com.termux/files/home/.cache/git-annex/locales/01ac43587c3dc29b384e1f7525ef0eb8
++ export LOCPATH
++ for localecache in $HOME/.cache/git-annex/locales/*
+++ cat /data/data/com.termux/files/home/.cache/git-annex/locales/01ac43587c3dc29b384e1f7525ef0eb8/base
++ cachebase=/data/data/com.termux/files/home/git-annex.linux
++ '[' '!' -d /data/data/com.termux/files/home/git-annex.linux ']'
+++ cat /data/data/com.termux/files/home/.cache/git-annex/locales/01ac43587c3dc29b384e1f7525ef0eb8/buildid
+++ cat /data/data/com.termux/files/home/git-annex.linux/buildid
++ '[' fd647a438576b806711ffed585497e8d '!=' fd647a438576b806711ffed585497e8d ']'
++ '[' '!' -d /data/data/com.termux/files/home/.cache/git-annex/locales/01ac43587c3dc29b384e1f7525ef0eb8 ']'
++ useproot=
++ case "$os" in
++ '[' -e /data/data/com.termux/files/home/git-annex.linux/git ']'
++ echo 'Running on Android.. Tuning for optimal behavior.'
+Running on Android.. Tuning for optimal behavior.
++ cd /data/data/com.termux/files/home/git-annex.linux
++ find .
++ grep git
++ grep -v git-annex
++ xargs rm -rf
+/data/data/com.termux/files/home/git-annex.linux/bin/xargs: 2: exec: /data/data/com.termux/files/home/git-annex.linux/exe/xa
+rgs: Permission denied
++ grep -v git-remote-gcrypt
++ grep -v git-remote-tor-annex
+```
+
+</details>
+
+and my foo here is not strong enough to deduce what it is really not happy about
+
+### What steps will reproduce the problem?
+
+- get boox
+- try to install git-annex from termux
+

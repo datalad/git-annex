@@ -1,0 +1,42 @@
+### Please describe the problem.
+
+As pinged via email, our daily builds has been failing for a while (about two weeks) on Windows.  Citing from the [most recent build](https://github.com/datalad/git-annex/actions/runs/9933338199/job/27435937101)
+
+```
+[426 of 720] Compiling Annex.Content
+D:\a\git-annex\git-annex\Annex\Content.hs:186:17: error: parse error on input `exlocker'
+[468 of 720] Compiling Assistant.Gpg
+    |
+186 |                 exlocker >>= \case
+[469 of 720] Compiling Annex.Environment
+    |                 ^^^^^^^^
+[628 of 720] Compiling Utility.Verifiable
+[630 of 720] Compiling Assistant.Pairing
+[631 of 720] Compiling Assistant.Types.DaemonStatus
+[655 of 720] Compiling Utility.WebApp
+[656 of 720] Compiling Utility.Yesod
+runneradmin\AppData\Local\Programs\stack\x86_64-windows\msys2-20221216\mingw64\bin (Win32 error 3): The system cannot find the path specified.
+ghc.exe: addLibrarySearchPath: C:\Users\runneradmin\AppData\Local\Programs\stack\x86_64-windows\msys2-20221216\mingw64\lib (Win32 error 3): The system cannot find the path specified.
+ghc.exe: addLibrarySearchPath: C:\Users\runneradmin\AppData\Local\Programs\stack\x86_64-windows\msys2-20221216\mingw64\bin (Win32 error 3): The system cannot find the path specified.
+ghc.exe: addLibrarySearchPath: C:\Users\runneradmin\AppData\Local\Programs\stack\x86_64-windows\msys2-20221216\mingw64\lib (Win32 error 3): The system cannot find the path specified.
+ghc.exe: addLibrarySearchPath: C:\Users\runneradmin\AppData\Local\Programs\stack\x86_64-windows\msys2-20221216\mingw64\bin (Win32 error 3): The system cannot find the path specified.
+ghc.exe: addLibrarySearchPath: C:\Users\runneradmin\AppData\Local\Programs\stack\x86_64-windows\msys2-20221216\mingw64\lib (Win32 error 3): The system cannot find the path specified.
+ghc.exe: addLibrarySearchPath: C:\Users\runneradmin\AppData\Local\Programs\stack\x86_64-windows\msys2-20221216\mingw64\bin (Win32 error 3): The system cannot find the path specified.
+ghc.exe: addLibrarySearchPath: C:\Users\runneradmin\AppData\Local\Programs\stack\x86_64-windows\msys2-20221216\mingw64\lib (Win32 error 3): The system cannot find the path specified.
+ghc.exe: addLibrarySearchPath: C:\Users\runneradmin\AppData\Local\Programs\stack\x86_64-windows\msys2-20221216\mingw64\bin (Win32 error 3): The system cannot find the path specified.
+ghc.exe: addLibrarySearchPath: C:\Users\runneradmin\AppData\Local\Programs\stack\x86_64-windows\msys2-20221216\mingw64\lib (Win32 error 3): The system cannot find the path specified.
+ghc.exe: addLibrarySearchPath: C:\Users\runneradmin\AppData\Local\Programs\stack\x86_64-windows\msys2-20221216\mingw64\bin (Win32 error 3): The system cannot find the path specified.
+
+Error: [S-7282]
+       Stack failed to execute the build plan.
+       
+       While executing the build plan, Stack encountered the error:
+       
+       [S-7011]
+       While building package git-annex-10.20240701 (scroll up to its section to see the error)
+       using:
+       D:\a\git-annex\git-annex\.stack-work\dist\274b403a\setup\setup --verbose=1 --builddir=.stack-work\dist\274b403a build exe:git-annex --ghc-options ""
+       Process exited with code: ExitFailure 1 
+```
+
+

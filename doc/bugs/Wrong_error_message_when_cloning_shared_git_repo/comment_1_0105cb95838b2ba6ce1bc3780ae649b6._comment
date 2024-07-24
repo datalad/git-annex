@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="comment 1"
+ date="2024-07-15T18:32:36Z"
+ content="""
+possibly related:
+
+- https://git-annex.branchable.com/forum/When_--git-dir_is_not_in_--work-tree/
+- https://git-annex.branchable.com/bugs/enableremote_fails_with___34__wrong_reason__34___stated/
+
+As a sidenote, I have been having nothing but pain and suffering with sharing git repos between users. The only viable way for me was to always access a git repo with the same user, otherwise it's been permission hell.
+"""]]
