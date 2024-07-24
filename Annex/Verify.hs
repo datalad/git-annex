@@ -1,6 +1,6 @@
 {- verification
  -
- - Copyright 2010-2022 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -21,6 +21,7 @@ module Annex.Verify (
 	finishVerifyKeyContentIncrementally,
 	verifyKeyContentIncrementally,
 	IncrementalVerifier(..),
+	resumeVerifyFromOffset,
 	tailVerify,
 ) where
 
@@ -32,6 +33,7 @@ import qualified Types.Backend
 import qualified Backend
 import Types.Remote (unVerified, Verification(..), RetrievalSecurityPolicy(..))
 import Utility.Hash (IncrementalVerifier(..))
+import Utility.Metered
 import Annex.WorkerPool
 import Types.WorkerPool
 import Types.Key
@@ -212,6 +214,41 @@ verifyKeyContentIncrementally verifyconfig k a = do
 	miv <- startVerifyKeyContentIncrementally verifyconfig k
 	a miv
 	snd <$> finishVerifyKeyContentIncrementally miv
+
+{- Given a file handle that is open for reading (and likely also for writing),
+ - and an offset, feeds the current content of the file up to the offset to
+ - the  IncrementalVerifier. Leaves the file seeked to the offset. 
+ - Also updates the meter to the offset. -}
+resumeVerifyFromOffset
+	:: Integer
+	-> Maybe IncrementalVerifier
+	-> MeterUpdate
+	-> Handle
+	-> IO MeterUpdate
+resumeVerifyFromOffset o incrementalverifier p h
+	| o /= 0 = do
+		p' <- case incrementalverifier of
+			Just iv -> do
+				go iv o
+				return p
+			_ -> return $ offsetMeterUpdate p (toBytesProcessed o)
+		-- Make sure the handle is seeked to the offset.
+		-- (Reading the file probably left it there
+		-- when that was done, but let's be sure.)
+		hSeek h AbsoluteSeek o
+		return p'
+	| otherwise = return p
+  where
+	go iv n
+		| n == 0 = return ()
+		| otherwise = do
+			let c = if n > fromIntegral defaultChunkSize
+				then defaultChunkSize
+				else fromIntegral n
+			b <- S.hGet h c
+			updateIncrementalVerifier iv b
+			unless (b == S.empty) $
+				go iv (n - fromIntegral (S.length b))
 
 -- | Runs a writer action that retrieves to a file. In another thread,
 -- reads the file as it grows, and feeds it to the incremental verifier.

@@ -191,37 +191,12 @@ runLocal runst runner a = case a of
 		-- a client.
 		Client _ -> ta nullMeterUpdate
 	
-	resumefromoffset o incrementalverifier p h
-		| o /= 0 = do
-			p' <- case incrementalverifier of
-				Just iv -> do
-					go iv o
-					return p
-				_ -> return $ offsetMeterUpdate p (toBytesProcessed o)
-			-- Make sure the handle is seeked to the offset.
-			-- (Reading the file probably left it there
-			-- when that was done, but let's be sure.)
-			hSeek h AbsoluteSeek o
-			return p'
-		| otherwise = return p
-	  where
-		go iv n
-			| n == 0 = return ()
-			| otherwise = do
-				let c = if n > fromIntegral defaultChunkSize
-					then defaultChunkSize
-					else fromIntegral n
-				b <- S.hGet h c
-				updateIncrementalVerifier iv b
-				unless (b == S.empty) $
-					go iv (n - fromIntegral (S.length b))
-
 	storefile dest (Offset o) (Len l) getb incrementalverifier validitycheck p ti = do
 		v <- runner getb
 		case v of
 			Right b -> do
 				liftIO $ withBinaryFile dest ReadWriteMode $ \h -> do
-					p' <- resumefromoffset o incrementalverifier p h
+					p' <- resumeVerifyFromOffset o incrementalverifier p h
 					let writechunk = case incrementalverifier of
 						Nothing -> \c -> S.hPut h c
 						Just iv -> \c -> do
