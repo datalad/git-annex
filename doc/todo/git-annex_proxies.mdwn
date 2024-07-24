@@ -28,24 +28,13 @@ Planned schedule of work:
 
 ## work notes
 
-* Rest of Remote.Git needs implementing.
-
-* git-annex p2phttp serving .well-known for ACME.
-
-* git-annex p2phttp needs to support https. Including serving .well-known
-  for ACME.
+* Rest of Remote.Git needs implementing: put, drop, lock
 
 * A Locker should expire the lock on its own after 10 minutes,
   initially. Once keeplocked is called, the expiry should end with the end
   of that call.
 
 * Make http server support proxies and clusters.
-
-* `git-annex p2phttp` could support systemd socket activation. This would
-  allow making a systemd unit that listens on port 80.
-
-* Perhaps: Support cgi program that proxies over to a webserver
-  speaking the http protocol.
 
 ## completed items for July's work on p2p protocol over http
 
@@ -60,6 +49,14 @@ Planned schedule of work:
 * Allow using annex+http urls in remote.name.annexUrl
 
 * Make git-annex p2phttp support https.
+
+## items deferred until later for p2p protocol over http
+
+* `git-annex p2phttp` could support systemd socket activation. This would
+  allow making a systemd unit that listens on port 80.
+
+* `git-annex p2phttp` could serve `.git/annex/p2phttp/.well-known/`, 
+  allowing it to be used by an ACME client to get certificates.
 
 ## items deferred until later for [[design/passthrough_proxy]]
 
