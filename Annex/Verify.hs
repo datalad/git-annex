@@ -234,16 +234,12 @@ resumeVerifyFromOffset
 	-> IO MeterUpdate
 resumeVerifyFromOffset o incrementalverifier meterupdate h
 	| o /= 0 = do
-		p' <- case incrementalverifier of
-			Just iv -> do
-				go iv o
-				return offsetmeterupdate
-			_ -> return offsetmeterupdate
+		maybe noop (`go` o) incrementalverifier
 		-- Make sure the handle is seeked to the offset.
 		-- (Reading the file probably left it there
 		-- when that was done, but let's be sure.)
 		hSeek h AbsoluteSeek o
-		return p'
+		return offsetmeterupdate
 	| otherwise = return meterupdate
   where
 	offsetmeterupdate = offsetMeterUpdate meterupdate (toBytesProcessed o)

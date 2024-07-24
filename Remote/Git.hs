@@ -539,11 +539,7 @@ copyFromRemote r st key file dest meterupdate vc = do
 
 copyFromRemote'' :: Git.Repo -> Remote -> State -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification
 copyFromRemote'' repo r st@(State connpool _ _ _ _) key af dest meterupdate vc
-	| isP2PHttp r = verifyKeyContentIncrementally vc key $ \iv ->
-		metered (Just meterupdate) key bwlimit $ \_ p ->
-		p2pHttpClient r giveup (clientGet p iv key af (encodeBS dest)) >>= \case
-			Valid -> return ()
-			Invalid -> giveup "Transfer failed"
+	| isP2PHttp r = p2phttp
 	| Git.repoIsHttp repo = verifyKeyContentIncrementally vc key $ \iv -> do
 		gc <- Annex.getGitConfig
 		ok <- Url.withUrlOptionsPromptingCreds $
@@ -577,6 +573,19 @@ copyFromRemote'' repo r st@(State connpool _ _ _ _) key af dest meterupdate vc
   where
 	bwlimit = remoteAnnexBwLimitDownload (gitconfig r)
 		<|> remoteAnnexBwLimit (gitconfig r)
+		
+	p2phttp = verifyKeyContentIncrementally vc key $ \iv -> do
+		startsz <- liftIO $ tryWhenExists $
+			getFileSize (toRawFilePath dest)
+		bracketIO (openBinaryFile dest ReadWriteMode) (hClose) $ \h -> do
+			metered (Just meterupdate) key bwlimit $ \_ p -> do
+				p' <- case startsz of
+					Just startsz' -> liftIO $ do
+						resumeVerifyFromOffset startsz' iv p h 
+					_ -> return p
+				p2pHttpClient r giveup (clientGet p' iv key af h startsz) >>= \case
+					Valid -> return ()
+					Invalid -> giveup "Transfer failed"
 
 copyFromRemoteCheap :: State -> Git.Repo -> Maybe (Key -> AssociatedFile -> FilePath -> Annex ())
 #ifndef mingw32_HOST_OS

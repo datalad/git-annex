@@ -144,33 +144,32 @@ runP2PHttpClient rmt fallback () = fallback
 #endif
 
 #ifdef WITH_SERVANT
+-- Downloads and writes to the Handle. If the file already exists, provide
+-- its starting size, and it will resume from that point. Note that the
+-- IncrementalVerifier needs to have already been fed the existing content
+-- of the file.
 clientGet
 	:: MeterUpdate
 	-> Maybe IncrementalVerifier
 	-> Key
 	-> AssociatedFile
-	-> RawFilePath
+	-> Handle
+	-> Maybe FileSize
 	-> ClientAction Validity
-clientGet meterupdate iv k af dest clientenv (ProtocolVersion ver) su cu bypass auth = liftIO $ do
-	startsz <- tryWhenExists $ getFileSize dest
+clientGet meterupdate iv k af h startsz clientenv (ProtocolVersion ver) su cu bypass auth = liftIO $ do
 	let offset = fmap (Offset . fromIntegral) startsz
 	withClientM (cli (B64Key k) cu bypass baf offset auth) clientenv $ \case
 		Left err -> return (Left err)
-		Right respheaders ->
-			withBinaryFile (fromRawFilePath dest) ReadWriteMode $ \h -> do
-				meterupdate' <- case startsz of
-					Just startsz' ->
-						resumeVerifyFromOffset startsz' iv meterupdate h 
-					_ -> return meterupdate
-				b <- S.unSourceT (getResponse respheaders) gather
-				BytesProcessed len <- meteredWrite'
-					meterupdate'
-					(writeVerifyChunk iv h) b
-				let DataLength dl = case lookupResponseHeader @DataLengthHeader' respheaders of
-					Header hdr -> hdr
-					_ -> error "missing data length header"
-				return $ Right $ 
-					if dl == len then Valid else Invalid
+		Right respheaders -> do
+			b <- S.unSourceT (getResponse respheaders) gather
+			BytesProcessed len <- meteredWrite'
+				meterupdate
+				(writeVerifyChunk iv h) b
+			let DataLength dl = case lookupResponseHeader @DataLengthHeader' respheaders of
+				Header hdr -> hdr
+				_ -> error "missing data length header"
+			return $ Right $ 
+				if dl == len then Valid else Invalid
   where
 	cli =case ver of
 		3 -> v3 su V3
