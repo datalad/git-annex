@@ -44,7 +44,7 @@ Planned schedule of work:
 
 ## completed items for July's work on p2p protocol over http
 
-* HTTP P2P protocol document [[design/p2p_protocol_over_http]].
+* HTTP P2P protocol design [[design/p2p_protocol_over_http]].
 
 * addressed [[doc/todo/P2P_locking_connection_drop_safety]]
 
@@ -52,9 +52,9 @@ Planned schedule of work:
 
 * added git-annex p2phttp command to serve HTTP P2P protocol
 
-* Allow using annex+http urls in remote.name.annexUrl
-
 * Make git-annex p2phttp support https.
+
+* Allow using annex+http urls in remote.name.annexUrl
 
 ## items deferred until later for p2p protocol over http
 
