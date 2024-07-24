@@ -57,6 +57,7 @@ import qualified Remote.GCrypt
 import qualified Remote.GitLFS
 import qualified Remote.P2P
 import qualified Remote.Helper.P2P as P2PHelper
+import qualified P2P.Protocol as P2P
 import P2P.Address
 import P2P.Http.Url
 import P2P.Http.Client
@@ -667,10 +668,11 @@ copyToRemote' repo r st@(State connpool duc _ _ _) key af o meterupdate
 				return False
 			Nothing -> return True
 		in p2pHttpClient r (const $ pure $ PutOffsetResultPlus (Offset 0)) (clientPutOffset key) >>= \case
-			PutOffsetResultPlus offset -> 
+			PutOffsetResultPlus (offset@(Offset (P2P.Offset n))) ->
 				metered (Just meterupdate) key bwlimit $ \_ p -> do
+					let p' = offsetMeterUpdate p (BytesProcessed n)
 					res <- p2pHttpClient r giveup $
-						clientPut p key (Just offset) af object sz check'
+						clientPut p' key (Just offset) af object sz check'
 					case res of
 						PutResultPlus False _ ->
 							failedsend

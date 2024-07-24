@@ -318,7 +318,7 @@ clientPut meterupdate k moffset af contentfile contentfilesize validitycheck cli
 			return (Right res)
   where
 	stream h checkv checkresultv = S.SourceT $ \a -> do
-		bl <- L.hGetContents h
+		bl <- hGetContentsMetered h meterupdate
 		v <- newMVar (0, filter (not . B.null) (L.toChunks bl))
 		a (go v)
 	  where

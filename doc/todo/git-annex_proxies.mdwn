@@ -28,7 +28,7 @@ Planned schedule of work:
 
 ## work notes
 
-* Rest of Remote.Git needs implementing: put, drop, lock
+* Rest of Remote.Git needs implementing: drop, lock
 
 * A Locker should expire the lock on its own after 10 minutes,
   initially. Once keeplocked is called, the expiry should end with the end
