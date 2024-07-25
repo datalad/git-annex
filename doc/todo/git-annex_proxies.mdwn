@@ -30,6 +30,8 @@ Planned schedule of work:
 
 * Make http server support proxies and clusters.
 
+  Current status: laying the keystone
+
 * Support proxying to git remotes using annex+http urls.
   (Current documentation says proxying only works with ssh remotes,
   so current state is not confusing, but this still needs to be done

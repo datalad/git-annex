@@ -28,6 +28,7 @@ import CmdLine.Action (startConcurrency)
 import Utility.ThreadScheduler
 import Utility.HumanTime
 import Annex.Proxy
+import qualified P2P.Proxy as Proxy
 import Types.Cluster
 
 import Servant
@@ -213,8 +214,8 @@ withP2PConnections workerpool a = do
 		| connectionServerUUID connparams == myuuid =
 			localConnection relv connparams workerpool
 		| otherwise =
-			atomically (getProxyConnection proxypool connparams) >>= \case
-				Just conn -> proxyConnection relv connparams proxypool conn
+			atomically (getProxyConnectionFromPool proxypool connparams) >>= \case
+				Just conn -> proxyConnection relv connparams workerpool conn
 				Nothing -> checkcanproxy myuuid proxypool relv connparams
 
 	checkcanproxy myuuid proxypool relv connparams = 
@@ -226,32 +227,45 @@ withP2PConnections workerpool a = do
 					fromMaybe "unknown uuid" reason
 			Right (Right (Right proxyremote)) -> do
 				openProxyConnectionToRemote proxyremote
-					>>= proxyConnection relv connparams proxypool
+					>>= proxyConnection relv connparams workerpool
 			Right (Right (Left cluster)) -> do
 				openProxyConnectionToCluster cluster
-					>>= proxyConnection relv connparams proxypool
+					>>= proxyConnection relv connparams workerpool
 			Left ex -> return $ Left $
 				ConnectionFailed $ show ex
+
+proxyConnection
+	:: TMVar (IO ())
+	-> ConnectionParams
+	-> AnnexWorkerPool
+	-> ProxyConnection
+	-> IO (Either ConnectionProblem P2PConnectionPair)
+proxyConnection relv connparams workerpool proxyconn =
+	-- XXX fixme mkP2PConnectionPair is not quite right for this
+	mkP2PConnectionPair connparams relv $ \serverrunst serverconn ->
+		inAnnexWorker' workerpool $ do
+			let proxyparams = undefined -- XXX
+			let remoteside = undefined -- XXX
+			let requestmessage = undefined -- XXX
+			let proxydone = return ()
+			let requestcomplete = \() -> return ()
+			let protoerrhandler = \a -> \case
+				Left err -> giveup err
+				Right v -> return v
+			Proxy.proxyRequest proxydone proxyparams requestcomplete requestmessage protoerrhandler
+
 localConnection
 	:: TMVar (IO ())
 	-> ConnectionParams
 	-> AnnexWorkerPool
 	-> IO (Either ConnectionProblem P2PConnectionPair)
-localConnection relv connparams workerpool = mkP2PConnectionPair connparams relv $ 
-	\serverrunst serverconn -> inAnnexWorker' workerpool $
-		void $ runFullProto serverrunst serverconn $
-			P2P.serveOneCommandAuthed
-				(connectionServerMode connparams)
-				(connectionServerUUID connparams)
-
-proxyConnection
-	:: TMVar (IO ())
-	-> ConnectionParams
-	-> TMVar (M.Map UUID [ProxyConnection])
-	-> ProxyConnection
-	-> IO (Either ConnectionProblem P2PConnectionPair)
-proxyConnection relv connparams proxypool conn = error "XXX" -- TODO
-
+localConnection relv connparams workerpool = 
+	mkP2PConnectionPair connparams relv $ \serverrunst serverconn ->
+		inAnnexWorker' workerpool $
+			void $ runFullProto serverrunst serverconn $
+				P2P.serveOneCommandAuthed
+					(connectionServerMode connparams)
+					(connectionServerUUID connparams)
 
 data P2PConnectionPair = P2PConnectionPair
 	{ clientRunState :: RunState
@@ -427,25 +441,34 @@ inAnnexWorker' poolv annexaction = do
 	return res
 
 data ProxyConnection = ProxyConnection
+	{ proxyP2PConnectionPair :: P2PConnectionPair
+	}
 
-getProxyConnection
-	:: TMVar (M.Map UUID [ProxyConnection])
+type ProxyConnectionPool = 
+	M.Map (UUID, UUID, P2P.ProtocolVersion) [ProxyConnection]
+
+getProxyConnectionFromPool
+	:: TMVar ProxyConnectionPool
 	-> ConnectionParams
 	-> STM (Maybe ProxyConnection)
-getProxyConnection proxypool connparams = do
+getProxyConnectionFromPool proxypool connparams = do
 	m <- takeTMVar proxypool
-	case M.lookup (connectionServerUUID connparams) m of
+	case M.lookup k m of
 		Nothing -> do
 			putTMVar proxypool m
 			return Nothing
 		Just [] -> do
-			putTMVar proxypool $
-				M.insert (connectionServerUUID connparams) [] m
+			putTMVar proxypool $ M.insert k [] m
 			return Nothing
 		Just (c:cs) -> do
-			putTMVar proxypool $
-				M.insert (connectionServerUUID connparams) cs m
+			putTMVar proxypool $ M.insert k cs m
 			return (Just c)
+  where
+	k = 
+		( connectionServerUUID connparams
+		, connectionClientUUID connparams
+		, connectionProtocolVersion connparams
+		)
 
 openProxyConnectionToRemote :: Remote -> IO ProxyConnection
 openProxyConnectionToRemote remote = error "XXX" -- TODO
