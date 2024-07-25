@@ -71,8 +71,19 @@ p2pHttpClient
 	-> (String -> Annex a)
 	-> ClientAction a
 	-> Annex a
+p2pHttpClient rmt fallback clientaction = 
+	p2pHttpClientVersions (const True) rmt fallback clientaction >>= \case
+		Just res -> return res
+		Nothing -> fallback "git-annex HTTP API server is missing an endpoint"
+
+p2pHttpClientVersions
+	:: (ProtocolVersion -> Bool)
+	-> Remote
+	-> (String -> Annex a)
+	-> ClientAction a
+	-> Annex (Maybe a)
 #ifdef WITH_SERVANT
-p2pHttpClient rmt fallback clientaction =
+p2pHttpClientVersions allowedversion rmt fallback clientaction =
 	case p2pHttpBaseUrl <$> remoteAnnexP2PHttpUrl (gitconfig rmt) of
 		Nothing -> error "internal"
 		Just baseurl -> do
@@ -82,9 +93,10 @@ p2pHttpClient rmt fallback clientaction =
 			Git.CredentialCache cc <- liftIO $ atomically $
 				readTMVar ccv
 			case M.lookup (Git.CredentialBaseURL credentialbaseurl) cc of
-				Nothing -> go clientenv Nothing False Nothing allProtocolVersions
-				Just cred -> go clientenv (Just cred) True (credauth cred) allProtocolVersions
+				Nothing -> go clientenv Nothing False Nothing versions
+				Just cred -> go clientenv (Just cred) True (credauth cred) versions
   where
+	versions = filter allowedversion allProtocolVersions
 	go clientenv mcred credcached mauth (v:vs) = do
 		myuuid <- getUUID
 		res <- clientaction clientenv v
@@ -95,7 +107,7 @@ p2pHttpClient rmt fallback clientaction =
 		case res of
 			Right resp -> do
 				unless credcached $ cachecred mcred
-				return resp
+				return (Just resp)
 			Left (FailureResponse _ resp)
 				| statusCode (responseStatusCode resp) == 404 && not (null vs) ->
 					go clientenv mcred credcached mauth vs
@@ -104,15 +116,15 @@ p2pHttpClient rmt fallback clientaction =
 						Nothing -> authrequired clientenv (v:vs)
 						Just cred -> do
 							inRepo $ Git.rejectUrlCredential cred
-							fallback (showstatuscode resp)
-				| otherwise -> fallback (showstatuscode resp)
+							Just <$> fallback (showstatuscode resp)
+				| otherwise -> Just <$> fallback (showstatuscode resp)
 			Left (ConnectionError ex) -> case fromException ex of
-				Just (HttpExceptionRequest _ (ConnectionFailure err)) -> fallback $
-					"unable to connect to HTTP server: " ++ show err
-				_ -> fallback (show ex)
-			Left clienterror -> fallback $
-					"git-annex HTTP API server returned an unexpected response: " ++ show clienterror
-	go _ _ _ _ [] = error "internal"
+				Just (HttpExceptionRequest _ (ConnectionFailure err)) -> Just <$> fallback
+					("unable to connect to HTTP server: " ++ show err)
+				_ -> Just <$> fallback (show ex)
+			Left clienterror -> Just <$> fallback
+					("git-annex HTTP API server returned an unexpected response: " ++ show clienterror)
+	go _ _ _ _ [] = return Nothing
 
 	authrequired clientenv vs = do
 		cred <- prompt $ 
@@ -212,12 +224,38 @@ clientCheckPresent key clientenv (ProtocolVersion ver) su cu bypass auth =
 clientCheckPresent _ = ()
 #endif
 
-clientRemove
+-- Similar to P2P.Protocol.remove.
+clientRemoveWithProof
 	:: Maybe SafeDropProof
 	-> Key
-	-> ClientAction RemoveResultPlus
+	-> Annex RemoveResultPlus
+	-> Remote
+	-> Annex RemoveResultPlus
+clientRemoveWithProof proof k unabletoremove remote =
+	case safeDropProofEndTime =<< proof of
+		Nothing -> removeanytime
+		Just endtime -> removebefore endtime
+  where
+	removeanytime = p2pHttpClient remote giveup (clientRemove k)
+
+	removebefore endtime =
+		p2pHttpClientVersions useversion remote giveup clientGetTimestamp >>= \case
+			Just (GetTimestampResult (Timestamp remotetime)) ->
+				removebefore' endtime remotetime
+			-- Peer is too old to support REMOVE-BEFORE.
+			Nothing -> removeanytime
+				
+	removebefore' endtime remotetime =
+		canRemoveBefore endtime remotetime (liftIO getPOSIXTime) >>= \case
+			Just remoteendtime -> p2pHttpClient remote giveup $
+				clientRemoveBefore k (Timestamp remoteendtime)
+			Nothing -> unabletoremove
+	
+	useversion v = v >= ProtocolVersion 3
+
+clientRemove :: Key -> ClientAction RemoveResultPlus
 #ifdef WITH_SERVANT
-clientRemove proof k clientenv (ProtocolVersion ver) su cu bypass auth =
+clientRemove k clientenv (ProtocolVersion ver) su cu bypass auth =
 	liftIO $ withClientM cli clientenv return
   where
 	bk = B64Key k
@@ -233,7 +271,7 @@ clientRemove proof k clientenv (ProtocolVersion ver) su cu bypass auth =
 		_ :<|> _ :<|> _ :<|> _ :<|>
 		v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
 #else
-clientRemove _ _ = ()
+clientRemove _ = ()
 #endif
 
 clientRemoveBefore

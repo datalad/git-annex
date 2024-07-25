@@ -28,8 +28,6 @@ Planned schedule of work:
 
 ## work notes
 
-* Drop needs to check the proof and use timestamps.
-
 * Make http server support proxies and clusters.
 
 * Support proxying to git remotes using annex+http urls.

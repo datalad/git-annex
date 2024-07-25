@@ -439,6 +439,16 @@ getTimestamp = do
 			net $ sendMessage (ERROR "expected TIMESTAMP")
 			return (Left "protocol error")
 
+removeBefore :: POSIXTime -> Key -> Proto (Either String Bool, Maybe [UUID])
+removeBefore endtime key = getTimestamp >>= \case
+	Right remotetime -> 
+		canRemoveBefore endtime remotetime (local getLocalCurrentTime) >>= \case
+			Just remoteendtime -> 
+				removeBeforeRemoteEndTime remoteendtime key
+			Nothing ->
+				return (Right False, Nothing)
+	Left err -> return (Left err, Nothing)
+
 {- The endtime is the last local time at which the key can be removed.
  - To tell the remote how long it has to remove the key, get its current
  - timestamp, and add to it the number of seconds from the current local
@@ -449,17 +459,15 @@ getTimestamp = do
  - response from the remote, that is reflected in the local time, and so
  - reduces the allowed time.
  -}
-removeBefore :: POSIXTime -> Key -> Proto (Either String Bool, Maybe [UUID])
-removeBefore endtime key = getTimestamp >>= \case
-	Right remotetime -> do
-		localtime <- local getLocalCurrentTime
-		let timeleft = endtime - localtime
-		let timeleft' = MonotonicTimestamp (floor timeleft)
-		let remoteendtime = remotetime + timeleft'
-		if timeleft <= 0
-			then return (Right False, Nothing)
-			else removeBeforeRemoteEndTime remoteendtime key
-	Left err -> return (Left err, Nothing)
+canRemoveBefore :: Monad m => POSIXTime -> MonotonicTimestamp -> m POSIXTime -> m (Maybe MonotonicTimestamp)
+canRemoveBefore endtime remotetime getlocaltime = do
+	localtime <- getlocaltime
+	let timeleft = endtime - localtime
+	let timeleft' = MonotonicTimestamp (floor timeleft)
+	let remoteendtime = remotetime + timeleft'
+	return $ if timeleft <= 0
+		then Nothing
+		else Just remoteendtime
 
 removeBeforeRemoteEndTime :: MonotonicTimestamp -> Key -> Proto (Either String Bool, Maybe [UUID])
 removeBeforeRemoteEndTime remoteendtime key = do

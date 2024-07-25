@@ -479,12 +479,13 @@ dropKey r st proof key = do
 
 dropKey' :: Git.Repo -> Remote -> State -> Maybe SafeDropProof -> Key -> Annex ()
 dropKey' repo r st@(State connpool duc _ _ _) proof key
-	| isP2PHttp r = p2pHttpClient r giveup (clientRemove proof key) >>= \case
-		RemoveResultPlus True fanoutuuids ->
-			storefanout fanoutuuids
-		RemoveResultPlus False fanoutuuids -> do
-			storefanout fanoutuuids
-			giveup "removing content from remote failed"
+	| isP2PHttp r = 
+		clientRemoveWithProof proof key unabletoremove r >>= \case
+				RemoveResultPlus True fanoutuuids ->
+					storefanout fanoutuuids
+				RemoveResultPlus False fanoutuuids -> do
+					storefanout fanoutuuids
+					unabletoremove
 	| not $ Git.repoIsUrl repo = ifM duc
 		( guardUsable repo (giveup "cannot access remote") removelocal
 		, giveup "remote does not have expected annex.uuid value"
@@ -493,6 +494,8 @@ dropKey' repo r st@(State connpool duc _ _ _) proof key
 	| otherwise = P2PHelper.remove (uuid r) p2prunner proof key
   where
 	p2prunner = Ssh.runProto r connpool (return (Right False, Nothing))
+
+	unabletoremove = giveup "removing content from remote failed"
 
 	-- It could take a long time to eg, automount a drive containing
 	-- the repo, so check the proof for expiry again after locking the
