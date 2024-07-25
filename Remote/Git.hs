@@ -481,11 +481,11 @@ dropKey' :: Git.Repo -> Remote -> State -> Maybe SafeDropProof -> Key -> Annex (
 dropKey' repo r st@(State connpool duc _ _ _) proof key
 	| isP2PHttp r = 
 		clientRemoveWithProof proof key unabletoremove r >>= \case
-				RemoveResultPlus True fanoutuuids ->
-					storefanout fanoutuuids
-				RemoveResultPlus False fanoutuuids -> do
-					storefanout fanoutuuids
-					unabletoremove
+			RemoveResultPlus True fanoutuuids ->
+				storefanout fanoutuuids
+			RemoveResultPlus False fanoutuuids -> do
+				storefanout fanoutuuids
+				unabletoremove
 	| not $ Git.repoIsUrl repo = ifM duc
 		( guardUsable repo (giveup "cannot access remote") removelocal
 		, giveup "remote does not have expected annex.uuid value"
