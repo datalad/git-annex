@@ -25,7 +25,11 @@ module Types.GitConfig (
 	RemoteGitConfigField(..),
 	remoteGitConfigKey,
 	proxyInheritedFields,
+	MkRemoteConfigKey,
+	mkRemoteConfigKey,
 ) where
+
+import Debug.Trace
 
 import Common
 import qualified Git
@@ -489,14 +493,14 @@ extractRemoteGitConfig r remotename = do
 		, remoteAnnexClusterGateway = fromMaybe [] $
 			(mapMaybe (mkClusterUUID . toUUID) . words)
 				<$> getmaybe ClusterGatewayField
-		, remoteUrl = 
-			case Git.Config.getMaybe (remoteConfig remotename (remoteGitConfigKey UrlField)) r of
+		, remoteUrl = traceShow (mkRemoteConfigKey remotename (remoteGitConfigKey UrlField)) $
+			case Git.Config.getMaybe (mkRemoteConfigKey remotename (remoteGitConfigKey UrlField)) r of
 				Just (ConfigValue b)
 					| B.null b -> Nothing
 					| otherwise -> Just (decodeBS b)
 				_ -> Nothing
 		, remoteAnnexP2PHttpUrl =
-			case Git.Config.getMaybe (remoteConfig remotename (remoteGitConfigKey AnnexUrlField)) r of
+			case Git.Config.getMaybe (mkRemoteConfigKey remotename (remoteGitConfigKey AnnexUrlField)) r of
 				Just (ConfigValue b) ->
 					parseP2PHttpUrl (decodeBS b)
 				_ -> Nothing
@@ -534,8 +538,8 @@ extractRemoteGitConfig r remotename = do
 	getmaybe' :: RemoteGitConfigField -> Maybe ConfigValue
 	getmaybe' f =
 		let k = remoteGitConfigKey f
-		in Git.Config.getMaybe (remoteAnnexConfig remotename k) r
-			<|> Git.Config.getMaybe (annexConfig k) r
+		in Git.Config.getMaybe (mkRemoteConfigKey remotename k) r
+			<|> Git.Config.getMaybe (mkAnnexConfigKey k) r
 	getoptions k = fromMaybe [] $ words <$> getmaybe k
 
 data RemoteGitConfigField
@@ -602,87 +606,89 @@ data RemoteGitConfigField
 	| ExternalTypeField
 	deriving (Enum, Bounded)
 
-remoteGitConfigField :: RemoteGitConfigField -> (UnqualifiedConfigKey, ProxyInherited)
+remoteGitConfigField :: RemoteGitConfigField -> (MkRemoteConfigKey, ProxyInherited)
 remoteGitConfigField = \case
 	-- Hard to know the true cost of accessing eg a slow special
 	-- remote via the proxy. The cost of the proxy is the best guess
 	-- so do inherit it.
-	CostField -> inherited "cost"
-	CostCommandField -> inherited "cost-command"
-	IgnoreField -> inherited "ignore"
-	IgnoreCommandField -> inherited "ignore-command"
-	SyncField -> inherited "sync"
-	SyncCommandField -> inherited "sync-command"
-	PullField -> inherited "pull"
-	PushField -> inherited "push"
-	ReadOnlyField -> inherited "readonly"
-	CheckUUIDField -> uninherited "checkuuid"
-	VerifyField -> inherited "verify"
-	TrackingBranchField -> uninherited "tracking-branch"
-	ExportTrackingField -> uninherited "export-tracking"
-	TrustLevelField -> uninherited "trustlevel"
-	StartCommandField -> uninherited "start-command"
-	StopCommandField -> uninherited "stop-command"
-	SpeculatePresentField -> inherited "speculate-present"
-	BareField -> inherited "bare"
-	RetryField -> inherited "retry"
-	ForwardRetryField -> inherited "forward-retry"
-	RetryDelayField -> inherited "retrydelay"
-	StallDetectionField -> inherited "stalldetection"
-	StallDetectionUploadField -> inherited "stalldetection-upload"
-	StallDetectionDownloadField -> inherited "stalldetection-download"
-	BWLimitField -> inherited "bwlimit"
-	BWLimitUploadField -> inherited "bwlimit-upload"
-	BWLimitDownloadField -> inherited "bwlimit-upload"
-	UUIDField -> uninherited "uuid"
-	ConfigUUIDField -> uninherited "config-uuid"
-	SecurityAllowUnverifiedDownloadsField -> inherited "security-allow-unverified-downloads"
-	MaxGitBundlesField -> inherited "max-git-bundles"
-	AllowEncryptedGitRepoField -> inherited "allow-encrypted-gitrepo"
+	CostField -> inherited True "cost"
+	CostCommandField -> inherited True "cost-command"
+	IgnoreField -> inherited True "ignore"
+	IgnoreCommandField -> inherited True "ignore-command"
+	SyncField -> inherited True "sync"
+	SyncCommandField -> inherited True "sync-command"
+	PullField -> inherited True "pull"
+	PushField -> inherited True "push"
+	ReadOnlyField -> inherited True "readonly"
+	CheckUUIDField -> uninherited True "checkuuid"
+	VerifyField -> inherited True "verify"
+	TrackingBranchField -> uninherited True "tracking-branch"
+	ExportTrackingField -> uninherited True "export-tracking"
+	TrustLevelField -> uninherited True "trustlevel"
+	StartCommandField -> uninherited True "start-command"
+	StopCommandField -> uninherited True "stop-command"
+	SpeculatePresentField -> inherited True "speculate-present"
+	BareField -> inherited True "bare"
+	RetryField -> inherited True "retry"
+	ForwardRetryField -> inherited True "forward-retry"
+	RetryDelayField -> inherited True "retrydelay"
+	StallDetectionField -> inherited True "stalldetection"
+	StallDetectionUploadField -> inherited True "stalldetection-upload"
+	StallDetectionDownloadField -> inherited True "stalldetection-download"
+	BWLimitField -> inherited True "bwlimit"
+	BWLimitUploadField -> inherited True "bwlimit-upload"
+	BWLimitDownloadField -> inherited True "bwlimit-upload"
+	UUIDField -> uninherited True "uuid"
+	ConfigUUIDField -> uninherited True "config-uuid"
+	SecurityAllowUnverifiedDownloadsField -> inherited True "security-allow-unverified-downloads"
+	MaxGitBundlesField -> inherited True "max-git-bundles"
+	AllowEncryptedGitRepoField -> inherited True "allow-encrypted-gitrepo"
 	-- Allow proxy chains.
-	ProxyField -> inherited "proxy"
-	ProxiedByField -> uninherited "proxied-by"
-	ClusterNodeField -> uninherited "cluster-node"
-	ClusterGatewayField -> uninherited "cluster-gateway"
-	UrlField -> uninherited "url"
-	AnnexUrlField -> uninherited "annexurl"
-	ShellField -> inherited "shell"
-	SshOptionsField -> inherited "ssh-options"
-	RsyncOptionsField -> inherited "rsync-options"
-	RsyncDownloadOptionsField -> inherited "rsync-download-options"
-	RsyncUploadOptionsField -> inherited "rsync-upload-options"
-	RsyncTransportField -> inherited "rsync-transport"
-	GnupgOptionsField -> inherited "gnupg-options"
-	GnupgDecryptOptionsField -> inherited "gnupg-decrypt-options"
-	SharedSOPCommandField -> inherited "shared-sop-command"
-	SharedSOPProfileField -> inherited "shared-sop-profile"
-	RsyncUrlField -> uninherited "rsyncurl"
-	BupRepoField -> uninherited "buprepo"
-	BorgRepoField -> uninherited "borgrepo"
-	TahoeField -> uninherited "tahoe"
-	BupSplitOptionsField -> uninherited "bup-split-options"
-	DirectoryField -> uninherited "directory"
-	AndroidDirectoryField -> uninherited "androiddirectory"
-	AndroidSerialField -> uninherited "androidserial"
-	GCryptField -> uninherited "gcrypt"
-	GitLFSField -> uninherited "git-lfs"
-	DdarRepoField -> uninherited "ddarrepo"
-	HookTypeField -> uninherited "hooktype"
-	ExternalTypeField -> uninherited "externaltype"
+	ProxyField -> inherited True "proxy"
+	ProxiedByField -> uninherited True "proxied-by"
+	ClusterNodeField -> uninherited True "cluster-node"
+	ClusterGatewayField -> uninherited True "cluster-gateway"
+	UrlField -> uninherited False "url"
+	AnnexUrlField -> uninherited False "annexurl"
+	ShellField -> inherited True "shell"
+	SshOptionsField -> inherited True "ssh-options"
+	RsyncOptionsField -> inherited True "rsync-options"
+	RsyncDownloadOptionsField -> inherited True "rsync-download-options"
+	RsyncUploadOptionsField -> inherited True "rsync-upload-options"
+	RsyncTransportField -> inherited True "rsync-transport"
+	GnupgOptionsField -> inherited True "gnupg-options"
+	GnupgDecryptOptionsField -> inherited True "gnupg-decrypt-options"
+	SharedSOPCommandField -> inherited True "shared-sop-command"
+	SharedSOPProfileField -> inherited True "shared-sop-profile"
+	RsyncUrlField -> uninherited True "rsyncurl"
+	BupRepoField -> uninherited True "buprepo"
+	BorgRepoField -> uninherited True "borgrepo"
+	TahoeField -> uninherited True "tahoe"
+	BupSplitOptionsField -> uninherited True "bup-split-options"
+	DirectoryField -> uninherited True "directory"
+	AndroidDirectoryField -> uninherited True "androiddirectory"
+	AndroidSerialField -> uninherited True "androidserial"
+	GCryptField -> uninherited True "gcrypt"
+	GitLFSField -> uninherited True "git-lfs"
+	DdarRepoField -> uninherited True "ddarrepo"
+	HookTypeField -> uninherited True "hooktype"
+	ExternalTypeField -> uninherited True "externaltype"
   where
-	inherited f = (f, ProxyInherited True)
-	uninherited f = (f, ProxyInherited False)
+	inherited True f = (MkRemoteAnnexConfigKey f, ProxyInherited True)
+	inherited False f = (MkRemoteConfigKey f, ProxyInherited True)
+	uninherited True f = (MkRemoteAnnexConfigKey f, ProxyInherited False)
+	uninherited False f = (MkRemoteConfigKey f, ProxyInherited False)
 
 newtype ProxyInherited = ProxyInherited Bool
 
 -- All remote config fields that are inherited from a proxy.
-proxyInheritedFields :: [UnqualifiedConfigKey]
+proxyInheritedFields :: [MkRemoteConfigKey]
 proxyInheritedFields = 
 	map fst $
 		filter (\(_, ProxyInherited p) -> p) $
 			map remoteGitConfigField [minBound..maxBound]
 
-remoteGitConfigKey :: RemoteGitConfigField -> UnqualifiedConfigKey
+remoteGitConfigKey :: RemoteGitConfigField -> MkRemoteConfigKey
 remoteGitConfigKey = fst . remoteGitConfigField
 
 notempty :: Maybe String -> Maybe String	
@@ -694,13 +700,23 @@ dummyRemoteGitConfig :: IO RemoteGitConfig
 dummyRemoteGitConfig = atomically $ 
 	extractRemoteGitConfig Git.Construct.fromUnknown "dummy"
 
-type UnqualifiedConfigKey = B.ByteString
+data MkRemoteConfigKey
+	= MkRemoteAnnexConfigKey B.ByteString
+	| MkRemoteConfigKey B.ByteString
+
+mkRemoteConfigKey :: RemoteNameable r => r -> MkRemoteConfigKey -> ConfigKey
+mkRemoteConfigKey r (MkRemoteAnnexConfigKey b) = remoteAnnexConfig r b
+mkRemoteConfigKey r (MkRemoteConfigKey b) = remoteConfig r b
+
+mkAnnexConfigKey :: MkRemoteConfigKey -> ConfigKey
+mkAnnexConfigKey (MkRemoteAnnexConfigKey b) = annexConfig b
+mkAnnexConfigKey (MkRemoteConfigKey b) = annexConfig b
 
 annexConfigPrefix :: B.ByteString
 annexConfigPrefix = "annex."
 
 {- A global annex setting in git config. -}
-annexConfig :: UnqualifiedConfigKey -> ConfigKey
+annexConfig :: B.ByteString -> ConfigKey
 annexConfig key = ConfigKey (annexConfigPrefix <> key)
 
 class RemoteNameable r where
@@ -713,13 +729,13 @@ instance RemoteNameable RemoteName where
 	 getRemoteName = id
 
 {- A per-remote annex setting in git config. -}
-remoteAnnexConfig :: RemoteNameable r => r -> UnqualifiedConfigKey -> ConfigKey
+remoteAnnexConfig :: RemoteNameable r => r -> B.ByteString -> ConfigKey
 remoteAnnexConfig r = remoteConfig r . remoteAnnexConfigEnd
 
-remoteAnnexConfigEnd :: UnqualifiedConfigKey -> UnqualifiedConfigKey
+remoteAnnexConfigEnd :: B.ByteString -> B.ByteString
 remoteAnnexConfigEnd key = "annex-" <> key
 
 {- A per-remote setting in git config. -}
-remoteConfig :: RemoteNameable r => r -> UnqualifiedConfigKey -> ConfigKey
+remoteConfig :: RemoteNameable r => r -> B.ByteString -> ConfigKey
 remoteConfig r key = ConfigKey $
 	"remote." <> encodeBS (getRemoteName r) <> "." <> key

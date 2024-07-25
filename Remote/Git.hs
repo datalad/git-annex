@@ -522,13 +522,13 @@ dropKey' repo r st@(State connpool duc _ _ _) proof key
 	storefanout = P2PHelper.storeFanout key InfoMissing (uuid r) . map fromB64UUID
 
 lockKey :: Remote -> State -> Key -> (VerifiedCopy -> Annex r) -> Annex r
-lockKey r st key callback = do
+lockKey r st key callback = do	
 	repo <- getRepo r
 	lockKey' repo r st key callback
 
 lockKey' :: Git.Repo -> Remote -> State -> Key -> (VerifiedCopy -> Annex r) -> Annex r
 lockKey' repo r st@(State connpool duc _ _ _) key callback
-	| isP2PHttp r = do
+	| isP2PHttp r = do	
 		showLocking r
 		p2pHttpClient r giveup (clientLockContent key) >>= \case
 			LockResult True (Just lckid) ->
@@ -954,6 +954,7 @@ listProxied proxies rs = concat <$> mapM go rs
 		annexconfigadjuster clusters r' = 
 			let c = adduuid (configRepoUUID renamedr) $
 				addurl $
+				addp2phttpurl $
 				addproxiedby $
 				adjustclusternode clusters $
 				inheritconfigs $ Git.fullconfig r'
@@ -965,8 +966,15 @@ listProxied proxies rs = concat <$> mapM go rs
 		adduuid ck = M.insert ck
 			[Git.ConfigValue $ fromUUID $ proxyRemoteUUID p]
 
-		addurl = M.insert (remoteConfig renamedr (remoteGitConfigKey UrlField))
+		addurl = M.insert (mkRemoteConfigKey renamedr (remoteGitConfigKey UrlField))
 			[Git.ConfigValue $ encodeBS $ Git.repoLocation r]
+		
+		addp2phttpurl = case remoteAnnexP2PHttpUrl gc of
+			Just u -> addremoteannexfield AnnexUrlField
+				[Git.ConfigValue $ encodeBS $ 
+					p2pHttpUrlWithoutUUID (p2pHttpUrlString u) 
+						++ fromUUID (proxyRemoteUUID p)]
+			Nothing -> id
 		
 		addproxiedby = case remoteAnnexUUID gc of
 			Just u -> addremoteannexfield ProxiedByField
@@ -993,7 +1001,7 @@ listProxied proxies rs = concat <$> mapM go rs
 		proxieduuids = S.map proxyRemoteUUID proxied
 
 		addremoteannexfield f = M.insert
-			(remoteAnnexConfig renamedr (remoteGitConfigKey f))
+			(mkRemoteConfigKey renamedr (remoteGitConfigKey f))
 
 		inheritconfigs c = foldl' inheritconfig c proxyInheritedFields
 		
@@ -1001,8 +1009,8 @@ listProxied proxies rs = concat <$> mapM go rs
 			(Nothing, Just v) -> M.insert dest v c
 			_ -> c
 		  where
-			src = remoteAnnexConfig r k
-			dest = remoteAnnexConfig renamedr k
+			src = mkRemoteConfigKey r k
+			dest = mkRemoteConfigKey renamedr k
 		
 		-- When the git config has anything set for a remote,
 		-- avoid making a proxied remote with the same name.
@@ -1019,11 +1027,15 @@ listProxied proxies rs = concat <$> mapM go rs
 	-- Proxing is also yet supported for remotes using P2P
 	-- addresses.
 	canproxy gc r
+		| isP2PHttp' gc = True
 		| remoteAnnexGitLFS gc = False
 		| Git.GCrypt.isEncrypted r = False
 		| Git.repoIsLocal r || Git.repoIsLocalUnknown r = False
 		| otherwise = isNothing (repoP2PAddress r)
 
 isP2PHttp :: Remote -> Bool
-isP2PHttp = isJust . remoteAnnexP2PHttpUrl . gitconfig
+isP2PHttp = isP2PHttp' . gitconfig
+
+isP2PHttp' :: RemoteGitConfig -> Bool
+isP2PHttp' = isJust . remoteAnnexP2PHttpUrl
 
