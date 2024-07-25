@@ -68,10 +68,18 @@ proxyCluster clusteruuid proxydone servermode clientside protoerrhandler = do
 			protocolversion bypassuuids
 		concurrencyconfig <- getConcurrencyConfig
 		proxystate <- liftIO mkProxyState
-		proxy proxydone proxymethods proxystate servermode clientside 
-			(fromClusterUUID clusteruuid)
-			selectnode concurrencyconfig protocolversion
-			othermsg (protoerrhandler closenodes)
+		let proxyparams = ProxyParams
+			{ proxyMethods = proxymethods
+			, proxyState = proxystate
+			, proxyServerMode = servermode
+			, proxyClientSide = clientside
+			, proxyUUID = fromClusterUUID clusteruuid
+			, proxySelector = selectnode
+			, proxyConcurrencyConfig = concurrencyconfig
+			, proxyProtocolVersion = protocolversion
+			}
+		proxy proxydone proxyparams othermsg
+			(protoerrhandler closenodes)
 
 clusterProxySelector :: ClusterUUID -> ProtocolVersion -> Bypass -> Annex (ProxySelector, Annex ())
 clusterProxySelector clusteruuid protocolversion (Bypass bypass) = do
