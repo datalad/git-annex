@@ -83,16 +83,18 @@ serveGetGeneric
 	:: P2PHttpServerState
 	-> B64UUID ServerSide
 	-> B64Key
+	-> Maybe (B64UUID ClientSide)
+	-> [B64UUID Bypass]
 	-> IsSecure
 	-> Maybe Auth
 	-> Handler (Headers '[DataLengthHeader] (S.SourceT IO B.ByteString))
-serveGetGeneric st su@(B64UUID u) k =
+serveGetGeneric st su@(B64UUID u) k mcu bypass =
 	-- Use V0 because it does not alter the returned data to indicate
 	-- Invalid content.
-	serveGet st su V0 k cu [] Nothing Nothing
+	serveGet st su V0 k (fromMaybe scu mcu) bypass Nothing Nothing
   where
 	-- Reuse server UUID as client UUID.
-	cu = B64UUID u :: B64UUID ClientSide
+	scu = B64UUID u :: B64UUID ClientSide
 
 serveGet
 	:: APIVersion v

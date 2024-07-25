@@ -97,6 +97,9 @@ http server.
 When the key is not present on the server, it will respond
 with 404 Not Found.
 
+Note that the common parameters bypass and clientuuid, while
+accepted, have no effect. Both are optional for this request.
+
 ### GET /git-annex/$uuid/v3/key/$key
 
 Get the content of a key from the repository with the specified uuid.

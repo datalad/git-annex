@@ -64,6 +64,8 @@ p2pHttpAPI = Proxy
 
 type GetGenericAPI
 	= CaptureKey
+	:> CU Optional
+	:> BypassUUIDs
 	:> IsSecure
 	:> AuthHeader
 	:> StreamGet NoFraming OctetStream
