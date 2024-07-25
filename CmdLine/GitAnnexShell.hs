@@ -8,7 +8,6 @@
 module CmdLine.GitAnnexShell where
 
 import Annex.Common
-import qualified Annex
 import qualified Git.Construct
 import qualified Git.Config
 import CmdLine
@@ -20,11 +19,7 @@ import CmdLine.GitAnnexShell.Fields
 import Remote.GCrypt (getGCryptUUID)
 import P2P.Protocol (ServerMode(..))
 import Git.Types
-import qualified Types.Remote as R
-import Logs.Proxy
-import Logs.Cluster
-import Logs.UUID
-import Remote
+import Annex.Proxy
 
 import qualified Command.ConfigList
 import qualified Command.NotifyChanges
@@ -36,7 +31,6 @@ import qualified Command.SendKey
 import qualified Command.DropKey
 
 import qualified Data.Map as M
-import qualified Data.Set as S
 
 cmdsMap :: M.Map ServerMode [Command]
 cmdsMap = M.fromList $ map mk
@@ -90,7 +84,7 @@ commonShellOptions =
 		check u 
 			| u == toUUID expected = noop
 			| otherwise = 
-				unlessM (checkProxy (toUUID expected) u) $
+				unlessM (checkCanProxy (toUUID expected) u) $
 					unexpectedUUID expected u
 	
 	checkGCryptUUID expected = check =<< getGCryptUUID True =<< gitRepo
@@ -184,61 +178,3 @@ checkField (field, val)
 	| field == fieldName remoteUUID = fieldCheck remoteUUID val
 	| field == fieldName autoInit = fieldCheck autoInit val
 	| otherwise = False
-
-{- Check if this repository can proxy for a specified remote uuid,
- - and if so enable proxying for it. -}
-checkProxy :: UUID -> UUID -> Annex Bool
-checkProxy remoteuuid ouruuid = M.lookup ouruuid <$> getProxies >>= \case
-	Nothing -> return False
-	-- This repository has (or had) proxying enabled. So it's
-	-- ok to display error messages that talk about proxies.
-	Just proxies ->
-		case filter (\p -> proxyRemoteUUID p == remoteuuid) (S.toList proxies) of
-			[] -> notconfigured
-			ps -> case mkClusterUUID remoteuuid of
-				Just cu -> proxyforcluster cu
-				Nothing -> proxyfor ps
-  where
-	-- This repository may have multiple remotes that access the same
-	-- repository. Proxy for the lowest cost one that is configured to
-	-- be used as a proxy.
-	proxyfor ps = do
-		rs <- concat . byCost <$> remoteList
-		myclusters <- annexClusters <$> Annex.getGitConfig
-		let sameuuid r = uuid r == remoteuuid
-		let samename r p = name r == proxyRemoteName p
-		case headMaybe (filter (\r -> sameuuid r && proxyisconfigured rs myclusters r && any (samename r) ps) rs) of
-			Nothing -> notconfigured
-			Just r -> do
-				Annex.changeState $ \st ->
-					st { Annex.proxyremote = Just (Right r) }
-				return True
-	
-	-- Only proxy for a remote when the git configuration
-	-- allows it. This is important to prevent changes to 
-	-- the git-annex branch making git-annex-shell unexpectedly
-	-- proxy for remotes.
-	proxyisconfigured rs myclusters r
-		| remoteAnnexProxy (R.gitconfig r) = True
-		-- Proxy for remotes that are configured as cluster nodes.
-		| any (`M.member` myclusters) (fromMaybe [] $ remoteAnnexClusterNode $ R.gitconfig r) = True
-		-- Proxy for a remote when it is proxied by another remote
-		-- which is itself configured as a cluster gateway.
-		| otherwise = case remoteAnnexProxiedBy (R.gitconfig r) of
-			Just proxyuuid -> not $ null $ 
-				concatMap (remoteAnnexClusterGateway . R.gitconfig) $
-					filter (\p -> R.uuid p == proxyuuid) rs
-			Nothing -> False
-
-	proxyforcluster cu = do
-		clusters <- getClusters
-		if M.member cu (clusterUUIDs clusters)
-			then do
-				Annex.changeState $ \st ->
-					st { Annex.proxyremote = Just (Left cu) }
-				return True
-			else notconfigured
-
-	notconfigured = M.lookup remoteuuid <$> uuidDescMap >>= \case
-		Just desc -> giveup $ "not configured to proxy for repository " ++ fromUUIDDesc desc
-		Nothing -> return False

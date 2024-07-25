@@ -27,6 +27,8 @@ import Annex.WorkerPool
 import CmdLine.Action (startConcurrency)
 import Utility.ThreadScheduler
 import Utility.HumanTime
+import Annex.Proxy
+import Types.Cluster
 
 import Servant
 import qualified Data.Map as M
@@ -162,6 +164,95 @@ data ConnectionProblem
 	| TooManyConnections
 	deriving (Show, Eq)
 
+proxyClientNetProto :: P2PConnectionPair -> P2P.Proto a -> IO (Either P2P.ProtoFailure a)
+proxyClientNetProto conn = runNetProto
+	(clientRunState conn) (clientP2PConnection conn)
+
+type AcquireP2PConnection
+	= ConnectionParams
+	-> IO (Either ConnectionProblem P2PConnectionPair)
+
+withP2PConnections :: AnnexWorkerPool -> (AcquireP2PConnection -> Annex a) -> Annex a
+withP2PConnections workerpool a = do
+	myuuid <- getUUID
+	reqv <- liftIO newEmptyTMVarIO
+	relv <- liftIO newEmptyTMVarIO
+	endv <- liftIO newEmptyTMVarIO
+	proxypool <- liftIO $ newTMVarIO mempty
+	asyncservicer <- liftIO $ async $
+		servicer myuuid proxypool reqv relv endv
+	let endit = do
+		liftIO $ atomically $ putTMVar endv ()
+		liftIO $ wait asyncservicer
+	a (acquireconn reqv) `finally` endit
+  where
+	acquireconn reqv connparams = do
+		respvar <- newEmptyTMVarIO
+		atomically $ putTMVar reqv (connparams, respvar)
+		atomically $ takeTMVar respvar
+
+	servicer myuuid proxypool reqv relv endv = do
+		reqrel <- liftIO $
+			atomically $ 
+				(Right <$> takeTMVar reqv)
+					`orElse` 
+				(Left . Right <$> takeTMVar relv)
+					`orElse` 
+				(Left . Left <$> takeTMVar endv)
+		case reqrel of
+			Right (connparams, respvar) -> do
+				servicereq myuuid proxypool relv connparams
+					>>= atomically . putTMVar respvar
+				servicer myuuid proxypool reqv relv endv
+			Left (Right releaseconn) -> do
+				releaseconn
+				servicer myuuid proxypool reqv relv endv
+			Left (Left ()) -> return ()
+	
+	servicereq myuuid proxypool relv connparams
+		| connectionServerUUID connparams == myuuid =
+			localConnection relv connparams workerpool
+		| otherwise =
+			atomically (getProxyConnection proxypool connparams) >>= \case
+				Just conn -> proxyConnection relv connparams proxypool conn
+				Nothing -> checkcanproxy myuuid proxypool relv connparams
+
+	checkcanproxy myuuid proxypool relv connparams = 
+		inAnnexWorker' workerpool
+			(checkCanProxy' (connectionServerUUID connparams) myuuid)
+		>>= \case
+			Right (Left reason) -> return $ Left $
+				ConnectionFailed $ 
+					fromMaybe "unknown uuid" reason
+			Right (Right (Right proxyremote)) -> do
+				openProxyConnectionToRemote proxyremote
+					>>= proxyConnection relv connparams proxypool
+			Right (Right (Left cluster)) -> do
+				openProxyConnectionToCluster cluster
+					>>= proxyConnection relv connparams proxypool
+			Left ex -> return $ Left $
+				ConnectionFailed $ show ex
+localConnection
+	:: TMVar (IO ())
+	-> ConnectionParams
+	-> AnnexWorkerPool
+	-> IO (Either ConnectionProblem P2PConnectionPair)
+localConnection relv connparams workerpool = mkP2PConnectionPair connparams relv $ 
+	\serverrunst serverconn -> inAnnexWorker' workerpool $
+		void $ runFullProto serverrunst serverconn $
+			P2P.serveOneCommandAuthed
+				(connectionServerMode connparams)
+				(connectionServerUUID connparams)
+
+proxyConnection
+	:: TMVar (IO ())
+	-> ConnectionParams
+	-> TMVar (M.Map UUID [ProxyConnection])
+	-> ProxyConnection
+	-> IO (Either ConnectionProblem P2PConnectionPair)
+proxyConnection relv connparams proxypool conn = error "XXX" -- TODO
+
+
 data P2PConnectionPair = P2PConnectionPair
 	{ clientRunState :: RunState
 	, clientP2PConnection :: P2PConnection
@@ -173,60 +264,6 @@ data P2PConnectionPair = P2PConnectionPair
 	-- ^ Closes a P2P connection, which is in a state where it is no
 	-- longer usable.
 	}
-
-proxyClientNetProto :: P2PConnectionPair -> P2P.Proto a -> IO (Either P2P.ProtoFailure a)
-proxyClientNetProto conn = runNetProto
-	(clientRunState conn) (clientP2PConnection conn)
-
-type AcquireP2PConnection
-	= ConnectionParams
-	-> IO (Either ConnectionProblem P2PConnectionPair)
-
-{- Acquire P2P connections to the local repository. -}
-withLocalP2PConnections :: AnnexWorkerPool -> (AcquireP2PConnection -> Annex a) -> Annex a
-withLocalP2PConnections workerpool a = do
-	myuuid <- getUUID
-	reqv <- liftIO newEmptyTMVarIO
-	relv <- liftIO newEmptyTMVarIO
-	endv <- liftIO newEmptyTMVarIO
-	asyncservicer <- liftIO $ async $ servicer myuuid reqv relv endv
-	let endit = do
-		liftIO $ atomically $ putTMVar endv ()
-		liftIO $ wait asyncservicer
-	a (acquireconn reqv) `finally` endit
-  where
-	acquireconn reqv connparams = do
-		respvar <- newEmptyTMVarIO
-		atomically $ putTMVar reqv (connparams, respvar)
-		atomically $ takeTMVar respvar
-
-	servicer myuuid reqv relv endv = do
-		reqrel <- liftIO $
-			atomically $ 
-				(Right <$> takeTMVar reqv)
-					`orElse` 
-				(Left . Right <$> takeTMVar relv)
-					`orElse` 
-				(Left . Left <$> takeTMVar endv)
-		case reqrel of
-			Right (connparams, respvar) -> do
-				servicereq myuuid relv connparams
-					>>= atomically . putTMVar respvar
-				servicer myuuid reqv relv endv
-			Left (Right releaseconn) -> do
-				releaseconn
-				servicer myuuid reqv relv endv
-			Left (Left ()) -> return ()
-	
-	servicereq myuuid relv connparams
-		| connectionServerUUID connparams /= myuuid =
-			return $ Left $ ConnectionFailed "unknown uuid"
-		| otherwise = mkP2PConnectionPair connparams relv $ 
-			\serverrunst serverconn -> inAnnexWorker' workerpool $
-				void $ runFullProto serverrunst serverconn $
-					P2P.serveOneCommandAuthed
-						(connectionServerMode connparams)
-						(connectionServerUUID connparams)
 
 mkP2PConnectionPair
 	:: ConnectionParams
@@ -388,3 +425,30 @@ inAnnexWorker' poolv annexaction = do
 		let !pool' = deactivateWorker pool aid workerstrd'
 		putTMVar poolv pool'
 	return res
+
+data ProxyConnection = ProxyConnection
+
+getProxyConnection
+	:: TMVar (M.Map UUID [ProxyConnection])
+	-> ConnectionParams
+	-> STM (Maybe ProxyConnection)
+getProxyConnection proxypool connparams = do
+	m <- takeTMVar proxypool
+	case M.lookup (connectionServerUUID connparams) m of
+		Nothing -> do
+			putTMVar proxypool m
+			return Nothing
+		Just [] -> do
+			putTMVar proxypool $
+				M.insert (connectionServerUUID connparams) [] m
+			return Nothing
+		Just (c:cs) -> do
+			putTMVar proxypool $
+				M.insert (connectionServerUUID connparams) cs m
+			return (Just c)
+
+openProxyConnectionToRemote :: Remote -> IO ProxyConnection
+openProxyConnectionToRemote remote = error "XXX" -- TODO
+
+openProxyConnectionToCluster :: ClusterUUID -> IO ProxyConnection
+openProxyConnectionToCluster cu = error "XXX" -- TODO

@@ -87,7 +87,7 @@ optParser _ = Options
 
 seek :: Options -> CommandSeek
 seek o = getAnnexWorkerPool $ \workerpool ->
-	withLocalP2PConnections workerpool $ \acquireconn -> liftIO $ do
+	withP2PConnections workerpool $ \acquireconn -> liftIO $ do
 		authenv <- getAuthEnv
 		st <- mkP2PHttpServerState acquireconn workerpool $
 			mkGetServerMode authenv o
