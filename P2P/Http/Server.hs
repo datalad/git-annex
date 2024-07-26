@@ -116,11 +116,14 @@ serveGet st su apiver (B64Key k) cu bypass baf startat sec auth = do
 	validityv <- liftIO newEmptyTMVarIO
 	finalv <- liftIO newEmptyTMVarIO
 	annexworker <- liftIO $ async $ inAnnexWorker st $ do
-		let storer _offset len = sendContentWith $ \bs -> do
-			liftIO $ atomically $ putTMVar bsv (len, bs)
-			liftIO $ atomically $ takeTMVar endv
-			liftIO $ signalFullyConsumedByteString $
-				connOhdl $ serverP2PConnection conn
+		let storer _offset len = sendContentWith $ \bs -> liftIO $ do
+			atomically $ putTMVar bsv (len, bs)
+			atomically $ takeTMVar endv
+			case serverP2PConnection conn of
+				Just c -> 
+					signalFullyConsumedByteString $
+						connOhdl c
+				Nothing -> noop
 			return $ \v -> do
 				liftIO $ atomically $ putTMVar validityv v
 				return True

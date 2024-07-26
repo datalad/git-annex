@@ -22,6 +22,7 @@ import Annex.Tmp
 import Logs.Proxy
 import Logs.Cluster
 import Logs.UUID
+import Logs.Location
 import Utility.Tmp.Dir
 import Utility.Metered
 
@@ -274,3 +275,9 @@ checkCanProxy' remoteuuid ouruuid = M.lookup ouruuid <$> getProxies >>= \case
 		Just desc -> return $ Left $ Just $
 			"not configured to proxy for repository " ++ fromUUIDDesc desc
 		Nothing -> return $ Left Nothing
+
+mkProxyMethods :: ProxyMethods
+mkProxyMethods = ProxyMethods
+	{ removedContent = \u k -> logChange k u InfoMissing
+	, addedContent = \u k -> logChange k u InfoPresent
+	}

@@ -16,7 +16,6 @@ import qualified Annex
 import Annex.Proxy
 import Annex.UUID
 import qualified CmdLine.GitAnnexShell.Checks as Checks
-import Logs.Location
 import Logs.Cluster
 import Annex.Cluster
 import qualified Remote
@@ -78,7 +77,7 @@ performProxy clientuuid servermode r = do
 		let errhandler = p2pErrHandler (closeRemoteSide remoteside)
 		proxystate <- liftIO mkProxyState
 		let proxyparams = ProxyParams
-			{ proxyMethods = proxymethods
+			{ proxyMethods = mkProxyMethods
 			, proxyState = proxystate
 			, proxyServerMode = servermode
 			, proxyClientSide = clientside
@@ -92,11 +91,6 @@ performProxy clientuuid servermode r = do
 		sendClientProtocolVersion clientside othermsg protocolversion
 			runproxy errhandler
 	withclientversion _ Nothing = p2pDone
-	
-	proxymethods = ProxyMethods
-		{ removedContent = \u k -> logChange k u InfoMissing
-		, addedContent = \u k -> logChange k u InfoPresent
-		}
 
 performProxyCluster :: UUID -> ClusterUUID -> P2P.ServerMode -> CommandPerform
 performProxyCluster clientuuid clusteruuid servermode = do

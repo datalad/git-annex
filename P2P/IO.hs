@@ -63,6 +63,7 @@ data ProtoFailure
 	= ProtoFailureMessage String
 	| ProtoFailureException SomeException
 	| ProtoFailureIOError IOError
+	deriving (Show)
 
 describeProtoFailure :: ProtoFailure -> String
 describeProtoFailure (ProtoFailureMessage s) = s

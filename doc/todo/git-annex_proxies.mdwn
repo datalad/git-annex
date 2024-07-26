@@ -28,9 +28,18 @@ Planned schedule of work:
 
 ## work notes
 
-* Make http server support proxies and clusters.
+* http server proxying hangs when git-annex copy --to it, maybe other
+  times. Need to fully test.
 
-  Current status: laying the keystone
+* http server proxying needs to get the version negotiated with the proxied
+  remote and feed that into the proxy function.
+
+* test http server proxying with special remotes
+
+* http server proxying needs to reuse connections to special remotes,
+  keeping a pool of open ones. Question: How many to keep in the pool?
+
+* Make http server support clusters.
 
 * Support proxying to git remotes using annex+http urls.
   (Current documentation says proxying only works with ssh remotes,
@@ -50,6 +59,8 @@ Planned schedule of work:
 * Make git-annex p2phttp support https.
 
 * Allow using annex+http urls in remote.name.annexUrl
+
+* Make http server support proxying.
 
 ## items deferred until later for p2p protocol over http
 
