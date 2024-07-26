@@ -346,8 +346,6 @@ proxyConnection relv connparams workerpool proxyconn = do
 		inAnnexWorker' workerpool $ do
 			proxystate <- liftIO Proxy.mkProxyState
 			concurrencyconfig <- Proxy.noConcurrencyConfig
-			let protocolversion = min remoteprotocolversion $
-				connectionProtocolVersion connparams
 			let proxyparams = Proxy.ProxyParams
 				{ Proxy.proxyMethods = mkProxyMethods
 				, Proxy.proxyState = proxystate
@@ -357,7 +355,7 @@ proxyConnection relv connparams workerpool proxyconn = do
 				, Proxy.proxySelector = Proxy.singleProxySelector $
 					proxyConnectionRemoteSide proxyconn
 				, Proxy.proxyConcurrencyConfig = concurrencyconfig
-				, Proxy.proxyClientProtocolVersion = protocolversion
+				, Proxy.proxyClientProtocolVersion = connectionProtocolVersion connparams
 				}
 			let proxy mrequestmessage = case mrequestmessage of
 				Just requestmessage -> do
@@ -386,9 +384,11 @@ proxyConnection relv connparams workerpool proxyconn = do
 		-- connection
 		Left err -> do
 			liftIO $ hPutStrLn stderr ("protoerrhandler: " ++ show err)
+			Proxy.closeRemoteSide $ proxyConnectionRemoteSide proxyconn
 			return ()
 		Right v -> do
 			liftIO $ print "protoerrhandler returned"
+			Proxy.closeRemoteSide $ proxyConnectionRemoteSide proxyconn
 			cont v
 	proxydone = return ()
 	requestcomplete () = return ()
