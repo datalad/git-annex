@@ -81,13 +81,17 @@ mkRunState mk = do
 
 data P2PHandle
 	= P2PHandle Handle
-	| P2PHandleTMVar (TMVar (Either L.ByteString Message)) (Maybe (TMVar ()))
+	| P2PHandleTMVar
+		(TMVar (Either L.ByteString Message))
+		(Maybe (TMVar ()))
+		(TMVar ())
 
 signalFullyConsumedByteString :: P2PHandle -> IO ()
 signalFullyConsumedByteString (P2PHandle _) = return ()
-signalFullyConsumedByteString (P2PHandleTMVar _ Nothing) = return () 
-signalFullyConsumedByteString (P2PHandleTMVar _ (Just waitv)) = 
+signalFullyConsumedByteString (P2PHandleTMVar _ Nothing _) = return () 
+signalFullyConsumedByteString (P2PHandleTMVar _ (Just waitv) closedv) = 
 	atomically $ putTMVar waitv ()
+		`orElse` readTMVar closedv
 
 data P2PConnection = P2PConnection
 	{ connRepo :: Maybe Repo
@@ -99,6 +103,7 @@ data P2PConnection = P2PConnection
 
 -- Identifier for a connection, only used for debugging.
 newtype ConnIdent = ConnIdent (Maybe String)
+	deriving (Show)
 
 data ClosableConnection conn
 	= OpenConnection conn
@@ -146,7 +151,8 @@ closeConnection conn = do
 	closehandle (connOhdl conn)
   where
 	closehandle (P2PHandle h) = hClose h
-	closehandle (P2PHandleTMVar _ _) = return ()
+	closehandle (P2PHandleTMVar _ _ closedv) = 
+		atomically $ void $ tryPutTMVar closedv ()
 
 -- Serves the protocol on a unix socket.
 --
@@ -209,8 +215,9 @@ runNet runst conn runner f = case f of
 				P2PHandle h -> tryNonAsync $ do
 					hPutStrLn h $ unwords (formatMessage m)
 					hFlush h
-				P2PHandleTMVar mv _ -> tryNonAsync $ do
+				P2PHandleTMVar mv _ closedv -> tryNonAsync $
 					atomically $ putTMVar mv (Right m)
+						`orElse` readTMVar closedv
 		case v of
 			Left e -> return $ Left $ ProtoFailureException e
 			Right () -> runner next
@@ -229,10 +236,13 @@ runNet runst conn runner f = case f of
 					Right (Just l) -> case parseMessage l of
 						Just m -> gotmessage m
 						Nothing -> runner (next Nothing)
-			P2PHandleTMVar mv _ -> 
-				liftIO (atomically (takeTMVar mv)) >>= \case
-					Right m -> gotmessage m
-					Left _b -> protoerr
+			P2PHandleTMVar mv _ closedv -> do
+				let recv = (Just <$> takeTMVar mv)
+					`orElse` (readTMVar closedv >> return Nothing)
+				liftIO (atomically recv) >>= \case
+					Just (Right m) -> gotmessage m
+					Just (Left _b) -> protoerr
+					Nothing -> runner (next Nothing)
 	SendBytes len b p next ->
 		case connOhdl conn of
 			P2PHandle h -> do
@@ -245,11 +255,16 @@ runNet runst conn runner f = case f of
 					Right False -> return $ Left $
 						ProtoFailureMessage "short data write"
 					Left e -> return $ Left $ ProtoFailureException e
-			P2PHandleTMVar mv waitv -> do
+			P2PHandleTMVar mv waitv closedv -> do
 				liftIO $ atomically $ putTMVar mv (Left b)
+					`orElse` readTMVar closedv
 				-- Wait for the whole bytestring to
 				-- be processed.
-				liftIO $ maybe noop (atomically . takeTMVar) waitv
+				case waitv of
+					Nothing -> noop
+					Just v -> liftIO $ atomically $
+						takeTMVar v
+							`orElse` readTMVar closedv
 				runner next
 	ReceiveBytes len p next ->
 		case connIhdl conn of
@@ -259,11 +274,15 @@ runNet runst conn runner f = case f of
 					Right b -> runner (next b)
 					Left e -> return $ Left $
 						ProtoFailureException e
-			P2PHandleTMVar mv _ ->
-				liftIO (atomically (takeTMVar mv)) >>= \case
-					Left b -> runner (next b)
-					Right _ -> return $ Left $
+			P2PHandleTMVar mv _ closedv -> do
+				let recv = (Just <$> takeTMVar mv)
+					`orElse` (readTMVar closedv >> return Nothing)
+				liftIO (atomically recv) >>= \case
+					Just (Left b) -> runner (next b)
+					Just (Right _) -> return $ Left $
 						ProtoFailureMessage "protocol error"
+					Nothing -> return $ Left $
+						ProtoFailureMessage "connection closed"
 	CheckAuthToken _u t next -> do
 		let authed = connCheckAuth conn t
 		runner (next authed)

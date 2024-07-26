@@ -302,14 +302,14 @@ mkP2PConnectionPair connparams (n1, n2) = do
 	hdl2 <- newEmptyTMVarIO
 	wait1 <- newEmptyTMVarIO
 	wait2 <- newEmptyTMVarIO
-	let h1 = P2PHandleTMVar hdl1 $ 
-		if connectionWaitVar connparams
-			then Just wait1
-			else Nothing
-	let h2 = P2PHandleTMVar hdl2 $
-		if connectionWaitVar connparams
-			then Just wait2
-			else Nothing
+	closed1 <- newEmptyTMVarIO
+	closed2 <- newEmptyTMVarIO
+	let h1 = P2PHandleTMVar hdl1
+		(if connectionWaitVar connparams then Just wait1 else Nothing)
+		closed1
+	let h2 = P2PHandleTMVar hdl2
+		(if connectionWaitVar connparams then Just wait2 else Nothing)
+		closed2
 	let clientconn = P2PConnection Nothing
 		(const True) h2 h1
 		(ConnIdent (Just n1))
@@ -366,10 +366,15 @@ proxyConnection relv connparams workerpool proxyconn = do
 				liftIO $ runNetProto proxyfromclientrunst proxyfromclientconn $
 					P2P.net P2P.receiveMessage
 	
-	let releaseconn returntopool = 
-		atomically $ void $ tryPutTMVar relv $
-			liftIO $ wait asyncworker
-				>>= either throwM return
+	let releaseconn returntopool =
+		atomically $ void $ tryPutTMVar relv $ do
+			r <- liftIO $ wait asyncworker
+			liftIO $ closeConnection proxyfromclientconn
+			liftIO $ closeConnection clientconn
+			inAnnexWorker' workerpool $ 
+				Proxy.closeRemoteSide $
+					proxyConnectionRemoteSide proxyconn
+			either throwM return r
 	
 	return $ Right $ P2PConnectionPair
 		{ clientRunState = clientrunst
@@ -380,16 +385,10 @@ proxyConnection relv connparams workerpool proxyconn = do
 		}
   where
 	protoerrhandler cont a = a >>= \case
-		-- TODO protocol error, or client hung up, release the p2p
-		-- connection
-		Left err -> do
-			liftIO $ hPutStrLn stderr ("protoerrhandler: " ++ show err)
-			Proxy.closeRemoteSide $ proxyConnectionRemoteSide proxyconn
-			return ()
-		Right v -> do
-			liftIO $ print "protoerrhandler returned"
-			Proxy.closeRemoteSide $ proxyConnectionRemoteSide proxyconn
-			cont v
+		Left err -> 
+			Proxy.closeRemoteSide $
+				proxyConnectionRemoteSide proxyconn
+		Right v -> cont v
 	proxydone = return ()
 	requestcomplete () = return ()
 

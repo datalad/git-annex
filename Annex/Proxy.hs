@@ -60,14 +60,16 @@ proxySpecialRemoteSide clientmaxversion r = mkRemoteSide r $ do
 	ohdl <- liftIO newEmptyTMVarIO
 	iwaitv <- liftIO newEmptyTMVarIO
 	owaitv <- liftIO newEmptyTMVarIO
+	iclosedv <- liftIO newEmptyTMVarIO
+	oclosedv <- liftIO newEmptyTMVarIO
 	endv <- liftIO newEmptyTMVarIO
 	worker <- liftIO . async =<< forkState
 		(proxySpecialRemote protoversion r ihdl ohdl owaitv endv)
 	let remoteconn = P2PConnection
 		{ connRepo = Nothing
 		, connCheckAuth = const False
-		, connIhdl = P2PHandleTMVar ihdl (Just iwaitv)
-		, connOhdl = P2PHandleTMVar ohdl (Just owaitv)
+		, connIhdl = P2PHandleTMVar ihdl (Just iwaitv) iclosedv
+		, connOhdl = P2PHandleTMVar ohdl (Just owaitv) oclosedv
 		, connIdent = ConnIdent (Just (Remote.name r))
 		}
 	let closeremoteconn = do

@@ -194,8 +194,8 @@ serveGet st su apiver (B64Key k) cu bypass baf startat sec auth = do
 		-- Make sure the annexworker is not left blocked on endv
 		-- if the client disconnected early.
 		void $ liftIO $ atomically $ tryPutTMVar endv ()
-		void $ tryNonAsync $ wait annexworker
 		void $ tryNonAsync $ releaseP2PConnection conn
+		void $ tryNonAsync $ wait annexworker
 	
 	sizer = pure $ Len $ case startat of
 		Just (Offset o) -> fromIntegral o
