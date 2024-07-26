@@ -84,7 +84,7 @@ performProxy clientuuid servermode r = do
 			, proxyUUID = Remote.uuid r
 			, proxySelector = singleProxySelector remoteside
 			, proxyConcurrencyConfig = concurrencyconfig
-			, proxyProtocolVersion = protocolversion
+			, proxyClientProtocolVersion = protocolversion
 			}
 		let runproxy othermsg' = proxy closer proxyparams 
 			othermsg' errhandler

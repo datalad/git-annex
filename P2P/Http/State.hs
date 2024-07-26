@@ -346,9 +346,8 @@ proxyConnection relv connparams workerpool proxyconn = do
 		inAnnexWorker' workerpool $ do
 			proxystate <- liftIO Proxy.mkProxyState
 			concurrencyconfig <- Proxy.noConcurrencyConfig
-			-- TODO run remote protocol to get its version and
-			-- take minimum of that and connectionProtocolVersion
-			let protocolversion = connectionProtocolVersion connparams
+			let protocolversion = min remoteprotocolversion $
+				connectionProtocolVersion connparams
 			let proxyparams = Proxy.ProxyParams
 				{ Proxy.proxyMethods = mkProxyMethods
 				, Proxy.proxyState = proxystate
@@ -358,7 +357,7 @@ proxyConnection relv connparams workerpool proxyconn = do
 				, Proxy.proxySelector = Proxy.singleProxySelector $
 					proxyConnectionRemoteSide proxyconn
 				, Proxy.proxyConcurrencyConfig = concurrencyconfig
-				, Proxy.proxyProtocolVersion = protocolversion
+				, Proxy.proxyClientProtocolVersion = protocolversion
 				}
 			let proxy mrequestmessage = case mrequestmessage of
 				Just requestmessage -> do
@@ -516,8 +515,8 @@ openProxyConnectionToRemote
 	-> [UUID]
 	-> Remote
 	-> IO (Either SomeException ProxyConnection)
-openProxyConnectionToRemote workerpool protoversion bypass remote =
-	inAnnexWorker' workerpool (proxyRemoteSide protoversion bypass' remote) >>= \case
+openProxyConnectionToRemote workerpool clientmaxversion bypass remote =
+	inAnnexWorker' workerpool (proxyRemoteSide clientmaxversion bypass' remote) >>= \case
 		Left ex -> return (Left ex)
 		Right remoteside -> return $ Right $
 			ProxyConnection (Remote.uuid remote) remoteside

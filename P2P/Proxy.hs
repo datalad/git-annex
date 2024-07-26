@@ -208,10 +208,9 @@ data ProxyParams = ProxyParams
 	, proxyUUID :: UUID
 	, proxySelector :: ProxySelector
 	, proxyConcurrencyConfig :: ConcurrencyConfig
-	, proxyProtocolVersion :: ProtocolVersion
-	-- ^ Protocol version being spoken between the proxy and the
-	-- client. When there are multiple remotes, some may speak an
-	-- earlier version.
+	, proxyClientProtocolVersion :: ProtocolVersion
+	-- ^ The remote(s) may speak an earlier version, or the same
+	-- version, but not a later version.
 	}
 
 {- Proxy between the client and the remote. This picks up after
@@ -452,7 +451,7 @@ proxyRequest proxydone proxyparams requestcomplete requestmessage protoerrhandle
 		protoerrhandler requestcomplete $
 			client $ net $ sendMessage $
 				let nonplussed = all (== proxyUUID proxyparams) us 
-					|| proxyProtocolVersion proxyparams < ProtocolVersion 2
+					|| proxyClientProtocolVersion proxyparams < ProtocolVersion 2
 				in if all (maybe False (fst . fst)) v'
 					then if nonplussed
 						then SUCCESS
@@ -496,7 +495,7 @@ proxyRequest proxydone proxyparams requestcomplete requestmessage protoerrhandle
 			relayDATAFinish (runRemoteSide remoteside) client $
 				relayonemessage client (runRemoteSide remoteside) $
 					const requestcomplete
-	
+
 	relayPUT remoteside k len = relayDATAStart (runRemoteSide remoteside) $
 		relayDATACore len client (runRemoteSide remoteside) $
 			relayDATAFinish client (runRemoteSide remoteside) $
@@ -536,7 +535,7 @@ proxyRequest proxydone proxyparams requestcomplete requestmessage protoerrhandle
 			_ -> False
 		l <- forMC (proxyConcurrencyConfig proxyparams) remotesides initiate
 		if all alreadyhave l
-			then if proxyProtocolVersion proxyparams < ProtocolVersion 2
+			then if proxyClientProtocolVersion proxyparams < ProtocolVersion 2
 				then protoerrhandler requestcomplete $
 					client $ net $ sendMessage ALREADY_HAVE
 				else protoerrhandler requestcomplete $
@@ -621,7 +620,7 @@ proxyRequest proxydone proxyparams requestcomplete requestmessage protoerrhandle
 		| otherwise = relayonemessage x y (\_ () -> sendsuccessfailure)
 
 	relayDATAFinishMulti k rs
-		| proxyProtocolVersion proxyparams == ProtocolVersion 0 = 
+		| proxyProtocolVersion proxyparams == ProtocolVersion 0 =
 			finish $ net receiveMessage
 		| otherwise =
 			flip protoerrhandler (client $ net $ receiveMessage) $
@@ -646,7 +645,7 @@ proxyRequest proxydone proxyparams requestcomplete requestmessage protoerrhandle
 					case concat (catMaybes storeduuids) of
 						[] -> FAILURE
 						us
-							| proxyProtocolVersion proxyparams < ProtocolVersion 2 -> SUCCESS
+							| proxyClientProtocolVersion proxyparams < ProtocolVersion 2 -> SUCCESS
 							| otherwise -> SUCCESS_PLUS us
 
 	-- The associated file received from the P2P protocol

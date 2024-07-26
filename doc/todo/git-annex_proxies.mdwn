@@ -30,9 +30,6 @@ Planned schedule of work:
 
 * http server proxying hangs on git-annex copy --to it
 
-* http server proxying needs to get the version negotiated with the proxied
-  remote and feed that into the proxy function.
-
 * test http server proxying with special remotes
 
 * http server proxying needs to reuse connections to special remotes,

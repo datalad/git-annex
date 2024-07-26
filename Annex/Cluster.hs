@@ -51,9 +51,8 @@ proxyCluster clusteruuid proxydone servermode clientside protoerrhandler = do
 		-- known at this point, and would be too expensive to
 		-- determine. Instead, pick the newest protocol version
 		-- that we and the client both speak. The proxy code
-		-- checks protocol versions when operating on multiple
-		-- nodes, and allows nodes to have different protocol
-		-- versions.
+		-- checks protocol versions of remotes, so nodes can
+		-- have different protocol versions.
 		let protocolversion = min maxProtocolVersion clientmaxversion
 		sendClientProtocolVersion clientside othermsg protocolversion
 			(getclientbypass protocolversion) (protoerrhandler noop)
@@ -76,7 +75,7 @@ proxyCluster clusteruuid proxydone servermode clientside protoerrhandler = do
 			, proxyUUID = fromClusterUUID clusteruuid
 			, proxySelector = selectnode
 			, proxyConcurrencyConfig = concurrencyconfig
-			, proxyProtocolVersion = protocolversion
+			, proxyClientProtocolVersion = protocolversion
 			}
 		proxy proxydone proxyparams othermsg
 			(protoerrhandler closenodes)
