@@ -120,7 +120,7 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv endv = go
 			liftIO $ sendmessage $
 				ERROR "NOTIFYCHANGE unsupported for a special remote"
 			go
-		Just _ -> giveup "protocol error M"
+		Just _ -> giveup "protocol error"
 		Nothing -> return ()
 
 	getnextmessageorend = 
@@ -173,9 +173,9 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv endv = go
 								store
 							Just (VALIDITY Invalid) ->
 								return ()
-							_ -> giveup "protocol error N"
+							_ -> giveup "protocol error"
 						else store
-				_ -> giveup "protocol error O"
+				_ -> giveup "protocol error"
 
 	proxyget offset af k = withproxytmpfile k $ \tmpfile -> do
 		-- Don't verify the content from the remote,
@@ -212,7 +212,7 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv endv = go
 			receivemessage >>= \case
 				Just SUCCESS -> return ()
 				Just FAILURE -> return ()
-				Just _ -> giveup "protocol error P"
+				Just _ -> giveup "protocol error"
 				Nothing -> return ()
 
 {- Check if this repository can proxy for a specified remote uuid,
