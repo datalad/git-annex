@@ -1,0 +1,28 @@
+### Please describe the problem.
+
+We used a script calling out to `reregisterurl` to move URLs from datalad to regular web remote: [https://github.com/dandi/dandisets/pull/387/files](https://github.com/dandi/dandisets/pull/387/files).
+
+Even after removing all urls, key is associated with the remote, and thus `annex find`able:
+
+```shell
+dandi@drogon:/mnt/backup/dandi/dandisets/000897$ git annex whereis sub-amadeus/sub-amadeus_ses-08152019_behavior+ecephys.nwb
+whereis sub-amadeus/sub-amadeus_ses-08152019_behavior+ecephys.nwb (2 copies) 
+  	00000000-0000-0000-0000-000000000001 -- web
+   	cf13d535-b47c-5df6-8590-0793cb08a90a -- datalad
+
+  web: https://api.dandiarchive.org/api/assets/d3a96834-ee80-4afa-b985-82066817272c/download/
+  web: https://dandiarchive.s3.amazonaws.com/blobs/a6e/c32/a6ec3274-ceeb-4d21-b091-1e991a512c7b?versionId=Vt7RKy0cgO1L82S7tqIQRQgNHBBZVtVh
+ok
+
+```
+
+I think that git-annex should have completely dissociated that remote from the key whenever the very last url was reregistered.
+
+
+### What version of git-annex are you using? On what operating system?
+
+
+10.20240430-1~ndall+1
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]
