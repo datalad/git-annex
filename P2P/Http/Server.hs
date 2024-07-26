@@ -119,11 +119,8 @@ serveGet st su apiver (B64Key k) cu bypass baf startat sec auth = do
 		let storer _offset len = sendContentWith $ \bs -> liftIO $ do
 			atomically $ putTMVar bsv (len, bs)
 			atomically $ takeTMVar endv
-			case serverP2PConnection conn of
-				Just c -> 
-					signalFullyConsumedByteString $
-						connOhdl c
-				Nothing -> noop
+			signalFullyConsumedByteString $
+				connOhdl $ serverP2PConnection conn
 			return $ \v -> do
 				liftIO $ atomically $ putTMVar validityv v
 				return True

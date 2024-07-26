@@ -248,7 +248,7 @@ withP2PConnections workerpool a = do
 data P2PConnectionPair = P2PConnectionPair
 	{ clientRunState :: RunState
 	, clientP2PConnection :: P2PConnection
-	, serverP2PConnection :: Maybe P2PConnection
+	, serverP2PConnection :: P2PConnection
 	, releaseP2PConnection :: IO ()
 	-- ^ Releases a P2P connection, which can be reused for other
 	-- requests.
@@ -288,7 +288,7 @@ localP2PConnectionPair connparams relv startworker = do
 	return $ Right $ P2PConnectionPair
 		{ clientRunState = clientrunst
 		, clientP2PConnection = clientconn
-		, serverP2PConnection = Just serverconn
+		, serverP2PConnection = serverconn
 		, releaseP2PConnection = releaseconn
 		, closeP2PConnection = releaseconn
 		}
@@ -338,8 +338,8 @@ proxyConnection
 	-> ProxyConnection
 	-> IO (Either ConnectionProblem P2PConnectionPair)
 proxyConnection relv connparams workerpool proxyconn = do
-	(clientconn, proxyfromclientconn) <- mkP2PConnectionPair connparams
-		("http client", "proxy")
+	(clientconn, proxyfromclientconn) <- 
+		mkP2PConnectionPair connparams ("http client", "proxy")
 	clientrunst <- mkClientRunState connparams
 	proxyfromclientrunst <- mkClientRunState connparams
 	asyncworker <- async $
@@ -377,7 +377,7 @@ proxyConnection relv connparams workerpool proxyconn = do
 	return $ Right $ P2PConnectionPair
 		{ clientRunState = clientrunst
 		, clientP2PConnection = clientconn
-		, serverP2PConnection = Nothing
+		, serverP2PConnection = proxyfromclientconn
 		, releaseP2PConnection = releaseconn True
 		, closeP2PConnection = releaseconn False
 		}
