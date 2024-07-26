@@ -115,7 +115,7 @@ the client sends:
 
 The server responds with either SUCCESS or FAILURE.
 The former indicates the content is locked. It will remain
-locked until the client sends:
+locked until the client sends its next message, which must be:
 
 	UNLOCKCONTENT Key
 

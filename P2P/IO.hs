@@ -335,12 +335,16 @@ debugMessage conn prefix m = do
 -- Must avoid sending too many bytes as it would confuse the other end.
 -- This is easily dealt with by truncating it.
 --
+-- However, the whole ByteString will be evaluated here, even if
+-- the end of it does not get sent.
+--
 -- If too few bytes are sent, the only option is to give up on this
 -- connection. False is returned to indicate this problem.
 sendExactly :: Len -> L.ByteString -> Handle -> MeterUpdate -> IO Bool
 sendExactly (Len n) b h p = do
-	sent <- meteredWrite' p (B.hPut h) (L.take (fromIntegral n) b)
-	return (fromBytesProcessed sent == n)
+	let (x, y) = L.splitAt (fromIntegral n) b
+	sent <- meteredWrite' p (B.hPut h) x
+	L.length y `seq` return (fromBytesProcessed sent == n)
 
 receiveExactly :: Len -> Handle -> MeterUpdate -> IO L.ByteString
 receiveExactly (Len n) h p = hGetMetered h (Just n) p
