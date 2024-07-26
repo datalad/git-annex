@@ -377,7 +377,7 @@ negotiateProtocolVersion preferredversion = do
 	case r of
 		Just (VERSION v) -> net $ setProtocolVersion v
 		-- Old server doesn't know about the VERSION command.
-		Just (ERROR _) -> net $ setProtocolVersion 0
+		Just (ERROR _) -> net $ setProtocolVersion (ProtocolVersion 0)
 		_ -> net $ sendMessage (ERROR "expected VERSION")
 
 sendBypass :: Bypass -> Proto ()
