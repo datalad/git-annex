@@ -28,7 +28,8 @@ Planned schedule of work:
 
 ## work notes
 
-* http server proxying hangs when git-annex copy --to it, maybe other
+* http server proxying hangs when git-annex copy --to it, 
+  and git-annex get --from it, maybe other
   times. Need to fully test.
 
 * http server proxying needs to get the version negotiated with the proxied
