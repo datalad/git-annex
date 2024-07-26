@@ -42,6 +42,7 @@ import Control.Concurrent.STM
 import Control.Concurrent.Async
 import Control.Concurrent
 import System.IO.Unsafe
+import Data.Either
 
 p2pHttpApp :: P2PHttpServerState -> Application
 p2pHttpApp = serve p2pHttpAPI . serveP2pHttp
@@ -187,14 +188,17 @@ serveGet st su apiver (B64Key k) cu bypass baf startat sec auth = do
 	
 	waitfinal endv finalv conn annexworker = do
 		-- Wait for everything to be transferred before
-		-- stopping the annexworker. The validityv will usually
+		-- stopping the annexworker. The finalv will usually
 		-- be written to at the end. If the client disconnects
 		-- early that does not happen, so catch STM exception.
-		liftIO $ void $ tryNonAsync $ atomically $ takeTMVar finalv
+		alltransferred <- isRight
+			<$> tryNonAsync (liftIO $ atomically $ takeTMVar finalv)
 		-- Make sure the annexworker is not left blocked on endv
 		-- if the client disconnected early.
 		void $ liftIO $ atomically $ tryPutTMVar endv ()
-		void $ tryNonAsync $ releaseP2PConnection conn
+		void $ tryNonAsync $ if alltransferred
+			then releaseP2PConnection conn
+			else closeP2PConnection conn
 		void $ tryNonAsync $ wait annexworker
 	
 	sizer = pure $ Len $ case startat of
