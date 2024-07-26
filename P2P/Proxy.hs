@@ -614,13 +614,13 @@ proxyRequest proxydone proxyparams requestcomplete requestmessage protoerrhandle
 			y $ net $ sendBytes len b nullMeterUpdate
 	
 	relayDATAFinish x y sendsuccessfailure ()
-		| proxyProtocolVersion proxyparams == ProtocolVersion 0 = sendsuccessfailure
+		| proxyClientProtocolVersion proxyparams == ProtocolVersion 0 = sendsuccessfailure
 		-- Protocol version 1 has a VALID or
 		-- INVALID message after the data.
 		| otherwise = relayonemessage x y (\_ () -> sendsuccessfailure)
 
 	relayDATAFinishMulti k rs
-		| proxyProtocolVersion proxyparams == ProtocolVersion 0 =
+		| proxyClientProtocolVersion proxyparams == ProtocolVersion 0 =
 			finish $ net receiveMessage
 		| otherwise =
 			flip protoerrhandler (client $ net $ receiveMessage) $
