@@ -30,6 +30,9 @@ Planned schedule of work:
 
 * http server proxying hangs on git-annex copy --to it
 
+  All the data gets sent first. Suggests the hang is at connection teardown
+  time.
+
 * test http server proxying with special remotes
 
 * Make http server support clusters.
