@@ -261,9 +261,9 @@ data NetF c
 	-- ^ Sends exactly Len bytes of data. (Any more or less will
 	-- confuse the receiver.)
 	| ReceiveBytes Len MeterUpdate (L.ByteString -> c)
-	-- ^ Lazily reads bytes from peer. Stops once Len are read,
-	-- or if connection is lost, and in either case returns the bytes
-	-- that were read. This allows resuming interrupted transfers.
+	-- ^ Streams bytes from peer. Stops once Len are read,
+	-- or if connection is lost. This allows resuming
+	-- interrupted transfers.
 	| CheckAuthToken UUID AuthToken (Bool -> c)
 	| RelayService Service c
 	-- ^ Runs a service, relays its output to the peer, and data
