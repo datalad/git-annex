@@ -40,6 +40,7 @@ data Options = Options
 	, unauthReadOnlyOption :: Bool
 	, unauthAppendOnlyOption :: Bool
 	, wideOpenOption :: Bool
+	, proxyConnectionsOption :: Maybe Integer
 	}
 
 optParser :: CmdParamsDesc -> Parser Options
@@ -84,10 +85,17 @@ optParser _ = Options
 		( long "wideopen"
 		<> help "give unauthenticated users full read+write access"
 		)
+	<*> optional (option auto
+		( long "proxyconnections" <> metavar paramNumber
+		<> help "maximum number of idle connections when proxying"
+		))
 
 seek :: Options -> CommandSeek
 seek o = getAnnexWorkerPool $ \workerpool ->
-	withP2PConnections workerpool $ \acquireconn -> liftIO $ do
+	withP2PConnections workerpool (fromMaybe 1 $ proxyConnectionsOption o)
+		(go workerpool)
+  where
+	go workerpool acquireconn = liftIO $ do
 		authenv <- getAuthEnv
 		st <- mkP2PHttpServerState acquireconn workerpool $
 			mkGetServerMode authenv o
@@ -100,7 +108,7 @@ seek o = getAnnexWorkerPool $ \workerpool ->
 					certfile (chainFileOption o) privatekeyfile
 				Warp.runTLS tlssettings settings (p2pHttpApp st)
 			_ -> giveup "You must use both --certfile and --privatekeyfile options to enable HTTPS."
-  where
+	
 	port = maybe
 		(fromIntegral defaultP2PHttpProtocolPort)
 		fromIntegral

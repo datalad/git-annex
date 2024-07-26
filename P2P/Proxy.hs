@@ -45,6 +45,9 @@ data RemoteSide = RemoteSide
 	, remoteSideId :: RemoteSideId
 	}
 
+instance Show RemoteSide where
+	show rs = show (remote rs)
+
 mkRemoteSide :: Remote -> Annex (Maybe (RunState, P2PConnection, ProtoCloser)) -> Annex RemoteSide
 mkRemoteSide r remoteconnect = RemoteSide
 	<$> pure r

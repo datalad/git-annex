@@ -39,6 +39,14 @@ convenient way to download the content of any key, by using the path
 
   A good choice is one worker per CPU core: `--jobs=cpus`
 
+* `--proxyconnections=N`
+
+  When is command is run in a repository that is configured to act as a
+  proxy for some of its remotes, this is the maximum number of idle
+  connections to keep open to proxied remotes.
+
+  The default is 1.
+
 * `--port=N`
 
   Port to listen on. The default is port 9417, which is the default
@@ -111,6 +119,8 @@ convenient way to download the content of any key, by using the path
 git-http-backend(1)
 
 [[git-annex-shell]](1)
+
+[[git-annex-updateproxy]](1)
 
 <https://git-annex.branchable.com/design/p2p_protocol_over_http/>
 

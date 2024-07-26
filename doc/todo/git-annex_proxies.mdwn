@@ -32,9 +32,6 @@ Planned schedule of work:
 
 * test http server proxying with special remotes
 
-* http server proxying needs to reuse connections to special remotes,
-  keeping a pool of open ones. Question: How many to keep in the pool?
-
 * Make http server support clusters.
 
 * Support proxying to git remotes using annex+http urls.
