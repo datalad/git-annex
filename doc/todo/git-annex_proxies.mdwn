@@ -30,6 +30,10 @@ Planned schedule of work:
 
 * test http server proxying with special remotes
 
+  git-annex get --from origin-d works
+  git-annex drop --from origin-d works
+  git-annex copy --to origin-d HANGS
+
 * Make http server support clusters.
 
 * Support proxying to git remotes using annex+http urls.
