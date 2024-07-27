@@ -565,26 +565,41 @@ Tentative design for exporttree=yes with proxies:
 * Configure annex-tracking-branch for the proxy in the git-annex branch.
   (For the proxy as a whole, or for specific exporttree=yes repos behind
   it?)
-* Then the user's workflow is simply: `git-annex push proxy`
+* Then the user's workflow is simply: `git-annex push`
 * sync/push need to first push any updated annex-tracking-branch to the
   proxy before sending content to it. (Currently sync only pushes at the
   end.)
 * If proxied remotes are all exporttree=yes, the proxy rejects any
-  transfers of a key that is not in the annex-tracking-branch that it
-  currently knows about. If there is any other proxied remote, the proxy
-  can direct such transfers to it.
+  puts of a key that is not in the annex-tracking-branch that it
+  currently knows about.
 * Upon receiving a new annex-tracking-branch or any transfer of a key
   used in the current annex-tracking-branch, the proxy can update
-  the exporttree=yes remotes. This needs to happen incrementally,
+  the exporttree=yes remote. This needs to happen incrementally,
   eg upon receiving a key, just proxy it on to the exporttree=yes remote,
   and update the export database. Once all keys are received, update
   the git-annex branch to indicate a new tree has been exported.
-* Upon receiving a git push of the annex-tracking-branch, a proxy might
-  be able to get all the changed objects from non-exporttree=yes proxied
-  remotes that contain them. If so it can update the exporttree=yes
-  remote automatically and inexpensively. At the same time, a
-  `git-annex push` will be attempting to send those same objects.
-  So somehow the proxy will need to manage this situation.
+
+A difficulty is that a put of a key to a proxied exporttree=yes remote
+can remove another key from it. Eg, a new version of a file. Consider a
+case where two files swapped content. The put of key B would drop
+key A that was stored in that file. Since the user's git-annex would not
+realize that, it would not upload key A again. So this would leave the
+exporttree=yes remote without a cooy of key A until the git-annex branch is
+synced and then the situation can be noticed. While doing renames first
+would avoid this, [[todo/export_paired_rename_innefficenctcy]] is a
+situation where it could still be a problem.
+
+A similar difficulty is that a push of the annex-tracking-branch can
+remove a file from the proxied exporttree=yes remote. If a second push
+of the annex-tracking-branch adds the file back, but the git-annex branch
+has not been fetched, it won't know that the file was removed, so it won't
+try to send it, leaving the export incomplete.
+
+A possibile solution to all of these problems would be to have a
+.git/annex/objects directory in the exporttree=yes remove. Rather than
+deleting any key from it, the proxy can mode a key into that directory.
+(git-remote-annex already uses such a directory for storing its keys on
+exporttree=yes remotes).
 
 ## possible enhancement: indirect uploads
 
