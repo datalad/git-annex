@@ -79,7 +79,6 @@ closeRemoteSide remoteside =
 data ProxySelector = ProxySelector
 	{ proxyCHECKPRESENT :: Key -> Annex (Maybe RemoteSide)
 	, proxyLOCKCONTENT :: Key -> Annex (Maybe RemoteSide)
-	, proxyUNLOCKCONTENT :: Annex (Maybe RemoteSide)
 	, proxyREMOVE :: Key -> Annex [RemoteSide]
 	-- ^ remove from all of these remotes
 	, proxyGETTIMESTAMP :: Annex [RemoteSide]
@@ -94,7 +93,6 @@ singleProxySelector :: RemoteSide -> ProxySelector
 singleProxySelector r = ProxySelector
 	{ proxyCHECKPRESENT = const (pure (Just r))
 	, proxyLOCKCONTENT = const (pure (Just r))
-	, proxyUNLOCKCONTENT = pure (Just r)
 	, proxyREMOVE = const (pure [r])
 	, proxyGETTIMESTAMP = pure [r]
 	, proxyGET = const (pure (Just r))
@@ -261,16 +259,10 @@ proxyRequest proxydone proxyparams requestcomplete requestmessage protoerrhandle
 					client $ net $ sendMessage FAILURE
 		LOCKCONTENT k -> proxyLOCKCONTENT (proxySelector proxyparams) k >>= \case
 			Just remoteside -> 
-				proxyresponse remoteside requestmessage 
-					(const requestcomplete)
+				handleLOCKCONTENT remoteside requestmessage
 			Nothing ->
 				protoerrhandler requestcomplete $
 					client $ net $ sendMessage FAILURE
-		UNLOCKCONTENT -> proxyUNLOCKCONTENT (proxySelector proxyparams) >>= \case
-			Just remoteside ->
-				proxynoresponse remoteside requestmessage
-					requestcomplete
-			Nothing -> requestcomplete ()
 		REMOVE k -> do
 			remotesides <- proxyREMOVE (proxySelector proxyparams) k
 			servermodechecker checkREMOVEServerMode $
@@ -312,6 +304,7 @@ proxyRequest proxydone proxyparams requestcomplete requestmessage protoerrhandle
 		FAILURE_PLUS _ -> protoerr
 		DATA _ -> protoerr
 		VALIDITY _ -> protoerr
+		UNLOCKCONTENT -> protoerr
 		-- If the client errors out, give up.
 		ERROR msg -> giveup $ "client error: " ++ msg
 		-- Messages that only the server should send.
@@ -344,11 +337,6 @@ proxyRequest proxydone proxyparams requestcomplete requestmessage protoerrhandle
 			protoerrhandler (a resp) $
 				client $ net $ sendMessage resp
 	
-	-- Send a message to the remote, that it will not respond to.
-	proxynoresponse remoteside message a =
-		protoerrhandler a $
-			runRemoteSide remoteside $ net $ sendMessage message
-	
 	-- Send a message to the endpoint and get back its response.
 	getresponse endpoint message handleresp =
 		protoerrhandler (withresp handleresp) $ 
@@ -370,8 +358,16 @@ proxyRequest proxydone proxyparams requestcomplete requestmessage protoerrhandle
 					to $ net $ sendMessage message
 	
 	protoerr = do
-		_ <- client $ net $ sendMessage (ERROR "protocol error X")
-		giveup "protocol error M"
+		_ <- client $ net $ sendMessage (ERROR "protocol error")
+		giveup "protocol error"
+	
+	handleLOCKCONTENT remoteside msg =
+		proxyresponse remoteside msg $ \r () -> case r of
+			SUCCESS -> relayonemessage client
+				(runRemoteSide remoteside)
+				(const requestcomplete)
+			FAILURE -> requestcomplete ()
+			_ -> requestcomplete ()
 	
 	-- When there is a single remote, reply with its timestamp,
 	-- to avoid needing timestamp translation.

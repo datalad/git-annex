@@ -120,7 +120,6 @@ clusterProxySelector clusteruuid protocolversion (Bypass bypass) = do
 		-- instead it can be locked on individual nodes that are
 		-- proxied to the client.
 		, proxyLOCKCONTENT = const (pure Nothing)
-		, proxyUNLOCKCONTENT = pure Nothing
 		}
 	return (proxyselector, closenodes)
   where

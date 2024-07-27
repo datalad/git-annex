@@ -28,20 +28,6 @@ Planned schedule of work:
 
 ## work notes
 
-* This against a http proxied remote leads to a protocol error:
-
-    git-annex move foo --to origin-c
-    git-annex get foo --from origin-c
-
-    ERROR expected UNLOCKCONTENT
-
-  May need to run the commands a few times before it happens.
-
-  I think it's because proxyRequest treats LOCKCONTENT as a single
-  command+reponse, with UNLOCKCONTENT separately. So it's possible for
-  there to be two different connections to the proxied remote,
-  with LOCKCONTENT being sent to one, and UNLOCKCONTENT to the other one.
-
 * test http server proxying with special remotes
 
 * Make http server support clusters.

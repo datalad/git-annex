@@ -114,8 +114,10 @@ the client sends:
 	LOCKCONTENT Key
 
 The server responds with either SUCCESS or FAILURE.
-The former indicates the content is locked. It will remain
-locked until the client sends its next message, which must be:
+The former indicates the content is locked.
+
+After SUCCESS, the content will remain locked until the
+client sends its next message, which must be:
 
 	UNLOCKCONTENT Key
 
