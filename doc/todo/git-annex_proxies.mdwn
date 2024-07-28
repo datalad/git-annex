@@ -28,9 +28,6 @@ Planned schedule of work:
 
 ## work notes
 
-* getProxies reads the proxy log every time, which is unncessarily slow.
-  memoize
-
 * An interrupted PUT to cluster that has a node that is a special remote
   over http leaves open the connection to the cluster, so the next request
   opens another one.

@@ -30,6 +30,7 @@ import Types.Cluster
 import CmdLine.Action (startConcurrency)
 import Utility.ThreadScheduler
 import Utility.HumanTime
+import Logs.Proxy
 import Annex.Proxy
 import Annex.Cluster
 import qualified P2P.Proxy as Proxy
@@ -188,12 +189,13 @@ withP2PConnections
 withP2PConnections workerpool proxyconnectionpoolsize clusterconcurrency a = do
 	enableInteractiveBranchAccess
 	myuuid <- getUUID
+	myproxies <- M.lookup myuuid <$> getProxies
 	reqv <- liftIO newEmptyTMVarIO
 	relv <- liftIO newEmptyTMVarIO
 	endv <- liftIO newEmptyTMVarIO
 	proxypool <- liftIO $ newTMVarIO (0, mempty)
 	asyncservicer <- liftIO $ async $
-		servicer myuuid proxypool reqv relv endv
+		servicer myuuid myproxies proxypool reqv relv endv
 	let endit = do
 		liftIO $ atomically $ putTMVar endv ()
 		liftIO $ wait asyncservicer
@@ -204,7 +206,7 @@ withP2PConnections workerpool proxyconnectionpoolsize clusterconcurrency a = do
 		atomically $ putTMVar reqv (connparams, respvar)
 		atomically $ takeTMVar respvar
 
-	servicer myuuid proxypool reqv relv endv = do
+	servicer myuuid myproxies proxypool reqv relv endv = do
 		reqrel <- liftIO $
 			atomically $ 
 				(Right <$> takeTMVar reqv)
@@ -214,25 +216,25 @@ withP2PConnections workerpool proxyconnectionpoolsize clusterconcurrency a = do
 				(Left . Left <$> takeTMVar endv)
 		case reqrel of
 			Right (connparams, respvar) -> do
-				servicereq myuuid proxypool relv connparams
+				servicereq myuuid myproxies proxypool relv connparams
 					>>= atomically . putTMVar respvar
-				servicer myuuid proxypool reqv relv endv
+				servicer myuuid myproxies proxypool reqv relv endv
 			Left (Right releaseconn) -> do
 				releaseconn
-				servicer myuuid proxypool reqv relv endv
+				servicer myuuid myproxies proxypool reqv relv endv
 			Left (Left ()) -> return ()
 	
-	servicereq myuuid proxypool relv connparams
+	servicereq myuuid myproxies proxypool relv connparams
 		| connectionServerUUID connparams == myuuid =
 			localConnection relv connparams workerpool
 		| otherwise =
 			atomically (getProxyConnectionPool proxypool connparams) >>= \case
 				Just conn -> proxyConnection proxyconnectionpoolsize relv connparams workerpool proxypool conn
-				Nothing -> checkcanproxy myuuid proxypool relv connparams
+				Nothing -> checkcanproxy myproxies proxypool relv connparams
 
-	checkcanproxy myuuid proxypool relv connparams = 
+	checkcanproxy myproxies proxypool relv connparams = 
 		inAnnexWorker' workerpool
-			(checkCanProxy' (connectionServerUUID connparams) myuuid)
+			(checkCanProxy' myproxies (connectionServerUUID connparams))
 		>>= \case
 			Right (Left reason) -> return $ Left $
 				ConnectionFailed $ 

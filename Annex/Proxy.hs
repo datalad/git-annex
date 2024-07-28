@@ -245,24 +245,23 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv oclosedv = go
 {- Check if this repository can proxy for a specified remote uuid,
  - and if so enable proxying for it. -}
 checkCanProxy :: UUID -> UUID -> Annex Bool
-checkCanProxy remoteuuid ouruuid = checkCanProxy' remoteuuid ouruuid >>= \case
-	Right v -> do
-		Annex.changeState $ \st -> st { Annex.proxyremote = Just v }
-		return True
-	Left Nothing -> return False
-	Left (Just err) -> giveup err
+checkCanProxy remoteuuid ouruuid = do
+	ourproxies <- M.lookup ouruuid <$> getProxies
+	checkCanProxy' ourproxies remoteuuid >>= \case
+		Right v -> do
+			Annex.changeState $ \st -> st { Annex.proxyremote = Just v }
+			return True
+		Left Nothing -> return False
+		Left (Just err) -> giveup err
 
-checkCanProxy' :: UUID -> UUID -> Annex (Either (Maybe String) (Either ClusterUUID Remote))
-checkCanProxy' remoteuuid ouruuid = M.lookup ouruuid <$> getProxies >>= \case
-	Nothing -> return (Left Nothing)
-	-- This repository has (or had) proxying enabled. So it's
-	-- ok to display error messages that talk about proxies.
-	Just proxies ->
-		case filter (\p -> proxyRemoteUUID p == remoteuuid) (S.toList proxies) of
-			[] -> notconfigured
-			ps -> case mkClusterUUID remoteuuid of
-				Just cu -> proxyforcluster cu
-				Nothing -> proxyfor ps
+checkCanProxy' :: Maybe (S.Set Proxy) -> UUID -> Annex (Either (Maybe String) (Either ClusterUUID Remote))
+checkCanProxy' Nothing _ = return (Left Nothing)
+checkCanProxy' (Just proxies) remoteuuid =
+	case filter (\p -> proxyRemoteUUID p == remoteuuid) (S.toList proxies) of
+		[] -> notconfigured
+		ps -> case mkClusterUUID remoteuuid of
+			Just cu -> proxyforcluster cu
+			Nothing -> proxyfor ps
   where
 	-- This repository may have multiple remotes that access the same
 	-- repository. Proxy for the lowest cost one that is configured to
