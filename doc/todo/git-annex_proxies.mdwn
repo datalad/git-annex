@@ -28,11 +28,8 @@ Planned schedule of work:
 
 ## work notes
 
-* test http server proxying with special remotes
-
-  git-annex get --from origin-d works
-  git-annex drop --from origin-d works
-  git-annex copy --to origin-d HANGS
+* shut down of a connection to a http proxied special remote may not work
+  properly
 
 * Make http server support clusters.
 

@@ -175,7 +175,7 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv endv = go
 							Just (VALIDITY Valid) ->
 								store
 							Just (VALIDITY Invalid) ->
-								return ()
+								liftIO $ sendmessage FAILURE
 							_ -> giveup "protocol error"
 						else store
 				_ -> giveup "protocol error"
