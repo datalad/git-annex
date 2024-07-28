@@ -28,6 +28,7 @@ import Utility.Metered
 
 import Control.Concurrent.STM
 import Control.Concurrent.Async
+import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import qualified System.FilePath.ByteString as P
 import qualified Data.Map as M
@@ -168,15 +169,10 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv oclosedv = go
 				Right () -> liftIO $ sendmessage SUCCESS
 				Left err -> liftIO $ propagateerror err
 			liftIO receivemessage >>= \case
-				Just (DATA (Len _)) -> do
-					b <- liftIO receivebytestring
-					liftIO $ L.writeFile (fromRawFilePath tmpfile) b
-					-- Signal that the whole bytestring
-					-- has been received.
-					liftIO $ atomically $ 
-						putTMVar owaitv ()
-							`orElse`
-						readTMVar oclosedv
+				Just (DATA (Len len)) -> do
+					h <- liftIO $ openFile (fromRawFilePath tmpfile) WriteMode
+					liftIO $ receivetofile h len
+					liftIO $ hClose h
 					if protoversion > ProtocolVersion 1
 						then liftIO receivemessage >>= \case
 							Just (VALIDITY Valid) ->
@@ -187,6 +183,26 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv oclosedv = go
 						else store
 				_ -> giveup "protocol error"
 			liftIO $ removeWhenExistsWith removeFile (fromRawFilePath tmpfile)
+
+	receivetofile h n = do
+		b <- liftIO receivebytestring
+		liftIO $ atomically $ 
+			putTMVar owaitv ()
+				`orElse`
+			readTMVar oclosedv
+		n' <- storetofile h n (L.toChunks b)
+		-- Normally all the data is sent in a single
+		-- lazy bytestring. However, when the special
+		-- remote is a node in a cluster, a PUT is
+		-- streamed to it in multiple chunks.
+		if n' == 0 
+			then return ()
+			else receivetofile h n'
+
+	storetofile _ n [] = pure n
+	storetofile h n (b:bs) = do
+		B.hPut h b
+		storetofile h (n - fromIntegral (B.length b)) bs
 
 	proxyget offset af k = withproxytmpfile k $ \tmpfile -> do
 		-- Don't verify the content from the remote,
