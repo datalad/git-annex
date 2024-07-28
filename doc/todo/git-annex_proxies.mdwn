@@ -30,7 +30,11 @@ Planned schedule of work:
 
 * http proxying for a local git remote seems to probably not work
 
-* git-annex testremote cluster
+* An interrupted `git-annex copy --to` a cluster via the http server,
+  when repeated, fails. The http server outputs "transfer already in
+  progress, or unable to take transfer lock". Apparently a second
+  connection gets opened to the cluster, because the first connection
+  never got shut down.
 
 ## completed items for July's work on p2p protocol over http
 

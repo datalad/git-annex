@@ -181,11 +181,13 @@ data GetPrivate = GetPrivate Bool
 getJournalFileStale :: GetPrivate -> RawFilePath -> Annex JournalledContent
 getJournalFileStale (GetPrivate getprivate) file = do
 	st <- Annex.getState id
+	let repo = Annex.repo st
+	bs <- getState
 	liftIO $
 		if getprivate && privateUUIDsKnown' st
 		then do
-			x <- getfrom (gitAnnexJournalDir (Annex.branchstate st) (Annex.repo st))
-			getfrom (gitAnnexPrivateJournalDir (Annex.branchstate st) (Annex.repo st)) >>= \case
+			x <- getfrom (gitAnnexJournalDir bs repo)
+			getfrom (gitAnnexPrivateJournalDir bs repo) >>= \case
 				Nothing -> return $ case x of
 					Nothing -> NoJournalledContent
 					Just b -> JournalledContent b
@@ -195,7 +197,7 @@ getJournalFileStale (GetPrivate getprivate) file = do
 					-- happens in a merge of two
 					-- git-annex branches.
 					Just x' -> x' <> y
-		else getfrom (gitAnnexJournalDir (Annex.branchstate st) (Annex.repo st)) >>= return . \case
+		else getfrom (gitAnnexJournalDir bs repo) >>= return . \case
 			Nothing -> NoJournalledContent
 			Just b -> JournalledContent b
   where
@@ -223,8 +225,9 @@ discardIncompleteAppend v
  - journal is staged as it is run. -}
 getJournalledFilesStale :: (BranchState -> Git.Repo -> RawFilePath) -> Annex [RawFilePath]
 getJournalledFilesStale getjournaldir = do
-	st <- Annex.getState id
-	let d = getjournaldir (Annex.branchstate st) (Annex.repo st)
+	bs <- getState
+	repo <- Annex.gitRepo
+	let d = getjournaldir bs repo
 	fs <- liftIO $ catchDefaultIO [] $ 
 		getDirectoryContents (fromRawFilePath d)
 	return $ filter (`notElem` [".", ".."]) $
@@ -233,8 +236,9 @@ getJournalledFilesStale getjournaldir = do
 {- Directory handle open on a journal directory. -}
 withJournalHandle :: (BranchState -> Git.Repo -> RawFilePath) -> (DirectoryHandle -> IO a) -> Annex a
 withJournalHandle getjournaldir a = do
-	st <- Annex.getState id
-	let d = getjournaldir (Annex.branchstate st) (Annex.repo st)
+	bs <- getState
+	repo <- Annex.gitRepo
+	let d = getjournaldir bs repo
 	bracket (opendir d) (liftIO . closeDirectory) (liftIO . a)
   where
 	-- avoid overhead of creating the journal directory when it already

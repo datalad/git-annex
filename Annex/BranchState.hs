@@ -2,7 +2,7 @@
  -
  - Runtime state about the git-annex branch, and a small cache.
  -
- - Copyright 2011-2022 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -16,14 +16,18 @@ import qualified Annex
 import Logs
 import qualified Git
 
+import Control.Concurrent
 import qualified Data.ByteString.Lazy as L
 
 getState :: Annex BranchState
-getState = Annex.getState Annex.branchstate
+getState = do
+	v <- Annex.getRead Annex.branchstate
+	liftIO $ readMVar v
 
 changeState :: (BranchState -> BranchState) -> Annex ()
-changeState changer = Annex.changeState $ \s -> 
-	s { Annex.branchstate = changer (Annex.branchstate s) }
+changeState changer = do
+	v <- Annex.getRead Annex.branchstate
+	liftIO $ modifyMVar_ v $ return . changer
 
 {- Runs an action to check that the index file exists, if it's not been
  - checked before in this run of git-annex. -}

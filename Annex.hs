@@ -115,7 +115,8 @@ newtype Annex a = Annex { runAnnex :: ReaderT (MVar AnnexState, AnnexRead) IO a 
 
 -- Values that can be read, but not modified by an Annex action.
 data AnnexRead = AnnexRead
-	{ activekeys :: TVar (M.Map Key ThreadId)
+	{ branchstate :: MVar BranchState
+	, activekeys :: TVar (M.Map Key ThreadId)
 	, activeremotes :: MVar (M.Map (Types.Remote.RemoteA Annex) Integer)
 	, keysdbhandle :: Keys.DbHandle
 	, sshstalecleaned :: TMVar Bool
@@ -137,6 +138,7 @@ data AnnexRead = AnnexRead
 
 newAnnexRead :: GitConfig -> IO AnnexRead
 newAnnexRead c = do
+	bs <- newMVar startBranchState
 	emptyactivekeys <- newTVarIO M.empty
 	emptyactiveremotes <- newMVar M.empty
 	kh <- Keys.newDbHandle
@@ -146,7 +148,8 @@ newAnnexRead c = do
 	cm <- newTMVarIO M.empty
 	cc <- newTMVarIO (CredentialCache M.empty)
 	return $ AnnexRead
-		{ activekeys = emptyactivekeys
+		{ branchstate = bs
+		, activekeys = emptyactivekeys
 		, activeremotes = emptyactiveremotes
 		, keysdbhandle = kh
 		, sshstalecleaned = sc
@@ -180,7 +183,6 @@ data AnnexState = AnnexState
 	, output :: MessageState
 	, concurrency :: ConcurrencySetting
 	, daemon :: Bool
-	, branchstate :: BranchState
 	, repoqueue :: Maybe (Git.Queue.Queue Annex)
 	, catfilehandles :: CatFileHandles
 	, hashobjecthandle :: Maybe (ResourcePool HashObjectHandle)
@@ -235,7 +237,6 @@ newAnnexState c r = do
 		, output = o
 		, concurrency = ConcurrencyCmdLine NonConcurrent
 		, daemon = False
-		, branchstate = startBranchState
 		, repoqueue = Nothing
 		, catfilehandles = catFileHandlesNonConcurrent
 		, hashobjecthandle = Nothing
