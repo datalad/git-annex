@@ -25,6 +25,7 @@ import Annex.UUID
 import Types.NumCopies
 import Types.WorkerPool
 import Annex.WorkerPool
+import Annex.BranchState
 import Types.Cluster
 import CmdLine.Action (startConcurrency)
 import Utility.ThreadScheduler
@@ -185,6 +186,7 @@ withP2PConnections
 	-> (AcquireP2PConnection -> Annex a)
 	-> Annex a
 withP2PConnections workerpool proxyconnectionpoolsize clusterconcurrency a = do
+	enableInteractiveBranchAccess
 	myuuid <- getUUID
 	reqv <- liftIO newEmptyTMVarIO
 	relv <- liftIO newEmptyTMVarIO

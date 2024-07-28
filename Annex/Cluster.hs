@@ -18,6 +18,7 @@ import P2P.Protocol
 import P2P.IO
 import Annex.Proxy
 import Annex.UUID
+import Annex.BranchState
 import Logs.Location
 import Logs.PreferredContent
 import Types.Command
@@ -38,6 +39,7 @@ proxyCluster
 	-> (forall a. Annex () -> ((a -> CommandPerform) -> Annex (Either ProtoFailure a) -> CommandPerform))
 	-> CommandPerform
 proxyCluster clusteruuid proxydone servermode clientside protoerrhandler = do
+	enableInteractiveBranchAccess
 	getClientProtocolVersion (fromClusterUUID clusteruuid) clientside
 		withclientversion (protoerrhandler noop)
   where
