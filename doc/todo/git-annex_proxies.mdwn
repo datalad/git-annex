@@ -28,8 +28,6 @@ Planned schedule of work:
 
 ## work notes
 
-* http proxying for a local git remote seems to probably not work
-
 * An interrupted `git-annex copy --to` a cluster via the http server,
   when repeated, fails. The http server outputs "transfer already in
   progress, or unable to take transfer lock". Apparently a second
@@ -116,6 +114,14 @@ Planned schedule of work:
   available to use spanning tree protocol for routing inside clusters.
 
 * Optimise proxy speed. See design for ideas.
+
+* Speed: A proxy to a local git repository spawns git-annex-shell 
+  to communicate with it. It would be more efficient to operate
+  directly on the Remote. Especially when transferring content to/from it.
+  But: When a cluster has several nodes that are local git repositories,
+  and is sending data to all of them, this would need an alternate
+  interface than `storeKey`, which supports streaming, of chunks
+  of a ByteString.
 
 * Use `sendfile()` to avoid data copying overhead when
   `receiveBytes` is being fed right into `sendBytes`.
