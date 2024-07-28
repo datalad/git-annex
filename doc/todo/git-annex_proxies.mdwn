@@ -28,6 +28,9 @@ Planned schedule of work:
 
 ## work notes
 
+* testremote hangs at PUT to on a cluster accessed over http that
+  has a node that is a directory special remote.
+
 * When part of a file has been sent to a cluster via the http server,
   the transfer interrupted, and another node is added to the cluster,
   and the transfer of the file performed again, there is a failure

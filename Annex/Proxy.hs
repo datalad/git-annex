@@ -179,6 +179,7 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv endv = go
 							_ -> giveup "protocol error"
 						else store
 				_ -> giveup "protocol error"
+			liftIO $ removeWhenExistsWith removeFile (fromRawFilePath tmpfile)
 
 	proxyget offset af k = withproxytmpfile k $ \tmpfile -> do
 		-- Don't verify the content from the remote,
