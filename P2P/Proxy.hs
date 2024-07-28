@@ -276,10 +276,7 @@ proxyRequest proxydone proxyparams requestcomplete requestmessage protoerrhandle
 			handleGETTIMESTAMP remotesides
 		GET _ _ k -> proxyGET (proxySelector proxyparams) k >>= \case
 			Just remoteside -> handleGET remoteside requestmessage
-			Nothing -> 
-				protoerrhandler requestcomplete $
-					client $ net $ sendMessage $ 
-						ERROR "content not present"
+			Nothing -> handleGETNoRemoteSide
 		PUT paf k -> do
 			af <- getassociatedfile paf
 			remotesides <- proxyPUT (proxySelector proxyparams) af k
@@ -352,7 +349,7 @@ proxyRequest proxydone proxyparams requestcomplete requestmessage protoerrhandle
 	-- Read a message from one party, send it to the other,
 	-- and then pass the message to the continuation.
 	relayonemessage from to cont =
-		flip protoerrhandler (from $ net $ receiveMessage) $
+		flip protoerrhandler (from $ net receiveMessage) $
 			withresp $ \message ->
 				protoerrhandler (cont message) $
 					to $ net $ sendMessage message
@@ -460,6 +457,15 @@ proxyRequest proxydone proxyparams requestcomplete requestmessage protoerrhandle
 							[] -> FAILURE
 							(err:_) -> ERROR err
 						else FAILURE_PLUS us
+		
+	-- Send an empty DATA and indicate it was invalid.
+	handleGETNoRemoteSide = protoerrhandler requestcomplete $
+		client $ net $ do
+			sendMessage $ DATA (Len 0)
+			sendBytes (Len 0) mempty nullMeterUpdate
+			when (proxyClientProtocolVersion proxyparams /= ProtocolVersion 0) $
+				sendMessage (VALIDITY Invalid)
+			void $ receiveMessage
 
 	handleGET remoteside message = getresponse (runRemoteSide remoteside) message $
 		withDATA (relayGET remoteside) $ \case
@@ -622,7 +628,7 @@ proxyRequest proxydone proxyparams requestcomplete requestmessage protoerrhandle
 		| proxyClientProtocolVersion proxyparams == ProtocolVersion 0 =
 			finish $ net receiveMessage
 		| otherwise =
-			flip protoerrhandler (client $ net $ receiveMessage) $
+			flip protoerrhandler (client $ net receiveMessage) $
 				withresp $ \message ->
 					finish $ do
 						-- Relay VALID or INVALID message
