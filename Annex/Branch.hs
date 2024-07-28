@@ -262,7 +262,7 @@ updateTo' pairs = do
 					else commitIndex jl branchref merge_desc commitrefs
 			)
 		addMergedRefs tomerge
-		invalidateCache
+		invalidateCacheAll
 	
 	stagejournalwhen dirty jl a
 		| dirty = stageJournal jl a
@@ -487,7 +487,7 @@ set jl ru f c = do
 	-- evaluating a Journalable Builder twice, which is not very
 	-- efficient. Instead, assume that it's not common to need to read
 	-- a log file immediately after writing it.
-	invalidateCache
+	invalidateCache f
 
 {- Appends content to the journal file. -}
 append :: Journalable content => JournalLocked -> RawFilePath -> AppendableJournalFile -> content -> Annex ()
@@ -495,7 +495,7 @@ append jl f appendable toappend = do
 	journalChanged
 	appendJournalFile jl appendable toappend
 	fastDebug "Annex.Branch" ("append " ++ fromRawFilePath f)
-	invalidateCache
+	invalidateCache f
 
 {- Commit message used when making a commit of whatever data has changed
  - to the git-annex branch. -}

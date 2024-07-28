@@ -134,5 +134,11 @@ getCache file state = go (cachedFileContents state)
 		| f == file && not (needInteractiveAccess state) = Just c
 		| otherwise = go rest
 
-invalidateCache :: Annex ()
-invalidateCache = changeState $ \s -> s { cachedFileContents = [] }
+invalidateCache :: RawFilePath -> Annex ()
+invalidateCache f = changeState $ \s -> s
+	{ cachedFileContents = filter (\(f', _) -> f' /= f) 
+		(cachedFileContents s)
+	}
+
+invalidateCacheAll :: Annex ()
+invalidateCacheAll = changeState $ \s -> s { cachedFileContents = [] }
