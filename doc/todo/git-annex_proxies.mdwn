@@ -28,7 +28,9 @@ Planned schedule of work:
 
 ## work notes
 
-* Make http server support clusters.
+* http proxying for a local git remote seems to probably not work
+
+* git-annex testremote cluster
 
 * Support proxying to git remotes using annex+http urls.
   (Current documentation says proxying only works with ssh remotes,
