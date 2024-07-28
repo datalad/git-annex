@@ -3,6 +3,8 @@ git-annex (10.20240702) UNRELEASED; urgency=medium
   * New HTTP API that is equivilant to the P2P protocol.
   * annex+http and annex+https urls can be configured for
     remote.name.annexUrl to use the HTTP API to communicate with a server.
+    This supports writable repositories, as well as accessing clusters
+    and proxied remotes over HTTP.
   * New p2phttp command to serve the HTTP API.
   * Added a build flag for servant, enabling annex+http urls and 
     git-annex p2phttp.

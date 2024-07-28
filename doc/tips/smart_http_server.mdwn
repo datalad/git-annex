@@ -1,0 +1,36 @@
+git-annex can access a remote using any web server,
+as shown in the tip [[setup_a_public_repository_on_a_web_site]].
+
+That's limited to basic read-only repository access though. Git
+has [smart HTTP](https://git-scm.com/book/en/v2/Git-on-the-Server-Smart-HTTP)
+that can be used to allow pushes over http. And git-annex has an
+equivilant, the [[git annex-p2phttp command|/git-annex-p2phttp]].
+
+As well as allowing write access to authorized users over http,
+`git-annex p2phttp` also allows accessing [[clusters]], and other proxied
+remotes over http.
+
+You will still need to run a web server to serve the git repository.
+`git-annex p2phttp` only serves git-annex's own
+[[API|design/p2p_protocol_over_http]], and it does it
+on a different port (9417 by default).
+
+All you need to do on the server is to arrange to run 
+`git-annex p2phttp` in your repository as a daemon, or service.
+Note that it should not be run as root, but as whatever user owns the
+repository. It has several options you can use to configure it, including
+controlling who can access the repository.
+
+After cloning a repository, it's necessary to configure
+`remote.name.annexUrl` to an "annex+http" or "annex+https" url,
+so that git-annex knows where the API endpoint is.
+
+For example:
+
+    git clone http://example.com/foo.git
+    cd foo
+    git config remote.origin.annexUrl annex+http://example.com/git-annex/bbdac17e-6633-4b27-8f7b-fb447d5bae7c
+    git-annex get ...
+
+The last part of the "annex+http" url is the annex.uuid of the
+remote repository.

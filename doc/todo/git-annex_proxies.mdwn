@@ -56,6 +56,10 @@ Planned schedule of work:
 
 ## items deferred until later for p2p protocol over http
 
+* `git-annex p2phttp` should support serving several repositories at the same
+  time (not as proxied remotes), so that eg, every git-annex repository
+  on a server can be served on the same port.
+
 * Support proxying to git remotes that use annex+http urls.
 
 * `git-annex p2phttp` could support systemd socket activation. This would
