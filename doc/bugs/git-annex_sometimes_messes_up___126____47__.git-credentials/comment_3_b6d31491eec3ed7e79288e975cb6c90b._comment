@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="m.risse@77eac2c22d673d5f10305c0bade738ad74055f92"
+ nickname="m.risse"
+ avatar="http://cdn.libravatar.org/avatar/59541f50d845e5f81aff06e88a38b9de"
+ subject="comment 3"
+ date="2024-07-26T11:42:49Z"
+ content="""
+Maybe this issue was the same, or at least related to, this one: <https://git-annex.branchable.com/bugs/git_annex_checkpresentkey_removes_git_credentials/> ?
+"""]]
