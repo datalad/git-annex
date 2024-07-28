@@ -28,6 +28,11 @@ Planned schedule of work:
 
 ## work notes
 
+* When getting the remote .git/config of a http remote, check if
+  annex.apiurl is set, and if so, set the remote's annexUrl automically.
+
+  git-annex-p2phttp could automatically set annex.apiurl as well.
+
 * An interrupted PUT to cluster that has a node that is a special remote
   over http leaves open the connection to the cluster, so the next request
   opens another one.
