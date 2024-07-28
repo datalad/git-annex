@@ -32,20 +32,36 @@ convenient way to download the content of any key, by using the path
 * `--jobs=N` `-JN`
 
   This or annex.jobs must be set to configure the number of worker
-  threads.
+  threads that serve connections to the webserver.
   
-  Since the webserver itself uses one thread, this needs to be set to
-  2 or more.
+  Since the webserver itself also uses one of these threads, 
+  this needs to be set to 2 or more.
 
-  A good choice is one worker per CPU core: `--jobs=cpus`
+  A good choice is often one worker per CPU core: `--jobs=cpus`
 
 * `--proxyconnections=N`
 
-  When is command is run in a repository that is configured to act as a
+  When this command is run in a repository that is configured to act as a
   proxy for some of its remotes, this is the maximum number of idle
   connections to keep open to proxied remotes.
 
   The default is 1.
+
+* `--clusterjobs=N`
+
+  When this command is run in a repository that is a gateway for a cluster,
+  this is the number of concurrent jobs to use to access nodes of the
+  cluster, per connection to the webserver.
+
+  The default is 1.
+
+  A good choice for this will be a balance between the number of nodes
+  in the cluster and the value of `--jobs`.
+
+  For example, if the cluster has 4 nodes, and `--jobs=4`, using
+  `--clusterjobs=4` will make all nodes in the cluster be accessed
+  concurrently, which is often optimal. But around 20 cores can be needed
+  when the webserver is busy.
 
 * `--port=N`
 
@@ -121,6 +137,10 @@ git-http-backend(1)
 [[git-annex-shell]](1)
 
 [[git-annex-updateproxy]](1)
+
+[[git-annex-initcluster]](1)
+
+[[git-annex-updatecluster]](1)
 
 <https://git-annex.branchable.com/design/p2p_protocol_over_http/>
 

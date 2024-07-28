@@ -659,10 +659,13 @@ proxyRequest proxydone proxyparams requestcomplete requestmessage protoerrhandle
 data ConcurrencyConfig = ConcurrencyConfig Int (MSem.MSem Int)
 
 noConcurrencyConfig :: Annex ConcurrencyConfig
-noConcurrencyConfig = liftIO $ ConcurrencyConfig 1 <$> MSem.new 1
+noConcurrencyConfig = mkConcurrencyConfig 1
 
-getConcurrencyConfig :: Annex ConcurrencyConfig
-getConcurrencyConfig = (annexJobs <$> Annex.getGitConfig) >>= \case
+mkConcurrencyConfig :: Int -> Annex ConcurrencyConfig
+mkConcurrencyConfig n = liftIO $ ConcurrencyConfig n <$> MSem.new n
+
+concurrencyConfigJobs :: Annex ConcurrencyConfig
+concurrencyConfigJobs = (annexJobs <$> Annex.getGitConfig) >>= \case
 	NonConcurrent -> noConcurrencyConfig
 	Concurrent n -> go n
 	ConcurrentPerCpu -> go =<< liftIO getNumProcessors
@@ -672,8 +675,7 @@ getConcurrencyConfig = (annexJobs <$> Annex.getGitConfig) >>= \case
 		when (n > c) $
 			liftIO $ setNumCapabilities n
 		setConcurrency (ConcurrencyGitConfig (Concurrent n))
-		msem <- liftIO $ MSem.new n
-		return (ConcurrencyConfig n msem)
+		mkConcurrencyConfig n
 
 forMC :: ConcurrencyConfig -> [a] -> (a -> Annex b) -> Annex [b]
 forMC _ (x:[]) a = do

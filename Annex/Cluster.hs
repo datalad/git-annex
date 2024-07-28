@@ -58,10 +58,11 @@ proxyCluster clusteruuid proxydone servermode clientside protoerrhandler = do
 			(withclientbypass protocolversion) (protoerrhandler noop)
 
 	withclientbypass protocolversion (bypassuuids, othermsg) = do
-		(selectnode, closenodes, concurrencyconfig) <-
+		(selectnode, closenodes) <-
 			clusterProxySelector clusteruuid
 				protocolversion bypassuuids
 		proxystate <- liftIO mkProxyState
+		concurrencyconfig <- concurrencyConfigJobs
 		let proxyparams = ProxyParams
 			{ proxyMethods = mkProxyMethods
 			, proxyState = proxystate
@@ -79,7 +80,7 @@ clusterProxySelector
 	:: ClusterUUID
 	-> ProtocolVersion
 	-> Bypass
-	-> Annex (ProxySelector, Annex (), ConcurrencyConfig)
+	-> Annex (ProxySelector, Annex ())
 clusterProxySelector clusteruuid protocolversion (Bypass bypass) = do
 	nodeuuids <- (fromMaybe S.empty . M.lookup clusteruuid . clusterUUIDs)
 		<$> getClusters
@@ -120,8 +121,7 @@ clusterProxySelector clusteruuid protocolversion (Bypass bypass) = do
 		-- proxied to the client.
 		, proxyLOCKCONTENT = const (pure Nothing)
 		}
-	concurrencyconfig <- getConcurrencyConfig
-	return (proxyselector, closenodes, concurrencyconfig)
+	return (proxyselector, closenodes)
   where
 	-- Nodes of the cluster have remote.name.annex-cluster-node
 	-- containing its name. 

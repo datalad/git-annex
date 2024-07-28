@@ -41,6 +41,7 @@ data Options = Options
 	, unauthAppendOnlyOption :: Bool
 	, wideOpenOption :: Bool
 	, proxyConnectionsOption :: Maybe Integer
+	, clusterJobsOption :: Maybe Int
 	}
 
 optParser :: CmdParamsDesc -> Parser Options
@@ -89,10 +90,16 @@ optParser _ = Options
 		( long "proxyconnections" <> metavar paramNumber
 		<> help "maximum number of idle connections when proxying"
 		))
+	<*> optional (option auto
+		( long "clusterjobs" <> metavar paramNumber
+		<> help "number of concurrent node accesses per connection"
+		))
 
 seek :: Options -> CommandSeek
 seek o = getAnnexWorkerPool $ \workerpool ->
-	withP2PConnections workerpool (fromMaybe 1 $ proxyConnectionsOption o)
+	withP2PConnections workerpool
+		(fromMaybe 1 $ proxyConnectionsOption o)
+		(fromMaybe 1 $ clusterJobsOption o)
 		(go workerpool)
   where
 	go workerpool acquireconn = liftIO $ do

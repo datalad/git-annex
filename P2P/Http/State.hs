@@ -181,9 +181,10 @@ type AcquireP2PConnection
 withP2PConnections
 	:: AnnexWorkerPool
 	-> ProxyConnectionPoolSize
+	-> ClusterConcurrency
 	-> (AcquireP2PConnection -> Annex a)
 	-> Annex a
-withP2PConnections workerpool proxyconnectionpoolsize a = do
+withP2PConnections workerpool proxyconnectionpoolsize clusterconcurrency a = do
 	myuuid <- getUUID
 	reqv <- liftIO newEmptyTMVarIO
 	relv <- liftIO newEmptyTMVarIO
@@ -241,7 +242,7 @@ withP2PConnections workerpool proxyconnectionpoolsize a = do
 			Right (Right (Left clusteruuid)) -> proxyconnection $
 				openProxyConnectionToCluster workerpool
 					(connectionProtocolVersion connparams)
-					bypass clusteruuid
+					bypass clusteruuid clusterconcurrency
 			Left ex -> return $ Left $
 				ConnectionFailed $ show ex
 	  where
@@ -557,16 +558,20 @@ openProxyConnectionToRemote workerpool clientmaxversion bypass remote =
 			(Proxy.closeRemoteSide remoteside)
 			concurrencyconfig
 
+type ClusterConcurrency = Int
+
 openProxyConnectionToCluster
 	:: AnnexWorkerPool
 	-> P2P.ProtocolVersion
 	-> P2P.Bypass
 	-> ClusterUUID
+	-> ClusterConcurrency
 	-> IO (Either SomeException ProxyConnection)
-openProxyConnectionToCluster workerpool clientmaxversion bypass clusteruuid =
+openProxyConnectionToCluster workerpool clientmaxversion bypass clusteruuid concurrency =
 	inAnnexWorker' workerpool $ do
-		(proxyselector, closenodes, concurrencyconfig) <-
+		(proxyselector, closenodes) <-
 			clusterProxySelector clusteruuid clientmaxversion bypass
+		concurrencyconfig <- Proxy.mkConcurrencyConfig concurrency
 		liftIO $ openedProxyConnection (fromClusterUUID clusteruuid)
 			proxyselector closenodes concurrencyconfig
 
