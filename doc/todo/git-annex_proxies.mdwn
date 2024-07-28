@@ -28,6 +28,10 @@ Planned schedule of work:
 
 ## work notes
 
+* An interrupted PUT to cluster node that is a special remote over http
+  leaves open the connection to the cluster, so the next request opens
+  another one.
+
 * When part of a file has been sent to a cluster via the http server,
   the transfer interrupted, and another node is added to the cluster,
   and the transfer of the file performed again, there is a failure
