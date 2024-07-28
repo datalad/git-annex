@@ -40,6 +40,13 @@ Planned schedule of work:
   When using ssh and not the http server, the node that had the incomplete
   copy also doesn't get the file, altough no error is displayed.
 
+## items deferred until later for p2p protocol over http
+
+* Support proxying to git remotes that use annex+http urls.
+
+* `git-annex p2phttp` could support systemd socket activation. This would
+  allow making a systemd unit that listens on port 80.
+
 ## completed items for July's work on p2p protocol over http
 
 * HTTP P2P protocol design [[design/p2p_protocol_over_http]].
@@ -57,13 +64,6 @@ Planned schedule of work:
 * Make http server support proxying.
 
 * Make http server support serving a cluster.
-
-## items deferred until later for p2p protocol over http
-
-* Support proxying to git remotes that use annex+http urls.
-
-* `git-annex p2phttp` could support systemd socket activation. This would
-  allow making a systemd unit that listens on port 80.
 
 ## items deferred until later for [[design/passthrough_proxy]]
 
