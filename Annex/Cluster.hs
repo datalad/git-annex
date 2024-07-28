@@ -41,11 +41,6 @@ proxyCluster clusteruuid proxydone servermode clientside protoerrhandler = do
 	getClientProtocolVersion (fromClusterUUID clusteruuid) clientside
 		withclientversion (protoerrhandler noop)
   where
-	proxymethods = ProxyMethods
-		{ removedContent = \u k -> logChange k u InfoMissing
-		, addedContent = \u k -> logChange k u InfoPresent
-		}
-	
 	withclientversion (Just (clientmaxversion, othermsg)) = do
 		-- The protocol versions supported by the nodes are not
 		-- known at this point, and would be too expensive to
@@ -68,7 +63,7 @@ proxyCluster clusteruuid proxydone servermode clientside protoerrhandler = do
 		concurrencyconfig <- getConcurrencyConfig
 		proxystate <- liftIO mkProxyState
 		let proxyparams = ProxyParams
-			{ proxyMethods = proxymethods
+			{ proxyMethods = mkProxyMethods
 			, proxyState = proxystate
 			, proxyServerMode = servermode
 			, proxyClientSide = clientside
