@@ -28,9 +28,6 @@ Planned schedule of work:
 
 ## work notes
 
-* shut down of a connection to a http proxied special remote may not work
-  properly
-
 * Make http server support clusters.
 
 * Support proxying to git remotes using annex+http urls.
