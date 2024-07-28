@@ -36,6 +36,18 @@ Planned schedule of work:
   connection gets opened to the cluster, because the first connection
   never got shut down.
 
+* When part of a file has been sent to a cluster via the http server,
+  the transfer interrupted, and another node is added to the cluster,
+  and the transfer of the file performed again, there is a failure
+  sending to the node that had an incomplete copy. It fails like this:
+
+	  //home/joey/tmp/bench/c3/.git/annex/tmp/SHA256E-s1048576000--09d7e19983a65682138fa5944f135e4fc593330c2693c41d22cc7881443d6060: withBinaryFile: illegal operation
+	git-annex: transfer already in progress, or unable to take transfer lock
+	p2pstdio: 1 failed
+
+  When using ssh and not the http server, the node that had the incomplete
+  copy also doesn't get the file, altough no error is displayed.
+
 ## completed items for July's work on p2p protocol over http
 
 * HTTP P2P protocol design [[design/p2p_protocol_over_http]].
