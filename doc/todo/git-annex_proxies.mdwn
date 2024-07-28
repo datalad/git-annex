@@ -28,12 +28,6 @@ Planned schedule of work:
 
 ## work notes
 
-* An interrupted `git-annex copy --to` a cluster via the http server,
-  when repeated, fails. The http server outputs "transfer already in
-  progress, or unable to take transfer lock". Apparently a second
-  connection gets opened to the cluster, because the first connection
-  never got shut down.
-
 * When part of a file has been sent to a cluster via the http server,
   the transfer interrupted, and another node is added to the cluster,
   and the transfer of the file performed again, there is a failure

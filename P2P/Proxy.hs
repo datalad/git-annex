@@ -558,7 +558,6 @@ proxyRequest proxydone proxyparams requestcomplete requestmessage protoerrhandle
 							(const protoerr)
 	
 	relayPUTMulti minoffset remotes k (Len datalen) _ = do
-		let totallen = datalen + minoffset
 		-- Tell each remote how much data to expect, depending
 		-- on the remote's offset.
 		rs <- forMC (proxyConcurrencyConfig proxyparams) remotes $ \r@(remoteside, remoteoffset) ->
@@ -569,6 +568,8 @@ proxyRequest proxydone proxyparams requestcomplete requestmessage protoerrhandle
 		protoerrhandler (send (catMaybes rs) minoffset) $
 			client $ net $ receiveBytes (Len datalen) nullMeterUpdate
 	  where
+		totallen = datalen + minoffset
+		
 		chunksize = fromIntegral defaultChunkSize
 		
 	  	-- Stream the lazy bytestring out to the remotes in chunks.
@@ -593,13 +594,21 @@ proxyRequest proxydone proxyparams requestcomplete requestmessage protoerrhandle
 								return r
 						else return (Just r)
 			if L.null b'
-				then sent (catMaybes rs')
+				then do
+					-- If we didn't receive as much
+					-- data as expected, close
+					-- connections to all the remotes,
+					-- because they are still waiting
+					-- on the rest of the data.
+					when (n' /= totallen) $
+						mapM_ (closeRemoteSide . fst) rs
+					sent (catMaybes rs')
 				else send (catMaybes rs') n' b'
 
 		sent [] = proxydone
 		sent rs = relayDATAFinishMulti k (map fst rs)
 	
-	runRemoteSideOrSkipFailed remoteside a = 
+	runRemoteSideOrSkipFailed remoteside a =
 		runRemoteSide remoteside a >>= \case
 			Right v -> return (Just v)
 			Left _ -> do
@@ -640,7 +649,7 @@ proxyRequest proxydone proxyparams requestcomplete requestmessage protoerrhandle
 						net receiveMessage			
 	  where
 		finish a = do
-			storeduuids <- forMC (proxyConcurrencyConfig proxyparams) rs $ \r -> 
+			storeduuids <- forMC (proxyConcurrencyConfig proxyparams) rs $ \r ->
 				runRemoteSideOrSkipFailed r a >>= \case
 					Just (Just resp) ->
 						relayPUTRecord k r resp
