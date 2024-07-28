@@ -62,9 +62,8 @@ proxySpecialRemoteSide clientmaxversion r = mkRemoteSide r $ do
 	owaitv <- liftIO newEmptyTMVarIO
 	iclosedv <- liftIO newEmptyTMVarIO
 	oclosedv <- liftIO newEmptyTMVarIO
-	endv <- liftIO newEmptyTMVarIO
 	worker <- liftIO . async =<< forkState
-		(proxySpecialRemote protoversion r ihdl ohdl owaitv endv)
+		(proxySpecialRemote protoversion r ihdl ohdl owaitv oclosedv)
 	let remoteconn = P2PConnection
 		{ connRepo = Nothing
 		, connCheckAuth = const False
@@ -73,7 +72,7 @@ proxySpecialRemoteSide clientmaxversion r = mkRemoteSide r $ do
 		, connIdent = ConnIdent (Just (Remote.name r))
 		}
 	let closeremoteconn = do
-		liftIO $ atomically $ putTMVar endv ()
+		liftIO $ atomically $ putTMVar oclosedv ()
 		join $ liftIO (wait worker)
 	return $ Just
 		( remoterunst
@@ -90,7 +89,7 @@ proxySpecialRemote
 	-> TMVar ()
 	-> TMVar ()
 	-> Annex ()
-proxySpecialRemote protoversion r ihdl ohdl owaitv endv = go
+proxySpecialRemote protoversion r ihdl ohdl owaitv oclosedv = go
   where
 	go :: Annex ()
 	go = liftIO receivemessage >>= \case
@@ -126,20 +125,25 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv endv = go
 		Just _ -> giveup "protocol error"
 		Nothing -> return ()
 
-	getnextmessageorend = 
-		liftIO $ atomically $ 
-			(Right <$> takeTMVar ohdl)
-				`orElse`
-			(Left <$> readTMVar endv)
-
-	receivemessage = getnextmessageorend >>= \case
+	receivemessage = liftIO (atomically recv) >>= \case
 		Right (Right m) -> return (Just m)
 		Right (Left _b) -> giveup "unexpected ByteString received from P2P MVar"
 		Left () -> return Nothing
+	  where
+		recv = 
+			(Right <$> takeTMVar ohdl)
+				`orElse`
+			(Left <$> readTMVar oclosedv)
 	
-	receivebytestring = atomically (takeTMVar ohdl) >>= \case
-		Left b -> return b
-		Right _m -> giveup "did not receive ByteString from P2P MVar"
+	receivebytestring = atomically recv >>= \case
+		Right (Left b) -> return b
+		Right (Right _m) -> giveup "did not receive ByteString from P2P MVar"
+		Left () -> giveup "connection closed"
+	  where
+		recv = 
+			(Right <$> takeTMVar ohdl)
+				`orElse`
+			(Left <$> readTMVar oclosedv)
 
 	sendmessage m = atomically $ putTMVar ihdl (Right m)
 	
@@ -169,7 +173,10 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv endv = go
 					liftIO $ L.writeFile (fromRawFilePath tmpfile) b
 					-- Signal that the whole bytestring
 					-- has been received.
-					liftIO $ atomically $ putTMVar owaitv ()
+					liftIO $ atomically $ 
+						putTMVar owaitv ()
+							`orElse`
+						readTMVar oclosedv
 					if protoversion > ProtocolVersion 1
 						then liftIO receivemessage >>= \case
 							Just (VALIDITY Valid) ->
