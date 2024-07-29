@@ -140,8 +140,8 @@ X-git-annex-data-length header indicated, then the data is invalid and
 should not be used. This can happen when eg, the data was being sent from
 an unlocked annexed file, which got modified while it was being sent.
 
-When the content is not present, the server will respond with 
-422 Unprocessable Content.
+When the key is not present on the server, it will respond
+with 404 Not Found.
 
 ### GET /git-annex/$uuid/v2/key/$key
 
