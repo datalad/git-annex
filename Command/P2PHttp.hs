@@ -25,9 +25,10 @@ import qualified Data.Map as M
 import Data.String
 
 cmd :: Command
-cmd = withAnnexOptions [jobsOption] $ command "p2phttp" SectionPlumbing
-	"communicate in P2P protocol over http"
-	paramNothing (seek <$$> optParser)
+cmd = noMessages $ withAnnexOptions [jobsOption] $
+	command "p2phttp" SectionPlumbing
+		"communicate in P2P protocol over http"
+		paramNothing (seek <$$> optParser)
 
 data Options = Options
 	{ portOption :: Maybe PortNumber
