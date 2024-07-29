@@ -164,31 +164,33 @@ lockContentShared key mduration a = do
 		, Nothing
 		)
 #else
-	lock retention v = 
-		let (locker, postunlock) = winLocker lockShared v
+	lock retention obj lckf = 
+		let (locker, postunlock) = winLocker lockShared' obj lckf
 		in 
 			( locker >>= \case
 				Just lck -> do
 					writeretention retention
 					return (Just lck)
 				Nothing -> return Nothing
-			, \lckfile -> do
-				maybe noop (\a -> a lckfile) postunlock
-				lockdropretention v retention
+			, Just $ \lckfile -> do
+				maybe noop (\pu -> pu lckfile) postunlock
+				lockdropretention obj lckf retention
 			)
 
-	lockdropretention _ Nothing = noop
-	lockdropretention v retention@(Just _) = do
+	lockdropretention _ _ Nothing = noop
+	lockdropretention obj lckf retention = do
 		-- In order to dropretention, have to
 		-- take an exclusive lock.
 		let (exlocker, expostunlock) =
-			winLocker lockExclusive v
+			winLocker lockExclusive' obj lckf
 		exlocker >>= \case
 			Nothing -> noop
 			Just lck -> do
 				dropretention retention
 				liftIO $ dropLock lck
-		fromMaybe noop expostunlock
+				case (expostunlock, lckf) of
+					(Just pu, Just f) -> pu f
+					_ -> noop
 #endif
 	
 	writeretention Nothing = noop
@@ -238,8 +240,10 @@ lockContentForRemoval key fallback a = lockContentUsing lock key fallback $
 			(tryLockExclusive Nothing contentfile)
 		in (lck, Nothing)
 #else
-	lock = checkRetentionTimestamp key
-		(winLocker lockExclusive)
+	lock obj lckf = 
+		let (exlocker, expostunlock) =
+			winLocker lockExclusive' obj lckf
+		in (checkRetentionTimestamp key exlocker, expostunlock)
 #endif
 
 {- Passed the object content file, and maybe a separate lock file to use,
@@ -362,7 +366,7 @@ lockContentUsing contentlocker key fallback a = withContentLockFile key $ \mlock
 		case mlockfile of
 			Nothing -> noop -- never reached
 			Just lockfile -> do
-				maybe noop (\a -> a lockfile) postunlock
+				maybe noop (\pu -> pu lockfile) postunlock
 				cleanuplockfile lockfile
 #endif
 
