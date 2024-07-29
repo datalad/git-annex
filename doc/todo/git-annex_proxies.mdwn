@@ -60,7 +60,15 @@ Planned schedule of work:
   time (not as proxied remotes), so that eg, every git-annex repository
   on a server can be served on the same port.
 
-* Support proxying to git remotes that use annex+http urls.
+* Support proxying to git remotes that use annex+http urls. This needs a
+  translation from P2P protocol to servant-client to P2P protocol.
+
+* Should be possible to use a git-remote-annex annex::$uuid url as
+  remote.foo.url with remote.foo.annexUrl using annex+http, and so 
+  not need a separate web server to serve the git repository. Doesn't work
+  currently because git-remote-annex urls only support special remotes.
+  It would need a new form of git-remote-annex url, eg:
+  annex::$uuid?annex+http://example.com/git-annex/
 
 * `git-annex p2phttp` could support systemd socket activation. This would
   allow making a systemd unit that listens on port 80.
