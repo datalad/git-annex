@@ -4,7 +4,7 @@ as shown in the tip [[setup_a_public_repository_on_a_web_site]].
 That's limited to basic read-only repository access though. Git
 has [smart HTTP](https://git-scm.com/book/en/v2/Git-on-the-Server-Smart-HTTP)
 that can be used to allow pushes over http. And git-annex
-has the [[git annex-p2phttp command|/git-annex-p2phttp]].
+has the [[git-annex p2phttp command|/git-annex-p2phttp]].
 
 As well as allowing write access to authorized users over http,
 `git-annex p2phttp` also allows accessing [[clusters]], and other proxied
