@@ -323,7 +323,7 @@ Executable git-annex
       servant-client-core,
       warp (>= 3.2.8),
       warp-tls (>= 3.2.2),
-      stm (>= 2.5.1),
+      stm (>= 2.5.1)
     CPP-Options: -DWITH_SERVANT
     Other-Modules:
       Command.P2PHttp
