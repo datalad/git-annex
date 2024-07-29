@@ -16,7 +16,6 @@ import P2P.Proxy
 import P2P.Protocol
 import P2P.IO
 import Remote.Helper.Ssh (openP2PShellConnection', closeP2PShellConnection)
-import Annex.Content
 import Annex.Concurrent
 import Annex.Tmp
 import Logs.Proxy
@@ -209,12 +208,7 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv oclosedv = go
 		-- because the client will do its own verification.
 		let vc = Remote.NoVerify
 		tryNonAsync (Remote.retrieveKeyFile r k af (fromRawFilePath tmpfile) nullMeterUpdate vc) >>= \case
-			Right v ->
-				ifM (verifyKeyContentPostRetrieval Remote.RetrievalVerifiableKeysSecure vc v k tmpfile)
-					( liftIO $ senddata offset tmpfile
-					, liftIO $ sendmessage $
-						ERROR "verification of content failed"
-					)
+			Right _ -> liftIO $ senddata offset tmpfile
 			Left err -> liftIO $ propagateerror err
 	
 	senddata (Offset offset) f = do

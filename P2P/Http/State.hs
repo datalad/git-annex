@@ -220,7 +220,7 @@ withP2PConnections workerpool proxyconnectionpoolsize clusterconcurrency a = do
 					>>= atomically . putTMVar respvar
 				servicer myuuid myproxies proxypool reqv relv endv
 			Left (Right releaseconn) -> do
-				releaseconn
+				void $ tryNonAsync releaseconn
 				servicer myuuid myproxies proxypool reqv relv endv
 			Left (Left ()) -> return ()
 	
@@ -378,12 +378,18 @@ proxyConnection proxyconnectionpoolsize relv connparams workerpool proxypool pro
 				liftIO $ runNetProto proxyfromclientrunst proxyfromclientconn $
 					P2P.net P2P.receiveMessage
 	
-	let releaseconn returntopool =
+	let closebothsides = do
+		liftIO $ closeConnection proxyfromclientconn
+		liftIO $ closeConnection clientconn
+
+	let releaseconn connstillusable = do
 		atomically $ void $ tryPutTMVar relv $ do
+			unless connstillusable
+				closebothsides
 			r <- liftIO $ wait asyncworker
-			liftIO $ closeConnection proxyfromclientconn
-			liftIO $ closeConnection clientconn
-			if returntopool
+			when connstillusable
+				closebothsides
+			if connstillusable
 				then liftIO $ do
 					now <- getPOSIXTime
 					evicted <- atomically $ putProxyConnectionPool proxypool proxyconnectionpoolsize connparams $
@@ -539,13 +545,20 @@ instance Show ProxyConnection where
 
 openedProxyConnection
 	:: UUID
+	-> String
 	-> Proxy.ProxySelector
 	-> Annex ()
 	-> Proxy.ConcurrencyConfig
-	-> IO ProxyConnection
-openedProxyConnection u selector closer concurrency = do
-	now <- getPOSIXTime
-	return $ ProxyConnection u selector closer concurrency now
+	-> Annex ProxyConnection
+openedProxyConnection u desc selector closer concurrency = do
+	now <- liftIO getPOSIXTime
+	fastDebug "P2P.Http" ("Opened proxy connection to " ++ desc)
+	return $ ProxyConnection u selector closer' concurrency now
+  where
+	closer' = do
+		fastDebug "P2P.Http" ("Closing proxy connection to " ++ desc)
+		closer
+		fastDebug "P2P.Http" ("Closed proxy connection to " ++ desc)
 
 openProxyConnectionToRemote
 	:: AnnexWorkerPool
@@ -557,7 +570,8 @@ openProxyConnectionToRemote workerpool clientmaxversion bypass remote =
 	inAnnexWorker' workerpool $ do
 		remoteside <- proxyRemoteSide clientmaxversion bypass remote
 		concurrencyconfig <- Proxy.noConcurrencyConfig
-		liftIO $ openedProxyConnection (Remote.uuid remote)
+		openedProxyConnection (Remote.uuid remote)
+			("remote " ++ Remote.name remote)
 			(Proxy.singleProxySelector remoteside)
 			(Proxy.closeRemoteSide remoteside)
 			concurrencyconfig
@@ -576,7 +590,8 @@ openProxyConnectionToCluster workerpool clientmaxversion bypass clusteruuid conc
 		(proxyselector, closenodes) <-
 			clusterProxySelector clusteruuid clientmaxversion bypass
 		concurrencyconfig <- Proxy.mkConcurrencyConfig concurrency
-		liftIO $ openedProxyConnection (fromClusterUUID clusteruuid)
+		openedProxyConnection (fromClusterUUID clusteruuid)
+			("cluster " ++ fromUUID (fromClusterUUID clusteruuid))
 			proxyselector closenodes concurrencyconfig
 
 type ProxyConnectionPool = (Integer, M.Map ProxyConnectionPoolKey [ProxyConnection])

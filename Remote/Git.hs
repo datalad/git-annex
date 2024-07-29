@@ -227,7 +227,7 @@ gen r u rc gc rs
 			, localpath = localpathCalc r
 			, getRepo = getRepoFromState st
 			, gitconfig = gc
-			, readonly = Git.repoIsHttp r
+			, readonly = Git.repoIsHttp r && not (isP2PHttp' gc)
 			, appendonly = False
 			, untrustworthy = False
 			, availability = repoAvail r

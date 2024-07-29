@@ -3,8 +3,8 @@ as shown in the tip [[setup_a_public_repository_on_a_web_site]].
 
 That's limited to basic read-only repository access though. Git
 has [smart HTTP](https://git-scm.com/book/en/v2/Git-on-the-Server-Smart-HTTP)
-that can be used to allow pushes over http. And git-annex has an
-equivilant, the [[git annex-p2phttp command|/git-annex-p2phttp]].
+that can be used to allow pushes over http. And git-annex
+has the [[git annex-p2phttp command|/git-annex-p2phttp]].
 
 As well as allowing write access to authorized users over http,
 `git-annex p2phttp` also allows accessing [[clusters]], and other proxied
@@ -37,3 +37,7 @@ In the git config file of the repository, set `annex.url` to the "annex+http"
 (or "annex+https") url. The first time it uses a http remote, git-annex
 downloads its git config file, and sets `remote.name.annexUrl` to the value
 of the remote's `annex.url`.
+
+Support for this first appeared in git-annex version 10.20240731. Users of
+older git-annex won't be able to use the smart http server, but can still
+clone the repository from the dumb http server.

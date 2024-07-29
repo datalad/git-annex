@@ -28,13 +28,6 @@ Planned schedule of work:
 
 ## work notes
 
-* An interrupted PUT to cluster that has a node that is a special remote
-  over http leaves open the connection to the cluster, so the next request
-  opens another one.
-
-  So does an interrupted PUT directly to the proxied ;
-  special remote over http.
-
 * When part of a file has been sent to a cluster via the http server,
   the transfer interrupted, and another node is added to the cluster,
   and the transfer of the file performed again, there is a failure
@@ -52,7 +45,10 @@ Planned schedule of work:
   special remote. This violates a usual invariant that any data being
   received into a repository gets verified in passing. Although on the
   other hand, when sending data to a special remote normally, there is also
-  no verification.
+  no verification. On the third hand, a p2p http proxy (or for that matter
+  a ssh server) may have users who are allowed to store objects, but are
+  not really trusted, and if they can upload garbage without verification,
+  that could be bad.
 
 ## items deferred until later for p2p protocol over http
 
@@ -60,7 +56,15 @@ Planned schedule of work:
   time (not as proxied remotes), so that eg, every git-annex repository
   on a server can be served on the same port.
 
-* Support proxying to git remotes that use annex+http urls.
+* Support proxying to git remotes that use annex+http urls. This needs a
+  translation from P2P protocol to servant-client to P2P protocol.
+
+* Should be possible to use a git-remote-annex annex::$uuid url as
+  remote.foo.url with remote.foo.annexUrl using annex+http, and so 
+  not need a separate web server to serve the git repository. Doesn't work
+  currently because git-remote-annex urls only support special remotes.
+  It would need a new form of git-remote-annex url, eg:
+  annex::$uuid?annex+http://example.com/git-annex/
 
 * `git-annex p2phttp` could support systemd socket activation. This would
   allow making a systemd unit that listens on port 80.

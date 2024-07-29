@@ -314,9 +314,9 @@ servePut st resultmangle su apiver (DataLength len) (B64Key k) cu bypass baf mof
 	tooshortv <- liftIO newEmptyTMVarIO
 	content <- liftIO $ S.unSourceT stream (gather validityv tooshortv)
 	res <- withP2PConnection' apiver st cu su bypass sec auth WriteAction
-		(\cst -> cst { connectionWaitVar = False }) $ \conn ->
+		(\cst -> cst { connectionWaitVar = False }) $ \conn -> do
+			liftIO $ void $ async $ checktooshort conn tooshortv
 			liftIO (protoaction conn content validitycheck)
-				`finally` checktooshort conn tooshortv
 	case res of
 		Right (Right (Just plusuuids)) -> return $ resultmangle $
 			PutResultPlus True (map B64UUID plusuuids)
@@ -385,8 +385,8 @@ servePut st resultmangle su apiver (DataLength len) (B64Key k) cu bypass baf mof
 			
 	-- The connection can no longer be used when too short a DATA has
 	-- been written to it.
-	checktooshort conn tooshortv =
-		liftIO $ whenM (atomically $ fromMaybe True <$> tryTakeTMVar tooshortv) $
+	checktooshort conn tooshortv = do
+		liftIO $ whenM (atomically $ takeTMVar tooshortv) $
 			closeP2PConnection conn
 
 servePutOffset
