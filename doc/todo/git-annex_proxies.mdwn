@@ -45,7 +45,10 @@ Planned schedule of work:
   special remote. This violates a usual invariant that any data being
   received into a repository gets verified in passing. Although on the
   other hand, when sending data to a special remote normally, there is also
-  no verification.
+  no verification. On the third hand, a p2p http proxy (or for that matter
+  a ssh server) may have users who are allowed to store objects, but are
+  not really trusted, and if they can upload garbage without verification,
+  that could be bad.
 
 ## items deferred until later for p2p protocol over http
 
