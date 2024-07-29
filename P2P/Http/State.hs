@@ -378,12 +378,18 @@ proxyConnection proxyconnectionpoolsize relv connparams workerpool proxypool pro
 				liftIO $ runNetProto proxyfromclientrunst proxyfromclientconn $
 					P2P.net P2P.receiveMessage
 	
-	let releaseconn returntopool = do
+	let closebothsides = do
+		liftIO $ closeConnection proxyfromclientconn
+		liftIO $ closeConnection clientconn
+
+	let releaseconn connstillusable = do
 		atomically $ void $ tryPutTMVar relv $ do
-			liftIO $ closeConnection proxyfromclientconn
-			liftIO $ closeConnection clientconn
+			unless connstillusable
+				closebothsides
 			r <- liftIO $ wait asyncworker
-			if returntopool
+			when connstillusable
+				closebothsides
+			if connstillusable
 				then liftIO $ do
 					now <- getPOSIXTime
 					evicted <- atomically $ putProxyConnectionPool proxypool proxyconnectionpoolsize connparams $
