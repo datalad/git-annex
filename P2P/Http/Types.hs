@@ -73,7 +73,7 @@ encodeB64Text b = case TE.decodeUtf8' b of
 		| otherwise -> t
 	Left _ -> b64wrapped
   where
-	b64wrapped = TE.decodeUtf8Lenient $ "[" <> B64.encode b <> "]"
+	b64wrapped = TE.decodeUtf8 $ "[" <> B64.encode b <> "]"
 	openbracket = fromIntegral (ord '[')
 	closebracket = fromIntegral (ord ']')
 
