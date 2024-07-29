@@ -178,7 +178,7 @@ lockContentShared key mduration a = do
 			)
 
 	lockdropretention Nothing = noop
-	lockdropretention retention@(Just _) =
+	lockdropretention retention@(Just _) = do
 		-- In order to dropretention, have to
 		-- take an exclusive lock.
 		let (exlocker, expostunlock) =
