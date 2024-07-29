@@ -151,7 +151,11 @@ data Auth = Auth B.ByteString B.ByteString
 
 instance ToHttpApiData Auth where
 	toHeader (Auth u p) = "Basic " <> B64.encode (u <> ":" <> p)
+#if MIN_VERSION_text(2,0,0)
 	toUrlPiece = TE.decodeUtf8Lenient . toHeader
+#else
+	toUrlPiece = TE.decodeUtf8With (\_ _ -> Just '\xfffd') . toHeader
+#endif
 
 instance FromHttpApiData Auth where
 	parseHeader h =
