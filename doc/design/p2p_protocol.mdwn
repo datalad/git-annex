@@ -3,7 +3,8 @@ communicate between peers.
 
 There's a common line-based serialization of the protocol, but other
 serializations are also possible. The line-based serialization is spoken
-by [[git-annex-shell], and by git-annex over tor.
+by [[git-annex-shell]], and by git-annex over tor. There is also
+a translation of this protocol to a [[HTTP_API|p2p_protocol_over_http]].
 
 One peer is known as the client, and is the peer that initiates the
 connection and sends commands. The other peer is known as the server, and
