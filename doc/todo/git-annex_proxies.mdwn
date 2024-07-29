@@ -40,16 +40,6 @@ Planned schedule of work:
   When using ssh and not the http server, the node that had the incomplete
   copy also doesn't get the file, altough no error is displayed.
 
-* When proxying a PUT to a special remote, no verification of the received
-  content is done, it's just written to a file and that is sent to the
-  special remote. This violates a usual invariant that any data being
-  received into a repository gets verified in passing. Although on the
-  other hand, when sending data to a special remote normally, there is also
-  no verification. On the third hand, a p2p http proxy (or for that matter
-  a ssh server) may have users who are allowed to store objects, but are
-  not really trusted, and if they can upload garbage without verification,
-  that could be bad.
-
 ## items deferred until later for p2p protocol over http
 
 * `git-annex p2phttp` should support serving several repositories at the same

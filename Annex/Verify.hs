@@ -19,6 +19,7 @@ module Annex.Verify (
 	isVerifiable,
 	startVerifyKeyContentIncrementally,
 	finishVerifyKeyContentIncrementally,
+	finishVerifyKeyContentIncrementally',
 	verifyKeyContentIncrementally,
 	IncrementalVerifier(..),
 	writeVerifyChunk,
@@ -199,13 +200,17 @@ startVerifyKeyContentIncrementally verifyconfig k =
 		)
 
 finishVerifyKeyContentIncrementally :: Maybe IncrementalVerifier -> Annex (Bool, Verification)
-finishVerifyKeyContentIncrementally Nothing = 
+finishVerifyKeyContentIncrementally = finishVerifyKeyContentIncrementally' False
+
+finishVerifyKeyContentIncrementally' :: Bool -> Maybe IncrementalVerifier -> Annex (Bool, Verification)
+finishVerifyKeyContentIncrementally' _ Nothing = 
 	return (True, UnVerified)
-finishVerifyKeyContentIncrementally (Just iv) =
+finishVerifyKeyContentIncrementally' quiet (Just iv) =
 	liftIO (finalizeIncrementalVerifier iv) >>= \case
 		Just True -> return (True, Verified)
 		Just False -> do
-			warning "verification of content failed"
+			unless quiet $
+				warning "verification of content failed"
 			return (False, UnVerified)
 		-- Incremental verification was not able to be done.
 		Nothing -> return (True, UnVerified)

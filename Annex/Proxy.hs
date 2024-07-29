@@ -18,6 +18,7 @@ import P2P.IO
 import Remote.Helper.Ssh (openP2PShellConnection', closeP2PShellConnection)
 import Annex.Concurrent
 import Annex.Tmp
+import Annex.Verify
 import Logs.Proxy
 import Logs.Cluster
 import Logs.UUID
@@ -136,9 +137,9 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv oclosedv = go
 			(Left <$> readTMVar oclosedv)
 	
 	receivebytestring = atomically recv >>= \case
-		Right (Left b) -> return b
+		Right (Left b) -> return (Just b)
 		Right (Right _m) -> giveup "did not receive ByteString from P2P MVar"
-		Left () -> giveup "connection closed"
+		Left () -> return Nothing
 	  where
 		recv = 
 			(Right <$> takeTMVar ohdl)
@@ -161,6 +162,8 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv oclosedv = go
 		withTmpDirIn (fromRawFilePath othertmpdir) "proxy" $ \tmpdir ->
 			a (toRawFilePath tmpdir P.</> keyFile k)
 			
+	-- Verify the content received from the client, to avoid bad content
+	-- being stored in the special remote.
 	proxyput af k = do
 		liftIO $ sendmessage $ PUT_FROM (Offset 0)
 		withproxytmpfile k $ \tmpfile -> do
@@ -169,13 +172,18 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv oclosedv = go
 				Left err -> liftIO $ propagateerror err
 			liftIO receivemessage >>= \case
 				Just (DATA (Len len)) -> do
+					iv <- startVerifyKeyContentIncrementally Remote.AlwaysVerify k
 					h <- liftIO $ openFile (fromRawFilePath tmpfile) WriteMode
-					liftIO $ receivetofile h len
+					gotall <- liftIO $ receivetofile iv h len
 					liftIO $ hClose h
+					verified <- if gotall
+						then fst <$> finishVerifyKeyContentIncrementally' True iv
+						else pure False
 					if protoversion > ProtocolVersion 1
 						then liftIO receivemessage >>= \case
-							Just (VALIDITY Valid) ->
-								store
+							Just (VALIDITY Valid)
+								| verified -> store
+								| otherwise -> liftIO $ sendmessage FAILURE
 							Just (VALIDITY Invalid) ->
 								liftIO $ sendmessage FAILURE
 							_ -> giveup "protocol error"
@@ -183,25 +191,27 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv oclosedv = go
 				_ -> giveup "protocol error"
 			liftIO $ removeWhenExistsWith removeFile (fromRawFilePath tmpfile)
 
-	receivetofile h n = do
-		b <- liftIO receivebytestring
-		liftIO $ atomically $ 
-			putTMVar owaitv ()
-				`orElse`
-			readTMVar oclosedv
-		n' <- storetofile h n (L.toChunks b)
-		-- Normally all the data is sent in a single
-		-- lazy bytestring. However, when the special
-		-- remote is a node in a cluster, a PUT is
-		-- streamed to it in multiple chunks.
-		if n' == 0 
-			then return ()
-			else receivetofile h n'
+	receivetofile iv h n = liftIO receivebytestring >>= \case
+		Just b -> do
+			liftIO $ atomically $ 
+				putTMVar owaitv ()
+					`orElse`
+				readTMVar oclosedv
+			n' <- storetofile iv h n (L.toChunks b)
+			-- Normally all the data is sent in a single
+			-- lazy bytestring. However, when the special
+			-- remote is a node in a cluster, a PUT is
+			-- streamed to it in multiple chunks.
+			if n' == 0 
+				then return True
+				else receivetofile iv h n'
+		Nothing -> return False
 
-	storetofile _ n [] = pure n
-	storetofile h n (b:bs) = do
+	storetofile _ _ n [] = pure n
+	storetofile iv h n (b:bs) = do
+		writeVerifyChunk iv h b
 		B.hPut h b
-		storetofile h (n - fromIntegral (B.length b)) bs
+		storetofile iv h (n - fromIntegral (B.length b)) bs
 
 	proxyget offset af k = withproxytmpfile k $ \tmpfile -> do
 		-- Don't verify the content from the remote,
