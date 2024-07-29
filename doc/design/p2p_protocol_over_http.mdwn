@@ -18,7 +18,7 @@ A git-annex key can contain text in any encoding. So can a filename,
 and it's even possible, though unlikely, that the UUID of a git-annex
 repository might.
 
-But the P2P requires that UTF-8 be used throughout, except 
+But this API requires that UTF-8 be used throughout, except 
 where bodies use `Content-Type: application/octet-stream`.
 
 So this API allows using 
