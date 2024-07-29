@@ -13,6 +13,7 @@ git-annex (10.20240702) UNRELEASED; urgency=medium
   * Avoid potential data loss in situations where git-annex-shell or
     git-annex remotedaemon is killed while locking a key to prevent its
     removal.
+  * When proxying for a special remote, avoid unncessary hashing.
   * Added a dependency on clock.
   * Propagate --force to git-annex transferrer.
 
