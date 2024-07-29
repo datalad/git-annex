@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2024-07-29T15:58:53Z"
+ content="""
+@m.risse, this is implemented now in [[git-annex p2phttp]], also see
+[[tips/smart_http_server]].
+"""]]
