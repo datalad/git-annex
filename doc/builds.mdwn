@@ -51,15 +51,15 @@
 </iframe>
 <h2>OSX</h2>
 <a href="https://github.com/datalad/git-annex/actions?query=workflow%3A%22Build+git-annex+on+macOS%22">
-<img src="https://github.com/datalad/git-annex/workflows/Build%20git-annex%20on%20macOS/badge.svg">
+<img src="https://github.com/datalad/git-annex/actions/workflows/build-macos.yaml/badge.svg">
 </a>
 <h2>Windows</h2>
 <a href="https://github.com/datalad/git-annex/actions?query=workflow%3A%22Build+git-annex+on+Windows%22">
-<img src="https://github.com/datalad/git-annex/workflows/Build%20git-annex%20on%20Windows/badge.svg">
+<img src="https://github.com/datalad/git-annex/actions/workflows/build-windows.yaml/badge.svg">
 </a>
 <h2>Debian standalone packages</h2>
 <a href="https://github.com/datalad/git-annex/actions?query=workflow%3A%22Build+git-annex+on+Ubuntu%22">
-<img src="https://github.com/datalad/git-annex/workflows/Build%20git-annex%20on%20Ubuntu/badge.svg">
+<img src="https://github.com/datalad/git-annex/actions/workflows/build-ubuntu.yaml/badge.svg">
 </a>
 <h2>Appveyor</h2>
 <a href="https://ci.appveyor.com/project/mih/git-annex">here</a>
