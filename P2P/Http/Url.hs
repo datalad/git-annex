@@ -32,7 +32,6 @@ isP2PHttpProtocolUrl s =
 
 data P2PHttpUrl = P2PHttpUrl
 	{ p2pHttpUrlString :: String
-	, p2pHttpUUID :: Maybe UUID
 #ifdef WITH_SERVANT
 	, p2pHttpBaseUrl :: BaseUrl
 #endif
@@ -50,21 +49,11 @@ parseP2PHttpUrl us
 				"https:" -> mkbaseurl Https u
 				_ -> Nothing
 #else
-			Just $ P2PHttpUrl us (extractuuid u)
+			Just $ P2PHttpUrl us
 #endif
 	| otherwise = Nothing
   where
 	prefixlen = length "annex+"
-
-	extractuuid u = do
-		p <- lastMaybe $ P.splitDirectories (uriPath u)
-		-- While git-annex generally allows a UUID that is not
-		-- well formed, here it's important to make sure that the
-		-- url a user provided really ends with a UUID, so check
-		-- that it's well formed.
-		case UUID.fromString p of
-			Nothing -> Nothing
-			Just _ -> return (UUID (encodeBS p)) 
 
 #ifdef WITH_SERVANT
 	mkbaseurl s u = do
@@ -72,7 +61,7 @@ parseP2PHttpUrl us
 		port <- if null (uriPort auth)
 			then Just defaultP2PHttpProtocolPort
 			else readMaybe (dropWhile (== ':') (uriPort auth))
-		return $ P2PHttpUrl us (extractuuid u) $ BaseUrl
+		return $ P2PHttpUrl us $ BaseUrl
 			{ baseUrlScheme = s
 			, baseUrlHost = uriRegName auth
 			, baseUrlPath = basepath u
@@ -84,13 +73,10 @@ parseP2PHttpUrl us
 	-- it from the url that the user provided. However, it may not be
 	-- present, eg if some other server is speaking the git-annex
 	-- protocol. The UUID is also removed from the end of the url.
-	basepath u = case drop 1 $ reverse $ P.splitDirectories (uriPath u) of
+	basepath u = case reverse $ P.splitDirectories (uriPath u) of
 		("git-annex":"/":rest) -> P.joinPath (reverse rest)
 		rest -> P.joinPath (reverse rest)
 #endif
-
-p2pHttpUrlWithoutUUID :: String -> String
-p2pHttpUrlWithoutUUID = reverse . dropWhile (/= '/') . reverse
 
 unavailableP2PHttpUrl :: P2PHttpUrl -> P2PHttpUrl
 unavailableP2PHttpUrl p = p

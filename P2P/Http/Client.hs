@@ -138,7 +138,7 @@ p2pHttpClientVersions allowedversion rmt fallback clientaction =
 
 	credentialbaseurl = case p2pHttpUrlString <$> remoteAnnexP2PHttpUrl (gitconfig rmt) of
 		Nothing -> error "internal"
-		Just url -> p2pHttpUrlWithoutUUID url
+		Just url -> url
 
 	credauth cred = do
 		ba <- Git.credentialBasicAuth cred

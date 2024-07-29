@@ -10,9 +10,7 @@ connection (mostly). This is a translation of that protocol to HTTP.
 To indicate that an url uses this protocol, use 
 `annex+http` or `annex+https` as the url scheme. Such an url uses
 port 9417 by default, although another port can be specified. 
-The last part of the path of such an url is always the repository uuid.
-For example, `annex+http://example.com/git-annex/$uuid` or 
-`annex+http://example.com:80/git-annex/$uuid`
+For example, "annex+http://example.com/git-annex/"
 
 ## base64 encoding of keys, uuids, and filenames
 

@@ -26,15 +26,14 @@ that git will use, and also have `remote.name.annexUrl` set to the url
 that git-annex will use to talk to `git-annex p2phttp`. That url
 looks like this:
     
-    annex+http://example.com/git-annex/bbdac17e-6633-4b27-8f7b-fb447d5bae7c
+    annex+http://example.com/git-annex/
 
 The "annex+http" (or "annex+https") indicates that it's a git-annex API
 url, which defaults to being on port 9417 unless a different port is set.
-And the last part of the url is the annex.uuid of the repository.
 
 It would be annoying if every user who cloned your repository 
 had to set `remote.name.annexUrl` manually. So there's a way to automate it.
 In the git config file of the repository, set `annex.url` to the "annex+http"
 (or "annex+https") url. The first time it uses a http remote, git-annex
-downloads the git config file, and sets `remote.name.annexUrl` to the value
-of annex.url.
+downloads its git config file, and sets `remote.name.annexUrl` to the value
+of the remote's `annex.url`.

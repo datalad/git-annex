@@ -169,10 +169,6 @@ enableRemote Nothing _ = giveup "unable to enable git remote with no specified u
  - done each time git-annex is run in a way that uses remotes, unless
  - annex-checkuuid is false.
  -
- - An annex+http remote's UUID is part of the url,
- - so the config does not have to be read, but it is verified that
- - it matches the cached UUID.
- -
  - The config of other URL remotes is only read when there is no
  - cached UUID value. 
  -}
@@ -181,27 +177,12 @@ configRead autoinit r = do
 	gc <- Annex.getRemoteGitConfig r
 	hasuuid <- (/= NoUUID) <$> getRepoUUID r
 	annexignore <- liftIO $ getDynamicConfig (remoteAnnexIgnore gc)
-	c <- fromRepo Git.config
-	case (repoCheap r, annexignore, hasuuid, p2pHttpUUID =<< parseP2PHttpUrl =<< getAnnexUrl r c) of
-		(_, True, _, _) -> return r
-		(True, _, _, _)
+	case (repoCheap r, annexignore, hasuuid) of
+		(_, True, _) -> return r
+		(True, _, _)
 			| remoteAnnexCheckUUID gc -> tryGitConfigRead autoinit r hasuuid
 			| otherwise -> return r
-		(_, _, _, Just p2phttpuuid) -> getRepoUUID r >>= \case
-			u@(UUID {})
-				| u == p2phttpuuid -> return r
-				| otherwise -> do
-					warning $ UnquotedString $ unwords
-						[ "Repository", Git.repoDescribe r
-						, "has different UUIDS in"
-						, Git.fromConfigKey (annexUrlConfigKey r)
-						, "and"
-						, Git.fromConfigKey (configRepoUUID r)
-						]
-					return r
-			NoUUID -> storeUpdatedRemote $
-				liftIO $ setUUID r p2phttpuuid
-		(False, _, False, _) -> configSpecialGitRemotes r >>= \case
+		(False, _, False) -> configSpecialGitRemotes r >>= \case
 			Nothing -> tryGitConfigRead autoinit r False
 			Just r' -> return r'
 		_ -> return r
@@ -960,7 +941,6 @@ listProxied proxies rs = concat <$> mapM go rs
 		annexconfigadjuster clusters r' = 
 			let c = adduuid (configRepoUUID renamedr) $
 				addurl $
-				addp2phttpurl $
 				addproxiedby $
 				adjustclusternode clusters $
 				inheritconfigs $ Git.fullconfig r'
@@ -974,13 +954,6 @@ listProxied proxies rs = concat <$> mapM go rs
 
 		addurl = M.insert (mkRemoteConfigKey renamedr (remoteGitConfigKey UrlField))
 			[Git.ConfigValue $ encodeBS $ Git.repoLocation r]
-		
-		addp2phttpurl = case remoteAnnexP2PHttpUrl gc of
-			Just u -> addremoteannexfield AnnexUrlField
-				[Git.ConfigValue $ encodeBS $ 
-					p2pHttpUrlWithoutUUID (p2pHttpUrlString u) 
-						++ fromUUID (proxyRemoteUUID p)]
-			Nothing -> id
 		
 		addproxiedby = case remoteAnnexUUID gc of
 			Just u -> addremoteannexfield ProxiedByField

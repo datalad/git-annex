@@ -17,7 +17,7 @@ API.
 
 Typically a remote will have `remote.name.url` set to a http url
 as usual, and `remote.name.annexUrl` set to an annex+http url such as
-`annex+http://example.com/git-annex/$uuid`. The annex+http url is
+"annex+http://example.com/git-annex/". The annex+http url is
 served by this server, and uses port 9417 by default.
 
 As well as serving the git-annex HTTP API, this server provides a

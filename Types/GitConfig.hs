@@ -651,7 +651,7 @@ remoteGitConfigField = \case
 	ClusterNodeField -> uninherited True "cluster-node"
 	ClusterGatewayField -> uninherited True "cluster-gateway"
 	UrlField -> uninherited False "url"
-	AnnexUrlField -> uninherited False "annexurl"
+	AnnexUrlField -> inherited False "annexurl"
 	ShellField -> inherited True "shell"
 	SshOptionsField -> inherited True "ssh-options"
 	RsyncOptionsField -> inherited True "rsync-options"
