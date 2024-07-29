@@ -9,14 +9,9 @@
 
 module P2P.Http.Url where
 
-import Types.UUID
-import Utility.FileSystemEncoding
-import Utility.PartialPrelude
-
 import Data.List
 import Network.URI
 import System.FilePath.Posix as P
-import qualified Data.UUID as UUID
 #ifdef WITH_SERVANT
 import Servant.Client (BaseUrl(..), Scheme(..))
 import Text.Read
