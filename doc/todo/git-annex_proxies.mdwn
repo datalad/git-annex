@@ -32,7 +32,7 @@ Planned schedule of work:
   over http leaves open the connection to the cluster, so the next request
   opens another one.
 
-  So does an interrupted PUT directly to the proxied ;
+  So does an interrupted PUT directly to the proxied
   special remote over http.
 
 * When part of a file has been sent to a cluster via the http server,
