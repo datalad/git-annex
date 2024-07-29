@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="stv0g"
+ avatar="http://cdn.libravatar.org/avatar/6faa6cc783a165b25fc1c8f3154ba449"
+ subject="importtree=yes Support"
+ date="2024-07-29T06:50:01Z"
+ content="""
+I have a use case for the importree protocol extensions:
+
+I would like to ingest photos and documents from my familys iCloud share.
+
+I am planning on using git-annex with the new [rclone special remote](https://git-annex.branchable.com/forum/New_external_special_remote_for_rclone/) to do so.
+rclone is just in the process of [adding support for a new iCloud drive/photos remote](https://github.com/rclone/rclone/pull/7717) to make it feasible.
+
+The missing piece is that we can not yet import/sync a tree of files from rclone into my annex.
+
+@joeyh.name I would be quite interested to work with you on getting this supported.
+"""]]
