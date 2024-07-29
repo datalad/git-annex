@@ -165,7 +165,7 @@ lockContentShared key mduration a = do
 		)
 #else
 	lock retention obj lckf = 
-		let (locker, postunlock) = winLocker lockShared' obj lckf
+		let (locker, postunlock) = winLocker lockShared obj lckf
 		in 
 			( locker >>= \case
 				Just lck -> do
@@ -182,7 +182,7 @@ lockContentShared key mduration a = do
 		-- In order to dropretention, have to
 		-- take an exclusive lock.
 		let (exlocker, expostunlock) =
-			winLocker lockExclusive' obj lckf
+			winLocker lockExclusive obj lckf
 		exlocker >>= \case
 			Nothing -> noop
 			Just lck -> do
@@ -242,7 +242,7 @@ lockContentForRemoval key fallback a = lockContentUsing lock key fallback $
 #else
 	lock obj lckf = 
 		let (exlocker, expostunlock) =
-			winLocker lockExclusive' obj lckf
+			winLocker lockExclusive obj lckf
 		in (checkRetentionTimestamp key exlocker, expostunlock)
 #endif
 
