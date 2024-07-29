@@ -10,6 +10,7 @@ flags:
     debuglocks: false
     benchmark: true
     crypton: false
+    servant: true
 packages:
 - '.'
 resolver: lts-18.13
