@@ -1242,6 +1242,13 @@ repository, using [[git-annex-config]]. See its man page for a list.)
   After changing this config, you need to re-run `git-annex init` for it
   to take effect.
 
+* `annex.url`
+
+  When a remote has a http url, the first time git-annex uses the remote
+  it will check if it can download its `.git/config` file. If it is able
+  to, and the file has this config set to an "annex+http" or "annex+https"
+  url, that url will be copied into `remote.<name>.annexUrl`. 
+
 * `annex.resolvemerge`
 
   Set to false to prevent merge conflicts in the checked out branch

@@ -340,6 +340,12 @@ tryGitConfigRead autoinit r hasuuid
 				-- optimisation.
 				unless (fromMaybe False $ Git.Config.isBare r') $
 					setremote setRemoteBare False
+				-- When annex.url is set to a P2P http url,
+				-- store in remote.name.annexUrl
+				case Git.fromConfigValue <$> Git.Config.getMaybe (annexConfig "url") r' of
+					Just u | isP2PHttpProtocolUrl u ->
+						setremote (setConfig . annexUrlConfigKey) u
+					_ -> noop
 				return r'
 			Left err -> do
 				set_ignore "not usable by git-annex" False

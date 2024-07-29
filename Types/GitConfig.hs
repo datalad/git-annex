@@ -109,6 +109,7 @@ data GitConfig = GitConfig
 	, annexSyncMigrations :: Bool
 	, annexDebug :: Bool
 	, annexDebugFilter :: Maybe String
+	, annexUrl :: Maybe String
 	, annexWebOptions :: [String]
 	, annexYoutubeDlOptions :: [String]
 	, annexYoutubeDlCommand :: Maybe String
@@ -204,6 +205,7 @@ extractGitConfig configsource r = GitConfig
 	, annexSyncMigrations = getbool (annexConfig "syncmigrations") True
 	, annexDebug = getbool (annexConfig "debug") False
 	, annexDebugFilter = getmaybe (annexConfig "debugfilter")
+	, annexUrl = getmaybe (annexConfig "url")
 	, annexWebOptions = getwords (annexConfig "web-options")
 	, annexYoutubeDlOptions = getwords (annexConfig "youtube-dl-options")
 	, annexYoutubeDlCommand = getmaybe (annexConfig "youtube-dl-command")

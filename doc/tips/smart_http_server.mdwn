@@ -15,22 +15,26 @@ You will still need to run a web server to serve the git repository.
 [[API|design/p2p_protocol_over_http]], and it does it
 on a different port (9417 by default).
 
-All you need to do on the server is to arrange to run 
-`git-annex p2phttp` in your repository as a daemon, or service.
-Note that it should not be run as root, but as whatever user owns the
-repository. It has several options you can use to configure it, including
-controlling who can access the repository.
+You will need to arrange to run `git-annex p2phttp` in your repository as a
+daemon or service. Note that it should not be run as root, but as whatever
+user owns the repository. It has several options you can use to configure
+it, including controlling who can access the repository.
 
-After cloning a repository, it's necessary to configure
-`remote.name.annexUrl` to an "annex+http" or "annex+https" url,
-so that git-annex knows where the API endpoint is.
+So there are two web servers, and thus two different urls.
+A remote will have `remote.name.url` set to the http url
+that git will use, and also have `remote.name.annexUrl` set to the url
+that git-annex will use to talk to `git-annex p2phttp`. That url
+looks like this:
+    
+    annex+http://example.com/git-annex/bbdac17e-6633-4b27-8f7b-fb447d5bae7c
 
-For example:
+The "annex+http" (or "annex+https") indicates that it's a git-annex API
+url, which defaults to being on port 9417 unless a different port is set.
+And the last part of the url is the annex.uuid of the repository.
 
-    git clone http://example.com/foo.git
-    cd foo
-    git config remote.origin.annexUrl annex+http://example.com/git-annex/bbdac17e-6633-4b27-8f7b-fb447d5bae7c
-    git-annex get ...
-
-The last part of the "annex+http" url is the annex.uuid of the
-remote repository.
+It would be annoying if every user who cloned your repository 
+had to set `remote.name.annexUrl` manually. So there's a way to automate it.
+In the git config file of the repository, set `annex.url` to the "annex+http"
+(or "annex+https") url. The first time it uses a http remote, git-annex
+downloads the git config file, and sets `remote.name.annexUrl` to the value
+of annex.url.
