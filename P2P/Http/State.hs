@@ -220,7 +220,7 @@ withP2PConnections workerpool proxyconnectionpoolsize clusterconcurrency a = do
 					>>= atomically . putTMVar respvar
 				servicer myuuid myproxies proxypool reqv relv endv
 			Left (Right releaseconn) -> do
-				releaseconn
+				void $ tryNonAsync releaseconn
 				servicer myuuid myproxies proxypool reqv relv endv
 			Left (Left ()) -> return ()
 	
@@ -378,11 +378,11 @@ proxyConnection proxyconnectionpoolsize relv connparams workerpool proxypool pro
 				liftIO $ runNetProto proxyfromclientrunst proxyfromclientconn $
 					P2P.net P2P.receiveMessage
 	
-	let releaseconn returntopool =
+	let releaseconn returntopool = do
 		atomically $ void $ tryPutTMVar relv $ do
-			r <- liftIO $ wait asyncworker
 			liftIO $ closeConnection proxyfromclientconn
 			liftIO $ closeConnection clientconn
+			r <- liftIO $ wait asyncworker
 			if returntopool
 				then liftIO $ do
 					now <- getPOSIXTime
