@@ -3,11 +3,11 @@
 ## introduction
 
 The [[P2P protocol]] is a custom protocol that git-annex speaks over a ssh
-connection (mostly). This is a translation of that protocol to HTTP.
+connection (mostly). This is a translation of that protocol to a HTTP API
 
-[[git-annex-p2phttp]] serves this protocol.
+[[git-annex-p2phttp]] serves this API.
 
-To indicate that an url uses this protocol, use 
+To indicate that an url uses this API, use 
 `annex+http` or `annex+https` as the url scheme. Such an url uses
 port 9417 by default, although another port can be specified. 
 For example, "annex+http://example.com/git-annex/"
@@ -18,10 +18,10 @@ A git-annex key can contain text in any encoding. So can a filename,
 and it's even possible, though unlikely, that the UUID of a git-annex
 repository might.
 
-But this protocol requires that UTF-8 be used throughout, except 
+But the P2P requires that UTF-8 be used throughout, except 
 where bodies use `Content-Type: application/octet-stream`.
 
-So this protocol allows using 
+So this API allows using 
 [base64url](https://datatracker.ietf.org/doc/html/rfc4648#section-5)
 encoding for such values. Any key, filename, or UUID wrapped in square
 brackets is a base64url encoded value. 
@@ -50,9 +50,9 @@ Requests are versioned. The versions correspond to
 P2P protocol versions. The version is part of the request path,
 eg "v3"
 
-If the server does not support a particular protocol version, the
+If the server does not support a particular version, the
 request will fail with a 404, and the client should fall
-back to an earlier protocol version.
+back to an earlier version.
 
 ## common request parameters
 
@@ -88,7 +88,7 @@ ready to service requests.]
 This is a simple, unversioned interface to get the content of a key
 from a repository.
 
-It is not part of the P2P protocol per se, but is provided to let
+It is not part of the API per se, but is provided to let
 other clients than git-annex easily download the content of keys from the
 http server.
 
@@ -327,7 +327,7 @@ The body of the request is empty.
 The server responds with JSON object with a timestmap field that has the
 current value of its monotonic clock, as a number of seconds.
 
-Important: If multiple servers are serving this protocol for the same
+Important: If multiple servers are serving this API for the same
 repository, they MUST all use the same monotonic clock.
 
 ### POST /git-annex/$uuid/v3/put
