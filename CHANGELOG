@@ -1,4 +1,4 @@
-git-annex (10.20240702) UNRELEASED; urgency=medium
+git-annex (10.20240731) UNRELEASED; urgency=medium
 
   * New HTTP API that is equivilant to the P2P protocol.
   * annex+http and annex+https urls can be configured for
