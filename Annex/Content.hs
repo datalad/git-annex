@@ -174,11 +174,11 @@ lockContentShared key mduration a = do
 				Nothing -> return Nothing
 			, \lckfile -> do
 				maybe noop (\a -> a lckfile) postunlock
-				lockdropretention retention
+				lockdropretention v retention
 			)
 
-	lockdropretention Nothing = noop
-	lockdropretention retention@(Just _) = do
+	lockdropretention _ Nothing = noop
+	lockdropretention v retention@(Just _) = do
 		-- In order to dropretention, have to
 		-- take an exclusive lock.
 		let (exlocker, expostunlock) =
@@ -363,7 +363,7 @@ lockContentUsing contentlocker key fallback a = withContentLockFile key $ \mlock
 			Nothing -> noop -- never reached
 			Just lockfile -> do
 				maybe noop (\a -> a lockfile) postunlock
-				cleanuplockfile
+				cleanuplockfile lockfile
 #endif
 
 	cleanuplockfile lockfile = void $ tryNonAsync $ do
