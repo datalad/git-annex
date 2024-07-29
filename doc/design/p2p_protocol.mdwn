@@ -114,8 +114,10 @@ the client sends:
 	LOCKCONTENT Key
 
 The server responds with either SUCCESS or FAILURE.
-The former indicates the content is locked. It will remain
-locked until the client sends:
+The former indicates the content is locked.
+
+After SUCCESS, the content will remain locked until the
+client sends its next message, which must be:
 
 	UNLOCKCONTENT Key
 
@@ -182,7 +184,7 @@ whitespace.)
 The server may respond with ALREADY-HAVE if it already
 had the content of that key. 
 
-In protocol version 2, the server can optionally reply with
+In protocol version 2 and above, the server can optionally reply with
 ALREADY-HAVE-PLUS. The subsequent list of UUIDs are additional
 UUIDs where the content is stored, in addition to the UUID where
 the client was going to send it.
@@ -197,9 +199,9 @@ the client to start. This allows resuming transfers.
 The client then sends a DATA message with content of the file from
 the offset to the end of file.
 
-In protocol version 1, after the data, the client sends an additional
-message, to indicate if the content of the file has changed while it
-was being sent.
+In protocol version 1 and above, after the data, the client sends an
+additional message, to indicate if the content of the file has changed
+while it was being sent.
 
 	INVALID
 	VALID
@@ -207,8 +209,8 @@ was being sent.
 If the server successfully receives the data and stores the content,
 it replies with SUCCESS. Otherwise, FAILURE.
 
-In protocol version 2, the server can optionally reply with SUCCESS-PLUS
-and a list of UUIDs where the content was stored.
+In protocol version 2 and above, the server can optionally reply with
+SUCCESS-PLUS and a list of UUIDs where the content was stored.
 
 ## Getting content from the server
 
@@ -223,7 +225,7 @@ See description of AssociatedFile above.
 The server then sends a DATA message with the content of the file
 from the offset to end of file.
 
-In protocol version 1, after the data, the server sends an additional
+In protocol version 1 and above, after the data, the server sends an additional
 message, to indicate if the content of the file has changed while it
 was being sent.
 

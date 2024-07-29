@@ -12,8 +12,8 @@ special remotes.
 ## using a cluster
 
 To use a cluster, your repository needs to have its gateway configured as a
-remote. Clusters can currently only be accessed via ssh. This gateway
-remote is added the same as any other git remote:
+remote. Clusters can currently only be accessed via ssh or by a annex+http
+url. This gateway remote is added the same as any other git remote:
 
     $ git remote add bigserver me@bigserver:annex
 
@@ -120,6 +120,9 @@ in the git-annex branch. That tells other repositories about the cluster.
 	Started proxying for node1
 	Started proxying for node2
 	Started proxying for node3
+
+The cluster will now be accessible over ssh. To also let the cluster be
+accessed over http, you would need to set up a [[tips/smart_http_server]].
 
 Operations that affect multiple nodes of a cluster can often be sped up by
 configuring annex.jobs in the gateway repository.

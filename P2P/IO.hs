@@ -25,6 +25,7 @@ module P2P.IO
 	, describeProtoFailure
 	, runNetProto
 	, runNet
+	, signalFullyConsumedByteString
 	) where
 
 import Common
@@ -62,6 +63,7 @@ data ProtoFailure
 	= ProtoFailureMessage String
 	| ProtoFailureException SomeException
 	| ProtoFailureIOError IOError
+	deriving (Show)
 
 describeProtoFailure :: ProtoFailure -> String
 describeProtoFailure (ProtoFailureMessage s) = s
@@ -79,7 +81,17 @@ mkRunState mk = do
 
 data P2PHandle
 	= P2PHandle Handle
-	| P2PHandleTMVar (TMVar (Either L.ByteString Message)) (TMVar ())
+	| P2PHandleTMVar
+		(TMVar (Either L.ByteString Message))
+		(Maybe (TMVar ()))
+		(TMVar ())
+
+signalFullyConsumedByteString :: P2PHandle -> IO ()
+signalFullyConsumedByteString (P2PHandle _) = return ()
+signalFullyConsumedByteString (P2PHandleTMVar _ Nothing _) = return () 
+signalFullyConsumedByteString (P2PHandleTMVar _ (Just waitv) closedv) = 
+	atomically $ putTMVar waitv ()
+		`orElse` readTMVar closedv
 
 data P2PConnection = P2PConnection
 	{ connRepo :: Maybe Repo
@@ -91,6 +103,7 @@ data P2PConnection = P2PConnection
 
 -- Identifier for a connection, only used for debugging.
 newtype ConnIdent = ConnIdent (Maybe String)
+	deriving (Show)
 
 data ClosableConnection conn
 	= OpenConnection conn
@@ -138,7 +151,8 @@ closeConnection conn = do
 	closehandle (connOhdl conn)
   where
 	closehandle (P2PHandle h) = hClose h
-	closehandle (P2PHandleTMVar _ _) = return ()
+	closehandle (P2PHandleTMVar _ _ closedv) = 
+		atomically $ void $ tryPutTMVar closedv ()
 
 -- Serves the protocol on a unix socket.
 --
@@ -188,11 +202,6 @@ runNetProto runst conn = go
 	go (Free (Local _)) = return $ Left $
 		ProtoFailureMessage "unexpected annex operation attempted"
 
-data P2PTMVarException = P2PTMVarException String
-	deriving (Show)
-
-instance Exception P2PTMVarException
-
 -- Interpreter of the Net part of Proto.
 --
 -- An interpreter of Proto has to be provided, to handle the rest of Proto
@@ -206,18 +215,15 @@ runNet runst conn runner f = case f of
 				P2PHandle h -> tryNonAsync $ do
 					hPutStrLn h $ unwords (formatMessage m)
 					hFlush h
-				P2PHandleTMVar mv _ ->
-					ifM (atomically (tryPutTMVar mv (Right m)))
-						( return $ Right ()
-						, return $ Left $ toException $
-							P2PTMVarException "TMVar left full"
-						)
+				P2PHandleTMVar mv _ closedv -> tryNonAsync $
+					atomically $ putTMVar mv (Right m)
+						`orElse` readTMVar closedv
 		case v of
 			Left e -> return $ Left $ ProtoFailureException e
 			Right () -> runner next
 	ReceiveMessage next ->
 		let protoerr = return $ Left $
-			ProtoFailureMessage "protocol error 1"
+			ProtoFailureMessage "protocol error"
 		    gotmessage m = do
 			liftIO $ debugMessage conn "P2P <" m
 			runner (next (Just m))
@@ -230,10 +236,13 @@ runNet runst conn runner f = case f of
 					Right (Just l) -> case parseMessage l of
 						Just m -> gotmessage m
 						Nothing -> runner (next Nothing)
-			P2PHandleTMVar mv _ -> 
-				liftIO (atomically (takeTMVar mv)) >>= \case
-					Right m -> gotmessage m
-					Left _b -> protoerr
+			P2PHandleTMVar mv _ closedv -> do
+				let recv = (Just <$> takeTMVar mv)
+					`orElse` (readTMVar closedv >> return Nothing)
+				liftIO (atomically recv) >>= \case
+					Just (Right m) -> gotmessage m
+					Just (Left _b) -> protoerr
+					Nothing -> runner (next Nothing)
 	SendBytes len b p next ->
 		case connOhdl conn of
 			P2PHandle h -> do
@@ -246,11 +255,16 @@ runNet runst conn runner f = case f of
 					Right False -> return $ Left $
 						ProtoFailureMessage "short data write"
 					Left e -> return $ Left $ ProtoFailureException e
-			P2PHandleTMVar mv waitv -> do
+			P2PHandleTMVar mv waitv closedv -> do
 				liftIO $ atomically $ putTMVar mv (Left b)
-				-- Wait for the whole bytestring to be
-				-- processed. Necessary due to lazyiness.
-				liftIO $ atomically $ takeTMVar waitv
+					`orElse` readTMVar closedv
+				-- Wait for the whole bytestring to
+				-- be processed.
+				case waitv of
+					Nothing -> noop
+					Just v -> liftIO $ atomically $
+						takeTMVar v
+							`orElse` readTMVar closedv
 				runner next
 	ReceiveBytes len p next ->
 		case connIhdl conn of
@@ -260,11 +274,15 @@ runNet runst conn runner f = case f of
 					Right b -> runner (next b)
 					Left e -> return $ Left $
 						ProtoFailureException e
-			P2PHandleTMVar mv _ ->
-				liftIO (atomically (takeTMVar mv)) >>= \case
-					Left b -> runner (next b)
-					Right _ -> return $ Left $
-						ProtoFailureMessage "protocol error 2"
+			P2PHandleTMVar mv _ closedv -> do
+				let recv = (Just <$> takeTMVar mv)
+					`orElse` (readTMVar closedv >> return Nothing)
+				liftIO (atomically recv) >>= \case
+					Just (Left b) -> runner (next b)
+					Just (Right _) -> return $ Left $
+						ProtoFailureMessage "protocol error"
+					Nothing -> return $ Left $
+						ProtoFailureMessage "connection closed"
 	CheckAuthToken _u t next -> do
 		let authed = connCheckAuth conn t
 		runner (next authed)
@@ -317,12 +335,16 @@ debugMessage conn prefix m = do
 -- Must avoid sending too many bytes as it would confuse the other end.
 -- This is easily dealt with by truncating it.
 --
+-- However, the whole ByteString will be evaluated here, even if
+-- the end of it does not get sent.
+--
 -- If too few bytes are sent, the only option is to give up on this
 -- connection. False is returned to indicate this problem.
 sendExactly :: Len -> L.ByteString -> Handle -> MeterUpdate -> IO Bool
 sendExactly (Len n) b h p = do
-	sent <- meteredWrite' p (B.hPut h) (L.take (fromIntegral n) b)
-	return (fromBytesProcessed sent == n)
+	let (x, y) = L.splitAt (fromIntegral n) b
+	sent <- meteredWrite' p (B.hPut h) x
+	L.length y `seq` return (fromBytesProcessed sent == n)
 
 receiveExactly :: Len -> Handle -> MeterUpdate -> IO L.ByteString
 receiveExactly (Len n) h p = hGetMetered h (Just n) p

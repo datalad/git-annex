@@ -44,12 +44,13 @@ toRepo cs r gc remotecmd = do
 git_annex_shell :: ConsumeStdin -> Git.Repo -> String -> [CommandParam] -> [(Field, String)] -> Annex (Maybe (FilePath, [CommandParam]))
 git_annex_shell cs r command params fields
 	| not $ Git.repoIsUrl r = do
-		shellopts <- getshellopts
+		dir <- liftIO $ absPath (Git.repoPath r)
+		shellopts <- getshellopts dir
 		return $ Just (shellcmd, shellopts ++ fieldopts)
 	| Git.repoIsSsh r = do
 		gc <- Annex.getRemoteGitConfig r
 		u <- getRepoUUID r
-		shellopts <- getshellopts
+		shellopts <- getshellopts (Git.repoPath r)
 		let sshcmd = unwords $
 			fromMaybe shellcmd (remoteAnnexShell gc)
 				: map shellEscape (toCommand shellopts) ++
@@ -58,9 +59,8 @@ git_annex_shell cs r command params fields
 		Just <$> toRepo cs r gc sshcmd
 	| otherwise = return Nothing
   where
-	dir = Git.repoPath r
 	shellcmd = "git-annex-shell"
-	getshellopts = do
+	getshellopts dir = do
 		debugenabled <- Annex.getRead Annex.debugenabled
 		debugselector <- Annex.getRead Annex.debugselector
 		let params' = case (debugenabled, debugselector) of

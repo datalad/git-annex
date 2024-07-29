@@ -97,13 +97,11 @@ changeStageTo mytid tv getnewstage = liftIO $
 
 -- | Waits until there's an idle StartStage worker in the worker pool,
 -- removes it from the pool, and returns its state.
---
--- If the worker pool is not already allocated, returns Nothing.
-waitStartWorkerSlot :: TMVar (WorkerPool t) -> STM (Maybe (t, WorkerStage))
+waitStartWorkerSlot :: TMVar (WorkerPool t) -> STM (t, WorkerStage)
 waitStartWorkerSlot tv = do
 	pool <- takeTMVar tv
 	v <- go pool
-	return $ Just (v, StartStage)
+	return (v, StartStage)
   where
 	go pool = case spareVals pool of
 		[] -> retry

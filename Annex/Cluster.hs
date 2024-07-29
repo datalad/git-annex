@@ -18,6 +18,7 @@ import P2P.Protocol
 import P2P.IO
 import Annex.Proxy
 import Annex.UUID
+import Annex.BranchState
 import Logs.Location
 import Logs.PreferredContent
 import Types.Command
@@ -38,22 +39,17 @@ proxyCluster
 	-> (forall a. Annex () -> ((a -> CommandPerform) -> Annex (Either ProtoFailure a) -> CommandPerform))
 	-> CommandPerform
 proxyCluster clusteruuid proxydone servermode clientside protoerrhandler = do
+	enableInteractiveBranchAccess
 	getClientProtocolVersion (fromClusterUUID clusteruuid) clientside
 		withclientversion (protoerrhandler noop)
   where
-	proxymethods = ProxyMethods
-		{ removedContent = \u k -> logChange k u InfoMissing
-		, addedContent = \u k -> logChange k u InfoPresent
-		}
-	
 	withclientversion (Just (clientmaxversion, othermsg)) = do
 		-- The protocol versions supported by the nodes are not
 		-- known at this point, and would be too expensive to
 		-- determine. Instead, pick the newest protocol version
 		-- that we and the client both speak. The proxy code
-		-- checks protocol versions when operating on multiple
-		-- nodes, and allows nodes to have different protocol
-		-- versions.
+		-- checks protocol versions of remotes, so nodes can
+		-- have different protocol versions.
 		let protocolversion = min maxProtocolVersion clientmaxversion
 		sendClientProtocolVersion clientside othermsg protocolversion
 			(getclientbypass protocolversion) (protoerrhandler noop)
@@ -64,16 +60,29 @@ proxyCluster clusteruuid proxydone servermode clientside protoerrhandler = do
 			(withclientbypass protocolversion) (protoerrhandler noop)
 
 	withclientbypass protocolversion (bypassuuids, othermsg) = do
-		(selectnode, closenodes) <- clusterProxySelector clusteruuid
-			protocolversion bypassuuids
-		concurrencyconfig <- getConcurrencyConfig
+		(selectnode, closenodes) <-
+			clusterProxySelector clusteruuid
+				protocolversion bypassuuids
 		proxystate <- liftIO mkProxyState
-		proxy proxydone proxymethods proxystate servermode clientside 
-			(fromClusterUUID clusteruuid)
-			selectnode concurrencyconfig protocolversion
-			othermsg (protoerrhandler closenodes)
+		concurrencyconfig <- concurrencyConfigJobs
+		let proxyparams = ProxyParams
+			{ proxyMethods = mkProxyMethods
+			, proxyState = proxystate
+			, proxyServerMode = servermode
+			, proxyClientSide = clientside
+			, proxyUUID = fromClusterUUID clusteruuid
+			, proxySelector = selectnode
+			, proxyConcurrencyConfig = concurrencyconfig
+			, proxyClientProtocolVersion = protocolversion
+			}
+		proxy proxydone proxyparams othermsg
+			(protoerrhandler closenodes)
 
-clusterProxySelector :: ClusterUUID -> ProtocolVersion -> Bypass -> Annex (ProxySelector, Annex ())
+clusterProxySelector
+	:: ClusterUUID
+	-> ProtocolVersion
+	-> Bypass
+	-> Annex (ProxySelector, Annex ())
 clusterProxySelector clusteruuid protocolversion (Bypass bypass) = do
 	nodeuuids <- (fromMaybe S.empty . M.lookup clusteruuid . clusterUUIDs)
 		<$> getClusters
@@ -113,7 +122,6 @@ clusterProxySelector clusteruuid protocolversion (Bypass bypass) = do
 		-- instead it can be locked on individual nodes that are
 		-- proxied to the client.
 		, proxyLOCKCONTENT = const (pure Nothing)
-		, proxyUNLOCKCONTENT = pure Nothing
 		}
 	return (proxyselector, closenodes)
   where

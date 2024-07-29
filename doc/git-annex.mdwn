@@ -212,6 +212,13 @@ content from the key-value store.
 
   See [[git-annex-webapp]](1) for details.
 
+* `p2phttp`
+
+  Allows a git-annex repository to be accessed over HTTP using git-annex
+  p2p protocol.
+
+  See [[git-annex-p2phttp]](1) for details.
+
 * `remotedaemon`
 
   Persistant communication with remotes.
@@ -1235,6 +1242,13 @@ repository, using [[git-annex-config]]. See its man page for a list.)
   After changing this config, you need to re-run `git-annex init` for it
   to take effect.
 
+* `annex.url`
+
+  When a remote has a http url, the first time git-annex uses the remote
+  it will check if it can download its `.git/config` file. If it is able
+  to, and the file has this config set to an "annex+http" or "annex+https"
+  url, that url will be copied into `remote.<name>.annexUrl`. 
+
 * `annex.resolvemerge`
 
   Set to false to prevent merge conflicts in the checked out branch
@@ -1530,8 +1544,13 @@ Remotes are configured using these settings in `.git/config`.
 * `remote.<name>.annexUrl`
 
   Can be used to specify a different url than the regular `remote.<name>.url`
-  for git-annex to use when talking with the remote. Similar to the `pushUrl`
+  for git-annex to use for accessing the remote. Similar to the `pushUrl`
   used by git-push.
+
+  When this is set to an annex+http or annex+https url, that url is used
+  for git-annex operations only, and the `remote.<name>.url` is used for
+  git operations. This allows using [[git-annex-p2phttp]] to serve a
+  git-annex repository over http.
 
 * `remote.<name>.annex-uuid`
 

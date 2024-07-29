@@ -1,153 +1,437 @@
 [[!toc ]]
 
-## motivation
+## introduction
 
 The [[P2P protocol]] is a custom protocol that git-annex speaks over a ssh
-connection (mostly). This is a design working on supporting the P2P
-protocol over HTTP.
+connection (mostly). This is a translation of that protocol to HTTP.
 
-Upload of annex objects to git remotes that use http is currently not
-supported by git-annex, and this would be a generally very useful addition.
+[[git-annex-p2phttp]] serves this protocol.
 
-For use cases such as OpenNeuro's javascript client, ssh is too difficult
-to support, so they currently use a special remote that talks to a http
-endpoint in order to upload objects. Implementing this would let them
-talk to git-annex over http.
+To indicate that an url uses this protocol, use 
+`annex+http` or `annex+https` as the url scheme. Such an url uses
+port 9417 by default, although another port can be specified. 
+For example, "annex+http://example.com/git-annex/"
 
-With the [[passthrough_proxy]], this would let clients configure a single
-http remote that accesses a more complicated network of git-annex
-repositories.
+## base64 encoding of keys, uuids, and filenames
 
-## integration with git
+A git-annex key can contain text in any encoding. So can a filename,
+and it's even possible, though unlikely, that the UUID of a git-annex
+repository might.
 
-A webserver that is configured to serve a git repository either serves the
-files in the repository with dumb http, or uses the git-http-backend CGI
-program for url paths under eg `/git/`.
+But this protocol requires that UTF-8 be used throughout, except 
+where bodies use `Content-Type: application/octet-stream`.
 
-To integrate with that, git-annex would need a git-annex-http-backend CGI
-program, that the webserver is configured to run for url paths under
-`/git/.*/annex/`.
+So this protocol allows using 
+[base64url](https://datatracker.ietf.org/doc/html/rfc4648#section-5)
+encoding for such values. Any key, filename, or UUID wrapped in square
+brackets is a base64url encoded value. 
+For example, "[Zm9v]" is the same as "foo".
 
-So, for a remote with an url `http://example.com/git/foo`, git-annex would
-use paths under `http://example.com/git/foo/annex/` to run its CGI.
+A filename like "[foo]" will need to itself be encoded that way: "[W2Zvb10=]"
 
-But, the CGI interface is a poor match for the P2P protocol. 
+## authentication
 
-A particular problem is that `LOCKCONTENT` would need to be in one CGI
-request, followed by another request to `UNLOCKCONTENT`. Unless
-git-annex-http-backend forked a daemon to keep the content locked, it would
-not be able to retain a file lock across the 2 requests. While the 10
-minute retention lock would paper over that, UNLOCKCONTENT would not be
-able to delete the retention lock, because there is no way to know if
-another LOCKCONTENT was received later. So LOCKCONTENT would always lock
-content for 10 minutes. Which would result in some undesirable behaviors.
+Some requests need authentication. Which requests do depends on the
+configuration of the HTTP server. When a request needs authentication,
+it will fail with 401 Unauthorized.
 
-Another problem is with proxies and clusters. The CGI would need to open
-ssh (or http) connections to the proxied repositories and cluster nodes
-each time it is run. That would add a lot of latency to every request.
+Authentication is done using HTTP basic auth. The realm to use when
+authenticating is "git-annex". The charset is UTF-8.
 
-And running a git-annex process once per CGI request also makes git-annex's
-own startup speed, which is ok but not great, add latency. And each time
-the CGI needed to change the git-annex branch, it would have to commit on
-shutdown. Lots of time and space optimisations would be prevented by using
-the CGI interface.
+When authentication is successful but does not allow a request to be
+performed, it will fail with 403 Forbidden.
 
-So, rather than having the CGI program do anything in the repository
-itself, have it pass each request through to a long-running server.
-(This does have the downside that files would get double-copied
-through the CGI, which adds some overhead.)
-A reasonable way to do that would be to have a webserver speaking a
-HTTP version of the git-annex P2P protocol and the CGI just talks to that.
+Note that HTTP basic auth is not encrypted so is only secure when used
+over HTTPS.
 
-The CGI program then becomes tiny, and just needs to know the url to
-connect to the git-annex HTTP server.
+## protocol version
 
-Alternatively, a remote's configuration could include that url, and
-then we don't need the complication and overhead of the CGI program at all.
-Eg:
+Requests are versioned. The versions correspond to
+P2P protocol versions. The version is part of the request path,
+eg "v3"
 
-    git config remote.origin.annex-url http://example.com:8080/
+If the server does not support a particular protocol version, the
+request will fail with a 404, and the client should fall
+back to an earlier protocol version.
 
-So, the rest of this design will focus on implementing that. The CGI
-program can be added later if desired, so avoid users needing to configure
-an additional thing.
+## common request parameters
 
-Note that, one nice benefit of having a separate annex-url is it allows
-having remote.origin.url on eg github, but with an annex-url configured
-that remote can also be used as a git-annex repository.
+Every request supports this parameter, and unless documented
+otherwise, it is required to be included.
 
-## approach 1: websockets
+* `clientuuid`  
 
-The client connects to the server over a websocket. From there on,
-the protocol is encapsulated in websockets.
+  The value is the UUID of the git-annex repository of the client.
 
-This seems nice and simple to implement, but not very web native. Anyone
-wanting to talk to this web server would need to understand the P2P
-protocol. Just to upload a file would need to deal with AUTH,
-AUTH-SUCCESS, AUTH-FAILURE, VERSION, PUT, ALREADY-HAVE, PUT-FROM, DATA,
-INVALID, VALID, SUCCESS, and FAILURE messages. Seems like a lot.
+Any request may also optionally include these parameters:
 
-Some requests like `LOCKCONTENT` do need full duplex communication like
-websockets provide. But, it might be more web native to only use websockets
-for that request, and not for everything.
+* `bypass`
 
-## approach 2: web-native API
+  The value is the UUID of a cluster gateway, which the server should avoid
+  connecting to when serving a cluster. This is the equivilant of the
+  `BYPASS` message in the [[P2P_Protocol]].
 
-Another approach is to define a web-native API with endpoints that
-correspond to each action in the P2P protocol. 
+  This parameter can be given multiple times to list several cluster
+  gateway UUIDs.
 
-Something like this:
+  This parameter is only available for v2 and above.
 
-    > POST /git-annex/v1/AUTH?clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925 HTTP/1.0
-    < AUTH-SUCCESS ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6
+[Internally, git-annex can use these common parameters, plus the protocol
+version, and remote UUID, to create a P2P session. The P2P session is
+driven through the AUTH, VERSION, and BYPASS messages, leaving the session
+ready to service requests.]
 
-    > POST /git-annex/v1/CHECKPRESENT?key=SHA1--foo&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.0
-    > SUCCESS
+## requests
 
-    > POST /git-annex/v1/PUT-FROM?key=SHA1--foo&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.0
-    < PUT-FROM 0
+### GET /git-annex/$uuid/key/$key
 
-    > POST /git-annex/v1/PUT?key=SHA1--foo&associatedfile=bar&put-from=0&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.0
-    > Content-Type: application/octet-stream
-    > Content-Length: 20
-    > foo
-    > {"valid": true}
-    < {"stored": true}
+This is a simple, unversioned interface to get the content of a key
+from a repository.
 
-(In the last example above "foo" is the content, it is followed by a line of json.
-This seems better than needing an entire other request to indicate validitity.)
+It is not part of the P2P protocol per se, but is provided to let
+other clients than git-annex easily download the content of keys from the
+http server.
 
-This needs a more complex spec. But it's easier for others to implement,
-especially since it does not need a session identifier, so the HTTP server can 
-be stateless.
+When the key is not present on the server, it will respond
+with 404 Not Found.
 
-A full draft protocol for this is being developed at [[p2p_protocol_over_http/draft1]].
+Note that the common parameters bypass and clientuuid, while
+accepted, have no effect. Both are optional for this request.
 
-## HTTP GET
+### GET /git-annex/$uuid/v3/key/$key
 
-It should be possible to support a regular HTTP get of a key, with
-no additional parameters, so that annex objects can be served to other clients
-from this web server.
+Get the content of a key from the repository with the specified uuid.
 
-    > GET /git-annex/key/SHA1--foo HTTP/1.0
+Example:
+
+    > GET /git-annex/ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6/v3/key/SHA1--foo&associatedfile=bar&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925 HTTP/1.1
+    < X-git-annex-data-length: 3
+    < Content-Type: application/octet-stream
+    < 
     < foo
 
-Although this would be a special case, not used by git-annex, because the P2P
-protocol's GET has the complication of offsets, and of the server sending
-VALID/INVALID after the content, and of needing to know the client's UUID in
-order to update the location log.
+All parameters are optional, including the common parameters, and these:
 
-## Problem: CONNECT
+* `associatedfile`
 
-The CONNECT message allows both sides of the P2P protocol to send DATA
-messages in any order. This seems difficult to encapsulate in HTTP.
+  The name of a file in the git repository, for informational purposes
+  only.
 
-Probably this can be not implemented, it's probably not needed for a HTTP
-remote? This is used to tunnel git protocol over the P2P protocol, but for
-a HTTP remote the git repository can be accessed over HTTP as well.
+* `offset`
 
-## security
+  Number of bytes to skip sending from the beginning of the file. 
 
-Should support HTTPS and/or be limited to only HTTPS.
+Request headers are currently ignored, so eg Range requests are
+not supported. (This would be possible to implement, up to a point.)
 
-Authentication via http basic auth?
+The body of the request is empty.
+
+The server's response will have a `Content-Type` header of
+`application/octet-stream`.
+
+The server's response will have a `X-git-annex-data-length` 
+header that indicates the number of bytes of content that are expected to
+be sent. Note that there is no Content-Length header.
+
+The body of the response is the content of the key.
+
+If the length of the body is different than what the the
+X-git-annex-data-length header indicated, then the data is invalid and
+should not be used. This can happen when eg, the data was being sent from
+an unlocked annexed file, which got modified while it was being sent.
+
+When the content is not present, the server will respond with 
+422 Unprocessable Content.
+
+### GET /git-annex/$uuid/v2/key/$key
+
+Identical to v3.
+
+### GET /git-annex/$uuid/v1/key/$key
+
+Identical to v3.
+
+### GET /git-annex/$uuid/v0/key/$key
+
+Same as v3, except the X-git-annex-data-length header is not used.
+Additional checking client-side will be required to validate the data.
+
+### POST /git-annex/$uuid/v3/checkpresent
+
+Checks if a key is currently present on the server.
+
+Example:
+
+    > POST /git-annex/ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6/v3/checkpresent?key=SHA1--foo&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925 HTTP/1.1
+    < {"present": true}
+
+There is one required additional parameter, `key`.
+
+The body of the request is empty.
+
+The server responds with a JSON object with a "present" field that is true
+if the key is present, or false if it is not present.
+
+### POST /git-annex/$uuid/v2/checkpresent
+
+Identical to v3.
+
+### POST /git-annex/$uuid/v1/checkpresent
+
+Identical to v3.
+
+### POST /git-annex/$uuid/v0/checkpresent
+
+Identical to v3.
+
+### POST /git-annex/$uuid/v3/lockcontent
+
+Locks the content of a key on the server, preventing it from being removed.
+
+Example:
+
+    > POST /git-annex/ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6/v3/lockcontent?key=SHA1--foo&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925 HTTP/1.1
+    < {"locked": true, "lockid": "foo"}
+
+There is one required additional parameter, `key`.
+
+The server will reply with `{"locked": true}` if it was able
+to lock the key, or `{"locked": false}` if it was not.
+
+The key will remain locked for 10 minutes. But, usually `keeplocked`
+is used to control the lifetime of the lock, using the "lockid"
+parameter from the server's reply. (See below.)
+
+### POST /git-annex/$uuid/v2/lockcontent
+
+Identical to v3.
+
+### POST /git-annex/$uuid/v1/lockcontent
+
+Identical to v3.
+
+### POST /git-annex/$uuid/v0/lockcontent
+
+Identical to v3.
+
+### POST /git-annex/$uuid/v3/keeplocked
+
+Controls the lifetime of a lock on a key that was earlier obtained
+with `lockcontent`.
+
+Example:
+
+    > POST /git-annex/ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6/v3/keeplocked?lockid=foo&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925 HTTP/1.1
+    > Connection: Keep-Alive
+    > Keep-Alive: timeout=1200
+    [some time later]
+    > {"unlock": true}
+    < {"locked": false}
+
+There is one required additional parameter, `lockid`.
+
+This uses long polling. So it's important to use 
+Connection and Keep-Alive headers.
+
+This keeps an active lock from expiring until the client sends
+`{"unlock": true}`, and then it immediately unlocks it.
+
+The client can send `{"unlock": false}` any number of times first.
+This has no effect, but may be useful to keep the connection alive.
+
+This must be called within ten minutes of `lockcontent`, otherwise
+the lock will have already expired when this runs. Note that this
+does not indicate if the lock expired, it always returns 
+`{"locked": false}`.
+
+If the connection is closed before the client sends `{"unlock": true},
+or even if the web server gets shut down, the content will remain
+locked for 10 minutes from the time it was first locked.
+
+Note that the common parameters bypass and clientuuid, while
+accepted, have no effect.
+
+### POST /git-annex/$uuid/v2/keeplocked
+
+Identical to v3.
+
+### POST /git-annex/$uuid/v1/keeplocked
+
+Identical to v3.
+
+### POST /git-annex/$uuid/v0/keeplocked
+
+Identical to v3.
+
+### POST /git-annex/$uuid/v3/remove
+
+Remove a key's content from the server.
+
+Example:
+
+    > POST /git-annex/ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6/v3/remove?key=SHA1--foo&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925 HTTP/1.1
+    < {"removed": true}
+
+There is one required additional parameter, `key`.
+
+The body of the request is empty.
+
+The server responds with a JSON object with a "removed" field that is true
+if the key was removed (or was not present on the server), 
+or false if the key was not able to be removed.
+
+The JSON object can have an additional field "plusuuids" that is a list of
+UUIDs of other repositories that the content was removed from.
+
+### POST /git-annex/$uuid/v2/remove
+
+Identical to v3.
+
+### POST /git-annex/$uuid/v1/remove
+
+Same as v3, except the JSON will not include "plusuuids".
+
+### POST /git-annex/$uuid/v0/remove
+
+Identical to v1.
+
+## POST /git-annex/$uuid/v3/remove-before
+
+Remove a key's content from the server, but only before a specified time.
+
+Example:
+
+    > POST /git-annex/ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6/v3/remove-before?timestamp=4949292929&key=SHA1--foo&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925 HTTP/1.1
+    < {"removed": true}
+
+This is the same as the `remove` request, but with an additional parameter,
+`timestamp`.
+
+If the server's monotonic clock is past the specified timestamp, the
+removal will fail and the server will respond with: `{"removed": false}`
+
+This is used to avoid removing content after a point in 
+time where it is no longer locked in other repostitories.
+
+## POST /git-annex/$uuid/v3/gettimestamp
+
+Gets the current timestamp from the server.
+
+Example:
+
+    > POST /git-annex/ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6/v3/gettimestamp?clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925 HTTP/1.1
+    < {"timestamp": 59459392}
+
+The body of the request is empty.
+
+The server responds with JSON object with a timestmap field that has the
+current value of its monotonic clock, as a number of seconds.
+
+Important: If multiple servers are serving this protocol for the same
+repository, they MUST all use the same monotonic clock.
+
+### POST /git-annex/$uuid/v3/put
+
+Store content on the server.
+
+Example:
+
+    > POST /git-annex/ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6/v3/put?key=SHA1--foo&associatedfile=bar&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925 HTTP/1.1
+    > Content-Type: application/octet-stream
+    > X-git-annex-data-length: 3
+    > 
+    > foo
+    < {"stored": true}
+
+There is one required additional parameter, `key`.
+
+There are are also these optional parameters:
+
+* `associatedfile`
+
+  The name of a file in the git repository, for informational purposes
+  only.
+
+* `offset`
+
+  Number of bytes that have been omitted from the beginning of the file. 
+  Usually this will be determined by making a `putoffset` request.
+
+The `Content-Type` header should be `application/octet-stream`.
+
+The `X-git-annex-data-length` must be included. It indicates the number
+of bytes of content that are expected to be sent.
+Note that there is no need to send a Content-Length header.
+
+If the length of the body is different than what the the
+X-git-annex-data-length header indicated, then the data is invalid and
+should not be used. This can happen when eg, the data was being sent from
+an unlocked annexed file, which got modified while it was being sent.
+
+The server responds with a JSON object with a field "stored"
+that is true if it received the data and stored the content.
+
+The JSON object can have an additional field "plusuuids" that is a list of
+UUIDs of other repositories that the content was stored to.
+
+### POST /git-annex/$uuid/v2/put
+
+Identical to v3.
+
+### POST /git-annex/$uuid/v1/put
+
+Same as v3, except the JSON will not include "plusuuids".
+
+### POST /git-annex/$uuid/v0/put
+
+Same as v1, except additional checking is done to validate the data.
+
+### POST /git-annex/$uuid/v3/putoffset
+
+Asks the server what `offset` can be used in a `put` of a key.
+
+This should usually be used right before sending a `put` request.
+The offset may not be valid after some point in time, which could result in
+the `put` request failing.
+
+Example:
+
+    > POST /git-annex/ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6/v3/putoffset?key=SHA1--foo&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925 HTTP/1.1
+    < {"offset": 10}
+
+There is one required additional parameter, `key`.
+
+The body of the request is empty.
+
+The server responds with a JSON object with an "offset" field that 
+is the largest allowable offset.
+
+If the server already has the content of the key, it will respond instead
+with a JSON object with an "alreadyhave" field that is set to true. This JSON
+object may also have a field "plusuuids" that lists 
+the UUIDs of other repositories where the content is stored, in addition to
+the serveruuid.
+
+[Implementation note: This will be implemented by sending `PUT` and
+returning the `PUT-FROM` offset. To avoid leaving the P2P protocol stuck
+part way through a `PUT`, a synthetic empty `DATA` followed by `INVALID`
+will be used to get the P2P protocol back into a state where it will accept
+any request.]
+
+### POST /git-annex/$uuid/v2/putoffset
+
+Identical to v3.
+
+### POST /git-annex/$uuid/v1/putoffset
+
+Same as v3, except the JSON will not include "plusuuids".
+
+## parts of P2P protocol that are not supported over HTTP
+
+`NOTIFYCHANGE` is not supported, but it would be possible to extend
+this HTTP protocol to support it.
+
+`CONNECT` is not supported, and due to the bi-directional message passing
+nature of it, it cannot easily be done over HTTP (would need websockets).
+It should not be necessary anyway, because the git repository itself can be
+accessed over HTTP.

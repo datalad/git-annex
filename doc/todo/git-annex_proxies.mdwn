@@ -28,19 +28,60 @@ Planned schedule of work:
 
 ## work notes
 
-* Next step: Ready to begin implementing in servant. I have a file
-  `servant.hs` in the httpproto branch that works through some of the
-  bytestring streaming issues.
+* An interrupted PUT to cluster that has a node that is a special remote
+  over http leaves open the connection to the cluster, so the next request
+  opens another one.
 
-* Perhaps: Support cgi program that proxies over to a webserver
-  speaking the http protocol.
+  So does an interrupted PUT directly to the proxied ;
+  special remote over http.
+
+* When part of a file has been sent to a cluster via the http server,
+  the transfer interrupted, and another node is added to the cluster,
+  and the transfer of the file performed again, there is a failure
+  sending to the node that had an incomplete copy. It fails like this:
+
+	  //home/joey/tmp/bench/c3/.git/annex/tmp/SHA256E-s1048576000--09d7e19983a65682138fa5944f135e4fc593330c2693c41d22cc7881443d6060: withBinaryFile: illegal operation
+	git-annex: transfer already in progress, or unable to take transfer lock
+	p2pstdio: 1 failed
+
+  When using ssh and not the http server, the node that had the incomplete
+  copy also doesn't get the file, altough no error is displayed.
+
+* When proxying a PUT to a special remote, no verification of the received
+  content is done, it's just written to a file and that is sent to the
+  special remote. This violates a usual invariant that any data being
+  received into a repository gets verified in passing. Although on the
+  other hand, when sending data to a special remote normally, there is also
+  no verification.
+
+## items deferred until later for p2p protocol over http
+
+* `git-annex p2phttp` should support serving several repositories at the same
+  time (not as proxied remotes), so that eg, every git-annex repository
+  on a server can be served on the same port.
+
+* Support proxying to git remotes that use annex+http urls.
+
+* `git-annex p2phttp` could support systemd socket activation. This would
+  allow making a systemd unit that listens on port 80.
 
 ## completed items for July's work on p2p protocol over http
 
+* HTTP P2P protocol design [[design/p2p_protocol_over_http]].
+
 * addressed [[doc/todo/P2P_locking_connection_drop_safety]]
 
-* finalized HTTP P2P protocol draft 1,
-  [[design/p2p_protocol_over_http/draft1]]
+* implemented server and client for HTTP P2P protocol
+
+* added git-annex p2phttp command to serve HTTP P2P protocol
+
+* Make git-annex p2phttp support https.
+
+* Allow using annex+http urls in remote.name.annexUrl
+
+* Make http server support proxying.
+
+* Make http server support serving a cluster.
 
 ## items deferred until later for [[design/passthrough_proxy]]
 
@@ -85,6 +126,14 @@ Planned schedule of work:
   available to use spanning tree protocol for routing inside clusters.
 
 * Optimise proxy speed. See design for ideas.
+
+* Speed: A proxy to a local git repository spawns git-annex-shell 
+  to communicate with it. It would be more efficient to operate
+  directly on the Remote. Especially when transferring content to/from it.
+  But: When a cluster has several nodes that are local git repositories,
+  and is sending data to all of them, this would need an alternate
+  interface than `storeKey`, which supports streaming, of chunks
+  of a ByteString.
 
 * Use `sendfile()` to avoid data copying overhead when
   `receiveBytes` is being fed right into `sendBytes`.

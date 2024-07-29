@@ -50,7 +50,7 @@ start cu clustername gatewayremote = starting "extendcluster" ai si $ do
 	let setcus f = setConfig f (fromUUID (fromClusterUUID cu))
 	unless (M.member clustername myclusters) $ do
 		setcus $ annexConfig ("cluster." <> encodeBS clustername)
-	setcus $ remoteAnnexConfig gatewayremote $ 
+	setcus $ mkRemoteConfigKey gatewayremote $ 
 		remoteGitConfigKey ClusterGatewayField
 	next $ return True
   where

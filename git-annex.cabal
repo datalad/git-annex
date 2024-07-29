@@ -173,6 +173,9 @@ Flag MagicMime
 Flag Crypton
   Description: Use the crypton library rather than the no longer maintained cryptonite
 
+Flag Servant
+  Description: Use the servant library, enabling using annex+http urls and git-annex p2phttp
+
 Flag Benchmark
   Description: Enable benchmarking
   Default: True
@@ -311,6 +314,21 @@ Executable git-annex
     CPP-Options: -DWITH_CRYPTON
   else
     Build-Depends: cryptonite (>= 0.23)
+
+  if flag(Servant)
+    Build-Depends:
+      servant,
+      servant-server,
+      servant-client,
+      servant-client-core,
+      warp (>= 3.2.8),
+      warp-tls (>= 3.2.2)
+    CPP-Options: -DWITH_SERVANT
+    Other-Modules:
+      Command.P2PHttp
+      P2P.Http
+      P2P.Http.Server
+      P2P.Http.State
 
   if (os(windows))
     Build-Depends:
@@ -878,6 +896,9 @@ Executable git-annex
     P2P.Address
     P2P.Annex
     P2P.Auth
+    P2P.Http.Types
+    P2P.Http.Client
+    P2P.Http.Url
     P2P.IO
     P2P.Protocol
     P2P.Proxy

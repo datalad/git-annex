@@ -29,7 +29,6 @@ import Annex.Verify
 import Control.Monad.Free
 import Control.Concurrent.STM
 import Data.Time.Clock.POSIX
-import qualified Data.ByteString as S
 
 -- Full interpreter for Proto, that can receive and send objects.
 runFullProto :: RunState -> P2PConnection -> Proto a -> Annex (Either ProtoFailure a)
@@ -97,6 +96,26 @@ runLocal runst runner a = case a of
 			let fallback = return $ Left $
 				ProtoFailureMessage "Transfer failed"
 			checktransfer runtransfer fallback
+		case v of
+			Left e -> return $ Left $ ProtoFailureException e
+			Right (Left e) -> return $ Left e
+			Right (Right ok) -> runner (next ok)
+	SendContentWith consumer getb validitycheck next -> do
+		v <- tryNonAsync $ do
+			let fallback = return $ Left $
+				ProtoFailureMessage "Transfer failed"
+			let consumer' b ti = do
+				validator <- consumer b
+				indicatetransferred ti
+				return validator
+			runner getb >>= \case
+				Left e -> giveup $ describeProtoFailure e
+				Right b -> checktransfer (\ti -> Right <$> consumer' b ti) fallback >>= \case
+					Left e -> return (Left e)
+					Right validator ->
+						runner validitycheck >>= \case
+							Right v -> Right <$> validator v
+							_ -> Right <$> validator Nothing
 		case v of
 			Left e -> return $ Left $ ProtoFailureException e
 			Right (Left e) -> return $ Left e
@@ -171,43 +190,13 @@ runLocal runst runner a = case a of
 		-- a client.
 		Client _ -> ta nullMeterUpdate
 	
-	resumefromoffset o incrementalverifier p h
-		| o /= 0 = do
-			p' <- case incrementalverifier of
-				Just iv -> do
-					go iv o
-					return p
-				_ -> return $ offsetMeterUpdate p (toBytesProcessed o)
-			-- Make sure the handle is seeked to the offset.
-			-- (Reading the file probably left it there
-			-- when that was done, but let's be sure.)
-			hSeek h AbsoluteSeek o
-			return p'
-		| otherwise = return p
-	  where
-		go iv n
-			| n == 0 = return ()
-			| otherwise = do
-				let c = if n > fromIntegral defaultChunkSize
-					then defaultChunkSize
-					else fromIntegral n
-				b <- S.hGet h c
-				updateIncrementalVerifier iv b
-				unless (b == S.empty) $
-					go iv (n - fromIntegral (S.length b))
-
 	storefile dest (Offset o) (Len l) getb incrementalverifier validitycheck p ti = do
 		v <- runner getb
 		case v of
 			Right b -> do
 				liftIO $ withBinaryFile dest ReadWriteMode $ \h -> do
-					p' <- resumefromoffset o incrementalverifier p h
-					let writechunk = case incrementalverifier of
-						Nothing -> \c -> S.hPut h c
-						Just iv -> \c -> do
-							S.hPut h c
-							updateIncrementalVerifier iv c
-					meteredWrite p' writechunk b
+					p' <- resumeVerifyFromOffset o incrementalverifier p h
+					meteredWrite p' (writeVerifyChunk incrementalverifier h) b
 				indicatetransferred ti
 
 				rightsize <- do

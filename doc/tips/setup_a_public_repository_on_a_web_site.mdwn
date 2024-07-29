@@ -28,4 +28,14 @@ Here's how I set it up. --[[Joey]]
 
 When users clone over http, and run git-annex, it will
 automatically learn all about your repository and be able to download files
-right out of it, also using http. 
+right out of it, also using http.
+
+----
+
+The above is a simple way to set that up, but it's not necessarily the
+*best* way. Both git and git-annex will be accessing the repository using
+dumb http, which can be innefficient. And it doesn't allow write access.
+
+For something smarter, you may want to also set up
+[git smart http](https://git-scm.com/book/en/v2/Git-on-the-Server-Smart-HTTP),
+and the git-annex equivilant, a [[smart_http_server]].

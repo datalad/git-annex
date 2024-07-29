@@ -1,0 +1,153 @@
+# NAME
+
+git-annex-p2phttp - HTTP server for the git-annex API
+
+# SYNOPSIS
+
+git-annex p2phttp
+
+# DESCRIPTION
+
+This is a HTTP server for the git-annex API.
+It is the git-annex equivilant of git-http-backend(1), for serving
+a repository over HTTP with write access for authenticated users.
+
+This does not serve the git repository over HTTP, only the git-annex
+API.
+
+Typically a remote will have `remote.name.url` set to a http url
+as usual, and `remote.name.annexUrl` set to an annex+http url such as
+"annex+http://example.com/git-annex/". The annex+http url is
+served by this server, and uses port 9417 by default.
+
+As well as serving the git-annex HTTP API, this server provides a
+convenient way to download the content of any key, by using the path
+"/git-annex/$uuid/$key". For example:
+
+	$ curl http://example.com:9417/git-annex/f11773f0-11e1-45b2-9805-06db16768efe/key/SHA256E-s6--5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03
+	hello
+
+# OPTIONS
+
+* `--jobs=N` `-JN`
+
+  This or annex.jobs must be set to configure the number of worker
+  threads that serve connections to the webserver.
+  
+  Since the webserver itself also uses one of these threads, 
+  this needs to be set to 2 or more.
+
+  A good choice is often one worker per CPU core: `--jobs=cpus`
+
+* `--proxyconnections=N`
+
+  When this command is run in a repository that is configured to act as a
+  proxy for some of its remotes, this is the maximum number of idle
+  connections to keep open to proxied remotes.
+
+  The default is 1.
+
+* `--clusterjobs=N`
+
+  When this command is run in a repository that is a gateway for a cluster,
+  this is the number of concurrent jobs to use to access nodes of the
+  cluster, per connection to the webserver.
+
+  The default is 1.
+
+  A good choice for this will be a balance between the number of nodes
+  in the cluster and the value of `--jobs`.
+
+  For example, if the cluster has 4 nodes, and `--jobs=4`, using
+  `--clusterjobs=4` will make all nodes in the cluster be accessed
+  concurrently, which is often optimal. But around 20 cores can be needed
+  when the webserver is busy.
+
+* `--port=N`
+
+  Port to listen on. The default is port 9417, which is the default
+  port used for an annex+http or annex+https url.
+
+  It is not recommended to run this command as root in order to
+  use a low port like port 80. It will not drop permissions when run as
+  root.
+
+* `--bind=address`
+
+  What address to bind to. The default is to bind to all addresses.
+
+* `--certfile=filename` 
+
+  TLS certificate file to use. Combining this with `--privatekeyfile`
+  makes the server use HTTPS.
+
+* `--privatekeyfile=filename`
+  
+  TLS private key file to use. Combining this with `--certfile`
+  makes the server use HTTPS.
+
+* `--chainfile=filename`
+
+  TLS chain file to use. This option can be repeated any number of times.
+
+* `--authenv`
+
+  Allows users to be authenticated with a username and password.
+  For security, this only allows authentication when the user connects over
+  HTTPS.
+
+  To configure the passwords, set environment variables
+  like `GIT_ANNEX_P2PHTTP_PASSWORD_alice=foo123`
+
+  The permissions of users can also be configured by setting
+  environment variables like 
+  `GIT_ANNEX_P2PHTTP_PERMISSIONS_alice=readonly`. The value
+  can be either "readonly" or "appendonly". When this is not set,
+  the default is to give the user full read+write+remove access.
+
+* `--authenv-http`
+
+  Like `--authenv`, but allows authentication when the user connects
+  over HTTP. This is not secure, since HTTP basic authentication is not
+  encrypted.
+
+* `--unauth-readonly`
+
+  Allows unauthenticated users to read the repository, but not make
+  modifications to it.
+
+* `--unauth-appendonly`
+
+  Allows unauthenticated users to read the repository, and store data in
+  it, but not remove data from it.
+
+* `--wideopen`
+
+  Gives unauthenticated users full read+write+remove access to the
+  repository.
+
+  Please think carefully before enabling this option.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+git-http-backend(1)
+
+[[git-annex-shell]](1)
+
+[[git-annex-updateproxy]](1)
+
+[[git-annex-initcluster]](1)
+
+[[git-annex-updatecluster]](1)
+
+<https://git-annex.branchable.com/design/p2p_protocol_over_http/>
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+<http://git-annex.branchable.com/>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care

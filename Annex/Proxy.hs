@@ -8,23 +8,31 @@
 module Annex.Proxy where
 
 import Annex.Common
-import P2P.Proxy
-import P2P.Protocol
-import P2P.IO
+import qualified Annex
 import qualified Remote
 import qualified Types.Remote as Remote
 import qualified Remote.Git
+import P2P.Proxy
+import P2P.Protocol
+import P2P.IO
 import Remote.Helper.Ssh (openP2PShellConnection', closeP2PShellConnection)
 import Annex.Content
 import Annex.Concurrent
 import Annex.Tmp
+import Logs.Proxy
+import Logs.Cluster
+import Logs.UUID
+import Logs.Location
 import Utility.Tmp.Dir
 import Utility.Metered
 
 import Control.Concurrent.STM
 import Control.Concurrent.Async
+import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import qualified System.FilePath.ByteString as P
+import qualified Data.Map as M
+import qualified Data.Set as S
 
 proxyRemoteSide :: ProtocolVersion -> Bypass -> Remote -> Annex RemoteSide
 proxyRemoteSide clientmaxversion bypass r
@@ -53,18 +61,19 @@ proxySpecialRemoteSide clientmaxversion r = mkRemoteSide r $ do
 	ohdl <- liftIO newEmptyTMVarIO
 	iwaitv <- liftIO newEmptyTMVarIO
 	owaitv <- liftIO newEmptyTMVarIO
-	endv <- liftIO newEmptyTMVarIO
+	iclosedv <- liftIO newEmptyTMVarIO
+	oclosedv <- liftIO newEmptyTMVarIO
 	worker <- liftIO . async =<< forkState
-		(proxySpecialRemote protoversion r ihdl ohdl owaitv endv)
+		(proxySpecialRemote protoversion r ihdl ohdl owaitv oclosedv)
 	let remoteconn = P2PConnection
 		{ connRepo = Nothing
 		, connCheckAuth = const False
-		, connIhdl = P2PHandleTMVar ihdl iwaitv
-		, connOhdl = P2PHandleTMVar ohdl owaitv
+		, connIhdl = P2PHandleTMVar ihdl (Just iwaitv) iclosedv
+		, connOhdl = P2PHandleTMVar ohdl (Just owaitv) oclosedv
 		, connIdent = ConnIdent (Just (Remote.name r))
 		}
 	let closeremoteconn = do
-		liftIO $ atomically $ putTMVar endv ()
+		liftIO $ atomically $ putTMVar oclosedv ()
 		join $ liftIO (wait worker)
 	return $ Just
 		( remoterunst
@@ -81,7 +90,7 @@ proxySpecialRemote
 	-> TMVar ()
 	-> TMVar ()
 	-> Annex ()
-proxySpecialRemote protoversion r ihdl ohdl owaitv endv = go
+proxySpecialRemote protoversion r ihdl ohdl owaitv oclosedv = go
   where
 	go :: Annex ()
 	go = liftIO receivemessage >>= \case
@@ -114,23 +123,28 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv endv = go
 			liftIO $ sendmessage $
 				ERROR "NOTIFYCHANGE unsupported for a special remote"
 			go
-		Just _ -> giveup "protocol error M"
+		Just _ -> giveup "protocol error"
 		Nothing -> return ()
 
-	getnextmessageorend = 
-		liftIO $ atomically $ 
-			(Right <$> takeTMVar ohdl)
-				`orElse`
-			(Left <$> readTMVar endv)
-
-	receivemessage = getnextmessageorend >>= \case
+	receivemessage = liftIO (atomically recv) >>= \case
 		Right (Right m) -> return (Just m)
 		Right (Left _b) -> giveup "unexpected ByteString received from P2P MVar"
 		Left () -> return Nothing
+	  where
+		recv = 
+			(Right <$> takeTMVar ohdl)
+				`orElse`
+			(Left <$> readTMVar oclosedv)
 	
-	receivebytestring = atomically (takeTMVar ohdl) >>= \case
-		Left b -> return b
-		Right _m -> giveup "did not receive ByteString from P2P MVar"
+	receivebytestring = atomically recv >>= \case
+		Right (Left b) -> return b
+		Right (Right _m) -> giveup "did not receive ByteString from P2P MVar"
+		Left () -> giveup "connection closed"
+	  where
+		recv = 
+			(Right <$> takeTMVar ohdl)
+				`orElse`
+			(Left <$> readTMVar oclosedv)
 
 	sendmessage m = atomically $ putTMVar ihdl (Right m)
 	
@@ -155,21 +169,40 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv endv = go
 				Right () -> liftIO $ sendmessage SUCCESS
 				Left err -> liftIO $ propagateerror err
 			liftIO receivemessage >>= \case
-				Just (DATA (Len _)) -> do
-					b <- liftIO receivebytestring
-					liftIO $ L.writeFile (fromRawFilePath tmpfile) b
-					-- Signal that the whole bytestring
-					-- has been received.
-					liftIO $ atomically $ putTMVar owaitv ()
+				Just (DATA (Len len)) -> do
+					h <- liftIO $ openFile (fromRawFilePath tmpfile) WriteMode
+					liftIO $ receivetofile h len
+					liftIO $ hClose h
 					if protoversion > ProtocolVersion 1
 						then liftIO receivemessage >>= \case
 							Just (VALIDITY Valid) ->
 								store
 							Just (VALIDITY Invalid) ->
-								return ()
-							_ -> giveup "protocol error N"
+								liftIO $ sendmessage FAILURE
+							_ -> giveup "protocol error"
 						else store
-				_ -> giveup "protocol error O"
+				_ -> giveup "protocol error"
+			liftIO $ removeWhenExistsWith removeFile (fromRawFilePath tmpfile)
+
+	receivetofile h n = do
+		b <- liftIO receivebytestring
+		liftIO $ atomically $ 
+			putTMVar owaitv ()
+				`orElse`
+			readTMVar oclosedv
+		n' <- storetofile h n (L.toChunks b)
+		-- Normally all the data is sent in a single
+		-- lazy bytestring. However, when the special
+		-- remote is a node in a cluster, a PUT is
+		-- streamed to it in multiple chunks.
+		if n' == 0 
+			then return ()
+			else receivetofile h n'
+
+	storetofile _ n [] = pure n
+	storetofile h n (b:bs) = do
+		B.hPut h b
+		storetofile h (n - fromIntegral (B.length b)) bs
 
 	proxyget offset af k = withproxytmpfile k $ \tmpfile -> do
 		-- Don't verify the content from the remote,
@@ -206,6 +239,70 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv endv = go
 			receivemessage >>= \case
 				Just SUCCESS -> return ()
 				Just FAILURE -> return ()
-				Just _ -> giveup "protocol error P"
+				Just _ -> giveup "protocol error"
 				Nothing -> return ()
-						
+
+{- Check if this repository can proxy for a specified remote uuid,
+ - and if so enable proxying for it. -}
+checkCanProxy :: UUID -> UUID -> Annex Bool
+checkCanProxy remoteuuid ouruuid = do
+	ourproxies <- M.lookup ouruuid <$> getProxies
+	checkCanProxy' ourproxies remoteuuid >>= \case
+		Right v -> do
+			Annex.changeState $ \st -> st { Annex.proxyremote = Just v }
+			return True
+		Left Nothing -> return False
+		Left (Just err) -> giveup err
+
+checkCanProxy' :: Maybe (S.Set Proxy) -> UUID -> Annex (Either (Maybe String) (Either ClusterUUID Remote))
+checkCanProxy' Nothing _ = return (Left Nothing)
+checkCanProxy' (Just proxies) remoteuuid =
+	case filter (\p -> proxyRemoteUUID p == remoteuuid) (S.toList proxies) of
+		[] -> notconfigured
+		ps -> case mkClusterUUID remoteuuid of
+			Just cu -> proxyforcluster cu
+			Nothing -> proxyfor ps
+  where
+	-- This repository may have multiple remotes that access the same
+	-- repository. Proxy for the lowest cost one that is configured to
+	-- be used as a proxy.
+	proxyfor ps = do
+		rs <- concat . Remote.byCost <$> Remote.remoteList
+		myclusters <- annexClusters <$> Annex.getGitConfig
+		let sameuuid r = Remote.uuid r == remoteuuid
+		let samename r p = Remote.name r == proxyRemoteName p
+		case headMaybe (filter (\r -> sameuuid r && proxyisconfigured rs myclusters r && any (samename r) ps) rs) of
+			Nothing -> notconfigured
+			Just r -> return (Right (Right r))
+	
+	-- Only proxy for a remote when the git configuration
+	-- allows it. This is important to prevent changes to 
+	-- the git-annex branch causing unexpected proxying for remotes.
+	proxyisconfigured rs myclusters r
+		| remoteAnnexProxy (Remote.gitconfig r) = True
+		-- Proxy for remotes that are configured as cluster nodes.
+		| any (`M.member` myclusters) (fromMaybe [] $ remoteAnnexClusterNode $ Remote.gitconfig r) = True
+		-- Proxy for a remote when it is proxied by another remote
+		-- which is itself configured as a cluster gateway.
+		| otherwise = case remoteAnnexProxiedBy (Remote.gitconfig r) of
+			Just proxyuuid -> not $ null $ 
+				concatMap (remoteAnnexClusterGateway . Remote.gitconfig) $
+					filter (\p -> Remote.uuid p == proxyuuid) rs
+			Nothing -> False
+
+	proxyforcluster cu = do
+		clusters <- getClusters
+		if M.member cu (clusterUUIDs clusters)
+			then return (Right (Left cu))
+			else notconfigured
+
+	notconfigured = M.lookup remoteuuid <$> uuidDescMap >>= \case
+		Just desc -> return $ Left $ Just $
+			"not configured to proxy for repository " ++ fromUUIDDesc desc
+		Nothing -> return $ Left Nothing
+
+mkProxyMethods :: ProxyMethods
+mkProxyMethods = ProxyMethods
+	{ removedContent = \u k -> logChange k u InfoMissing
+	, addedContent = \u k -> logChange k u InfoPresent
+	}

@@ -42,12 +42,14 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Set as S
 import Data.Char
+import Data.Maybe
 import Data.Time.Clock.POSIX
 import Control.Applicative
+import Control.DeepSeq
 import Prelude
 
 newtype Offset = Offset Integer
-	deriving (Show)
+	deriving (Show, Eq, NFData, Num, Real, Ord, Enum, Integral)
 
 newtype Len = Len Integer
 	deriving (Show)
@@ -60,6 +62,15 @@ defaultProtocolVersion = ProtocolVersion 0
 
 maxProtocolVersion :: ProtocolVersion
 maxProtocolVersion = ProtocolVersion 3
+
+-- In order from newest to oldest.
+allProtocolVersions :: [ProtocolVersion]
+allProtocolVersions =
+	[ ProtocolVersion 3
+	, ProtocolVersion 2
+	, ProtocolVersion 1
+	, ProtocolVersion 0
+	] 
 
 newtype ProtoAssociatedFile = ProtoAssociatedFile AssociatedFile
 	deriving (Show)
@@ -250,9 +261,9 @@ data NetF c
 	-- ^ Sends exactly Len bytes of data. (Any more or less will
 	-- confuse the receiver.)
 	| ReceiveBytes Len MeterUpdate (L.ByteString -> c)
-	-- ^ Lazily reads bytes from peer. Stops once Len are read,
-	-- or if connection is lost, and in either case returns the bytes
-	-- that were read. This allows resuming interrupted transfers.
+	-- ^ Streams bytes from peer. Stops once Len are read,
+	-- or if connection is lost. This allows resuming
+	-- interrupted transfers.
 	| CheckAuthToken UUID AuthToken (Bool -> c)
 	| RelayService Service c
 	-- ^ Runs a service, relays its output to the peer, and data
@@ -308,6 +319,10 @@ data LocalF c
 	-- content been transferred.
 	| StoreContentTo FilePath (Maybe IncrementalVerifier) Offset Len (Proto L.ByteString) (Proto (Maybe Validity)) ((Bool, Verification) -> c)
 	-- ^ Like StoreContent, but stores the content to a temp file.
+	| SendContentWith (L.ByteString -> Annex (Maybe Validity -> Annex Bool)) (Proto L.ByteString) (Proto (Maybe Validity)) (Bool -> c)
+	-- ^ Reads content from the Proto L.ByteString and sends it to the
+	-- callback. The callback must consume the whole lazy ByteString,
+	-- before it returns a validity checker.
 	| SetPresent Key UUID c
 	| CheckContentPresent Key (Bool -> c)
 	-- ^ Checks if the whole content of the key is locally present.
@@ -362,7 +377,7 @@ negotiateProtocolVersion preferredversion = do
 	case r of
 		Just (VERSION v) -> net $ setProtocolVersion v
 		-- Old server doesn't know about the VERSION command.
-		Just (ERROR _) -> return ()
+		Just (ERROR _) -> net $ setProtocolVersion (ProtocolVersion 0)
 		_ -> net $ sendMessage (ERROR "expected VERSION")
 
 sendBypass :: Bypass -> Proto ()
@@ -414,6 +429,26 @@ remove proof key =
 		net $ sendMessage (REMOVE key)
 		checkSuccessFailurePlus
 
+getTimestamp :: Proto (Either String MonotonicTimestamp)
+getTimestamp = do
+	net $ sendMessage GETTIMESTAMP
+	net receiveMessage >>= \case
+		Just (TIMESTAMP ts) -> return (Right ts)
+		Just (ERROR err) -> return (Left err)
+		_ -> do
+			net $ sendMessage (ERROR "expected TIMESTAMP")
+			return (Left "protocol error")
+
+removeBefore :: POSIXTime -> Key -> Proto (Either String Bool, Maybe [UUID])
+removeBefore endtime key = getTimestamp >>= \case
+	Right remotetime -> 
+		canRemoveBefore endtime remotetime (local getLocalCurrentTime) >>= \case
+			Just remoteendtime -> 
+				removeBeforeRemoteEndTime remoteendtime key
+			Nothing ->
+				return (Right False, Nothing)
+	Left err -> return (Left err, Nothing)
+
 {- The endtime is the last local time at which the key can be removed.
  - To tell the remote how long it has to remove the key, get its current
  - timestamp, and add to it the number of seconds from the current local
@@ -424,25 +459,21 @@ remove proof key =
  - response from the remote, that is reflected in the local time, and so
  - reduces the allowed time.
  -}
-removeBefore :: POSIXTime -> Key -> Proto (Either String Bool, Maybe [UUID])
-removeBefore endtime key = do
-	net $ sendMessage GETTIMESTAMP
-	net receiveMessage >>= \case
-		Just (TIMESTAMP remotetime) -> do
-			localtime <- local getLocalCurrentTime
-			let timeleft = endtime - localtime
-			let timeleft' = MonotonicTimestamp (floor timeleft)
-			let remoteendtime = remotetime + timeleft'
-			if timeleft <= 0
-				then return (Right False, Nothing)
-				else do
-					net $ sendMessage $
-						REMOVE_BEFORE remoteendtime key
-					checkSuccessFailurePlus	
-		Just (ERROR err) -> return (Left err, Nothing)
-		_ -> do
-			net $ sendMessage (ERROR "expected TIMESTAMP")
-			return (Right False, Nothing)
+canRemoveBefore :: Monad m => POSIXTime -> MonotonicTimestamp -> m POSIXTime -> m (Maybe MonotonicTimestamp)
+canRemoveBefore endtime remotetime getlocaltime = do
+	localtime <- getlocaltime
+	let timeleft = endtime - localtime
+	let timeleft' = MonotonicTimestamp (floor timeleft)
+	let remoteendtime = remotetime + timeleft'
+	return $ if timeleft <= 0
+		then Nothing
+		else Just remoteendtime
+
+removeBeforeRemoteEndTime :: MonotonicTimestamp -> Key -> Proto (Either String Bool, Maybe [UUID])
+removeBeforeRemoteEndTime remoteendtime key = do
+	net $ sendMessage $
+		REMOVE_BEFORE remoteendtime key
+	checkSuccessFailurePlus	
 
 get :: FilePath -> Key -> Maybe IncrementalVerifier -> AssociatedFile -> Meter -> MeterUpdate -> Proto (Bool, Verification)
 get dest key iv af m p = 
@@ -453,16 +484,38 @@ get dest key iv af m p =
 	storer = storeContentTo dest iv
 
 put :: Key -> AssociatedFile -> MeterUpdate -> Proto (Maybe [UUID])
-put key af p = do
+put key af p = put' key af $ \offset ->
+	sendContent key af Nothing offset p
+
+put' :: Key -> AssociatedFile -> (Offset -> Proto (Maybe [UUID])) -> Proto (Maybe [UUID])
+put' key af sender = do
 	net $ sendMessage (PUT (ProtoAssociatedFile af) key)
 	r <- net receiveMessage
 	case r of
-		Just (PUT_FROM offset) -> sendContent key af Nothing offset p
+		Just (PUT_FROM offset) -> sender offset
 		Just ALREADY_HAVE -> return (Just [])
 		Just (ALREADY_HAVE_PLUS uuids) -> return (Just uuids)
 		_ -> do
 			net $ sendMessage (ERROR "expected PUT_FROM or ALREADY_HAVE")
 			return Nothing
+
+-- The protocol does not have a way to get the PUT offset
+-- without sending DATA, so send an empty bytestring and indicate
+-- it is not valid.
+getPutOffset :: Key -> AssociatedFile -> Proto (Either [UUID] Offset)
+getPutOffset key af = do
+	net $ sendMessage (PUT (ProtoAssociatedFile af) key)
+	r <- net receiveMessage
+	case r of
+		Just (PUT_FROM offset) -> do
+			void $ sendContent' nullMeterUpdate (Len 0) L.empty $
+				return Invalid
+			return (Right offset)
+		Just ALREADY_HAVE -> return (Left [])
+		Just (ALREADY_HAVE_PLUS uuids) -> return (Left uuids)
+		_ -> do
+			net $ sendMessage (ERROR "expected PUT_FROM or ALREADY_HAVE")
+			return (Left [])
 
 data ServerHandler a
 	= ServerGot a
@@ -471,7 +524,14 @@ data ServerHandler a
 
 -- Server loop, getting messages from the client and handling them
 serverLoop :: (Message -> Proto (ServerHandler a)) -> Proto (Maybe a)
-serverLoop a = do
+serverLoop a = serveOneMessage a serverLoop
+
+-- Get one message from the client and handle it.
+serveOneMessage
+	:: (Message -> Proto (ServerHandler a))
+	-> ((Message -> Proto (ServerHandler a)) -> Proto (Maybe a)) 
+	-> Proto (Maybe a)
+serveOneMessage a cont = do
 	mcmd <- net receiveMessage
 	case mcmd of
 		-- When the client sends ERROR to the server, the server
@@ -479,16 +539,16 @@ serverLoop a = do
 		-- is in, and so not possible to recover.
 		Just (ERROR _) -> return Nothing
 		-- When the client sends an unparsable message, the server
-		-- responds with an error message, and loops. This allows
+		-- responds with an error message, and continues. This allows
 		-- expanding the protocol with new messages.
 		Nothing -> do
 			net $ sendMessage (ERROR "unknown command")
-			serverLoop a
+			cont a
 		Just cmd -> do
 			v <- a cmd
 			case v of
 				ServerGot r -> return (Just r)
-				ServerContinue -> serverLoop a
+				ServerContinue -> cont a
 				-- If the client sends an unexpected message,
 				-- the server will respond with ERROR, and
 				-- always continues processing messages.
@@ -500,7 +560,7 @@ serverLoop a = do
 				-- support some new feature, and fall back.
 				ServerUnexpected -> do
 					net $ sendMessage (ERROR "unexpected command")
-					serverLoop a
+					cont a
 
 -- | Serve the protocol, with an unauthenticated peer. Once the peer
 -- successfully authenticates, returns their UUID.
@@ -525,11 +585,22 @@ data ServerMode
 	-- ^ Allow reading, and storing new objects, but not deleting objects.
 	| ServeReadWrite
 	-- ^ Full read and write access.
-	deriving (Eq, Ord)
+	deriving (Show, Eq, Ord)
 
 -- | Serve the protocol, with a peer that has authenticated.
 serveAuthed :: ServerMode -> UUID -> Proto ()
-serveAuthed servermode myuuid = void $ serverLoop handler
+serveAuthed servermode myuuid = void $ serverLoop $
+	serverHandler servermode myuuid
+
+-- | Serve a single command in the protocol, the same as serveAuthed,
+-- but without looping to handle the next command.
+serveOneCommandAuthed :: ServerMode -> UUID -> Proto ()
+serveOneCommandAuthed servermode myuuid = fromMaybe () <$>
+	serveOneMessage (serverHandler servermode myuuid) 
+		(const $ pure Nothing)
+
+serverHandler :: ServerMode -> UUID -> Message -> Proto (ServerHandler ())
+serverHandler servermode myuuid = handler
   where
 	handler (VERSION theirversion) = do
 		let v = min theirversion maxProtocolVersion
@@ -650,16 +721,21 @@ sendContent key af o offset@(Offset n) p = go =<< local (contentSize key)
 			else local $ readContent key af o offset $
 				sender (Len len)
 	-- Content not available to send. Indicate this by sending
-	-- empty data and indlicate it's invalid.
+	-- empty data and indicate it's invalid.
  	go Nothing = sender (Len 0) L.empty (return Invalid)
-	sender len content validitycheck = do
-		let p' = offsetMeterUpdate p (toBytesProcessed n)
-		net $ sendMessage (DATA len)
-		net $ sendBytes len content p'
-		ver <- net getProtocolVersion
-		when (ver >= ProtocolVersion 1) $
-			net . sendMessage . VALIDITY =<< validitycheck
-		checkSuccessPlus
+
+	sender = sendContent' p'
+	
+	p' = offsetMeterUpdate p (toBytesProcessed n)
+
+sendContent' :: MeterUpdate -> Len -> L.ByteString -> Proto Validity -> Proto (Maybe [UUID])
+sendContent' p len content validitycheck = do
+	net $ sendMessage (DATA len)
+	net $ sendBytes len content p
+	ver <- net getProtocolVersion
+	when (ver >= ProtocolVersion 1) $
+		net . sendMessage . VALIDITY =<< validitycheck
+	checkSuccessPlus
 
 receiveContent
 	:: Observable t

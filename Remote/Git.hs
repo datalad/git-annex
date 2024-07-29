@@ -57,7 +57,10 @@ import qualified Remote.GCrypt
 import qualified Remote.GitLFS
 import qualified Remote.P2P
 import qualified Remote.Helper.P2P as P2PHelper
+import qualified P2P.Protocol as P2P
 import P2P.Address
+import P2P.Http.Url
+import P2P.Http.Client
 import Annex.Path
 import Creds
 import Types.NumCopies
@@ -103,14 +106,20 @@ list autoinit = do
 			proxied <- listProxied proxies rs'
 			return (proxied++rs')
   where
-	annexurl r = remoteConfig r "annexurl"
 	tweakurl c r = do
 		let n = fromJust $ Git.remoteName r
-		case M.lookup (annexurl r) c of
-			Nothing -> return r
-			Just url -> inRepo $ \g ->
-				Git.Construct.remoteNamed n $
-					Git.Construct.fromRemoteLocation (Git.fromConfigValue url) False g
+		case getAnnexUrl r c of
+			Just url | not (isP2PHttpProtocolUrl url) -> 
+				inRepo $ \g -> Git.Construct.remoteNamed n $
+					Git.Construct.fromRemoteLocation url
+						False g
+			_ -> return r
+
+getAnnexUrl :: Git.Repo -> M.Map Git.ConfigKey Git.ConfigValue -> Maybe String
+getAnnexUrl r c = Git.fromConfigValue <$> M.lookup (annexUrlConfigKey r) c
+
+annexUrlConfigKey :: Git.Repo -> Git.ConfigKey
+annexUrlConfigKey r = remoteConfig r "annexurl"
 
 isGitRemoteAnnex :: Git.Repo -> Bool
 isGitRemoteAnnex r = "annex::" `isPrefixOf` Git.repoLocation r
@@ -160,8 +169,9 @@ enableRemote Nothing _ = giveup "unable to enable git remote with no specified u
  - done each time git-annex is run in a way that uses remotes, unless
  - annex-checkuuid is false.
  -
- - Conversely, the config of an URL remote is only read when there is no
- - cached UUID value. -}
+ - The config of other URL remotes is only read when there is no
+ - cached UUID value. 
+ -}
 configRead :: Bool -> Git.Repo -> Annex Git.Repo
 configRead autoinit r = do
 	gc <- Annex.getRemoteGitConfig r
@@ -176,7 +186,6 @@ configRead autoinit r = do
 			Nothing -> tryGitConfigRead autoinit r False
 			Just r' -> return r'
 		_ -> return r
-
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u rc gc rs
@@ -236,7 +245,7 @@ defaultRepoCost r
 	| otherwise = expensiveRemoteCost
 
 unavailable :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
-unavailable r = gen r'
+unavailable r u c gc = gen r' u c gc'
   where
 	r' = case Git.location r of
 		Git.Local { Git.gitdir = d } ->
@@ -247,6 +256,10 @@ unavailable r = gen r'
 				in r { Git.location = Git.Url (url { uriAuthority = Just auth' })}
 			Nothing -> r { Git.location = Git.Unknown }
 		_ -> r -- already unavailable
+	gc' = gc
+		{ remoteAnnexP2PHttpUrl =
+			unavailableP2PHttpUrl <$> remoteAnnexP2PHttpUrl gc
+		}
 
 {- Tries to read the config for a specified remote, updates state, and
  - returns the updated repo. -}
@@ -308,6 +321,12 @@ tryGitConfigRead autoinit r hasuuid
 				-- optimisation.
 				unless (fromMaybe False $ Git.Config.isBare r') $
 					setremote setRemoteBare False
+				-- When annex.url is set to a P2P http url,
+				-- store in remote.name.annexUrl
+				case Git.fromConfigValue <$> Git.Config.getMaybe (annexConfig "url") r' of
+					Just u | isP2PHttpProtocolUrl u ->
+						setremote (setConfig . annexUrlConfigKey) u
+					_ -> noop
 				return r'
 			Left err -> do
 				set_ignore "not usable by git-annex" False
@@ -405,10 +424,12 @@ inAnnex rmt st key = do
 
 inAnnex' :: Git.Repo -> Remote -> State -> Key -> Annex Bool
 inAnnex' repo rmt st@(State connpool duc _ _ _) key
+	| isP2PHttp rmt = checkp2phttp
 	| Git.repoIsHttp repo = checkhttp
 	| Git.repoIsUrl repo = checkremote
 	| otherwise = checklocal
   where
+	checkp2phttp = p2pHttpClient rmt giveup (clientCheckPresent key)
 	checkhttp = do
 		gc <- Annex.getGitConfig
 		Url.withUrlOptionsPromptingCreds $ \uo -> 
@@ -445,14 +466,23 @@ dropKey r st proof key = do
 
 dropKey' :: Git.Repo -> Remote -> State -> Maybe SafeDropProof -> Key -> Annex ()
 dropKey' repo r st@(State connpool duc _ _ _) proof key
+	| isP2PHttp r = 
+		clientRemoveWithProof proof key unabletoremove r >>= \case
+			RemoveResultPlus True fanoutuuids ->
+				storefanout fanoutuuids
+			RemoveResultPlus False fanoutuuids -> do
+				storefanout fanoutuuids
+				unabletoremove
 	| not $ Git.repoIsUrl repo = ifM duc
 		( guardUsable repo (giveup "cannot access remote") removelocal
 		, giveup "remote does not have expected annex.uuid value"
 		)
-	| Git.repoIsHttp repo = giveup "dropping from http remote not supported"
+	| Git.repoIsHttp repo = giveup "dropping from this remote is not supported"
 	| otherwise = P2PHelper.remove (uuid r) p2prunner proof key
   where
 	p2prunner = Ssh.runProto r connpool (return (Right False, Nothing))
+
+	unabletoremove = giveup "removing content from remote failed"
 
 	-- It could take a long time to eg, automount a drive containing
 	-- the repo, so check the proof for expiry again after locking the
@@ -475,14 +505,24 @@ dropKey' repo r st@(State connpool duc _ _ _) proof key
 				)
 		unless proofunexpired
 			safeDropProofExpired
+			
+	storefanout = P2PHelper.storeFanout key InfoMissing (uuid r) . map fromB64UUID
 
 lockKey :: Remote -> State -> Key -> (VerifiedCopy -> Annex r) -> Annex r
-lockKey r st key callback = do
+lockKey r st key callback = do	
 	repo <- getRepo r
 	lockKey' repo r st key callback
 
 lockKey' :: Git.Repo -> Remote -> State -> Key -> (VerifiedCopy -> Annex r) -> Annex r
 lockKey' repo r st@(State connpool duc _ _ _) key callback
+	| isP2PHttp r = do	
+		showLocking r
+		p2pHttpClient r giveup (clientLockContent key) >>= \case
+			LockResult True (Just lckid) ->
+				p2pHttpClient r failedlock $
+					clientKeepLocked lckid (uuid r)
+						failedlock callback
+			_ -> failedlock
 	| not $ Git.repoIsUrl repo = ifM duc
 		( guardUsable repo failedlock $ do
 			inorigrepo <- Annex.makeRunner
@@ -509,7 +549,8 @@ copyFromRemote r st key file dest meterupdate vc = do
 	copyFromRemote'' repo r st key file dest meterupdate vc
 
 copyFromRemote'' :: Git.Repo -> Remote -> State -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification
-copyFromRemote'' repo r st@(State connpool _ _ _ _) key file dest meterupdate vc
+copyFromRemote'' repo r st@(State connpool _ _ _ _) key af dest meterupdate vc
+	| isP2PHttp r = copyp2phttp
 	| Git.repoIsHttp repo = verifyKeyContentIncrementally vc key $ \iv -> do
 		gc <- Annex.getGitConfig
 		ok <- Url.withUrlOptionsPromptingCreds $
@@ -519,8 +560,6 @@ copyFromRemote'' repo r st@(State connpool _ _ _ _) key file dest meterupdate vc
 	| not $ Git.repoIsUrl repo = guardUsable repo (giveup "cannot access remote") $ do
 		u <- getUUID
 		hardlink <- wantHardLink
-		let bwlimit = remoteAnnexBwLimitDownload (gitconfig r)
-			<|> remoteAnnexBwLimit (gitconfig r)
 		-- run copy from perspective of remote
 		onLocalFast st $ Annex.Content.prepSendAnnex' key Nothing >>= \case
 			Just (object, _sz, check) -> do
@@ -529,7 +568,7 @@ copyFromRemote'' repo r st@(State connpool _ _ _ _) key file dest meterupdate vc
 					Nothing -> return True
 				copier <- mkFileCopier hardlink st
 				(ok, v) <- runTransfer (Transfer Download u (fromKey id key))
-					Nothing file Nothing stdRetry $ \p ->
+					Nothing af Nothing stdRetry $ \p ->
 						metered (Just (combineMeterUpdate p meterupdate)) key bwlimit $ \_ p' -> 
 							copier object dest key p' checksuccess vc
 				if ok
@@ -540,8 +579,26 @@ copyFromRemote'' repo r st@(State connpool _ _ _ _) key file dest meterupdate vc
 		P2PHelper.retrieve
 			(gitconfig r)
 			(Ssh.runProto r connpool (return (False, UnVerified)))
-			key file dest meterupdate vc
-	| otherwise = giveup "copying from non-ssh, non-http remote not supported"
+			key af dest meterupdate vc
+	| otherwise = giveup "copying from this remote is not supported"
+  where
+	bwlimit = remoteAnnexBwLimitDownload (gitconfig r)
+		<|> remoteAnnexBwLimit (gitconfig r)
+		
+	copyp2phttp = verifyKeyContentIncrementally vc key $ \iv -> do
+		startsz <- liftIO $ tryWhenExists $
+			getFileSize (toRawFilePath dest)
+		bracketIO (openBinaryFile dest ReadWriteMode) (hClose) $ \h -> do
+			metered (Just meterupdate) key bwlimit $ \_ p -> do
+				p' <- case startsz of
+					Just startsz' -> liftIO $ do
+						resumeVerifyFromOffset startsz' iv p h 
+					_ -> return p
+				let consumer = meteredWrite' p' 
+					(writeVerifyChunk iv h)
+				p2pHttpClient r giveup (clientGet key af consumer startsz) >>= \case
+					Valid -> return ()
+					Invalid -> giveup "Transfer failed"
 
 copyFromRemoteCheap :: State -> Git.Repo -> Maybe (Key -> AssociatedFile -> FilePath -> Annex ())
 #ifndef mingw32_HOST_OS
@@ -568,9 +625,10 @@ copyToRemote r st key af o meterupdate = do
 
 copyToRemote' :: Git.Repo -> Remote -> State -> Key -> AssociatedFile -> Maybe FilePath -> MeterUpdate -> Annex ()
 copyToRemote' repo r st@(State connpool duc _ _ _) key af o meterupdate
+	| isP2PHttp r = prepsendwith copyp2phttp
 	| not $ Git.repoIsUrl repo = ifM duc
 		( guardUsable repo (giveup "cannot access remote") $ commitOnCleanup repo r st $
-			copylocal =<< Annex.Content.prepSendAnnex' key o
+			prepsendwith copylocal
 		, giveup "remote does not have expected annex.uuid value"
 		)
 	| Git.repoIsSsh repo =
@@ -578,18 +636,24 @@ copyToRemote' repo r st@(State connpool duc _ _ _) key af o meterupdate
 			(Ssh.runProto r connpool (return Nothing))
 			key af o meterupdate
 		
-	| otherwise = giveup "copying to non-ssh repo not supported"
+	| otherwise = giveup "copying to this remote is not supported"
   where
-	copylocal Nothing = giveup "content not available"
-	copylocal (Just (object, sz, check)) = do
+	prepsendwith a = Annex.Content.prepSendAnnex' key o >>= \case
+		Nothing -> giveup "content not available"
+		Just v -> a v
+		
+	bwlimit = remoteAnnexBwLimitUpload (gitconfig r)
+		<|> remoteAnnexBwLimit (gitconfig r)
+
+	failedsend = giveup "failed to send content to remote"
+
+	copylocal (object, sz, check) = do
 		-- The check action is going to be run in
 		-- the remote's Annex, but it needs access to the local
 		-- Annex monad's state.
 		checkio <- Annex.withCurrentState check
 		u <- getUUID
 		hardlink <- wantHardLink
-		let bwlimit = remoteAnnexBwLimitUpload (gitconfig r)
-			<|> remoteAnnexBwLimit (gitconfig r)
 		-- run copy from perspective of remote
 		res <- onLocalFast st $ ifM (Annex.Content.inAnnex key)
 			( return True
@@ -605,7 +669,30 @@ copyToRemote' repo r st@(State connpool duc _ _ _) key af o meterupdate
 						copier object (fromRawFilePath dest) key p' checksuccess verify
 			)
 		unless res $
-			giveup "failed to send content to remote"
+			failedsend
+
+	copyp2phttp (object, sz, check) =
+		let check' = check >>= \case
+			Just s -> do
+				warning (UnquotedString s)
+				return False
+			Nothing -> return True
+		in p2pHttpClient r (const $ pure $ PutOffsetResultPlus (Offset 0)) (clientPutOffset key) >>= \case
+			PutOffsetResultPlus (offset@(Offset (P2P.Offset n))) ->
+				metered (Just meterupdate) key bwlimit $ \_ p -> do
+					let p' = offsetMeterUpdate p (BytesProcessed n)
+					res <- p2pHttpClient r giveup $
+						clientPut p' key (Just offset) af object sz check'
+					case res of
+						PutResultPlus False fanoutuuids -> do
+							storefanout fanoutuuids
+							failedsend
+						PutResultPlus True fanoutuuids ->
+							storefanout fanoutuuids
+			PutOffsetResultAlreadyHavePlus fanoutuuids ->
+				storefanout fanoutuuids
+	
+	storefanout = P2PHelper.storeFanout key InfoPresent (uuid r) . map fromB64UUID
 
 fsckOnRemote :: Git.Repo -> [CommandParam] -> Annex (IO Bool)
 fsckOnRemote r params
@@ -865,7 +952,7 @@ listProxied proxies rs = concat <$> mapM go rs
 		adduuid ck = M.insert ck
 			[Git.ConfigValue $ fromUUID $ proxyRemoteUUID p]
 
-		addurl = M.insert (remoteConfig renamedr (remoteGitConfigKey UrlField))
+		addurl = M.insert (mkRemoteConfigKey renamedr (remoteGitConfigKey UrlField))
 			[Git.ConfigValue $ encodeBS $ Git.repoLocation r]
 		
 		addproxiedby = case remoteAnnexUUID gc of
@@ -893,7 +980,7 @@ listProxied proxies rs = concat <$> mapM go rs
 		proxieduuids = S.map proxyRemoteUUID proxied
 
 		addremoteannexfield f = M.insert
-			(remoteAnnexConfig renamedr (remoteGitConfigKey f))
+			(mkRemoteConfigKey renamedr (remoteGitConfigKey f))
 
 		inheritconfigs c = foldl' inheritconfig c proxyInheritedFields
 		
@@ -901,8 +988,8 @@ listProxied proxies rs = concat <$> mapM go rs
 			(Nothing, Just v) -> M.insert dest v c
 			_ -> c
 		  where
-			src = remoteAnnexConfig r k
-			dest = remoteAnnexConfig renamedr k
+			src = mkRemoteConfigKey r k
+			dest = mkRemoteConfigKey renamedr k
 		
 		-- When the git config has anything set for a remote,
 		-- avoid making a proxied remote with the same name.
@@ -919,7 +1006,15 @@ listProxied proxies rs = concat <$> mapM go rs
 	-- Proxing is also yet supported for remotes using P2P
 	-- addresses.
 	canproxy gc r
+		| isP2PHttp' gc = True
 		| remoteAnnexGitLFS gc = False
 		| Git.GCrypt.isEncrypted r = False
 		| Git.repoIsLocal r || Git.repoIsLocalUnknown r = False
 		| otherwise = isNothing (repoP2PAddress r)
+
+isP2PHttp :: Remote -> Bool
+isP2PHttp = isP2PHttp' . gitconfig
+
+isP2PHttp' :: RemoteGitConfig -> Bool
+isP2PHttp' = isJust . remoteAnnexP2PHttpUrl
+

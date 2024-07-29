@@ -45,6 +45,9 @@ data RemoteSide = RemoteSide
 	, remoteSideId :: RemoteSideId
 	}
 
+instance Show RemoteSide where
+	show rs = show (remote rs)
+
 mkRemoteSide :: Remote -> Annex (Maybe (RunState, P2PConnection, ProtoCloser)) -> Annex RemoteSide
 mkRemoteSide r remoteconnect = RemoteSide
 	<$> pure r
@@ -76,7 +79,6 @@ closeRemoteSide remoteside =
 data ProxySelector = ProxySelector
 	{ proxyCHECKPRESENT :: Key -> Annex (Maybe RemoteSide)
 	, proxyLOCKCONTENT :: Key -> Annex (Maybe RemoteSide)
-	, proxyUNLOCKCONTENT :: Annex (Maybe RemoteSide)
 	, proxyREMOVE :: Key -> Annex [RemoteSide]
 	-- ^ remove from all of these remotes
 	, proxyGETTIMESTAMP :: Annex [RemoteSide]
@@ -91,7 +93,6 @@ singleProxySelector :: RemoteSide -> ProxySelector
 singleProxySelector r = ProxySelector
 	{ proxyCHECKPRESENT = const (pure (Just r))
 	, proxyLOCKCONTENT = const (pure (Just r))
-	, proxyUNLOCKCONTENT = pure (Just r)
 	, proxyREMOVE = const (pure [r])
 	, proxyGETTIMESTAMP = pure [r]
 	, proxyGET = const (pure (Just r))
@@ -200,86 +201,88 @@ mkProxyState = ProxyState
 	<$> newTVarIO mempty
 	<*> newTVarIO Nothing
 
+data ProxyParams = ProxyParams
+	{ proxyMethods :: ProxyMethods
+	, proxyState :: ProxyState
+	, proxyServerMode :: ServerMode
+	, proxyClientSide :: ClientSide
+	, proxyUUID :: UUID
+	, proxySelector :: ProxySelector
+	, proxyConcurrencyConfig :: ConcurrencyConfig
+	, proxyClientProtocolVersion :: ProtocolVersion
+	-- ^ The remote(s) may speak an earlier version, or the same
+	-- version, but not a later version.
+	}
+
 {- Proxy between the client and the remote. This picks up after
  - sendClientProtocolVersion.
  -}
 proxy 
 	:: Annex r
-	-> ProxyMethods
-	-> ProxyState
-	-> ServerMode
-	-> ClientSide
-	-> UUID
-	-> ProxySelector
-	-> ConcurrencyConfig
-	-> ProtocolVersion
-	-- ^ Protocol version being spoken between the proxy and the
-	-- client. When there are multiple remotes, some may speak an
-	-- earlier version.
+	-> ProxyParams
 	-> Maybe Message
 	-- ^ non-VERSION message that was received from the client when
 	-- negotiating protocol version, and has not been responded to yet
 	-> ProtoErrorHandled r
-proxy proxydone proxymethods proxystate servermode (ClientSide clientrunst clientconn) remoteuuid proxyselector concurrencyconfig (ProtocolVersion protocolversion) othermsg protoerrhandler = do
+proxy proxydone proxyparams othermsg protoerrhandler = do
 	case othermsg of
 		Nothing -> proxynextclientmessage ()
 		Just message -> proxyclientmessage (Just message)
   where
-	client = liftIO . runNetProto clientrunst clientconn
+	proxyclientmessage Nothing = proxydone
+	proxyclientmessage (Just message) = proxyRequest
+		proxydone proxyparams proxynextclientmessage
+		message protoerrhandler
 
 	proxynextclientmessage () = protoerrhandler proxyclientmessage $
 		client (net receiveMessage)
+	
+	client = liftIO . runNetProto clientrunst clientconn
+	
+	ClientSide clientrunst clientconn = proxyClientSide proxyparams
 
-	servermodechecker c a = c servermode $ \case
-		Nothing -> a
-		Just notallowed -> 
-			protoerrhandler proxynextclientmessage $
-				client notallowed
-
-	proxyclientmessage Nothing = proxydone
-	proxyclientmessage (Just message) = case message of
-		CHECKPRESENT k -> proxyCHECKPRESENT proxyselector k >>= \case
+{- Handles proxying a single request between the client and remote. -}
+proxyRequest 
+	:: Annex r
+	-> ProxyParams
+	-> (() -> Annex r) -- ^ called once the request has been handled
+	-> Message
+	-> ProtoErrorHandled r
+proxyRequest proxydone proxyparams requestcomplete requestmessage protoerrhandler =
+	case requestmessage of
+		CHECKPRESENT k -> proxyCHECKPRESENT (proxySelector proxyparams) k >>= \case
 			Just remoteside -> 
-				proxyresponse remoteside message
-					(const proxynextclientmessage)
+				proxyresponse remoteside requestmessage
+					(const requestcomplete)
 			Nothing -> 
-				protoerrhandler proxynextclientmessage $
+				protoerrhandler requestcomplete $
 					client $ net $ sendMessage FAILURE
-		LOCKCONTENT k -> proxyLOCKCONTENT proxyselector k >>= \case
+		LOCKCONTENT k -> proxyLOCKCONTENT (proxySelector proxyparams) k >>= \case
 			Just remoteside -> 
-				proxyresponse remoteside message 
-					(const proxynextclientmessage)
+				handleLOCKCONTENT remoteside requestmessage
 			Nothing ->
-				protoerrhandler proxynextclientmessage $
+				protoerrhandler requestcomplete $
 					client $ net $ sendMessage FAILURE
-		UNLOCKCONTENT -> proxyUNLOCKCONTENT proxyselector >>= \case
-			Just remoteside ->
-				proxynoresponse remoteside message
-					proxynextclientmessage
-			Nothing -> proxynextclientmessage ()
 		REMOVE k -> do
-			remotesides <- proxyREMOVE proxyselector k
+			remotesides <- proxyREMOVE (proxySelector proxyparams) k
 			servermodechecker checkREMOVEServerMode $
-				handleREMOVE remotesides k message
+				handleREMOVE remotesides k requestmessage
 		REMOVE_BEFORE _ k -> do
-			remotesides <- proxyREMOVE proxyselector k
+			remotesides <- proxyREMOVE (proxySelector proxyparams) k
 			servermodechecker checkREMOVEServerMode $
-				handleREMOVE remotesides k message
+				handleREMOVE remotesides k requestmessage
 		GETTIMESTAMP -> do
-			remotesides <- proxyGETTIMESTAMP proxyselector
+			remotesides <- proxyGETTIMESTAMP (proxySelector proxyparams)
 			handleGETTIMESTAMP remotesides
-		GET _ _ k -> proxyGET proxyselector k >>= \case
-			Just remoteside -> handleGET remoteside message
-			Nothing -> 
-				protoerrhandler proxynextclientmessage $
-					client $ net $ sendMessage $ 
-						ERROR "content not present"
+		GET _ _ k -> proxyGET (proxySelector proxyparams) k >>= \case
+			Just remoteside -> handleGET remoteside requestmessage
+			Nothing -> handleGETNoRemoteSide
 		PUT paf k -> do
 			af <- getassociatedfile paf
-			remotesides <- proxyPUT proxyselector af k
+			remotesides <- proxyPUT (proxySelector proxyparams) af k
 			servermodechecker checkPUTServerMode $
-				handlePUT remotesides k message
-		BYPASS _ -> proxynextclientmessage ()
+				handlePUT remotesides k requestmessage
+		BYPASS _ -> requestcomplete ()
 		-- These messages involve the git repository, not the
 		-- annex. So they affect the git repository of the proxy,
 		-- not the remote.
@@ -298,6 +301,7 @@ proxy proxydone proxymethods proxystate servermode (ClientSide clientrunst clien
 		FAILURE_PLUS _ -> protoerr
 		DATA _ -> protoerr
 		VALIDITY _ -> protoerr
+		UNLOCKCONTENT -> protoerr
 		-- If the client errors out, give up.
 		ERROR msg -> giveup $ "client error: " ++ msg
 		-- Messages that only the server should send.
@@ -312,6 +316,16 @@ proxy proxydone proxymethods proxystate servermode (ClientSide clientrunst clien
 		-- Early messages that the client should not send now.
 		AUTH _ _ -> protoerr
 		VERSION _ -> protoerr
+  where
+	client = liftIO . runNetProto clientrunst clientconn
+	
+	ClientSide clientrunst clientconn = proxyClientSide proxyparams
+
+	servermodechecker c a = c (proxyServerMode proxyparams) $ \case
+		Nothing -> a
+		Just notallowed -> 
+			protoerrhandler requestcomplete $
+				client notallowed
 
 	-- Send a message to the remote, send its response back to the
 	-- client, and pass it to the continuation.
@@ -319,11 +333,6 @@ proxy proxydone proxymethods proxystate servermode (ClientSide clientrunst clien
 		getresponse (runRemoteSide remoteside) message $ \resp ->
 			protoerrhandler (a resp) $
 				client $ net $ sendMessage resp
-	
-	-- Send a message to the remote, that it will not respond to.
-	proxynoresponse remoteside message a =
-		protoerrhandler a $
-			runRemoteSide remoteside $ net $ sendMessage message
 	
 	-- Send a message to the endpoint and get back its response.
 	getresponse endpoint message handleresp =
@@ -340,26 +349,33 @@ proxy proxydone proxymethods proxystate servermode (ClientSide clientrunst clien
 	-- Read a message from one party, send it to the other,
 	-- and then pass the message to the continuation.
 	relayonemessage from to cont =
-		flip protoerrhandler (from $ net $ receiveMessage) $
+		flip protoerrhandler (from $ net receiveMessage) $
 			withresp $ \message ->
 				protoerrhandler (cont message) $
 					to $ net $ sendMessage message
 	
 	protoerr = do
-		_ <- client $ net $ sendMessage (ERROR "protocol error X")
-		giveup "protocol error M"
+		_ <- client $ net $ sendMessage (ERROR "protocol error")
+		giveup "protocol error"
+	
+	handleLOCKCONTENT remoteside msg =
+		proxyresponse remoteside msg $ \r () -> case r of
+			SUCCESS -> relayonemessage client
+				(runRemoteSide remoteside)
+				(const requestcomplete)
+			FAILURE -> requestcomplete ()
+			_ -> requestcomplete ()
 	
 	-- When there is a single remote, reply with its timestamp,
 	-- to avoid needing timestamp translation.
 	handleGETTIMESTAMP (remoteside:[]) = do
-		liftIO $ hPutStrLn stderr "!!!! single remote side"
 		liftIO $ atomically $ do
-			writeTVar (proxyRemoteLatestTimestamps proxystate)
+			writeTVar (proxyRemoteLatestTimestamps (proxyState proxyparams))
 				mempty
-			writeTVar (proxyRemoteLatestLocalTimestamp proxystate)
+			writeTVar (proxyRemoteLatestLocalTimestamp (proxyState proxyparams))
 				Nothing
 		proxyresponse remoteside GETTIMESTAMP
-			(const proxynextclientmessage)
+			(const requestcomplete)
 	-- When there are multiple remotes, reply with our local timestamp,
 	-- and do timestamp translation when sending REMOVE-FROM.
 	handleGETTIMESTAMP remotesides = do
@@ -371,14 +387,14 @@ proxy proxydone proxymethods proxystate servermode (ClientSide clientrunst clien
 		remotetimes <- (M.fromList . mapMaybe join) <$> getremotetimes 
 	 	localtime <- liftIO currentMonotonicTimestamp
 		liftIO $ atomically $ do
-			writeTVar (proxyRemoteLatestTimestamps proxystate)
+			writeTVar (proxyRemoteLatestTimestamps (proxyState proxyparams))
 				remotetimes
-			writeTVar (proxyRemoteLatestLocalTimestamp proxystate)
+			writeTVar (proxyRemoteLatestLocalTimestamp (proxyState proxyparams))
 				(Just localtime)
-		protoerrhandler proxynextclientmessage $
+		protoerrhandler requestcomplete $
 			client $ net $ sendMessage (TIMESTAMP localtime)
 	  where
-		getremotetimes = forMC concurrencyconfig remotesides $ \r ->
+		getremotetimes = forMC (proxyConcurrencyConfig proxyparams) remotesides $ \r ->
 			runRemoteSideOrSkipFailed r $ do
 				net $ sendMessage GETTIMESTAMP
 				net receiveMessage >>= return . \case
@@ -395,14 +411,14 @@ proxy proxydone proxymethods proxystate servermode (ClientSide clientrunst clien
 	handleREMOVE [] _ _ =
 		-- When no places are provided to remove from,
 		-- don't report a successful remote.
-		protoerrhandler proxynextclientmessage $
+		protoerrhandler requestcomplete $
 			client $ net $ sendMessage FAILURE	
 	handleREMOVE remotesides k message = do
 		tsm <- liftIO $ readTVarIO $ 
-			proxyRemoteLatestTimestamps proxystate
+			proxyRemoteLatestTimestamps (proxyState proxyparams)
 		oldlocaltime <- liftIO $ readTVarIO $
-			proxyRemoteLatestLocalTimestamp proxystate
-		v <- forMC concurrencyconfig remotesides $ \r ->
+			proxyRemoteLatestLocalTimestamp (proxyState proxyparams)
+		v <- forMC (proxyConcurrencyConfig proxyparams) remotesides $ \r ->
 			runRemoteSideOrSkipFailed r $ do
 				case message of
 					REMOVE_BEFORE ts _ -> do 
@@ -427,11 +443,11 @@ proxy proxydone proxymethods proxystate servermode (ClientSide clientrunst clien
 					_ -> Nothing
 		let v' = map join v
 		let us = concatMap snd $ catMaybes v'
-		mapM_ (\u -> removedContent proxymethods u k) us
-		protoerrhandler proxynextclientmessage $
+		mapM_ (\u -> removedContent (proxyMethods proxyparams) u k) us
+		protoerrhandler requestcomplete $
 			client $ net $ sendMessage $
-				let nonplussed = all (== remoteuuid) us 
-					|| protocolversion < 2
+				let nonplussed = all (== proxyUUID proxyparams) us 
+					|| proxyClientProtocolVersion proxyparams < ProtocolVersion 2
 				in if all (maybe False (fst . fst)) v'
 					then if nonplussed
 						then SUCCESS
@@ -441,19 +457,28 @@ proxy proxydone proxymethods proxystate servermode (ClientSide clientrunst clien
 							[] -> FAILURE
 							(err:_) -> ERROR err
 						else FAILURE_PLUS us
+		
+	-- Send an empty DATA and indicate it was invalid.
+	handleGETNoRemoteSide = protoerrhandler requestcomplete $
+		client $ net $ do
+			sendMessage $ DATA (Len 0)
+			sendBytes (Len 0) mempty nullMeterUpdate
+			when (proxyClientProtocolVersion proxyparams /= ProtocolVersion 0) $
+				sendMessage (VALIDITY Invalid)
+			void $ receiveMessage
 
 	handleGET remoteside message = getresponse (runRemoteSide remoteside) message $
 		withDATA (relayGET remoteside) $ \case
-			ERROR err -> protoerrhandler proxynextclientmessage $
+			ERROR err -> protoerrhandler requestcomplete $
 				client $ net $ sendMessage (ERROR err)
 			_ -> protoerr
 
 	handlePUT (remoteside:[]) k message
-		| Remote.uuid (remote remoteside) == remoteuuid =
+		| Remote.uuid (remote remoteside) == proxyUUID proxyparams =
 			getresponse (runRemoteSide remoteside) message $ \resp -> case resp of
-				ALREADY_HAVE -> protoerrhandler proxynextclientmessage $
+				ALREADY_HAVE -> protoerrhandler requestcomplete $
 					client $ net $ sendMessage resp
-				ALREADY_HAVE_PLUS _ -> protoerrhandler proxynextclientmessage $
+				ALREADY_HAVE_PLUS _ -> protoerrhandler requestcomplete $
 					client $ net $ sendMessage resp
 				PUT_FROM _ -> 
 					getresponse client resp $ 
@@ -462,7 +487,7 @@ proxy proxydone proxymethods proxystate servermode (ClientSide clientrunst clien
 							(const protoerr)
 				_ -> protoerr
 	handlePUT [] _ _ = 
-		protoerrhandler proxynextclientmessage $
+		protoerrhandler requestcomplete $
 			client $ net $ sendMessage ALREADY_HAVE
 	handlePUT remotesides k message = 
 		handlePutMulti remotesides k message
@@ -474,8 +499,8 @@ proxy proxydone proxymethods proxystate servermode (ClientSide clientrunst clien
 		relayDATACore len (runRemoteSide remoteside) client $
 			relayDATAFinish (runRemoteSide remoteside) client $
 				relayonemessage client (runRemoteSide remoteside) $
-					const proxynextclientmessage
-	
+					const requestcomplete
+
 	relayPUT remoteside k len = relayDATAStart (runRemoteSide remoteside) $
 		relayDATACore len client (runRemoteSide remoteside) $
 			relayDATAFinish client (runRemoteSide remoteside) $
@@ -483,15 +508,15 @@ proxy proxydone proxymethods proxystate servermode (ClientSide clientrunst clien
 	  where
 		finished resp () = do
 			void $ relayPUTRecord k remoteside resp
-			proxynextclientmessage ()
+			requestcomplete ()
 
 	relayPUTRecord k remoteside SUCCESS = do
-		addedContent proxymethods (Remote.uuid (remote remoteside)) k
+		addedContent (proxyMethods proxyparams) (Remote.uuid (remote remoteside)) k
 		return $ Just [Remote.uuid (remote remoteside)]
 	relayPUTRecord k remoteside (SUCCESS_PLUS us) = do
 		let us' = (Remote.uuid (remote remoteside)) : us
 		forM_ us' $ \u ->
-			addedContent proxymethods u k
+			addedContent (proxyMethods proxyparams) u k
 		return $ Just us'
 	relayPUTRecord _ _ _ =
 		return Nothing
@@ -513,14 +538,14 @@ proxy proxydone proxymethods proxystate servermode (ClientSide clientrunst clien
 		let alreadyhave = \case
 			Right (Left _) -> True
 			_ -> False
-		l <- forMC concurrencyconfig remotesides initiate
+		l <- forMC (proxyConcurrencyConfig proxyparams) remotesides initiate
 		if all alreadyhave l
-			then if protocolversion < 2
-				then protoerrhandler proxynextclientmessage $
+			then if proxyClientProtocolVersion proxyparams < ProtocolVersion 2
+				then protoerrhandler requestcomplete $
 					client $ net $ sendMessage ALREADY_HAVE
-				else protoerrhandler proxynextclientmessage $
+				else protoerrhandler requestcomplete $
 					client $ net $ sendMessage $ ALREADY_HAVE_PLUS $
-						filter (/= remoteuuid) $
+						filter (/= proxyUUID proxyparams) $
 							map (Remote.uuid . remote) (lefts (rights l))
 			else if null (rights l)
 				-- no response from any remote
@@ -533,10 +558,9 @@ proxy proxydone proxymethods proxystate servermode (ClientSide clientrunst clien
 							(const protoerr)
 	
 	relayPUTMulti minoffset remotes k (Len datalen) _ = do
-		let totallen = datalen + minoffset
 		-- Tell each remote how much data to expect, depending
 		-- on the remote's offset.
-		rs <- forMC concurrencyconfig remotes $ \r@(remoteside, remoteoffset) ->
+		rs <- forMC (proxyConcurrencyConfig proxyparams) remotes $ \r@(remoteside, remoteoffset) ->
 			runRemoteSideOrSkipFailed remoteside $ do
 				net $ sendMessage $ DATA $ Len $
 					totallen - remoteoffset
@@ -544,6 +568,8 @@ proxy proxydone proxymethods proxystate servermode (ClientSide clientrunst clien
 		protoerrhandler (send (catMaybes rs) minoffset) $
 			client $ net $ receiveBytes (Len datalen) nullMeterUpdate
 	  where
+		totallen = datalen + minoffset
+		
 		chunksize = fromIntegral defaultChunkSize
 		
 	  	-- Stream the lazy bytestring out to the remotes in chunks.
@@ -553,7 +579,7 @@ proxy proxydone proxymethods proxystate servermode (ClientSide clientrunst clien
 			let (chunk, b') = L.splitAt chunksize b
 			let chunklen = fromIntegral (L.length chunk)
 			let !n' = n + chunklen
-			rs' <- forMC concurrencyconfig rs $ \r@(remoteside, remoteoffset) ->
+			rs' <- forMC (proxyConcurrencyConfig proxyparams) rs $ \r@(remoteside, remoteoffset) ->
 				if n >= remoteoffset
 					then runRemoteSideOrSkipFailed remoteside $ do
 						net $ sendBytes (Len chunklen) chunk nullMeterUpdate
@@ -568,13 +594,21 @@ proxy proxydone proxymethods proxystate servermode (ClientSide clientrunst clien
 								return r
 						else return (Just r)
 			if L.null b'
-				then sent (catMaybes rs')
+				then do
+					-- If we didn't receive as much
+					-- data as expected, close
+					-- connections to all the remotes,
+					-- because they are still waiting
+					-- on the rest of the data.
+					when (n' /= totallen) $
+						mapM_ (closeRemoteSide . fst) rs
+					sent (catMaybes rs')
 				else send (catMaybes rs') n' b'
 
 		sent [] = proxydone
 		sent rs = relayDATAFinishMulti k (map fst rs)
 	
-	runRemoteSideOrSkipFailed remoteside a = 
+	runRemoteSideOrSkipFailed remoteside a =
 		runRemoteSide remoteside a >>= \case
 			Right v -> return (Just v)
 			Left _ -> do
@@ -594,16 +628,16 @@ proxy proxydone proxymethods proxystate servermode (ClientSide clientrunst clien
 			y $ net $ sendBytes len b nullMeterUpdate
 	
 	relayDATAFinish x y sendsuccessfailure ()
-		| protocolversion == 0 = sendsuccessfailure
+		| proxyClientProtocolVersion proxyparams == ProtocolVersion 0 = sendsuccessfailure
 		-- Protocol version 1 has a VALID or
 		-- INVALID message after the data.
 		| otherwise = relayonemessage x y (\_ () -> sendsuccessfailure)
 
 	relayDATAFinishMulti k rs
-		| protocolversion == 0 = 
+		| proxyClientProtocolVersion proxyparams == ProtocolVersion 0 =
 			finish $ net receiveMessage
 		| otherwise =
-			flip protoerrhandler (client $ net $ receiveMessage) $
+			flip protoerrhandler (client $ net receiveMessage) $
 				withresp $ \message ->
 					finish $ do
 						-- Relay VALID or INVALID message
@@ -615,17 +649,17 @@ proxy proxydone proxymethods proxystate servermode (ClientSide clientrunst clien
 						net receiveMessage			
 	  where
 		finish a = do
-			storeduuids <- forMC concurrencyconfig rs $ \r -> 
+			storeduuids <- forMC (proxyConcurrencyConfig proxyparams) rs $ \r ->
 				runRemoteSideOrSkipFailed r a >>= \case
 					Just (Just resp) ->
 						relayPUTRecord k r resp
 					_ -> return Nothing
-			protoerrhandler proxynextclientmessage $
+			protoerrhandler requestcomplete $
 				client $ net $ sendMessage $
 					case concat (catMaybes storeduuids) of
 						[] -> FAILURE
 						us
-							| protocolversion < 2 -> SUCCESS
+							| proxyClientProtocolVersion proxyparams < ProtocolVersion 2 -> SUCCESS
 							| otherwise -> SUCCESS_PLUS us
 
 	-- The associated file received from the P2P protocol
@@ -640,10 +674,13 @@ proxy proxydone proxymethods proxystate servermode (ClientSide clientrunst clien
 data ConcurrencyConfig = ConcurrencyConfig Int (MSem.MSem Int)
 
 noConcurrencyConfig :: Annex ConcurrencyConfig
-noConcurrencyConfig = liftIO $ ConcurrencyConfig 1 <$> MSem.new 1
+noConcurrencyConfig = mkConcurrencyConfig 1
 
-getConcurrencyConfig :: Annex ConcurrencyConfig
-getConcurrencyConfig = (annexJobs <$> Annex.getGitConfig) >>= \case
+mkConcurrencyConfig :: Int -> Annex ConcurrencyConfig
+mkConcurrencyConfig n = liftIO $ ConcurrencyConfig n <$> MSem.new n
+
+concurrencyConfigJobs :: Annex ConcurrencyConfig
+concurrencyConfigJobs = (annexJobs <$> Annex.getGitConfig) >>= \case
 	NonConcurrent -> noConcurrencyConfig
 	Concurrent n -> go n
 	ConcurrentPerCpu -> go =<< liftIO getNumProcessors
@@ -653,8 +690,7 @@ getConcurrencyConfig = (annexJobs <$> Annex.getGitConfig) >>= \case
 		when (n > c) $
 			liftIO $ setNumCapabilities n
 		setConcurrency (ConcurrencyGitConfig (Concurrent n))
-		msem <- liftIO $ MSem.new n
-		return (ConcurrencyConfig n msem)
+		mkConcurrencyConfig n
 
 forMC :: ConcurrencyConfig -> [a] -> (a -> Annex b) -> Annex [b]
 forMC _ (x:[]) a = do

@@ -16,6 +16,7 @@ import qualified Data.UUID as U
 import Data.Maybe
 import Data.String
 import Data.ByteString.Builder
+import Control.DeepSeq
 import qualified Data.Semigroup as Sem
 
 import Git.Types (ConfigValue(..))
@@ -27,6 +28,10 @@ import qualified Utility.SimpleProtocol as Proto
 -- A UUID is either an arbitrary opaque string, or UUID info may be missing.
 data UUID = NoUUID | UUID B.ByteString
 	deriving (Eq, Ord, Show, Read)
+
+instance NFData UUID where
+	rnf NoUUID = ()
+	rnf (UUID b) = rnf b
 
 class FromUUID a where
 	fromUUID :: UUID -> a

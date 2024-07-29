@@ -16,7 +16,6 @@ import qualified Annex
 import Annex.Proxy
 import Annex.UUID
 import qualified CmdLine.GitAnnexShell.Checks as Checks
-import Logs.Location
 import Logs.Cluster
 import Annex.Cluster
 import qualified Remote
@@ -61,7 +60,7 @@ performLocal theiruuid servermode = do
 
 performProxy :: UUID -> P2P.ServerMode -> Remote -> CommandPerform
 performProxy clientuuid servermode r = do
-	clientside <- proxyClientSide clientuuid
+	clientside <- mkProxyClientSide clientuuid
 	getClientProtocolVersion (Remote.uuid r) clientside 
 		(withclientversion clientside)
 		(p2pErrHandler noop)
@@ -77,29 +76,29 @@ performProxy clientuuid servermode r = do
 			p2pDone
 		let errhandler = p2pErrHandler (closeRemoteSide remoteside)
 		proxystate <- liftIO mkProxyState
-		let runproxy othermsg' = proxy closer
-			proxymethods proxystate
-			servermode clientside
-			(Remote.uuid r)
-			(singleProxySelector remoteside)
-			concurrencyconfig
-			protocolversion othermsg' errhandler
+		let proxyparams = ProxyParams
+			{ proxyMethods = mkProxyMethods
+			, proxyState = proxystate
+			, proxyServerMode = servermode
+			, proxyClientSide = clientside
+			, proxyUUID = Remote.uuid r
+			, proxySelector = singleProxySelector remoteside
+			, proxyConcurrencyConfig = concurrencyconfig
+			, proxyClientProtocolVersion = protocolversion
+			}
+		let runproxy othermsg' = proxy closer proxyparams 
+			othermsg' errhandler
 		sendClientProtocolVersion clientside othermsg protocolversion
 			runproxy errhandler
 	withclientversion _ Nothing = p2pDone
-	
-	proxymethods = ProxyMethods
-		{ removedContent = \u k -> logChange k u InfoMissing
-		, addedContent = \u k -> logChange k u InfoPresent
-		}
 
 performProxyCluster :: UUID -> ClusterUUID -> P2P.ServerMode -> CommandPerform
 performProxyCluster clientuuid clusteruuid servermode = do
-	clientside <- proxyClientSide clientuuid
+	clientside <- mkProxyClientSide clientuuid
 	proxyCluster clusteruuid p2pDone servermode clientside p2pErrHandler
 
-proxyClientSide :: UUID -> Annex ClientSide
-proxyClientSide clientuuid = do
+mkProxyClientSide :: UUID -> Annex ClientSide
+mkProxyClientSide clientuuid = do
 	clientrunst <- liftIO (mkRunState $ Serving clientuuid Nothing)
 	ClientSide clientrunst <$> liftIO (stdioP2PConnectionDupped Nothing)
 

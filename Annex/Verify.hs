@@ -1,6 +1,6 @@
 {- verification
  -
- - Copyright 2010-2022 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -21,6 +21,8 @@ module Annex.Verify (
 	finishVerifyKeyContentIncrementally,
 	verifyKeyContentIncrementally,
 	IncrementalVerifier(..),
+	writeVerifyChunk,
+	resumeVerifyFromOffset,
 	tailVerify,
 ) where
 
@@ -32,6 +34,7 @@ import qualified Types.Backend
 import qualified Backend
 import Types.Remote (unVerified, Verification(..), RetrievalSecurityPolicy(..))
 import Utility.Hash (IncrementalVerifier(..))
+import Utility.Metered
 import Annex.WorkerPool
 import Types.WorkerPool
 import Types.Key
@@ -212,6 +215,44 @@ verifyKeyContentIncrementally verifyconfig k a = do
 	miv <- startVerifyKeyContentIncrementally verifyconfig k
 	a miv
 	snd <$> finishVerifyKeyContentIncrementally miv
+
+writeVerifyChunk :: Maybe IncrementalVerifier -> Handle -> S.ByteString -> IO ()
+writeVerifyChunk (Just iv) h c = do
+	S.hPut h c
+	updateIncrementalVerifier iv c
+writeVerifyChunk Nothing h c = S.hPut h c
+
+{- Given a file handle that is open for reading (and likely also for writing),
+ - and an offset, feeds the current content of the file up to the offset to
+ - the  IncrementalVerifier. Leaves the file seeked to the offset.
+ - Returns the meter with the offset applied. -}
+resumeVerifyFromOffset
+	:: Integer
+	-> Maybe IncrementalVerifier
+	-> MeterUpdate
+	-> Handle
+	-> IO MeterUpdate
+resumeVerifyFromOffset o incrementalverifier meterupdate h
+	| o /= 0 = do
+		maybe noop (`go` o) incrementalverifier
+		-- Make sure the handle is seeked to the offset.
+		-- (Reading the file probably left it there
+		-- when that was done, but let's be sure.)
+		hSeek h AbsoluteSeek o
+		return offsetmeterupdate
+	| otherwise = return meterupdate
+  where
+	offsetmeterupdate = offsetMeterUpdate meterupdate (toBytesProcessed o)
+	go iv n
+		| n == 0 = return ()
+		| otherwise = do
+			let c = if n > fromIntegral defaultChunkSize
+				then defaultChunkSize
+				else fromIntegral n
+			b <- S.hGet h c
+			updateIncrementalVerifier iv b
+			unless (b == S.empty) $
+				go iv (n - fromIntegral (S.length b))
 
 -- | Runs a writer action that retrieves to a file. In another thread,
 -- reads the file as it grows, and feeds it to the incremental verifier.

@@ -26,7 +26,7 @@ it. Then after pulling from "work", git-annex will know about an
 additional remote, "work-foo". That remote will be accessed using "work" as
 a proxy.
 
-Proxies can only be accessed via ssh.
+Proxies can only be accessed via ssh or by an annex+http url.
 
 # OPTIONS
 
