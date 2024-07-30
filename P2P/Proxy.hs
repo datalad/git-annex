@@ -563,7 +563,9 @@ proxyRequest proxydone proxyparams requestcomplete requestmessage protoerrhandle
 		rs <- forMC (proxyConcurrencyConfig proxyparams) remotes $ \r@(remoteside, remoteoffset) ->
 			runRemoteSideOrSkipFailed remoteside $ do
 				net $ sendMessage $ DATA $ Len $
-					totallen - remoteoffset
+					if remoteoffset > totallen
+						then 0
+						else totallen - remoteoffset
 				return r
 		protoerrhandler (send (catMaybes rs) minoffset) $
 			client $ net $ receiveBytes (Len datalen) nullMeterUpdate

@@ -18,27 +18,19 @@ Joey has received funding to work on this.
 Planned schedule of work:
 
 * June: git-annex proxies and clusters
-* July, part 1: p2p protocol over http
-* July, part 2: git-annex proxy support for exporttree
-* August: balanced preferred content
-* September: streaming through proxy to special remotes (especially S3)
-* October: proving behavior of balanced preferred content with proxies
+* July: p2p protocol over http
+* August, part 1: git-annex proxy support for exporttree
+* August, part 2: balanced preferred content
+* September, part 1: balanced preferred content continued
+* September, part 2: streaming through proxy to special remotes (especially S3)
+* October, part 1: streaming through proxy continued
+* October, part 2: proving behavior of balanced preferred content with proxies
 
 [[!tag projects/openneuro]]
 
 ## work notes
 
-* When part of a file has been sent to a cluster via the http server,
-  the transfer interrupted, and another node is added to the cluster,
-  and the transfer of the file performed again, there is a failure
-  sending to the node that had an incomplete copy. It fails like this:
-
-	  //home/joey/tmp/bench/c3/.git/annex/tmp/SHA256E-s1048576000--09d7e19983a65682138fa5944f135e4fc593330c2693c41d22cc7881443d6060: withBinaryFile: illegal operation
-	git-annex: transfer already in progress, or unable to take transfer lock
-	p2pstdio: 1 failed
-
-  When using ssh and not the http server, the node that had the incomplete
-  copy also doesn't get the file, altough no error is displayed.
+* release time
 
 ## items deferred until later for p2p protocol over http
 
