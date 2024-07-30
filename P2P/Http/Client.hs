@@ -156,7 +156,7 @@ p2pHttpClientVersions allowedversion rmt fallback clientaction =
 					M.insert (Git.CredentialBaseURL credentialbaseurl) cred cc
 		Nothing -> noop
 #else
-p2pHttpClientVersions _rmt fallback () = fallback
+p2pHttpClientVersions _ _ fallback () = fallback
 	"This remote uses an annex+http url, but this version of git-annex is not build with support for that."
 #endif
 
