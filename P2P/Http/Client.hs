@@ -24,6 +24,7 @@ import Utility.Metered
 import Utility.FileSize
 import Types.NumCopies
 
+import Annex.Common
 #ifdef WITH_SERVANT
 import qualified Annex
 import Annex.UUID
@@ -31,7 +32,6 @@ import Annex.Url
 import Types.Remote
 import P2P.Http
 import P2P.Http.Url
-import Annex.Common
 import Annex.Concurrent
 import Utility.Url (BasicAuth(..))
 import Utility.HumanTime
@@ -45,12 +45,12 @@ import Network.HTTP.Client
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy.Internal as LI
 import qualified Data.Map as M
-import Data.Time.Clock.POSIX
 import Control.Concurrent.STM
 import Control.Concurrent.Async
 import Control.Concurrent
 import System.IO.Unsafe
 #endif
+import Data.Time.Clock.POSIX
 import qualified Data.ByteString.Lazy as L
 
 type ClientAction a
@@ -156,7 +156,7 @@ p2pHttpClientVersions allowedversion rmt fallback clientaction =
 					M.insert (Git.CredentialBaseURL credentialbaseurl) cred cc
 		Nothing -> noop
 #else
-p2pHttpClientVersions _ _ fallback () = fallback
+p2pHttpClientVersions _ _ fallback () = Just <$> fallback
 	"This remote uses an annex+http url, but this version of git-annex is not built with support for that."
 #endif
 
