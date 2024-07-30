@@ -157,7 +157,7 @@ p2pHttpClientVersions allowedversion rmt fallback clientaction =
 		Nothing -> noop
 #else
 p2pHttpClientVersions _ _ fallback () = fallback
-	"This remote uses an annex+http url, but this version of git-annex is not build with support for that."
+	"This remote uses an annex+http url, but this version of git-annex is not built with support for that."
 #endif
 
 clientGet
