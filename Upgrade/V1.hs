@@ -1,6 +1,6 @@
 {- git-annex v1 -> v2 upgrade support
  -
- - Copyright 2011 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -18,6 +18,7 @@ import qualified Data.ByteString.Short as S (toShort, fromShort)
 import qualified Data.ByteString.Lazy as L
 import qualified System.FilePath.ByteString as P
 import System.PosixCompat.Files (isRegularFile)
+import Text.Read
 
 import Annex.Common
 import Types.Upgrade
@@ -149,13 +150,16 @@ oldlog2key l
 -- WORM backend keys: "WORM:mtime:size:filename"
 -- all the rest: "backend:key"
 --
--- If the file looks like "WORM:XXX-...", then it was created by mixing
+-- If the file looks like "WORM:FOO-...", then it was created by mixing
 -- v2 and v1; that infelicity is worked around by treating the value
 -- as the v2 key that it is.
 readKey1 :: String -> Key
-readKey1 v
-	| mixup = fromJust $ deserializeKey $ intercalate ":" $ Prelude.tail bits
-	| otherwise = mkKey $ \d -> d
+readKey1 = fromMaybe (giveup "unable to parse v0 key") . readKey1'
+
+readKey1' :: String -> Maybe Key
+readKey1' v
+	| mixup = deserializeKey $ intercalate ":" $ drop 1 bits
+	| otherwise = Just $ mkKey $ \d -> d
 		{ keyName = S.toShort (encodeBS n)
 		, keyVariety = parseKeyVariety (encodeBS b)
 		, keySize = s
@@ -166,13 +170,13 @@ readKey1 v
 	b = Prelude.head bits
 	n = intercalate ":" $ drop (if wormy then 3 else 1) bits
 	t = if wormy
-		then Just (Prelude.read (bits !! 1) :: EpochTime)
+		then readMaybe (bits !! 1) :: Maybe EpochTime
 		else Nothing
-	s = if wormy
-		then Just (Prelude.read (bits !! 2) :: Integer)
+	s = if wormy && length bits > 2
+		then readMaybe (bits !! 2) :: Maybe Integer
 		else Nothing
-	wormy = Prelude.head bits == "WORM"
-	mixup = wormy && isUpper (Prelude.head $ bits !! 1)
+	wormy = length bits > 1 && headMaybe bits == Just "WORM"
+	mixup = wormy && fromMaybe False (isUpper <$> (headMaybe $ bits !! 1))
 
 showKey1 :: Key -> String
 showKey1 k = intercalate ":" $ filter (not . null)
