@@ -10,6 +10,7 @@ flags:
     debuglocks: false
     benchmark: false
     crypton: false
+    servant: false
 packages:
 - '.'
 extra-deps:
