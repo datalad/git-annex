@@ -101,7 +101,7 @@ install:
 # optimisation (including when building the dependencies) 
 before_build:
   - sh: cp stack.yaml stack.yaml.build
-  - ps: cp stack-lts-18.13.yaml stack.yaml.build
+  - ps: cp stack.yaml stack.yaml.build
   - sh: 'echo "apply-ghc-options: everything" >> stack.yaml.build'
   - ps: '"apply-ghc-options: everything" |Add-Content -Path .\stack.yaml.build'
   - stack --stack-yaml stack.yaml.build build --only-dependencies --ghc-options=-O0

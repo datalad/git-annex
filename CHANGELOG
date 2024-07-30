@@ -20,6 +20,8 @@ git-annex (10.20240731) UNRELEASED; urgency=medium
   * Added a build flag for servant, enabling annex+http urls and 
     git-annex p2phttp.
   * Added a dependency on clock.
+  * Updated stack.yaml to nightly-2024-07-29, which can be used to build
+    on Windows as well, so removed stack-lts-18.13.yaml
 
  -- Joey Hess <id@joeyh.name>  Tue, 02 Jul 2024 12:14:53 -0400
 

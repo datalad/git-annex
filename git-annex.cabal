@@ -35,7 +35,6 @@ Description:
 -- Include only files that are needed make cabal install git-annex work.
 Extra-Source-Files:
   stack.yaml
-  stack-lts-18.13.yaml
   README
   CHANGELOG
   NEWS

@@ -13,6 +13,6 @@ flags:
     servant: true
 packages:
 - '.'
-resolver: lts-22.9
+resolver: nightly-2024-07-29
 extra-deps:
-allow-newer: true
+ - filepath-bytestring-1.4.100.3.2
