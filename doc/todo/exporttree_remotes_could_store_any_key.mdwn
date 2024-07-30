@@ -51,3 +51,21 @@ sending all (wanted) keys to an exporttree=yes remote, that would be
 surprising for an existing user!
 
 Perhaps this should not be "exportree=yes", but something else.
+
+----
+
+Consider two repositories A and B that both have access to the same
+exporttree=yes special remote R.
+
+* A exports tree T1 to R
+* B pulls from A, so knows R has tree T1
+* A exports tree T2 to R, which deletes file `foo`. So
+  it is moved to R's .git/annex/objects/
+* B exports tree T2 to R also. So B deletes file `foo`. But it was not
+  present anyway. If B then marks the key as not present in R, we will have
+  lost track of the fact that A moved it to the objects location.
+
+So, when calling removeExport, have to also check if the key is present in
+the objects location. If so, don't record the key as missing. (Or course,
+it already checks if some other exported file also has the content of the
+key.)

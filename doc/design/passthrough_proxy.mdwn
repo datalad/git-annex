@@ -596,10 +596,33 @@ has not been fetched, it won't know that the file was removed, so it won't
 try to send it, leaving the export incomplete.
 
 A possibile solution to all of these problems would be to have a
-.git/annex/objects directory in the exporttree=yes remove. Rather than
-deleting any key from it, the proxy can mode a key into that directory.
+.git/annex/objects directory in the exporttree=yes remote. Rather than
+deleting any key from it, the proxy can move a key into that directory.
 (git-remote-annex already uses such a directory for storing its keys on
-exporttree=yes remotes).
+exporttree=yes remotes). [[todo/exporttree_remotes_could_store_any_key]]
+explores that idea generally. 
+
+Whether or not that gets implemented generally, a proxy could do this.
+It seems better to have it implemented generally though. Otherwise, a
+special remote that happens to be proxied would have keys stored on it that
+were not accessible when it is accessed directly rather than via the proxy.
+
+Simplified design for proxying to exporttree=yes, if those remotes can
+store any key:
+
+* Configure annex-tracking-branch for the proxy in the git-annex branch.
+  (For the proxy as a whole, or for specific exporttree=yes repos behind
+  it?)
+* Then the user's workflow is simply: `git-annex push`
+* The proxy handles PUT/GET/REMOVE of a key that is not in the 
+  annex-tracking branch that it currently knows about, by using
+  the special remote's .git/annex/objects/ location.
+* Upon receiving a new annex-tracking-branch or any transfer of a key
+  used in the current annex-tracking-branch, the proxy can update
+  the exporttree=yes remote. This needs to happen incrementally,
+  eg upon receiving a key, just proxy it on to the exporttree=yes remote,
+  and update the export database. Once all keys are received, update
+  the git-annex branch to indicate a new tree has been exported.
 
 ## possible enhancement: indirect uploads
 
