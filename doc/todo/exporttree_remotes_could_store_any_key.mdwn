@@ -1,0 +1,53 @@
+An exporttree=yes remote is limited to storing the files in the tree that
+is exported to it.
+
+However, it would be possible to instead make these remotes be able to
+store any key. Keys that were not in the exported tree would be stored
+under .git/annex/objects/
+
+When updating the tree exported to the remote, files that were deleted
+would have their content renamed to the .git/annex/objects/ location.
+And keys that were already stored there but were not used in the previous
+tree would be moved to the file in the new tree that uses them.
+
+In fact, git-remote-annex already does this for its own (very special)
+keys, in order to support exporttree=yes remotes.
+
+Another place this would be useful is 
+[[proxying to exporttree=yes special remotes|design/passthrough_proxy]].
+
+This could also solve [[todo/export_paired_rename_innefficenctcy]]
+cleanly.
+
+With this change, a user could just `git-annex copy --to remote`
+and copy whatever files they want into it. Then later 
+`git-annex export master --to remote` would efficiently update the tree
+there.
+
+If sending individual files like that works, when `git-annex drop --from
+remote` would also work. And dropping a key that is used by a file in the
+exported tree would delete that file. One problem with this is `git-annex
+import` would then import a tree with a deleted file. Probably not what the
+user wanted to do! So it seems that `git-annex drop` should fail if the
+file is part of the exported tree, and only allow dropping keys that are
+not, from the .git/annex/objects/ location in the special remote.
+
+Some remotes don't support renameExport, and if this was used with such a
+remote, files would need to be re-uploaded at when updating the tree
+exported to the remote, and the .git/annex/objects/ files deleted.
+So users of such remotes would not want to use workflows that copy files
+to them before updating the export tree.
+
+An old version of git-annex would not know about the new way to store keys
+on the remote, and so things like `git-annex fsck --from remote` would
+update bad data. Fsck is not really a problem since a fsck can be run with
+a new git-annex to recover. But compatability with old versions needs to be
+carefully considered if making this change.
+
+There is also the potential for breaking existing workflows, eg a user
+might be running a command like `git-annex push` that doesn't currently
+send keys to the remote that are not in the exported tree. If it started
+sending all (wanted) keys to an exporttree=yes remote, that would be
+surprising for an existing user!
+
+Perhaps this should not be "exportree=yes", but something else.
