@@ -29,7 +29,10 @@ linux systems.
 
 The x86-32 build for ancient kernels is for use with Linux kernel
 versions such as 2.6.32. It will work on both 32 and 64 bit systems.
-The arm64 build for ancient kernels is for kernels such as 4.19,
+This build does not support some of git-annex's newer features,
+notably [[smart_http|tips/smart_http_server]].
+
+The arm64 build for ancient kernels is for Linux kernels such as 4.19,
 which is still in use on Android phones.
 
 ## autobuilds

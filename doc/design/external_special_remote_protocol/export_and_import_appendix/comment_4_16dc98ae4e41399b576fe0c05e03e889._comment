@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: importtree=yes Support"""
+ date="2024-07-30T14:41:35Z"
+ content="""
+@stv0g I'm pretty busy with other features, on the other hand implementing
+the git-annex side of this would not really be that hard. It's making sure
+that git-annex doesn't encourage lots of unsafe things to be built with
+the export/import interface that seems hard to me.
+
+Would you need the full export/import interface though?
+[[todo/importtree_only_remotes]] would be enough if you only want to
+import, and it avoids the tricky question of how to avoid data loss
+due to overwriting a modified file in your implementation of
+STOREEXPORTEXPECTED.
+
+On the other hand, if rclone provides something that can be used 
+as a good ContentIdentifier, and has a way to avoid a store overwriting a
+modified file, it would be great to have this interface.
+"""]]
