@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="Spencer"
+ avatar="http://cdn.libravatar.org/avatar/2e0829f36a68480155e09d0883794a55"
+ subject="@joey"
+ date="2024-07-31T20:10:06Z"
+ content="""
+I deleted the file locally and verified that sync updated the file as gone remotely.
+`rclone ls` also shows file missing from Dropbox.
+
+Trying to get from remote after deletion but before drop prints nothing. Getting after dropping gives the error that the file is gone.
+"""]]
