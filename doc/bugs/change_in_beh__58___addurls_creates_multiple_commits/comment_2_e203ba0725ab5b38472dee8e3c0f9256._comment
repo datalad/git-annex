@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2024-07-31T16:06:38Z"
+ content="""
+Bisected to [[!commit 780367200b14d532f745079dfa09ffaa214d0a84]],
+"remove dead nodes when loading the cluster log".
+
+Replacing `loadClusters` with a noop on top of that commit gets the test
+suite passing again.
+
+Since nothing in `loadClusters` involves the location log at all, I think
+this must come down to a difference in when/if git-annex starts reading
+from the git-annex branch. There could be git-annex commands that didn't
+used to read from the branch before, that now do. Which might mean merging
+in other git-annex branches at different points in time than happened
+before, which I suppose can result in an additional commit.
+
+Unfortunately, I can't avoid the early `loadClusters` for reasons explained
+in that commit.
+
+Anyway, I doubt this will result in a lot of additional commits.
+"""]]
