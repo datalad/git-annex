@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="kdm9"
- avatar="http://cdn.libravatar.org/avatar/b7b736335a0e9944a8169a582eb4c43d"
- subject="Linux 64bit failing?"
- date="2023-10-04T14:39:48Z"
- content="""
-FYI Joey: seems like the x86_64 build failed? In any case the \"current\" Linux x86_64 standalone tarball points to the last release from the end of August.
-"""]]
