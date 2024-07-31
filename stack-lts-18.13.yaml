@@ -1,0 +1,20 @@
+# This is temporarily present to work around this issue.
+# https://github.com/datalad/git-annex/issues/204
+flags:
+  git-annex:
+    production: true
+    parallelbuild: true
+    assistant: true
+    pairing: true
+    torrentparser: true
+    magicmime: false
+    dbus: false
+    debuglocks: false
+    benchmark: true
+    crypton: true
+    servant: true
+packages:
+- '.'
+resolver: nightly-2024-07-29
+extra-deps:
+- filepath-bytestring-1.4.100.3.2
