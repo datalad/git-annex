@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-07-31T13:39:48Z"
+ content="""
+git-annex drop always actively verifies that a semitrusted remote
+still has a copy of the file.
+
+How did you delete the file from the remote? I suppose it's possible that
+rclone is seeing a cached or stale state of the dropbox. Or that the
+dropbox you deleted it from was not in sync with the dropbox rclone was
+looking at.
+
+What version of rclone?
+
+Here's the code that the rclone special remote uses to check the presence
+of a file:
+<https://github.com/rclone/rclone/blob/master/cmd/gitannex/gitannex.go#L494>
+
+And at least according to the documentation of newObject, that does actively
+check if the file is present:
+<https://github.com/rclone/rclone/blob/612c717ea0eed3f646095ed57620fd05b2a2c20b/fs/types.go#L36>
+"""]]
