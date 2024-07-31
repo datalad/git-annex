@@ -1,0 +1,64 @@
+# Trust but Verify: Potential Data Loss with RClone
+
+I'm fairly new to git annex, so I wanted to test its trust capabilities. So, I deleted a file from my rclone special remote after I pushed to it and lo and behold, I was still able to effectively "lose" the file by dropping it locally. I had hoped that because annex tells me "could not verify the existence of X necessary cop(y|ies)" that it was actually verifying said copies existed before performing the drop operation. This may be an issue with RClone special remotes or with my understanding of the semitrust algorithm.
+
+I tried to synchronize my repository's local record of the data on the rclone special remote with `git annex sync`, `git annex pull`, and `git annex push`, but `git annex whereis` still listed my rclone remote as carrying a copy of the file after I deleted it.
+
+Specifically, I am working with a dropbox rclone as setup like so:
+
+```bash
+git annex initremote dropbox-storage \
+    type=rclone \
+    encryption=none \
+    git annex initremote 
+    rcloneprefix=Path/To/Project/annex \
+    rcloneremotename=dropbox
+```
+
+with modern versions of rclone and annex (i.e. built in support for git-annex-remote-rclone).
+
+Should the semitrust system ping this rclone remote for existence of files during the drop operation as a final verification that it really exists before deleting the contents locally, or if there's even a chance that files get deleted on a remote, I should be untrusting it? In the case of untrusted remotes is there some way to actually verify files' existence by git annex (ie not manually)? For sake of data integrity I would really appreciate this.
+
+Also, really looking forward to the new git-remote-annex helper! Would love to pair this with rclone so as to avoid Dropbox's egregious sync utility which is constantly dropping git objects and mangling my repos... The helper didn't install/initialize as a remote type on my computer in the latest version of annex, not sure why.
+
+(Mac - Annex installed via homebrew)
+
+```
+==> git-annex: stable 10.20240701 (bottled), HEAD
+Manage files with git without checking in file contents
+https://git-annex.branchable.com/
+Installed
+/opt/homebrew/Cellar/git-annex/10.20240701 (11 files, 167.2MB) *
+  Poured from bottle using the formulae.brew.sh API on 2024-07-18 at 13:46:03
+From: https://github.com/Homebrew/homebrew-core/blob/HEAD/Formula/g/git-annex.rb
+License: AGPL-3.0-or-later and BSD-2-Clause and BSD-3-Clause and GPL-2.0-only and GPL-3.0-or-later and MIT
+==> Dependencies
+Build: cabal-install ✘, ghc@9.6 ✘, pkg-config ✔
+Required: libmagic ✔
+==> Options
+--HEAD
+        Install HEAD version
+==> Caveats
+To start git-annex now and restart at login:
+  brew services start git-annex
+Or, if you don't want/need a background service you can just run:
+  /opt/homebrew/opt/git-annex/bin/git-annex assistant --autostart
+==> Analytics
+install: 512 (30 days), 1,779 (90 days), 6,533 (365 days)
+install-on-request: 431 (30 days), 1,547 (90 days), 5,669 (365 days)
+build-error: 0 (30 days)
+```
+
+(annex version)
+
+```
+git-annex version: 10.20240701
+build flags: Assistant Webapp Pairing FsEvents TorrentParser MagicMime Benchmark Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.24.2 bloomfilter-2.0.1.2 crypton-1.0.0 DAV-1.3.4 feed-1.3.2.1 ghc-9.6.3 http-client-0.7.17 persistent-sqlite-2.13.3.0 torrent-10000.1.3 uuid-1.3.15 yesod-1.6.2.1
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL GITBUNDLE GITMANIFEST VURL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg rclone hook external
+operating system: darwin aarch64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
+local repository version: 10
+```
