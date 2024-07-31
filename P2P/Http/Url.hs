@@ -11,8 +11,8 @@ module P2P.Http.Url where
 
 import Data.List
 import Network.URI
-import System.FilePath.Posix as P
 #ifdef WITH_SERVANT
+import System.FilePath.Posix as P
 import Servant.Client (BaseUrl(..), Scheme(..))
 import Text.Read
 #endif
@@ -37,13 +37,14 @@ parseP2PHttpUrl :: String -> Maybe P2PHttpUrl
 parseP2PHttpUrl us
 	| isP2PHttpProtocolUrl us = case parseURI (drop prefixlen us) of
 		Nothing -> Nothing
-		Just u ->
 #ifdef WITH_SERVANT
+		Just u ->
 			case uriScheme u of
 				"http:" -> mkbaseurl Http u
 				"https:" -> mkbaseurl Https u
 				_ -> Nothing
 #else
+		Just _u ->
 			Just $ P2PHttpUrl us
 #endif
 	| otherwise = Nothing
