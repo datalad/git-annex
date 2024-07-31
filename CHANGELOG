@@ -1,3 +1,9 @@
+git-annex (10.20240732) UNRELEASED; urgency=medium
+
+  * Avoid loading cluster log at startup.
+
+ -- Joey Hess <id@joeyh.name>  Wed, 31 Jul 2024 15:52:03 -0400
+
 git-annex (10.20240731) upstream; urgency=medium
 
   * New HTTP API that is equivilant to the P2P protocol.

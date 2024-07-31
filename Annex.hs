@@ -197,7 +197,7 @@ data AnnexState = AnnexState
 	, preferredcontentmap :: Maybe (FileMatcherMap Annex)
 	, requiredcontentmap :: Maybe (FileMatcherMap Annex)
 	, remoteconfigmap :: Maybe (M.Map UUID RemoteConfig)
-	, clusters :: Maybe Clusters
+	, clusters :: Maybe (Annex Clusters)
 	, forcetrust :: TrustMap
 	, trustmap :: Maybe TrustMap
 	, groupmap :: Maybe GroupMap

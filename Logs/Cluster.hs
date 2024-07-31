@@ -11,6 +11,7 @@ module Logs.Cluster (
 	module Types.Cluster,
 	getClusters,
 	loadClusters,
+	preLoadClusters,
 	recordCluster,
 ) where
 
@@ -24,7 +25,12 @@ import qualified Data.Map as M
 import qualified Data.Set as S
 
 getClusters :: Annex Clusters
-getClusters = maybe loadClusters return	=<< Annex.getState Annex.clusters
+getClusters = maybe loadClusters id =<< Annex.getState Annex.clusters
+
+{- This works around a module dependency loop. -}
+preLoadClusters :: Annex ()
+preLoadClusters = Annex.changeState $ \s ->
+	s { Annex.clusters = Just loadClusters }
 
 {- Loads the clusters and caches it for later.
  -
@@ -37,5 +43,5 @@ loadClusters = do
 	dead <- (S.fromList . map ClusterNodeUUID)
 		<$> trustGet DeadTrusted
 	clusters <- getClustersWith (M.map (`S.difference` dead))
-	Annex.changeState $ \s -> s { Annex.clusters = Just clusters }
+	Annex.changeState $ \s -> s { Annex.clusters = Just (pure clusters) }
 	return clusters

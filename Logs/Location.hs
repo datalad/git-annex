@@ -252,4 +252,4 @@ overLocationLogs' iv discarder keyaction = do
 -- Cannot import Logs.Cluster due to a cycle.
 -- Annex.clusters gets populated when starting up git-annex.
 getClusters :: Annex Clusters
-getClusters = fromMaybe noClusters <$> Annex.getState Annex.clusters
+getClusters = maybe (pure noClusters) id =<< Annex.getState Annex.clusters

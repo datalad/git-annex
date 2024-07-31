@@ -186,3 +186,5 @@ add-archive-content(ok): /home/yoh/.tmp/datalad_temp_tree_rsua9kmg (dataset)
 
 [[!meta author=yoh]]
 [[!tag projects/repronim]]
+
+> [[fixed|done]] --[[Joey]]

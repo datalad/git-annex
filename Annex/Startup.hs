@@ -35,10 +35,10 @@ startup = do
  -}
 startupAnnex :: Annex ()
 startupAnnex = doQuietAction $
-	-- Logs.Location needs clusters to be loaded before it is used,
-	-- in order for a cluster to be treated as the location of keys
+	-- Logs.Location needs this before it is used, in order for a
+	-- cluster to be treated as the location of keys
 	-- that are located in any of its nodes.
-	void loadClusters
+	preLoadClusters
 
 startupSignals :: Annex ()
 startupSignals = do
