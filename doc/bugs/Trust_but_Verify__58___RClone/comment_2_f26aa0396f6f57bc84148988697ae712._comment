@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2024-07-31T14:05:59Z"
+ content="""
+I pinged @dmcardle about this, of course if rclone can be shown to be doing
+the wrong thing with this check a bug should be filed there.
+"""]]
