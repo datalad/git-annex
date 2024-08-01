@@ -1,0 +1,5 @@
+The forum says my comments are written by "d", presumably because that's the username component of my email address. If it's going to omit the domain name, I'd prefer to change my username somehow.
+
+When I look at the repo's representation of my comments, I see a nickname="d" field. Is it possible to customize my account's nickname?
+
+I checked the "preferences" page, but I can only configure my email address and subscriptions.
