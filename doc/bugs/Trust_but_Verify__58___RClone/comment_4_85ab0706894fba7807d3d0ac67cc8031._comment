@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="d@403a635aa8eaa8bfa8613acb6a375d9e06ed7001"
+ nickname="d"
+ avatar="http://cdn.libravatar.org/avatar/b79468a0d03ec3ec7acbae547c4fa994"
+ subject="comment 4"
+ date="2024-08-01T13:49:40Z"
+ content="""
+Hi, Spencer, thank you for testing and reporting this!
+
+I've been attempting to repro this failure with a (janky) end-to-end test in the rclone repo: [PR #7983](https://github.com/rclone/rclone/pull/7983). Unfortunately, I can't repro the data loss you've described despite running it 30+ times. However, if you're able to reliably repro, that indicates my e2e test is missing something.
+
+One potential difference is that I'm invoking rclone to delete the content from Dropbox. It sounded like you might be deleting from a local directory managed by Dropbox's app, then waiting for a visual indication that it has synchronized with Dropbox's servers. Can you clarify how you're deleting the file?
+
+"""]]
