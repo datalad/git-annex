@@ -69,3 +69,7 @@ So, when calling removeExport, have to also check if the key is present in
 the objects location. If so, don't record the key as missing. (Or course,
 it already checks if some other exported file also has the content of the
 key.)
+
+---
+
+Implementing in the "exportreeplus" branch --[[Joey]]
