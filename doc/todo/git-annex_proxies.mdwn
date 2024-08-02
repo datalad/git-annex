@@ -30,7 +30,8 @@ Planned schedule of work:
 
 ## work notes
 
-* release time
+* Working on `exportreeplus` branch which is groundwork for proxying to
+  exporttree=yes special remotes.
 
 ## items deferred until later for p2p protocol over http
 
