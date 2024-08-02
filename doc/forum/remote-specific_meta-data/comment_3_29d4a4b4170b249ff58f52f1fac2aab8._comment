@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Spencer"
+ avatar="http://cdn.libravatar.org/avatar/2e0829f36a68480155e09d0883794a55"
+ subject="Necro"
+ date="2024-08-02T04:10:14Z"
+ content="""
+This is rather old, but I find it a good question. For example if I clone from a clone, the new clone will have metadata about the original origin - assuming annex was used - in the form of a uuid, but no way of tracking where that uuid came from or might be.
+
+Last known paths might help, or some sort of ‘client-host’ metadata for each normal repo that’s recorded whenever a certain repo has others configured as its remotes. Specifically in an `A<-B<-C` configuration, B might register A as its host, and B as a client of A so that when B and A sync, B is added to A’s client list, or if B and C sync first, C is registered as B’s clients and can see that B has A as a host.
+"""]]
