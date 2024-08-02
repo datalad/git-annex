@@ -77,3 +77,7 @@ exporttree=yes special remote R.
 So, when calling removeExport, have to also check if the key is present in
 the objects location. If so, either don't record the key as missing, or
 also remove from the objects location.
+
+---
+
+Implementing in the "exportreeplus" branch --[[Joey]]

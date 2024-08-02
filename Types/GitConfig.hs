@@ -29,8 +29,6 @@ module Types.GitConfig (
 	mkRemoteConfigKey,
 ) where
 
-import Debug.Trace
-
 import Common
 import qualified Git
 import qualified Git.Config
@@ -495,12 +493,11 @@ extractRemoteGitConfig r remotename = do
 		, remoteAnnexClusterGateway = fromMaybe [] $
 			(mapMaybe (mkClusterUUID . toUUID) . words)
 				<$> getmaybe ClusterGatewayField
-		, remoteUrl = traceShow (mkRemoteConfigKey remotename (remoteGitConfigKey UrlField)) $
-			case Git.Config.getMaybe (mkRemoteConfigKey remotename (remoteGitConfigKey UrlField)) r of
-				Just (ConfigValue b)
-					| B.null b -> Nothing
-					| otherwise -> Just (decodeBS b)
-				_ -> Nothing
+		, remoteUrl = case Git.Config.getMaybe (mkRemoteConfigKey remotename (remoteGitConfigKey UrlField)) r of
+			Just (ConfigValue b)
+				| B.null b -> Nothing
+				| otherwise -> Just (decodeBS b)
+			_ -> Nothing
 		, remoteAnnexP2PHttpUrl =
 			case Git.Config.getMaybe (mkRemoteConfigKey remotename (remoteGitConfigKey AnnexUrlField)) r of
 				Just (ConfigValue b) ->
