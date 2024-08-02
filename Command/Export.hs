@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2017-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2017-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -21,6 +21,7 @@ import Git.Types
 import Git.FilePath
 import Git.Sha
 import qualified Remote
+import qualified Types.Remote as Remote
 import Types.Remote
 import Types.Export
 import Annex.Export
@@ -29,6 +30,7 @@ import Annex.Transfer
 import Annex.CatFile
 import Annex.FileMatcher
 import Annex.RemoteTrackingBranch
+import Annex.SpecialRemote.Config
 import Logs.Location
 import Logs.Export
 import Logs.PreferredContent
@@ -387,7 +389,15 @@ cleanupUnexport r db eks loc = do
 			concat <$> forM eks (getExportedLocation db)
 		when (null remaininglocs) $
 			forM_ eks $ \ek ->
-				logChange ek (uuid r) InfoMissing
+				-- When annexobject=true, a key that
+				-- was unexported may still be present
+				-- on the remote.
+				if annexObjects (Remote.config r)
+					then tryNonAsync (checkPresent r ek) >>= \case
+						Right False ->
+							logChange ek (uuid r) InfoMissing
+						_ -> noop
+					else logChange ek (uuid r) InfoMissing
 	
 	removeEmptyDirectories r db loc eks
 
