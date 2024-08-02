@@ -52,6 +52,13 @@ surprising for an existing user!
 
 Perhaps this should not be "exportree=yes", but something else.
 
+> Currently, if a remote is configured with "exporttree=foo", that
+> is treated the same as "exporttree=no". So this will need to be
+> a config added to exporttree=yes in order to interoperate
+> with old git-annex.
+> 
+> Call it "exporttree=yes annexobjects=yes" --[[Joey]]
+
 ----
 
 Consider two repositories A and B that both have access to the same

@@ -1,30 +1,35 @@
 {- Helper to make remotes support export and import (or not).
  -
- - Copyright 2017-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2017-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
 {-# LANGUAGE FlexibleInstances, FlexibleContexts #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Remote.Helper.ExportImport where
 
 import Annex.Common
+import qualified Annex
 import Types.Remote
 import Types.Key
 import Types.ProposedAccepted
-import Annex.Verify
+import Types.Export
 import Remote.Helper.Encryptable (encryptionIsEnabled)
 import qualified Database.Export as Export
 import qualified Database.ContentIdentifier as ContentIdentifier
 import Annex.Export
 import Annex.LockFile
 import Annex.SpecialRemote.Config
+import Annex.Verify
+import Annex.Content
 import Git.Types (fromRef)
 import Logs.Export
 import Logs.ContentIdentifier (recordContentIdentifier)
 
 import Control.Concurrent.STM
+import qualified System.FilePath.ByteString as P
 
 -- | Use for remotes that do not support exports.
 class HasExportUnsupported a where
@@ -123,12 +128,15 @@ adjustExportImport r rs = do
 				else importUnsupported
 			}
 		}
+	let annexobjects = isexport && annexObjects (config r)
 	if not isexport && not isimport
 		then return r'
-		else adjustExportImport' isexport isimport r' rs
+		else do
+			gc <- Annex.getGitConfig
+			adjustExportImport' isexport isimport annexobjects r' rs gc
 
-adjustExportImport' :: Bool -> Bool -> Remote -> RemoteStateHandle -> Annex Remote
-adjustExportImport' isexport isimport r rs = do
+adjustExportImport' :: Bool -> Bool -> Bool -> Remote -> RemoteStateHandle -> GitConfig -> Annex Remote
+adjustExportImport' isexport isimport annexobjects r rs gc = do
 	dbv <- prepdbv
 	ciddbv <- prepciddb
 	let versioned = versionedExport (exportActions r)
@@ -141,43 +149,49 @@ adjustExportImport' isexport isimport r rs = do
 		, importActions = if isimport
 			then importActions r
 			else importUnsupported
-		, storeKey = \k af p ->
-			-- Storing a key on an export could be implemented,
-			-- but it would perform unnecessary work
+		, storeKey = \k af o p ->
+			-- Storing a key to an export location could be
+			-- implemented, but it would perform unnecessary work
 			-- when another repository has already stored the
 			-- key, and the local repository does not know
 			-- about it. To avoid unnecessary costs, don't do it.
 			if thirdpartypopulated
 				then giveup "remote is not populated by git-annex"
 				else if isexport
-					then giveup "remote is configured with exporttree=yes; use `git-annex export` to store content on it"
+					then if annexobjects
+						then storeannexobject k o p
+						else giveup "remote is configured with exporttree=yes; use `git-annex export` to store content on it"
 					else if isimport
 						then giveup "remote is configured with importtree=yes and without exporttree=yes; cannot modify content stored on it"
-						else storeKey r k af p
-		, removeKey = \k -> 
-			-- Removing a key from an export would need to
-			-- change the tree in the export log to not include
+						else storeKey r k af o p
+		, removeKey = \proof k -> 
+			-- Removing a key from an export location would need
+			-- to change the tree in the export log to not include
 			-- the file. Otherwise, conflicts when removing
 			-- files would not be dealt with correctly.
 			-- There does not seem to be a good use case for
-			-- removing a key from an export in any case.
+			-- removing a key from an exported tree in any case.
 			if thirdpartypopulated
 				then giveup "dropping content from this remote is not supported"
 				else if isexport
-					then giveup "dropping content from an export is not supported; use `git annex export` to export a tree that lacks the files you want to remove"
+					then if annexobjects
+						then removeannexobject k
+						else giveup "dropping content from an export is not supported; use `git annex export` to export a tree that lacks the files you want to remove"
 					else if isimport
 						then giveup "dropping content from this remote is not supported because it is configured with importtree=yes"
-						else removeKey r k
+						else removeKey r proof k
 		, lockContent = if versioned
 			then lockContent r
 			else Nothing
 		, retrieveKeyFile = \k af dest p vc ->
 			if isimport
 				then supportversionedretrieve k af dest p vc $
-					retrieveKeyFileFromImport dbv ciddbv k af dest p
+					supportretrieveannexobject dbv k dest p $
+						retrieveKeyFileFromImport dbv ciddbv k af dest p
 				else if isexport
 					then supportversionedretrieve k af dest p vc $
-						retrieveKeyFileFromExport dbv k af dest p
+						supportretrieveannexobject dbv k dest p $
+							retrieveKeyFileFromExport dbv k af dest p
 					else retrieveKeyFile r k af dest p vc
 		, retrieveKeyFileCheap = if versioned
 			then retrieveKeyFileCheap r
@@ -185,8 +199,9 @@ adjustExportImport' isexport isimport r rs = do
 		, checkPresent = \k -> if versioned
 			then checkPresent r k
 			else if isimport
-				then anyM (checkPresentImport ciddbv k)
-					=<< getanyexportlocs dbv k
+				then checkpresentwith k $
+					anyM (checkPresentImport ciddbv k)
+						=<< getanyexportlocs dbv k
 				else if isexport
 					-- Check if any of the files a key
 					-- was exported to are present. This 
@@ -197,8 +212,9 @@ adjustExportImport' isexport isimport r rs = do
 					-- to it. Remotes that have such 
 					-- problems are made untrusted,
 					-- so it's not worried about here.
-					then anyM (checkPresentExport (exportActions r) k)
-						=<< getanyexportlocs dbv k
+					then checkpresentwith k $
+						anyM (checkPresentExport (exportActions r) k)
+							=<< getanyexportlocs dbv k
 					else checkPresent r k
 		-- checkPresent from an export is more expensive
 		-- than otherwise, so not cheap. Also, this
@@ -226,7 +242,13 @@ adjustExportImport' isexport isimport r rs = do
 				then do
 					ts <- map fromRef . exportedTreeishes
 						<$> getExport (uuid r)
-					return (is++[("exporttree", "yes"), ("exportedtree", unwords ts)])
+					return $ is ++ catMaybes
+						[ Just ("exporttree", "yes")
+						, Just ("exportedtree", unwords ts)
+						, if annexobjects
+							then Just ("annexobjects", "yes")
+							else Nothing
+						]
 				else return is
 			return $ if isimport && not thirdpartypopulated
 				then (is'++[("importtree", "yes")])
@@ -313,7 +335,7 @@ adjustExportImport' isexport isimport r rs = do
 				, liftIO $ atomically (readTMVar dbv)
 				)
 
-	getexportinconflict (_, _, v) = v
+	isexportinconflict (_, _, v) = liftIO $ atomically $ readTVar v
 
 	updateexportdb db exportinconflict =
 		Export.updateExportTreeFromLog db >>= \case
@@ -329,8 +351,8 @@ adjustExportImport' isexport isimport r rs = do
 	
 	getexportlocs dbv k = do
 		db <- getexportdb dbv
-		liftIO $ Export.getExportTree db k >>= \case
-			[] -> ifM (atomically $ readTVar $ getexportinconflict dbv)
+		liftIO (Export.getExportTree db k) >>= \case
+			[] -> ifM (isexportinconflict dbv)
 				( giveup "unknown export location, likely due to the export conflict"
 				, return []
 				)
@@ -372,18 +394,71 @@ adjustExportImport' isexport isimport r rs = do
 			else if isexport
 				then retrieveKeyFileFromExport dbv k af dest p
 				else giveup "no content identifier is recorded, unable to retrieve"
-	
-	-- versionedExport remotes have a key/value store, so can use
-	-- the usual retrieveKeyFile, rather than an import/export
-	-- variant. However, fall back to that if retrieveKeyFile fails.
-	supportversionedretrieve k af dest p vc a
-		| versionedExport (exportActions r) =
-			retrieveKeyFile r k af dest p vc
-				`catchNonAsync` const a
-		| otherwise = a
+
+	checkpresentwith k a = ifM a
+		( return True
+		, if annexobjects
+			then checkpresentannexobject k
+			else return False
+		)
 
 	checkPresentImport ciddbv k loc =
 		checkPresentExportWithContentIdentifier
 			(importActions r)
 			k loc 
 			=<< getkeycids ciddbv k
+
+	-- For annexobjects=true, objects are stored in the remote
+	-- in a location under .git/objects/
+	annexobjectlocation k = mkExportLocation $
+		".git" P.</> annexLocation gc k hashDirLower
+
+	checkpresentannexobject k = 
+		checkPresentExport (exportActions r) k (annexobjectlocation k)
+
+	storeannexobject k o p = prepSendAnnex' k o >>= \case
+		Nothing -> giveup "content is not available"
+		Just (src, _, checkmodified) -> do
+			let loc = annexobjectlocation k
+			storeExport (exportActions r) src k loc p
+			checkmodified >>= \case
+				Nothing -> return ()
+				Just err -> do
+					removeExport (exportActions r) k loc
+					giveup err
+
+	removeannexobject k = 
+		removeExport (exportActions r) k (annexobjectlocation k)
+
+	retrieveannexobject k dest p =
+		retrieveExport (exportActions r) k (annexobjectlocation k) dest p
+
+	supportretrieveannexobject dbv k dest p a
+		| annexobjects = tryNonAsync a >>= \case
+			Right res -> return res
+			Left err -> tryNonAsync (retrieveannexobject k dest p) >>= \case
+				Right res -> return res
+				-- Both failed, so which exception to
+				-- throw? If there are known export
+				-- locations, throw the exception from
+				-- retrieving from the export locations.
+				-- If there are no known export locations,
+				-- throw the exception from retrieving from
+				-- the annexobjects location.
+				Left err' -> getanyexportlocs dbv k >>= \case
+					[] -> ifM (isexportinconflict dbv)
+						( throwM err
+						, throwM err'
+						)
+					_ -> throwM err
+		| otherwise = a
+
+	-- versionedExport remotes have a key/value store which
+	-- the usual retrieveKeyFile can be used with, rather than
+	-- an import/export variant. However, fall back to that
+	-- if retrieveKeyFile fails.
+	supportversionedretrieve k af dest p vc a
+		| versionedExport (exportActions r) =
+			retrieveKeyFile r k af dest p vc
+				`catchNonAsync` const a
+		| otherwise = a

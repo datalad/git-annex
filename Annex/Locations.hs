@@ -27,6 +27,7 @@ module Annex.Locations (
 	gitAnnexInodeSentinalCache,
 	annexLocationsBare,
 	annexLocationsNonBare,
+	annexLocation,
 	gitAnnexDir,
 	gitAnnexObjectDir,
 	gitAnnexTmpOtherDir,

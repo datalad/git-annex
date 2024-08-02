@@ -1,6 +1,10 @@
 git-annex (10.20240732) UNRELEASED; urgency=medium
 
   * Avoid loading cluster log at startup.
+  * Remotes configured with exporttree=yes annexobjects=yes 
+    can store objects in .git/annex/objects, as well as an exported tree.
+  * git-remote-annex: Store objects in exportree=yes special remotes
+    in the same paths used by annexobjects=yes.
 
  -- Joey Hess <id@joeyh.name>  Wed, 31 Jul 2024 15:52:03 -0400
 

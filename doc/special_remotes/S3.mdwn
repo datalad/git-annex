@@ -125,6 +125,11 @@ the S3 remote.
   When versioning is not enabled, this risks data loss, and so git-annex
   will not let you enable a remote with that configuration unless forced.
 
+* `annexobjects` - When set to "yes" along with "exporttree=yes",
+  this allows storing other objects in the remote along with the
+  exported tree. They will be stored under .git/annex/objects/ in the
+  remote.
+
 * `publicurl` - Configure the URL that is used to download files
   from the bucket. Using this with a S3 bucket that has been configured
   to allow anyone to download its content allows git-annex to download

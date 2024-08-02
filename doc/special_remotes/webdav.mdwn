@@ -33,6 +33,11 @@ the webdav remote.
   by [[git-annex-export]]. It will not be usable as a general-purpose
   special remote.
 
+* `annexobjects` - When set to "yes" along with "exporttree=yes",
+  this allows storing other objects in the remote along with the
+  exported tree. They will be stored under .git/annex/objects/ in the
+  remote.
+
 * `chunk` - Enables [[chunking]] when storing large files.
 
 * `chunksize` - Deprecated version of chunk parameter above.  

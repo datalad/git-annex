@@ -92,8 +92,8 @@ See [[git-annex-preferred-content]](1).
 
   This option can be repeated multiple times with different paths.
 
-  Note that this option is ignored when syncing with "exporttree=yes"
-  remotes.
+  Note that this option does not prevent exporting other files to an 
+  "exporttree=yes" remote.
 
 * `--all` `-A`
 
