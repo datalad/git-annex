@@ -175,7 +175,7 @@ adjustExportImport' isexport isimport annexobjects r rs gc = do
 				then giveup "dropping content from this remote is not supported"
 				else if isexport
 					then if annexobjects
-						then removeannexobject k
+						then removeannexobject dbv k
 						else giveup "dropping content from an export is not supported; use `git annex export` to export a tree that lacks the files you want to remove"
 					else if isimport
 						then giveup "dropping content from this remote is not supported because it is configured with importtree=yes"
@@ -427,8 +427,15 @@ adjustExportImport' isexport isimport annexobjects r rs gc = do
 					removeExport (exportActions r) k loc
 					giveup err
 
-	removeannexobject k = 
-		removeExport (exportActions r) k (annexobjectlocation k)
+	removeannexobject dbv k = 
+		getanyexportlocs dbv k >>= \case
+			[] -> ifM (isexportinconflict dbv)
+				( do
+					warnExportImportConflict r
+					giveup "Cannot remove content from the remote until the conflict has been resolved."
+				, removeExport (exportActions r) k (annexobjectlocation k)
+				)
+			_ -> giveup "This key is part of the exported tree, so can only be removed by exporting a tree that does not include it."
 
 	retrieveannexobject k dest p =
 		retrieveExport (exportActions r) k (annexobjectlocation k) dest p
