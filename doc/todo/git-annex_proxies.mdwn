@@ -33,6 +33,17 @@ Planned schedule of work:
 * Working on `exportreeplus` branch which is groundwork for proxying to
   exporttree=yes special remotes.
 
+* `git-annex sync --content` to an annexobjects=true special remote should 
+  get and put keys that are not in the exported tree to the annexobjects
+  location.
+
+* `git-annex export` when renaming an exported file to a temporary name
+  should use the annexobjects location.
+
+* It would be possible for an annexobjects=true special remote to not be
+  untrusted, unlike usual exporttree=yes special remotes. Unexporting a
+  file would need to move it to the annexobjects location.
+
 ## items deferred until later for p2p protocol over http
 
 * `git-annex p2phttp` should support serving several repositories at the same
