@@ -315,7 +315,8 @@ seek' o = startConcurrency transferStages $ do
 				-- importing only downloads new files not
 				-- old files)
 				let shouldsynccontent r
-					| isExport r && not (isImport r) = False
+					| isExport r && not (isImport r) 
+						&& not (exportHasAnnexObjects r) = False
 					| otherwise = True
 				syncedcontent <- withbranch $
 					seekSyncContent o
@@ -944,7 +945,8 @@ syncFile o ebloom rs af k = do
 	wantput r
 		| pushOption o == False && operationMode o /= SatisfyMode = return False
 		| Remote.readonly r || remoteAnnexReadOnly (Remote.gitconfig r) = return False
-		| isExport r || isImport r = return False
+		| isImport r && not (isExport r) = return False
+		| isExport r && not (exportHasAnnexObjects r) = return False
 		| isThirdPartyPopulated r = return False
 		| otherwise = wantGetBy True (Just k) af (Remote.uuid r)
 	handleput lack inhere
@@ -1146,6 +1148,9 @@ isExport = exportTree . Remote.config
 
 isImport :: Remote -> Bool
 isImport = importTree . Remote.config
+
+exportHasAnnexObjects :: Remote -> Bool
+exportHasAnnexObjects = annexObjects . Remote.config
 
 isThirdPartyPopulated :: Remote -> Bool
 isThirdPartyPopulated = Remote.thirdPartyPopulated . Remote.remotetype

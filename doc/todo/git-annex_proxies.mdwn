@@ -33,6 +33,15 @@ Planned schedule of work:
 * Working on `exportreeplus` branch which is groundwork for proxying to
   exporttree=yes special remotes.
 
+* `git-annex sync` with an annexobjects=true special remote, when exporting
+  a subdir that contained a file, which has now been moved out of the
+  subdir, first unexports the file, and then re-uploads it to the remote.
+  This could be avoided if when unexporting, it moves to the annex objects
+  location.
+
+  (Might be worth doing that by default, this would let annexobjects=true
+  special remotes not be untrusted.)
+
 * `git-annex sync --content` to an annexobjects=true special remote should 
   get and put keys that are not in the exported tree to the annexobjects
   location.
