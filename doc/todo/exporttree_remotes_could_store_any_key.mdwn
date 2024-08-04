@@ -16,9 +16,6 @@ keys, in order to support exporttree=yes remotes.
 Another place this would be useful is 
 [[proxying to exporttree=yes special remotes|design/passthrough_proxy]].
 
-This could also solve [[todo/export_paired_rename_innefficenctcy]]
-cleanly.
-
 With this change, a user could just `git-annex copy --to remote`
 and copy whatever files they want into it. Then later 
 `git-annex export master --to remote` would efficiently update the tree
@@ -90,7 +87,7 @@ If the annexobjects directory only gets keys uploaded to it, and never had
 exported files renamed into it, its content will always be as expected, and
 perhaps the remote does not need to be untrusted.
 
-OTOH, if an exported file that is being deleted (or pairwise renamed) in an
+OTOH, if an exported file that is being deleted in an
 updated export gets renamed into the annexobjects directory, it's possible
 that the file has in fact been overwritten with other content (by git-annex
 in another clone of the repository), and so the object in annexobjects

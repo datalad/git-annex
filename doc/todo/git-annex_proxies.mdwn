@@ -33,8 +33,12 @@ Planned schedule of work:
 * Working on `exportreeplus` branch which is groundwork for proxying to
   exporttree=yes special remotes.
 
-* `git-annex export` when renaming an exported file to a temporary name
-  should use the annexobjects location.
+* `git-annex export` when unexporting a deleted file from the tree should
+  rename it to the annexobjects location. This would avoid needing to
+  re-upload it again in the case where it's preferred content of the
+  remote. Currently eg, a sync will unexport the file and then re-upload
+  it. If it's not preferred content, sync will drop it from the
+  annexobjects location.
 
 ## items deferred until later for p2p protocol over http
 
