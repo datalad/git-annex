@@ -184,15 +184,11 @@ adjustExportImport' isexport isimport annexobjects r rs gc = do
 			then lockContent r
 			else Nothing
 		, retrieveKeyFile = \k af dest p vc ->
-			if isimport
+			if isimport || isexport
 				then supportversionedretrieve k af dest p vc $
-					supportretrieveannexobject dbv k dest p $
-						retrieveKeyFileFromImport dbv ciddbv k af dest p
-				else if isexport
-					then supportversionedretrieve k af dest p vc $
-						supportretrieveannexobject dbv k dest p $
-							retrieveKeyFileFromExport dbv k af dest p
-					else retrieveKeyFile r k af dest p vc
+					supportretrieveannexobject dbv k af dest p $
+						retrieveFromImportOrExport (tryexportlocs dbv k) ciddbv k af dest p
+				else retrieveKeyFile r k af dest p vc
 		, retrieveKeyFileCheap = if versioned
 			then retrieveKeyFileCheap r
 			else Nothing
@@ -371,12 +367,16 @@ adjustExportImport' isexport isimport annexobjects r rs gc = do
 		db <- getciddb ciddbv
 		liftIO $ ContentIdentifier.getContentIdentifiers db rs k
 
+	retrieveFromImportOrExport getlocs ciddbv k af dest p
+		| isimport = retrieveFromImport getlocs ciddbv k af dest p
+		| otherwise = retrieveFromExport getlocs k af dest p
+
 	-- Keys can be retrieved using retrieveExport, but since that
 	-- retrieves from a path in the remote that another writer could
 	-- have replaced with content not of the requested key, the content
 	-- has to be strongly verified.
-	retrieveKeyFileFromExport dbv k _af dest p = ifM (isVerifiable k)
-		( tryexportlocs dbv k $ \loc -> 
+	retrieveFromExport getlocs k _af dest p = ifM (isVerifiable k)
+		( getlocs $ \loc -> 
 			retrieveExport (exportActions r) k loc dest p >>= return . \case
 				UnVerified -> MustVerify
 				IncompleteVerify iv -> MustFinishIncompleteVerify iv
@@ -384,15 +384,15 @@ adjustExportImport' isexport isimport annexobjects r rs gc = do
 		, giveup $ "exported content cannot be verified due to using the " ++ decodeBS (formatKeyVariety (fromKey keyVariety k)) ++ " backend"
 		)
 	
-	retrieveKeyFileFromImport dbv ciddbv k af dest p = do
+	retrieveFromImport getlocs ciddbv k af dest p = do
 		cids <- getkeycids ciddbv k
 		if not (null cids)
-			then tryexportlocs dbv k $ \loc ->
+			then getlocs $ \loc ->
 				snd <$> retrieveExportWithContentIdentifier (importActions r) loc cids dest (Left k) p
 			-- In case a content identifier is somehow missing,
 			-- try this instead.
 			else if isexport
-				then retrieveKeyFileFromExport dbv k af dest p
+				then retrieveFromExport getlocs k af dest p
 				else giveup "no content identifier is recorded, unable to retrieve"
 
 	checkpresentwith k a = ifM a
@@ -437,13 +437,15 @@ adjustExportImport' isexport isimport annexobjects r rs gc = do
 				)
 			_ -> giveup "This key is part of the exported tree, so can only be removed by exporting a tree that does not include it."
 
-	retrieveannexobject k dest p =
-		retrieveExport (exportActions r) k (annexobjectlocation k) dest p
+	retrieveannexobject k af dest p =
+		retrieveFromExport getlocs k af dest p
+	  where
+		getlocs a = a (annexobjectlocation k)
 
-	supportretrieveannexobject dbv k dest p a
+	supportretrieveannexobject dbv k af dest p a
 		| annexobjects = tryNonAsync a >>= \case
 			Right res -> return res
-			Left err -> tryNonAsync (retrieveannexobject k dest p) >>= \case
+			Left err -> tryNonAsync (retrieveannexobject k af dest p) >>= \case
 				Right res -> return res
 				-- Both failed, so which exception to
 				-- throw? If there are known export

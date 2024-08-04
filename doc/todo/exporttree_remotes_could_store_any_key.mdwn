@@ -80,8 +80,6 @@ also remove from the objects location.
 
 ----
 
-# trust
-
 Could a remote with annexobjects=yet and exporttree=yes but without
 importtree=yes not be forced to be untrusted?
 
@@ -92,11 +90,12 @@ If the annexobjects directory only gets keys uploaded to it, and never had
 exported files renamed into it, its content will always be as expected, and
 perhaps the remote does not need to be untrusted.
 
-OTOH, if an exported file that is being deleted in an updated export gets
-renamed into the annexobjects directory, it's possible that the file has in
-fact been overwritten with other content (by git-annex in another clone of
-the repository), and so the object in annexobjects would not be as
-expected. So unfortunately, it seems that rename can't be done.
+OTOH, if an exported file that is being deleted (or pairwise renamed) in an
+updated export gets renamed into the annexobjects directory, it's possible
+that the file has in fact been overwritten with other content (by git-annex
+in another clone of the repository), and so the object in annexobjects
+would not be as expected. So unfortunately, it seems that rename can't be
+done without forcing untrusted.
 
 Note that, exporting a new tree can still delete any file at any time.
 If the remote is not untrusted, that could violate numcopies.
@@ -113,6 +112,10 @@ Crazy idea: Split the remote into two uuids. Use one for
 the annexobjects directory, and the other for the exported files. This
 clean separation avoids the above problem. But would be confusing for the
 user. HOWEVER, what if the two were treated as parts of the same cluster....?
+
+This may be worth revisiting later, but for now, I am leaning to keeping it
+untrusted, and following down that line to make it as performant as
+possible.
 
 ---
 
