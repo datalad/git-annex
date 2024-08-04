@@ -33,21 +33,6 @@ Planned schedule of work:
 * Working on `exportreeplus` branch which is groundwork for proxying to
   exporttree=yes special remotes.
 
-* `git-annex export` when exporting a file should rename it from the
-  annexobjects location when it's present there. This will avoid redundant
-  uploads.
-
-  An example case where this is important: Proxying to a exporttree remote,
-  a file is uploaded to it but is not yet in an exported tree. When the
-  exported tree is pushed, the remote needs to be updated by exporting to
-  it. In this case, the proxy doesn't have a copy of the file, so it would
-  need to download it from annexobjects before uploading it to the final
-  location. With this optimisation, it can just rename it.
-
-  However: If a key is used twice in an exported tree, it seems a proxy
-  will need to download and reupload anyway. Unless a copy operation is
-  added to exporttree remotes..
-
 ## items deferred until later for p2p protocol over http
 
 * `git-annex p2phttp` should support serving several repositories at the same

@@ -294,9 +294,8 @@ startExport r db cvar allfilledvar ti = do
 
 performExport :: Remote -> ExportHandle -> Key -> AssociatedFile -> Sha -> ExportLocation -> MVar AllFilled -> CommandPerform
 performExport r db ek af contentsha loc allfilledvar = do
-	let storer = storeExport (exportActions r)
 	sent <- tryNonAsync $ if not (isGitShaKey ek)
-		then ifM (inAnnex ek)
+		then tryrenameannexobject $ ifM (inAnnex ek)
 			( notifyTransfer Upload af $
 				-- alwaysUpload because the same key
 				-- could be used for more than one export
@@ -328,6 +327,24 @@ performExport r db ek af contentsha loc allfilledvar = do
 		Left err -> do
 			failedsend
 			throwM err
+  where
+	storer = storeExport (exportActions r)
+
+	tryrenameannexobject fallback
+		| annexObjects (Remote.config r) = do
+			case renameExport (exportActions r) of
+				Just renameaction -> do
+					locs <- loggedLocations ek
+					gc <- Annex.getGitConfig
+	  				let objloc = exportAnnexObjectLocation gc ek
+					if Remote.uuid r `elem` locs
+						then tryNonAsync (renameaction ek objloc loc) >>= \case
+							Right (Just ()) -> return True
+							Left _err -> fallback
+							Right Nothing -> fallback
+						else fallback
+				Nothing -> fallback
+		| otherwise = fallback
 
 cleanupExport :: Remote -> ExportHandle -> Key -> ExportLocation -> Bool -> CommandCleanup
 cleanupExport r db ek loc sent = do
