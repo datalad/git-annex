@@ -152,16 +152,15 @@ changeExport r db (ExportFiltered new) = do
 		[oldtreesha] -> do
 			diffmap <- mkDiffMap oldtreesha new db
 			let seekdiffmap a = mapM_ a (M.toList diffmap)
-			-- Rename old files to temp, or delete.
-			let deleteoldf = \ek oldf -> commandAction $
-				startUnexport' r db oldf ek
+			let disposeoldf = \ek oldf -> commandAction $
+				startDispose r db oldf ek
 			seekdiffmap $ \case
 				(ek, (oldf:oldfs, _newf:_)) -> do
 					commandAction $
 						startMoveToTempName r db oldf ek
-					forM_ oldfs (deleteoldf ek)
+					forM_ oldfs (disposeoldf ek)
 				(ek, (oldfs, [])) ->
-					forM_ oldfs (deleteoldf ek)
+					forM_ oldfs (disposeoldf ek)
 				(_ek, ([], _)) -> noop
 			waitForAllRunningCommandActions
 			-- Rename from temp to new files.
@@ -350,16 +349,6 @@ startUnexport r db f shas = do
 	ai = ActionItemTreeFile f'
 	si = SeekInput []
 
-startUnexport' :: Remote -> ExportHandle -> TopFilePath -> Key -> CommandStart
-startUnexport' r db f ek =
-	starting ("unexport " ++ name r) ai si $
-		performUnexport r db [ek] loc
-  where
-	loc = mkExportLocation f'
-	f' = getTopFilePath f
-	ai = ActionItemTreeFile f'
-	si = SeekInput []
-
 -- Unlike a usual drop from a repository, this does not check that
 -- numcopies is satisfied before removing the content. Typically an export
 -- remote is untrusted, so would not count as a copy anyway.
@@ -400,6 +389,23 @@ cleanupUnexport r db eks loc = do
 					else logChange ek (uuid r) InfoMissing
 	
 	removeEmptyDirectories r db loc eks
+
+-- Dispose of an old exported file by either unexporting it, or by moving
+-- it to the annexobjects location.
+startDispose :: Remote -> ExportHandle -> TopFilePath -> Key -> CommandStart
+startDispose r db f ek =
+	starting ("unexport " ++ name r) ai si $
+		if annexObjects (Remote.config r) && not (isGitShaKey ek)
+			then do
+				gc <- Annex.getGitConfig
+				performRename r db ek loc
+					(exportAnnexObjectLocation gc ek)
+			else performUnexport r db [ek] loc
+  where
+	loc = mkExportLocation f'
+	f' = getTopFilePath f
+	ai = ActionItemTreeFile f'
+	si = SeekInput []
 
 startRecoverIncomplete :: Remote -> ExportHandle -> Git.Sha -> TopFilePath -> CommandStart
 startRecoverIncomplete r db sha oldf

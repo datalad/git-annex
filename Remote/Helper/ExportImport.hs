@@ -408,10 +408,7 @@ adjustExportImport' isexport isimport annexobjects r rs gc = do
 			k loc 
 			=<< getkeycids ciddbv k
 
-	-- For annexobjects=true, objects are stored in the remote
-	-- in a location under .git/objects/
-	annexobjectlocation k = mkExportLocation $
-		".git" P.</> annexLocation gc k hashDirLower
+	annexobjectlocation k = exportAnnexObjectLocation gc k
 
 	checkpresentannexobject k = 
 		checkPresentExport (exportActions r) k (annexobjectlocation k)
