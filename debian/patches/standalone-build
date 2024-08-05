@@ -6,7 +6,7 @@ Last-Update: 2015-04-20
 
 --- a/debian/control
 +++ b/debian/control
-@@ -86,6 +86,7 @@ Build-Depends:
+@@ -95,6 +95,7 @@ Build-Depends:
  	git (>= 1:2.22),
  	rsync,
  	curl,
@@ -14,7 +14,7 @@ Last-Update: 2015-04-20
  	openssh-client,
  	git-remote-gcrypt (>= 0.20130908-6),
  	gnupg,
-@@ -96,15 +97,15 @@ Vcs-Git: git://git.joeyh.name/git-annex
+@@ -105,15 +106,15 @@ Vcs-Git: git://git.joeyh.name/git-annex
  Homepage: http://git-annex.branchable.com/
  XS-Testsuite: autopkgtest
  
@@ -36,16 +36,16 @@ Last-Update: 2015-04-20
  Recommends: 
  	lsof,
  	gnupg,
-@@ -123,7 +124,7 @@ Suggests:
- 	libnss-mdns,
+@@ -133,7 +134,7 @@ Suggests:
  	uftp,
+ 	yt-dlp,
  Breaks: datalad (< 0.12.3~)
 -Description: manage files with git, without checking their contents into git
 +Description: manage files with git, without checking their contents into git -- standalone build
   git-annex allows managing large files with git, without storing the file 
   contents in git. It can sync, backup, and archive your data, offline
   and online. Checksums and encryption keep your data safe and secure. Bring
-@@ -142,3 +143,7 @@ Description: manage files with git, with
+@@ -152,3 +153,7 @@ Description: manage files with git, with
   noticing when files are changed, and automatically committing them
   to git and transferring them to other computers. The git-annex webapp
   makes it easy to set up and use git-annex this way.
