@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="Spencer"
+ avatar="http://cdn.libravatar.org/avatar/2e0829f36a68480155e09d0883794a55"
+ subject="D: Correct"
+ date="2024-08-05T22:17:55Z"
+ content="""
+Hi D,
+
+That is correct: I am deleting the file via the dropbox sync utility.
+What's odd is rclone is aware of the file's absense, so far as `ls` is concerned at least.
+
+I suspect I will recreate your non-issue if I try with the sync utility disabled, I will explore. In the meantime, maybe you can reproduce the issue with the sync utility or have debug command suggestions I could run?
+"""]]
