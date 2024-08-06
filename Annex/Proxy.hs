@@ -210,7 +210,6 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv oclosedv = go
 	storetofile _ _ n [] = pure n
 	storetofile iv h n (b:bs) = do
 		writeVerifyChunk iv h b
-		B.hPut h b
 		storetofile iv h (n - fromIntegral (B.length b)) bs
 
 	proxyget offset af k = withproxytmpfile k $ \tmpfile -> do
