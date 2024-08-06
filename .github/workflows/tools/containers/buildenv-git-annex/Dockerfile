@@ -4,9 +4,9 @@ FROM neurodebian:bookworm
 # provide some apt conf tune ups with hope to make apt more robust in talking to it
 # see https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=959518  for more info
 # (later apt as now in sid should be more robust)
-RUN echo 'Acquire::http::Dl-Limit "1000";' >| /etc/apt/apt.conf.d/20snapshots \
-    && echo 'Acquire::https::Dl-Limit "1000";' >> /etc/apt/apt.conf.d/20snapshots \
-    && echo 'Acquire::Retries "5";' >> /etc/apt/apt.conf.d/20snapshots
+RUN echo 'Acquire::http::Dl-Limit "200";' >| /etc/apt/apt.conf.d/20snapshots \
+    && echo 'Acquire::https::Dl-Limit "200";' >> /etc/apt/apt.conf.d/20snapshots \
+    && echo 'Acquire::Retries "10";' >> /etc/apt/apt.conf.d/20snapshots
 
 # Notes:
 # - in APT for NeuroDebian we have #deb-src  for debian-devel, so we need to change
