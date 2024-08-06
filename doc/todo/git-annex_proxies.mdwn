@@ -34,10 +34,12 @@ Planned schedule of work:
   exporttree=yes special remotes.
 
 * `git-annex post-receive` of a proxied exporttree=yes special remote's
-  annex-tracking-branch needs to exporttree.
-* When there is an incomplete export and a key is received, the proxy
-  should check if it's the *last* key that is needed to complete the
-  export, and when so, do a final exporttree.
+  annex-tracking-branch should check if the special remote contains all
+  keys in the tree. If so, it can exporttree. If not, record
+  the keys that are needed. (It could always exporttree,
+  but better to avoid leaving it incomplete.)
+* After a key is received, the proxy should check if it's the *last* key
+  that is needed to complete the export, and exporttree when so.
 * Handle cases where a single key is used by multiple files in the exported
   tree. Need to download from the special remote in order to export
   multiple copies to it.
