@@ -616,27 +616,33 @@ store any key:
 
 * Configure annex-tracking-branch in the proxy's git config.
 * Then the user's workflow is simply: `git-annex push`
-* The proxy handles PUT/GET/REMOVE of a key that is not in the 
-  annex-tracking branch that it currently knows about, by using
-  the special remote's .git/annex/objects/ location.
-* Upon receiving a new annex-tracking-branch or any transfer of a key
-  used in the current annex-tracking-branch, the proxy can update
-  the exporttree=yes remote. This needs to happen incrementally,
-  eg upon receiving a key, just proxy it on to the exporttree=yes remote,
-  and update the export database. Once all keys are received, update
-  the git-annex branch to indicate a new tree has been exported.
-* `git-annex sync` may optionally push updates to the annex-tracking-branch
-  before sending content. This can let the proxy be more efficient,
-  especially when the special remote does not support renaming.
-
-Note that this necessarily means that an object that the client uploads
-once to the proxy might need to be uploaded multiple times from the proxy
-to the special remote. Eg, if a key is used 10 times in a tree, it will
-need to upload 10 times. Adding a "copy" operation to exportActions would
-avoid this problem, but only for special remotes that were able to
-implement it. Even a rename of a single file can need the proxy to download
-it from the special remote and upload it back under a new name, when the
-special remote does not support renames.
+* The proxy handles PUT by always storing to the special remote's
+  .git/annex/objects/ location, not updating the exported tree.
+* The proxy allows REMOVE from the special remote's
+  .git/annex/objects/ location, but not removal of keys
+  that are in the currently exported tree.
+* When `git-annex post-receive` is run by the post-receive hook
+  and the annex-tracking-branch has been updated, it exports
+  the tree to the special remote.
+  (But, `git-annex push` sends the updated tree first, so
+  this will often be an incomplete export.)
+* When there is an incomplete export and a key is received
+  that is part of that export, check if it is the *last* key
+  that is needed to complete the export. If so, export the tree to the
+  special remote again.
+  (This avoids overhead and complication of incrementally updating
+  the export. It relies on the special remote supporting renameExport.
+  Incrementally updating the export might be worth doing eventually,
+  for special remotes that do no support renameExport.)
+* When exporting a tree to the special remote, handle cases
+  where a single key is used by multiple files, and the key is not 
+  present locally. In this case it currently fails to update
+  one of the files (and renames the annexobjects location to the other
+  one). It will need to download the content from the special remote and
+  send it back to it.
+* When the special remote does not support renameExport, will need to
+  download from the annexobjects location in order to store to the export
+  location.
 
 ## possible enhancement: indirect uploads
 

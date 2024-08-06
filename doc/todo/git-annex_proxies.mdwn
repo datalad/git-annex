@@ -33,6 +33,18 @@ Planned schedule of work:
 * Working on `exportreeplus` branch which is groundwork for proxying to
   exporttree=yes special remotes.
 
+* `git-annex post-receive` of a proxied exporttree=yes special remote's
+  annex-tracking-branch needs to exporttree.
+* When there is an incomplete export and a key is received, the proxy
+  should check if it's the *last* key that is needed to complete the
+  export, and when so, do a final exporttree.
+* Handle cases where a single key is used by multiple files in the exported
+  tree. Need to download from the special remote in order to export
+  multiple copies to it.
+* Handle case where the special remote does not support renameExport.
+  Each key will need to be downloaded from it in order to export the key
+  back to it, if the proxy is to support such a remote.
+
 ## items deferred until later for p2p protocol over http
 
 * `git-annex p2phttp` should support serving several repositories at the same
