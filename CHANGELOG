@@ -3,8 +3,10 @@ git-annex (10.20240732) UNRELEASED; urgency=medium
   * Avoid loading cluster log at startup.
   * Remove debug output (to stderr) accidentially included in
     last version.
-  * Remotes configured with exporttree=yes annexobjects=yes 
+  * Special remotes configured with exporttree=yes annexobjects=yes 
     can store objects in .git/annex/objects, as well as an exported tree.
+  * Support proxying to special remotes configured with 
+    exporttree=yes annexobjects=yes.
   * git-remote-annex: Store objects in exportree=yes special remotes
     in the same paths used by annexobjects=yes.
 

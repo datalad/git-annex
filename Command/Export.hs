@@ -94,7 +94,10 @@ seek o = startConcurrency commandStages $ do
 		inRepo (Git.Ref.tree (exportTreeish o))
 	
 	mtbcommitsha <- getExportCommit r (exportTreeish o)
+	seekExport r tree mtbcommitsha
 
+seekExport :: Remote -> ExportFiltered Git.Ref -> Maybe (RemoteTrackingBranch, Sha) -> CommandSeek
+seekExport r tree mtbcommitsha = do
 	db <- openDb (uuid r)
 	writeLockDbWhile db $ do
 		changeExport r db tree

@@ -87,8 +87,6 @@ import Utility.Tuple
 
 import Control.Concurrent.MVar
 import qualified Data.Map as M
-import qualified Data.ByteString as S
-import Data.Char
 
 cmd :: Command
 cmd = withAnnexOptions [jobsOption, backendOption] $
@@ -1154,12 +1152,3 @@ exportHasAnnexObjects = annexObjects . Remote.config
 
 isThirdPartyPopulated :: Remote -> Bool
 isThirdPartyPopulated = Remote.thirdPartyPopulated . Remote.remotetype
-
-splitRemoteAnnexTrackingBranchSubdir :: Git.Ref -> (Git.Ref, Maybe TopFilePath)
-splitRemoteAnnexTrackingBranchSubdir tb = (branch, subdir)
-  where
-	(b, p) = separate' (== (fromIntegral (ord ':'))) (Git.fromRef' tb)
-	branch = Git.Ref b
-	subdir = if S.null p
-		then Nothing
-		else Just (asTopFilePath p)

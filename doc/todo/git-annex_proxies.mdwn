@@ -31,15 +31,30 @@ Planned schedule of work:
 ## work notes
 
 * Working on `exportreeplus` branch which is groundwork for proxying to
-  exporttree=yes special remotes.
+  exporttree=yes special remotes. Need to merge it to master.
 
-* `git-annex post-receive` of a proxied exporttree=yes special remote's
-  annex-tracking-branch should check if the special remote contains all
-  keys in the tree. If so, it can exporttree. If not, record
-  the keys that are needed. (It could always exporttree,
-  but better to avoid leaving it incomplete.)
-* After a key is received, the proxy should check if it's the *last* key
-  that is needed to complete the export, and exporttree when so.
+* files sent to proxied exporttree=yes remotes seem to get every line doubled?!
+
+* `git-annex sync --content` now updates a proxied exporttree=yes special
+  remote! But, there are some messages like these that should be avoided:
+
+	    Not updating export to origin-d to reflect changes to the tree, because export tracking is not enabled.  (Set remote.origin-d.annex-tracking-branch to enable it.)
+	export origin-d 1
+	  export not supported
+	failed
+
+* These are only needed to support workflows other than `git-annex push`.
+  (Since a push sends all content to the proxied remote and then pushes
+  to the proxy, it happens to do things in an order where these are not
+  necessary.)
+  * `git-annex post-receive` of a proxied exporttree=yes special remote's
+    annex-tracking-branch should check if the special remote contains all
+    keys in the tree. If so, it can exporttree. If not, record
+    the keys that are needed. (It could always exporttree,
+    but better to avoid leaving it incomplete.)
+  * After a key is received, the proxy should check if it's the *last* key
+    that is needed to complete the export, and exporttree when so.
+
 * Handle cases where a single key is used by multiple files in the exported
   tree. Need to download from the special remote in order to export
   multiple copies to it.

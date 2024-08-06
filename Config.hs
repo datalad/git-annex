@@ -26,7 +26,11 @@ import Types.Availability
 import Types.GitConfig
 import Types.RemoteConfig
 import Git.Types
+import Git.FilePath
 import Annex.SpecialRemote.Config
+
+import Data.Char
+import qualified Data.ByteString as S
 
 {- Looks up a setting in git config. This is not as efficient as using the
  - GitConfig type. -}
@@ -99,3 +103,12 @@ pidLockFile = ifM (annexPidLock <$> Annex.getGitConfig)
 #else
 pidLockFile = pure Nothing
 #endif
+
+splitRemoteAnnexTrackingBranchSubdir :: Git.Ref -> (Git.Ref, Maybe TopFilePath)
+splitRemoteAnnexTrackingBranchSubdir tb = (branch, subdir)
+  where
+	(b, p) = separate' (== (fromIntegral (ord ':'))) (Git.fromRef' tb)
+	branch = Git.Ref b
+	subdir = if S.null p
+		then Nothing
+		else Just (asTopFilePath p)

@@ -17,6 +17,10 @@ for repositories that have an adjusted branch checked
 out. The hook updates the work tree when run in such a repository,
 the same as running `git-annex merge` would.
 
+When a repository is configured to proxy to a special remote with
+exporttree=yes, the hook handles updating the tree exported to the special
+remote.
+
 # OPTIONS
 
 * The [[git-annex-common-options]](1) can be used.

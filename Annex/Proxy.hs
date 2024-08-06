@@ -19,12 +19,14 @@ import Remote.Helper.Ssh (openP2PShellConnection', closeP2PShellConnection)
 import Annex.Concurrent
 import Annex.Tmp
 import Annex.Verify
+import Annex.UUID
 import Logs.Proxy
 import Logs.Cluster
 import Logs.UUID
 import Logs.Location
 import Utility.Tmp.Dir
 import Utility.Metered
+import Git.Types
 
 import Control.Concurrent.STM
 import Control.Concurrent.Async
@@ -249,9 +251,9 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv oclosedv = go
 {- Check if this repository can proxy for a specified remote uuid,
  - and if so enable proxying for it. -}
 checkCanProxy :: UUID -> UUID -> Annex Bool
-checkCanProxy remoteuuid ouruuid = do
-	ourproxies <- M.lookup ouruuid <$> getProxies
-	checkCanProxy' ourproxies remoteuuid >>= \case
+checkCanProxy remoteuuid myuuid = do
+	myproxies <- M.lookup myuuid <$> getProxies
+	checkCanProxy' myproxies remoteuuid >>= \case
 		Right v -> do
 			Annex.changeState $ \st -> st { Annex.proxyremote = Just v }
 			return True
@@ -267,32 +269,12 @@ checkCanProxy' (Just proxies) remoteuuid =
 			Just cu -> proxyforcluster cu
 			Nothing -> proxyfor ps
   where
-	-- This repository may have multiple remotes that access the same
-	-- repository. Proxy for the lowest cost one that is configured to
-	-- be used as a proxy.
 	proxyfor ps = do
 		rs <- concat . Remote.byCost <$> Remote.remoteList
 		myclusters <- annexClusters <$> Annex.getGitConfig
-		let sameuuid r = Remote.uuid r == remoteuuid
-		let samename r p = Remote.name r == proxyRemoteName p
-		case headMaybe (filter (\r -> sameuuid r && proxyisconfigured rs myclusters r && any (samename r) ps) rs) of
+		case canProxyForRemote rs ps myclusters remoteuuid of
 			Nothing -> notconfigured
 			Just r -> return (Right (Right r))
-	
-	-- Only proxy for a remote when the git configuration
-	-- allows it. This is important to prevent changes to 
-	-- the git-annex branch causing unexpected proxying for remotes.
-	proxyisconfigured rs myclusters r
-		| remoteAnnexProxy (Remote.gitconfig r) = True
-		-- Proxy for remotes that are configured as cluster nodes.
-		| any (`M.member` myclusters) (fromMaybe [] $ remoteAnnexClusterNode $ Remote.gitconfig r) = True
-		-- Proxy for a remote when it is proxied by another remote
-		-- which is itself configured as a cluster gateway.
-		| otherwise = case remoteAnnexProxiedBy (Remote.gitconfig r) of
-			Just proxyuuid -> not $ null $ 
-				concatMap (remoteAnnexClusterGateway . Remote.gitconfig) $
-					filter (\p -> Remote.uuid p == proxyuuid) rs
-			Nothing -> False
 
 	proxyforcluster cu = do
 		clusters <- getClusters
@@ -304,6 +286,57 @@ checkCanProxy' (Just proxies) remoteuuid =
 		Just desc -> return $ Left $ Just $
 			"not configured to proxy for repository " ++ fromUUIDDesc desc
 		Nothing -> return $ Left Nothing
+
+{- Remotes that this repository is configured to proxy for.
+ - 
+ - When there are multiple remotes that access the same repository,
+ - this picks the lowest cost one that is configured to be used as a proxy.
+ -}
+proxyForRemotes :: Annex [Remote]
+proxyForRemotes = do
+	myuuid <- getUUID
+	(M.lookup myuuid <$> getProxies) >>= \case
+		Nothing -> return []
+		Just myproxies -> do
+			let myproxies' = S.toList myproxies
+			rs <- concat . Remote.byCost <$> Remote.remoteList
+			myclusters <- annexClusters <$> Annex.getGitConfig
+			return $ mapMaybe (canProxyForRemote rs myproxies' myclusters . Remote.uuid) rs
+
+-- Only proxy for a remote when the git configuration allows it.
+-- This is important to prevent changes to the git-annex branch
+-- causing unexpected proxying for remotes.
+canProxyForRemote
+	:: [Remote] -- ^ must be sorted by cost
+	-> [Proxy]
+	-> M.Map RemoteName ClusterUUID
+	-> UUID
+	-> (Maybe Remote)
+canProxyForRemote rs myproxies myclusters remoteuuid =
+	headMaybe $ filter canproxy rs
+  where
+	canproxy r =
+		sameuuid r && 
+		proxyisconfigured r &&
+		any (isproxyfor r) myproxies
+	
+	sameuuid r = Remote.uuid r == remoteuuid
+
+	isproxyfor r p = 
+		proxyRemoteUUID p == remoteuuid &&
+		Remote.name r == proxyRemoteName p
+
+	proxyisconfigured r
+		| remoteAnnexProxy (Remote.gitconfig r) = True
+		-- Proxy for remotes that are configured as cluster nodes.
+		| any (`M.member` myclusters) (fromMaybe [] $ remoteAnnexClusterNode $ Remote.gitconfig r) = True
+		-- Proxy for a remote when it is proxied by another remote
+		-- which is itself configured as a cluster gateway.
+		| otherwise = case remoteAnnexProxiedBy (Remote.gitconfig r) of
+			Just proxyuuid -> not $ null $ 
+				concatMap (remoteAnnexClusterGateway . Remote.gitconfig) $
+					filter (\p -> Remote.uuid p == proxyuuid) rs
+			Nothing -> False
 
 mkProxyMethods :: ProxyMethods
 mkProxyMethods = ProxyMethods
