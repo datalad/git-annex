@@ -33,8 +33,6 @@ Planned schedule of work:
 * Working on `exportreeplus` branch which is groundwork for proxying to
   exporttree=yes special remotes. Need to merge it to master.
 
-* files sent to proxied exporttree=yes remotes seem to get every line doubled?!
-
 * `git-annex sync --content` now updates a proxied exporttree=yes special
   remote! But, there are some messages like these that should be avoided:
 
