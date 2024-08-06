@@ -15,7 +15,6 @@ import qualified Annex
 import Types.Remote
 import Types.Key
 import Types.ProposedAccepted
-import Types.Export
 import Remote.Helper.Encryptable (encryptionIsEnabled)
 import qualified Database.Export as Export
 import qualified Database.ContentIdentifier as ContentIdentifier
@@ -29,7 +28,6 @@ import Logs.Export
 import Logs.ContentIdentifier (recordContentIdentifier)
 
 import Control.Concurrent.STM
-import qualified System.FilePath.ByteString as P
 
 -- | Use for remotes that do not support exports.
 class HasExportUnsupported a where
