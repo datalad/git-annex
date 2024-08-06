@@ -1,6 +1,5 @@
 git-annex (10.20240732) UNRELEASED; urgency=medium
 
-  * Avoid loading cluster log at startup.
   * Remove debug output (to stderr) accidentially included in
     last version.
   * Special remotes configured with exporttree=yes annexobjects=yes 
@@ -9,6 +8,8 @@ git-annex (10.20240732) UNRELEASED; urgency=medium
     exporttree=yes annexobjects=yes.
   * git-remote-annex: Store objects in exportree=yes special remotes
     in the same paths used by annexobjects=yes.
+  * When proxying an upload to a special remote, verify the hash.
+  * Avoid loading cluster log at startup.
 
  -- Joey Hess <id@joeyh.name>  Wed, 31 Jul 2024 15:52:03 -0400
 
