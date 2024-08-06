@@ -545,6 +545,10 @@ it pick which of multiple branches to export?
 Perhaps configure the annex-tracking-branch in the git-annex branch?
 That might be generally useful when working with exporttree=yes remotes.
 
+Or simply configure remote.foo.annex-tracking-branch on the proxy.
+This may not meet all use cases, but it's simple and seems like a
+reasonable first step.
+
 The first two approaches also have a complication when a key is sent to
 the proxy that is not part of the configured annex-tracking-branch. What
 does the proxy do with it? There seem three possibilities:
@@ -610,9 +614,7 @@ were not accessible when it is accessed directly rather than via the proxy.
 Simplified design for proxying to exporttree=yes, if those remotes can
 store any key:
 
-* Configure annex-tracking-branch for the proxy in the git-annex branch.
-  (For the proxy as a whole, or for specific exporttree=yes repos behind
-  it?)
+* Configure annex-tracking-branch in the proxy's git config.
 * Then the user's workflow is simply: `git-annex push`
 * The proxy handles PUT/GET/REMOVE of a key that is not in the 
   annex-tracking branch that it currently knows about, by using
@@ -623,6 +625,18 @@ store any key:
   eg upon receiving a key, just proxy it on to the exporttree=yes remote,
   and update the export database. Once all keys are received, update
   the git-annex branch to indicate a new tree has been exported.
+* `git-annex sync` may optionally push updates to the annex-tracking-branch
+  before sending content. This can let the proxy be more efficient,
+  especially when the special remote does not support renaming.
+
+Note that this necessarily means that an object that the client uploads
+once to the proxy might need to be uploaded multiple times from the proxy
+to the special remote. Eg, if a key is used 10 times in a tree, it will
+need to upload 10 times. Adding a "copy" operation to exportActions would
+avoid this problem, but only for special remotes that were able to
+implement it. Even a rename of a single file can need the proxy to download
+it from the special remote and upload it back under a new name, when the
+special remote does not support renames.
 
 ## possible enhancement: indirect uploads
 
