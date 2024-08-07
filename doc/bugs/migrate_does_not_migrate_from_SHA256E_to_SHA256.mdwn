@@ -1,0 +1,22 @@
+### Please describe the problem.
+In my repository I have a mixture of SHA256 and SHA256E backed files due to old files and manually configuring a subset of the remotes to SHA256. After configuring SHA256 as the (only) backend, when I run git annex migrate (with or without giving a specific path, or specifying the target SHA256 backend), some files pointing to SHA256E files still point to SHA256E instead of, as expected, SHA256.
+
+Note: The migration actually migrated MOST of the files, but some remain. I don't see anything special about these files.
+
+Note: The issue is NOT that, after migration, the SHA256E files remain as "duplicates". This is annoying, but I'm aware of this and can mitigate the issue via dropunused.
+
+
+### What steps will reproduce the problem?
+Have SHA256E. Configure SHA256 as backend. Run migrate.
+
+
+### What version of git-annex are you using? On what operating system?
+10.20230126 (Debian Stable)
+
+
+### Please provide any additional information below.
+n/a
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+I love it! :)
+

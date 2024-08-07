@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-08-07T14:35:14Z"
+ content="""
+Reproduced this, and also `git-annex copy --from` fails the same way. While
+`git-annex copy --to` does prompt for credentials.
+"""]]
