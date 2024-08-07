@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-08-07T15:31:47Z"
+ content="""
+The most likely reason why a file would not be migrated is if its content
+is not present. Can you verify that the files that didn't migrate do
+have their content present, and migrate still doesn't do anything?
+
+Note that it's possible in some situations for unlocked files to seem to
+have their content present, but for git-annex to think that it's not
+present. Eg, if it thinks that the file has gotten modified. Are all of the
+affected files unlocked?
+
+I am having difficulty reproducing this problem. I also think it
+might be helpful if you showed what some of the un-migrated keys look
+like (obscuring the actual hash is fine).
+"""]]
