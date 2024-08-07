@@ -305,8 +305,7 @@ seek' o = startConcurrency transferStages $ do
 				-- repositories, in case that lets content
 				-- be dropped from other repositories.
 				exportedcontent <- withbranch $
-					seekExportContent (Just o)
-						(filter isExport contentremotes)
+					seekExportContent (Just o) contentremotes
 
 				-- Sync content with remotes, including
 				-- importing from import remotes (since
@@ -975,7 +974,13 @@ syncFile o ebloom rs af k = do
  - Returns True if any file transfers were made.
  -}
 seekExportContent :: Maybe SyncOptions -> [Remote] -> CurrBranch -> Annex Bool
-seekExportContent o rs (mcurrbranch, madj)
+seekExportContent o rs currbranch =
+	seekExportContent' o (filter canexportcontent rs) currbranch
+  where
+	canexportcontent r = isExport r && not (isProxied r)
+
+seekExportContent' :: Maybe SyncOptions -> [Remote] -> CurrBranch -> Annex Bool
+seekExportContent' o rs (mcurrbranch, madj)
 	| null rs = return False
 	| otherwise = do
 		-- Propagate commits from the adjusted branch, so that
@@ -1146,6 +1151,9 @@ isExport = exportTree . Remote.config
 
 isImport :: Remote -> Bool
 isImport = importTree . Remote.config
+
+isProxied :: Remote -> Bool
+isProxied = isJust . remoteAnnexProxiedBy . Remote.gitconfig
 
 exportHasAnnexObjects :: Remote -> Bool
 exportHasAnnexObjects = annexObjects . Remote.config

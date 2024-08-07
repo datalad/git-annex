@@ -33,13 +33,8 @@ Planned schedule of work:
 * Working on `exportreeplus` branch which is groundwork for proxying to
   exporttree=yes special remotes. Need to merge it to master.
 
-* `git-annex sync --content` now updates a proxied exporttree=yes special
-  remote! But, there are some messages like these that should be avoided:
-
-	    Not updating export to origin-d to reflect changes to the tree, because export tracking is not enabled.  (Set remote.origin-d.annex-tracking-branch to enable it.)
-	export origin-d 1
-	  export not supported
-	failed
+* `git-annex sync` hides output of git-annex post-retreive, which is a
+  problem when it's doing things that are expensive.
 
 * Handle cases where a single key is used by multiple files in the exported
   tree. Need to download from the special remote in order to export
@@ -47,6 +42,11 @@ Planned schedule of work:
   `git-annex push`. When using first `git push` followed by
   `git-annex copy --to` the proxied remote, the received key is stored
   to all export locations.)
+
+* Implement `git-annex export treeish --to=foo --from=bar`, which
+  gets from bar as needed to send to foo. Make post-retrieve use
+  `--to=r --from=r` to handle the multiple files case.
+
 * Handle case where the special remote does not support renameExport.
   Each key will need to be downloaded from it in order to export the key
   back to it, if the proxy is to support such a remote.
