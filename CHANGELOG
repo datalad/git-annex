@@ -4,6 +4,8 @@ git-annex (10.20240732) UNRELEASED; urgency=medium
     last version.
   * When proxying an upload to a special remote, verify the hash.
   * Avoid loading cluster log at startup.
+  * When getting from a P2P HTTP remote, prompt for credentials when
+    required, instead of failing.
 
  -- Joey Hess <id@joeyh.name>  Wed, 31 Jul 2024 15:52:03 -0400
 

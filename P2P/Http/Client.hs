@@ -9,6 +9,7 @@
 
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE DataKinds, TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE CPP #-}
 
 module P2P.Http.Client (
@@ -99,7 +100,7 @@ p2pHttpClientVersions allowedversion rmt fallback clientaction =
 	versions = filter allowedversion allProtocolVersions
 	go clientenv mcred credcached mauth (v:vs) = do
 		myuuid <- getUUID
-		res <- clientaction clientenv v
+		res <- catchclienterror $ clientaction clientenv v
 			(B64UUID (uuid rmt))
 			(B64UUID myuuid)
 			[]
@@ -125,6 +126,8 @@ p2pHttpClientVersions allowedversion rmt fallback clientaction =
 			Left clienterror -> Just <$> fallback
 					("git-annex HTTP API server returned an unexpected response: " ++ show clienterror)
 	go _ _ _ _ [] = return Nothing
+
+	catchclienterror a = a `catch` \(ex :: ClientError) -> pure (Left ex)
 
 	authrequired clientenv vs = do
 		cred <- prompt $ 
