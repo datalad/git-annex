@@ -6,6 +6,9 @@ git-annex (10.20240732) UNRELEASED; urgency=medium
     can store objects in .git/annex/objects, as well as an exported tree.
   * Support proxying to special remotes configured with 
     exporttree=yes annexobjects=yes.
+  * post-retrieve: When proxying is enabled for an exporttree=yes
+    special remote and the configured remote.name.annex-tracking-branch
+    is received, the tree is exported to the special remote.
   * git-remote-annex: Store objects in exportree=yes special remotes
     in the same paths used by annexobjects=yes.
   * When proxying an upload to a special remote, verify the hash.

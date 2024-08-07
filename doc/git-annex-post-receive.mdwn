@@ -18,8 +18,9 @@ out. The hook updates the work tree when run in such a repository,
 the same as running `git-annex merge` would.
 
 When a repository is configured to proxy to a special remote with
-exporttree=yes, the hook handles updating the tree exported to the special
-remote.
+exporttree=yes, and the configured remote.name.annex-tracking-branch
+is received, the hook handles updating the tree exported to the
+special remote.
 
 # OPTIONS
 
@@ -32,6 +33,8 @@ remote.
 [[git-annex-adjust]](1)
 
 [[git-annex-merge]](1)
+
+[[git-annex-export]](1)
 
 # AUTHOR
 

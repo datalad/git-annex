@@ -41,7 +41,7 @@ Planned schedule of work:
 	  export not supported
 	failed
 
-* Prevent `enableproxy` from enabling an exporttree=yes special remote
+* Prevent `updateproxy` from enabling an exporttree=yes special remote
   that does not have annexobjects=yes, to avoid foot shooting.
 
 * Handle cases where a single key is used by multiple files in the exported
@@ -53,6 +53,21 @@ Planned schedule of work:
 * Handle case where the special remote does not support renameExport.
   Each key will need to be downloaded from it in order to export the key
   back to it, if the proxy is to support such a remote.
+
+## completed items for August
+
+* Special remotes configured with exporttree=yes annexobjects=yes
+  can store objects in .git/annex/objects, as well as an exported tree.
+
+* Support proxying to special remotes configured with
+  exporttree=yes annexobjects=yes.
+
+* post-retrieve: When proxying is enabled for an exporttree=yes
+  special remote and the configured remote.name.annex-tracking-branch
+  is received, the tree is exported to the special remote.
+
+* When getting from a P2P HTTP remote, prompt for credentials when
+  required, instead of failing.
 
 ## items deferred until later for p2p protocol over http
 
