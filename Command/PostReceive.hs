@@ -22,6 +22,7 @@ import Git.Types
 import Git.Sha
 import qualified Git.Ref
 import Command.Export (filterExport, getExportCommit, seekExport)
+import Command.Sync (syncBranch)
 
 import qualified Data.Set as S
 import qualified Data.ByteString as B
@@ -59,7 +60,8 @@ proxyExportTree = do
 		pushedbranches <- liftIO $ 
 			S.fromList . map snd . parseHookInput
 				<$> B.hGetContents stdin
-		let waspushed = flip S.member pushedbranches
+		let waspushed b = S.member b pushedbranches
+			|| S.member (syncBranch b) pushedbranches
 		case filter (waspushed . Git.Ref.branchRef . fst . snd) rbs of
 			[] -> return ()
 			rbs' -> forM_ rbs' $ \((r, b), _) -> go r b

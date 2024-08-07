@@ -28,6 +28,7 @@ module Command.Sync (
 	parseUnrelatedHistoriesOption,
 	SyncOptions(..),
 	OperationMode(..),
+	syncBranch,
 ) where
 
 import Command
