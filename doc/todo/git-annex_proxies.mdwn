@@ -41,21 +41,15 @@ Planned schedule of work:
 	  export not supported
 	failed
 
-* These are only needed to support workflows other than `git-annex push`.
-  (Since a push sends all content to the proxied remote and then pushes
-  to the proxy, it happens to do things in an order where these are not
-  necessary.)
-  * `git-annex post-receive` of a proxied exporttree=yes special remote's
-    annex-tracking-branch should check if the special remote contains all
-    keys in the tree. If so, it can exporttree. If not, record
-    the keys that are needed. (It could always exporttree,
-    but better to avoid leaving it incomplete.)
-  * After a key is received, the proxy should check if it's the *last* key
-    that is needed to complete the export, and exporttree when so.
+* Prevent `enableproxy` from enabling an exporttree=yes special remote
+  that does not have annexobjects=yes, to avoid foot shooting.
 
 * Handle cases where a single key is used by multiple files in the exported
   tree. Need to download from the special remote in order to export
-  multiple copies to it.
+  multiple copies to it. (In particular, this is needed when using
+  `git-annex push`. When using first `git push` followed by
+  `git-annex copy --to` the proxied remote, the received key is stored
+  to all export locations.)
 * Handle case where the special remote does not support renameExport.
   Each key will need to be downloaded from it in order to export the key
   back to it, if the proxy is to support such a remote.

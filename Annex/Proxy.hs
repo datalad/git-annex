@@ -27,6 +27,7 @@ import Logs.Location
 import Utility.Tmp.Dir
 import Utility.Metered
 import Git.Types
+import qualified Database.Export as Export
 
 import Control.Concurrent.STM
 import Control.Concurrent.Async
@@ -65,8 +66,12 @@ proxySpecialRemoteSide clientmaxversion r = mkRemoteSide r $ do
 	owaitv <- liftIO newEmptyTMVarIO
 	iclosedv <- liftIO newEmptyTMVarIO
 	oclosedv <- liftIO newEmptyTMVarIO
+	exportdb <- ifM (Remote.isExportSupported r)
+		( Just <$> Export.openDb (Remote.uuid r)
+		, pure Nothing
+		)
 	worker <- liftIO . async =<< forkState
-		(proxySpecialRemote protoversion r ihdl ohdl owaitv oclosedv)
+		(proxySpecialRemote protoversion r ihdl ohdl owaitv oclosedv exportdb)
 	let remoteconn = P2PConnection
 		{ connRepo = Nothing
 		, connCheckAuth = const False
@@ -77,6 +82,7 @@ proxySpecialRemoteSide clientmaxversion r = mkRemoteSide r $ do
 	let closeremoteconn = do
 		liftIO $ atomically $ putTMVar oclosedv ()
 		join $ liftIO (wait worker)
+		maybe noop Export.closeDb exportdb
 	return $ Just
 		( remoterunst
 		, remoteconn
@@ -91,8 +97,9 @@ proxySpecialRemote
 	-> TMVar (Either L.ByteString Message)
 	-> TMVar ()
 	-> TMVar ()
+	-> Maybe Export.ExportHandle
 	-> Annex ()
-proxySpecialRemote protoversion r ihdl ohdl owaitv oclosedv = go
+proxySpecialRemote protoversion r ihdl ohdl owaitv oclosedv mexportdb = go
   where
 	go :: Annex ()
 	go = liftIO receivemessage >>= \case
@@ -169,7 +176,7 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv oclosedv = go
 	proxyput af k = do
 		liftIO $ sendmessage $ PUT_FROM (Offset 0)
 		withproxytmpfile k $ \tmpfile -> do
-			let store = tryNonAsync (Remote.storeKey r k af (Just (decodeBS tmpfile)) nullMeterUpdate) >>= \case
+			let store = tryNonAsync (storeput k af (decodeBS tmpfile)) >>= \case
 				Right () -> liftIO $ sendmessage SUCCESS
 				Left err -> liftIO $ propagateerror err
 			liftIO receivemessage >>= \case
@@ -192,6 +199,25 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv oclosedv = go
 						else store
 				_ -> giveup "protocol error"
 			liftIO $ removeWhenExistsWith removeFile (fromRawFilePath tmpfile)
+
+	storeput k af tmpfile = case mexportdb of
+		Just exportdb -> liftIO (Export.getExportTree exportdb k) >>= \case
+			[] -> storeputkey k af tmpfile
+			locs -> do
+				havelocs <- liftIO $ S.fromList
+					<$> Export.getExportedLocation exportdb k
+				let locs' = filter (`S.notMember` havelocs) locs
+				forM_ locs' $ \loc ->
+					storeputexport exportdb k loc tmpfile
+				liftIO $ Export.flushDbQueue exportdb
+		Nothing -> storeputkey k af tmpfile
+	
+	storeputkey k af tmpfile = 
+		Remote.storeKey r k af (Just tmpfile) nullMeterUpdate
+	
+	storeputexport exportdb k loc tmpfile = do
+		Remote.storeExport (Remote.exportActions r) tmpfile k loc nullMeterUpdate
+		liftIO $ Export.addExportedLocation exportdb k loc
 
 	receivetofile iv h n = liftIO receivebytestring >>= \case
 		Just b -> do

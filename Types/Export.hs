@@ -34,7 +34,7 @@ import Control.DeepSeq
 -- PINNED in memory which caused memory fragmentation and excessive memory
 -- use.
 newtype ExportLocation = ExportLocation S.ShortByteString
-	deriving (Show, Eq, Generic)
+	deriving (Show, Eq, Generic, Ord)
 
 instance NFData ExportLocation
 
