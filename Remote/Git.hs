@@ -231,7 +231,8 @@ gen r u rc gc rs
 			, readonly = Git.repoIsHttp r && not (isP2PHttp' gc)
 			, appendonly = False
 			, untrustworthy = isJust (remoteAnnexProxiedBy gc) 
-				&& exportTree c && not (isVersioning c)
+				&& (exportTree c || importTree c) 
+				&& not (isVersioning c)
 			, availability = repoAvail r
 			, remotetype = remote
 			, mkUnavailable = unavailable r u rc gc rs
