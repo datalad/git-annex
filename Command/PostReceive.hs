@@ -79,7 +79,7 @@ proxyExportTree = do
 		Just t -> do
 			tree <- filterExport r t
 			mtbcommitsha <- getExportCommit r b
-			seekExport r tree mtbcommitsha
+			seekExport r tree mtbcommitsha []
 
 parseHookInput :: B.ByteString -> [((Sha, Sha), Ref)]
 parseHookInput = mapMaybe parse . B8.lines

@@ -1019,7 +1019,7 @@ seekExportContent' o rs (mcurrbranch, madj)
 					| tree == currtree -> do
 						filteredtree <- Command.Export.filterExport r tree
 						Command.Export.changeExport r db filteredtree
-						Command.Export.fillExport r db filteredtree mtbcommitsha
+						Command.Export.fillExport r db filteredtree mtbcommitsha []
 					| otherwise -> cannotupdateexport r db Nothing False
 				(Nothing, _, _) -> cannotupdateexport r db (Just (Git.fromRef b ++ " does not exist")) True
 				(_, Nothing, _) -> cannotupdateexport r db (Just "no branch is currently checked out") True
@@ -1062,7 +1062,7 @@ seekExportContent' o rs (mcurrbranch, madj)
 		-- filling in any files that did not get transferred
 		-- to the existing exported tree.
 		let filteredtree = Command.Export.ExportFiltered tree
-		Command.Export.fillExport r db filteredtree mtbcommitsha
+		Command.Export.fillExport r db filteredtree mtbcommitsha []
 	fillexistingexport r _ _ _ = do
 		warnExportImportConflict r
 		return False

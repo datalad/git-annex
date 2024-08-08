@@ -77,6 +77,20 @@ so the overwritten modification is not lost.)
 
   Specify the special remote to export to.
 
+* `--from=remote`
+
+  When the content of a file is not available in the local repository,
+  this option lets it be downloaded from another remote, and sent on to the
+  destination remote. The file will be temporarily stored on local disk,
+  but will never enter the local repository.
+  
+  This option can be repeated multiple times.
+
+  It is possible to use --from with the same remote as --to. If the tree
+  contains several files with the same content, and the remote being
+  exported to already contains one copy of the content, this allows making
+  a copy by downloading the content from it.
+
 * `--tracking`
 
   This is a deprecated way to set "remote.<name>.annex-tracking-branch".

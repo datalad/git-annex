@@ -33,6 +33,8 @@ Planned schedule of work:
 * Working on `exportreeplus` branch which is groundwork for proxying to
   exporttree=yes special remotes. Need to merge it to master.
 
+* A proxied exporttree=yes special remote is not untrusted, and should be.
+
 * Handle cases where a single key is used by multiple files in the exported
   tree. Need to download from the special remote in order to export
   multiple copies to it. (In particular, this is needed when using
