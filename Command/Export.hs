@@ -418,7 +418,7 @@ startDispose r db f ek =
 		if annexObjects (Remote.config r) && not (isGitShaKey ek)
 			then do
 				gc <- Annex.getGitConfig
-				performRename r db ek loc
+				performRename False r db ek loc
 					(exportAnnexObjectLocation gc ek)
 			else performUnexport r db [ek] loc
   where
@@ -444,7 +444,7 @@ startRecoverIncomplete r db sha oldf
 startMoveToTempName :: Remote -> ExportHandle -> TopFilePath -> Key -> CommandStart
 startMoveToTempName r db f ek = case renameExport (exportActions r) of
 	Just _ -> starting ("rename " ++ name r) ai si $
-		performRename r db ek loc tmploc
+		performRename True r db ek loc tmploc
 	Nothing -> starting ("unexport " ++ name r) ai' si $
 		performUnexport r db [ek] loc
   where
@@ -460,7 +460,7 @@ startMoveFromTempName :: Remote -> ExportHandle -> Key -> TopFilePath -> Command
 startMoveFromTempName r db ek f = case renameExport (exportActions r) of
 	Just _ -> stopUnless (liftIO $ elem tmploc <$> getExportedLocation db ek) $
 		starting ("rename " ++ name r) ai si $
-			performRename r db ek tmploc loc
+			performRename True r db ek tmploc loc
 	Nothing -> starting ("unexport " ++ name r) ai' si $
 		performUnexport r db [ek] tmploc
   where
@@ -472,12 +472,14 @@ startMoveFromTempName r db ek f = case renameExport (exportActions r) of
 	ai' = ActionItemTreeFile (fromExportLocation tmploc)
 	si = SeekInput []
 
-performRename :: Remote -> ExportHandle -> Key -> ExportLocation -> ExportLocation -> CommandPerform
-performRename r db ek src dest = case renameExport (exportActions r) of
+performRename :: Bool -> Remote -> ExportHandle -> Key -> ExportLocation -> ExportLocation -> CommandPerform
+performRename warnonfail r db ek src dest = case renameExport (exportActions r) of
 	Just renameaction -> tryNonAsync (renameaction ek src dest) >>= \case
 		Right (Just ()) -> next $ cleanupRename r db ek src dest
 		Left err -> do
-			warning $ UnquotedString $ "rename failed (" ++ show err ++ "); deleting instead"
+			when warnonfail $
+				warning $ UnquotedString $ 
+					"rename failed (" ++ show err ++ "); deleting instead"
 			fallbackdelete
 		Right Nothing -> fallbackdelete
 	-- remote does not support renaming
