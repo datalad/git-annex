@@ -13,7 +13,8 @@ git-annex (10.20240831) UNRELEASED; urgency=medium
   * updateproxy, updatecluster: Prevent using an exporttree=yes special
     remote that does not have annexobjects=yes, since it will not work.
   * git-remote-annex: Store objects in exportree=yes special remotes
-    in the same paths used by annexobjects=yes.
+    in the same paths used by annexobjects=yes. This is a backwards
+    compatible change.
 
  -- Joey Hess <id@joeyh.name>  Wed, 31 Jul 2024 15:52:03 -0400
 
