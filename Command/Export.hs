@@ -422,10 +422,10 @@ cleanupUnexport r db eks loc = do
 			removeExportedLocation db ek loc
 		flushDbQueue db
 
-	-- A versionedExport remote supports removeExportLocation to remove
+	-- A versioned remote supports removeExportLocation to remove
 	-- the file from the exported tree, but still retains the content
 	-- and allows retrieving it.
-	unless (versionedExport (exportActions r)) $ do
+	unless (isVersioning (Remote.config r)) $ do
 		remaininglocs <- liftIO $ 
 			concat <$> forM eks (getExportedLocation db)
 		when (null remaininglocs) $

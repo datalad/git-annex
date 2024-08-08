@@ -42,7 +42,6 @@ instance HasExportUnsupported (ExportActions Annex) where
 		, retrieveExport = nope
 		, checkPresentExport = \_ _ -> return False
 		, removeExport = nope
-		, versionedExport = False
 		, removeExportDirectory = nope
 		, renameExport = Nothing
 		}
@@ -137,7 +136,6 @@ adjustExportImport' :: Bool -> Bool -> Bool -> Remote -> RemoteStateHandle -> Gi
 adjustExportImport' isexport isimport annexobjects r rs gc = do
 	dbv <- prepdbv
 	ciddbv <- prepciddb
-	let versioned = versionedExport (exportActions r)
 	return $ r
 		{ exportActions = if isexport
 			then if isimport
@@ -249,6 +247,8 @@ adjustExportImport' isexport isimport annexobjects r rs gc = do
 				else is'
 		}
   where
+	versioned = isVersioning (config r)
+	
 	thirdpartypopulated = thirdPartyPopulated (remotetype r)
 
 	-- exportActions adjusted to use the equivalent import actions,
@@ -457,12 +457,12 @@ adjustExportImport' isexport isimport annexobjects r rs gc = do
 					_ -> throwM err
 		| otherwise = a
 
-	-- versionedExport remotes have a key/value store which
+	-- versioned remotes have a key/value store which
 	-- the usual retrieveKeyFile can be used with, rather than
 	-- an import/export variant. However, fall back to that
 	-- if retrieveKeyFile fails.
 	supportversionedretrieve k af dest p vc a
-		| versionedExport (exportActions r) =
+		| versioned =
 			retrieveKeyFile r k af dest p vc
 				`catchNonAsync` const a
 		| otherwise = a

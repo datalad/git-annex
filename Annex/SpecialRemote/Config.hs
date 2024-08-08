@@ -93,12 +93,18 @@ exportTreeField = Accepted "exporttree"
 
 importTreeField :: RemoteConfigField
 importTreeField = Accepted "importtree"
+			
+versioningField :: RemoteConfigField
+versioningField = Accepted "versioning"
 
 exportTree :: ParsedRemoteConfig -> Bool
 exportTree = fromMaybe False . getRemoteConfigValue exportTreeField
 
 importTree :: ParsedRemoteConfig -> Bool
 importTree = fromMaybe False . getRemoteConfigValue importTreeField
+
+isVersioning :: ParsedRemoteConfig -> Bool
+isVersioning = fromMaybe False . getRemoteConfigValue versioningField
 
 annexObjectsField :: RemoteConfigField
 annexObjectsField = Accepted "annexobjects"

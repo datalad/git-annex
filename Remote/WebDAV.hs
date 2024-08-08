@@ -101,7 +101,6 @@ gen r u rc gc rs = do
 				, retrieveExport = retrieveExportDav hdl
 				, checkPresentExport = checkPresentExportDav hdl this
 				, removeExport = removeExportDav hdl
-				, versionedExport = False
 				, removeExportDirectory = Just $
 					removeExportDirectoryDav hdl
 				, renameExport = Just $ renameExportDav hdl
