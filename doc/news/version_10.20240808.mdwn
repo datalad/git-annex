@@ -1,0 +1,7 @@
+git-annex 10.20240808 released with [[!toggle text="these changes"]]
+[[!toggleable text="""  * Remove debug output (to stderr) accidentially included in
+    last version.
+  * When getting from a P2P HTTP remote, prompt for credentials when
+    required, instead of failing.
+  * When proxying an upload to a special remote, verify the hash.
+  * Avoid loading cluster log at startup."""]]
