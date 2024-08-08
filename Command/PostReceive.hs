@@ -20,6 +20,7 @@ import qualified Types.Remote as Remote
 import Config
 import Git.Types
 import Git.Sha
+import Git.FilePath
 import qualified Git.Ref
 import Command.Export (filterExport, getExportCommit, seekExport)
 import Command.Sync (syncBranch)
@@ -60,17 +61,23 @@ proxyExportTree = do
 		pushedbranches <- liftIO $ 
 			S.fromList . map snd . parseHookInput
 				<$> B.hGetContents stdin
-		let waspushed b = S.member b pushedbranches
-			|| S.member (syncBranch b) pushedbranches
-		case filter (waspushed . Git.Ref.branchRef . fst . snd) rbs of
-			[] -> return ()
-			rbs' -> forM_ rbs' $ \((r, b), _) -> go r b
+		let waspushed (r, (b, d))
+			| S.member (Git.Ref.branchRef b) pushedbranches =
+				Just (r, b, d)
+			| S.member (Git.Ref.branchRef (syncBranch b)) pushedbranches =
+				Just (r, syncBranch b, d)
+			| otherwise = Nothing
+		case headMaybe (mapMaybe waspushed rbs) of
+			Just (r, b, Nothing) -> go r b
+			Just (r, b, Just d) -> go r $
+				Git.Ref.branchFileRef b (getTopFilePath d)
+			Nothing -> noop
   where
 	canexport r = case remoteAnnexTrackingBranch (Remote.gitconfig r) of
 		Nothing -> return Nothing
 		Just branch ->
 			ifM (isExportSupported r)
-				( return (Just ((r, branch), splitRemoteAnnexTrackingBranchSubdir branch))
+				( return (Just (r, splitRemoteAnnexTrackingBranchSubdir branch))
 				, return Nothing
 				)
 	
@@ -79,7 +86,7 @@ proxyExportTree = do
 		Just t -> do
 			tree <- filterExport r t
 			mtbcommitsha <- getExportCommit r b
-			seekExport r tree mtbcommitsha []
+			seekExport r tree mtbcommitsha [r]
 
 parseHookInput :: B.ByteString -> [((Sha, Sha), Ref)]
 parseHookInput = mapMaybe parse . B8.lines

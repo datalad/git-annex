@@ -35,13 +35,6 @@ Planned schedule of work:
 
 * A proxied exporttree=yes special remote is not untrusted, and should be.
 
-* Handle cases where a single key is used by multiple files in the exported
-  tree. Need to download from the special remote in order to export
-  multiple copies to it. (In particular, this is needed when using
-  `git-annex push`. When using first `git push` followed by
-  `git-annex copy --to` the proxied remote, the received key is stored
-  to all export locations.)
-
 * Implement `git-annex export treeish --to=foo --from=bar`, which
   gets from bar as needed to send to foo. Make post-retrieve use
   `--to=r --from=r` to handle the multiple files case.
@@ -68,6 +61,8 @@ Planned schedule of work:
 * Prevent `updateproxy` and `updatecluster` from adding
   an exporttree=yes special remote that does not have
   annexobjects=yes, to avoid foot shooting.
+
+* Added --from option to `git-annex export`.
 
 ## items deferred until later for p2p protocol over http
 
