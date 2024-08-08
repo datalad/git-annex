@@ -35,14 +35,6 @@ Planned schedule of work:
 
 * A proxied exporttree=yes special remote is not untrusted, and should be.
 
-* Implement `git-annex export treeish --to=foo --from=bar`, which
-  gets from bar as needed to send to foo. Make post-retrieve use
-  `--to=r --from=r` to handle the multiple files case.
-
-* Handle case where the special remote does not support renameExport.
-  Each key will need to be downloaded from it in order to export the key
-  back to it, if the proxy is to support such a remote.
-
 ## completed items for August
 
 * Special remotes configured with exporttree=yes annexobjects=yes
@@ -62,7 +54,9 @@ Planned schedule of work:
   an exporttree=yes special remote that does not have
   annexobjects=yes, to avoid foot shooting.
 
-* Added --from option to `git-annex export`.
+* Implement `git-annex export treeish --to=foo --from=bar`, which
+  gets from bar as needed to send to foo. Make post-retrieve use
+  `--to=r --from=r` to handle the multiple files case.
 
 ## items deferred until later for p2p protocol over http
 
