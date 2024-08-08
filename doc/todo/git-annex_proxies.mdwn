@@ -33,23 +33,8 @@ Planned schedule of work:
 * Working on `exportreeplus` branch which is groundwork for proxying to
   exporttree=yes special remotes. Need to merge it to master.
 
-* A proxied exporttree=yes special remote is not untrusted, and should be.
-
-  This needs Remote.untrustworthy to be set when constucting a proxied 
-  Remote that uses exporttree=yes. So will need to load the remote config
-  to see if it does.
-  
-  But, the proxy.log uses the UUID of a remote. There could be multiple
-  special remotes that share a UUID. Which config to load? Maybe load the
-  configs of them all and check if any has exporttree=yes.
-  Probably all ought to if any do.
-
-  Alternatively, make annexobjects=yes remotes not untrusted.
-  This was considered in [[todo/exporttree_remotes_could_store_any_key]],
-  but didn't seem very feasible.
-
-* Also, versioned exports are not untrustworthy. But checking that would
-  need to construct a Remote using the special remote's config. 
+* Versioned exports are not untrustworthy. But checking that for a proxied
+  remote would need to construct a Remote using the special remote's config. 
   
   For eg S3 (the only versioned one currently), that would need the S3
   creds to be set in the environment. 
