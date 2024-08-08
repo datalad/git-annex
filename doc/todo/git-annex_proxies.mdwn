@@ -30,10 +30,9 @@ Planned schedule of work:
 
 ## work notes
 
-* Working on `exportreeplus` branch which is groundwork for proxying to
-  exporttree=yes special remotes. Need to merge it to master.
+* onward to balanced preferred content!
 
-## completed items for August
+## completed items for August's work on git-annex proxy support for exporttre
 
 * Special remotes configured with exporttree=yes annexobjects=yes
   can store objects in .git/annex/objects, as well as an exported tree.
