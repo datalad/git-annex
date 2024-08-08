@@ -31,7 +31,30 @@ Planned schedule of work:
 ## work notes
 
 * Working on `exportreeplus` branch which is groundwork for proxying to
-  exporttree=yes special remotes.
+  exporttree=yes special remotes. Need to merge it to master.
+
+## completed items for August
+
+* Special remotes configured with exporttree=yes annexobjects=yes
+  can store objects in .git/annex/objects, as well as an exported tree.
+
+* Support proxying to special remotes configured with
+  exporttree=yes annexobjects=yes.
+
+* post-retrieve: When proxying is enabled for an exporttree=yes
+  special remote and the configured remote.name.annex-tracking-branch
+  is received, the tree is exported to the special remote.
+
+* When getting from a P2P HTTP remote, prompt for credentials when
+  required, instead of failing.
+
+* Prevent `updateproxy` and `updatecluster` from adding
+  an exporttree=yes special remote that does not have
+  annexobjects=yes, to avoid foot shooting.
+
+* Implement `git-annex export treeish --to=foo --from=bar`, which
+  gets from bar as needed to send to foo. Make post-retrieve use
+  `--to=r --from=r` to handle the multiple files case.
 
 ## items deferred until later for p2p protocol over http
 

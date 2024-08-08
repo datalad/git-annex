@@ -14,8 +14,7 @@ Normally files are stored on a git-annex special remote named by their
 keys. That is great for reliable data storage, but your filenames are
 obscured. Exporting replicates the tree to the special remote as-is.
 
-Mixing key/value storage and exports in the same remote would be a mess and
-so is not allowed. You have to configure a special remote with
+To use this, you have to configure a special remote with
 `exporttree=yes` when initially setting it up with
 [[git-annex-initremote]](1).
 
@@ -77,6 +76,20 @@ so the overwritten modification is not lost.)
 * `--to=remote`
 
   Specify the special remote to export to.
+
+* `--from=remote`
+
+  When the content of a file is not available in the local repository,
+  this option lets it be downloaded from another remote, and sent on to the
+  destination remote. The file will be temporarily stored on local disk,
+  but will never enter the local repository.
+  
+  This option can be repeated multiple times.
+
+  It is possible to use --from with the same remote as --to. If the tree
+  contains several files with the same content, and the remote being
+  exported to already contains one copy of the content, this allows making
+  a copy by downloading the content from it.
 
 * `--tracking`
 

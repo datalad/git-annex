@@ -32,6 +32,11 @@ the adb remote.
   by [[git-annex-import]]. When set in combination with exporttree,
   this lets files be imported from it, and changes exported back to it.
 
+* `annexobjects` - When set to "yes" along with "exporttree=yes",
+  this allows storing other objects in the remote along with the
+  exported tree. They will be stored under .git/annex/objects/ in the
+  remote.
+
 * `oldandroid` - Set to "yes" if your Android device is too old
   to support `find -printf`. Enabling this will make importing slower.
   If you see an error like "bad arg '-printf'", you can enable this

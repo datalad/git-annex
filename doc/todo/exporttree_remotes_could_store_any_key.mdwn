@@ -16,9 +16,6 @@ keys, in order to support exporttree=yes remotes.
 Another place this would be useful is 
 [[proxying to exporttree=yes special remotes|design/passthrough_proxy]].
 
-This could also solve [[todo/export_paired_rename_innefficenctcy]]
-cleanly.
-
 With this change, a user could just `git-annex copy --to remote`
 and copy whatever files they want into it. Then later 
 `git-annex export master --to remote` would efficiently update the tree
@@ -52,6 +49,13 @@ surprising for an existing user!
 
 Perhaps this should not be "exportree=yes", but something else.
 
+> Currently, if a remote is configured with "exporttree=foo", that
+> is treated the same as "exporttree=no". So this will need to be
+> a config added to exporttree=yes in order to interoperate
+> with old git-annex.
+> 
+> Call it "exporttree=yes annexobjects=yes" --[[Joey]]
+
 ----
 
 Consider two repositories A and B that both have access to the same
@@ -60,16 +64,58 @@ exporttree=yes special remote R.
 * A exports tree T1 to R
 * B pulls from A, so knows R has tree T1
 * A exports tree T2 to R, which deletes file `foo`. So
-  it is moved to R's .git/annex/objects/
+  it is moved to R's .git/annex/objects. Or, alternatively,
+  `foo` is deleted, and the key is then copied to R again,
+  also to .git/annex/objects.
 * B exports tree T2 to R also. So B deletes file `foo`. But it was not
   present anyway. If B then marks the key as not present in R, we will have
   lost track of the fact that A moved it to the objects location.
 
 So, when calling removeExport, have to also check if the key is present in
-the objects location. If so, don't record the key as missing. (Or course,
-it already checks if some other exported file also has the content of the
-key.)
+the objects location. If so, either don't record the key as missing, or
+also remove from the objects location.
+
+----
+
+Could a remote with annexobjects=yet and exporttree=yes but without
+importtree=yes not be forced to be untrusted?
+
+If not, the retrieval from the annexobjects location needs to do strong
+verification of the content.
+
+If the annexobjects directory only gets keys uploaded to it, and never had
+exported files renamed into it, its content will always be as expected, and
+perhaps the remote does not need to be untrusted.
+
+OTOH, if an exported file that is being deleted in an
+updated export gets renamed into the annexobjects directory, it's possible
+that the file has in fact been overwritten with other content (by git-annex
+in another clone of the repository), and so the object in annexobjects
+would not be as expected. So unfortunately, it seems that rename can't be
+done without forcing untrusted.
+
+Note that, exporting a new tree can still delete any file at any time.
+If the remote is not untrusted, that could violate numcopies.
+So, performUnexport would need to check numcopies first, when using such a
+remote.
+
+Even if they are not untrusted, an exported file can't be counted as a
+copy. Only a file in the annexobjects location can be. So the remote's
+checkPresent will perhaps need to return false for files that are exported?
+But surely other things than numcopies use checkPresent. So this might need
+a change to checkPresent's type to indicate the difference.
+
+Crazy idea: Split the remote into two uuids. Use one for
+the annexobjects directory, and the other for the exported files. This
+clean separation avoids the above problem. But would be confusing for the
+user. HOWEVER, what if the two were treated as parts of the same cluster....?
+
+This may be worth revisiting later, but for now, I am leaning to keeping it
+untrusted, and following down that line to make it as performant as
+possible.
 
 ---
 
 Implementing in the "exportreeplus" branch --[[Joey]]
+
+> [[done]] --[[Joey]]

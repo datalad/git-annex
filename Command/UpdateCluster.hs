@@ -34,10 +34,17 @@ seek = withNothing $ do
 start :: CommandStart
 start = startingCustomOutput (ActionItemOther Nothing) $ do
 	rs <- R.remoteList
-	let getnode r = do
-		clusternames <- remoteAnnexClusterNode (R.gitconfig r)
-		return $ M.fromList $ zip clusternames (repeat (S.singleton r))
-	let myclusternodes = M.unionsWith S.union (mapMaybe getnode rs)
+	let getnode r = case remoteAnnexClusterNode (R.gitconfig r) of
+		Nothing -> return Nothing
+		Just [] -> return Nothing
+		Just clusternames -> 
+			ifM (Command.UpdateProxy.checkCanProxy r "Cannot use this special remote as a cluster node.")
+				( return $ Just $ M.fromList $
+					zip clusternames (repeat (S.singleton r))
+				, return Nothing
+				)
+	myclusternodes <- M.unionsWith S.union . catMaybes
+		<$> mapM getnode rs
 	myclusters <- annexClusters <$> Annex.getGitConfig
 	recordedclusters <- getClusters
 	descs <- R.uuidDescriptions

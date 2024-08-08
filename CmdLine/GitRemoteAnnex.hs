@@ -1010,14 +1010,13 @@ getKeyExportLocations rmt k = do
 -- inside the .git/annex/objects/ directory in the remote.
 --
 -- The first ExportLocation in the returned list is the one that
--- is the same as the local repository would use. But it's possible
--- that one of the others in the list was used by another repository to
--- upload a git key.
+-- should be used to store a key. But it's possible
+-- that one of the others in the list was used.
 keyExportLocations :: Remote -> Key -> GitConfig -> UUID -> Maybe [ExportLocation]
 keyExportLocations rmt k cfg uuid
 	| exportTree (Remote.config rmt) || importTree (Remote.config rmt) = 
 		Just $ map (\p -> mkExportLocation (".git" P.</> p)) $
-			concatMap (`annexLocationsNonBare` k) cfgs
+			concatMap (`annexLocationsBare` k) cfgs
 	| otherwise = Nothing
   where
 	-- When git-annex has not been initialized yet (eg, when cloning), 

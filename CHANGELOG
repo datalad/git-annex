@@ -1,3 +1,20 @@
+git-annex (10.20240831) UNRELEASED; urgency=medium
+
+  * export: Added --from option.
+  * Special remotes configured with exporttree=yes annexobjects=yes 
+    can store objects in .git/annex/objects, as well as an exported tree.
+  * Support proxying to special remotes configured with 
+    exporttree=yes annexobjects=yes.
+  * post-retrieve: When proxying is enabled for an exporttree=yes
+    special remote and the configured remote.name.annex-tracking-branch
+    is received, the tree is exported to the special remote.
+  * updateproxy, updatecluster: Prevent using an exporttree=yes special
+    remote that does not have annexobjects=yes, since it will not work.
+  * git-remote-annex: Store objects in exportree=yes special remotes
+    in the same paths used by annexobjects=yes.
+
+ -- Joey Hess <id@joeyh.name>  Wed, 31 Jul 2024 15:52:03 -0400
+
 git-annex (10.20240808) upstream; urgency=medium
 
   * Remove debug output (to stderr) accidentially included in

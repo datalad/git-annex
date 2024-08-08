@@ -14,6 +14,7 @@ import Logs.Cluster
 import Annex.UUID
 import qualified Remote as R
 import qualified Types.Remote as R
+import Annex.SpecialRemote.Config
 import Utility.SafeOutput
 
 import qualified Data.Map as M
@@ -30,8 +31,8 @@ seek = withNothing (commandAction start)
 start :: CommandStart
 start = startingCustomOutput (ActionItemOther Nothing) $ do
 	rs <- R.remoteList
-	let remoteproxies = S.fromList $ map mkproxy $
-		filter (isproxy . R.gitconfig) rs
+	remoteproxies <- S.fromList . map mkproxy
+		<$> filterM isproxy rs
 	clusterproxies <- getClusterProxies remoteproxies
 	let proxies = S.union remoteproxies clusterproxies
 	u <- getUUID
@@ -54,9 +55,33 @@ start = startingCustomOutput (ActionItemOther Nothing) $ do
 						"Stopped proxying for " ++ proxyRemoteName p
 				_ -> noop
 	
-	isproxy c = remoteAnnexProxy c || not (null (remoteAnnexClusterNode c))
-	
 	mkproxy r = Proxy (R.uuid r) (R.name r)
+	
+	isproxy r
+		| remoteAnnexProxy (R.gitconfig r) || not (null (remoteAnnexClusterNode (R.gitconfig r))) = 
+			checkCanProxy r "Cannot proxy to this special remote."
+		| otherwise = pure False
+
+checkCanProxy :: Remote -> String -> Annex Bool
+checkCanProxy r cannotmessage = 
+	ifM (R.isExportSupported r)
+		( if annexObjects (R.config r)
+			then pure True
+			else do
+				warnannexobjects
+				pure False
+		, pure True
+		)
+  where
+	warnannexobjects = warning $ UnquotedString $ unwords
+		[ R.name r
+		, "is configured with exporttree=yes, but without"
+		, "annexobjects=yes."
+		, cannotmessage
+		, "Suggest you run: git-annex enableremote"
+		, R.name r
+		, "annexobjects=yes"
+		]
 
 -- Automatically proxy nodes of any cluster this repository is configured
 -- to serve as a gateway for. Also proxy other cluster nodes that are

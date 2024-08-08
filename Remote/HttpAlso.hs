@@ -79,7 +79,6 @@ gen r u rc gc rs = do
 			{ storeExport = cannotModify
 			, retrieveExport = retriveExportHttpAlso url
 			, removeExport = cannotModify
-			, versionedExport = False
 			, checkPresentExport = checkPresentExportHttpAlso url
 			, removeExportDirectory = Nothing
 			, renameExport = cannotModify

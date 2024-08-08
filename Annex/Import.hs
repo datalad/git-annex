@@ -44,6 +44,7 @@ import Annex.Transfer
 import Annex.CheckIgnore
 import Annex.CatFile
 import Annex.VectorClock
+import Annex.SpecialRemote.Config
 import Command
 import Backend
 import Types.Key
@@ -194,7 +195,7 @@ recordImportTree remote importtreeconfig imported = do
 			_ -> noop
 		-- When the remote is versioned, it still contains keys
 		-- that are not present in the new tree.
-		unless (Remote.versionedExport (Remote.exportActions remote)) $ do
+		unless (isVersioning (Remote.config remote)) $ do
 			db <- Export.openDb (Remote.uuid remote)
 			forM_ (exportedTreeishes oldexport) $ \oldtree ->
 				Export.runExportDiffUpdater updater db oldtree finaltree

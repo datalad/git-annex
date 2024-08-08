@@ -28,6 +28,7 @@ module Command.Sync (
 	parseUnrelatedHistoriesOption,
 	SyncOptions(..),
 	OperationMode(..),
+	syncBranch,
 ) where
 
 import Command
@@ -87,8 +88,6 @@ import Utility.Tuple
 
 import Control.Concurrent.MVar
 import qualified Data.Map as M
-import qualified Data.ByteString as S
-import Data.Char
 
 cmd :: Command
 cmd = withAnnexOptions [jobsOption, backendOption] $
@@ -307,15 +306,15 @@ seek' o = startConcurrency transferStages $ do
 				-- repositories, in case that lets content
 				-- be dropped from other repositories.
 				exportedcontent <- withbranch $
-					seekExportContent (Just o)
-						(filter isExport contentremotes)
+					seekExportContent (Just o) contentremotes
 
 				-- Sync content with remotes, including
 				-- importing from import remotes (since
 				-- importing only downloads new files not
 				-- old files)
 				let shouldsynccontent r
-					| isExport r && not (isImport r) = False
+					| isExport r && not (isImport r) 
+						&& not (exportHasAnnexObjects r) = False
 					| otherwise = True
 				syncedcontent <- withbranch $
 					seekSyncContent o
@@ -944,7 +943,8 @@ syncFile o ebloom rs af k = do
 	wantput r
 		| pushOption o == False && operationMode o /= SatisfyMode = return False
 		| Remote.readonly r || remoteAnnexReadOnly (Remote.gitconfig r) = return False
-		| isExport r || isImport r = return False
+		| isImport r && not (isExport r) = return False
+		| isExport r && not (exportHasAnnexObjects r) = return False
 		| isThirdPartyPopulated r = return False
 		| otherwise = wantGetBy True (Just k) af (Remote.uuid r)
 	handleput lack inhere
@@ -975,7 +975,13 @@ syncFile o ebloom rs af k = do
  - Returns True if any file transfers were made.
  -}
 seekExportContent :: Maybe SyncOptions -> [Remote] -> CurrBranch -> Annex Bool
-seekExportContent o rs (mcurrbranch, madj)
+seekExportContent o rs currbranch =
+	seekExportContent' o (filter canexportcontent rs) currbranch
+  where
+	canexportcontent r = isExport r && not (isProxied r)
+
+seekExportContent' :: Maybe SyncOptions -> [Remote] -> CurrBranch -> Annex Bool
+seekExportContent' o rs (mcurrbranch, madj)
 	| null rs = return False
 	| otherwise = do
 		-- Propagate commits from the adjusted branch, so that
@@ -1013,7 +1019,7 @@ seekExportContent o rs (mcurrbranch, madj)
 					| tree == currtree -> do
 						filteredtree <- Command.Export.filterExport r tree
 						Command.Export.changeExport r db filteredtree
-						Command.Export.fillExport r db filteredtree mtbcommitsha
+						Command.Export.fillExport r db filteredtree mtbcommitsha []
 					| otherwise -> cannotupdateexport r db Nothing False
 				(Nothing, _, _) -> cannotupdateexport r db (Just (Git.fromRef b ++ " does not exist")) True
 				(_, Nothing, _) -> cannotupdateexport r db (Just "no branch is currently checked out") True
@@ -1056,7 +1062,7 @@ seekExportContent o rs (mcurrbranch, madj)
 		-- filling in any files that did not get transferred
 		-- to the existing exported tree.
 		let filteredtree = Command.Export.ExportFiltered tree
-		Command.Export.fillExport r db filteredtree mtbcommitsha
+		Command.Export.fillExport r db filteredtree mtbcommitsha []
 	fillexistingexport r _ _ _ = do
 		warnExportImportConflict r
 		return False
@@ -1147,14 +1153,11 @@ isExport = exportTree . Remote.config
 isImport :: Remote -> Bool
 isImport = importTree . Remote.config
 
+isProxied :: Remote -> Bool
+isProxied = isJust . remoteAnnexProxiedBy . Remote.gitconfig
+
+exportHasAnnexObjects :: Remote -> Bool
+exportHasAnnexObjects = annexObjects . Remote.config
+
 isThirdPartyPopulated :: Remote -> Bool
 isThirdPartyPopulated = Remote.thirdPartyPopulated . Remote.remotetype
-
-splitRemoteAnnexTrackingBranchSubdir :: Git.Ref -> (Git.Ref, Maybe TopFilePath)
-splitRemoteAnnexTrackingBranchSubdir tb = (branch, subdir)
-  where
-	(b, p) = separate' (== (fromIntegral (ord ':'))) (Git.fromRef' tb)
-	branch = Git.Ref b
-	subdir = if S.null p
-		then Nothing
-		else Just (asTopFilePath p)

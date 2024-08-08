@@ -93,12 +93,24 @@ exportTreeField = Accepted "exporttree"
 
 importTreeField :: RemoteConfigField
 importTreeField = Accepted "importtree"
+			
+versioningField :: RemoteConfigField
+versioningField = Accepted "versioning"
 
 exportTree :: ParsedRemoteConfig -> Bool
 exportTree = fromMaybe False . getRemoteConfigValue exportTreeField
 
 importTree :: ParsedRemoteConfig -> Bool
 importTree = fromMaybe False . getRemoteConfigValue importTreeField
+
+isVersioning :: ParsedRemoteConfig -> Bool
+isVersioning = fromMaybe False . getRemoteConfigValue versioningField
+
+annexObjectsField :: RemoteConfigField
+annexObjectsField = Accepted "annexobjects"
+
+annexObjects :: ParsedRemoteConfig -> Bool
+annexObjects = fromMaybe False . getRemoteConfigValue annexObjectsField
 
 {- Parsers for fields that are common to all special remotes. -}
 commonFieldParsers :: [RemoteConfigFieldParser]
@@ -124,6 +136,8 @@ essentialFieldParsers =
 		(FieldDesc "export trees of files to this remote")
 	, yesNoParser importTreeField (Just False)
 		(FieldDesc "import trees of files from this remote")
+	, yesNoParser annexObjectsField (Just False)
+		(FieldDesc "store other objects in remote along with exported trees")
 	]
 
 autoEnableFieldParser :: RemoteConfigFieldParser

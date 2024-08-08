@@ -32,6 +32,9 @@ for a list of known working combinations.
   Setting this does not allow trees to be exported to the httpalso remote,
   because it's read-only. But it does let exported files be downloaded
   from it.
+* `annexobjects` - If the other special remote has `annexobjects=yes`
+  set (along with `exporttree=yes`), it also needs to be set when
+  initializing the httpalso remote.
 
 Configuration of encryption and chunking is inherited from the other
 special remote, and does not need to be specified when initializing the

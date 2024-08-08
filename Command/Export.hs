@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2017-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2017-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -21,6 +21,7 @@ import Git.Types
 import Git.FilePath
 import Git.Sha
 import qualified Remote
+import qualified Types.Remote as Remote
 import Types.Remote
 import Types.Export
 import Annex.Export
@@ -29,6 +30,7 @@ import Annex.Transfer
 import Annex.CatFile
 import Annex.FileMatcher
 import Annex.RemoteTrackingBranch
+import Annex.SpecialRemote.Config
 import Logs.Location
 import Logs.Export
 import Logs.PreferredContent
@@ -41,6 +43,7 @@ import Utility.Matcher
 import qualified Data.ByteString.Char8 as S8
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
+import qualified Data.Set as S
 import Control.Concurrent
 
 cmd :: Command
@@ -53,6 +56,7 @@ data ExportOptions = ExportOptions
 	{ exportTreeish :: Git.Ref
 	-- ^ can be a tree, a branch, a commit, or a tag
 	, exportRemote :: DeferredParse Remote
+	, sourceRemote :: [DeferredParse Remote]
 	, exportTracking :: Bool
 	}
 
@@ -60,6 +64,7 @@ optParser :: CmdParamsDesc -> Parser ExportOptions
 optParser _ = ExportOptions
 	<$> (Git.Ref <$> parsetreeish)
 	<*> (mkParseRemoteOption <$> parseToOption)
+	<*> many (mkParseRemoteOption <$> parseFromOption)
 	<*> parsetracking
   where
 	parsetreeish = argument str
@@ -82,6 +87,9 @@ seek o = startConcurrency commandStages $ do
 	unlessM (isExportSupported r) $
 		giveup "That remote does not support exports."
 	
+	srcrs <- concat . Remote.byCost
+		<$> mapM getParsed (sourceRemote o)
+
 	-- handle deprecated option
 	when (exportTracking o) $
 		setConfig (remoteAnnexConfig r "tracking-branch")
@@ -92,12 +100,15 @@ seek o = startConcurrency commandStages $ do
 		inRepo (Git.Ref.tree (exportTreeish o))
 	
 	mtbcommitsha <- getExportCommit r (exportTreeish o)
+	seekExport r tree mtbcommitsha srcrs
 
+seekExport :: Remote -> ExportFiltered Git.Ref -> Maybe (RemoteTrackingBranch, Sha) -> [Remote] -> CommandSeek
+seekExport r tree mtbcommitsha srcrs = do
 	db <- openDb (uuid r)
 	writeLockDbWhile db $ do
 		changeExport r db tree
 		unlessM (Annex.getRead Annex.fast) $ do
-			void $ fillExport r db tree mtbcommitsha
+			void $ fillExport r db tree mtbcommitsha srcrs
 	closeDb db
 
 -- | When the treeish is a branch like master or refs/heads/master
@@ -150,16 +161,15 @@ changeExport r db (ExportFiltered new) = do
 		[oldtreesha] -> do
 			diffmap <- mkDiffMap oldtreesha new db
 			let seekdiffmap a = mapM_ a (M.toList diffmap)
-			-- Rename old files to temp, or delete.
-			let deleteoldf = \ek oldf -> commandAction $
-				startUnexport' r db oldf ek
+			let disposeoldf = \ek oldf -> commandAction $
+				startDispose r db oldf ek
 			seekdiffmap $ \case
 				(ek, (oldf:oldfs, _newf:_)) -> do
 					commandAction $
 						startMoveToTempName r db oldf ek
-					forM_ oldfs (deleteoldf ek)
+					forM_ oldfs (disposeoldf ek)
 				(ek, (oldfs, [])) ->
-					forM_ oldfs (deleteoldf ek)
+					forM_ oldfs (disposeoldf ek)
 				(_ek, ([], _)) -> noop
 			waitForAllRunningCommandActions
 			-- Rename from temp to new files.
@@ -237,8 +247,8 @@ newtype AllFilled = AllFilled { fromAllFilled :: Bool }
 --
 -- Once all exported files have reached the remote, updates the
 -- remote tracking branch.
-fillExport :: Remote -> ExportHandle -> ExportFiltered Git.Ref -> Maybe (RemoteTrackingBranch, Sha) -> Annex Bool
-fillExport r db (ExportFiltered newtree) mtbcommitsha = do
+fillExport :: Remote -> ExportHandle -> ExportFiltered Git.Ref -> Maybe (RemoteTrackingBranch, Sha) -> [Remote] -> Annex Bool
+fillExport r db (ExportFiltered newtree) mtbcommitsha srcrs = do
 	(l, cleanup) <- inRepo $ Git.LsTree.lsTree
 		Git.LsTree.LsTreeRecursive
 		(Git.LsTree.LsTreeLong False)
@@ -246,7 +256,7 @@ fillExport r db (ExportFiltered newtree) mtbcommitsha = do
 	cvar <- liftIO $ newMVar (FileUploaded False)
 	allfilledvar <- liftIO $ newMVar (AllFilled True)
 	commandActions $
-		map (startExport r db cvar allfilledvar) l
+		map (startExport r srcrs db cvar allfilledvar) l
 	void $ liftIO $ cleanup
 	waitForAllRunningCommandActions
 
@@ -259,8 +269,8 @@ fillExport r db (ExportFiltered newtree) mtbcommitsha = do
 	
 	liftIO $ fromFileUploaded <$> takeMVar cvar
 
-startExport :: Remote -> ExportHandle -> MVar FileUploaded -> MVar AllFilled -> Git.LsTree.TreeItem -> CommandStart
-startExport r db cvar allfilledvar ti = do
+startExport :: Remote -> [Remote] -> ExportHandle -> MVar FileUploaded -> MVar AllFilled -> Git.LsTree.TreeItem -> CommandStart
+startExport r srcrs db cvar allfilledvar ti = do
 	ek <- exportKey (Git.LsTree.sha ti)
 	stopUnless (notrecordedpresent ek) $
 		starting ("export " ++ name r) ai si $
@@ -268,7 +278,7 @@ startExport r db cvar allfilledvar ti = do
 				( next $ cleanupExport r db ek loc False
 				, do
 					liftIO $ modifyMVar_ cvar (pure . const (FileUploaded True))
-					performExport r db ek af (Git.LsTree.sha ti) loc allfilledvar
+					performExport r srcrs db ek af (Git.LsTree.sha ti) loc allfilledvar
 				)
   where
 	loc = mkExportLocation f
@@ -291,26 +301,10 @@ startExport r db cvar allfilledvar ti = do
 				else notElem (uuid r) <$> loggedLocations ek
 			)
 
-performExport :: Remote -> ExportHandle -> Key -> AssociatedFile -> Sha -> ExportLocation -> MVar AllFilled -> CommandPerform
-performExport r db ek af contentsha loc allfilledvar = do
-	let storer = storeExport (exportActions r)
+performExport :: Remote -> [Remote] -> ExportHandle -> Key -> AssociatedFile -> Sha -> ExportLocation -> MVar AllFilled -> CommandPerform
+performExport r srcrs db ek af contentsha loc allfilledvar = do
 	sent <- tryNonAsync $ if not (isGitShaKey ek)
-		then ifM (inAnnex ek)
-			( notifyTransfer Upload af $
-				-- alwaysUpload because the same key
-				-- could be used for more than one export
-				-- location, and concurrently uploading
-				-- of the content should still be allowed.
-				alwaysUpload (uuid r) ek af Nothing stdRetry $ \pm -> do
-					let rollback = void $
-						performUnexport r db [ek] loc
-					sendAnnex ek Nothing rollback $ \f _sz ->
-						Remote.action $
-							storer f ek loc pm
-			, do
-				showNote "not available"
-				return False
-			)
+		then tryrenameannexobject $ sendannexobject
 		-- Sending a non-annexed file.
 		else withTmpFile "export" $ \tmp h -> do
 			b <- catObject contentsha
@@ -327,6 +321,65 @@ performExport r db ek af contentsha loc allfilledvar = do
 		Left err -> do
 			failedsend
 			throwM err
+  where
+	storer = storeExport (exportActions r)
+	
+	sendannexobject = ifM (inAnnex ek)
+		( sendlocalannexobject
+		, do
+			locs <- S.fromList <$> loggedLocations ek
+			case filter (\sr -> S.member (Remote.uuid sr) locs) srcrs of
+				[] -> do
+					showNote "not available"
+					return False
+				(srcr:_) -> getsendannexobject srcr
+		)
+	
+	sendlocalannexobject = sendwith $ \p -> do
+		let rollback = void $
+			performUnexport r db [ek] loc
+		sendAnnex ek Nothing rollback $ \f _sz ->
+			Remote.action $
+				storer f ek loc p
+	
+	sendwith a = 
+		notifyTransfer Upload af $
+			-- alwaysUpload because the same key
+			-- could be used for more than one export
+			-- location, and concurrently uploading
+			-- of the content should still be allowed.
+			alwaysUpload (uuid r) ek af Nothing stdRetry a
+
+	-- Similar to Command.Move.fromToPerform, use a regular download
+	-- of a local copy, lock early, and drop the local copy after sending.
+	getsendannexobject srcr = do
+		showAction $ UnquotedString $ "from " ++ Remote.name srcr
+		ifM (notifyTransfer Download af $ download srcr ek af stdRetry)
+			( lockContentForRemoval ek (return False) $ \contentlock -> do
+				showAction $ UnquotedString $ "to " ++ Remote.name r
+				sendlocalannexobject
+					`finally` removeAnnex contentlock
+			, return False 
+			)
+
+	tryrenameannexobject fallback
+		| annexObjects (Remote.config r) = do
+			case renameExport (exportActions r) of
+				Just renameaction -> do
+					locs <- loggedLocations ek
+					gc <- Annex.getGitConfig
+	  				let objloc = exportAnnexObjectLocation gc ek
+					if Remote.uuid r `elem` locs
+						then tryNonAsync (renameaction ek objloc loc) >>= \case
+							Right (Just ()) -> do
+								liftIO $ addExportedLocation db ek loc
+								liftIO $ flushDbQueue db
+								return True
+							Left _err -> fallback
+							Right Nothing -> fallback
+						else fallback
+				Nothing -> fallback
+		| otherwise = fallback
 
 cleanupExport :: Remote -> ExportHandle -> Key -> ExportLocation -> Bool -> CommandCleanup
 cleanupExport r db ek loc sent = do
@@ -342,16 +395,6 @@ startUnexport r db f shas = do
 		then stop
 		else starting ("unexport " ++ name r) ai si $
 			performUnexport r db eks loc
-  where
-	loc = mkExportLocation f'
-	f' = getTopFilePath f
-	ai = ActionItemTreeFile f'
-	si = SeekInput []
-
-startUnexport' :: Remote -> ExportHandle -> TopFilePath -> Key -> CommandStart
-startUnexport' r db f ek =
-	starting ("unexport " ++ name r) ai si $
-		performUnexport r db [ek] loc
   where
 	loc = mkExportLocation f'
 	f' = getTopFilePath f
@@ -379,17 +422,42 @@ cleanupUnexport r db eks loc = do
 			removeExportedLocation db ek loc
 		flushDbQueue db
 
-	-- A versionedExport remote supports removeExportLocation to remove
+	-- A versioned remote supports removeExportLocation to remove
 	-- the file from the exported tree, but still retains the content
 	-- and allows retrieving it.
-	unless (versionedExport (exportActions r)) $ do
+	unless (isVersioning (Remote.config r)) $ do
 		remaininglocs <- liftIO $ 
 			concat <$> forM eks (getExportedLocation db)
 		when (null remaininglocs) $
 			forM_ eks $ \ek ->
-				logChange ek (uuid r) InfoMissing
+				-- When annexobject=true, a key that
+				-- was unexported may still be present
+				-- on the remote.
+				if annexObjects (Remote.config r)
+					then tryNonAsync (checkPresent r ek) >>= \case
+						Right False ->
+							logChange ek (uuid r) InfoMissing
+						_ -> noop
+					else logChange ek (uuid r) InfoMissing
 	
 	removeEmptyDirectories r db loc eks
+
+-- Dispose of an old exported file by either unexporting it, or by moving
+-- it to the annexobjects location.
+startDispose :: Remote -> ExportHandle -> TopFilePath -> Key -> CommandStart
+startDispose r db f ek =
+	starting ("unexport " ++ name r) ai si $
+		if annexObjects (Remote.config r) && not (isGitShaKey ek)
+			then do
+				gc <- Annex.getGitConfig
+				performRename False r db ek loc
+					(exportAnnexObjectLocation gc ek)
+			else performUnexport r db [ek] loc
+  where
+	loc = mkExportLocation f'
+	f' = getTopFilePath f
+	ai = ActionItemTreeFile f'
+	si = SeekInput []
 
 startRecoverIncomplete :: Remote -> ExportHandle -> Git.Sha -> TopFilePath -> CommandStart
 startRecoverIncomplete r db sha oldf
@@ -408,7 +476,7 @@ startRecoverIncomplete r db sha oldf
 startMoveToTempName :: Remote -> ExportHandle -> TopFilePath -> Key -> CommandStart
 startMoveToTempName r db f ek = case renameExport (exportActions r) of
 	Just _ -> starting ("rename " ++ name r) ai si $
-		performRename r db ek loc tmploc
+		performRename True r db ek loc tmploc
 	Nothing -> starting ("unexport " ++ name r) ai' si $
 		performUnexport r db [ek] loc
   where
@@ -424,7 +492,7 @@ startMoveFromTempName :: Remote -> ExportHandle -> Key -> TopFilePath -> Command
 startMoveFromTempName r db ek f = case renameExport (exportActions r) of
 	Just _ -> stopUnless (liftIO $ elem tmploc <$> getExportedLocation db ek) $
 		starting ("rename " ++ name r) ai si $
-			performRename r db ek tmploc loc
+			performRename True r db ek tmploc loc
 	Nothing -> starting ("unexport " ++ name r) ai' si $
 		performUnexport r db [ek] tmploc
   where
@@ -436,12 +504,14 @@ startMoveFromTempName r db ek f = case renameExport (exportActions r) of
 	ai' = ActionItemTreeFile (fromExportLocation tmploc)
 	si = SeekInput []
 
-performRename :: Remote -> ExportHandle -> Key -> ExportLocation -> ExportLocation -> CommandPerform
-performRename r db ek src dest = case renameExport (exportActions r) of
+performRename :: Bool -> Remote -> ExportHandle -> Key -> ExportLocation -> ExportLocation -> CommandPerform
+performRename warnonfail r db ek src dest = case renameExport (exportActions r) of
 	Just renameaction -> tryNonAsync (renameaction ek src dest) >>= \case
 		Right (Just ()) -> next $ cleanupRename r db ek src dest
 		Left err -> do
-			warning $ UnquotedString $ "rename failed (" ++ show err ++ "); deleting instead"
+			when warnonfail $
+				warning $ UnquotedString $ 
+					"rename failed (" ++ show err ++ "); deleting instead"
 			fallbackdelete
 		Right Nothing -> fallbackdelete
 	-- remote does not support renaming

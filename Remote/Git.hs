@@ -84,6 +84,7 @@ remote = RemoteType
 	, configParser = mkRemoteConfigParser
 		[ optionalStringParser locationField
 			(FieldDesc "url of git remote to remember with special remote")
+		, yesNoParser versioningField (Just False) HiddenField
 		]
 	, setup = gitSetup
 	, exportSupported = exportUnsupported
@@ -229,7 +230,9 @@ gen r u rc gc rs
 			, gitconfig = gc
 			, readonly = Git.repoIsHttp r && not (isP2PHttp' gc)
 			, appendonly = False
-			, untrustworthy = False
+			, untrustworthy = isJust (remoteAnnexProxiedBy gc) 
+				&& (exportTree c || importTree c) 
+				&& not (isVersioning c)
 			, availability = repoAvail r
 			, remotetype = remote
 			, mkUnavailable = unavailable r u rc gc rs

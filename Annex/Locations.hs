@@ -27,6 +27,8 @@ module Annex.Locations (
 	gitAnnexInodeSentinalCache,
 	annexLocationsBare,
 	annexLocationsNonBare,
+	annexLocation,
+	exportAnnexObjectLocation,
 	gitAnnexDir,
 	gitAnnexObjectDir,
 	gitAnnexTmpOtherDir,
@@ -121,6 +123,7 @@ import Types.UUID
 import Types.GitConfig
 import Types.Difference
 import Types.BranchState
+import Types.Export
 import qualified Git
 import qualified Git.Types as Git
 import Git.FilePath
@@ -168,6 +171,13 @@ annexLocationsBare config key =
 
 annexLocation :: GitConfig -> Key -> (HashLevels -> Hasher) -> RawFilePath
 annexLocation config key hasher = objectDir P.</> keyPath key (hasher $ objectHashLevels config)
+
+{- For exportree remotes with annexobjects=true, objects are stored
+ - in this location as well as in the exported tree. -}
+exportAnnexObjectLocation :: GitConfig -> Key -> ExportLocation
+exportAnnexObjectLocation gc k =
+	mkExportLocation $
+		".git" P.</> annexLocation gc k hashDirLower
 
 {- Number of subdirectories from the gitAnnexObjectDir
  - to the gitAnnexLocation. -}

@@ -26,6 +26,11 @@ These parameters can be passed to `git annex initremote` to configure rsync:
   by [[git-annex-export]]. It will not be usable as a general-purpose
   special remote.
 
+* `annexobjects` - When set to "yes" along with "exporttree=yes",
+  this allows storing other objects in the remote along with the
+  exported tree. They will be stored under .git/annex/objects/ in the
+  remote.
+
 * `shellescape` - Optional. This has no effect when using rsync 3.2.4 or
   newer. Set to "no" to avoid shell escaping
   normally done when using older versions of rsync over ssh. That escaping
