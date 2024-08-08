@@ -12,7 +12,7 @@ special remotes.
 ## using a cluster
 
 To use a cluster, your repository needs to have its gateway configured as a
-remote. Clusters can currently only be accessed via ssh or by a annex+http
+remote. Clusters can currently only be accessed via ssh or by an annex+http
 url. This gateway remote is added the same as any other git remote:
 
     $ git remote add bigserver me@bigserver:annex
@@ -105,11 +105,11 @@ In the example above, the three cluster nodes were configured like this:
 
 	$ git remote add node1 /media/disk1/repo
 	$ git remote add node2 /media/disk2/repo
-	$ git remote add node3 /media/disk3/repo
+	$ git remote add node3 /media/disk2/repo
 	$ git config remote.node1.annex-cluster-node mycluster
 	$ git config remote.node2.annex-cluster-node mycluster
 	$ git config remote.node3.annex-cluster-node mycluster
-
+	
 Finally, run [[git-annex-updatecluster]] to record the cluster configuration
 in the git-annex branch. That tells other repositories about the cluster.
 	
@@ -130,6 +130,26 @@ In the example above, the nodes are all disk bound, so operating
 on more than one at a time will likely be faster.
 
     $ git config annex.jobs cpus
+
+## special remotes as cluster nodes
+
+Cluster nodes don't have to be regular git remotes. They can
+also be special remotes.
+
+Even special remotes with `exporttree=yes` can be
+used as cluster nodes. Those also need to be configured with
+`annexobjects=yes` though. And, will also need to configure
+`remote.name.annex-tracking-branch` to the branch that will
+trigger an update of the exported tree when it is pushed to the
+cluster gateway.
+
+Let's set up a directory special remote as cluster node,
+with the "master" branch exported as a tree:
+
+    $ git-annex initremote node4 type=directory directory=/media/disk3/repo exporttree=yes annexobjects=yes
+    $ git config remote.node4.annex-tracking-branch master
+	$ git config remote.node4.annex-cluster-node mycluster
+	$ git-annex updatecluster
 
 ## adding additional gateways to a cluster
 
@@ -211,9 +231,16 @@ be pulled from another one. And gateways only learn about the locations of
 keys that are uploaded to the cluster via them. So in the example above,
 after an upload to AMS-mycluster, NYC-mycluster will only know that the
 key is stored in its nodes, but won't know that it's stored in nodes
-behind AMS. So, it's best to have a single git repository that is synced
-with, or perhaps run [[git-annex-remotedaemon]] on each gateway to keep
-its git repository in sync with the other gateways.
+behind AMS.
+
+So, it's best to have a single git repository that is synced with, or
+perhaps run [[git-annex-remotedaemon]] on each gateway to keep its git
+repository in sync with the other gateways.
+
+When using special remotes with `exporttree=yes` as nodes, it's
+particularly important that pushes reach all the gateways, since the
+exported tree will only get updated when the annex-tracking-branch is
+pushed.
 
 Clusters can be constructed with any number of gateways, and any internal
 topology of connections between gateways. But there must always be a path
@@ -226,4 +253,5 @@ uploading a key to the cluster.
 
 A breakdown in communication between gateways will temporarily split the
 cluster. When communication resumes, some keys may need to be copied to
-additional nodes.
+additional nodes, and of course the git repositories will need to be pushed
+as well to get things back in sync.
