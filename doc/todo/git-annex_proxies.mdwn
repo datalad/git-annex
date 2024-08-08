@@ -20,8 +20,8 @@ Planned schedule of work:
 * June: git-annex proxies and clusters
 * July: p2p protocol over http
 * August, part 1: git-annex proxy support for exporttree
-* August, part 2: balanced preferred content
-* September, part 1: balanced preferred content continued
+* August, part 2: [[track_free_space_in_repos_via_git-annex_branch]]
+* September, part 1: balanced preferred content
 * September, part 2: streaming through proxy to special remotes (especially S3)
 * October, part 1: streaming through proxy continued
 * October, part 2: proving behavior of balanced preferred content with proxies
@@ -30,7 +30,9 @@ Planned schedule of work:
 
 ## work notes
 
-* onward to balanced preferred content!
+* onward to balanced preferred content! But it depends on 
+  [[track_free_space_in_repos_via_git-annex_branch]] so that will be the
+  first task.
 
 ## completed items for August's work on git-annex proxy support for exporttre
 

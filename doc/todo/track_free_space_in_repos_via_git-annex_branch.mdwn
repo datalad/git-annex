@@ -41,7 +41,7 @@ particular git-annex branch commit. We don't care about sizes at
 intermediate points in time, which that command does calculate.
 
 See [[todo/info_--size-history]] for the subtleties that had to be handled.
-In particular, compating the previous git-annex branch commit to current may
+In particular, computing the previous git-annex branch commit to current may
 yield lines that seem to indicate content was added to a repo, but in fact
 that repo already had that content at the previous git-annex branch commit
 and another log line was recorded elsewhere redundantly.
