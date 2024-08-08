@@ -15,6 +15,9 @@ git-annex (10.20240831) UNRELEASED; urgency=medium
   * git-remote-annex: Store objects in exportree=yes special remotes
     in the same paths used by annexobjects=yes. This is a backwards
     compatible change.
+  * The config versioning=true is now reserved for use by versioned special
+    remotes. External special remotes should not use that config for their
+    own purposes.
 
  -- Joey Hess <id@joeyh.name>  Wed, 31 Jul 2024 15:52:03 -0400
 
