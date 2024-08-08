@@ -43,6 +43,7 @@ import Utility.Matcher
 import qualified Data.ByteString.Char8 as S8
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
+import qualified Data.Set as S
 import Control.Concurrent
 
 cmd :: Command
@@ -325,11 +326,13 @@ performExport r srcrs db ek af contentsha loc allfilledvar = do
 	
 	sendannexobject = ifM (inAnnex ek)
 		( sendlocalannexobject
-		, firstM remotehaskey srcrs >>= \case
-			Nothing -> do	
-				showNote "not available"
-				return False
-			Just srcr -> getsendannexobject srcr
+		, do
+			locs <- S.fromList <$> loggedLocations ek
+			case filter (\sr -> S.member (Remote.uuid sr) locs) srcrs of
+				[] -> do
+					showNote "not available"
+					return False
+				(srcr:_) -> getsendannexobject srcr
 		)
 	
 	sendlocalannexobject = sendwith $ \p -> do
@@ -346,8 +349,6 @@ performExport r srcrs db ek af contentsha loc allfilledvar = do
 			-- location, and concurrently uploading
 			-- of the content should still be allowed.
 			alwaysUpload (uuid r) ek af Nothing stdRetry a
-
-	remotehaskey srcr = either (const False) id <$> Remote.hasKey srcr ek
 
 	-- Similar to Command.Move.fromToPerform, use a regular download
 	-- of a local copy, lock early, and drop the local copy after sending.
@@ -370,7 +371,10 @@ performExport r srcrs db ek af contentsha loc allfilledvar = do
 	  				let objloc = exportAnnexObjectLocation gc ek
 					if Remote.uuid r `elem` locs
 						then tryNonAsync (renameaction ek objloc loc) >>= \case
-							Right (Just ()) -> return True
+							Right (Just ()) -> do
+								liftIO $ addExportedLocation db ek loc
+								liftIO $ flushDbQueue db
+								return True
 							Left _err -> fallback
 							Right Nothing -> fallback
 						else fallback
