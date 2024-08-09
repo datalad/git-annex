@@ -33,6 +33,15 @@ Planned schedule of work:
 * balanced= and fullybalanced= need to limit the set of repositories to
   ones with enough free space to contain a key.
 
+* document balancing algo well enough that someone else could implement it
+  from the design doc
+
+* picking a low UUID and picking keys that mod N == 0 would let an attacker
+  generate keys that balancing always puts on that UUID. To avoid this
+  use HMAC with the set of UUIDs and the key. Then any such attack can be
+  prevented by adding another UUID to the set, it could even be a dummy
+  UUID that is marked as having 0 size, so it will never be used.
+
 * Add `git-annex maxsize` command.
 
 * Implement [[track_free_space_in_repos_via_git-annex_branch]]
