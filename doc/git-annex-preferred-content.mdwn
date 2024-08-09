@@ -262,6 +262,52 @@ elsewhere to allow removing it).
   says it wants them. (Or, if annex.expireunused is set, it may just delete
   them.)
 
+* `balanced=groupname[:number]`
+
+  Makes content be evenly balanced amoung repositories in the group.
+  
+  The number is the number of repositories in the group that will
+  want each file. When not specified, the default is 1.
+
+  For this to work, each repository in the group should have its preferred
+  content set to the same expression. Using `groupwanted` is a good
+  way to do that.
+  
+  For example, "balanced=backup:2", when there are 3 members of the backup
+  group, will make each backup repository want 2/3rds of the files.
+
+  The sizes of files are not taken into account, so it's possible for
+  one repository to get larger than usual files and so fill up before
+  the other repositories. But files are only wanted by repositories that
+  have enough free space to hold them. So once a repository is full,
+  the remaining repositories will have any additional files balanced
+  amoung them. In order for this to work, you must use
+  [[git-annex-size]](1) to specify the size of each repository in the
+  group.
+
+  This usually avoids moving files between repositories of the group, even
+  if that means that things are not optimally balanced. Some of the ways
+  that it can get out of balance include adding a new repository to the
+  group, or a file getting copied into more repositories in the group than
+  the specified number. Running git-annex commands with the `--rebalance`
+  option will make this expression instead behave like the `fullybalanced`
+  expression, which will make repositories want to move files around as
+  necessary in order to get fully balanced.
+
+  Note that `not balanced` is a bad thing to put in a preferred content
+  expression for the same reason `not present` is.
+
+* `fullybalanced=groupname`
+
+  This is like `balanced`, but allows moving content between repositories
+  in the group at any time to keep it fully balanced.
+
+  Normally "balanced=groupname:number" is the same as 
+  "(fullybalanced=groupname:number and not copies=groupname:number) or present"
+
+  When the `--rebalance` option is used, `balanced` is the same as
+  `fullybalanced`.
+
 * `anything`
 
   Always matches.
@@ -303,6 +349,8 @@ for example `"exclude=* and copies=1"` will be displayed as
 [[git-annex-vicfg]](1)
 
 [[git-annex-wanted]](1)
+
+[[git-annex-size]](1)
 
 <https://git-annex.branchable.com/preferred_content/>
 

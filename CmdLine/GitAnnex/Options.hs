@@ -56,6 +56,11 @@ gitAnnexCommonOptions = commonOptions ++
 		<> help "override minimum number of copies"
 		<> hidden
 		)
+	, annexFlag (setrebalance True)
+		( long "rebalance" 
+		<> help "move content as needed to improve balance"
+		<> hidden
+		)
 	, annexOption (setAnnexState . Remote.forceTrust Trusted) $ strOption
 		( long "trust" <> metavar paramRemote
 		<> help "deprecated, does not override trust setting"
@@ -103,6 +108,7 @@ gitAnnexCommonOptions = commonOptions ++
   where
 	setnumcopies n = setAnnexRead $ \rd -> rd { Annex.forcenumcopies = Just $ configuredNumCopies n }
 	setmincopies n = setAnnexRead $ \rd -> rd { Annex.forcemincopies = Just $ configuredMinCopies n }
+	setrebalance v = setAnnexRead $ \rd -> rd { Annex.rebalance = v }
 	setuseragent v = setAnnexRead $ \rd -> rd { Annex.useragent = Just v }
 	setdesktopnotify v = setAnnexRead $ \rd -> rd { Annex.desktopnotify = Annex.desktopnotify rd <> v }
 	setgitconfig v = Annex.addGitConfigOverride v

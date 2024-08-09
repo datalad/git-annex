@@ -131,6 +131,7 @@ data AnnexRead = AnnexRead
 	, forcenumcopies :: Maybe NumCopies
 	, forcemincopies :: Maybe MinCopies
 	, forcebackend :: Maybe String
+	, rebalance :: Bool
 	, useragent :: Maybe String
 	, desktopnotify :: DesktopNotify
 	, gitcredentialcache :: TMVar CredentialCache
@@ -164,6 +165,7 @@ newAnnexRead c = do
 		, forcebackend = Nothing
 		, forcenumcopies = Nothing
 		, forcemincopies = Nothing
+		, rebalance = False
 		, useragent = Nothing
 		, desktopnotify = mempty
 		, gitcredentialcache = cc

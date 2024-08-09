@@ -76,6 +76,12 @@ Most of these options are accepted by all git-annex commands.
 
   Overrides the mincopies setting.
 
+* `--rebalance`
+
+  Changes the behavior of the "balanced" preferred content expression
+  to be the same as "fullbalanced". When that expression is used,
+  this can cause a lot of work to be done to rebalance repositories.
+
 * `--time-limit=time`
 
   Limits how long a git-annex command runs. The time can be something

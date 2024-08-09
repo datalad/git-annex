@@ -13,7 +13,7 @@ that entirely:
   Existing preferred content expressions such as the one for archive group
   have this problem.
 
-So, let's add a new expression: `balanced(group)`
+So, let's add a new expression: `balanced=group`
 
 ## implementation
 
@@ -47,7 +47,7 @@ repo1 and repo2 want to swap some files between them,
 So, we'll want to add some precautions to avoid a lot of data moving around
 in such a case:
 
-	((balanced(backup) and not (copies=backup:1)) or present
+	(balanced=backup and not (copies=backup:1)) or present
 
 So once file lands on a backup drive, it stays there, even if more backup
 drives change the balancing.
@@ -56,7 +56,7 @@ drives change the balancing.
 
 What if we have 5 backup repos and want each key to be stored in 3 of them?
 There's a simple change that can support that:
-`balanced(group:3)`
+`balanced=group:3`
 
 This works the same as before, but rather than just `N mod M`, take
 `N+I mod M` where I is [0..2] to get the list of 3 repositories that want a
@@ -78,10 +78,10 @@ number of drives. Each file should have 1 copy stored in each datacenter,
 on some drive there. 
 
 This can be implemented by making a group for each datacenter, which all of
-its drives are in, and using `balanced()` to pick the drive that holds the
+its drives are in, and using `balanced` to pick the drive that holds the
 copy of the file. The preferred content expression would be eg:
 
-    ((balanced(datacenterA) and not (copies=datacenterA:1)) or present
+    (balanced=datacenterA and not copies=datacenterA:1) or present
 
 In such a situation, to avoid a `N^2` remote interconnect, there might be a
 transfer repository in each datacenter, that is in front of its drives. The
@@ -90,7 +90,7 @@ destination drive. How to write a preferred content expression for that?
 It might be sufficient to use `copies=datacenterA:1`, so long as the file
 reaching any drive in the datacenter is enough. But may want to add
 something analagous to `inallgroup=` that checks if a file is in
-the place that `balanced()` picks for a group. Eg, 
+the place that `balanced` picks for a group. Eg, 
 `balancedgroup=datacenterA` for 1 copy and `balancedgroup=group:datacenterA:2`
 for N copies.
 
@@ -143,18 +143,18 @@ the cluster.
 In several examples above, we have preferred content expressions in this
 form:
 
-    ((balanced(group:N) and not (copies=group:N)) or present
+    (balanced=group:N and not copies=group:N) or present
 
 In order to rebalance, that needs to be changed to:
 
-    balanced(group:N)
+    balanced=group:N
 
 What could be done is make `balanced()` usually expand to the former,
 but when --rebalance is used, it only expands to the latter.
 
-(Might make the fully balanced behavior available as `fullybalanced()` for
+(Might make the fully balanced behavior available as `fullybalanced` for
 users who want it, then 
-`balanced() == ((fullybalanced(group:N) and not (copies=group:N)) or present`
-usually and when --rebalance is used, `balanced() == fullybalanced(group:N)`
+`balanced=group:N == (fullybalanced=group:N and not copies=group:N) or present`
+usually and when --rebalance is used, `balanced=group:N == fullybalanced=group:N)`
 
 

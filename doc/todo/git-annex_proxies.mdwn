@@ -30,9 +30,17 @@ Planned schedule of work:
 
 ## work notes
 
-* onward to balanced preferred content! But it depends on 
-  [[track_free_space_in_repos_via_git-annex_branch]] so that will be the
-  first task.
+* balanced= and fullybalanced= need to limit the set of repositories to
+  ones with enough free space to contain a key.
+
+* Add `git-annex size` command.
+
+* Implement [[track_free_space_in_repos_via_git-annex_branch]]
+
+## completed items for August's work on balanced preferred content
+
+* Balanced preferred content basic implementation, including --rebalance
+  option.
 
 ## completed items for August's work on git-annex proxy support for exporttre
 

@@ -1,6 +1,6 @@
 {- git-annex file matching
  -
- - Copyright 2012-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -171,6 +171,8 @@ preferredContentTokens pcd =
 	, ValueToken "metadata" (usev limitMetaData)
 	, ValueToken "inallgroup" (usev $ limitInAllGroup $ getGroupMap pcd)
 	, ValueToken "onlyingroup" (usev $ limitOnlyInGroup $ getGroupMap pcd)
+	, ValueToken "balanced" (usev $ limitBalanced (repoUUID pcd) (getGroupMap pcd))
+	, ValueToken "fullybalanced" (usev $ limitFullyBalanced (repoUUID pcd) (getGroupMap pcd))
 	] ++ commonTokens LimitAnnexFiles
   where
 	preferreddir = maybe "public" fromProposedAccepted $

@@ -1,6 +1,6 @@
 {- user-specified limits on files to act on
  -
- - Copyright 2011-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -37,6 +37,7 @@ import Git.Types (RefDate(..))
 import Utility.Glob
 import Utility.HumanTime
 import Utility.DataUnits
+import Utility.Hash
 import qualified Database.Keys
 import qualified Utility.RawFilePath as R
 import Backend
@@ -47,6 +48,8 @@ import qualified Data.Set as S
 import qualified Data.Map as M
 import qualified System.FilePath.ByteString as P
 import System.PosixCompat.Files (accessTime, isSymbolicLink)
+import qualified Data.ByteArray as BA
+import Data.Bits (shiftL)
 
 {- Some limits can look at the current status of files on
  - disk, or in the annex. This allows controlling which happens. -}
@@ -552,6 +555,76 @@ limitOnlyInGroup getgroupmap groupname = Right $ MatchFiles
 		let present = locs `S.difference` notpresent
 		return $ not (S.null $ present `S.intersection` want)
 			&& S.null (S.filter (`S.notMember` want) present)
+
+limitBalanced :: Maybe UUID -> Annex GroupMap -> MkLimit Annex
+limitBalanced mu getgroupmap groupname = do
+	fullybalanced <- limitFullyBalanced mu getgroupmap groupname
+	copies <- limitCopies $ if ':' `elem` groupname
+		then groupname
+		else groupname ++ ":1"
+	let present = limitPresent mu
+	Right $ MatchFiles
+		{ matchAction = \a i ->
+			ifM (Annex.getRead Annex.rebalance)
+				( matchAction fullybalanced a i
+				, matchAction present a i <||>
+					((not <$> matchAction copies a i)
+						<&&> matchAction fullybalanced a i
+					)
+				)
+		, matchNeedsFileName =
+			matchNeedsFileName present ||
+			matchNeedsFileName fullybalanced ||
+			matchNeedsFileName copies
+		, matchNeedsFileContent =
+			matchNeedsFileContent present ||
+			matchNeedsFileContent fullybalanced ||
+			matchNeedsFileContent copies
+		, matchNeedsKey =
+			matchNeedsKey present ||
+			matchNeedsKey fullybalanced ||
+			matchNeedsKey copies
+		, matchNeedsLocationLog =
+			matchNeedsLocationLog present ||
+			matchNeedsLocationLog fullybalanced ||
+			matchNeedsLocationLog copies
+		, matchDesc = "balanced" =? groupname
+		}
+
+limitFullyBalanced :: Maybe UUID -> Annex GroupMap -> MkLimit Annex
+limitFullyBalanced mu getgroupmap groupname = Right $ MatchFiles
+	{ matchAction = const $ checkKey $ \key -> do
+		groupmembers <- fromMaybe S.empty 
+			. M.lookup (toGroup groupname) 
+			. uuidsByGroup
+			<$> getgroupmap
+		-- TODO free space checking
+		return $ case mu of
+			Just u -> u == pickBalanced key groupmembers
+			Nothing -> False
+	, matchNeedsFileName = False
+	, matchNeedsFileContent = False
+	, matchNeedsKey = True
+	, matchNeedsLocationLog = False
+	, matchDesc = "fullybalanced" =? groupname
+	}
+  where
+
+pickBalanced :: Key -> S.Set UUID -> UUID
+pickBalanced key s = 
+	let m = fromIntegral (S.size s)
+	    n = keyToInteger key
+	in S.elemAt (fromIntegral (n `mod` m)) s
+
+{- Converts a Key into a stable Integer.
+ -
+ - The SHA2 hash of the key is used to constrain the size of the Integer
+ - and to get an even distribution.
+ -}
+keyToInteger :: Key -> Integer
+keyToInteger key = 
+	foldl' (\i b -> (i `shiftL` 8) + fromIntegral b) 0 $
+		BA.unpack (sha2_256s (serializeKey' key))
 
 {- Adds a limit to skip files not using a specified key-value backend. -}
 addInBackend :: String -> Annex ()

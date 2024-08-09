@@ -58,6 +58,7 @@ it assumes all files that are currently present are preferred content.
 Here are recent changes to preferred content expressions, and the version
 they were added in.
 
+* "balanced=", "fullybalanced=" 10.20240831
 * "securehash" 6.20170228
 * "nothing" 6.201600202
 * "anything" 5.20150616

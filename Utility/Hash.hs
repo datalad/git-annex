@@ -1,6 +1,6 @@
 {- Convenience wrapper around cryptonite's hashing.
  -
- - Copyright 2013-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2024 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -16,6 +16,7 @@ module Utility.Hash (
 	sha2_224_context,
 	sha2_256,
 	sha2_256_context,
+	sha2_256s,
 	sha2_384,
 	sha2_384_context,
 	sha2_512,
@@ -105,6 +106,9 @@ sha2_256 = hashlazy
 
 sha2_256_context :: Context SHA256
 sha2_256_context = hashInit
+
+sha2_256s :: S.ByteString -> Digest SHA256
+sha2_256s = hash
 
 sha2_384 :: L.ByteString -> Digest SHA384
 sha2_384 = hashlazy
