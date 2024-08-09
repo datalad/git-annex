@@ -30,11 +30,17 @@ Planned schedule of work:
 
 ## work notes
 
-* balanced= and fullybalanced= need to limit the set of repositories to
-  ones with enough free space to contain a key.
+* `fullybalanced=foo:2` can get stuck in suboptimal situations. Eg,
+  when 2 out of 3 repositories are full, and the 3rd is mostly empty,
+  it is no longer possible to add new files to 2 repositories.
+  Moving some files from one of the full repositories to the empty one
+  would improve things, but is there any way for fullybalanced to know
+  when it makes sense to do that?
 
-* document balancing algo well enough that someone else could implement it
-  from the design doc
+  If this is not resolved, it may be better to lose the ":number" part
+  of balanced and fullybalanced. With 1 copy balanced, this situation does
+  not occur. Users wanting 2 copies can have 2 groups which are each
+  balanced, although that would mean more repositories on more drives.
 
 * picking a low UUID and picking keys that mod N == 0 would let an attacker
   generate keys that balancing always puts on that UUID. To avoid this
@@ -42,7 +48,13 @@ Planned schedule of work:
   prevented by adding another UUID to the set, it could even be a dummy
   UUID that is marked as having 0 size, so it will never be used.
 
+* document balancing algo well enough that someone else could implement it
+  from the design doc
+
 * Add `git-annex maxsize` command.
+
+* balanced= and fullybalanced= need to limit the set of repositories to
+  ones with enough free space to contain a key.
 
 * Implement [[track_free_space_in_repos_via_git-annex_branch]]
 
