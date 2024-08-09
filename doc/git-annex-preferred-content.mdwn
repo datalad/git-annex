@@ -282,7 +282,7 @@ elsewhere to allow removing it).
   have enough free space to hold them. So once a repository is full,
   the remaining repositories will have any additional files balanced
   amoung them. In order for this to work, you must use
-  [[git-annex-size]](1) to specify the size of each repository in the
+  [[git-annex-maxsize]](1) to specify the size of each repository in the
   group.
 
   This usually avoids moving files between repositories of the group, even
@@ -350,7 +350,7 @@ for example `"exclude=* and copies=1"` will be displayed as
 
 [[git-annex-wanted]](1)
 
-[[git-annex-size]](1)
+[[git-annex-maxsize]](1)
 
 <https://git-annex.branchable.com/preferred_content/>
 

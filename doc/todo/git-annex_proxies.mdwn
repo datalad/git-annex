@@ -33,7 +33,7 @@ Planned schedule of work:
 * balanced= and fullybalanced= need to limit the set of repositories to
   ones with enough free space to contain a key.
 
-* Add `git-annex size` command.
+* Add `git-annex maxsize` command.
 
 * Implement [[track_free_space_in_repos_via_git-annex_branch]]
 

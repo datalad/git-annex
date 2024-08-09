@@ -1,0 +1,46 @@
+# NAME
+
+git-annex maxsize - configure maximum size of a repository
+
+# SYNOPSIS
+
+git annex maxsize repository size
+
+git annex maxsize here --auto
+
+git annex maxsize repository
+
+# DESCRIPTION
+
+This configures the maximum combined size of annexed files that can be
+stored in a repository. When run without a size or the --auto option,
+it displays the currently configured maxsize.
+
+The repository can be specified by git remote name or
+by uuid. For the current repository, use "here".
+
+The size can be specified using any units. For example "100 gigabytes" or
+"0.8 TB"
+
+This is advisory only, it does not prevent git-annex from trying to store
+more data than that in a repository. So use this to tell git-annex about
+hard repository size limits that are enforced in some other way.
+
+For example, if a git repository is on a 1 terabyte drive, and is the only
+thing stored on that drive, and `annex.diskreserve` is configured to 1
+gigabyte, then it would make sense to run 
+`git-annex maxsize here "999 gigabytes"`.
+
+# OPTIONS
+
+* The [[git-annex-common-options]](1) can be used.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.
