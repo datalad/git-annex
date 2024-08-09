@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="xentac"
+ avatar="http://cdn.libravatar.org/avatar/773b6c7b0dc34f10b66aa46d2730a5b3"
+ subject="comment 1"
+ date="2024-08-09T19:31:12Z"
+ content="""
+I stopped the assistant, checked out master, `git reset HEAD^`, and ran git annex add .caltrash and it told me this:
+
+```
+add .caltrash/b/592/metadata.opf (non-large file; adding content to git repository) ok                                                                                                                                                                                         
+```
+
+In this case it is just a small .opf file, but in a previous case, it added an entire pdf. Either way, I want all the files in git annex.
+
+So I double checked that git annex.largefiles wasn't set:
+
+```
+xentac@baxter:~/calibre$ git config annex.largefiles                                                                                                                                                                                                                           
+xentac@baxter:~/calibre$
+```
+
+Then I set git annex.largefiles to anything
+
+```
+xentac@baxter:~/calibre$ git config annex.largefiles anything                                                                                                                                                                                                                  
+xentac@baxter:~/calibre$
+```
+
+But it still wants to add the opf to the git repository!
+"""]]
