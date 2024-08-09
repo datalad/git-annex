@@ -297,7 +297,7 @@ elsewhere to allow removing it).
   Note that `not balanced` is a bad thing to put in a preferred content
   expression for the same reason `not present` is.
 
-* `fullybalanced=groupname`
+* `fullybalanced=groupname[:number]`
 
   This is like `balanced`, but allows moving content between repositories
   in the group at any time to keep it fully balanced.
