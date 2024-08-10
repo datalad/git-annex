@@ -1,6 +1,6 @@
 {- git-annex group log
  -
- - Copyright 2012, 2019 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -29,6 +29,7 @@ import qualified Annex
 import Logs.UUIDBased
 import Types.Group
 import Types.StandardGroups
+import Annex.Balanced
 
 {- Returns the groups of a given repo UUID. -}
 lookupGroups :: UUID -> Annex (S.Set Group)
@@ -82,7 +83,7 @@ groupMapLoad = do
 	return m
 
 makeGroupMap :: M.Map UUID (S.Set Group) -> GroupMap
-makeGroupMap byuuid = GroupMap byuuid bygroup
+makeGroupMap byuuid = GroupMap byuuid bygroup (M.map balancedPicker bygroup)
   where
 	bygroup = M.fromListWith S.union $
 		concatMap explode $ M.toList byuuid

@@ -37,7 +37,7 @@ verify :: (Eq a, Show a) => Verifiable a -> Secret -> Bool
 verify v secret = v == mkVerifiable (verifiableVal v) secret
 
 calcDigest :: String -> Secret -> HMACDigest
-calcDigest v secret = calcMac HmacSha1 secret (fromString v)
+calcDigest v secret = calcMac show HmacSha1 secret (fromString v)
 
 prop_verifiable_sane :: TestableString -> TestableString -> Bool
 prop_verifiable_sane v ts = 

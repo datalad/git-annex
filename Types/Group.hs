@@ -1,6 +1,6 @@
 {- git-annex repo groups
  -
- - Copyright 2012, 2019 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -15,6 +15,7 @@ module Types.Group (
 
 import Types.UUID
 import Utility.FileSystemEncoding
+import Annex.Balanced
 
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -32,7 +33,8 @@ toGroup = Group . encodeBS
 data GroupMap = GroupMap
 	{ groupsByUUID :: M.Map UUID (S.Set Group)
 	, uuidsByGroup :: M.Map Group (S.Set UUID)
+	, balancedPickerByGroup :: M.Map Group BalancedPicker
 	}
 
 emptyGroupMap :: GroupMap
-emptyGroupMap = GroupMap M.empty M.empty
+emptyGroupMap = GroupMap M.empty M.empty M.empty

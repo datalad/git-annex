@@ -37,7 +37,6 @@ import Git.Types (RefDate(..))
 import Utility.Glob
 import Utility.HumanTime
 import Utility.DataUnits
-import Utility.Hash
 import qualified Database.Keys
 import qualified Utility.RawFilePath as R
 import Backend
@@ -48,8 +47,6 @@ import qualified Data.Set as S
 import qualified Data.Map as M
 import qualified System.FilePath.ByteString as P
 import System.PosixCompat.Files (accessTime, isSymbolicLink)
-import qualified Data.ByteArray as BA
-import Data.Bits (shiftL)
 
 {- Some limits can look at the current status of files on
  - disk, or in the annex. This allows controlling which happens. -}
@@ -594,14 +591,13 @@ limitBalanced mu getgroupmap groupname = do
 limitFullyBalanced :: Maybe UUID -> Annex GroupMap -> MkLimit Annex
 limitFullyBalanced mu getgroupmap groupname = Right $ MatchFiles
 	{ matchAction = const $ checkKey $ \key -> do
-		groupmembers <- fromMaybe S.empty 
-			. M.lookup (toGroup groupname) 
-			. uuidsByGroup
-			<$> getgroupmap
+		gm <- getgroupmap
+		let groupmembers = fromMaybe S.empty $
+			M.lookup g (uuidsByGroup gm)
 		-- TODO free space checking
-		return $ case mu of
-			Just u -> u == pickBalanced key groupmembers
-			Nothing -> False
+		return $ case (mu, M.lookup g (balancedPickerByGroup gm)) of
+			(Just u, Just picker) -> u == picker groupmembers key
+			_ -> False
 	, matchNeedsFileName = False
 	, matchNeedsFileContent = False
 	, matchNeedsKey = True
@@ -609,22 +605,7 @@ limitFullyBalanced mu getgroupmap groupname = Right $ MatchFiles
 	, matchDesc = "fullybalanced" =? groupname
 	}
   where
-
-pickBalanced :: Key -> S.Set UUID -> UUID
-pickBalanced key s = 
-	let m = fromIntegral (S.size s)
-	    n = keyToInteger key
-	in S.elemAt (fromIntegral (n `mod` m)) s
-
-{- Converts a Key into a stable Integer.
- -
- - The SHA2 hash of the key is used to constrain the size of the Integer
- - and to get an even distribution.
- -}
-keyToInteger :: Key -> Integer
-keyToInteger key = 
-	foldl' (\i b -> (i `shiftL` 8) + fromIntegral b) 0 $
-		BA.unpack (sha2_256s (serializeKey' key))
+	g = toGroup groupname
 
 {- Adds a limit to skip files not using a specified key-value backend. -}
 addInBackend :: String -> Annex ()

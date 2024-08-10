@@ -42,12 +42,6 @@ Planned schedule of work:
   not occur. Users wanting 2 copies can have 2 groups which are each
   balanced, although that would mean more repositories on more drives.
 
-* picking a low UUID and picking keys that mod N == 0 would let an attacker
-  generate keys that balancing always puts on that UUID. To avoid this
-  use HMAC with the set of UUIDs and the key. Then any such attack can be
-  prevented by adding another UUID to the set, it could even be a dummy
-  UUID that is marked as having 0 size, so it will never be used.
-
 * document balancing algo well enough that someone else could implement it
   from the design doc
 

@@ -245,7 +245,7 @@ decrypt cmd c cipher feeder reader = case cipher of
 macWithCipher :: Mac -> Cipher -> S.ByteString -> String
 macWithCipher mac c = macWithCipher' mac (cipherMac c)
 macWithCipher' :: Mac -> S.ByteString -> S.ByteString -> String
-macWithCipher' mac c s = calcMac mac c s
+macWithCipher' mac c s = calcMac show mac c s
 
 {- Ensure that macWithCipher' returns the same thing forevermore. -}
 prop_HmacSha1WithCipher_sane :: Bool

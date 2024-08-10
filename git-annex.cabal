@@ -519,6 +519,7 @@ Executable git-annex
     Annex.AdjustedBranch.Merge
     Annex.AdjustedBranch.Name
     Annex.AutoMerge
+    Annex.Balanced
     Annex.BloomFilter
     Annex.Branch
     Annex.Branch.Transitions

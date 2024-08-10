@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE BangPatterns, PackageImports #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE CPP #-}
 
 module Utility.Hash (
@@ -16,7 +17,6 @@ module Utility.Hash (
 	sha2_224_context,
 	sha2_256,
 	sha2_256_context,
-	sha2_256s,
 	sha2_384,
 	sha2_384_context,
 	sha2_512,
@@ -106,9 +106,6 @@ sha2_256 = hashlazy
 
 sha2_256_context :: Context SHA256
 sha2_256_context = hashInit
-
-sha2_256s :: S.ByteString -> Digest SHA256
-sha2_256s = hash
 
 sha2_384 :: L.ByteString -> Digest SHA384
 sha2_384 = hashlazy
@@ -267,25 +264,26 @@ data Mac = HmacSha1 | HmacSha224 | HmacSha256 | HmacSha384 | HmacSha512
 	deriving (Eq)
 
 calcMac
-	:: Mac          -- ^ MAC
+	:: (forall a. Digest a -> t)    -- ^ applied to MAC'ed message
+	-> Mac          -- ^ MAC
 	-> S.ByteString -- ^ secret key
 	-> S.ByteString -- ^ message
-	-> String       -- ^ MAC'ed message, in hexadecimal
-calcMac mac = case mac of
+	-> t
+calcMac f mac = case mac of
 	HmacSha1   -> use SHA1
 	HmacSha224 -> use SHA224
 	HmacSha256 -> use SHA256
 	HmacSha384 -> use SHA384
 	HmacSha512 -> use SHA512
   where
-	use alg k m = show (hmacGetDigest (hmacWitnessAlg alg k m))
+	use alg k m = f (hmacGetDigest (hmacWitnessAlg alg k m))
 
 	hmacWitnessAlg :: HashAlgorithm a => a -> S.ByteString -> S.ByteString -> HMAC a
 	hmacWitnessAlg _ = hmac
 
 -- Check that all the MACs continue to produce the same.
 props_macs_stable :: [(String, Bool)]
-props_macs_stable = map (\(desc, mac, result) -> (desc ++ " stable", calcMac mac key msg == result))
+props_macs_stable = map (\(desc, mac, result) -> (desc ++ " stable", calcMac show mac key msg == result))
 	[ ("HmacSha1", HmacSha1, "46b4ec586117154dacd49d664e5d63fdc88efb51")
 	, ("HmacSha224", HmacSha224, "4c1f774863acb63b7f6e9daa9b5c543fa0d5eccf61e3ffc3698eacdd")
 	, ("HmacSha256", HmacSha256, "f9320baf0249169e73850cd6156ded0106e2bb6ad8cab01b7bbbebe6d1065317")

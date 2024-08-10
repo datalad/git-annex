@@ -63,6 +63,7 @@ import qualified Annex.VectorClock
 import qualified Annex.VariantFile
 import qualified Annex.View
 import qualified Annex.View.ViewedFile
+import qualified Annex.Balanced
 import qualified Logs.View
 import qualified Command.TestRemote
 import qualified Utility.Path.Tests
@@ -186,6 +187,7 @@ properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck" $
 	, testProperty "prop_view_roundtrips" Annex.View.prop_view_roundtrips
 	, testProperty "prop_viewedFile_rountrips" Annex.View.ViewedFile.prop_viewedFile_roundtrips
 	, testProperty "prop_standardGroups_parse" Logs.PreferredContent.prop_standardGroups_parse
+	, testProperty "prop_balanced_stable" Annex.Balanced.prop_balanced_stable
 	] ++ map (uncurry testProperty) combos
   where
 	combos = concat
