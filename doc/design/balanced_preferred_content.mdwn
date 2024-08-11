@@ -15,22 +15,31 @@ that entirely:
 
 So, let's add a new expression: `balanced=group`
 
-## implementation
+## how it works
 
-This would work by taking the list of uuids of all repositories in the
-group that have enough free space to store a key, and sorting them, 
-which yields a list from 0..M-1 repositories.
+To decide which repository wants key K:
 
-(To know if a repo has enough free space to store a key 
-will need [[todo/track_free_space_in_repos_via_git-annex_branch]]
+A is the list of UUIDs of all the repositories in the group,
+in ascending order.
+
+B is A filtered to repositories that have enough free space to store key K.
+(Needs [[todo/track_free_space_in_repos_via_git-annex_branch]]
 to be implemented.)
 
-To decide which repository wants key K, convert K to a number N in some
-stable way and then `N mod M` yields the number of the repository that
-wants it, while all the rest don't.
+S is the concacenation of each UUID in A.
 
-(Since git-annex keys can be pretty long and not all of them are random
-hashes, let's md5sum the key and then use the md5 as a number.)
+N is the HMAC-SHA256 of K and S, with S being the "secret key" and K being 
+the message.
+
+M is the number of repositories in B.
+
+Then `N mod M` is the index of the repository in B that wants key K.
+
+The purpose of using HMAC-SHA256 here is mostly to evenly distribute
+amoung the repositories, since git-annex keys can be pretty long and do not
+always contain hashe. Also, including the concacenation of all the UUIDs
+of reposotories in the group makes it harder to generate a combination of
+key and repository UUID that makes that repository want to contain the key.
 
 ## stability
 
@@ -39,8 +48,8 @@ the members of the group will change which repository is selected. And
 changes in how full repositories are will also change which repo is
 selected.
 
-Without stability, when another repo is added to the group, all data will
-be rebalanced, with some moving to it. Which could be desirable in some
+Without stability, when another repo is added to the group, or a repository
+becomes full, all data will be rebalanced. Which could be desirable in some
 situations, but the problem is that it's likely that adding repo3 will make
 repo1 and repo2 want to swap some files between them,
 
