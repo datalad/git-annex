@@ -30,7 +30,7 @@ cmd' name desc getter setter = noMessages $
 	command name SectionSetup desc pdesc
 		(withParams' seek completeRemotes)
   where
-	pdesc = paramPair paramRemote (paramOptional paramExpression)
+	pdesc = paramPair paramRepository (paramOptional paramExpression)
 
 	seek = withWords (commandAction . start)
 
