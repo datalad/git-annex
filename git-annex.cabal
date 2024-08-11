@@ -692,6 +692,7 @@ Executable git-annex
     Command.LookupKey
     Command.Map
     Command.MatchExpression
+    Command.MaxSize
     Command.Merge
     Command.MetaData
     Command.Migrate
@@ -859,6 +860,7 @@ Executable git-annex
     Logs.Line
     Logs.Location
     Logs.MapLog
+    Logs.MaxSize
     Logs.MetaData
     Logs.MetaData.Pure
     Logs.Migrate
@@ -986,6 +988,7 @@ Executable git-annex
     Types.KeySource
     Types.Link
     Types.LockCache
+    Types.MaxSize
     Types.Messages
     Types.MetaData
     Types.Mime

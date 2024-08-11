@@ -6,14 +6,12 @@ git-annex maxsize - configure maximum size of a repository
 
 git annex maxsize repository size
 
-git annex maxsize here --auto
-
 git annex maxsize repository
 
 # DESCRIPTION
 
 This configures the maximum combined size of annexed files that can be
-stored in a repository. When run without a size or the --auto option,
+stored in a repository. When run without a size,
 it displays the currently configured maxsize.
 
 The repository can be specified by git remote name or
@@ -33,7 +31,11 @@ gigabyte, then it would make sense to run
 
 # OPTIONS
 
-* The [[git-annex-common-options]](1) can be used.
+* `--bytes`  
+
+  Displays the maximum size in bytes, disabling the default nicer units.
+
+* The [[git-annex-common-options]](1) can also be used.
 
 # SEE ALSO
 

@@ -333,6 +333,10 @@ content from the key-value store.
   
   See [[git-annex-required]](1) for details.
 
+* `maxsize repository [size]`
+
+  Get or set maximum size of repository.
+
 * `initcluster`
 
   Initializes a new cluster.

@@ -45,7 +45,7 @@ Planned schedule of work:
   Also note that "fullybalanced=foo:2" is not currently actually
   implemented!
 
-* Add `git-annex maxsize` command.
+* `git-annex info` can use maxsize to display how full repositories are
 
 * balanced= and fullybalanced= need to limit the set of repositories to
   ones with enough free space to contain a key.

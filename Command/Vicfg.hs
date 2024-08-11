@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2012-2022 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -27,11 +27,13 @@ import Logs.PreferredContent
 import Logs.Schedule
 import Logs.Config
 import Logs.NumCopies
+import Logs.MaxSize
 import Types.StandardGroups
 import Types.ScheduledActivity
 import Types.NumCopies
 import Remote
 import Git.Types (fromConfigKey, fromConfigValue)
+import Utility.DataUnits
 import qualified Utility.RawFilePath as R
 
 cmd :: Command
@@ -76,6 +78,7 @@ data Cfg = Cfg
 	, cfgGlobalConfigs :: M.Map ConfigKey ConfigValue
 	, cfgNumCopies :: Maybe NumCopies
 	, cfgMinCopies :: Maybe MinCopies
+	, cfgMaxSizeMap :: M.Map UUID (Maybe MaxSize)
 	}
 
 getCfg :: Annex Cfg
@@ -89,6 +92,7 @@ getCfg = Cfg
 	<*> loadGlobalConfig
 	<*> getGlobalNumCopies
 	<*> getGlobalMinCopies
+	<*> (M.map Just <$> getMaxSizes)
 
 setCfg :: Cfg -> Cfg -> Annex ()
 setCfg curcfg newcfg = do
@@ -102,6 +106,10 @@ setCfg curcfg newcfg = do
 	mapM_ (uncurry setGlobalConfig) $ M.toList $ cfgGlobalConfigs diff
 	maybe noop setGlobalNumCopies $ cfgNumCopies diff
 	maybe noop setGlobalMinCopies $ cfgMinCopies diff
+	mapM_ (uncurry setmaxsize) $ M.toList $ cfgMaxSizeMap diff
+  where
+	setmaxsize _u Nothing = noop
+	setmaxsize u (Just sz) = recordMaxSize u sz
 
 {- Default config has all the keys from the input config, but with their
  - default values. -}
@@ -116,6 +124,7 @@ defCfg curcfg = Cfg
 	, cfgGlobalConfigs = mapdef $ cfgGlobalConfigs curcfg
 	, cfgNumCopies = Nothing
 	, cfgMinCopies = Nothing
+	, cfgMaxSizeMap = mapdef $ cfgMaxSizeMap curcfg
 	}
   where
 	mapdef :: forall k v. Default v => M.Map k v -> M.Map k v
@@ -132,6 +141,7 @@ diffCfg curcfg newcfg = Cfg
 	, cfgGlobalConfigs = diff cfgGlobalConfigs
 	, cfgNumCopies = cfgNumCopies newcfg
 	, cfgMinCopies = cfgMinCopies newcfg
+	, cfgMaxSizeMap = diff cfgMaxSizeMap
 	}
   where
 	diff f = M.differenceWith (\x y -> if x == y then Nothing else Just x)
@@ -146,6 +156,7 @@ genCfg cfg descs = unlines $ intercalate [""]
 	, grouppreferredcontent
 	, standardgroups
 	, requiredcontent
+	, maxsizes
 	, schedule
 	, numcopies
 	, globalconfigs
@@ -214,6 +225,12 @@ genCfg cfg descs = unlines $ intercalate [""]
 			[ "standard"
 			, fromGroup (fromStandardGroup g), "=", standardPreferredContent g
 			]
+	
+	maxsizes = settings cfg descs cfgMaxSizeMap
+		[ com "Maximum repository sizes"
+		]
+		(\(sz, u) -> line "maxsize" u $ maybe "" (\(MaxSize n) -> preciseSize storageUnits False n) sz)
+		(\u -> line "maxsize" u "")
 	
 	schedule = settings cfg descs cfgScheduleMap
 		[ com "Scheduled activities"
@@ -311,6 +328,11 @@ parseCfg defcfg = go [] defcfg . lines
 				Nothing ->
 					let m = M.insert (toGroup f) val (cfgGroupPreferredContentMap cfg)
 					in Right $ cfg { cfgGroupPreferredContentMap = m }
+		| setting == "maxsize" = case readSize dataUnits val of
+			Nothing -> Left "parse error (expected a size such as \"100 gb\")"
+			Just n ->
+				let m = M.insert u (Just (MaxSize n)) (cfgMaxSizeMap cfg)
+				in Right $ cfg { cfgMaxSizeMap = m }
 		| setting == "schedule" = case parseScheduledActivities val of
 			Left e -> Left e
 			Right l -> 

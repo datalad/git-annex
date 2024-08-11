@@ -176,6 +176,16 @@ The file format is one line per group, starting with a timestamp, then a
 space, then the group name followed by a space and then the preferred
 content expression.
 
+## `maxsize.log`
+
+Records the maximum combined size of annexed files that can be stored in
+a repository.
+
+The file format is a timestamp, followed by the UUID of a repository,
+followed by the size in bytes. For example:
+
+	1317929189.157237s e605dca6-446a-11e0-8b2a-002170d25c55 100000000000
+
 ## `export.log`
 
 Tracks what trees have been exported to special remotes by

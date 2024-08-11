@@ -100,6 +100,7 @@ topLevelNewUUIDBasedLogs =
 	[ exportLog
 	, proxyLog
 	, clusterLog
+	, maxSizeLog
 	]
 
 {- Other top-level logs. -}
@@ -161,6 +162,9 @@ proxyLog = "proxy.log"
 
 clusterLog :: RawFilePath
 clusterLog = "cluster.log"
+
+maxSizeLog :: RawFilePath
+maxSizeLog = "maxsize.log"
 
 {- This is not a log file, it's where exported treeishes get grafted into
  - the git-annex branch. -}

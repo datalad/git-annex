@@ -131,6 +131,7 @@ import qualified Command.InitCluster
 import qualified Command.UpdateCluster
 import qualified Command.ExtendCluster
 import qualified Command.UpdateProxy
+import qualified Command.MaxSize
 import qualified Command.Version
 import qualified Command.RemoteDaemon
 #ifdef WITH_ASSISTANT
@@ -261,6 +262,7 @@ cmds testoptparser testrunner mkbenchmarkgenerator = map addGitAnnexCommonOption
 	, Command.UpdateCluster.cmd
 	, Command.ExtendCluster.cmd
 	, Command.UpdateProxy.cmd
+	, Command.MaxSize.cmd
 	, Command.Version.cmd
 	, Command.RemoteDaemon.cmd
 #ifdef WITH_ASSISTANT
