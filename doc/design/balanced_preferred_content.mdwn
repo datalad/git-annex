@@ -41,6 +41,23 @@ always contain hashe. Also, including the concacenation of all the UUIDs
 of reposotories in the group makes it harder to generate a combination of
 key and repository UUID that makes that repository want to contain the key.
 
+## size balancing
+
+Beyond filtering balanced repos to those that have enough free space to
+store a key, the sizes of the repos can be used in other ways.
+
+If the maximum size of all the balanced repos is known, they can be filled
+with data proportional to their sizes.
+
+If the maximum size is not known of any balanced repos, a reasonable thing
+to do would be to assume they all have the same maximum size, and fill them
+proportionally also.
+
+If the maximum size of some but not others is known, what then?
+
+Balancing this way would fall back to the method above when several repos
+are equally good candidates to hold a key.
+
 ## stability
 
 Note that this preferred content expression will not be stable. A change in 
