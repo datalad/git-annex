@@ -13,7 +13,7 @@ module Logs.MaxSize (
 
 import qualified Annex
 import Annex.Common
-import Types.MaxSize
+import Types.RepoSize
 import Logs
 import Logs.UUIDBased
 import Logs.MapLog

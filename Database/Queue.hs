@@ -14,6 +14,7 @@ module Database.Queue (
 	closeDbQueue,
 	flushDbQueue,
 	QueueSize,
+	LastCommitTime,
 	queueDb,
 ) where
 

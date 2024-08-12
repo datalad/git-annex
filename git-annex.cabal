@@ -783,6 +783,7 @@ Executable git-annex
     Database.Keys.SQL
     Database.Queue
     Database.RawFilePath
+    Database.RepoSize
     Database.Types
     Database.Utility
     Git
@@ -988,7 +989,6 @@ Executable git-annex
     Types.KeySource
     Types.Link
     Types.LockCache
-    Types.MaxSize
     Types.Messages
     Types.MetaData
     Types.Mime
@@ -998,6 +998,7 @@ Executable git-annex
     Types.Remote
     Types.RemoteConfig
     Types.RemoteState
+    Types.RepoSize
     Types.RepoVersion
     Types.ScheduledActivity
     Types.StandardGroups

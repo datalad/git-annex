@@ -75,7 +75,7 @@ import Types.RemoteConfig
 import Types.TransferrerPool
 import Types.VectorClock
 import Types.Cluster
-import Types.MaxSize
+import Types.RepoSize
 import Annex.VectorClock.Utility
 import Annex.Debug.Utility
 import qualified Database.Keys.Handle as Keys
@@ -202,6 +202,7 @@ data AnnexState = AnnexState
 	, remoteconfigmap :: Maybe (M.Map UUID RemoteConfig)
 	, clusters :: Maybe (Annex Clusters)
 	, maxsizes :: Maybe (M.Map UUID MaxSize)
+	, reposizes :: Maybe (M.Map UUID RepoSize)
 	, forcetrust :: TrustMap
 	, trustmap :: Maybe TrustMap
 	, groupmap :: Maybe GroupMap
@@ -257,6 +258,7 @@ newAnnexState c r = do
 		, remoteconfigmap = Nothing
 		, clusters = Nothing
 		, maxsizes = Nothing
+		, reposizes = Nothing
 		, forcetrust = M.empty
 		, trustmap = Nothing
 		, groupmap = Nothing
