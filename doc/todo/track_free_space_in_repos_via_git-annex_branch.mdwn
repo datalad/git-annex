@@ -92,4 +92,17 @@ merge time. Those are less expensive than diffing the location logs only
 because the logs they diff are less often used, and the work is only 
 done when relevant commands are run.
 
+## concurrency
+
+Suppose a repository is almost full. Two concurrent threads or processes
+are considering sending two different keys to the repository. It can hold
+either key, but not both. So the size tracking seems to need to be 
+provisionally updated for one key before it is sent, and then the check for
+the other key will show not enough space and it won't be sent. If the first
+key fails to get sent, the size needs to be reset back.
+
+Note that checkDiskSpace deals with this by looking at 
+sizeOfDownloadsInProgress. It would be possible to make a
+`sizeOfUploadsInProgressToRemote r` similarly.
+
 [[!tag projects/openneuro]]
