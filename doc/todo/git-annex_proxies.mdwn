@@ -53,7 +53,43 @@ Planned schedule of work:
 * balanced= and fullybalanced= need to limit the set of repositories to
   ones with enough free space to contain a key.
 
-* Implement [[track_free_space_in_repos_via_git-annex_branch]]
+* Implement [[track_free_space_in_repos_via_git-annex_branch]]:
+
+  * Load Annex.reposizes from Database.RepoSizes on startup.
+
+  * When Annex.reposizes does not list the size of a UUID, and 
+    that UUID's size is needed eg for balanced preferred
+    content, read the git-annex branch to get all repo sizes, 
+    the same way `git-annex info` gets repo sizes. And store in
+    Database.RepoSizes.
+
+  * Update Annex.reposizes after each successful transfer.
+
+  * Update Database.RepoSizes during merge of git-annex branch.
+    (Also update Annex.reposizes)
+
+  * On commit of git-annex branch, update Database.RepoSize to reflect
+    the size changes in the commit.
+
+    Probably cannot use Annex.reposizes for the values, since they must
+    match the sizes in the location log files being committed. Note
+    that other processes may journal location log changes, which will be
+    part of the commit. So need to read all the changed location logs,
+    and update Database.RepoSize accordingly.
+
+    (Annex.reposizes can be updated to the resulting values.)
+
+  * Perhaps: setRepoSize to 0 when initializing a new repo or a
+    new special remote (but not when reinitializing),
+    and also update Annex.reposizes for that uuid.
+  
+    Whether it makes sense to do this will depend on how expensive
+    it is to update Database.RepoSize on git-annex branch merge and commit.
+    If it is not expensive, will want to track reposizes from the beginning
+    whenever possible, to avoid a later expensive read of the git-annex
+    branch to calculate the reposizes.
+
+* Make `git-annex info` use Annex.reposizes.
 
 ## completed items for August's work on balanced preferred content
 
