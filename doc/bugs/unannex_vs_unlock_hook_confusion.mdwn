@@ -21,6 +21,7 @@ local repository version: 10
 ```
 
 Install Details (Brew)
+
 ```
 ==> git-annex: stable 10.20240808 (bottled), HEAD
 Manage files with git without checking in file contents
