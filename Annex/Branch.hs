@@ -1,6 +1,6 @@
 {- management of the git-annex branch
  -
- - Copyright 2011-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -36,6 +36,7 @@ module Annex.Branch (
 	performTransitions,
 	withIndex,
 	precache,
+	UnmergedBranches(..),
 	overBranchFileContents,
 	updatedFromTree,
 ) where
@@ -977,6 +978,15 @@ prepRememberTreeish treeish graftpoint parent = do
 	inRepo $ Git.Branch.commitTree cmode
 		["graft cleanup"] [c] origtree
 
+{- UnmergedBranches is used to indicate when a value was calculated in a
+ - read-only repository that has other git-annex branches that have not
+ - been merged in. The value does not include information from those
+ - branches.
+ -}
+data UnmergedBranches t
+	= UnmergedBranches t 
+	| NoUnmergedBranches t
+
 {- Runs an action on the content of selected files from the branch.
  - This is much faster than reading the content of each file in turn,
  - because it lets git cat-file stream content without blocking.
@@ -989,20 +999,17 @@ prepRememberTreeish treeish graftpoint parent = do
  - with different content. This happens rarely, only when the journal
  - contains additional information, and the last version of the
  - file it returns is the most current one.
- -
- - In a read-only repository that has other git-annex branches that have
- - not been merged in, returns Nothing, because it's not possible to
- - efficiently handle that.
  -}
 overBranchFileContents
 	:: (RawFilePath -> Maybe v)
 	-> (Annex (Maybe (v, RawFilePath, Maybe L.ByteString)) -> Annex a)
-	-> Annex (Maybe a)
+	-> Annex (UnmergedBranches a)
 overBranchFileContents select go = do
 	st <- update
-	if not (null (unmergedRefs st))
-		then return Nothing
-		else Just <$> overBranchFileContents' select go st
+	v <- overBranchFileContents' select go st
+	return $ if not (null (unmergedRefs st))
+		then UnmergedBranches v
+		else NoUnmergedBranches v
 
 overBranchFileContents'
 	:: (RawFilePath -> Maybe v)

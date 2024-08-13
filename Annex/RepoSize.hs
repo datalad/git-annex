@@ -8,6 +8,7 @@
 module Annex.RepoSize where
 
 import Annex.Common
+import Annex.Branch (UnmergedBranches(..))
 import Types.RepoSize
 import Logs.Location
 import Logs.UUID
@@ -24,10 +25,12 @@ calcRepoSizes :: Annex (M.Map UUID RepoSize)
 calcRepoSizes = do
 	knownuuids <- M.keys <$> uuidDescMap
 	let startmap = M.fromList $ map (\u -> (u, RepoSize 0)) knownuuids
-	overLocationLogs startmap $ \k locs m ->
-		return $ 
-			let sz = fromMaybe 0 $ fromKey keySize k
-			in foldl' (flip $ M.alter $ addksz sz) m locs
+	overLocationLogs startmap accum >>= \case
+		UnmergedBranches m -> return m
+		NoUnmergedBranches m -> return m
   where
 	addksz ksz (Just (RepoSize sz)) = Just $ RepoSize $ sz + ksz
 	addksz ksz Nothing = Just $ RepoSize ksz
+	accum k locs m = return $ 
+		let sz = fromMaybe 0 $ fromKey keySize k
+		in foldl' (flip $ M.alter $ addksz sz) m locs

@@ -33,6 +33,7 @@ import Annex.WorkTree
 import Logs.UUID
 import Logs.Trust
 import Logs.Location
+import Annex.Branch (UnmergedBranches(..))
 import Annex.NumCopies
 import Git.Config (boolConfig)
 import qualified Git.LsTree as LsTree
@@ -640,7 +641,7 @@ cachedAllRepoData = do
 		Just _ -> return s
 		Nothing -> do
 			matcher <- lift getKeyOnlyMatcher
-			!(d, rd) <- lift $ overLocationLogs (emptyKeyInfo, mempty) $ \k locs (d, rd) -> do
+			r <- lift $ overLocationLogs (emptyKeyInfo, mempty) $ \k locs (d, rd) -> do
 				ifM (matchOnKey matcher k)
 					( do
 						alivelocs <- snd
@@ -650,9 +651,14 @@ cachedAllRepoData = do
 						return (d', rd')
 					, return (d, rd)
 					)
-			let s' = s { allRepoData = Just d, repoData = rd }
-			put s'
-			return s'
+			case r of
+				NoUnmergedBranches (!(d, rd)) -> do
+					let s' = s { allRepoData = Just d, repoData = rd }
+					put s'
+					return s'
+				UnmergedBranches _ -> do
+					lift $ warning "This repository is read-only, and there are unmerged git-annex branches. Information from those branches is not included here."
+					return s
   where
 	accumrepodata k = M.alter (Just . addKey k . fromMaybe emptyKeyInfo)
 

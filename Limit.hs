@@ -600,10 +600,12 @@ limitFullyBalanced mu getgroupmap groupname = Right $ MatchFiles
 		maxsizes <- getMaxSizes
 		-- XXX do not calc this every time!
 		sizemap <- calcRepoSizes
+		let keysize = fromMaybe 0 (fromKey keySize key)
 		let hasspace u = case (M.lookup u maxsizes, M.lookup u sizemap) of
 			(Just (MaxSize maxsize), Just (RepoSize reposize)) ->
-				reposize + fromMaybe 0 (fromKey keySize key) 
-					<= maxsize
+				if maybe False (`S.member` notpresent) mu
+					then reposize <= maxsize
+					else reposize + keysize <= maxsize
 			_ -> True
 		let candidates = S.filter hasspace groupmembers
 		return $ if S.null candidates

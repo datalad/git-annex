@@ -287,6 +287,9 @@ withKeyOptions' ko auto mkkeyaction fallbackaction worktreeitems = do
 		overLocationLogs' () 
 			(\reader cont -> checktimelimit (discard reader) cont) 
 			(\k _ () -> keyaction Nothing (SeekInput [], k, mkActionItem k))
+			>>= \case
+				Annex.Branch.NoUnmergedBranches () -> return ()
+				Annex.Branch.UnmergedBranches () -> giveup "This repository is read-only, and there are unmerged git-annex branches, which prevents operating on all keys. (Set annex.merge-annex-branches to false to ignore the unmerged git-annex branches.)"
 
 	runkeyaction getks = do
 		keyaction <- mkkeyaction

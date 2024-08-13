@@ -219,18 +219,18 @@ loggedKeysFor' u = loggedKeys' isthere
 		return there
 
 {- This is much faster than loggedKeys. -}
-overLocationLogs :: v -> (Key -> [UUID] -> v -> Annex v) -> Annex v
+overLocationLogs :: v -> (Key -> [UUID] -> v -> Annex v) -> Annex (Annex.Branch.UnmergedBranches v)
 overLocationLogs v = overLocationLogs' v (flip const)
 
 overLocationLogs'
 	 :: v 
 	-> (Annex (Maybe (Key, RawFilePath, Maybe L.ByteString)) -> Annex v -> Annex v)
         -> (Key -> [UUID] -> v -> Annex v)
-        -> Annex v
+        -> Annex (Annex.Branch.UnmergedBranches v)
 overLocationLogs' iv discarder keyaction = do
 	config <- Annex.getGitConfig
 	clusters <- getClusters
-		
+	
 	let getk = locationLogFileKey config
 	let go v reader = reader >>= \case
 		Just (k, f, content) -> discarder reader $ do
@@ -245,9 +245,7 @@ overLocationLogs' iv discarder keyaction = do
 				)
 		Nothing -> return v
 
-	Annex.Branch.overBranchFileContents getk (go iv) >>= \case
-		Just r -> return r
-		Nothing -> giveup "This repository is read-only, and there are unmerged git-annex branches, which prevents operating on all keys. (Set annex.merge-annex-branches to false to ignore the unmerged git-annex branches.)"
+	Annex.Branch.overBranchFileContents getk (go iv)
 
 -- Cannot import Logs.Cluster due to a cycle.
 -- Annex.clusters gets populated when starting up git-annex.

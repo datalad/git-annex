@@ -188,8 +188,8 @@ updateFromLog db@(ImportFeedDbHandle h) (oldtree, currtree)
 	-- is faster than diffing from the empty tree
 	-- and looking up every log file.
 	scanbranch = Annex.Branch.overBranchFileContents toscan goscan >>= \case
-		Just () -> return ()
-		Nothing -> scandiff
+		Annex.Branch.NoUnmergedBranches () -> return ()
+		Annex.Branch.UnmergedBranches () -> scandiff
 	
 	toscan f
 		| isUrlLog f = Just ()
