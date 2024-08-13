@@ -53,15 +53,19 @@ Planned schedule of work:
 
 * Implement [[track_free_space_in_repos_via_git-annex_branch]]:
 
-  * Load Annex.reposizes from Database.RepoSizes on startup.
+  * Goal is for limitFullyBalanced not to need to calcRepoSizes.
+
+  * Load Annex.reposizes from Database.RepoSizes on demand.
 
   * When Annex.reposizes does not list the size of a UUID, and 
     that UUID's size is needed eg for balanced preferred
-    content, read the git-annex branch to get all repo sizes, 
-    the same way `git-annex info` gets repo sizes. And store in
+    content, use calcRepoSizes and store in 
     Database.RepoSizes.
 
-  * Update Annex.reposizes after each successful transfer.
+  * Update Annex.reposizes in Logs.Location.logChange,
+    when it makes a change and when Annex.reposizes has a size
+    for the UUID. So Annex.reposizes is kept up-to-date
+    for each transfer and drop.
 
   * Update Database.RepoSizes during merge of git-annex branch.
     (Also update Annex.reposizes)
@@ -75,7 +79,13 @@ Planned schedule of work:
     part of the commit. So need to read all the changed location logs,
     and update Database.RepoSize accordingly.
 
+    Also private journals complicate this.
+
     (Annex.reposizes can be updated to the resulting values.)
+
+  * calcRepoSizes currently skips log files in private journals,
+    when they are for a key that does not appear in the git-annex branch.
+    It needs to include those.
 
   * Perhaps: setRepoSize to 0 when initializing a new repo or a
     new special remote (but not when reinitializing),
