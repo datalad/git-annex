@@ -21,14 +21,14 @@ type BalancedPicker = S.Set UUID -> Key -> UUID
 
 -- The set of UUIDs provided here are all the UUIDs that are ever
 -- expected to be picked amoung. A subset of that can be provided
--- when later using the BalancedPicker.
+-- when later using the BalancedPicker. Neither set can be empty.
 balancedPicker :: S.Set UUID -> BalancedPicker
 balancedPicker s = \s' key -> 
 	let n = calcMac tointeger HmacSha256 combineduuids (serializeKey' key)
+	    m = fromIntegral (S.size s')
 	in S.elemAt (fromIntegral (n `mod` m)) s'
   where
 	combineduuids = mconcat (map fromUUID (S.toAscList s))
-	m = fromIntegral (S.size s)
 
 	tointeger :: Digest a -> Integer
 	tointeger = foldl' (\i b -> (i `shiftL` 8) + fromIntegral b) 0 

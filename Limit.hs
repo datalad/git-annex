@@ -17,6 +17,9 @@ import Annex.Content
 import Annex.WorkTree
 import Annex.UUID
 import Annex.Magic
+import Annex.RepoSize
+import Types.RepoSize
+import Logs.MaxSize
 import Annex.Link
 import Types.Link
 import Logs.Trust
@@ -590,14 +593,24 @@ limitBalanced mu getgroupmap groupname = do
 
 limitFullyBalanced :: Maybe UUID -> Annex GroupMap -> MkLimit Annex
 limitFullyBalanced mu getgroupmap groupname = Right $ MatchFiles
-	{ matchAction = const $ checkKey $ \key -> do
+	{ matchAction = \notpresent -> checkKey $ \key -> do
 		gm <- getgroupmap
 		let groupmembers = fromMaybe S.empty $
 			M.lookup g (uuidsByGroup gm)
-		-- TODO free space checking
-		return $ case (mu, M.lookup g (balancedPickerByGroup gm)) of
-			(Just u, Just picker) -> u == picker groupmembers key
-			_ -> False
+		maxsizes <- getMaxSizes
+		-- XXX do not calc this every time!
+		sizemap <- calcRepoSizes
+		let hasspace u = case (M.lookup u maxsizes, M.lookup u sizemap) of
+			(Just (MaxSize maxsize), Just (RepoSize reposize)) ->
+				reposize + fromMaybe 0 (fromKey keySize key) 
+					<= maxsize
+			_ -> True
+		let candidates = S.filter hasspace groupmembers
+		return $ if S.null candidates
+			then False
+			else case (mu, M.lookup g (balancedPickerByGroup gm)) of
+				(Just u, Just picker) -> u == picker candidates key
+				_ -> False
 	, matchNeedsFileName = False
 	, matchNeedsFileContent = False
 	, matchNeedsKey = True

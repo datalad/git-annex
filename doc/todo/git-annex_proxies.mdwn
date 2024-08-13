@@ -45,13 +45,15 @@ Planned schedule of work:
   Also note that "fullybalanced=foo:2" is not currently actually
   implemented!
 
-* implement size-based balancing, either as the default or as another
-  preferred content expression.
+* implement size-based balancing, so all balanced repositories are around
+  the same percent full, either as the default or as another preferred
+  content expression.
 
 * `git-annex info` can use maxsize to display how full repositories are
 
-* balanced= and fullybalanced= need to limit the set of repositories to
-  ones with enough free space to contain a key.
+* --rebalance is not stable. It will drop a key that was just stored in a
+  repo. Seems that limitFullyBalanced needs to take AssumeNotPresent
+  into account to handle dropping correctly.
 
 * Implement [[track_free_space_in_repos_via_git-annex_branch]]:
 

@@ -574,6 +574,7 @@ Executable git-annex
     Annex.Queue
     Annex.ReplaceFile
     Annex.RemoteTrackingBranch
+    Annex.RepoSize
     Annex.SafeDropProof
     Annex.SpecialRemote
     Annex.SpecialRemote.Config
