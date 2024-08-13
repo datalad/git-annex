@@ -51,6 +51,17 @@ Planned schedule of work:
 
 * `git-annex info` can use maxsize to display how full repositories are
 
+* overBranchFileContents can improve its handling of journalled files
+  by first going over the branch, and then at the end, feeding
+  the journalled filenames into catObjectStream (run on the same branch
+  sha) to check if the file was in the branch. Only pass the journalled
+  file to the callback when it was not. This will avoid innaccuracies
+  in calcRepoSizes and git-annex info.
+
+  calcRepoSizes currently skips log files in private journals,
+  when they are for a key that does not appear in the git-annex branch.
+  It needs to include those.
+
 * Implement [[track_free_space_in_repos_via_git-annex_branch]]:
 
   * Goal is for limitFullyBalanced not to need to calcRepoSizes.
@@ -82,10 +93,6 @@ Planned schedule of work:
     Also private journals complicate this.
 
     (Annex.reposizes can be updated to the resulting values.)
-
-  * calcRepoSizes currently skips log files in private journals,
-    when they are for a key that does not appear in the git-annex branch.
-    It needs to include those.
 
   * Perhaps: setRepoSize to 0 when initializing a new repo or a
     new special remote (but not when reinitializing),
