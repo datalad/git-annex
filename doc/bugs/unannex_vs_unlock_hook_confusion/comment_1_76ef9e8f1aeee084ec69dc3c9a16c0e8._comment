@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="Spencer"
+ avatar="http://cdn.libravatar.org/avatar/2e0829f36a68480155e09d0883794a55"
+ subject="Exact Moment Things Go Wrong"
+ date="2024-08-13T06:22:11Z"
+ content="""
+Hopefully this specific issue can be reproduced:
+
+1. Have a repo with an annexed file committed.
+2. Run `git annex unannex` on the locked file.
+3. Run `git commit` to save the file as deleted on the index.
+4. Drop the file contents in git annex (useful to have a remote with contents so you don't have to --force) by key (`git annex drop --key KEY`)
+4a. Has to be done by key because `git annex unused` does NOT show the key as unused.
+4b. Instead, `git annex whereused --key KEY --historical` should show `[here] branch~X:path/to/file` i.e. it's used X commits prior to the head `branch`
+5. `git annex findkeys` to see key not there.
+6. `git add FILE`
+7. Key now back in annex, e.g. under `findkeys`.
+7a. At this point, dropping the file contents appears to change the file size in `ls -Al`: a tiny (tens of bytes) file tells you that it's really a pointer file.
+8. Never during this process will `ls -Al` show any indication that the file isn't a normal file after unannexing. inode = 1, no symlink. Just the file size changes if the contents aren't in the annex.
+"""]]
