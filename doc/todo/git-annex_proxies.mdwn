@@ -51,10 +51,6 @@ Planned schedule of work:
 
 * `git-annex info` can use maxsize to display how full repositories are
 
-* --rebalance is not stable. It will drop a key that was just stored in a
-  repo. Seems that limitFullyBalanced needs to take AssumeNotPresent
-  into account to handle dropping correctly.
-
 * Implement [[track_free_space_in_repos_via_git-annex_branch]]:
 
   * Load Annex.reposizes from Database.RepoSizes on startup.

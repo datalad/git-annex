@@ -603,7 +603,7 @@ limitFullyBalanced mu getgroupmap groupname = Right $ MatchFiles
 		let keysize = fromMaybe 0 (fromKey keySize key)
 		let hasspace u = case (M.lookup u maxsizes, M.lookup u sizemap) of
 			(Just (MaxSize maxsize), Just (RepoSize reposize)) ->
-				if maybe False (`S.member` notpresent) mu
+				if u `S.member` notpresent
 					then reposize <= maxsize
 					else reposize + keysize <= maxsize
 			_ -> True
