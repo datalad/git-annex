@@ -593,7 +593,7 @@ limitBalanced mu getgroupmap groupname = do
 
 limitFullyBalanced :: Maybe UUID -> Annex GroupMap -> MkLimit Annex
 limitFullyBalanced mu getgroupmap groupname = Right $ MatchFiles
-	{ matchAction = \notpresent -> checkKey $ \key -> do
+	{ matchAction = const $ checkKey $ \key -> do
 		gm <- getgroupmap
 		let groupmembers = fromMaybe S.empty $
 			M.lookup g (uuidsByGroup gm)
@@ -601,9 +601,10 @@ limitFullyBalanced mu getgroupmap groupname = Right $ MatchFiles
 		-- XXX do not calc this every time!
 		sizemap <- calcRepoSizes
 		let keysize = fromMaybe 0 (fromKey keySize key)
+		currentlocs <- S.fromList <$> loggedLocations key
 		let hasspace u = case (M.lookup u maxsizes, M.lookup u sizemap) of
 			(Just (MaxSize maxsize), Just (RepoSize reposize)) ->
-				if u `S.member` notpresent
+				if u `S.member` currentlocs
 					then reposize <= maxsize
 					else reposize + keysize <= maxsize
 			_ -> True
