@@ -247,7 +247,7 @@ overLocationLogs' iv discarder keyaction = do
 
 	Annex.Branch.overBranchFileContents getk (go iv) >>= \case
 		Just r -> return r
-		Nothing -> giveup "This repository is read-only, and there are unmerged git-annex branches, which prevents operating on allu keys. (Set annex.merge-annex-branches to false to ignore the unmerged git-annex branches.)"
+		Nothing -> giveup "This repository is read-only, and there are unmerged git-annex branches, which prevents operating on all keys. (Set annex.merge-annex-branches to false to ignore the unmerged git-annex branches.)"
 
 -- Cannot import Logs.Cluster due to a cycle.
 -- Annex.clusters gets populated when starting up git-annex.
