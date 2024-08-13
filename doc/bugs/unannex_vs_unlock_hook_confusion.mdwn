@@ -1,0 +1,48 @@
+# Committing File Contents to Git: Unlock Confusion
+
+I cannot convert a file from being annexed to its content being committed to git. Instead, annex commits a pointer to git as if the file were to be unlocked. This is regardless of if the key exists in `git/annex/objects`. There is no workaround it seems. At this point I have an annexed file committed to a repo. If I want to go back and commit the file contents to git instead, I tried the workaround of committing the deletion after running `git annex unannex` and then committing the file again via `git commit`. However, this still only commits the pointer contents to git as shown by `git annex HASH`. What's worse, the HASH - found from `git log --raw` is the same hash that can be gotten from `git hash-object FILE`. So it looks like the file content committed correctly but it's not.
+
+It appears to be that the hook hashes the file content, and if that content has ever been logged in the git-annex branch logs, it assumes the user just unlocked the file. I would hope that what is shown in `git log --raw` is in fact representative of the *content* saved to the git repo. I would assert then that annex should commit a git object with a hash for a pointer file that is **different** than for the file contents. So, if I have a "unlocked" pointer file of contents `/annex/objects/MD5E-s87104--942e5878169ea672dc8ab47889694974.txt` the object should be `6a/0da5de8f1a16a30b713b180972dadacb1edd7a`. Then if I manually hash-object the file and see `80d6030a72be1bb60644df613b1597793263a8d5` (the hash of the actual contents in my case) I can see that this content is in fact NOT within my git history yet.
+
+I notice that when I truly unlock a file, because I have (by default) `annex.thin=false`, the file content moves out of the annex on unlock, but *folder structure remains*. This is in contrast to unannex where the emptied `annex/objects/` tree is deleted. Maybe the hook checks for the existence of empty folders in the annex as a signal of unlock versus unannex? More trivially, if `annex.thin=true`, then maybe the inode count can indicate unlocking.
+
+In case this is platform dependent here is my info:
+
+```
+git-annex version: 10.20240701
+build flags: Assistant Webapp Pairing FsEvents TorrentParser MagicMime Benchmark Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.24.2 bloomfilter-2.0.1.2 crypton-1.0.0 DAV-1.3.4 feed-1.3.2.1 ghc-9.6.3 http-client-0.7.17 persistent-sqlite-2.13.3.0 torrent-10000.1.3 uuid-1.3.15 yesod-1.6.2.1
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL GITBUNDLE GITMANIFEST VURL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg rclone hook external
+operating system: darwin aarch64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
+local repository version: 10
+```
+
+Install Details (Brew)
+```
+==> git-annex: stable 10.20240808 (bottled), HEAD
+Manage files with git without checking in file contents
+https://git-annex.branchable.com/
+Installed
+/opt/homebrew/Cellar/git-annex/10.20240701 (11 files, 167.2MB) *
+  Poured from bottle using the formulae.brew.sh API on 2024-07-18 at 13:46:03
+From: https://github.com/Homebrew/homebrew-core/blob/HEAD/Formula/g/git-annex.rb
+License: AGPL-3.0-or-later and BSD-2-Clause and BSD-3-Clause and GPL-2.0-only and GPL-3.0-or-later and MIT
+==> Dependencies
+Build: cabal-install ✘, ghc@9.8 ✘, pkg-config ✔
+Required: libmagic ✔
+==> Options
+--HEAD
+        Install HEAD version
+==> Caveats
+To start git-annex now and restart at login:
+  brew services start git-annex
+Or, if you don't want/need a background service you can just run:
+  /opt/homebrew/opt/git-annex/bin/git-annex assistant --autostart
+==> Analytics
+install: 542 (30 days), 1,832 (90 days), 6,629 (365 days)
+install-on-request: 439 (30 days), 1,574 (90 days), 5,735 (365 days)
+build-error: 0 (30 days)
+```
