@@ -219,15 +219,17 @@ loggedKeysFor' u = loggedKeys' isthere
 		return there
 
 {- This is much faster than loggedKeys. -}
-overLocationLogs :: v -> (Key -> [UUID] -> v -> Annex v) -> Annex (Annex.Branch.UnmergedBranches v)
-overLocationLogs v = overLocationLogs' v (flip const)
+overLocationLogs :: Bool -> v -> (Key -> [UUID] -> v -> Annex v) -> Annex (Annex.Branch.UnmergedBranches v)
+overLocationLogs omitnewjournalledfiles v =
+	overLocationLogs' omitnewjournalledfiles v (flip const)
 
 overLocationLogs'
-	 :: v 
+	:: Bool
+	-> v 
 	-> (Annex (Maybe (Key, RawFilePath, Maybe L.ByteString)) -> Annex v -> Annex v)
         -> (Key -> [UUID] -> v -> Annex v)
         -> Annex (Annex.Branch.UnmergedBranches v)
-overLocationLogs' iv discarder keyaction = do
+overLocationLogs' omitnewjournalledfiles iv discarder keyaction = do
 	config <- Annex.getGitConfig
 	clusters <- getClusters
 	
@@ -245,7 +247,7 @@ overLocationLogs' iv discarder keyaction = do
 				)
 		Nothing -> return v
 
-	Annex.Branch.overBranchFileContents getk (go iv)
+	Annex.Branch.overBranchFileContents getk omitnewjournalledfiles (go iv)
 
 -- Cannot import Logs.Cluster due to a cycle.
 -- Annex.clusters gets populated when starting up git-annex.

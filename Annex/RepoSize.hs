@@ -16,7 +16,8 @@ import Logs.UUID
 import qualified Data.Map.Strict as M
 
 {- Sum up the sizes of all keys in all repositories, from the information
- - in the git-annex branch. Can be slow.
+ - in the git-annex branch. New keys that only appear in the journal are
+ - not included. Can be slow.
  -
  - The map includes the UUIDs of all known repositories, including
  - repositories that are empty.
@@ -25,7 +26,7 @@ calcRepoSizes :: Annex (M.Map UUID RepoSize)
 calcRepoSizes = do
 	knownuuids <- M.keys <$> uuidDescMap
 	let startmap = M.fromList $ map (\u -> (u, RepoSize 0)) knownuuids
-	overLocationLogs startmap accum >>= \case
+	overLocationLogs True startmap accum >>= \case
 		UnmergedBranches m -> return m
 		NoUnmergedBranches m -> return m
   where

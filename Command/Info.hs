@@ -641,7 +641,7 @@ cachedAllRepoData = do
 		Just _ -> return s
 		Nothing -> do
 			matcher <- lift getKeyOnlyMatcher
-			r <- lift $ overLocationLogs (emptyKeyInfo, mempty) $ \k locs (d, rd) -> do
+			r <- lift $ overLocationLogs True (emptyKeyInfo, mempty) $ \k locs (d, rd) -> do
 				ifM (matchOnKey matcher k)
 					( do
 						alivelocs <- snd

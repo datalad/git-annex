@@ -994,29 +994,30 @@ data UnmergedBranches t
  - The action is passed a callback that it can repeatedly call to read
  - the next file and its contents. When there are no more files, the
  - callback will return Nothing.
- -
- - In some cases the callback may return the same file more than once,
- - with different content. This happens rarely, only when the journal
- - contains additional information, and the last version of the
- - file it returns is the most current one.
  -}
 overBranchFileContents
 	:: (RawFilePath -> Maybe v)
+	-> Bool
+	-- ^ When there are new files in the journal that have not yet
+	-- been committed to the branch, should those files be omitted?
+	-- When this is False, the callback is run on each journalled file
+	-- at the end, and so may be run more than once on the same file.
 	-> (Annex (Maybe (v, RawFilePath, Maybe L.ByteString)) -> Annex a)
 	-> Annex (UnmergedBranches a)
-overBranchFileContents select go = do
+overBranchFileContents select omitnewjournalledfiles go = do
 	st <- update
-	v <- overBranchFileContents' select go st
+	v <- overBranchFileContents' select omitnewjournalledfiles go st
 	return $ if not (null (unmergedRefs st))
 		then UnmergedBranches v
 		else NoUnmergedBranches v
 
 overBranchFileContents'
 	:: (RawFilePath -> Maybe v)
+	-> Bool
 	-> (Annex (Maybe (v, RawFilePath, Maybe L.ByteString)) -> Annex a)
 	-> BranchState
 	-> Annex a
-overBranchFileContents' select go st = do
+overBranchFileContents' select omitnewjournalledfiles go st = do
 	g <- Annex.gitRepo
 	(l, cleanup) <- inRepo $ Git.LsTree.lsTree
 		Git.LsTree.LsTreeRecursive
@@ -1029,9 +1030,10 @@ overBranchFileContents' select go st = do
 			content' <- checkjournal f content
 			return (Just (v, f, content'))
 		Nothing
-			| journalIgnorable st -> return Nothing
+			| journalIgnorable st || omitnewjournalledfiles ->
+				return Nothing
 			-- The journal did not get committed to the
-			-- branch, and may contain files that
+			-- branch, and may contain new files that
 			-- are not present in the branch, which 
 			-- need to be provided to the action still.
 			-- This can cause the action to be run a
