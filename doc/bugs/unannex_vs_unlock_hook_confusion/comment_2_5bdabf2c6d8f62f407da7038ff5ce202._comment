@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="Spencer"
+ avatar="http://cdn.libravatar.org/avatar/2e0829f36a68480155e09d0883794a55"
+ subject="Workaround: --force-small"
+ date="2024-08-13T07:05:57Z"
+ content="""
+One workaround I've (finally) found is `git annex add --force-small` instead of `git add`. This **forces** annex to add the content to git. Phew!
+
+What's even more interesting is that all along, `git hash-object` has been hashing the contents of the pointer file without me even knowing it. On my system when a file is a pointer file and I have the file contents in my annex:
+
+- `ls -l` shows the file content size. Dropping the file from the annex changes this number to the pointer file string size (tens of bytes).
+- `git hash-object FILE` hashes the **pointer file contents**. Reproduce the hash via `git cat-file -p :/path/to/FILE | git hash-object --stdin`. Trying `echo \"pointer\" | git hash-object --stdin` won't work with or without spaces. Also, I can `cat <file> | git hash-object --stdin` to see the real hash of the file contents.
+
+In summary, *annex is committing what I want*: the hash of the actual contents stored in git. `hash-object`, annex, and git are somehow recognizing the file as a pointer file where `ls` cannot. I assume this is done by annex behind the scenes, which fascinates me because `git hash-object` otherwise isn't affected by repositories and can be run anywhere on any file.
+
+Going forward - for others who run into this issue - you can use `git annex add --force-small` to overcome this confusion with unlock.
+"""]]
