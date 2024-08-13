@@ -330,9 +330,12 @@ catObjectStream
 	:: (MonadMask m, MonadIO m)
 	=> Repo
 	-> (
-	    ((v, Ref) -> IO ()) -- ^ call to feed values in
-	    -> IO () -- call once all values are fed in
-	    -> IO (Maybe (v, Maybe L.ByteString)) -- call to read results
+	    ((v, Ref) -> IO ())
+	    -- ^ call to feed values in
+	    -> IO ()
+	    -- ^ call once all values are fed in
+	    -> IO (Maybe (v, Maybe L.ByteString))
+	    -- ^ call to read results
 	    -> m a
 	   )
 	-> m a
@@ -350,9 +353,12 @@ catObjectMetaDataStream
 	:: (MonadMask m, MonadIO m)
 	=> Repo
 	-> (
-	    ((v, Ref) -> IO ()) -- ^ call to feed values in
-	    -> IO () -- call once all values are fed in
-	    -> IO (Maybe (v, Maybe (Sha, FileSize, ObjectType))) -- call to read results
+	    ((v, Ref) -> IO ())
+	    -- ^ call to feed values in
+	    -> IO ()
+	    -- ^ call once all values are fed in
+	    -> IO (Maybe (v, Maybe (Sha, FileSize, ObjectType)))
+	    -- ^ call to read results
 	    -> m a
 	   )
 	-> m a
