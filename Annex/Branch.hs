@@ -38,6 +38,7 @@ module Annex.Branch (
 	withIndex,
 	precache,
 	UnmergedBranches(..),
+	FileContents,
 	overBranchFileContents,
 	overJournalFileContents,
 	combineStaleJournalWithBranch,
@@ -990,6 +991,8 @@ data UnmergedBranches t
 	= UnmergedBranches t 
 	| NoUnmergedBranches t
 
+type FileContents t b = Maybe (t, RawFilePath, Maybe (L.ByteString, Maybe b))
+
 {- Runs an action on the content of selected files from the branch.
  - This is much faster than reading the content of each file in turn,
  - because it lets git cat-file stream content without blocking.
@@ -1012,7 +1015,7 @@ overBranchFileContents
 	-- and in this case it's also possible for the callback to be
 	-- passed some of the same file content repeatedly.
 	-> (RawFilePath -> Maybe v)
-	-> (Annex (Maybe (v, RawFilePath, Maybe (L.ByteString, Maybe Bool))) -> Annex a)
+	-> (Annex (FileContents v Bool) -> Annex a)
 	-> Annex (UnmergedBranches (a, Git.Sha))
 overBranchFileContents ignorejournal select go = do
 	st <- update
@@ -1026,7 +1029,7 @@ overBranchFileContents ignorejournal select go = do
 
 overBranchFileContents'
 	:: (RawFilePath -> Maybe v)
-	-> (Annex (Maybe (v, RawFilePath, Maybe (L.ByteString, Maybe Bool))) -> Annex a)
+	-> (Annex (FileContents v Bool) -> Annex a)
 	-> BranchState
 	-> Annex (a, Git.Sha)
 overBranchFileContents' select go st = do
@@ -1080,7 +1083,7 @@ overJournalFileContents
 	-- content may be stale or lack information committed to the
 	-- git-annex branch.
 	-> (RawFilePath -> Maybe v)
-	-> (Annex (Maybe (v, RawFilePath, Maybe (L.ByteString, Maybe b))) -> Annex a)
+	-> (Annex (FileContents v b) -> Annex a)
 	-> Annex a
 overJournalFileContents handlestale select go = do
 	buf <- liftIO newEmptyMVar
@@ -1090,7 +1093,7 @@ overJournalFileContents'
 	:: MVar ([RawFilePath], [RawFilePath])
 	-> (RawFilePath -> L.ByteString -> Annex (L.ByteString, Maybe b))
 	-> (RawFilePath -> Maybe a)
-	-> Annex (Maybe (a, RawFilePath, (Maybe (L.ByteString, Maybe b))))
+	-> Annex (FileContents a b)
 overJournalFileContents' buf handlestale select =
 	liftIO (tryTakeMVar buf) >>= \case
 		Nothing -> do

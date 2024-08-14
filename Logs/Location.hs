@@ -39,6 +39,7 @@ module Logs.Location (
 
 import Annex.Common
 import qualified Annex.Branch
+import Annex.Branch (FileContents)
 import Logs
 import Logs.Presence
 import Types.Cluster
@@ -230,7 +231,7 @@ overLocationLogs ignorejournal v =
 overLocationLogs'
 	:: Bool
 	-> v
-	-> (Annex (Maybe (Key, RawFilePath, Maybe (L.ByteString, Maybe Bool))) -> Annex v -> Annex v)
+	-> (Annex (FileContents Key Bool) -> Annex v -> Annex v)
         -> (Key -> [UUID] -> v -> Annex v)
         -> Annex (Annex.Branch.UnmergedBranches (v, Sha))
 overLocationLogs' ignorejournal =
@@ -280,14 +281,11 @@ overLocationLogsJournal v branchsha keyaction =
 	changedlocs _ _ _ Nothing = pure (S.empty, S.empty)
 
 overLocationLogsHelper
-	:: ( (RawFilePath -> Maybe Key)
-		-> (Annex (Maybe (Key, RawFilePath, Maybe (L.ByteString, Maybe b))) -> Annex v) 
-		-> Annex a
-	   )
+	:: ((RawFilePath -> Maybe Key) -> (Annex (FileContents Key b) -> Annex v) -> Annex a)
 	-> ((Maybe L.ByteString -> [UUID]) -> Key -> RawFilePath -> Maybe (L.ByteString, Maybe b) -> Annex u)
 	-> Bool
 	-> v
-	-> (Annex (Maybe (Key, RawFilePath, Maybe (L.ByteString, Maybe b))) -> Annex v -> Annex v)
+	-> (Annex (FileContents Key b) -> Annex v -> Annex v)
         -> (Key -> u -> v -> Annex v)
         -> Annex a
 overLocationLogsHelper runner locparserrunner canprecache iv discarder keyaction = do
