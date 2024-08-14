@@ -652,7 +652,7 @@ cachedAllRepoData = do
 					, return (d, rd)
 					)
 			case r of
-				NoUnmergedBranches (!(d, rd)) -> do
+				NoUnmergedBranches (!(d, rd), _) -> do
 					let s' = s { allRepoData = Just d, repoData = rd }
 					put s'
 					return s'

@@ -599,7 +599,7 @@ limitFullyBalanced mu getgroupmap groupname = Right $ MatchFiles
 			M.lookup g (uuidsByGroup gm)
 		maxsizes <- getMaxSizes
 		-- XXX do not calc this every time!
-		sizemap <- calcRepoSizes
+		(sizemap, _sha) <- calcBranchRepoSizes
 		let keysize = fromMaybe 0 (fromKey keySize key)
 		currentlocs <- S.fromList <$> loggedLocations key
 		let hasspace u = case (M.lookup u maxsizes, M.lookup u sizemap) of

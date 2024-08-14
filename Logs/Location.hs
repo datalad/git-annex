@@ -45,7 +45,7 @@ import Types.Cluster
 import Annex.UUID
 import Annex.CatFile
 import Annex.VectorClock
-import Git.Types (RefDate, Ref)
+import Git.Types (RefDate, Ref, Sha)
 import qualified Annex
 
 import Data.Time.Clock
@@ -219,17 +219,23 @@ loggedKeysFor' u = loggedKeys' isthere
 		return there
 
 {- This is much faster than loggedKeys. -}
-overLocationLogs :: Bool -> v -> (Key -> [UUID] -> v -> Annex v) -> Annex (Annex.Branch.UnmergedBranches v)
-overLocationLogs omitnewjournalledfiles v =
-	overLocationLogs' omitnewjournalledfiles v (flip const)
+overLocationLogs
+	:: Bool
+	-> v
+	-> (Key -> [UUID]
+	-> v
+	-> Annex v)
+	-> Annex (Annex.Branch.UnmergedBranches (v, Sha))
+overLocationLogs ignorejournal v =
+	overLocationLogs' ignorejournal v (flip const)
 
 overLocationLogs'
 	:: Bool
 	-> v 
 	-> (Annex (Maybe (Key, RawFilePath, Maybe L.ByteString)) -> Annex v -> Annex v)
         -> (Key -> [UUID] -> v -> Annex v)
-        -> Annex (Annex.Branch.UnmergedBranches v)
-overLocationLogs' omitnewjournalledfiles iv discarder keyaction = do
+        -> Annex (Annex.Branch.UnmergedBranches (v, Sha))
+overLocationLogs' ignorejournal iv discarder keyaction = do
 	config <- Annex.getGitConfig
 	clusters <- getClusters
 	
@@ -247,7 +253,7 @@ overLocationLogs' omitnewjournalledfiles iv discarder keyaction = do
 				)
 		Nothing -> return v
 
-	Annex.Branch.overBranchFileContents getk omitnewjournalledfiles (go iv)
+	Annex.Branch.overBranchFileContents ignorejournal getk (go iv)
 
 -- Cannot import Logs.Cluster due to a cycle.
 -- Annex.clusters gets populated when starting up git-annex.

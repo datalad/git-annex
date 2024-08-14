@@ -592,7 +592,7 @@ gitAnnexIndex r = gitAnnexDir r P.</> "index"
 gitAnnexPrivateIndex :: Git.Repo -> RawFilePath
 gitAnnexPrivateIndex r = gitAnnexDir r P.</> "index-private"
 
-{- Holds the ref of the git-annex branch that the index was last updated to.
+{- Holds the sha of the git-annex branch that the index was last updated to.
  -
  - The .lck in the name is a historical accident; this is not used as a
  - lock. -}

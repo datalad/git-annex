@@ -38,6 +38,7 @@ module Annex.Branch (
 	precache,
 	UnmergedBranches(..),
 	overBranchFileContents,
+	overJournalFileContents,
 	updatedFromTree,
 ) where
 
@@ -123,7 +124,7 @@ create :: Annex ()
 create = void getBranch
 
 {- Returns the sha of the branch, creating it first if necessary. -}
-getBranch :: Annex Git.Ref
+getBranch :: Annex Git.Sha
 getBranch = maybe (hasOrigin >>= go >>= use) return =<< branchsha
   where
 	go True = do
@@ -706,8 +707,8 @@ needUpdateIndex branchref = do
 	return (committedref /= branchref)
 
 {- Record that the branch's index has been updated to correspond to a
- - given ref of the branch. -}
-setIndexSha :: Git.Ref -> Annex ()
+ - given sha of the branch. -}
+setIndexSha :: Git.Sha -> Annex ()
 setIndexSha ref = do
 	f <- fromRepo gitAnnexIndexStatus
 	writeLogFile f $ fromRef ref ++ "\n"
@@ -994,35 +995,45 @@ data UnmergedBranches t
  - The action is passed a callback that it can repeatedly call to read
  - the next file and its contents. When there are no more files, the
  - callback will return Nothing.
+ -
+ - Returns the accumulated result of the callback, as well as the sha of
+ - the branch at the point it was read.
  -}
 overBranchFileContents
-	:: (RawFilePath -> Maybe v)
-	-> Bool
-	-- ^ When there are new files in the journal that have not yet
-	-- been committed to the branch, should those files be omitted?
-	-- When this is False, the callback is run on each journalled file
-	-- at the end, and so may be run more than once on the same file.
+	:: Bool
+	-- ^ Should files in the journal be ignored? When False,
+	-- the content of journalled files is combined with files in the
+	-- git-annex branch. And also, at the end, the callback is run
+	-- on each journalled file, in case some journalled files are new
+	-- files that do not yet appear in the branch. Note that this means
+	-- the callback can be run more than once on the same filename,
+	-- and in this case it's also possible for the callback to be
+	-- passed some of the same file content repeatedly.
+	-> (RawFilePath -> Maybe v)
 	-> (Annex (Maybe (v, RawFilePath, Maybe L.ByteString)) -> Annex a)
-	-> Annex (UnmergedBranches a)
-overBranchFileContents select omitnewjournalledfiles go = do
+	-> Annex (UnmergedBranches (a, Git.Sha))
+overBranchFileContents ignorejournal select go = do
 	st <- update
-	v <- overBranchFileContents' select omitnewjournalledfiles go st
+	let st' = if ignorejournal
+		then st { journalIgnorable = True }
+		else st
+	v <- overBranchFileContents' select go st'
 	return $ if not (null (unmergedRefs st))
 		then UnmergedBranches v
 		else NoUnmergedBranches v
 
 overBranchFileContents'
 	:: (RawFilePath -> Maybe v)
-	-> Bool
 	-> (Annex (Maybe (v, RawFilePath, Maybe L.ByteString)) -> Annex a)
 	-> BranchState
-	-> Annex a
-overBranchFileContents' select omitnewjournalledfiles go st = do
+	-> Annex (a, Git.Sha)
+overBranchFileContents' select go st = do
 	g <- Annex.gitRepo
+	branchsha <- getBranch
 	(l, cleanup) <- inRepo $ Git.LsTree.lsTree
 		Git.LsTree.LsTreeRecursive
 		(Git.LsTree.LsTreeLong False)
-		fullname
+		branchsha
 	let select' f = fmap (\v -> (v, f)) (select f)
 	buf <- liftIO newEmptyMVar
 	let go' reader = go $ liftIO reader >>= \case
@@ -1030,24 +1041,12 @@ overBranchFileContents' select omitnewjournalledfiles go st = do
 			content' <- checkjournal f content
 			return (Just (v, f, content'))
 		Nothing
-			| journalIgnorable st || omitnewjournalledfiles ->
-				return Nothing
-			-- The journal did not get committed to the
-			-- branch, and may contain new files that
-			-- are not present in the branch, which 
-			-- need to be provided to the action still.
-			-- This can cause the action to be run a
-			-- second time with a file it already ran on.
-			| otherwise -> liftIO (tryTakeMVar buf) >>= \case
-				Nothing -> do
-					jfs <- journalledFiles
-					pjfs <- journalledFilesPrivate
-					drain buf jfs pjfs
-				Just (jfs, pjfs) -> drain buf jfs pjfs
-	catObjectStreamLsTree l (select' . getTopFilePath . Git.LsTree.file) g go'
+			| journalIgnorable st -> return Nothing
+			| otherwise -> overJournalFileContents' buf (handlestale branchsha) select
+	res <- catObjectStreamLsTree l (select' . getTopFilePath . Git.LsTree.file) g go'
 		`finally` liftIO (void cleanup)
+	return (res, branchsha)
   where
-	-- Check the journal, in case it did not get committed to the branch
 	checkjournal f branchcontent
 		| journalIgnorable st = return branchcontent
 		| otherwise = getJournalFileStale (GetPrivate True) f >>= return . \case
@@ -1056,20 +1055,50 @@ overBranchFileContents' select omitnewjournalledfiles go st = do
 				Just journalledcontent
 			PossiblyStaleJournalledContent journalledcontent ->
 				Just (fromMaybe mempty branchcontent <> journalledcontent)
-				
-	drain buf fs pfs = case getnext fs pfs of
+	
+	handlestale branchsha f journalledcontent = do
+		-- This is expensive, but happens only when there is a
+		-- private journal file.
+		content <- getRef branchsha f
+		return (content <> journalledcontent)
+
+{- Like overBranchFileContents but only reads the content of journalled
+ - files. Note that when there are private UUIDs, the journal files may
+ - only include information about the private UUID, while information about
+ - other UUIDs has been committed to the git-annex branch.
+ -}
+overJournalFileContents
+	:: (RawFilePath -> Maybe v)
+	-> (Annex (Maybe (v, RawFilePath, Maybe L.ByteString)) -> Annex a)
+	-> Annex a
+overJournalFileContents select go = do
+	buf <- liftIO newEmptyMVar
+	go $ overJournalFileContents' buf handlestale select
+  where
+	handlestale _f journalledcontent = return journalledcontent
+
+overJournalFileContents'
+	:: MVar ([RawFilePath], [RawFilePath])
+	-> (RawFilePath -> L.ByteString -> Annex L.ByteString)
+	-> (RawFilePath -> Maybe a)
+	-> Annex (Maybe (a, RawFilePath, Maybe L.ByteString))
+overJournalFileContents' buf handlestale select =
+	liftIO (tryTakeMVar buf) >>= \case
+		Nothing -> do
+			jfs <- journalledFiles
+			pjfs <- journalledFilesPrivate
+			drain jfs pjfs
+		Just (jfs, pjfs) -> drain jfs pjfs
+  where
+	drain fs pfs = case getnext fs pfs of
 		Just (v, f, fs', pfs') -> do
 			liftIO $ putMVar buf (fs', pfs')
 			content <- getJournalFileStale (GetPrivate True) f >>= \case
 				NoJournalledContent -> return Nothing
 				JournalledContent journalledcontent ->
 					return (Just journalledcontent)
-				PossiblyStaleJournalledContent journalledcontent -> do
-					-- This is expensive, but happens
-					-- only when there is a private
-					-- journal file.
-					content <- getRef fullname f
-					return (Just (content <> journalledcontent))
+				PossiblyStaleJournalledContent journalledcontent ->
+					Just <$> handlestale f journalledcontent
 			return (Just (v, f, content))
 		Nothing -> do
 			liftIO $ putMVar buf ([], [])
