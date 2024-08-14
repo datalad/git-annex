@@ -197,7 +197,7 @@ updateFromLog db@(ImportFeedDbHandle h) (oldtree, currtree)
 		| otherwise = Nothing
 	
 	goscan reader = reader >>= \case
-		Just ((), f, Just content)
+		Just ((), f, Just (content, _))
 			| isUrlLog f -> do
 				knownurls (parseUrlLog content)
 				goscan reader

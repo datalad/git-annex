@@ -21,6 +21,7 @@ module Annex.Branch (
 	updateTo,
 	get,
 	getHistorical,
+	getRef,
 	getUnmergedRefs,
 	RegardingUUID(..),
 	change,
@@ -39,6 +40,7 @@ module Annex.Branch (
 	UnmergedBranches(..),
 	overBranchFileContents,
 	overJournalFileContents,
+	combineStaleJournalWithBranch,
 	updatedFromTree,
 ) where
 
@@ -1010,7 +1012,7 @@ overBranchFileContents
 	-- and in this case it's also possible for the callback to be
 	-- passed some of the same file content repeatedly.
 	-> (RawFilePath -> Maybe v)
-	-> (Annex (Maybe (v, RawFilePath, Maybe L.ByteString)) -> Annex a)
+	-> (Annex (Maybe (v, RawFilePath, Maybe (L.ByteString, Maybe Bool))) -> Annex a)
 	-> Annex (UnmergedBranches (a, Git.Sha))
 overBranchFileContents ignorejournal select go = do
 	st <- update
@@ -1024,7 +1026,7 @@ overBranchFileContents ignorejournal select go = do
 
 overBranchFileContents'
 	:: (RawFilePath -> Maybe v)
-	-> (Annex (Maybe (v, RawFilePath, Maybe L.ByteString)) -> Annex a)
+	-> (Annex (Maybe (v, RawFilePath, Maybe (L.ByteString, Maybe Bool))) -> Annex a)
 	-> BranchState
 	-> Annex (a, Git.Sha)
 overBranchFileContents' select go st = do
@@ -1038,11 +1040,14 @@ overBranchFileContents' select go st = do
 	buf <- liftIO newEmptyMVar
 	let go' reader = go $ liftIO reader >>= \case
 		Just ((v, f), content) -> do
-			content' <- checkjournal f content
+			content' <- checkjournal f content >>= return . \case
+				Nothing -> Nothing
+				Just c -> Just (c, Just False)
 			return (Just (v, f, content'))
 		Nothing
 			| journalIgnorable st -> return Nothing
-			| otherwise -> overJournalFileContents' buf (handlestale branchsha) select
+			| otherwise ->
+				overJournalFileContents' buf (handlestale branchsha) select
 	res <- catObjectStreamLsTree l (select' . getTopFilePath . Git.LsTree.file) g go'
 		`finally` liftIO (void cleanup)
 	return (res, branchsha)
@@ -1059,29 +1064,33 @@ overBranchFileContents' select go st = do
 	handlestale branchsha f journalledcontent = do
 		-- This is expensive, but happens only when there is a
 		-- private journal file.
-		content <- getRef branchsha f
-		return (content <> journalledcontent)
+		branchcontent <- getRef branchsha f
+		return (combineStaleJournalWithBranch branchcontent journalledcontent, Just True)
+
+combineStaleJournalWithBranch :: L.ByteString -> L.ByteString -> L.ByteString
+combineStaleJournalWithBranch branchcontent journalledcontent =
+	branchcontent <> journalledcontent
 
 {- Like overBranchFileContents but only reads the content of journalled
- - files. Note that when there are private UUIDs, the journal files may
- - only include information about the private UUID, while information about
- - other UUIDs has been committed to the git-annex branch.
+ - files.
  -}
 overJournalFileContents
-	:: (RawFilePath -> Maybe v)
-	-> (Annex (Maybe (v, RawFilePath, Maybe L.ByteString)) -> Annex a)
+	:: (RawFilePath -> L.ByteString -> Annex (L.ByteString, Maybe b))
+	-- ^ Called with the journalled file content when the journalled
+	-- content may be stale or lack information committed to the
+	-- git-annex branch.
+	-> (RawFilePath -> Maybe v)
+	-> (Annex (Maybe (v, RawFilePath, Maybe (L.ByteString, Maybe b))) -> Annex a)
 	-> Annex a
-overJournalFileContents select go = do
+overJournalFileContents handlestale select go = do
 	buf <- liftIO newEmptyMVar
 	go $ overJournalFileContents' buf handlestale select
-  where
-	handlestale _f journalledcontent = return journalledcontent
 
 overJournalFileContents'
 	:: MVar ([RawFilePath], [RawFilePath])
-	-> (RawFilePath -> L.ByteString -> Annex L.ByteString)
+	-> (RawFilePath -> L.ByteString -> Annex (L.ByteString, Maybe b))
 	-> (RawFilePath -> Maybe a)
-	-> Annex (Maybe (a, RawFilePath, Maybe L.ByteString))
+	-> Annex (Maybe (a, RawFilePath, (Maybe (L.ByteString, Maybe b))))
 overJournalFileContents' buf handlestale select =
 	liftIO (tryTakeMVar buf) >>= \case
 		Nothing -> do
@@ -1096,7 +1105,7 @@ overJournalFileContents' buf handlestale select =
 			content <- getJournalFileStale (GetPrivate True) f >>= \case
 				NoJournalledContent -> return Nothing
 				JournalledContent journalledcontent ->
-					return (Just journalledcontent)
+					return (Just (journalledcontent, Nothing))
 				PossiblyStaleJournalledContent journalledcontent ->
 					Just <$> handlestale f journalledcontent
 			return (Just (v, f, content))

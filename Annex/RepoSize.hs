@@ -22,23 +22,43 @@ import qualified Data.Map.Strict as M
  -
  - The map includes the UUIDs of all known repositories, including
  - repositories that are empty.
+ -
+ - Note that private repositories, which do not get recorded in
+ - the git-annex branch, will have 0 size. journalledRepoSizes
+ - takes care of getting repo sizes for those.
  -}
 calcBranchRepoSizes :: Annex (M.Map UUID RepoSize, Sha)
 calcBranchRepoSizes = do
 	knownuuids <- M.keys <$> uuidDescMap
 	let startmap = M.fromList $ map (\u -> (u, RepoSize 0)) knownuuids
-	overLocationLogs True startmap accum >>= \case
+	overLocationLogs True startmap accumsizes >>= \case
 		UnmergedBranches v -> return v
 		NoUnmergedBranches v -> return v
   where
-	addksz ksz (Just (RepoSize sz)) = Just $ RepoSize $ sz + ksz
-	addksz ksz Nothing = Just $ RepoSize ksz
-	accum k locs m = return $ 
-		let sz = fromMaybe 0 $ fromKey keySize k
-		in foldl' (flip $ M.alter $ addksz sz) m locs
+	accumsizes k locs m = return $
+		foldl' (flip $ M.alter $ addKeyRepoSize k) m locs
 
 {- Given the RepoSizes calculated from the git-annex branch, updates it with
  - data from journalled location logs.
   -}
 journalledRepoSizes :: M.Map UUID RepoSize -> Sha -> Annex (M.Map UUID RepoSize)
-journalledRepoSizes m branchsha = undefined --- XXX 
+journalledRepoSizes startmap branchsha =
+	overLocationLogsJournal startmap branchsha accumsizes
+  where
+	accumsizes k (newlocs, removedlocs) m = return $
+		let m' = foldl' (flip $ M.alter $ addKeyRepoSize k) m newlocs
+		in foldl' (flip $ M.alter $ removeKeyRepoSize k) m' removedlocs
+
+addKeyRepoSize :: Key -> Maybe RepoSize -> Maybe RepoSize
+addKeyRepoSize k mrs = case mrs of
+	Just (RepoSize sz) -> Just $ RepoSize $ sz + ksz
+	Nothing -> Just $ RepoSize ksz
+  where
+	ksz = fromMaybe 0 $ fromKey keySize k
+
+removeKeyRepoSize :: Key -> Maybe RepoSize -> Maybe RepoSize
+removeKeyRepoSize k mrs = case mrs of
+	Just (RepoSize sz) -> Just $ RepoSize $ sz - ksz
+	Nothing -> Nothing
+  where
+	ksz = fromMaybe 0 $ fromKey keySize k

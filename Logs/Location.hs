@@ -24,7 +24,6 @@ module Logs.Location (
 	loggedPreviousLocations,
 	loggedLocationsHistorical,
 	loggedLocationsRef,
-	parseLoggedLocations,
 	isKnownKey,
 	checkDead,
 	setDead,
@@ -35,6 +34,7 @@ module Logs.Location (
 	loggedKeysFor',
 	overLocationLogs,
 	overLocationLogs',
+	overLocationLogsJournal,
 ) where
 
 import Annex.Common
@@ -222,38 +222,96 @@ loggedKeysFor' u = loggedKeys' isthere
 overLocationLogs
 	:: Bool
 	-> v
-	-> (Key -> [UUID]
-	-> v
-	-> Annex v)
+	-> (Key -> [UUID] -> v -> Annex v)
 	-> Annex (Annex.Branch.UnmergedBranches (v, Sha))
 overLocationLogs ignorejournal v =
 	overLocationLogs' ignorejournal v (flip const)
 
 overLocationLogs'
 	:: Bool
-	-> v 
-	-> (Annex (Maybe (Key, RawFilePath, Maybe L.ByteString)) -> Annex v -> Annex v)
+	-> v
+	-> (Annex (Maybe (Key, RawFilePath, Maybe (L.ByteString, Maybe Bool))) -> Annex v -> Annex v)
         -> (Key -> [UUID] -> v -> Annex v)
         -> Annex (Annex.Branch.UnmergedBranches (v, Sha))
-overLocationLogs' ignorejournal iv discarder keyaction = do
+overLocationLogs' ignorejournal =
+	overLocationLogsHelper
+		(Annex.Branch.overBranchFileContents ignorejournal)
+		(\locparser _ _ content -> pure (locparser (fst <$> content)))
+		True
+
+type LocChanges = 
+	( S.Set UUID
+	-- ^ locations that are in the journal, but not in the
+	-- git-annex branch
+	, S.Set UUID
+	-- ^ locations that are in the git-annex branch,
+	-- but have been removed in the journal
+	)
+
+{- Like overLocationLogs, but only adds changes in journalled files
+ - compared with what was logged in the git-annex branch at the specified
+ - commit sha. -}
+overLocationLogsJournal
+	:: v
+	-> Sha
+	-> (Key -> LocChanges -> v -> Annex v)
+	-> Annex v
+overLocationLogsJournal v branchsha keyaction = 
+	overLocationLogsHelper
+		(Annex.Branch.overJournalFileContents handlestale)
+		changedlocs
+		False
+		-- ^ do not precache journalled content, which may be stale
+		v (flip const) keyaction 
+  where
+	handlestale _ journalcontent = return (journalcontent, Just True)
+
+	changedlocs locparser _key logf (Just (journalcontent, isstale)) = do
+		branchcontent <- Annex.Branch.getRef branchsha logf
+		let branchlocs = S.fromList $ locparser $ Just branchcontent
+		let journallocs = S.fromList $ locparser $ Just $ case isstale of
+			Just True -> Annex.Branch.combineStaleJournalWithBranch
+				branchcontent journalcontent
+			_ -> journalcontent
+		return
+			( S.difference journallocs branchlocs
+			, S.difference branchlocs journallocs
+			)
+	changedlocs _ _ _ Nothing = pure (S.empty, S.empty)
+
+overLocationLogsHelper
+	:: ( (RawFilePath -> Maybe Key)
+		-> (Annex (Maybe (Key, RawFilePath, Maybe (L.ByteString, Maybe b))) -> Annex v) 
+		-> Annex a
+	   )
+	-> ((Maybe L.ByteString -> [UUID]) -> Key -> RawFilePath -> Maybe (L.ByteString, Maybe b) -> Annex u)
+	-> Bool
+	-> v
+	-> (Annex (Maybe (Key, RawFilePath, Maybe (L.ByteString, Maybe b))) -> Annex v -> Annex v)
+        -> (Key -> u -> v -> Annex v)
+        -> Annex a
+overLocationLogsHelper runner locparserrunner canprecache iv discarder keyaction = do
 	config <- Annex.getGitConfig
 	clusters <- getClusters
-	
+
+	let locparser = maybe [] (parseLoggedLocations clusters)
 	let getk = locationLogFileKey config
 	let go v reader = reader >>= \case
 		Just (k, f, content) -> discarder reader $ do
 			-- precache to make checkDead fast, and also to
 			-- make any accesses done in keyaction fast.
-			maybe noop (Annex.Branch.precache f) content
+			when canprecache $
+				maybe noop (Annex.Branch.precache f . fst) content
 			ifM (checkDead k)
 				( go v reader
 				, do
-					!v' <- keyaction k (maybe [] (parseLoggedLocations clusters) content) v
+					!locs <- locparserrunner locparser k f content
+					!v' <- keyaction k locs v
 					go v' reader
 				)
 		Nothing -> return v
 
-	Annex.Branch.overBranchFileContents ignorejournal getk (go iv)
+	runner getk (go iv)
 
 -- Cannot import Logs.Cluster due to a cycle.
 -- Annex.clusters gets populated when starting up git-annex.

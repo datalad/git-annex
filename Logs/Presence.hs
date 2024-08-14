@@ -6,7 +6,7 @@
  - A line of the log will look like: "date N INFO"
  - Where N=1 when the INFO is present, 0 otherwise.
  - 
- - Copyright 2010-2022 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -20,6 +20,7 @@ module Logs.Presence (
 	presentLogInfo,
 	notPresentLogInfo,
 	historicalLogInfo,
+	parseLogInfo,
 ) where
 
 import Logs.Presence.Pure as X
@@ -27,6 +28,8 @@ import Annex.Common
 import Annex.VectorClock
 import qualified Annex.Branch
 import Git.Types (RefDate)
+
+import qualified Data.ByteString.Lazy as L
 
 {- Adds to the log, removing any LogLines that are obsoleted. -}
 addLog :: Annex.Branch.RegardingUUID -> RawFilePath -> LogStatus -> LogInfo -> Annex ()
@@ -82,5 +85,8 @@ notPresentLogInfo file = map info . filterNotPresent <$> readLog file
  - The date is formatted as shown in gitrevisions man page.
  -}
 historicalLogInfo :: RefDate -> RawFilePath -> Annex [LogInfo]
-historicalLogInfo refdate file = map info . filterPresent . parseLog
+historicalLogInfo refdate file = parseLogInfo
 	<$> Annex.Branch.getHistorical refdate file
+
+parseLogInfo :: L.ByteString -> [LogInfo]
+parseLogInfo = map info . filterPresent . parseLog
