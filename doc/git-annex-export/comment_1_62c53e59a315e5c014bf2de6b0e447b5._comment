@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="pedro-lopes-de-azevedo"
+ avatar="http://cdn.libravatar.org/avatar/492b7020bff4e7cb466e95dfd72fd206"
+ subject="parameter  --from not accepted"
+ date="2024-08-14T14:27:53Z"
+ content="""
+Recently I tested the export command adding the `--from` parameter and it was not accepted.
+
+git-annex version: 10.20240701
+"""]]
