@@ -15,6 +15,7 @@ import Annex.Common
 import Annex.RepoSize.LiveUpdate
 import qualified Annex
 import Annex.Branch (UnmergedBranches(..), getBranch)
+import Annex.Journal (lockJournal)
 import Types.RepoSize
 import qualified Database.RepoSize as Db
 import Logs.Location
@@ -25,35 +26,32 @@ import qualified Data.Map.Strict as M
 
 {- Gets the repo size map. Cached for speed. -}
 getRepoSizes :: Annex (M.Map UUID RepoSize)
-getRepoSizes = maybe updateRepoSizes return =<< Annex.getState Annex.reposizes
+getRepoSizes = maybe calcRepoSizes return =<< Annex.getState Annex.reposizes
 
-{- Updates Annex.reposizes with current information from the git-annex
+{- Sets Annex.reposizes with current information from the git-annex
  - branch, supplimented with journalled but not yet committed information.
+ -
+ - This should only be called when Annex.reposizes = Nothing.
  -}
-updateRepoSizes :: Annex (M.Map UUID RepoSize)
-updateRepoSizes = bracket Db.openDb Db.closeDb $ \h -> do
+calcRepoSizes :: Annex (M.Map UUID RepoSize)
+calcRepoSizes = bracket Db.openDb Db.closeDb $ \h -> do
 	(oldsizemap, moldbranchsha) <- liftIO $ Db.getRepoSizes h
 	case moldbranchsha of
-		Nothing -> calculatefromscratch h >>= set
+		Nothing -> calculatefromscratch h
 		Just oldbranchsha -> do
 			currbranchsha <- getBranch
 			if oldbranchsha == currbranchsha
-				then journalledRepoSizes oldsizemap oldbranchsha
-					>>= set
+				then calcJournalledRepoSizes oldsizemap oldbranchsha
 				else do
 					-- XXX todo incremental update by diffing
 					-- from old to new branch.
-					calculatefromscratch h >>= set
+					calculatefromscratch h
   where
 	calculatefromscratch h = do
 		showSideAction "calculating repository sizes"
 		(sizemap, branchsha) <- calcBranchRepoSizes
 		liftIO $ Db.setRepoSizes h sizemap branchsha
-		journalledRepoSizes sizemap branchsha
-	set sizemap = do
-		Annex.changeState $ \st -> st
-			{ Annex.reposizes = Just sizemap }
-		return sizemap
+		calcJournalledRepoSizes sizemap branchsha
 
 {- Sum up the sizes of all keys in all repositories, from the information
  - in the git-annex branch, but not the journal. Retuns the sha of the
@@ -79,10 +77,19 @@ calcBranchRepoSizes = do
 
 {- Given the RepoSizes calculated from the git-annex branch, updates it with
  - data from journalled location logs.
+ - 
+ - This should only be called when Annex.reposizes = Nothing.
   -}
-journalledRepoSizes :: M.Map UUID RepoSize -> Sha -> Annex (M.Map UUID RepoSize)
-journalledRepoSizes startmap branchsha =
-	overLocationLogsJournal startmap branchsha accumsizes
+calcJournalledRepoSizes :: M.Map UUID RepoSize -> Sha -> Annex (M.Map UUID RepoSize)
+calcJournalledRepoSizes startmap branchsha = lockJournal $ \_jl -> do
+	sizemap <- overLocationLogsJournal startmap branchsha accumsizes
+	-- Set while the journal is still locked. Since Annex.reposizes
+	-- was Nothing until this point, any other thread that might be
+	-- journalling a location log change at the same time will
+	-- be blocked from running updateRepoSize concurrently with this.
+	Annex.changeState $ \st -> st
+			{ Annex.reposizes = Just sizemap }
+	return sizemap
   where
 	accumsizes k (newlocs, removedlocs) m = return $
 		let m' = foldl' (flip $ M.alter $ addKeyRepoSize k) m newlocs

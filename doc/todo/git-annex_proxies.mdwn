@@ -32,12 +32,6 @@ Planned schedule of work:
 
 * Implement [[track_free_space_in_repos_via_git-annex_branch]]:
 
-  * When calling journalledRepoSizes make sure that the current
-    process is prevented from making changes to the journal in another
-    thread. Probably lock the journal? (No need to worry about changes made
-    by other processes; Annex.reposizes does not need to be kept current
-    with what other processes might be doing.)
-
   * updateRepoSizes incrementally when the git-annex branch sha in the
     database is older than the current git-annex branch. Diff from old to
     new branch to efficiently update.
