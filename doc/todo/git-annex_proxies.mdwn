@@ -44,6 +44,24 @@ Planned schedule of work:
     It should avoid sending both in this situation. (Also discussed in
     above todo)
 
+  * There can also be a race with 2 concurrent threads where one just
+    finished sending to a repo, but has not yet updated the location log. 
+    So the other one won't see an updated repo size.
+    
+    The fact that location log changes happen in CommandCleanup makes
+    this difficult to fix.
+
+    Could provisionally update Annex.reposizes before starting to send a
+    key, and roll it back if the send fails. But then Logs.Location
+    would update Annex.reposizes redundantly. So would need to remember
+    the provisional update was made until that is called.... But what if it
+    is never called for some reason?
+
+    This race only really matters when the repo becomes full,
+    then the second thread will fail to send because it's full. Or will
+    send more than the configured maxsize. Still this would be good to
+    fix.
+
 * `fullybalanced=foo:2` can get stuck in suboptimal situations. Eg,
   when 2 out of 3 repositories are full, and the 3rd is mostly empty,
   it is no longer possible to add new files to 2 repositories.
