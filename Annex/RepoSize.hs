@@ -12,6 +12,7 @@ module Annex.RepoSize (
 ) where
 
 import Annex.Common
+import Annex.RepoSize.LiveUpdate
 import qualified Annex
 import Annex.Branch (UnmergedBranches(..), getBranch)
 import Types.RepoSize
@@ -86,17 +87,3 @@ journalledRepoSizes startmap branchsha =
 	accumsizes k (newlocs, removedlocs) m = return $
 		let m' = foldl' (flip $ M.alter $ addKeyRepoSize k) m newlocs
 		in foldl' (flip $ M.alter $ removeKeyRepoSize k) m' removedlocs
-
-addKeyRepoSize :: Key -> Maybe RepoSize -> Maybe RepoSize
-addKeyRepoSize k mrs = case mrs of
-	Just (RepoSize sz) -> Just $ RepoSize $ sz + ksz
-	Nothing -> Just $ RepoSize ksz
-  where
-	ksz = fromMaybe 0 $ fromKey keySize k
-
-removeKeyRepoSize :: Key -> Maybe RepoSize -> Maybe RepoSize
-removeKeyRepoSize k mrs = case mrs of
-	Just (RepoSize sz) -> Just $ RepoSize $ sz - ksz
-	Nothing -> Nothing
-  where
-	ksz = fromMaybe 0 $ fromKey keySize k

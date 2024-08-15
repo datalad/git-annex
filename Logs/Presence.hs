@@ -49,8 +49,10 @@ addLog' ru file logstatus loginfo c =
 {- When a LogLine already exists with the same status and info, but an
  - older timestamp, that LogLine is preserved, rather than updating the log
  - with a newer timestamp.
+ -
+ - Returns True when the log was changed.
  -}
-maybeAddLog :: Annex.Branch.RegardingUUID -> RawFilePath -> LogStatus -> LogInfo -> Annex ()
+maybeAddLog :: Annex.Branch.RegardingUUID -> RawFilePath -> LogStatus -> LogInfo -> Annex Bool
 maybeAddLog ru file logstatus loginfo = do
 	c <- currentVectorClock
 	Annex.Branch.maybeChange ru file $ \b ->

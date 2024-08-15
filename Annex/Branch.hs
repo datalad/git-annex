@@ -410,15 +410,21 @@ getRef ref file = withIndex $ catFile ref file
 change :: Journalable content => RegardingUUID -> RawFilePath -> (L.ByteString -> content) -> Annex ()
 change ru file f = lockJournal $ \jl -> f <$> getToChange ru file >>= set jl ru file
 
-{- Applies a function which can modify the content of a file, or not. -}
-maybeChange :: Journalable content => RegardingUUID -> RawFilePath -> (L.ByteString -> Maybe content) -> Annex ()
+{- Applies a function which can modify the content of a file, or not.
+ -
+ - Returns True when the file was modified. -}
+maybeChange :: Journalable content => RegardingUUID -> RawFilePath -> (L.ByteString -> Maybe content) -> Annex Bool
 maybeChange ru file f = lockJournal $ \jl -> do
 	v <- getToChange ru file
 	case f v of
 		Just jv ->
 			let b = journalableByteString jv
-			in when (v /= b) $ set jl ru file b
-		_ -> noop
+			in if v /= b
+				then do
+					set jl ru file b
+					return True
+				else return False
+		_ -> return False
 
 data ChangeOrAppend t = Change t | Append t
 

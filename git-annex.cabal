@@ -575,6 +575,7 @@ Executable git-annex
     Annex.ReplaceFile
     Annex.RemoteTrackingBranch
     Annex.RepoSize
+    Annex.RepoSize.LiveUpdate
     Annex.SafeDropProof
     Annex.SpecialRemote
     Annex.SpecialRemote.Config

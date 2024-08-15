@@ -40,6 +40,7 @@ module Logs.Location (
 import Annex.Common
 import qualified Annex.Branch
 import Annex.Branch (FileContents)
+import Annex.RepoSize.LiveUpdate
 import Logs
 import Logs.Presence
 import Types.Cluster
@@ -81,11 +82,13 @@ logChange key u@(UUID _) s
 	| isClusterUUID u = noop
 	| otherwise = do
 		config <- Annex.getGitConfig
-		maybeAddLog
+		changed <- maybeAddLog
 			(Annex.Branch.RegardingUUID [u])
 			(locationLogFile config key)
 			s
 			(LogInfo (fromUUID u))
+		when changed $
+			updateRepoSize u key s
 logChange _ NoUUID _ = noop
 
 {- Returns a list of repository UUIDs that, according to the log, have
@@ -162,14 +165,15 @@ setDead key = do
 	ls <- compactLog <$> readLog logfile
 	mapM_ (go logfile) (filter (\l -> status l == InfoMissing) ls)
   where
-	go logfile l = 
+	go logfile l = do
 		let u = toUUID (fromLogInfo (info l))
 		    c = case date l of
 			VectorClock v -> CandidateVectorClock $
 				v + realToFrac (picosecondsToDiffTime 1)
 			Unknown -> CandidateVectorClock 0
-		in addLog' (Annex.Branch.RegardingUUID [u]) logfile InfoDead
+		addLog' (Annex.Branch.RegardingUUID [u]) logfile InfoDead
 			(info l) c
+		updateRepoSize u key InfoDead
 
 data Unchecked a = Unchecked (Annex (Maybe a))
 
