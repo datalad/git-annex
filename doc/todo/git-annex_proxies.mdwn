@@ -55,8 +55,6 @@ Planned schedule of work:
 
   * Goal is for limitFullyBalanced not to need to calcRepoSizes.
 
-  * Add git-annex branch sha to Database.RepoSizes.
-  
   * When Annex.reposizes does not list the size of a UUID, and 
     that UUID's size is needed eg for balanced preferred
     content, use calcRepoSizes and store in 

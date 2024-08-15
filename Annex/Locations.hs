@@ -76,6 +76,7 @@ module Annex.Locations (
 	gitAnnexImportFeedDbDir,
 	gitAnnexImportFeedDbLock,
 	gitAnnexRepoSizeDbDir,
+	gitAnnexRepoSizeDbLock,
 	gitAnnexScheduleState,
 	gitAnnexTransferDir,
 	gitAnnexCredsDir,
@@ -520,6 +521,10 @@ gitAnnexImportFeedDbLock r c = gitAnnexImportFeedDbDir r c <> ".lck"
 gitAnnexRepoSizeDbDir :: Git.Repo -> GitConfig -> RawFilePath
 gitAnnexRepoSizeDbDir r c =
 	fromMaybe (gitAnnexDir r) (annexDbDir c) P.</> "reposize"
+
+{- Lock file for the reposize database. -}
+gitAnnexRepoSizeDbLock :: Git.Repo -> GitConfig -> RawFilePath
+gitAnnexRepoSizeDbLock r c = gitAnnexRepoSizeDbDir r c <> ".lck"
 
 {- .git/annex/schedulestate is used to store information about when
  - scheduled jobs were last run. -}
