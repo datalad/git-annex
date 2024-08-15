@@ -5,16 +5,51 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-module Annex.RepoSize where
+module Annex.RepoSize (
+	getRepoSizes,
+) where
 
 import Annex.Common
-import Annex.Branch (UnmergedBranches(..))
+import qualified Annex
+import Annex.Branch (UnmergedBranches(..), getBranch)
 import Types.RepoSize
+import qualified Database.RepoSize as Db
 import Logs.Location
 import Logs.UUID
 import Git.Types (Sha)
 
 import qualified Data.Map.Strict as M
+
+{- Gets the repo size map. Cached for speed. -}
+getRepoSizes :: Annex (M.Map UUID RepoSize)
+getRepoSizes = maybe updateRepoSizes return =<< Annex.getState Annex.reposizes
+
+{- Updates Annex.reposizes with current information from the git-annex
+ - branch, supplimented with journalled but not yet committed information.
+ -}
+updateRepoSizes :: Annex (M.Map UUID RepoSize)
+updateRepoSizes = bracket Db.openDb Db.closeDb $ \h -> do
+	(oldsizemap, moldbranchsha) <- liftIO $ Db.getRepoSizes h
+	case moldbranchsha of
+		Nothing -> calculatefromscratch h >>= set
+		Just oldbranchsha -> do
+			currbranchsha <- getBranch
+			if oldbranchsha == currbranchsha
+				then journalledRepoSizes oldsizemap oldbranchsha
+					>>= set
+				else do
+					-- XXX todo incremental update by diffing
+					-- from old to new branch.
+					calculatefromscratch h >>= set
+  where
+	calculatefromscratch h = do
+		(sizemap, branchsha) <- calcBranchRepoSizes
+		liftIO $ Db.setRepoSizes h sizemap branchsha
+		journalledRepoSizes sizemap branchsha
+	set sizemap = do
+		Annex.changeState $ \st -> st
+			{ Annex.reposizes = Just sizemap }
+		return sizemap
 
 {- Sum up the sizes of all keys in all repositories, from the information
  - in the git-annex branch, but not the journal. Retuns the sha of the

@@ -30,6 +30,23 @@ Planned schedule of work:
 
 ## work notes
 
+* Implement [[track_free_space_in_repos_via_git-annex_branch]]:
+
+  * Update Annex.reposizes in Logs.Location.logChange,
+    when it makes a change and when Annex.reposizes has a size
+    for the UUID. So Annex.reposizes is kept up-to-date
+    for each transfer and drop.
+
+  * When calling journalledRepoSizes make sure that the current
+    process is prevented from making changes to the journal in another
+    thread. Probably lock the journal? (No need to worry about changes made
+    by other processes; Annex.reposizes does not need to be kept current
+    with what other processes might be doing.)
+
+  * updateRepoSizes incrementally when the git-annex branch sha in the
+    database is older than the current git-annex branch. Diff from old to
+    new branch to efficiently update.
+
 * `fullybalanced=foo:2` can get stuck in suboptimal situations. Eg,
   when 2 out of 3 repositories are full, and the 3rd is mostly empty,
   it is no longer possible to add new files to 2 repositories.
@@ -45,52 +62,13 @@ Planned schedule of work:
   Also note that "fullybalanced=foo:2" is not currently actually
   implemented!
 
-* implement size-based balancing, so all balanced repositories are around
-  the same percent full, either as the default or as another preferred
-  content expression.
+* Make `git-annex info` use Annex.reposizes.
 
 * `git-annex info` can use maxsize to display how full repositories are
 
-* Implement [[track_free_space_in_repos_via_git-annex_branch]]:
-
-  * Goal is for limitFullyBalanced not to need to calcRepoSizes.
-
-  * When Annex.reposizes does not list the size of a UUID, and 
-    that UUID's size is needed eg for balanced preferred
-    content, use calcRepoSizes and store in 
-    Database.RepoSizes.
-
-  * Load Annex.reposizes from Database.RepoSizes on demand,
-    supplimenting with journalledRepoSizes.
-  
-  * Update Annex.reposizes in Logs.Location.logChange,
-    when it makes a change and when Annex.reposizes has a size
-    for the UUID. So Annex.reposizes is kept up-to-date
-    for each transfer and drop.
-
-  * When calling journalledRepoSizes make sure that the current
-    process is prevented from making changes to the journal in another
-    thread. Probably lock the journal? (No need to worry about changes made
-    by other processes; Annex.reposizes does not need to be kept current
-    with what other processes might be doing.)
-
-  * Update Database.RepoSizes incrementally during merge of
-    git-annex branch, and after commit of git-annex branch.
-    (Also update Annex.reposizes)
-
-    (Annex.reposizes can be updated to the resulting values as well.)
-
-  * Perhaps: setRepoSize to 0 when initializing a new repo or a
-    new special remote (but not when reinitializing),
-    and also update Annex.reposizes for that uuid.
-  
-    Whether it makes sense to do this will depend on how expensive
-    it is to update Database.RepoSize on git-annex branch merge and commit.
-    If it is not expensive, will want to track reposizes from the beginning
-    whenever possible, to avoid a later expensive read of the git-annex
-    branch to calculate the reposizes.
-
-* Make `git-annex info` use Annex.reposizes.
+* implement size-based balancing, so all balanced repositories are around
+  the same percent full, either as the default or as another preferred
+  content expression.
 
 ## completed items for August's work on balanced preferred content
 
