@@ -39,6 +39,10 @@ Planned schedule of work:
     Note ideas in above todo about doing this at git-annex branch merge
     time to reuse the git diff done there.
 
+  * Annex.reposizes is not shared amoung threads, so duplicate work
+    to populate it, and threads won't learn about changes made by other
+    threads.
+
   * What if 2 concurrent threads are considering sending two different
     keys to a repo at the same time. It can hold either but not both.
     It should avoid sending both in this situation. (Also discussed in
@@ -57,10 +61,22 @@ Planned schedule of work:
     the provisional update was made until that is called.... But what if it
     is never called for some reason?
 
+    Also, in a race between two threads at the checking preferred content
+    stage, neither would have started sending yet, and so both would think
+    it was ok for them to.
+
     This race only really matters when the repo becomes full,
     then the second thread will fail to send because it's full. Or will
     send more than the configured maxsize. Still this would be good to
     fix.
+
+  * If all the above thread concurrency problems are fixed, separate
+    processes will still have concurrency problems. One case where that is
+    bad is a cluster accessed via ssh. Each connection to the cluster is
+    a separate process. So each will be unaware of changes made by others.
+    When `git-annex copy --to cluster -Jn` is used, this makes a single
+    command behave non-ideally, the same as the thread concurrency
+    problems.
 
 * `fullybalanced=foo:2` can get stuck in suboptimal situations. Eg,
   when 2 out of 3 repositories are full, and the 3rd is mostly empty,
