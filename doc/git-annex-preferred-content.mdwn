@@ -294,6 +294,14 @@ elsewhere to allow removing it).
   expression, which will make repositories want to move files around as
   necessary in order to get fully balanced.
 
+  Using this in a perferred content expression makes git-annex need to do
+  some additional work to keep track of how full repositories are. Usually
+  that won't affect performance much. However, the first time git-annex
+  processes this in a given git repository, it will need to examine
+  all the locations of all files, which can be slow when there are a lot of
+  them. When this causes git-annex to do a lot of work, it will
+  display "(calculating repository sizes)".
+
   Note that `not balanced` is a bad thing to put in a preferred content
   expression for the same reason `not present` is.
 

@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Annex.RepoSize (
 	getRepoSizes,
 ) where
@@ -43,6 +45,7 @@ updateRepoSizes = bracket Db.openDb Db.closeDb $ \h -> do
 					calculatefromscratch h >>= set
   where
 	calculatefromscratch h = do
+		showSideAction "calculating repository sizes"
 		(sizemap, branchsha) <- calcBranchRepoSizes
 		liftIO $ Db.setRepoSizes h sizemap branchsha
 		journalledRepoSizes sizemap branchsha
