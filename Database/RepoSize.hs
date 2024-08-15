@@ -30,7 +30,7 @@ import Annex.Common
 import Annex.LockFile
 import Types.RepoSize
 import Git.Types
-import qualified Database.Queue as H
+import qualified Database.Handle as H
 import Database.Init
 import Database.Utility
 import Database.Types
@@ -41,7 +41,7 @@ import Database.Persist.TH
 import qualified System.FilePath.ByteString as P
 import qualified Data.Map as M
 
-newtype RepoSizeHandle = RepoSizeHandle (Maybe H.DbQueue)
+newtype RepoSizeHandle = RepoSizeHandle (Maybe H.DbHandle)
 
 share [mkPersist sqlSettings, mkMigrate "migrateRepoSizes"] [persistLowerCase|
 -- Corresponds to location log information from the git-annex branch.
@@ -72,7 +72,7 @@ openDb = do
 		unlessM (liftIO $ R.doesPathExist db) $ do
 			initDb db $ void $
 				runMigrationSilent migrateRepoSizes
-		h <- liftIO $ H.openDbQueue db "repo_sizes"
+		h <- liftIO $ H.openDb db "repo_sizes"
 		return $ RepoSizeHandle (Just h)
   where
 	-- If permissions don't allow opening the database,
@@ -83,11 +83,11 @@ openDb = do
 	permerr _e = return (RepoSizeHandle Nothing)
 
 closeDb :: RepoSizeHandle -> Annex ()
-closeDb (RepoSizeHandle (Just h)) = liftIO $ H.closeDbQueue h
+closeDb (RepoSizeHandle (Just h)) = liftIO $ H.closeDb h
 closeDb (RepoSizeHandle Nothing) = noop
 
 getRepoSizes :: RepoSizeHandle -> IO (M.Map UUID RepoSize, Maybe Sha)
-getRepoSizes (RepoSizeHandle (Just h)) = H.queryDbQueue h $ do
+getRepoSizes (RepoSizeHandle (Just h)) = H.queryDb h $ do
 	sizemap <- M.fromList . map conv <$> getRepoSizes'
 	annexbranchsha <- getAnnexBranchCommit
 	return (sizemap, annexbranchsha)
@@ -119,7 +119,7 @@ getAnnexBranchCommit = do
  -}
 setRepoSizes :: RepoSizeHandle -> M.Map UUID RepoSize -> Sha -> IO ()
 setRepoSizes (RepoSizeHandle (Just h)) sizemap branchcommitsha = 
-	H.queueDb h commitimmediately $ do
+	H.commitDb h $ do
 		l <- getRepoSizes' 
 		forM_ (map entityVal l) $ \(RepoSizes u _) ->
 			unless (M.member u sizemap) $
@@ -127,8 +127,6 @@ setRepoSizes (RepoSizeHandle (Just h)) sizemap branchcommitsha =
 		forM_ (M.toList sizemap) $
 			uncurry setRepoSize
 		recordAnnexBranchCommit branchcommitsha
-  where
-	commitimmediately _ _ = pure True
 setRepoSizes (RepoSizeHandle Nothing) _ _ = noop
 
 setRepoSize :: UUID -> RepoSize -> SqlPersistM ()
