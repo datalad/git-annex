@@ -36,6 +36,14 @@ Planned schedule of work:
     database is older than the current git-annex branch. Diff from old to
     new branch to efficiently update.
 
+    Note ideas in above todo about doing this at git-annex branch merge
+    time to reuse the git diff done there.
+
+  * What if 2 concurrent threads are considering sending two different
+    keys to a repo at the same time. It can hold either but not both.
+    It should avoid sending both in this situation. (Also discussed in
+    above todo)
+
 * `fullybalanced=foo:2` can get stuck in suboptimal situations. Eg,
   when 2 out of 3 repositories are full, and the 3rd is mostly empty,
   it is no longer possible to add new files to 2 repositories.
