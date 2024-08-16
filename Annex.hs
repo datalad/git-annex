@@ -132,6 +132,7 @@ data AnnexRead = AnnexRead
 	, forcenumcopies :: Maybe NumCopies
 	, forcemincopies :: Maybe MinCopies
 	, forcebackend :: Maybe String
+	, reposizes :: MVar (Maybe (M.Map UUID RepoSize))
 	, rebalance :: Bool
 	, useragent :: Maybe String
 	, desktopnotify :: DesktopNotify
@@ -149,6 +150,7 @@ newAnnexRead c = do
 	tp <- newTransferrerPool
 	cm <- newTMVarIO M.empty
 	cc <- newTMVarIO (CredentialCache M.empty)
+	rs <- newMVar Nothing
 	return $ AnnexRead
 		{ branchstate = bs
 		, activekeys = emptyactivekeys
@@ -166,6 +168,7 @@ newAnnexRead c = do
 		, forcebackend = Nothing
 		, forcenumcopies = Nothing
 		, forcemincopies = Nothing
+		, reposizes = rs
 		, rebalance = False
 		, useragent = Nothing
 		, desktopnotify = mempty
@@ -202,7 +205,6 @@ data AnnexState = AnnexState
 	, remoteconfigmap :: Maybe (M.Map UUID RemoteConfig)
 	, clusters :: Maybe (Annex Clusters)
 	, maxsizes :: Maybe (M.Map UUID MaxSize)
-	, reposizes :: Maybe (M.Map UUID RepoSize)
 	, forcetrust :: TrustMap
 	, trustmap :: Maybe TrustMap
 	, groupmap :: Maybe GroupMap
@@ -258,7 +260,6 @@ newAnnexState c r = do
 		, remoteconfigmap = Nothing
 		, clusters = Nothing
 		, maxsizes = Nothing
-		, reposizes = Nothing
 		, forcetrust = M.empty
 		, trustmap = Nothing
 		, groupmap = Nothing

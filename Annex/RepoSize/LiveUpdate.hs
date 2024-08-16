@@ -14,17 +14,19 @@ import qualified Annex
 import Types.RepoSize
 import Logs.Presence.Pure
 
+import Control.Concurrent
 import qualified Data.Map.Strict as M
 
 updateRepoSize :: UUID -> Key -> LogStatus -> Annex ()
-updateRepoSize u k s = Annex.getState Annex.reposizes >>= \case
-	Nothing -> noop
-	Just sizemap -> do
-		let !sizemap' = M.adjust 
-			(fromMaybe (RepoSize 0) . f k . Just)
-			u sizemap
-		Annex.changeState $ \st -> st
-			{ Annex.reposizes = Just sizemap' }
+updateRepoSize u k s = do
+	rsv <- Annex.getRead Annex.reposizes
+	liftIO (takeMVar rsv) >>= \case
+		Nothing -> liftIO (putMVar rsv Nothing)
+		Just sizemap -> do
+			let !sizemap' = M.adjust 
+				(fromMaybe (RepoSize 0) . f k . Just)
+				u sizemap
+			liftIO $ putMVar rsv (Just sizemap')
   where
 	f = case s of
 		InfoPresent -> addKeyRepoSize

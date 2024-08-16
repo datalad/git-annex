@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, BangPatterns #-}
 
 module Annex.RepoSize (
 	getRepoSizes,
@@ -15,43 +15,60 @@ import Annex.Common
 import Annex.RepoSize.LiveUpdate
 import qualified Annex
 import Annex.Branch (UnmergedBranches(..), getBranch)
-import Annex.Journal (lockJournal)
 import Types.RepoSize
 import qualified Database.RepoSize as Db
 import Logs.Location
 import Logs.UUID
 import Git.Types (Sha)
 
+import Control.Concurrent
 import qualified Data.Map.Strict as M
 
 {- Gets the repo size map. Cached for speed. -}
 getRepoSizes :: Annex (M.Map UUID RepoSize)
-getRepoSizes = maybe calcRepoSizes return =<< Annex.getState Annex.reposizes
+getRepoSizes = do
+	rsv <- Annex.getRead Annex.reposizes
+	liftIO (takeMVar rsv) >>= \case
+		Just sizemap -> do
+			liftIO $ putMVar rsv (Just sizemap)
+			return sizemap
+		Nothing -> calcRepoSizes rsv
 
-{- Sets Annex.reposizes with current information from the git-annex
- - branch, supplimented with journalled but not yet committed information.
- -
- - This should only be called when Annex.reposizes = Nothing.
+{- Fills an empty Annex.reposizes MVar with current information
+ - from the git-annex branch, supplimented with journalled but
+ - not yet committed information.
  -}
-calcRepoSizes :: Annex (M.Map UUID RepoSize)
-calcRepoSizes = bracket Db.openDb Db.closeDb $ \h -> do
-	(oldsizemap, moldbranchsha) <- liftIO $ Db.getRepoSizes h
-	case moldbranchsha of
-		Nothing -> calculatefromscratch h
-		Just oldbranchsha -> do
-			currbranchsha <- getBranch
-			if oldbranchsha == currbranchsha
-				then calcJournalledRepoSizes oldsizemap oldbranchsha
-				else do
-					-- XXX todo incremental update by diffing
-					-- from old to new branch.
-					calculatefromscratch h
+calcRepoSizes :: MVar (Maybe (M.Map UUID RepoSize)) -> Annex (M.Map UUID RepoSize)
+calcRepoSizes rsv = bracket setup cleanup $ \h -> go h `onException` failed
   where
+	go h = do
+		(oldsizemap, moldbranchsha) <- liftIO $ Db.getRepoSizes h
+		!sizemap <- case moldbranchsha of
+			Nothing -> calculatefromscratch h
+			Just oldbranchsha -> do
+				currbranchsha <- getBranch
+				if oldbranchsha == currbranchsha
+					then calcJournalledRepoSizes oldsizemap oldbranchsha
+					else do
+						-- XXX todo incremental update by diffing
+						-- from old to new branch.
+						calculatefromscratch h
+		liftIO $ putMVar rsv (Just sizemap)
+		return sizemap
+	
 	calculatefromscratch h = do
 		showSideAction "calculating repository sizes"
 		(sizemap, branchsha) <- calcBranchRepoSizes
 		liftIO $ Db.setRepoSizes h sizemap branchsha
 		calcJournalledRepoSizes sizemap branchsha
+	
+	setup = Db.openDb
+
+	cleanup = Db.closeDb
+
+	failed = do
+		liftIO $ putMVar rsv (Just M.empty)
+		return M.empty
 
 {- Sum up the sizes of all keys in all repositories, from the information
  - in the git-annex branch, but not the journal. Retuns the sha of the
@@ -77,19 +94,13 @@ calcBranchRepoSizes = do
 
 {- Given the RepoSizes calculated from the git-annex branch, updates it with
  - data from journalled location logs.
- - 
- - This should only be called when Annex.reposizes = Nothing.
   -}
-calcJournalledRepoSizes :: M.Map UUID RepoSize -> Sha -> Annex (M.Map UUID RepoSize)
-calcJournalledRepoSizes startmap branchsha = lockJournal $ \_jl -> do
-	sizemap <- overLocationLogsJournal startmap branchsha accumsizes
-	-- Set while the journal is still locked. Since Annex.reposizes
-	-- was Nothing until this point, any other thread that might be
-	-- journalling a location log change at the same time will
-	-- be blocked from running updateRepoSize concurrently with this.
-	Annex.changeState $ \st -> st
-			{ Annex.reposizes = Just sizemap }
-	return sizemap
+calcJournalledRepoSizes
+	:: M.Map UUID RepoSize
+	-> Sha 
+	-> Annex (M.Map UUID RepoSize)
+calcJournalledRepoSizes startmap branchsha =
+	overLocationLogsJournal startmap branchsha accumsizes
   where
 	accumsizes k (newlocs, removedlocs) m = return $
 		let m' = foldl' (flip $ M.alter $ addKeyRepoSize k) m newlocs

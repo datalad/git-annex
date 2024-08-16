@@ -39,10 +39,6 @@ Planned schedule of work:
     Note ideas in above todo about doing this at git-annex branch merge
     time to reuse the git diff done there.
 
-  * Annex.reposizes is not shared amoung threads, so duplicate work
-    to populate it, and threads won't learn about changes made by other
-    threads.
-
   * What if 2 concurrent threads are considering sending two different
     keys to a repo at the same time. It can hold either but not both.
     It should avoid sending both in this situation. (Also discussed in
