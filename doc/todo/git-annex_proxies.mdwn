@@ -81,8 +81,6 @@ Planned schedule of work:
   Also note that "fullybalanced=foo:2" is not currently actually
   implemented!
 
-* Make `git-annex info` use Annex.reposizes.
-
 * `git-annex info` can use maxsize to display how full repositories are
 
 * implement size-based balancing, so all balanced repositories are around

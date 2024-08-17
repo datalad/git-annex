@@ -1,16 +1,18 @@
 {- git-annex command
  -
- - Copyright 2011-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE BangPatterns, DeriveDataTypeable, PackageImports, OverloadedStrings #-}
+{-# LANGUAGE BangPatterns, DeriveDataTypeable, PackageImports #-}
+{-# LANGUAGE OverloadedStrings, FlexibleContexts #-}
 
 module Command.Info where
 
 import "mtl" Control.Monad.State.Strict
 import qualified Data.Map.Strict as M
+import qualified Data.Set as S
 import qualified Data.Vector as V
 import qualified System.FilePath.ByteString as P
 import System.PosixCompat.Files (isDirectory)
@@ -33,7 +35,7 @@ import Annex.WorkTree
 import Logs.UUID
 import Logs.Trust
 import Logs.Location
-import Annex.Branch (UnmergedBranches(..))
+import Annex.Branch (UnmergedBranches(..), getUnmergedRefs)
 import Annex.NumCopies
 import Git.Config (boolConfig)
 import qualified Git.LsTree as LsTree
@@ -48,6 +50,8 @@ import Types.Availability
 import qualified Limit
 import Messages.JSON (DualDisp(..), ObjectMap(..))
 import Annex.BloomFilter
+import Annex.RepoSize
+import Types.RepoSize
 import qualified Command.Unused
 import qualified Utility.RawFilePath as R
 
@@ -640,27 +644,50 @@ cachedAllRepoData = do
 	case allRepoData s of
 		Just _ -> return s
 		Nothing -> do
-			matcher <- lift getKeyOnlyMatcher
-			r <- lift $ overLocationLogs False False (emptyKeyInfo, mempty) $ \k locs (d, rd) -> do
-				ifM (matchOnKey matcher k)
-					( do
-						alivelocs <- snd
-							<$> trustPartition DeadTrusted locs
-						let !d' = addKeyCopies (genericLength alivelocs) k d
-						let !rd' = foldl' (flip (accumrepodata k)) rd alivelocs
-						return (d', rd')
-					, return (d, rd)
-					)
-			case r of
-				NoUnmergedBranches (!(d, rd), _) -> do
-					let s' = s { allRepoData = Just d, repoData = rd }
-					put s'
-					return s'
-				UnmergedBranches _ -> do
-					lift $ warning "This repository is read-only, and there are unmerged git-annex branches. Information from those branches is not included here."
-					return s
+			s' <- ifM (lift Limit.limited)
+				( limitedcalc s
+				, usereposizes s
+				)
+			put s'
+			return s'
   where
+ 	usereposizes s = do
+		sizemap <- lift $ getRepoSizes True
+		deadset <- lift $ S.fromList <$> trustGet DeadTrusted
+		let sizemap' = M.withoutKeys sizemap deadset
+		lift $ unlessM (null <$> getUnmergedRefs)
+			warnunmerged
+		return $ s
+			{ allRepoData = Just $
+				convsize (sum (M.elems sizemap'))
+			, repoData = M.map convsize sizemap'
+			}
+	
+	limitedcalc s = do
+		matcher <- lift getKeyOnlyMatcher
+		r <- lift $ overLocationLogs False False (emptyKeyInfo, mempty) $ \k locs (d, rd) -> do
+			ifM (matchOnKey matcher k)
+				( do
+					alivelocs <- snd
+						<$> trustPartition DeadTrusted locs
+					let !d' = addKeyCopies (genericLength alivelocs) k d
+					let !rd' = foldl' (flip (accumrepodata k)) rd alivelocs
+					return (d', rd')
+				, return (d, rd)
+				)
+		(!(d, rd), _) <- case r of
+			NoUnmergedBranches v ->
+				return v
+			UnmergedBranches v -> do
+				lift warnunmerged
+				return v
+		return $ s { allRepoData = Just d, repoData = rd }
+
 	accumrepodata k = M.alter (Just . addKey k . fromMaybe emptyKeyInfo)
+
+	convsize (RepoSize sz) = emptyKeyInfo { sizeKeys = sz }
+	
+	warnunmerged = warning "There are unmerged git-annex branches. Information from those branches is not included here."
 
 cachedNumCopiesStats :: StatState (Maybe NumCopiesStats)
 cachedNumCopiesStats = numCopiesStats <$> get

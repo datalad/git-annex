@@ -23,6 +23,7 @@ git-annex (10.20240831) UNRELEASED; urgency=medium
   * maxsize: New command to tell git-annex how large the expected maximum
     size of a repository is.
   * vicfg: Include maxsize configuration.
+  * info: Improved speed.
 
  -- Joey Hess <id@joeyh.name>  Wed, 31 Jul 2024 15:52:03 -0400
 

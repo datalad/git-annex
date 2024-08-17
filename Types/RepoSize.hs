@@ -5,11 +5,13 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+
 module Types.RepoSize where
 
 -- The current size of a repo.
 newtype RepoSize = RepoSize Integer
-	deriving (Show, Eq, Ord)
+	deriving (Show, Eq, Ord, Num)
 
 -- The maximum size of a repo.
 newtype MaxSize = MaxSize Integer

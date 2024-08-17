@@ -31,21 +31,21 @@ import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 
 {- Gets the repo size map. Cached for speed. -}
-getRepoSizes :: Annex (M.Map UUID RepoSize)
-getRepoSizes = do
+getRepoSizes :: Bool -> Annex (M.Map UUID RepoSize)
+getRepoSizes quiet = do
 	rsv <- Annex.getRead Annex.reposizes
 	liftIO (takeMVar rsv) >>= \case
 		Just sizemap -> do
 			liftIO $ putMVar rsv (Just sizemap)
 			return sizemap
-		Nothing -> calcRepoSizes rsv
+		Nothing -> calcRepoSizes quiet rsv
 
 {- Fills an empty Annex.reposizes MVar with current information
  - from the git-annex branch, supplimented with journalled but
  - not yet committed information.
  -}
-calcRepoSizes :: MVar (Maybe (M.Map UUID RepoSize)) -> Annex (M.Map UUID RepoSize)
-calcRepoSizes rsv = bracket setup cleanup $ \h -> go h `onException` failed
+calcRepoSizes :: Bool -> MVar (Maybe (M.Map UUID RepoSize)) -> Annex (M.Map UUID RepoSize)
+calcRepoSizes quiet rsv = bracket setup cleanup $ \h -> go h `onException` failed
   where
 	go h = do
 		(oldsizemap, moldbranchsha) <- liftIO $ Db.getRepoSizes h
@@ -60,13 +60,14 @@ calcRepoSizes rsv = bracket setup cleanup $ \h -> go h `onException` failed
 		return sizemap
 	
 	calculatefromscratch h = do
-		showSideAction "calculating repository sizes"
+		unless quiet $
+			showSideAction "calculating repository sizes"
 		(sizemap, branchsha) <- calcBranchRepoSizes
 		liftIO $ Db.setRepoSizes h sizemap branchsha
 		calcJournalledRepoSizes sizemap branchsha
 	
 	incrementalupdate h oldsizemap oldbranchsha currbranchsha = do
-		(sizemap, branchsha) <- diffBranchRepoSizes oldsizemap oldbranchsha currbranchsha
+		(sizemap, branchsha) <- diffBranchRepoSizes quiet oldsizemap oldbranchsha currbranchsha
 		liftIO $ Db.setRepoSizes h sizemap branchsha
 		calcJournalledRepoSizes sizemap branchsha
 
@@ -113,8 +114,8 @@ calcJournalledRepoSizes startmap branchsha =
 		Nothing
 
 {- Incremental update by diffing. -}
-diffBranchRepoSizes :: M.Map UUID RepoSize -> Sha -> Sha -> Annex (M.Map UUID RepoSize, Sha)
-diffBranchRepoSizes oldsizemap oldbranchsha newbranchsha = do
+diffBranchRepoSizes :: Bool -> M.Map UUID RepoSize -> Sha -> Sha -> Annex (M.Map UUID RepoSize, Sha)
+diffBranchRepoSizes quiet oldsizemap oldbranchsha newbranchsha = do
 	g <- Annex.gitRepo
 	catObjectStream g $ \feeder closer reader -> do
 		(l, cleanup) <- inRepo $
@@ -148,8 +149,10 @@ diffBranchRepoSizes oldsizemap oldbranchsha newbranchsha = do
 			    removedlocs = S.difference prevlog currlog
 			    !sizemap' = accumRepoSizes k (newlocs, removedlocs) sizemap
 			in do
-				n' <- countdownToMessage n $
-					showSideAction "calculating repository sizes"
+				n' <- if quiet
+					then pure n
+					else countdownToMessage n $
+						showSideAction "calculating repository sizes"
 				readpairs n' reader sizemap' Nothing
 		Nothing -> return sizemap
 	parselog = maybe mempty (S.fromList . parseLoggedLocationsWithoutClusters)
