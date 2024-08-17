@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="Spencer"
+ avatar="http://cdn.libravatar.org/avatar/2e0829f36a68480155e09d0883794a55"
+ subject="Remote Helper?"
+ date="2024-08-17T05:33:01Z"
+ content="""
+Homebrew doesn't seem to install the remote helper (`git remote-annex` is not a known command).
+
+Building from source doesn't work because brew installs base>4.20 which is incompatible with filepath-bytestring. Since homebrew is against backward compatibility I presume changing base version by installing a different ghc is out of the question.
+
+Maybe there's a way to do this with sandboxes? I'm not familiar with haskell, can anyone update the build recipe on how to build git-annex on MacOS (Apple silicon)? As I understand it one would need:
+
+1. `brew install ghc cabal-install haskell-stack` instead of `haskell-platform`
+1. option `--bindir -> --installdir`
+1. To specify `extra-lib-dirs` and `extra-include-dirs` to `/opt/homebrew/(lib|include)` respectively in cabal config or as additional options
+1. `base` version `< 4.20` must be installed when installing `ghc`
+
+This is where I got stuck because I can't reinstall `base` without understanding sandboxes or installing a different GHC version (I think? This is effectively my first exposure to haskell)
+"""]]
