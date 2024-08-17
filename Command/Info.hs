@@ -654,7 +654,7 @@ cachedAllRepoData = do
  	usereposizes s = do
 		sizemap <- lift $ getRepoSizes True
 		deadset <- lift $ S.fromList <$> trustGet DeadTrusted
-		let sizemap' = M.withoutKeys sizemap deadset
+		let sizemap' = M.filter (> 0) $ M.withoutKeys sizemap deadset
 		lift $ unlessM (null <$> getUnmergedRefs)
 			warnunmerged
 		return $ s

@@ -81,6 +81,11 @@ Planned schedule of work:
   Also note that "fullybalanced=foo:2" is not currently actually
   implemented!
 
+* `git-annex info` in the limitedcalc path in cachedAllRepoData
+  double-counts redundant information from the journal due to using
+  overLocationLogs. In the other path it does not, and this should be fixed
+  for consistency and correctness.
+
 * `git-annex info` can use maxsize to display how full repositories are
 
 * implement size-based balancing, so all balanced repositories are around
