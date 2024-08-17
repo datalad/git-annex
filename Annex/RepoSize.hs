@@ -123,7 +123,7 @@ diffBranchRepoSizes quiet oldsizemap oldbranchsha newbranchsha = do
 		feedtid <- liftIO $ async $ do
 			forM_ l $ feedpairs feeder
 			closer
-		newsizemap <- readpairs 500000 reader oldsizemap Nothing
+		newsizemap <- readpairs 100000 reader oldsizemap Nothing
 		liftIO $ wait feedtid
 		ifM (liftIO cleanup)
 			( return (newsizemap, newbranchsha)
