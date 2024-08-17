@@ -30,19 +30,11 @@ Planned schedule of work:
 
 ## work notes
 
-* Implement [[track_free_space_in_repos_via_git-annex_branch]]:
-
-  * updateRepoSizes incrementally when the git-annex branch sha in the
-    database is older than the current git-annex branch. Diff from old to
-    new branch to efficiently update.
-
-    Note ideas in above todo about doing this at git-annex branch merge
-    time to reuse the git diff done there.
+* Concurrency issues with RepoSizes calculation and balanced content:
 
   * What if 2 concurrent threads are considering sending two different
     keys to a repo at the same time. It can hold either but not both.
-    It should avoid sending both in this situation. (Also discussed in
-    above todo)
+    It should avoid sending both in this situation.
 
   * There can also be a race with 2 concurrent threads where one just
     finished sending to a repo, but has not yet updated the location log. 
@@ -101,6 +93,7 @@ Planned schedule of work:
 
 * Balanced preferred content basic implementation, including --rebalance
   option.
+* Implemented [[track_free_space_in_repos_via_git-annex_branch]]
 
 ## completed items for August's work on git-annex proxy support for exporttre
 

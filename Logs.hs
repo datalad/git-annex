@@ -179,7 +179,10 @@ migrationTreeGraftPoint = "migrate.tree"
 {- The pathname of the location log file for a given key. -}
 locationLogFile :: GitConfig -> Key -> RawFilePath
 locationLogFile config key =
-	branchHashDir config key P.</> keyFile key <> ".log"
+	branchHashDir config key P.</> keyFile key <> locationLogExt
+
+locationLogExt :: S.ByteString
+locationLogExt = ".log"
 
 {- The filename of the url log for a given key. -}
 urlLogFile :: GitConfig -> Key -> RawFilePath

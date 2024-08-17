@@ -476,18 +476,10 @@ reconcileStaged dbisnew qh = ifM isBareRepo
 		dbwriter dbchanged n catreader = liftIO catreader >>= \case
 			Just (ka, content) -> do
 				changed <- ka (parseLinkTargetOrPointerLazy =<< content)
-				!n' <- countdownToMessage n
+				n' <- countdownToMessage n $
+					showSideAction "scanning for annexed files"
 				dbwriter (dbchanged || changed) n' catreader
 			Nothing -> return dbchanged
-
-	-- When the diff is large, the scan can take a while,
-	-- so let the user know what's going on.
-	countdownToMessage n
-		| n < 1 = return 0
-		| n == 1 = do
-			showSideAction "scanning for annexed files"
-			return 0
-		| otherwise = return (pred n)
 
 	-- How large is large? Too large and there will be a long
 	-- delay before the message is shown; too short and the message

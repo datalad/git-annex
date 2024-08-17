@@ -16,6 +16,7 @@ import Logs.Presence.Pure
 
 import Control.Concurrent
 import qualified Data.Map.Strict as M
+import qualified Data.Set as S
 
 updateRepoSize :: UUID -> Key -> LogStatus -> Annex ()
 updateRepoSize u k s = do
@@ -46,3 +47,8 @@ removeKeyRepoSize k mrs = case mrs of
 	Nothing -> Nothing
   where
 	ksz = fromMaybe 0 $ fromKey keySize k
+
+accumRepoSizes :: Key -> (S.Set UUID, S.Set UUID) -> M.Map UUID RepoSize -> M.Map UUID RepoSize
+accumRepoSizes k (newlocs, removedlocs) sizemap = 
+	let !sizemap' = foldl' (flip $ M.alter $ addKeyRepoSize k) sizemap newlocs
+	in foldl' (flip $ M.alter $ removeKeyRepoSize k) sizemap' removedlocs

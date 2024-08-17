@@ -35,6 +35,8 @@ module Logs.Location (
 	overLocationLogs,
 	overLocationLogs',
 	overLocationLogsJournal,
+	parseLoggedLocations,
+	parseLoggedLocationsWithoutClusters,
 ) where
 
 import Annex.Common
@@ -110,7 +112,10 @@ loggedLocationsHistorical = getLoggedLocations . historicalLogInfo
 loggedLocationsRef :: Ref -> Annex [UUID]
 loggedLocationsRef ref = map (toUUID . fromLogInfo) . getLog <$> catObject ref
 
-{- Parses the content of a log file and gets the locations in it. -}
+{- Parses the content of a log file and gets the locations in it.
+ -
+ - Adds the UUIDs of any clusters whose nodes are in the list.
+ -}
 parseLoggedLocations :: Clusters -> L.ByteString -> [UUID]
 parseLoggedLocations clusters =
 	addClusterUUIDs clusters . parseLoggedLocationsWithoutClusters
@@ -127,7 +132,6 @@ getLoggedLocations getter key = do
 	clusters <- getClusters
 	return $ addClusterUUIDs clusters locs
 
--- Add UUIDs of any clusters whose nodes are in the list.
 addClusterUUIDs :: Clusters -> [UUID] -> [UUID]
 addClusterUUIDs clusters locs
 	| M.null clustermap = locs

@@ -1,0 +1,15 @@
+When git-annex merges a remote into the git-annex branch, it uses
+a CatFileHandle, making a query get the contents of each file in the
+diff. It would be faster for it to use catObjectStream. 
+[[!commit d010ab04be5a8d74fe85a2fa27a853784d1f9009]] saw a 2x-16x
+improvement to a similar process.
+
+Also, Database.ContentIdentifier.updateFromLog, 
+Database.ImportFeed.updateFromLog, and Annex.RepoSize.diffBranchRepoSizes
+each do a similar diff and cat-file to update information cached from the
+git-annex branch into a database. (diffBranchRepoSizes does use
+catObjectStream, the others don't.)
+
+It seems like it might be possible to
+make merging the git-annex branch do these updates in passing, and reduce
+the overhead of diff and cat-file 4x. --[[Joey]]

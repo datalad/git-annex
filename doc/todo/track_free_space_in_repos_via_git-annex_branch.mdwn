@@ -92,6 +92,9 @@ merge time. Those are less expensive than diffing the location logs only
 because the logs they diff are less often used, and the work is only 
 done when relevant commands are run.
 
+(Opened [[todo/optimise_git-annex_branch_merge_and_database_updates]]
+about that possibility.)
+
 ## concurrency
 
 Suppose a repository is almost full. Two concurrent threads or processes
@@ -106,3 +109,6 @@ sizeOfDownloadsInProgress. It would be possible to make a
 `sizeOfUploadsInProgressToRemote r` similarly.
 
 [[!tag projects/openneuro]]
+
+> Current status: This is implemented, but concurrency issues remain.
+> --[[Joey]]

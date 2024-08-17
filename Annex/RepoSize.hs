@@ -17,12 +17,18 @@ import qualified Annex
 import Annex.Branch (UnmergedBranches(..), getBranch)
 import Types.RepoSize
 import qualified Database.RepoSize as Db
+import Logs
 import Logs.Location
 import Logs.UUID
 import Git.Types (Sha)
+import Git.FilePath
+import Git.CatFile
+import qualified Git.DiffTree as DiffTree
 
 import Control.Concurrent
+import Control.Concurrent.Async
 import qualified Data.Map.Strict as M
+import qualified Data.Set as S
 
 {- Gets the repo size map. Cached for speed. -}
 getRepoSizes :: Annex (M.Map UUID RepoSize)
@@ -49,10 +55,7 @@ calcRepoSizes rsv = bracket setup cleanup $ \h -> go h `onException` failed
 				currbranchsha <- getBranch
 				if oldbranchsha == currbranchsha
 					then calcJournalledRepoSizes oldsizemap oldbranchsha
-					else do
-						-- XXX todo incremental update by diffing
-						-- from old to new branch.
-						calculatefromscratch h
+					else incrementalupdate h oldsizemap oldbranchsha currbranchsha
 		liftIO $ putMVar rsv (Just sizemap)
 		return sizemap
 	
@@ -62,6 +65,11 @@ calcRepoSizes rsv = bracket setup cleanup $ \h -> go h `onException` failed
 		liftIO $ Db.setRepoSizes h sizemap branchsha
 		calcJournalledRepoSizes sizemap branchsha
 	
+	incrementalupdate h oldsizemap oldbranchsha currbranchsha = do
+		(sizemap, branchsha) <- diffBranchRepoSizes oldsizemap oldbranchsha currbranchsha
+		liftIO $ Db.setRepoSizes h sizemap branchsha
+		calcJournalledRepoSizes sizemap branchsha
+
 	setup = Db.openDb
 
 	cleanup = Db.closeDb
@@ -75,7 +83,7 @@ calcRepoSizes rsv = bracket setup cleanup $ \h -> go h `onException` failed
  - branch commit that was used.
  -
  - The map includes the UUIDs of all known repositories, including
- - repositories that are empty.
+ - repositories that are empty. But clusters are not included.
  -
  - Note that private repositories, which do not get recorded in
  - the git-annex branch, will have 0 size. journalledRepoSizes
@@ -100,8 +108,48 @@ calcJournalledRepoSizes
 	-> Sha 
 	-> Annex (M.Map UUID RepoSize)
 calcJournalledRepoSizes startmap branchsha =
-	overLocationLogsJournal startmap branchsha accumsizes Nothing
+	overLocationLogsJournal startmap branchsha 
+		(\k v m -> pure (accumRepoSizes k v m))
+		Nothing
+
+{- Incremental update by diffing. -}
+diffBranchRepoSizes :: M.Map UUID RepoSize -> Sha -> Sha -> Annex (M.Map UUID RepoSize, Sha)
+diffBranchRepoSizes oldsizemap oldbranchsha newbranchsha = do
+	g <- Annex.gitRepo
+	catObjectStream g $ \feeder closer reader -> do
+		(l, cleanup) <- inRepo $
+			DiffTree.diffTreeRecursive oldbranchsha newbranchsha
+		feedtid <- liftIO $ async $ do
+			forM_ l $ feedpairs feeder
+			closer
+		newsizemap <- readpairs 500000 reader oldsizemap Nothing
+		liftIO $ wait feedtid
+		ifM (liftIO cleanup)
+			( return (newsizemap, newbranchsha)
+			, return (oldsizemap, oldbranchsha)
+			)
   where
-	accumsizes k (newlocs, removedlocs) m = return $
-		let m' = foldl' (flip $ M.alter $ addKeyRepoSize k) m newlocs
-		in foldl' (flip $ M.alter $ removeKeyRepoSize k) m' removedlocs
+	feedpairs feeder ti = 
+		let f = getTopFilePath (DiffTree.file ti)
+		in case extLogFileKey locationLogExt f of
+			Nothing -> noop
+			Just k -> do
+				feeder (k, DiffTree.srcsha ti)
+				feeder (k, DiffTree.dstsha ti)
+
+	readpairs n reader sizemap Nothing = liftIO reader >>= \case
+		Just (_k, oldcontent) -> readpairs n reader sizemap (Just oldcontent)
+		Nothing -> return sizemap
+	readpairs n reader sizemap (Just oldcontent) = liftIO reader >>= \case
+		Just (k, newcontent) ->
+			let prevlog = parselog oldcontent
+			    currlog = parselog newcontent
+			    newlocs = S.difference currlog prevlog
+			    removedlocs = S.difference prevlog currlog
+			    !sizemap' = accumRepoSizes k (newlocs, removedlocs) sizemap
+			in do
+				n' <- countdownToMessage n $
+					showSideAction "calculating repository sizes"
+				readpairs n' reader sizemap' Nothing
+		Nothing -> return sizemap
+	parselog = maybe mempty (S.fromList . parseLoggedLocationsWithoutClusters)

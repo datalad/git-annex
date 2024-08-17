@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE OverloadedStrings, ScopedTypeVariables, CPP #-}
+{-# LANGUAGE OverloadedStrings, ScopedTypeVariables, BangPatterns, CPP #-}
 
 module Messages (
 	showStartMessage,
@@ -54,6 +54,7 @@ module Messages (
 	prompt,
 	mkPrompter,
 	sanitizeTopLevelExceptionMessages,
+	countdownToMessage,
 ) where
 
 import Control.Concurrent
@@ -364,3 +365,17 @@ sanitizeTopLevelExceptionMessages a = a `catches`
 	go e = do
 		hPutStrLn stderr $ safeOutput $ toplevelMsg (show e)
 		exitWith $ ExitFailure 1
+
+{- Used to only run an action that displays a message after the specified
+ - number of steps. This is useful when performing an action that can
+ - sometimes take a long time, but often does not.
+ -}
+countdownToMessage :: Int -> Annex () -> Annex Int
+countdownToMessage n showmsg
+	| n < 1 = return 0
+	| n == 1 = do
+		showmsg
+		return 0
+	| otherwise = do
+		let !n' = pred n
+		return n'
