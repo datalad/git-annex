@@ -112,7 +112,11 @@ loggedLocationsRef ref = map (toUUID . fromLogInfo) . getLog <$> catObject ref
 
 {- Parses the content of a log file and gets the locations in it. -}
 parseLoggedLocations :: Clusters -> L.ByteString -> [UUID]
-parseLoggedLocations clusters l = addClusterUUIDs clusters $
+parseLoggedLocations clusters =
+	addClusterUUIDs clusters . parseLoggedLocationsWithoutClusters
+
+parseLoggedLocationsWithoutClusters :: L.ByteString -> [UUID]
+parseLoggedLocationsWithoutClusters l =
 	map (toUUID . fromLogInfo . info)
 		(filterPresent (parseLog l))
 
@@ -226,23 +230,30 @@ loggedKeysFor' u = loggedKeys' isthere
 {- This is much faster than loggedKeys. -}
 overLocationLogs
 	:: Bool
+	-> Bool
 	-> v
 	-> (Key -> [UUID] -> v -> Annex v)
 	-> Annex (Annex.Branch.UnmergedBranches (v, Sha))
-overLocationLogs ignorejournal v =
-	overLocationLogs' ignorejournal v (flip const)
+overLocationLogs ignorejournal noclusters v =
+	overLocationLogs' ignorejournal noclusters v (flip const)
 
 overLocationLogs'
 	:: Bool
+	-> Bool
 	-> v
 	-> (Annex (FileContents Key Bool) -> Annex v -> Annex v)
         -> (Key -> [UUID] -> v -> Annex v)
         -> Annex (Annex.Branch.UnmergedBranches (v, Sha))
-overLocationLogs' ignorejournal =
+overLocationLogs' ignorejournal noclusters iv discarder keyaction = do
+	mclusters <- if noclusters then pure Nothing else Just <$> getClusters
 	overLocationLogsHelper
 		(Annex.Branch.overBranchFileContents ignorejournal)
 		(\locparser _ _ content -> pure (locparser (fst <$> content)))
 		True
+		iv
+		discarder
+		keyaction
+		mclusters
 
 type LocChanges = 
 	( S.Set UUID
@@ -260,14 +271,16 @@ overLocationLogsJournal
 	:: v
 	-> Sha
 	-> (Key -> LocChanges -> v -> Annex v)
+	-> Maybe Clusters
 	-> Annex v
-overLocationLogsJournal v branchsha keyaction = 
+overLocationLogsJournal v branchsha keyaction mclusters = 
 	overLocationLogsHelper
 		(Annex.Branch.overJournalFileContents handlestale)
 		changedlocs
 		False
 		-- ^ do not precache journalled content, which may be stale
 		v (flip const) keyaction 
+		mclusters
   where
 	handlestale _ journalcontent = return (journalcontent, Just True)
 
@@ -291,12 +304,16 @@ overLocationLogsHelper
 	-> v
 	-> (Annex (FileContents Key b) -> Annex v -> Annex v)
         -> (Key -> u -> v -> Annex v)
+	-> (Maybe Clusters)
         -> Annex a
-overLocationLogsHelper runner locparserrunner canprecache iv discarder keyaction = do
+overLocationLogsHelper runner locparserrunner canprecache iv discarder keyaction mclusters = do
 	config <- Annex.getGitConfig
-	clusters <- getClusters
 
-	let locparser = maybe [] (parseLoggedLocations clusters)
+	let locparser = maybe
+		parseLoggedLocationsWithoutClusters
+		parseLoggedLocations
+		mclusters
+	let locparser' = maybe [] locparser
 	let getk = locationLogFileKey config
 	let go v reader = reader >>= \case
 		Just (k, f, content) -> discarder reader $ do
@@ -307,7 +324,7 @@ overLocationLogsHelper runner locparserrunner canprecache iv discarder keyaction
 			ifM (checkDead k)
 				( go v reader
 				, do
-					!locs <- locparserrunner locparser k f content
+					!locs <- locparserrunner locparser' k f content
 					!v' <- keyaction k locs v
 					go v' reader
 				)

@@ -284,7 +284,7 @@ withKeyOptions' ko auto mkkeyaction fallbackaction worktreeitems = do
 		let discard reader = reader >>= \case
 			Nothing -> noop
 			Just _ -> discard reader
-		overLocationLogs' False ()
+		overLocationLogs' False False ()
 			(\reader cont -> checktimelimit (discard reader) cont) 
 			(\k _ () -> keyaction Nothing (SeekInput [], k, mkActionItem k))
 			>>= \case

@@ -85,7 +85,7 @@ calcBranchRepoSizes :: Annex (M.Map UUID RepoSize, Sha)
 calcBranchRepoSizes = do
 	knownuuids <- M.keys <$> uuidDescMap
 	let startmap = M.fromList $ map (\u -> (u, RepoSize 0)) knownuuids
-	overLocationLogs True startmap accumsizes >>= \case
+	overLocationLogs True True startmap accumsizes >>= \case
 		UnmergedBranches v -> return v
 		NoUnmergedBranches v -> return v
   where
@@ -100,7 +100,7 @@ calcJournalledRepoSizes
 	-> Sha 
 	-> Annex (M.Map UUID RepoSize)
 calcJournalledRepoSizes startmap branchsha =
-	overLocationLogsJournal startmap branchsha accumsizes
+	overLocationLogsJournal startmap branchsha accumsizes Nothing
   where
 	accumsizes k (newlocs, removedlocs) m = return $
 		let m' = foldl' (flip $ M.alter $ addKeyRepoSize k) m newlocs
