@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="xentac"
+ avatar="http://cdn.libravatar.org/avatar/773b6c7b0dc34f10b66aa46d2730a5b3"
+ subject="comment 3"
+ date="2024-08-18T03:17:12Z"
+ content="""
+Thanks! That does seem to have been it.
+
+Do you know if there's a way to only treat some dotfiles as annexed? Like I want .caltrash and .calnotes to be annexed, but maybe not if I create .gitattributes.
+"""]]
