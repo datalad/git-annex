@@ -78,8 +78,9 @@ Planned schedule of work:
   not occur. Users wanting 2 copies can have 2 groups which are each
   balanced, although that would mean more repositories on more drives.
 
-  Also note that "fullybalanced=foo:2" is not currently actually
-  implemented!
+  Size based rebalancing may offer a solution; see design.
+
+* "fullybalanced=foo:2" is not currently actually implemented!
 
 * `git-annex info` in the limitedcalc path in cachedAllRepoData
   double-counts redundant information from the journal due to using

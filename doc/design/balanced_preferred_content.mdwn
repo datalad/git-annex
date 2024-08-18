@@ -58,6 +58,17 @@ If the maximum size of some but not others is known, what then?
 Balancing this way would fall back to the method above when several repos
 are equally good candidates to hold a key.
 
+The problem with size balancing is that in a split brain situation,
+the known sizes are not accurate, and so one repository will end up more
+full than others. Consider, for example, a group of 2 repositories of the
+same size, where one repository is 50% full and the other is 75%. Sending
+files to that group will put them all in the 50% repository until it gets
+to 75%. But if another clone is doing the same thing and sending different
+files, the 50% full repository will end up 100% full.
+
+Rebalancing could fix that, but it seems better generally to use `N mod M`
+balancing amoung the repositories known/believed to have enough free space.
+
 ## stability
 
 Note that this preferred content expression will not be stable. A change in 
@@ -90,10 +101,11 @@ key.
 
 However, once 3 of those 5 repos get full, new keys will only be able to be
 stored on 2 of them. At that point one or more new repos will need to be
-added to reach the goal of each key being stored in 3 of them. It would be
-possible to rebalance the 3 full repos by moving some keys from them to the
-other 2 repos, and eke out more storage before needing to add new
-repositories. A separate rebalancing pass, that does not use preferred
+added to reach the goal of each key being stored in 3 of them. 
+
+It would be possible to rebalance the 3 full repos by moving some keys from
+them to the other 2 repos, and eke out more storage before needing to add
+new repositories. A separate rebalancing pass, that does not use preferred
 content alone, could be implemented to handle this (see below).
 
 ## use case: geographically distinct datacenters
@@ -183,4 +195,20 @@ users who want it, then
 `balanced=group:N == (fullybalanced=group:N and not copies=group:N) or present`
 usually and when --rebalance is used, `balanced=group:N == fullybalanced=group:N)`
 
+In the balanced=group:3 example above, some content needs to be moved from
+the 3 full repos to the 2 less full repos. To handle this,
+fullybalanced=group:N needs to look at how full the repositories in
+the group are. What could be done is make it use size based balancing
+when rebalancing `group:N (>1)
 
+While size based balancing generally has problems as described above with
+split brain, rebalancing is probably run in a single repository, so split
+brain won't be an issue.
+
+Note that size based rebalancing will need to take into account the size
+if the content is moved from one of the repositories that contains it to
+the candidate repository. For example, if one repository is 75% full and
+the other is 60% full, and the annex object in the 75% full repo is 20%
+of the size of the repositories, then it doesn't make sense to make the
+repo that currently contains it not want it any more, because the other
+repo would end up more full.
