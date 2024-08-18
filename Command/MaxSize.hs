@@ -5,21 +5,28 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Command.MaxSize where
 
 import Command
 import qualified Remote
+import Annex.RepoSize
+import Types.RepoSize
 import Logs.MaxSize
-import Utility.SafeOutput
+import Logs.Trust
 import Utility.DataUnits
 
 import qualified Data.Map as M
+import qualified Data.Set as S
+import qualified Data.Text as T
 
 cmd :: Command
-cmd = noMessages $ command "maxsize" SectionSetup
-	"configure maximum size of repositoriy"
-	(paramPair paramRepository (paramOptional paramSize))
-	(seek <$$> optParser)
+cmd = noMessages $ withAnnexOptions [jsonOptions] $ 
+	command "maxsize" SectionSetup
+		"configure maximum size of repositoriy"
+		(paramPair paramRepository (paramOptional paramSize))
+		(seek <$$> optParser)
 
 data MaxSizeOptions = MaxSizeOptions
 	{ cmdparams :: CmdParams
@@ -37,16 +44,17 @@ optParser desc = MaxSizeOptions
 seek :: MaxSizeOptions -> CommandSeek
 seek o = case cmdparams o of
 	(rname:[]) -> commandAction $ do
-		u <- Remote.nameToUUID rname
-		startingCustomOutput (ActionItemOther Nothing) $ do
+		enableNormalOutput
+		showCustom "maxsize" (SeekInput [rname]) $ do
+			u <- Remote.nameToUUID rname
 			v <- M.lookup u <$> getMaxSizes
-			liftIO $ putStrLn $ safeOutput $ case v of
+			maybeAddJSONField "maxsize" (fromMaxSize <$> v)
+			showRaw $ encodeBS $ case v of
 				Just (MaxSize n) -> 
-					if bytesOption o
-						then show n
-						else preciseSize storageUnits False n
+					formatSize o (preciseSize storageUnits True) n
 				Nothing -> ""
-			next $ return True
+			return True
+		stop
 	(rname:sz:[]) -> commandAction $ do
 		u <- Remote.nameToUUID rname
 		let si = SeekInput (cmdparams o)
@@ -57,4 +65,51 @@ seek o = case cmdparams o of
 				Just n -> do
 					recordMaxSize u (MaxSize n)
 					next $ return True
-	_ -> giveup "Specify a repository."
+	[] -> commandAction $ sizeOverview o
+	_ -> giveup "Too many parameters"
+
+sizeOverview :: MaxSizeOptions -> CommandStart
+sizeOverview o = do
+	enableNormalOutput
+	showCustom "maxsize" (SeekInput []) $ do
+		descmap <- Remote.uuidDescriptions
+		deadset <- S.fromList <$> trustGet DeadTrusted
+		maxsizes <- getMaxSizes
+		reposizes <- flip M.withoutKeys deadset <$> getRepoSizes True
+		let l = reverse $ sortOn snd $ M.toList $
+			M.mapWithKey (gather maxsizes) reposizes
+		v <- Remote.prettyPrintUUIDsWith' False (Just "size")
+		 	"repositories" descmap showsizes l
+		showRaw $ encodeBS $ tableheader
+		showRaw $ encodeBS $ dropWhileEnd (== '\n') v
+		return True
+	stop
+  where
+	sizefield = "size" :: T.Text
+	maxsizefield = "maxsize" :: T.Text
+	
+	gather maxsizes u (RepoSize currsize) = Just $
+			M.fromList
+				[ (sizefield, Just currsize)
+				, (maxsizefield, fromMaxSize <$> M.lookup u maxsizes)
+				]
+
+	tableheader = tablerow ["size", "maxsize", "repository"]
+	
+	showsizes m = do
+		size <- M.lookup sizefield m
+		maxsize <- M.lookup maxsizefield m
+		return $ tablerow [formatsize size, formatsize maxsize, ""]
+	
+	formatsize = maybe "" (formatSize o (roughSize' storageUnits True 0))
+
+	padcolumn s = replicate (7 - length s) ' ' ++ s
+	
+	tablerow [] = ""
+	tablerow (s:[]) = " " ++ s
+	tablerow (s:l) = padcolumn s ++ " " ++ tablerow l
+					
+formatSize :: MaxSizeOptions -> (ByteSize -> String) -> ByteSize -> String
+formatSize o f n
+	| bytesOption o = show n
+	| otherwise = f n

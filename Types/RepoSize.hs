@@ -10,9 +10,9 @@
 module Types.RepoSize where
 
 -- The current size of a repo.
-newtype RepoSize = RepoSize Integer
+newtype RepoSize = RepoSize { fromRepoSize :: Integer }
 	deriving (Show, Eq, Ord, Num)
 
 -- The maximum size of a repo.
-newtype MaxSize = MaxSize Integer
+newtype MaxSize = MaxSize { fromMaxSize :: Integer }
 	deriving (Show, Eq, Ord)

@@ -40,6 +40,7 @@ module Remote (
 	prettyPrintUUIDs,
 	prettyPrintUUIDsDescs,
 	prettyPrintUUIDsWith,
+	prettyPrintUUIDsWith',
 	prettyListUUIDs,
 	prettyUUID,
 	remoteFromUUID,
@@ -229,11 +230,25 @@ prettyPrintUUIDsWith
 	-> (v -> Maybe String)
 	-> [(UUID, Maybe v)] 
 	-> Annex String
-prettyPrintUUIDsWith optfield header descm showval uuidvals = do
+prettyPrintUUIDsWith = prettyPrintUUIDsWith' True
+
+prettyPrintUUIDsWith'
+	:: ToJSON' v
+	=> Bool
+	-> Maybe String 
+	-> String 
+	-> UUIDDescMap
+	-> (v -> Maybe String)
+	-> [(UUID, Maybe v)] 
+	-> Annex String
+prettyPrintUUIDsWith' indented optfield header descm showval uuidvals = do
 	hereu <- getUUID
 	maybeShowJSON $ JSONChunk [(header, V.fromList $ map (jsonify hereu) uuidvals)]
-	return $ unwords $ map (\u -> "\t" ++ prettify hereu u ++ "\n") uuidvals
+	return $ concatMap 
+		(\u -> tabindent ++ prettify hereu u ++ "\n")
+		uuidvals
   where
+	tabindent = if indented then "\t" else ""
 	finddescription u = fromUUIDDesc $ M.findWithDefault mempty u descm
 	prettify hereu (u, optval)
 		| not (null d) = addoptval $ fromUUID u ++ " -- " ++ d
@@ -247,7 +262,7 @@ prettyPrintUUIDsWith optfield header descm showval uuidvals = do
 			| otherwise = n
 		addoptval s = case showval =<< optval of
 			Nothing -> s
-			Just val -> val ++ ": " ++ s
+			Just val -> val ++ s
 	jsonify hereu (u, optval) = object $ catMaybes
 		[ Just ("uuid", toJSON' (fromUUID u :: String))
 		, Just ("description", toJSON' $ finddescription u)

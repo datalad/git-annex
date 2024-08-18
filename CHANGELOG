@@ -21,7 +21,7 @@ git-annex (10.20240831) UNRELEASED; urgency=medium
   * Support "balanced=" and "fullybalanced=" in preferred content expressions.
   * Added --rebalance option.
   * maxsize: New command to tell git-annex how large the expected maximum
-    size of a repository is.
+    size of a repository is, and to display repository sizes.
   * vicfg: Include maxsize configuration.
   * info: Improved speed.
 

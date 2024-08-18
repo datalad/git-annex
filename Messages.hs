@@ -55,6 +55,7 @@ module Messages (
 	mkPrompter,
 	sanitizeTopLevelExceptionMessages,
 	countdownToMessage,
+	enableNormalOutput,
 ) where
 
 import Control.Concurrent
@@ -87,9 +88,7 @@ showStartMessage (StartMessage command ai si) =
   where
 	json = JSON.startActionItem command ai si
 showStartMessage (StartUsualMessages command ai si) = do
-	outputType <$> Annex.getState Annex.output >>= \case
-		QuietOutput -> Annex.setOutput NormalOutput
-		_ -> noop
+	enableNormalOutput
 	showStartMessage (StartMessage command ai si)
 showStartMessage (StartNoMessage _) = noop
 showStartMessage (CustomOutput _) =
@@ -379,3 +378,9 @@ countdownToMessage n showmsg
 	| otherwise = do
 		let !n' = pred n
 		return n'
+
+enableNormalOutput :: Annex ()
+enableNormalOutput =
+	outputType <$> Annex.getState Annex.output >>= \case
+		QuietOutput -> Annex.setOutput NormalOutput
+		_ -> noop

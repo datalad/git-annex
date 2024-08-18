@@ -573,7 +573,8 @@ reposizes_stats count desc m = stat desc $ nojson $ do
 	let maxlen = maximum (map (length . snd) l)
 	descm <- lift Remote.uuidDescriptions
 	-- This also handles json display.
-	s <- lift $ Remote.prettyPrintUUIDsWith (Just "size") desc descm (Just . show) $
+	s <- lift $ Remote.prettyPrintUUIDsWith (Just "size") desc descm
+		(\sz -> Just $ show sz ++ ": ") $
 		map (\(u, sz) -> (u, Just $ mkdisp sz maxlen)) l
 	return $ if count
 		then countRepoList (length l) s

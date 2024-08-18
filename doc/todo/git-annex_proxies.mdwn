@@ -86,8 +86,6 @@ Planned schedule of work:
   overLocationLogs. In the other path it does not, and this should be fixed
   for consistency and correctness.
 
-* `git-annex info` can use maxsize to display how full repositories are
-
 * implement size-based balancing, so all balanced repositories are around
   the same percent full, either as the default or as another preferred
   content expression.
