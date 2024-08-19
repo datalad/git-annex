@@ -16,6 +16,7 @@ import Types.RepoSize
 import Logs.MaxSize
 import Logs.Trust
 import Utility.DataUnits
+import Utility.Percentage
 
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -80,7 +81,7 @@ sizeOverview o = do
 			M.mapWithKey (gather maxsizes) reposizes
 		v <- Remote.prettyPrintUUIDsWith' False (Just "size")
 		 	"repositories" descmap showsizes l
-		showRaw $ encodeBS $ tableheader
+		showRaw $ encodeBS $ tablerow (zip widths headers)
 		showRaw $ encodeBS $ dropWhileEnd (== '\n') v
 		return True
 	stop
@@ -94,20 +95,34 @@ sizeOverview o = do
 				, (maxsizefield, fromMaxSize <$> M.lookup u maxsizes)
 				]
 
-	tableheader = tablerow ["size", "maxsize", "repository"]
+	(widths, headers) = unzip
+		[ (7, "size")
+		, (7, "maxsize")
+		, (4, "%full")
+		, (0, "repository")
+		]
 	
 	showsizes m = do
 		size <- M.lookup sizefield m
 		maxsize <- M.lookup maxsizefield m
-		return $ tablerow [formatsize size, formatsize maxsize, ""]
+		return $ tablerow $ zip widths
+			[ formatsize size
+			, formatsize maxsize
+			, case (size, maxsize) of
+				(Just size', Just maxsize') -> 
+					showPercentage 0 $
+						percentage maxsize' size'
+				_ -> ""
+			, ""
+			]
 	
 	formatsize = maybe "" (formatSize o (roughSize' storageUnits True 0))
 
-	padcolumn s = replicate (7 - length s) ' ' ++ s
+	padcolumn width s = replicate (width - length s) ' ' ++ s
 	
 	tablerow [] = ""
-	tablerow (s:[]) = " " ++ s
-	tablerow (s:l) = padcolumn s ++ " " ++ tablerow l
+	tablerow ((_, s):[]) = " " ++ s
+	tablerow ((width, s):l) = padcolumn width s ++ " " ++ tablerow l
 					
 formatSize :: MaxSizeOptions -> (ByteSize -> String) -> ByteSize -> String
 formatSize o f n
