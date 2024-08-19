@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/59541f50d845e5f81aff06e88a38b9de"
+ subject="comment 4"
+ date="2024-08-19T10:25:13Z"
+ content="""
+When `annex.dotfiles` is set to true, git-annex should treat dotfiles just like other files, so it should apply .gitattributes to them. With that in mind, I'd expect something like this to work:
+
+```
+.* annex.largefiles=nothing
+.caltrash annex.largefiles=anything
+.calnotes annex.largefiles=anything
+```
+
+I haven't tested it though.
+"""]]
