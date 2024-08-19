@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="Matthew"
+ avatar="http://cdn.libravatar.org/avatar/495960d189a9cdc26f8e449bbf28aaf4"
+ subject="Help with .nfsXXXX files"
+ date="2024-08-19T21:20:58Z"
+ content="""
+I have many dozens of .nfs files that I cannot seem to remove. I have had IT reboot the machine I was using with git-annex, as well as the file server in hopes of killing the process that have the files open. The files stubbornly remain, and cannot be removed with 'rm -f .nfsXXXX' with resulting \"rm: cannot remove ‘.nfsXXXX’: Permission denied\", even after the reboots.
+
+Any thoughts are appreciated, as I have a few hundred gigabytes tied up in these files.
+
+My next step is to see about working with IT to put the file server in single-user mode, and getting root access to see if we can remove the files. But, I'm hoping maybe there are some other suggestion before taking such a drastic step.
+
+"""]]
