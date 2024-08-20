@@ -592,7 +592,19 @@ limitBalanced mu getgroupmap groupname = do
 		}
 
 limitFullyBalanced :: Maybe UUID -> Annex GroupMap -> MkLimit Annex
-limitFullyBalanced mu getgroupmap groupname = Right $ MatchFiles
+limitFullyBalanced mu getgroupmap want =
+	case splitc ':' want of
+		[g] -> go g 1
+		[g, n] -> maybe
+			(Left "bad number for fullybalanced")
+			(go g)
+			(readish n)
+		_ -> Left "bad value for fullybalanced"
+  where
+	go s n = limitFullyBalanced' mu getgroupmap (toGroup s) n want
+
+limitFullyBalanced' :: Maybe UUID -> Annex GroupMap -> Group -> Int -> MkLimit Annex
+limitFullyBalanced' mu getgroupmap g n want = Right $ MatchFiles
 	{ matchAction = const $ checkKey $ \key -> do
 		gm <- getgroupmap
 		let groupmembers = fromMaybe S.empty $
@@ -611,16 +623,14 @@ limitFullyBalanced mu getgroupmap groupname = Right $ MatchFiles
 		return $ if S.null candidates
 			then False
 			else case (mu, M.lookup g (balancedPickerByGroup gm)) of
-				(Just u, Just picker) -> u == picker candidates key
+				(Just u, Just picker) -> u == picker candidates key n
 				_ -> False
 	, matchNeedsFileName = False
 	, matchNeedsFileContent = False
 	, matchNeedsKey = True
 	, matchNeedsLocationLog = False
-	, matchDesc = "fullybalanced" =? groupname
+	, matchDesc = "fullybalanced" =? want
 	}
-  where
-	g = toGroup groupname
 
 {- Adds a limit to skip files not using a specified key-value backend. -}
 addInBackend :: String -> Annex ()

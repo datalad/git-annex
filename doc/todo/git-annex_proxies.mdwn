@@ -66,6 +66,10 @@ Planned schedule of work:
     command behave non-ideally, the same as the thread concurrency
     problems.
 
+* implement size-based balancing, so all balanced repositories are around
+  the same percent full, perhaps as another preferred
+  content expression.
+
 * `fullybalanced=foo:2` can get stuck in suboptimal situations. Eg,
   when 2 out of 3 repositories are full, and the 3rd is mostly empty,
   it is no longer possible to add new files to 2 repositories.
@@ -80,16 +84,10 @@ Planned schedule of work:
 
   Size based rebalancing may offer a solution; see design.
 
-* "fullybalanced=foo:2" is not currently actually implemented!
-
 * `git-annex info` in the limitedcalc path in cachedAllRepoData
   double-counts redundant information from the journal due to using
   overLocationLogs. In the other path it does not, and this should be fixed
   for consistency and correctness.
-
-* implement size-based balancing, so all balanced repositories are around
-  the same percent full, either as the default or as another preferred
-  content expression.
 
 ## completed items for August's work on balanced preferred content
 
