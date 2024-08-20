@@ -623,7 +623,8 @@ limitFullyBalanced' mu getgroupmap g n want = Right $ MatchFiles
 		return $ if S.null candidates
 			then False
 			else case (mu, M.lookup g (balancedPickerByGroup gm)) of
-				(Just u, Just picker) -> u == picker candidates key n
+				(Just u, Just picker) ->
+					u `elem` picker candidates key n
 				_ -> False
 	, matchNeedsFileName = False
 	, matchNeedsFileContent = False
