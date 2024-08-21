@@ -268,38 +268,40 @@ elsewhere to allow removing it).
   
   The number is the number of repositories in the group that will
   want each file. When not specified, the default is 1.
+  
+  For example, "balanced=backup:2", when there are 3 members of the backup
+  group, will make each backup repository want 2/3rds of the files.
 
   For this to work, each repository in the group should have its preferred
   content set to the same expression. Using `groupwanted` is a good
   way to do that.
-  
-  For example, "balanced=backup:2", when there are 3 members of the backup
-  group, will make each backup repository want 2/3rds of the files.
 
   The sizes of files are not taken into account, so it's possible for
   one repository to get larger than usual files and so fill up before
   the other repositories. But files are only wanted by repositories that
   have enough free space to hold them. So once a repository is full,
   the remaining repositories will have any additional files balanced
-  amoung them. In order for this to work, you must use
-  [[git-annex-maxsize]](1) to specify the size of each repository in the
-  group.
+  amoung them. For git-annex to know when a repository is full, 
+  you must use [[git-annex-maxsize]](1) to specify the size of each
+  repository in the group.
 
-  This usually avoids moving files between repositories of the group, even
+  This usually avoids moving files between repositories, even
   if that means that things are not optimally balanced. Some of the ways
   that it can get out of balance include adding a new repository to the
-  group, or a file getting copied into more repositories in the group than
-  the specified number. Running git-annex commands with the `--rebalance`
-  option will make this expression instead behave like the `fullybalanced`
-  expression, which will make repositories want to move files around as
-  necessary in order to get fully balanced.
+  group, or a file getting copied into more repositories in the
+  group than the specified number, or some of the repositories filling up.
 
-  Using this in a perferred content expression makes git-annex need to do
+  Running git-annex commands with the `--rebalance` option will make this
+  expression instead behave like the `fullybalanced` expression, which will
+  make repositories want to move files around as necessary in order to get
+  fully balanced.
+
+  Using this in a preferred content expression makes git-annex need to do
   some additional work to keep track of how full repositories are. Usually
   that won't affect performance much. However, the first time git-annex
-  processes this in a given git repository, it will need to examine
-  all the locations of all files, which can be slow when there are a lot of
-  them. When this causes git-annex to do a lot of work, it will
+  processes this expression in a given git repository, it will need to
+  calculate the sizes of all repositories, which can be slow when there are
+  a lot of files. When this causes git-annex to do a lot of work, it will
   display "(calculating repository sizes)".
 
   Note that `not balanced` is a bad thing to put in a preferred content
@@ -315,6 +317,54 @@ elsewhere to allow removing it).
 
   When the `--rebalance` option is used, `balanced` is the same as
   `fullybalanced`.
+
+* `sizebalanced=groupname:number`
+
+  Distributes content amoung repositories in the group, keeping
+  repositories proportionally full. 
+  
+  The number is the number of repositories in the group that will
+  want each file. When not specified, the default is 1.
+
+  For this to work, you must use [[git-annex-maxsize]](1) to specify
+  the size of each repository in the group. When a repository's
+  maxsize has not been specified, it will not want any files.
+
+  For example, if one repository in the group has a maximum size of
+  100 gb with 60 gb used, and another has a maximum size of 50 gb with
+  25 gb used, the smaller one will want files (that fit in it),
+  and the larger one won't want any files 
+  (that would fit in the smaller one)
+  until the smaller one gets equally full.
+
+  Note that, once a repository contains a file, it will continue to want
+  it, even if it's more full than other repositories. This is to avoid
+  churn in moving files around.
+  
+  This is more likely to get out of balance than the `balanced=` expression
+  is, because git-annex does not always have a consistent knowledge of 
+  how full repositories are. Consider for example if a laptop and a desktop
+  are each sending a new file to the group. They will both pick whichever
+  repository was least full, but that means both files go to the same
+  repository, when a better solution might have been to send the smaller
+  file to a different repository. When using `balanced=` in the same
+  situation, it's less likely that a repository will want both files.
+  
+  Running git-annex commands with the `--rebalance` option will make this
+  expression instead behave like the `fullysizebalanced` expression, which
+  will make repositories want to move files around as necessary in order to
+  get fully balanced.
+
+* `fullysizebalanced=groupname:number`
+
+  This is like `sizebalanced`, but allows moving content between repositories
+  in the group at any time to keep it fully balanced.
+
+  Normally "sizebalanced=groupname:number" is the same as 
+  "(fullysizebalanced=groupname:number and not copies=groupname:number) or present"
+
+  When the `--rebalance` option is used, `sizebalanced` is the same as
+  `fullysizebalanced`.
 
 * `anything`
 

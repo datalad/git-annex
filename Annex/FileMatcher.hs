@@ -173,6 +173,8 @@ preferredContentTokens pcd =
 	, ValueToken "onlyingroup" (usev $ limitOnlyInGroup $ getGroupMap pcd)
 	, ValueToken "balanced" (usev $ limitBalanced (repoUUID pcd) (getGroupMap pcd))
 	, ValueToken "fullybalanced" (usev $ limitFullyBalanced (repoUUID pcd) (getGroupMap pcd))
+	, ValueToken "sizebalanced" (usev $ limitSizeBalanced (repoUUID pcd) (getGroupMap pcd))
+	, ValueToken "fullysizebalanced" (usev $ limitFullySizeBalanced (repoUUID pcd) (getGroupMap pcd))
 	] ++ commonTokens LimitAnnexFiles
   where
 	preferreddir = maybe "public" fromProposedAccepted $

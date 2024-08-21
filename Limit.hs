@@ -558,7 +558,11 @@ limitOnlyInGroup getgroupmap groupname = Right $ MatchFiles
 
 limitBalanced :: Maybe UUID -> Annex GroupMap -> MkLimit Annex
 limitBalanced mu getgroupmap groupname = do
-	fullybalanced <- limitFullyBalanced mu getgroupmap groupname
+	fullybalanced <- limitFullyBalanced' "balanced" mu getgroupmap groupname
+	limitBalanced' "balanced" fullybalanced mu groupname 
+
+limitBalanced' :: String -> MatchFiles Annex -> Maybe UUID -> MkLimit Annex
+limitBalanced' termname fullybalanced mu groupname = do
 	copies <- limitCopies $ if ':' `elem` groupname
 		then groupname
 		else groupname ++ ":1"
@@ -588,38 +592,65 @@ limitBalanced mu getgroupmap groupname = do
 			matchNeedsLocationLog present ||
 			matchNeedsLocationLog fullybalanced ||
 			matchNeedsLocationLog copies
-		, matchDesc = "balanced" =? groupname
+		, matchDesc = termname =? groupname
 		}
 
 limitFullyBalanced :: Maybe UUID -> Annex GroupMap -> MkLimit Annex
-limitFullyBalanced mu getgroupmap want =
+limitFullyBalanced = limitFullyBalanced' "fullybalanced"
+
+limitFullyBalanced' :: String -> Maybe UUID -> Annex GroupMap -> MkLimit Annex
+limitFullyBalanced' = limitFullyBalanced'' filtercandidates
+  where
+	filtercandidates _ key candidates = do
+		maxsizes <- getMaxSizes
+		sizemap <- getRepoSizes False
+		currentlocs <- S.fromList <$> loggedLocations key
+  		let keysize = fromMaybe 0 (fromKey keySize key)
+		let hasspace u = case (M.lookup u maxsizes, M.lookup u sizemap) of
+			(Just maxsize, Just reposize) ->
+				repoHasSpace keysize (u `S.member` currentlocs) reposize maxsize
+			_ -> True
+		return $ S.filter hasspace candidates
+
+repoHasSpace :: Integer -> Bool -> RepoSize -> MaxSize -> Bool
+repoHasSpace keysize inrepo (RepoSize reposize) (MaxSize maxsize)
+	| inrepo =
+		reposize <= maxsize
+	| otherwise = 
+		reposize + keysize <= maxsize
+
+limitFullyBalanced''
+	:: (Int -> Key -> S.Set UUID -> Annex (S.Set UUID))
+	-> String
+	-> Maybe UUID
+	-> Annex GroupMap
+	-> MkLimit Annex
+limitFullyBalanced'' filtercandidates termname mu getgroupmap want =
 	case splitc ':' want of
 		[g] -> go g 1
 		[g, n] -> maybe
-			(Left "bad number for fullybalanced")
+			(Left $ "bad number for " ++ termname)
 			(go g)
 			(readish n)
-		_ -> Left "bad value for fullybalanced"
+		_ -> Left $ "bad value for " ++ termname
   where
-	go s n = limitFullyBalanced' mu getgroupmap (toGroup s) n want
+	go s n = limitFullyBalanced''' filtercandidates termname mu
+		getgroupmap (toGroup s) n want
 
-limitFullyBalanced' :: Maybe UUID -> Annex GroupMap -> Group -> Int -> MkLimit Annex
-limitFullyBalanced' mu getgroupmap g n want = Right $ MatchFiles
+limitFullyBalanced'''
+	:: (Int -> Key -> S.Set UUID -> Annex (S.Set UUID))
+	-> String
+	-> Maybe UUID
+	-> Annex GroupMap
+	-> Group
+	-> Int
+	-> MkLimit Annex
+limitFullyBalanced''' filtercandidates termname mu getgroupmap g n want = Right $ MatchFiles
 	{ matchAction = const $ checkKey $ \key -> do
 		gm <- getgroupmap
 		let groupmembers = fromMaybe S.empty $
 			M.lookup g (uuidsByGroup gm)
-		maxsizes <- getMaxSizes
-		sizemap <- getRepoSizes False
-		let keysize = fromMaybe 0 (fromKey keySize key)
-		currentlocs <- S.fromList <$> loggedLocations key
-		let hasspace u = case (M.lookup u maxsizes, M.lookup u sizemap) of
-			(Just (MaxSize maxsize), Just (RepoSize reposize)) ->
-				if u `S.member` currentlocs
-					then reposize <= maxsize
-					else reposize + keysize <= maxsize
-			_ -> True
-		let candidates = S.filter hasspace groupmembers
+		candidates <- filtercandidates n key groupmembers
 		return $ if S.null candidates
 			then False
 			else case (mu, M.lookup g (balancedPickerByGroup gm)) of
@@ -630,8 +661,45 @@ limitFullyBalanced' mu getgroupmap g n want = Right $ MatchFiles
 	, matchNeedsFileContent = False
 	, matchNeedsKey = True
 	, matchNeedsLocationLog = False
-	, matchDesc = "fullybalanced" =? want
+	, matchDesc = termname =? want
 	}
+
+limitSizeBalanced :: Maybe UUID -> Annex GroupMap -> MkLimit Annex
+limitSizeBalanced mu getgroupmap groupname = do
+	fullysizebalanced <- limitFullySizeBalanced' "sizebalanced" mu getgroupmap groupname
+	limitBalanced' "sizebalanced" fullysizebalanced mu groupname 
+
+limitFullySizeBalanced :: Maybe UUID -> Annex GroupMap -> MkLimit Annex
+limitFullySizeBalanced = limitFullySizeBalanced' "fullysizebalanced"
+
+limitFullySizeBalanced' :: String -> Maybe UUID -> Annex GroupMap -> MkLimit Annex
+limitFullySizeBalanced' = limitFullyBalanced'' filtercandidates
+  where
+	filtercandidates n key candidates = do
+		maxsizes <- getMaxSizes
+		sizemap <- getRepoSizes False
+		currentlocs <- S.fromList <$> loggedLocations key
+  		let keysize = fromMaybe 0 (fromKey keySize key)
+		let go u = case (M.lookup u maxsizes, M.lookup u sizemap, u `S.member` currentlocs) of
+			(Just maxsize, Just reposize, inrepo)
+				| repoHasSpace keysize inrepo reposize maxsize ->
+					proportionfree keysize inrepo u reposize maxsize
+				| otherwise -> Nothing
+			_ -> Nothing
+		return $ S.fromList $
+			map fst $ take n $ reverse $ sortOn snd $
+			mapMaybe go $ S.toList candidates
+	
+	proportionfree keysize inrepo u (RepoSize reposize) (MaxSize maxsize)
+		| maxsize > 0 = Just
+			( u
+			, fromIntegral freespacesanskey / fromIntegral maxsize
+				:: Double
+			)
+		| otherwise = Nothing
+	  where
+		freespacesanskey = maxsize - reposize +
+			if inrepo then keysize else 0
 
 {- Adds a limit to skip files not using a specified key-value backend. -}
 addInBackend :: String -> Annex ()
