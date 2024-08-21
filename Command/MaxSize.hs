@@ -98,7 +98,7 @@ sizeOverview o = do
 	(widths, headers) = unzip
 		[ (7, "size")
 		, (7, "maxsize")
-		, (4, "%full")
+		, (5, "%full")
 		, (0, "repository")
 		]
 	
