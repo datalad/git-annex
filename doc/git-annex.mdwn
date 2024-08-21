@@ -928,6 +928,12 @@ repository, using [[git-annex-config]]. See its man page for a list.)
 
   The default reserve is 100 megabytes.
 
+* `annex.fullybalancedthreshhold`
+
+  Configures the percent full a repository must be in order for
+  the "fullybalanced" preferred content expression to consider it
+  to be full. The default is 90.
+
 * `annex.skipunknown`
 
   Set to true to make commands like "git-annex get" silently skip over

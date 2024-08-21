@@ -318,6 +318,16 @@ elsewhere to allow removing it).
   When the `--rebalance` option is used, `balanced` is the same as
   `fullybalanced`.
 
+  When the specified number is greater than 1, and too many repositories
+  in the group are more than 90% full (as configured by
+  annex.fullybalancedthreshhold), this behaves like `fullysizebalanced`.
+
+  For example, `fullybalanced=foo:3`, when group foo has 5 repositories,
+  two 50% full and three 99% full, will make some content move from the
+  full repositories to the others. Moving content like that is expensive,
+  but it allows new files to continue to be stored on the specified number
+  of repositories.
+
 * `sizebalanced=groupname:number`
 
   Distributes content amoung repositories in the group, keeping

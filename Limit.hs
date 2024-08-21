@@ -599,18 +599,31 @@ limitFullyBalanced :: Maybe UUID -> Annex GroupMap -> MkLimit Annex
 limitFullyBalanced = limitFullyBalanced' "fullybalanced"
 
 limitFullyBalanced' :: String -> Maybe UUID -> Annex GroupMap -> MkLimit Annex
-limitFullyBalanced' = limitFullyBalanced'' filtercandidates
-  where
-	filtercandidates _ key candidates = do
-		maxsizes <- getMaxSizes
-		sizemap <- getRepoSizes False
-		currentlocs <- S.fromList <$> loggedLocations key
-  		let keysize = fromMaybe 0 (fromKey keySize key)
-		let hasspace u = case (M.lookup u maxsizes, M.lookup u sizemap) of
-			(Just maxsize, Just reposize) ->
-				repoHasSpace keysize (u `S.member` currentlocs) reposize maxsize
-			_ -> True
-		return $ S.filter hasspace candidates
+limitFullyBalanced' = limitFullyBalanced'' $ \n key candidates -> do
+	maxsizes <- getMaxSizes
+	sizemap <- getRepoSizes False
+	let threshhold = 0.9 :: Double
+	let toofull u =
+		case (M.lookup u maxsizes, M.lookup u sizemap) of
+			(Just (MaxSize maxsize), Just (RepoSize reposize)) ->
+				fromIntegral reposize >= fromIntegral maxsize * threshhold
+			_ -> False
+	needsizebalance <- ifM (Annex.getRead Annex.rebalance)
+		( return $ n > 1 &&
+			n > S.size candidates 
+				- S.size (S.filter toofull candidates)
+		, return False
+		)
+	if needsizebalance
+		then filterCandidatesFullySizeBalanced maxsizes sizemap n key candidates
+		else do
+			currentlocs <- S.fromList <$> loggedLocations key
+ 	 		let keysize = fromMaybe 0 (fromKey keySize key)
+			let hasspace u = case (M.lookup u maxsizes, M.lookup u sizemap) of
+				(Just maxsize, Just reposize) ->
+					repoHasSpace keysize (u `S.member` currentlocs) reposize maxsize
+				_ -> True
+			return $ S.filter hasspace candidates
 
 repoHasSpace :: Integer -> Bool -> RepoSize -> MaxSize -> Bool
 repoHasSpace keysize inrepo (RepoSize reposize) (MaxSize maxsize)
@@ -673,23 +686,31 @@ limitFullySizeBalanced :: Maybe UUID -> Annex GroupMap -> MkLimit Annex
 limitFullySizeBalanced = limitFullySizeBalanced' "fullysizebalanced"
 
 limitFullySizeBalanced' :: String -> Maybe UUID -> Annex GroupMap -> MkLimit Annex
-limitFullySizeBalanced' = limitFullyBalanced'' filtercandidates
+limitFullySizeBalanced' = limitFullyBalanced'' $ \n key candidates -> do
+	maxsizes <- getMaxSizes
+	sizemap <- getRepoSizes False
+	filterCandidatesFullySizeBalanced maxsizes sizemap n key candidates
+
+filterCandidatesFullySizeBalanced
+	:: M.Map UUID MaxSize
+	-> M.Map UUID RepoSize
+	-> Int
+	-> Key
+	-> S.Set UUID
+	-> Annex (S.Set UUID)
+filterCandidatesFullySizeBalanced maxsizes sizemap n key candidates = do
+	currentlocs <- S.fromList <$> loggedLocations key
+ 	let keysize = fromMaybe 0 (fromKey keySize key)
+	let go u = case (M.lookup u maxsizes, M.lookup u sizemap, u `S.member` currentlocs) of
+		(Just maxsize, Just reposize, inrepo)
+			| repoHasSpace keysize inrepo reposize maxsize ->
+				proportionfree keysize inrepo u reposize maxsize
+			| otherwise -> Nothing
+		_ -> Nothing
+	return $ S.fromList $
+		map fst $ take n $ reverse $ sortOn snd $
+		mapMaybe go $ S.toList candidates
   where
-	filtercandidates n key candidates = do
-		maxsizes <- getMaxSizes
-		sizemap <- getRepoSizes False
-		currentlocs <- S.fromList <$> loggedLocations key
-  		let keysize = fromMaybe 0 (fromKey keySize key)
-		let go u = case (M.lookup u maxsizes, M.lookup u sizemap, u `S.member` currentlocs) of
-			(Just maxsize, Just reposize, inrepo)
-				| repoHasSpace keysize inrepo reposize maxsize ->
-					proportionfree keysize inrepo u reposize maxsize
-				| otherwise -> Nothing
-			_ -> Nothing
-		return $ S.fromList $
-			map fst $ take n $ reverse $ sortOn snd $
-			mapMaybe go $ S.toList candidates
-	
 	proportionfree keysize inrepo u (RepoSize reposize) (MaxSize maxsize)
 		| maxsize > 0 = Just
 			( u
