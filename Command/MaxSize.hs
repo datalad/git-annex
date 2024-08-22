@@ -98,7 +98,7 @@ sizeOverview o = do
 	(widths, headers) = unzip
 		[ (7, "size")
 		, (7, "maxsize")
-		, (5, "%full")
+		, (6, "%full")
 		, (0, "repository")
 		]
 	
@@ -109,9 +109,11 @@ sizeOverview o = do
 			[ formatsize size
 			, formatsize maxsize
 			, case (size, maxsize) of
-				(Just size', Just maxsize') -> 
-					showPercentage 0 $
-						percentage maxsize' size'
+				(Just size', Just maxsize')
+					| size' <= maxsize' ->
+						showPercentage 0 $
+							percentage maxsize' size'
+					| otherwise -> ">100%"
 				_ -> ""
 			, ""
 			]
