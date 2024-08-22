@@ -602,7 +602,7 @@ limitFullyBalanced' :: String -> Maybe UUID -> Annex GroupMap -> MkLimit Annex
 limitFullyBalanced' = limitFullyBalanced'' $ \n key candidates -> do
 	maxsizes <- getMaxSizes
 	sizemap <- getRepoSizes False
-	let threshhold = 0.9 :: Double
+	threshhold <- annexFullyBalancedThreshhold <$> Annex.getGitConfig
 	let toofull u =
 		case (M.lookup u maxsizes, M.lookup u sizemap) of
 			(Just (MaxSize maxsize), Just (RepoSize reposize)) ->

@@ -163,6 +163,7 @@ data GitConfig = GitConfig
 	, annexAdviceNoSshCaching :: Bool
 	, annexViewUnsetDirectory :: ViewUnset
 	, annexClusters :: M.Map RemoteName ClusterUUID
+	, annexFullyBalancedThreshhold :: Double
 	}
 
 extractGitConfig :: ConfigSource -> Git.Repo -> GitConfig
@@ -296,6 +297,9 @@ extractGitConfig configsource r = GitConfig
 		M.mapMaybe (mkClusterUUID . toUUID) $
 			M.mapKeys removeclusterprefix $
 				M.filterWithKey isclusternamekey (config r)
+	, annexFullyBalancedThreshhold =
+		fromMaybe 0.9 $ (/ 100) <$> getmayberead
+			(annexConfig "fullybalancedthreshhold")
 	}
   where
 	getbool k d = fromMaybe d $ getmaybebool k

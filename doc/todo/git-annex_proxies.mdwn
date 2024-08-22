@@ -30,8 +30,6 @@ Planned schedule of work:
 
 ## work notes
 
-* Implement annex.fullybalancedthreshhold
-
 * `git-annex assist --rebalance` of `balanced=foo:2` 
   sometimes needs several runs to stabalize.
 
