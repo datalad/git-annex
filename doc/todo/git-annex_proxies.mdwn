@@ -33,6 +33,8 @@ Planned schedule of work:
 * `git-annex assist --rebalance` of `balanced=foo:2` 
   sometimes needs several runs to stabalize.
 
+  May not be a bug, needs reproducing and analysis.
+
 * Concurrency issues with RepoSizes calculation and balanced content:
 
   * What if 2 concurrent threads are considering sending two different
@@ -79,6 +81,8 @@ Planned schedule of work:
 * Balanced preferred content basic implementation, including --rebalance
   option.
 * Implemented [[track_free_space_in_repos_via_git-annex_branch]]
+* `git-annex maxsize`
+* annex.fullybalancedthreshhold
 
 ## completed items for August's work on git-annex proxy support for exporttre
 
