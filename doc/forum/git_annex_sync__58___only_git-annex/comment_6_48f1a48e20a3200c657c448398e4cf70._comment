@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="Spencer"
+ avatar="http://cdn.libravatar.org/avatar/2e0829f36a68480155e09d0883794a55"
+ subject="Precise Workflow"
+ date="2024-08-22T00:18:27Z"
+ content="""
+To be more precise on how to accomplish this - say for synchronizing special remotes for repos that are otherwise completely different - one might consider:
+
+1. `git push destination git-annex:synced/git-annex`. This is what git-annex does under the hood during the `push` step of the `sync`.
+1. In `destination`, run `git annex merge`. This performs the merging of `synced/git-annex` into `git-annex`.
+
+I found this useful when I was trying to set up multiple repositories to use one central location (an rclone special remote) for file content sharing. Since the repos had a shared context (a project), but were otherwise disjoint from one another, `sync` was not an option. However, I felt odd running `git annex initremote` for each repo separately because then I could end up with myriad special remotes with the same configuration but different UUIDs for each. Ultimately this is not a problem - to have the same special remote have different UUIDs in different repositories - so long as the repos **never** come in contact. But I, novice as I was, had already muddled the git-annex branches of these repos together already, so for sake of cleanliness I went back and reimplemented these special remotes as the same UUID on every repo. This often involved adding repos as remotes to one another, fetching - which implicitly performs some merging - and then pushing (as above) any metadata changes to the repo, leaving content changes untouched.
+"""]]
