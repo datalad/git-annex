@@ -126,7 +126,9 @@ diffBranchRepoSizes quiet oldsizemap oldbranchsha newbranchsha = do
 		newsizemap <- readpairs 100000 reader oldsizemap Nothing
 		liftIO $ wait feedtid
 		ifM (liftIO cleanup)
-			( return (newsizemap, newbranchsha)
+			( do
+				newsizemap' <- addemptyrepos newsizemap
+				return (newsizemap', newbranchsha)
 			, return (oldsizemap, oldbranchsha)
 			)
   where
@@ -156,3 +158,10 @@ diffBranchRepoSizes quiet oldsizemap oldbranchsha newbranchsha = do
 				readpairs n' reader sizemap' Nothing
 		Nothing -> return sizemap
 	parselog = maybe mempty (S.fromList . parseLoggedLocationsWithoutClusters)
+	
+	addemptyrepos newsizemap = do
+		knownuuids <- M.keys <$> uuidDescMap
+		return $ foldl'
+			(\m u -> M.insertWith (flip const) u (RepoSize 0) m)
+			newsizemap
+			knownuuids

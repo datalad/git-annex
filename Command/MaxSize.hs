@@ -76,9 +76,16 @@ sizeOverview o = do
 		descmap <- Remote.uuidDescriptions
 		deadset <- S.fromList <$> trustGet DeadTrusted
 		maxsizes <- getMaxSizes
-		reposizes <- flip M.withoutKeys deadset <$> getRepoSizes True
+		reposizes <- getRepoSizes True
+		-- Add repos too new and empty to have a reposize,
+		-- whose maxsize has been set.
+		let reposizes' = foldl'
+			(\m u -> M.insertWith (flip const) u (RepoSize 0) m)
+			reposizes
+			(M.keys maxsizes)
+		let reposizes'' = flip M.withoutKeys deadset reposizes'
 		let l = reverse $ sortOn snd $ M.toList $
-			M.mapWithKey (gather maxsizes) reposizes
+			M.mapWithKey (gather maxsizes) reposizes''
 		v <- Remote.prettyPrintUUIDsWith' False (Just "size")
 		 	"repositories" descmap showsizes l
 		showRaw $ encodeBS $ tablerow (zip widths headers)
@@ -89,11 +96,10 @@ sizeOverview o = do
 	sizefield = "size" :: T.Text
 	maxsizefield = "maxsize" :: T.Text
 	
-	gather maxsizes u (RepoSize currsize) = Just $
-			M.fromList
-				[ (sizefield, Just currsize)
-				, (maxsizefield, fromMaxSize <$> M.lookup u maxsizes)
-				]
+	gather maxsizes u (RepoSize currsize) = Just $ M.fromList
+		[ (sizefield, Just currsize)
+		, (maxsizefield, fromMaxSize <$> M.lookup u maxsizes)
+		]
 
 	(widths, headers) = unzip
 		[ (7, "size")

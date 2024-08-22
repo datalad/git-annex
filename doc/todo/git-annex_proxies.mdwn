@@ -35,21 +35,6 @@ Planned schedule of work:
 * `git-annex assist --rebalance` of `balanced=foo:2` 
   sometimes needs several runs to stabalize.
 
-* Bug:
-
-    git init foo
-    cd foo
-    git-annex init
-    git commit --allow-empty -m foo
-    cd ..
-    git clone foo bar
-    cd foo
-    git remote add bar ../bar
-    git-annex maxsize bar
-
-    Now `git-annex maxsize` will omit displaying bar. This is because the
-    DB got written without it.
-
 * Concurrency issues with RepoSizes calculation and balanced content:
 
   * What if 2 concurrent threads are considering sending two different
