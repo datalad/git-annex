@@ -14,24 +14,31 @@ git annex maxsize
 
 This configures the maximum combined size of annexed files that can be
 stored in a repository. When run with a repository but without a size,
-it displays the currently configured maxsize. When run without a
-repository, it displays an overview of the size and maxsize of all
+it displays the currently configured maxsize. When run without any
+parameters, it displays an overview of the size and maxsize of all
 repositories.
 
 The repository can be specified by git remote name or
 by uuid. For the current repository, use "here".
 
 The size can be specified using any units. For example "100 gigabytes" or
-"0.8 TB"
+"0.8TB"
 
 This is advisory only, it does not prevent git-annex from trying to store
-more data than that in a repository. So use this to tell git-annex about
-hard repository size limits that are enforced in some other way.
+more data in a repository. When a repository has a preferred content
+expression configured using "balanced" or "sizebalanced", it will take the
+maxsize into account when checking preferred content. It is still possible
+for the maxsize to be exceeded, eg when there are multiple writers to the
+same repository.
+
+A hard repository size limit has to be enforced in some other way,
+eg by putting the repository on a partition of the desired size.
+This command can then be used to tell git-annex about that size limit.
 
 For example, if a git repository is on a 1 terabyte drive, and is the only
 thing stored on that drive, and `annex.diskreserve` is configured to 1
-gigabyte, then it would make sense to run 
-`git-annex maxsize here "999 gigabytes"`.
+gigabyte, then it would make sense to run
+`git-annex maxsize here "999 gigabytes"`
 
 # OPTIONS
 
@@ -48,6 +55,8 @@ gigabyte, then it would make sense to run
 # SEE ALSO
 
 [[git-annex]](1)
+
+[[git-annex-preferred-content]](1)
 
 # AUTHOR
 
