@@ -48,19 +48,19 @@ import Limit
 
 {- Checks if a file is preferred content (or required content) for the
  - specified repository (or the current repository if none is specified). -}
-isPreferredContent :: Maybe UUID -> AssumeNotPresent -> Maybe Key -> AssociatedFile -> Bool -> Annex Bool
+isPreferredContent :: LiveUpdate -> Maybe UUID -> AssumeNotPresent -> Maybe Key -> AssociatedFile -> Bool -> Annex Bool
 isPreferredContent = checkMap preferredContentMap
 
-isRequiredContent :: Maybe UUID -> AssumeNotPresent -> Maybe Key -> AssociatedFile -> Bool -> Annex Bool
+isRequiredContent :: LiveUpdate -> Maybe UUID -> AssumeNotPresent -> Maybe Key -> AssociatedFile -> Bool -> Annex Bool
 isRequiredContent = checkMap requiredContentMap
 
-checkMap :: Annex (FileMatcherMap Annex) -> Maybe UUID -> AssumeNotPresent -> Maybe Key -> AssociatedFile -> Bool -> Annex Bool
-checkMap getmap mu notpresent mkey afile d = do
+checkMap :: Annex (FileMatcherMap Annex) -> LiveUpdate -> Maybe UUID -> AssumeNotPresent -> Maybe Key -> AssociatedFile -> Bool -> Annex Bool
+checkMap getmap lu mu notpresent mkey afile d = do
 	u <- maybe getUUID return mu
 	m <- getmap
 	case M.lookup u m of
 		Nothing -> return d
-		Just matcher -> checkMatcher matcher mkey afile notpresent (return d) (return d)
+		Just matcher -> checkMatcher matcher mkey afile lu notpresent (return d) (return d)
 
 {- Checks if the preferred or required content for the specified repository
  - (or the current repository if none is specified) contains any terms

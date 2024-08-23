@@ -86,5 +86,5 @@ registerUrl remote key url = do
 	-- does not have an OtherDownloader, but this command needs to do
 	-- it for urls claimed by other remotes as well.
 	case snd (getDownloader url) of
-		OtherDownloader -> logChange key (Remote.uuid remote) InfoPresent
+		OtherDownloader -> logChange NoLiveUpdate key (Remote.uuid remote) InfoPresent
 		_ -> return ()

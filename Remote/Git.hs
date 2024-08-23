@@ -495,7 +495,7 @@ dropKey' repo r st@(State connpool duc _ _ _) proof key
 			ifM (Annex.Content.inAnnex key)
 				( do
 					let cleanup = do
-						logStatus key InfoMissing
+						logStatus NoLiveUpdate key InfoMissing
 						return True
 					Annex.Content.lockContentForRemoval key cleanup $ \lock ->
 						ifM (liftIO $ checkSafeDropProofEndTime proof) 
@@ -509,7 +509,7 @@ dropKey' repo r st@(State connpool duc _ _ _) proof key
 		unless proofunexpired
 			safeDropProofExpired
 			
-	storefanout = P2PHelper.storeFanout key InfoMissing (uuid r) . map fromB64UUID
+	storefanout = P2PHelper.storeFanout NoLiveUpdate key InfoMissing (uuid r) . map fromB64UUID
 
 lockKey :: Remote -> State -> Key -> (VerifiedCopy -> Annex r) -> Annex r
 lockKey r st key callback = do	
@@ -667,7 +667,7 @@ copyToRemote' repo r st@(State connpool duc _ _ _) key af o meterupdate
 				let checksuccess = liftIO checkio >>= \case
 					Just err -> giveup err
 					Nothing -> return True
-				logStatusAfter key $ Annex.Content.getViaTmp rsp verify key af (Just sz) $ \dest ->
+				logStatusAfter NoLiveUpdate key $ Annex.Content.getViaTmp rsp verify key af (Just sz) $ \dest ->
 					metered (Just (combineMeterUpdate meterupdate p)) key bwlimit $ \_ p' -> 
 						copier object (fromRawFilePath dest) key p' checksuccess verify
 			)
@@ -695,7 +695,7 @@ copyToRemote' repo r st@(State connpool duc _ _ _) key af o meterupdate
 			PutOffsetResultAlreadyHavePlus fanoutuuids ->
 				storefanout fanoutuuids
 	
-	storefanout = P2PHelper.storeFanout key InfoPresent (uuid r) . map fromB64UUID
+	storefanout = P2PHelper.storeFanout NoLiveUpdate key InfoPresent (uuid r) . map fromB64UUID
 
 fsckOnRemote :: Git.Repo -> [CommandParam] -> Annex (IO Bool)
 fsckOnRemote r params

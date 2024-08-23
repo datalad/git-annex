@@ -77,7 +77,7 @@ expireUnused duration = do
 		debug ["removing old unused key", serializeKey k]
 		liftAnnex $ tryNonAsync $ do
 			lockContentForRemoval k noop removeAnnex
-			logStatus k InfoMissing
+			logStatus NoLiveUpdate k InfoMissing
   where
 	boundary = durationToPOSIXTime <$> duration
 	tooold now (_, mt) = case boundary of

@@ -214,7 +214,7 @@ onAddFile symlinkssupported f fs =
 		Database.Keys.removeAssociatedFile oldkey
 			=<< inRepo (toTopFilePath (toRawFilePath file))
 		unlessM (inAnnex oldkey) $
-			logStatus oldkey InfoMissing
+			logStatus NoLiveUpdate oldkey InfoMissing
 	addlink file key = do
 		mode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus (toRawFilePath file)
 		liftAnnex $ stagePointerFile (toRawFilePath file) mode =<< hashPointerFile key

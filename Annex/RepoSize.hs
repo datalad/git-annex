@@ -15,7 +15,6 @@ import Annex.Common
 import Annex.RepoSize.LiveUpdate
 import qualified Annex
 import Annex.Branch (UnmergedBranches(..), getBranch)
-import Types.RepoSize
 import qualified Database.RepoSize as Db
 import Logs
 import Logs.Location
@@ -71,9 +70,9 @@ calcRepoSizes quiet rsv = bracket setup cleanup $ \h -> go h `onException` faile
 		liftIO $ Db.setRepoSizes h sizemap branchsha
 		calcJournalledRepoSizes sizemap branchsha
 
-	setup = Db.openDb
+	setup = Db.getRepoSizeHandle
 
-	cleanup = Db.closeDb
+	cleanup _ = return ()
 
 	failed = do
 		liftIO $ putMVar rsv (Just M.empty)

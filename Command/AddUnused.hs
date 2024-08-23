@@ -32,7 +32,7 @@ start = startUnused go (other "bad") (other "tmp")
 			(ActionItemTreeFile file)
 			(SeekInput [show n]) $
 			next $ do
-				logStatus key InfoPresent
+				logStatus NoLiveUpdate key InfoPresent
 				addSymlink file key Nothing
 				return True
 

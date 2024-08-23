@@ -210,11 +210,11 @@ genTransfer t info = case transferRemote info of
 shouldTransfer :: Transfer -> TransferInfo -> Annex Bool
 shouldTransfer t info
 	| transferDirection t == Download =
-		(not <$> inAnnex key) <&&> wantGet True (Just key) file
+		(not <$> inAnnex key) <&&> wantGet NoLiveUpdate True (Just key) file
 	| transferDirection t == Upload = case transferRemote info of
 		Nothing -> return False
 		Just r -> notinremote r
-			<&&> wantGetBy True (Just key) file (Remote.uuid r)
+			<&&> wantGetBy NoLiveUpdate True (Just key) file (Remote.uuid r)
 	| otherwise = return False
   where
 	key = transferKey t

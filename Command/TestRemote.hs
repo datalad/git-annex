@@ -298,7 +298,7 @@ test runannex mkr mkk =
 			Just verifier -> do
 				loc <- Annex.calcRepo (gitAnnexLocation k)
 				verifier k loc
-	get r k = logStatusAfter k $ getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k (AssociatedFile Nothing) Nothing $ \dest ->
+	get r k = logStatusAfter NoLiveUpdate k $ getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k (AssociatedFile Nothing) Nothing $ \dest ->
 		tryNonAsync (Remote.retrieveKeyFile r k (AssociatedFile Nothing) (fromRawFilePath dest) nullMeterUpdate (RemoteVerify r)) >>= \case
 			Right v -> return (True, v)
 			Left _ -> return (False, UnVerified)
@@ -372,13 +372,13 @@ testUnavailable runannex mkr mkk =
 	, check (`notElem` [Right True, Right False]) "checkPresent" $ \r k ->
 		Remote.checkPresent r k
 	, check (== Right False) "retrieveKeyFile" $ \r k ->
-		logStatusAfter k $ getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k (AssociatedFile Nothing) Nothing $ \dest ->
+		logStatusAfter NoLiveUpdate k $ getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k (AssociatedFile Nothing) Nothing $ \dest ->
 			tryNonAsync (Remote.retrieveKeyFile r k (AssociatedFile Nothing) (fromRawFilePath dest) nullMeterUpdate (RemoteVerify r)) >>= \case
 				Right v -> return (True, v)
 				Left _ -> return (False, UnVerified)
 	, check (== Right False) "retrieveKeyFileCheap" $ \r k -> case Remote.retrieveKeyFileCheap r of
 		Nothing -> return False
-		Just a -> logStatusAfter k $ getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k (AssociatedFile Nothing) Nothing $ \dest -> 
+		Just a -> logStatusAfter NoLiveUpdate k $ getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k (AssociatedFile Nothing) Nothing $ \dest -> 
 			unVerified $ isRight
 				<$> tryNonAsync (a k (AssociatedFile Nothing) (fromRawFilePath dest))
 	]

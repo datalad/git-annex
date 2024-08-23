@@ -788,7 +788,7 @@ moveBad key = do
 	createAnnexDirectory (parentDir dest)
 	cleanObjectLoc key $
 		liftIO $ moveFile src dest
-	logStatus key InfoMissing
+	logStatus NoLiveUpdate key InfoMissing
 	return dest
 
 data KeyLocation = InAnnex | InAnywhere

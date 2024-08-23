@@ -18,12 +18,12 @@ import Types.FileMatcher
 import qualified Data.Set as S
 
 {- Check if a file is preferred content for the local repository. -}
-wantGet :: Bool -> Maybe Key -> AssociatedFile -> Annex Bool
-wantGet d key file = isPreferredContent Nothing S.empty key file d
+wantGet :: LiveUpdate -> Bool -> Maybe Key -> AssociatedFile -> Annex Bool
+wantGet lu d key file = isPreferredContent lu Nothing S.empty key file d
 
 {- Check if a file is preferred content for a repository. -}
-wantGetBy :: Bool -> Maybe Key -> AssociatedFile -> UUID -> Annex Bool
-wantGetBy d key file to = isPreferredContent (Just to) S.empty key file d
+wantGetBy :: LiveUpdate -> Bool -> Maybe Key -> AssociatedFile -> UUID -> Annex Bool
+wantGetBy lu d key file to = isPreferredContent lu (Just to) S.empty key file d
 
 {- Check if a file is not preferred or required content, and can be
  - dropped. When a UUID is provided, checks for that repository.
@@ -34,20 +34,20 @@ wantGetBy d key file to = isPreferredContent (Just to) S.empty key file d
  - that will prevent dropping. When the other associated files are known,
  - they can be provided, otherwise this looks them up.
  -}
-wantDrop :: Bool -> Maybe UUID -> Maybe Key -> AssociatedFile -> (Maybe [AssociatedFile]) -> Annex Bool
-wantDrop d from key file others =
-	isNothing <$> checkDrop isPreferredContent d from key file others
+wantDrop :: LiveUpdate -> Bool -> Maybe UUID -> Maybe Key -> AssociatedFile -> (Maybe [AssociatedFile]) -> Annex Bool
+wantDrop lu d from key file others =
+	isNothing <$> checkDrop isPreferredContent lu d from key file others
 
 {- Generalization of wantDrop that can also be used with isRequiredContent.
  -
  - When the content should not be dropped, returns Just the file that
  - the checker matches.
  -}
-checkDrop :: (Maybe UUID -> AssumeNotPresent -> Maybe Key -> AssociatedFile -> Bool -> Annex Bool) -> Bool -> Maybe UUID -> Maybe Key -> AssociatedFile -> (Maybe [AssociatedFile]) -> Annex (Maybe AssociatedFile)
-checkDrop checker d from key file others = do
+checkDrop :: (LiveUpdate -> Maybe UUID -> AssumeNotPresent -> Maybe Key -> AssociatedFile -> Bool -> Annex Bool) -> LiveUpdate -> Bool -> Maybe UUID -> Maybe Key -> AssociatedFile -> (Maybe [AssociatedFile]) -> Annex (Maybe AssociatedFile)
+checkDrop checker lu d from key file others = do
 	u <- maybe getUUID (pure . id) from
 	let s = S.singleton u
-	let checker' f = checker (Just u) s key f d
+	let checker' f = checker lu (Just u) s key f d
 	ifM (checker' file)
 		( return (Just file)
 		, do

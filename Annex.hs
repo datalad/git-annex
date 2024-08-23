@@ -1,6 +1,6 @@
 {- git-annex monad
  -
- - Copyright 2010-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -79,6 +79,7 @@ import Types.RepoSize
 import Annex.VectorClock.Utility
 import Annex.Debug.Utility
 import qualified Database.Keys.Handle as Keys
+import Database.RepoSize.Handle
 import Utility.InodeCache
 import Utility.Url
 import Utility.ResourcePool
@@ -225,6 +226,7 @@ data AnnexState = AnnexState
 	, insmudgecleanfilter :: Bool
 	, getvectorclock :: IO CandidateVectorClock
 	, proxyremote :: Maybe (Either ClusterUUID (Types.Remote.RemoteA Annex))
+	, reposizehandle :: Maybe RepoSizeHandle
 	}
 
 newAnnexState :: GitConfig -> Git.Repo -> IO AnnexState
@@ -280,6 +282,7 @@ newAnnexState c r = do
 		, insmudgecleanfilter = False
 		, getvectorclock = vc
 		, proxyremote = Nothing
+		, reposizehandle = Nothing
 		}
 
 {- Makes an Annex state object for the specified git repo.

@@ -54,5 +54,5 @@ start si (KeyStatus k u s) = starting "setpresentkey" ai si $ perform k u s
 
 perform :: Key -> UUID -> LogStatus -> CommandPerform
 perform k u s = next $ do
-	logChange k u s
+	logChange NoLiveUpdate k u s
 	return True

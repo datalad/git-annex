@@ -21,6 +21,7 @@ import CmdLine.AnnexSetter as ReExported
 import CmdLine.GitAnnex.Options as ReExported
 import CmdLine.Batch as ReExported
 import Options.Applicative as ReExported hiding (command)
+import Annex.RepoSize.LiveUpdate as ReExported
 import qualified Git
 import Annex.Init
 import Annex.Startup

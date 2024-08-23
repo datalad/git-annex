@@ -213,7 +213,7 @@ storeReceived f = do
 		Nothing -> do
 			warning $ "Received a file " <> QuotedPath (toRawFilePath f) <> " that is not a git-annex key. Deleting this file."
 			liftIO $ removeWhenExistsWith R.removeLink (toRawFilePath f)
-		Just k -> void $ logStatusAfter k $
+		Just k -> void $ logStatusAfter NoLiveUpdate k $
 			getViaTmpFromDisk RetrievalVerifiableKeysSecure AlwaysVerify k (AssociatedFile Nothing) $ \dest -> unVerified $
 				liftIO $ catchBoolIO $ do
 					R.rename (toRawFilePath f) dest

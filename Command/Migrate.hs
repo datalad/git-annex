@@ -174,7 +174,7 @@ update oldkey newkey =
 		starting "migrate" ai (SeekInput []) $
 			ifM (Command.ReKey.linkKey' v oldkey newkey)
 				( do
-					logStatus newkey InfoPresent
+					logStatus NoLiveUpdate newkey InfoPresent
 					next $ return True
 				, next $ return False
 				)

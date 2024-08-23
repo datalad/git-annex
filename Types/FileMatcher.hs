@@ -11,6 +11,7 @@ import Types.UUID (UUID)
 import Types.Key (Key)
 import Types.Link (LinkType)
 import Types.Mime
+import Types.RepoSize (LiveUpdate)
 import Utility.Matcher (Matcher, Token, MatchDesc)
 import Utility.FileSize
 import Utility.FileSystemEncoding
@@ -85,7 +86,7 @@ type MkLimit a = String -> Either String (MatchFiles a)
 type AssumeNotPresent = S.Set UUID
 
 data MatchFiles a = MatchFiles 
-	{ matchAction :: AssumeNotPresent -> MatchInfo -> a Bool
+	{ matchAction :: LiveUpdate -> AssumeNotPresent -> MatchInfo -> a Bool
 	, matchNeedsFileName :: Bool
 	-- ^ does the matchAction need a filename in order to match?
 	, matchNeedsFileContent :: Bool

@@ -43,15 +43,15 @@ store remoteuuid gc runner k af o p = do
 	metered (Just p) sizer bwlimit $ \_ p' ->
 		runner (P2P.put k af p') >>= \case
 			Just (Just fanoutuuids) -> 
-				storeFanout k InfoPresent remoteuuid fanoutuuids
+				storeFanout NoLiveUpdate k InfoPresent remoteuuid fanoutuuids
 			Just Nothing -> giveup "Transfer failed"
 			Nothing -> remoteUnavail
 
-storeFanout :: Key -> LogStatus -> UUID -> [UUID] -> Annex ()
-storeFanout k logstatus remoteuuid us = 
+storeFanout :: LiveUpdate -> Key -> LogStatus -> UUID -> [UUID] -> Annex ()
+storeFanout lu k logstatus remoteuuid us = 
 	forM_ us $ \u ->
 		when (u /= remoteuuid) $
-			logChange k u logstatus
+			logChange lu k u logstatus
 
 retrieve :: RemoteGitConfig -> (ProtoRunner (Bool, Verification)) -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification
 retrieve gc runner k af dest p verifyconfig = do
@@ -66,10 +66,10 @@ retrieve gc runner k af dest p verifyconfig = do
 remove :: UUID -> ProtoRunner (Either String Bool, Maybe [UUID]) -> Maybe SafeDropProof -> Key -> Annex ()
 remove remoteuuid runner proof k = runner (P2P.remove proof k) >>= \case
 	Just (Right True, alsoremoveduuids) -> 
-		storeFanout k InfoMissing remoteuuid
+		storeFanout NoLiveUpdate k InfoMissing remoteuuid
 			(fromMaybe [] alsoremoveduuids)
 	Just (Right False, alsoremoveduuids) -> do
-		storeFanout k InfoMissing remoteuuid
+		storeFanout NoLiveUpdate k InfoMissing remoteuuid
 			(fromMaybe [] alsoremoveduuids)
 		giveup "removing content from remote failed"
 	Just (Left err, _) -> do

@@ -98,7 +98,7 @@ perform file key = do
 					)
 			Nothing -> lostcontent
 
-	lostcontent = logStatus key InfoMissing
+	lostcontent = logStatus NoLiveUpdate key InfoMissing
 
 errorModified :: a
 errorModified =  giveup "Locking this file would discard any changes you have made to it. Use 'git annex add' to stage your changes. (Or, use --force to override)"

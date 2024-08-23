@@ -53,22 +53,22 @@ import Control.Monad.Writer
 
 type GetFileMatcher = RawFilePath -> Annex (FileMatcher Annex)
 
-checkFileMatcher :: GetFileMatcher -> RawFilePath -> Annex Bool
-checkFileMatcher getmatcher file =
-	checkFileMatcher' getmatcher file (return True)
+checkFileMatcher :: LiveUpdate -> GetFileMatcher -> RawFilePath -> Annex Bool
+checkFileMatcher lu getmatcher file =
+	checkFileMatcher' lu getmatcher file (return True)
 
 -- | Allows running an action when no matcher is configured for the file.
-checkFileMatcher' :: GetFileMatcher -> RawFilePath -> Annex Bool -> Annex Bool
-checkFileMatcher' getmatcher file notconfigured = do
+checkFileMatcher' :: LiveUpdate -> GetFileMatcher -> RawFilePath -> Annex Bool -> Annex Bool
+checkFileMatcher' lu getmatcher file notconfigured = do
 	matcher <- getmatcher file
-	checkMatcher matcher Nothing afile S.empty notconfigured d
+	checkMatcher matcher Nothing afile lu S.empty notconfigured d
   where
 	afile = AssociatedFile (Just file)
 	-- checkMatcher will never use this, because afile is provided.
 	d = return True
 
-checkMatcher :: FileMatcher Annex -> Maybe Key -> AssociatedFile -> AssumeNotPresent -> Annex Bool -> Annex Bool -> Annex Bool
-checkMatcher matcher mkey afile notpresent notconfigured d
+checkMatcher :: FileMatcher Annex -> Maybe Key -> AssociatedFile -> LiveUpdate -> AssumeNotPresent -> Annex Bool -> Annex Bool -> Annex Bool
+checkMatcher matcher mkey afile lu notpresent notconfigured d
 	| isEmpty (fst matcher) = notconfigured
 	| otherwise = case (mkey, afile) of
 		(_, AssociatedFile (Just file)) ->
@@ -85,12 +85,12 @@ checkMatcher matcher mkey afile notpresent notconfigured d
 			in go (MatchingInfo i)
 		(Nothing, _) -> d
   where
-	go mi = checkMatcher' matcher mi notpresent
+	go mi = checkMatcher' matcher mi lu notpresent
 
-checkMatcher' :: FileMatcher Annex -> MatchInfo -> AssumeNotPresent -> Annex Bool
-checkMatcher' (matcher, (MatcherDesc matcherdesc)) mi notpresent = do
+checkMatcher' :: FileMatcher Annex -> MatchInfo -> LiveUpdate -> AssumeNotPresent -> Annex Bool
+checkMatcher' (matcher, (MatcherDesc matcherdesc)) mi lu notpresent = do
 	(matches, desc) <- runWriterT $ matchMrun' matcher $ \op ->
-		matchAction op notpresent mi
+		matchAction op lu notpresent mi
 	explain (mkActionItem mi) $ UnquotedString <$>
 		describeMatchResult matchDesc desc
 			((if matches then "matches " else "does not match ") ++ matcherdesc ++ ": ")
@@ -259,9 +259,9 @@ addUnlockedMatcher = AddUnlockedMatcher <$>
 	matchalways True = return (MOp limitAnything, matcherdesc)
 	matchalways False = return (MOp limitNothing, matcherdesc)
 
-checkAddUnlockedMatcher :: AddUnlockedMatcher -> MatchInfo -> Annex Bool
-checkAddUnlockedMatcher (AddUnlockedMatcher matcher) mi = 
-	checkMatcher' matcher mi S.empty
+checkAddUnlockedMatcher :: LiveUpdate -> AddUnlockedMatcher -> MatchInfo -> Annex Bool
+checkAddUnlockedMatcher lu (AddUnlockedMatcher matcher) mi = 
+	checkMatcher' matcher mi lu S.empty
 
 simply :: MatchFiles Annex -> ParseResult (MatchFiles Annex)
 simply = Right . Operation
@@ -271,8 +271,8 @@ usev a v = Operation <$> a v
 
 call :: String -> Either String (Matcher (MatchFiles Annex)) -> ParseResult (MatchFiles Annex)
 call desc (Right sub) = Right $ Operation $ MatchFiles
-	{ matchAction = \notpresent mi ->
-		matchMrun sub $ \o -> matchAction o notpresent mi
+	{ matchAction = \lu notpresent mi ->
+		matchMrun sub $ \o -> matchAction o lu notpresent mi
 	, matchNeedsFileName = any matchNeedsFileName sub
 	, matchNeedsFileContent = any matchNeedsFileContent sub
 	, matchNeedsKey = any matchNeedsKey sub

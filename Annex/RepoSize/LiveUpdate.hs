@@ -11,15 +11,16 @@ module Annex.RepoSize.LiveUpdate where
 
 import Annex.Common
 import qualified Annex
-import Types.RepoSize
 import Logs.Presence.Pure
+import qualified Database.RepoSize as Db
+import Annex.UUID
 
 import Control.Concurrent
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 
-updateRepoSize :: UUID -> Key -> LogStatus -> Annex ()
-updateRepoSize u k s = do
+updateRepoSize :: LiveUpdate -> UUID -> Key -> LogStatus -> Annex ()
+updateRepoSize lu u k s = do
 	rsv <- Annex.getRead Annex.reposizes
 	liftIO (takeMVar rsv) >>= \case
 		Nothing -> liftIO (putMVar rsv Nothing)
@@ -52,3 +53,48 @@ accumRepoSizes :: Key -> (S.Set UUID, S.Set UUID) -> M.Map UUID RepoSize -> M.Ma
 accumRepoSizes k (newlocs, removedlocs) sizemap = 
 	let !sizemap' = foldl' (flip $ M.alter $ addKeyRepoSize k) sizemap newlocs
 	in foldl' (flip $ M.alter $ removeKeyRepoSize k) sizemap' removedlocs
+
+-- Called when a preferred content check indicates that a live update is
+-- needed. Can be called more than once.
+startLiveUpdate :: LiveUpdate -> Annex ()
+startLiveUpdate (LiveUpdate startv _donev) = 
+	liftIO $ void $ tryPutMVar startv ()
+startLiveUpdate NoLiveUpdate = noop
+
+-- When the UUID is Nothing, it's a live update of the local repository.
+prepareLiveUpdate :: Maybe UUID -> Key -> SizeChange -> Annex LiveUpdate
+prepareLiveUpdate mu k sc = do
+	h <- Db.getRepoSizeHandle
+	u <- maybe getUUID pure mu
+	startv <- liftIO newEmptyMVar
+	donev <- liftIO newEmptyMVar
+	void $ liftIO $ forkIO $ waitstart startv donev h u
+	return (LiveUpdate startv donev)
+  where
+	{- Wait for startLiveUpdate, or for the LiveUpdate to get garbage
+	 - collected in the case where it is never going to start. -}
+	waitstart startv donev h u = tryNonAsync (takeMVar startv) >>= \case
+		Right _ -> do
+			Db.startingLiveSizeChange h u k sc
+			waitdone donev h u
+		Left _ -> noop
+	
+	{- Wait for endLiveUpdate to be called, or for the LiveUpdate to
+	 - get garbage collected in the case where the change didn't
+	 - actually happen. -}
+	waitdone donev h u = tryNonAsync (takeMVar donev) >>= \case
+		-- TODO if succeeded == True, need to update RepoSize db
+		-- in same transaction as Db.finishedLiveSizeChange
+		Right (succeeded, u', k', sc')
+			| u' == u && k' == k && sc' == sc -> done h u
+			-- This can happen when eg, storing to a cluster
+			-- causes fanout and so this is called with
+			-- other UUIDs.
+			| otherwise -> waitdone donev h u
+		Left _ -> done h u
+	done h u = Db.finishedLiveSizeChange h u k sc
+
+finishedLiveUpdate :: LiveUpdate -> Bool -> UUID -> Key -> SizeChange -> IO ()
+finishedLiveUpdate (LiveUpdate _startv donev) succeeded u k sc =
+	putMVar donev (succeeded, u, k, sc)
+finishedLiveUpdate NoLiveUpdate _ _ _ _ = noop

@@ -60,7 +60,7 @@ queueTransfers = queueTransfersMatching (const True)
  - condition. Honors preferred content settings. -}
 queueTransfersMatching :: (UUID -> Bool) -> Reason -> Schedule -> Key -> AssociatedFile -> Direction -> Assistant Bool
 queueTransfersMatching matching reason schedule k f direction
-	| direction == Download = ifM (liftAnnex $ wantGet True (Just k) f)
+	| direction == Download = ifM (liftAnnex $ wantGet NoLiveUpdate True (Just k) f)
 		( go
 		, return False
 		)
@@ -89,7 +89,7 @@ queueTransfersMatching matching reason schedule k f direction
 		 - already have it. -}
 		| otherwise = do
 			s <- locs
-			filterM (wantGetBy True (Just k) f . Remote.uuid) $
+			filterM (wantGetBy NoLiveUpdate True (Just k) f . Remote.uuid) $
 				filter (\r -> not (inset s r || Remote.readonly r))
 					(syncDataRemotes st)
 	  where

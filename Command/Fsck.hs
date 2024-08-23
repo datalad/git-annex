@@ -334,12 +334,12 @@ verifyLocationLog key keystatus ai = do
 		whenM (annexSecureHashesOnly <$> Annex.getGitConfig) $
 			warning $ "** Despite annex.securehashesonly being set, " <> QuotedPath obj <> " has content present in the annex using an insecure " <> UnquotedString (decodeBS (formatKeyVariety (fromKey keyVariety key))) <> " key"
 
-	verifyLocationLog' key ai present u (logChange key u)
+	verifyLocationLog' key ai present u (logChange NoLiveUpdate key u)
 
 verifyLocationLogRemote :: Key -> ActionItem -> Remote -> Bool -> Annex Bool
 verifyLocationLogRemote key ai remote present =
 	verifyLocationLog' key ai present (Remote.uuid remote)
-		(Remote.logStatus remote key)
+		(Remote.logStatus NoLiveUpdate remote key)
 
 verifyLocationLog' :: Key -> ActionItem -> Bool -> UUID -> (LogStatus -> Annex ()) -> Annex Bool
 verifyLocationLog' key ai present u updatestatus = do
@@ -385,7 +385,7 @@ verifyRequiredContent key ai@(ActionItemAssociatedFile afile _) = case afile of
 	go requiredlocs = do
 		presentlocs <- S.fromList <$> loggedLocations key
 		missinglocs <- filterM
-			(\u -> isRequiredContent (Just u) S.empty (Just key) afile False)
+			(\u -> isRequiredContent NoLiveUpdate (Just u) S.empty (Just key) afile False)
 			(S.toList $ S.difference requiredlocs presentlocs)
 		if null missinglocs
 			then return True
@@ -641,7 +641,7 @@ badContentRemote remote localcopy key = do
 
 	dropped <- tryNonAsync (Remote.removeKey remote Nothing key)
 	when (isRight dropped) $
-		Remote.logStatus remote key InfoMissing
+		Remote.logStatus NoLiveUpdate remote key InfoMissing
 	return $ case (movedbad, dropped) of
 		(True, Right ()) -> "moved from " ++ Remote.name remote ++
 			" to " ++ fromRawFilePath destbad

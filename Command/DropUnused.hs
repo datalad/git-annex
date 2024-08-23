@@ -57,7 +57,8 @@ perform :: Maybe Remote -> NumCopies -> MinCopies -> Key -> CommandPerform
 perform from numcopies mincopies key = case from of
 	Just r -> do
 		showAction $ UnquotedString $ "from " ++ Remote.name r
-		Command.Drop.performRemote pcc key (AssociatedFile Nothing) numcopies mincopies r ud
+		Command.Drop.performRemote NoLiveUpdate pcc key
+			(AssociatedFile Nothing) numcopies mincopies r ud
 	Nothing -> ifM (inAnnex key)
 		( droplocal
 		, ifM (objectFileExists key)
@@ -71,7 +72,8 @@ perform from numcopies mincopies key = case from of
 			)
 		)
   where
-	droplocal = Command.Drop.performLocal pcc key (AssociatedFile Nothing) numcopies mincopies [] ud
+	droplocal = Command.Drop.performLocal NoLiveUpdate pcc 
+		key (AssociatedFile Nothing) numcopies mincopies [] ud
 	pcc = Command.Drop.PreferredContentChecked False
 	ud = Command.Drop.DroppingUnused True
 

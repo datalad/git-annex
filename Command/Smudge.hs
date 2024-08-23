@@ -191,7 +191,7 @@ clean' file mk passthrough discardreststdin emitpointer =
 			=<< lockDown cfg (fromRawFilePath file)
 
 	postingest (Just k, _) = do
-		logStatus k InfoPresent
+		logStatus NoLiveUpdate k InfoPresent
 		return k
 	postingest _ = giveup "could not add file to the annex"
 
@@ -248,7 +248,7 @@ shouldAnnex file indexmeta moldkey = do
 	  where
 		go = do
 			matcher <- largeFilesMatcher
-			checkFileMatcher' matcher file d
+			checkFileMatcher' NoLiveUpdate matcher file d
 	
 	checkwasannexed = pure $ isJust moldkey
 

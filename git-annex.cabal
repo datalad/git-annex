@@ -786,6 +786,7 @@ Executable git-annex
     Database.Queue
     Database.RawFilePath
     Database.RepoSize
+    Database.RepoSize.Handle
     Database.Types
     Database.Utility
     Git

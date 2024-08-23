@@ -101,7 +101,7 @@ startDistributionDownload d = go =<< liftIO . newVersionLocation d =<< liftIO ol
 	cleanup = liftAnnex $ do
 		lockContentForRemoval k noop removeAnnex
 		setUrlMissing k u
-		logStatus k InfoMissing
+		logStatus NoLiveUpdate k InfoMissing
 
 {- Called once the download is done.
  - Passed an action that can be used to clean up the downloaded file.

@@ -133,5 +133,5 @@ perform src key = do
 
 cleanup :: Key -> CommandCleanup
 cleanup key = do
-	logStatus key InfoPresent
+	logStatus NoLiveUpdate key InfoPresent
 	return True

@@ -323,7 +323,7 @@ addUrlChecked o url file u checkexistssize key =
 			Just (exists, samesize, url')
 				| exists && (samesize || relaxedOption (downloadOptions o)) -> do
 					setUrlPresent key url'
-					logChange key u InfoPresent
+					logChange NoLiveUpdate key u InfoPresent
 					next $ return True
 				| otherwise -> do
 					warning $ UnquotedString $ "while adding a new url to an already annexed file, " ++ if exists
@@ -511,7 +511,7 @@ addWorkTree _ addunlockedmatcher u url file key mtmp = case mtmp of
 			createWorkTreeDirectory (P.takeDirectory file)
 			liftIO $ moveFile tmp file
 		largematcher <- largeFilesMatcher
-		large <- checkFileMatcher largematcher file
+		large <- checkFileMatcher NoLiveUpdate largematcher file
 		if large
 			then do
 				-- Move back to tmp because addAnnexedFile
@@ -525,11 +525,11 @@ addWorkTree _ addunlockedmatcher u url file key mtmp = case mtmp of
 	go = do
 		maybeShowJSON $ JSONChunk [("key", serializeKey key)]
 		setUrlPresent key url
-		logChange key u InfoPresent
+		logChange NoLiveUpdate key u InfoPresent
 		ifM (addAnnexedFile addunlockedmatcher file key mtmp)
 			( do
 				when (isJust mtmp) $
-					logStatus key InfoPresent
+					logStatus NoLiveUpdate key InfoPresent
 			, maybe noop (\tmp -> pruneTmpWorkDirBefore tmp (liftIO . removeWhenExistsWith R.removeLink)) mtmp
 			)
 

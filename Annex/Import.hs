@@ -191,7 +191,7 @@ recordImportTree remote importtreeconfig imported = do
 		let updater db moldkey _newkey _ = case moldkey of
 			Just oldkey | not (isGitShaKey oldkey) ->
 				unlessM (stillpresent db oldkey) $
-					logChange oldkey (Remote.uuid remote) InfoMissing
+					logChange NoLiveUpdate oldkey (Remote.uuid remote) InfoMissing
 			_ -> noop
 		-- When the remote is versioned, it still contains keys
 		-- that are not present in the new tree.
@@ -763,7 +763,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 				tryNonAsync (importkey loc cid sz nullMeterUpdate) >>= \case
 					Right (Just k) -> do
 						recordcidkeyindb db cid k
-						logChange k (Remote.uuid remote) InfoPresent
+						logChange NoLiveUpdate k (Remote.uuid remote) InfoPresent
 						return $ Just (loc, Right k)
 					Right Nothing -> return Nothing
 					Left e -> do
@@ -799,7 +799,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 					, providedMimeEncoding = Nothing
 					, providedLinkType = Nothing
 					}
-				islargefile <- checkMatcher' matcher mi mempty
+				islargefile <- checkMatcher' matcher mi NoLiveUpdate mempty
 				metered Nothing sz bwlimit $ const $ if islargefile
 					then doimportlarge importkey cidmap loc cid sz f
 					else doimportsmall cidmap loc cid sz
@@ -823,7 +823,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 				Just k -> checkSecureHashes k >>= \case
 					Nothing -> do
 						recordcidkey cidmap cid k
-						logChange k (Remote.uuid remote) InfoPresent
+						logChange NoLiveUpdate k (Remote.uuid remote) InfoPresent
 						if importcontent
 							then getcontent k
 							else return (Just (k, True))
@@ -839,7 +839,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 					(combineMeterUpdate p' p)
 				ok <- moveAnnex k af tmpfile
 				when ok $
-					logStatus k InfoPresent
+					logStatus NoLiveUpdate k InfoPresent
 				return (Just (k, ok))
 			checkDiskSpaceToGet k Nothing Nothing $
 				notifyTransfer Download af $
@@ -883,8 +883,8 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 					ok <- moveAnnex k af tmpfile
 					when ok $ do
 						recordcidkey cidmap cid k
-						logStatus k InfoPresent
-						logChange k (Remote.uuid remote) InfoPresent
+						logStatus NoLiveUpdate k InfoPresent
+						logChange NoLiveUpdate k (Remote.uuid remote) InfoPresent
 					return (Right k, ok)
 				Just sha -> do
 					recordcidkey cidmap cid k
@@ -910,7 +910,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 				, contentFile = tmpfile
 				, matchKey = Nothing
 				}
-			islargefile <- checkMatcher' matcher mi mempty
+			islargefile <- checkMatcher' matcher mi NoLiveUpdate mempty
 			if islargefile
 				then do
 					backend <- chooseBackend f
@@ -1085,7 +1085,7 @@ isKnownImportLocation dbhandle loc = liftIO $
 	not . null <$> Export.getExportTreeKey dbhandle loc
 
 matchesImportLocation :: FileMatcher Annex -> ImportLocation -> Integer -> Annex Bool
-matchesImportLocation matcher loc sz = checkMatcher' matcher mi mempty
+matchesImportLocation matcher loc sz = checkMatcher' matcher mi NoLiveUpdate mempty
   where
 	mi = MatchingInfo $ ProvidedInfo
 		{ providedFilePath = Just (fromImportLocation loc)

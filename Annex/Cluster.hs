@@ -108,7 +108,10 @@ clusterProxySelector clusteruuid protocolversion (Bypass bypass) = do
 		, proxyPUT = \af k -> do
 			locs <- S.fromList <$> loggedLocations k
 			let l = filter (flip S.notMember locs . Remote.uuid . remote) nodes
-			l' <- filterM (\n -> isPreferredContent (Just (Remote.uuid (remote n))) mempty (Just k) af True) l
+			--- XXX FIXME TODO NoLiveUpdate should not be used
+			-- here. Doing a live update here is exactly why
+			-- live update is needed.
+			l' <- filterM (\n -> isPreferredContent NoLiveUpdate (Just (Remote.uuid (remote n))) mempty (Just k) af True) l
 			-- PUT to no nodes doesn't work, so fall
 			-- back to all nodes.
 			return $ nonempty [l', l] nodes

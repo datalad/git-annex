@@ -90,7 +90,7 @@ seek o = do
 			, liftIO exitFailure
 			)
   where
-	checkmatcher matcher = checkMatcher' matcher (matchinfo o) S.empty
+	checkmatcher matcher = checkMatcher' matcher (matchinfo o) NoLiveUpdate S.empty
 
 bail :: String -> IO a
 bail s = do

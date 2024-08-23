@@ -58,17 +58,17 @@ import qualified Data.Map as M
 import qualified Data.Set as S
 
 {- Log a change in the presence of a key's value in current repository. -}
-logStatus :: Key -> LogStatus -> Annex ()
-logStatus key s = do
+logStatus :: LiveUpdate -> Key -> LogStatus -> Annex ()
+logStatus lu key s = do
 	u <- getUUID
-	logChange key u s
+	logChange lu key u s
 
 {- Run an action that gets the content of a key, and update the log
  - when it succeeds. -}
-logStatusAfter :: Key -> Annex Bool -> Annex Bool
-logStatusAfter key a = ifM a 
+logStatusAfter :: LiveUpdate -> Key -> Annex Bool -> Annex Bool
+logStatusAfter lu key a = ifM a
 	( do
-		logStatus key InfoPresent
+		logStatus lu key InfoPresent
 		return True
 	, return False
 	)
@@ -79,8 +79,8 @@ logStatusAfter key a = ifM a
  - logged to contain a key, loading the log will include the cluster's
  - UUID.
  -}
-logChange :: Key -> UUID -> LogStatus -> Annex ()
-logChange key u@(UUID _) s
+logChange :: LiveUpdate -> Key -> UUID -> LogStatus -> Annex ()
+logChange lu key u@(UUID _) s
 	| isClusterUUID u = noop
 	| otherwise = do
 		config <- Annex.getGitConfig
@@ -90,8 +90,8 @@ logChange key u@(UUID _) s
 			s
 			(LogInfo (fromUUID u))
 		when changed $
-			updateRepoSize u key s
-logChange _ NoUUID _ = noop
+			updateRepoSize lu u key s
+logChange _ _ NoUUID _ = noop
 
 {- Returns a list of repository UUIDs that, according to the log, have
  - the value of a key. -}
@@ -181,7 +181,7 @@ setDead key = do
 			Unknown -> CandidateVectorClock 0
 		addLog' (Annex.Branch.RegardingUUID [u]) logfile InfoDead
 			(info l) c
-		updateRepoSize u key InfoDead
+		updateRepoSize NoLiveUpdate u key InfoDead
 
 data Unchecked a = Unchecked (Annex (Maybe a))
 

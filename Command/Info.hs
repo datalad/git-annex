@@ -51,7 +51,6 @@ import qualified Limit
 import Messages.JSON (DualDisp(..), ObjectMap(..))
 import Annex.BloomFilter
 import Annex.RepoSize
-import Types.RepoSize
 import qualified Command.Unused
 import qualified Utility.RawFilePath as R
 

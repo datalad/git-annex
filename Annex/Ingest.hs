@@ -288,7 +288,7 @@ cleanOldKeys file newkey = do
 				(f:_) -> do
 					ic <- withTSDelta (liftIO . genInodeCache f)
 					void $ linkToAnnex key f ic
-				_ -> logStatus key InfoMissing
+				_ -> logStatus NoLiveUpdate key InfoMissing
 
 {- On error, put the file back so it doesn't seem to have vanished.
  - This can be called before or after the symlink is in place. -}
@@ -349,7 +349,7 @@ gitAddParams (CheckGitIgnore False) = return [Param "-f"]
 addUnlocked :: AddUnlockedMatcher -> MatchInfo -> Bool -> Annex Bool
 addUnlocked matcher mi contentpresent =
 	((not . coreSymlinks <$> Annex.getGitConfig) <||>
-	 (checkAddUnlockedMatcher matcher mi) <||>
+	 (checkAddUnlockedMatcher NoLiveUpdate matcher mi) <||>
 	 (maybe False go . snd <$> getCurrentBranch)
 	)
   where

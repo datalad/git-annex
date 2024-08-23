@@ -149,6 +149,6 @@ cleanup file newkey a = do
 			return (MigrationRecord sha)
 		)
 	whenM (inAnnex newkey) $
-		logStatus newkey InfoPresent
+		logStatus NoLiveUpdate newkey InfoPresent
 	a newkeyrec
 	return True

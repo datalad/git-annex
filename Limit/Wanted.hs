@@ -16,23 +16,23 @@ import qualified Remote
 
 addWantGet :: Annex ()
 addWantGet = addPreferredContentLimit "want-get" $
-	checkWant $ wantGet False Nothing
+	checkWant $ wantGet NoLiveUpdate False Nothing
 
 addWantGetBy :: String -> Annex ()
 addWantGetBy name = do
 	u <- Remote.nameToUUID name
 	addPreferredContentLimit "want-get-by" $ checkWant $ \af ->
-		wantGetBy False Nothing af u
+		wantGetBy NoLiveUpdate False Nothing af u
 
 addWantDrop :: Annex ()
 addWantDrop = addPreferredContentLimit "want-drop" $ checkWant $ \af ->
-	wantDrop False Nothing Nothing af (Just [])
+	wantDrop NoLiveUpdate False Nothing Nothing af (Just [])
 
 addWantDropBy :: String -> Annex ()
 addWantDropBy name = do
 	u <- Remote.nameToUUID name
 	addPreferredContentLimit "want-drop-by" $ checkWant $ \af ->
-		wantDrop False (Just u) Nothing af (Just [])
+		wantDrop NoLiveUpdate False (Just u) Nothing af (Just [])
 
 addPreferredContentLimit :: String -> (MatchInfo -> Annex Bool) -> Annex ()
 addPreferredContentLimit desc a = do
@@ -41,7 +41,7 @@ addPreferredContentLimit desc a = do
 	nk <- introspectPreferredRequiredContent matchNeedsKey Nothing
 	nl <- introspectPreferredRequiredContent matchNeedsLocationLog Nothing
 	addLimit $ Right $ MatchFiles
-		{ matchAction = const a
+		{ matchAction = const $ const a
 		, matchNeedsFileName = nfn
 		, matchNeedsFileContent = nfc
 		, matchNeedsKey = nk

@@ -425,8 +425,8 @@ forceTrust level remotename = do
  - in the local repo, not on the remote. The process of transferring the
  - key to the remote, or removing the key from it *may* log the change
  - on the remote, but this cannot always be relied on. -}
-logStatus :: Remote -> Key -> LogStatus -> Annex ()
-logStatus remote key = logChange key (uuid remote)
+logStatus :: LiveUpdate -> Remote -> Key -> LogStatus -> Annex ()
+logStatus lu remote key = logChange lu key (uuid remote)
 
 {- Orders remotes by cost, with ones with the lowest cost grouped together. -}
 byCost :: [Remote] -> [[Remote]]

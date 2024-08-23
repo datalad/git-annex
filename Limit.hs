@@ -18,7 +18,6 @@ import Annex.WorkTree
 import Annex.UUID
 import Annex.Magic
 import Annex.RepoSize
-import Types.RepoSize
 import Logs.MaxSize
 import Annex.Link
 import Types.Link
@@ -67,7 +66,7 @@ getMatcher = run <$> getMatcher'
 	run matcher i = do
 		(match, desc) <- runWriterT $
 			Utility.Matcher.matchMrun' matcher $ \o ->
-				matchAction o S.empty i
+				matchAction o NoLiveUpdate S.empty i
 		explain (mkActionItem i) $ UnquotedString <$>
 			Utility.Matcher.describeMatchResult matchDesc desc
 				(if match then "matches:" else "does not match:")
@@ -109,7 +108,7 @@ addInclude = addLimit . limitInclude
 
 limitInclude :: MkLimit Annex
 limitInclude glob = Right $ MatchFiles
-	{ matchAction = const $ matchGlobFile glob
+	{ matchAction = const $ const $ matchGlobFile glob
 	, matchNeedsFileName = True
 	, matchNeedsFileContent = False
 	, matchNeedsKey = False
@@ -123,7 +122,7 @@ addExclude = addLimit . limitExclude
 
 limitExclude :: MkLimit Annex
 limitExclude glob = Right $ MatchFiles
-	{ matchAction = const $ not <$$> matchGlobFile glob
+	{ matchAction = const $ const $ not <$$> matchGlobFile glob
 	, matchNeedsFileName = True
 	, matchNeedsFileContent = False
 	, matchNeedsKey = False
@@ -148,7 +147,7 @@ addIncludeSameContent = addLimit . limitIncludeSameContent
 
 limitIncludeSameContent :: MkLimit Annex
 limitIncludeSameContent glob = Right $ MatchFiles
-	{ matchAction = const $ matchSameContentGlob glob
+	{ matchAction = const $ const $ matchSameContentGlob glob
 	, matchNeedsFileName = True
 	, matchNeedsFileContent = False
 	, matchNeedsKey = False
@@ -163,7 +162,7 @@ addExcludeSameContent = addLimit . limitExcludeSameContent
 
 limitExcludeSameContent :: MkLimit Annex
 limitExcludeSameContent glob = Right $ MatchFiles
-	{ matchAction = const $ not <$$> matchSameContentGlob glob
+	{ matchAction = const $ const $ not <$$> matchSameContentGlob glob
 	, matchNeedsFileName = True
 	, matchNeedsFileContent = False
 	, matchNeedsKey = False
@@ -239,7 +238,7 @@ matchMagic
 	-> MkLimit Annex
 matchMagic limitname querymagic selectprovidedinfo selectuserprovidedinfo (Just magic) glob = 
 	Right $ MatchFiles
-		{ matchAction = const go
+		{ matchAction = const $ const go
 		, matchNeedsFileName = False
 		, matchNeedsFileContent = True
 		, matchNeedsKey = False
@@ -266,7 +265,7 @@ matchMagic limitname _ _ _ Nothing _ =
 
 addUnlocked :: Annex ()
 addUnlocked = addLimit $ Right $ MatchFiles
-	{ matchAction = const $ matchLockStatus False
+	{ matchAction = const $ const $ matchLockStatus False
 	, matchNeedsFileName = True
 	, matchNeedsFileContent = False
 	, matchNeedsKey = False
@@ -276,7 +275,7 @@ addUnlocked = addLimit $ Right $ MatchFiles
 
 addLocked :: Annex ()
 addLocked = addLimit $ Right $ MatchFiles
-	{ matchAction = const $ matchLockStatus True
+	{ matchAction = const $ const $ matchLockStatus True
 	, matchNeedsFileName = True
 	, matchNeedsFileContent = False
 	, matchNeedsKey = False
@@ -311,7 +310,7 @@ addIn s = do
   where
 	(name, date) = separate (== '@') s
 	use inhere a = Right $ MatchFiles
-		{ matchAction = checkKey . a
+		{ matchAction = const $ checkKey . a
 		, matchNeedsFileName = False
 		, matchNeedsFileContent = False
 		, matchNeedsKey = True
@@ -339,7 +338,7 @@ addExpectedPresent :: Annex ()
 addExpectedPresent = do
 	hereu <- getUUID
 	addLimit $ Right $ MatchFiles
-		{ matchAction = const $ checkKey $ \key -> do
+		{ matchAction = const $ const $ checkKey $ \key -> do
 			us <- Remote.keyLocations key
 			return $ hereu `elem` us
 		, matchNeedsFileName = False
@@ -352,7 +351,7 @@ addExpectedPresent = do
 {- Limit to content that is currently present on a uuid. -}
 limitPresent :: Maybe UUID -> MatchFiles Annex
 limitPresent u = MatchFiles
-	{ matchAction = const $ checkKey $ \key -> do
+	{ matchAction = const $ const $ checkKey $ \key -> do
 		hereu <- getUUID
 		if u == Just hereu || isNothing u
 			then inAnnex key
@@ -369,7 +368,7 @@ limitPresent u = MatchFiles
 {- Limit to content that is in a directory, anywhere in the repository tree -}
 limitInDir :: FilePath -> String -> MatchFiles Annex
 limitInDir dir desc = MatchFiles 
-	{ matchAction = const go
+	{ matchAction = const $ const go
 	, matchNeedsFileName = True
 	, matchNeedsFileContent = False
 	, matchNeedsKey = False
@@ -400,7 +399,7 @@ limitCopies want = case splitc ':' want of
 	go num good = case readish num of
 		Nothing -> Left "bad number for copies"
 		Just n -> Right $ MatchFiles
-			{ matchAction = \notpresent -> checkKey $
+			{ matchAction = const $ \notpresent -> checkKey $
 				go' n good notpresent
 			, matchNeedsFileName = False
 			, matchNeedsFileContent = False
@@ -425,7 +424,7 @@ addLackingCopies desc approx = addLimit . limitLackingCopies desc approx
 limitLackingCopies :: String -> Bool -> MkLimit Annex
 limitLackingCopies desc approx want = case readish want of
 	Just needed -> Right $ MatchFiles
-		{ matchAction = \notpresent mi -> flip checkKey mi $
+		{ matchAction = const $ \notpresent mi -> flip checkKey mi $
 			go mi needed notpresent
 		, matchNeedsFileName = False
 		, matchNeedsFileContent = False
@@ -456,7 +455,7 @@ limitLackingCopies desc approx want = case readish want of
  -}
 limitUnused :: MatchFiles Annex
 limitUnused = MatchFiles
-	{ matchAction = go
+	{ matchAction = const $ const go
 	, matchNeedsFileName = True
 	, matchNeedsFileContent = False
 	, matchNeedsKey = True
@@ -464,9 +463,9 @@ limitUnused = MatchFiles
 	, matchDesc = matchDescSimple "unused"
 	}
   where
- 	go _ (MatchingFile _) = return False
-	go _ (MatchingInfo p) = maybe (pure False) isunused (providedKey p)
-	go _ (MatchingUserInfo p) = do
+ 	go (MatchingFile _) = return False
+	go (MatchingInfo p) = maybe (pure False) isunused (providedKey p)
+	go (MatchingUserInfo p) = do
 		k <- getUserInfo (userProvidedKey p)
 		isunused k
 	
@@ -479,7 +478,7 @@ addAnything = addLimit (Right limitAnything)
 {- Limit that matches any version of any file or key. -}
 limitAnything :: MatchFiles Annex
 limitAnything = MatchFiles
-	{ matchAction = \_ _ -> return True
+	{ matchAction = \_ _ _ -> return True
 	, matchNeedsFileName = False
 	, matchNeedsFileContent = False
 	, matchNeedsKey = False
@@ -494,7 +493,7 @@ addNothing = addLimit (Right limitNothing)
 {- Limit that never matches. -}
 limitNothing :: MatchFiles Annex
 limitNothing = MatchFiles 
-	{ matchAction = \_ _ -> return False
+	{ matchAction = \_ _ _ -> return False
 	, matchNeedsFileName = False
 	, matchNeedsFileContent = False
 	, matchNeedsKey = False
@@ -509,7 +508,7 @@ addInAllGroup groupname = addLimit $ limitInAllGroup groupMap groupname
 
 limitInAllGroup :: Annex GroupMap -> MkLimit Annex
 limitInAllGroup getgroupmap groupname = Right $ MatchFiles
-	{ matchAction = \notpresent mi -> do
+	{ matchAction = const $ \notpresent mi -> do
 		m <- getgroupmap
 		let want = fromMaybe S.empty $ M.lookup (toGroup groupname) $ uuidsByGroup m
 		if S.null want
@@ -537,7 +536,7 @@ addOnlyInGroup groupname = addLimit $ limitOnlyInGroup groupMap groupname
 
 limitOnlyInGroup :: Annex GroupMap -> MkLimit Annex
 limitOnlyInGroup getgroupmap groupname = Right $ MatchFiles
-	{ matchAction = \notpresent mi -> do
+	{ matchAction = const $ \notpresent mi -> do
 		m <- getgroupmap
 		let want = fromMaybe S.empty $ M.lookup (toGroup groupname) $ uuidsByGroup m
 		if S.null want
@@ -568,12 +567,12 @@ limitBalanced' termname fullybalanced mu groupname = do
 		else groupname ++ ":1"
 	let present = limitPresent mu
 	Right $ MatchFiles
-		{ matchAction = \a i ->
+		{ matchAction = \lu a i ->
 			ifM (Annex.getRead Annex.rebalance)
-				( matchAction fullybalanced a i
-				, matchAction present a i <||>
-					((not <$> matchAction copies a i)
-						<&&> matchAction fullybalanced a i
+				( matchAction fullybalanced lu a i
+				, matchAction present lu a i <||>
+					((not <$> matchAction copies lu a i)
+						<&&> matchAction fullybalanced lu a i
 					)
 				)
 		, matchNeedsFileName =
@@ -659,7 +658,7 @@ limitFullyBalanced'''
 	-> Int
 	-> MkLimit Annex
 limitFullyBalanced''' filtercandidates termname mu getgroupmap g n want = Right $ MatchFiles
-	{ matchAction = const $ checkKey $ \key -> do
+	{ matchAction = \lu -> const $ checkKey $ \key -> do
 		gm <- getgroupmap
 		let groupmembers = fromMaybe S.empty $
 			M.lookup g (uuidsByGroup gm)
@@ -728,7 +727,7 @@ addInBackend = addLimit . limitInBackend
 
 limitInBackend :: MkLimit Annex
 limitInBackend name = Right $ MatchFiles
-	{ matchAction = const $ checkKey check
+	{ matchAction = const $ const $ checkKey check
 	, matchNeedsFileName = False
 	, matchNeedsFileContent = False
 	, matchNeedsKey = True
@@ -745,7 +744,7 @@ addSecureHash = addLimit $ Right limitSecureHash
 
 limitSecureHash :: MatchFiles Annex
 limitSecureHash = MatchFiles
-	{ matchAction = const $ checkKey isCryptographicallySecureKey
+	{ matchAction = const $ const $ checkKey isCryptographicallySecureKey
 	, matchNeedsFileName = False
 	, matchNeedsFileContent = False
 	, matchNeedsKey = True
@@ -764,7 +763,7 @@ limitSize :: LimitBy -> String -> (Maybe Integer -> Maybe Integer -> Bool) -> Mk
 limitSize lb desc vs s = case readSize dataUnits s of
 	Nothing -> Left "bad size"
 	Just sz -> Right $ MatchFiles
-		{ matchAction = go sz
+		{ matchAction = const $ go sz
 		, matchNeedsFileName = case lb of
 			LimitAnnexFiles -> False
 			LimitDiskFiles -> True
@@ -796,7 +795,7 @@ limitMetaData :: MkLimit Annex
 limitMetaData s = case parseMetaDataMatcher s of
 	Left e -> Left e
 	Right (f, matching) -> Right $ MatchFiles
-		{ matchAction = const $ checkKey (check f matching)
+		{ matchAction = const $ const $ checkKey (check f matching)
 		, matchNeedsFileName = False
 		, matchNeedsFileContent = False
 		, matchNeedsKey = True
@@ -812,7 +811,7 @@ addAccessedWithin :: Duration -> Annex ()
 addAccessedWithin duration = do
 	now <- liftIO getPOSIXTime
 	addLimit $ Right $ MatchFiles
-		{ matchAction = const $ checkKey $ check now
+		{ matchAction = const $ const $ checkKey $ check now
 		, matchNeedsFileName = False
 		, matchNeedsFileContent = False
 		, matchNeedsKey = False

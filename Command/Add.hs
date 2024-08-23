@@ -95,7 +95,7 @@ seek' o = do
 	annexdotfiles <- getGitConfigVal annexDotFiles 
 	let gofile includingsmall (si, file) = case largeFilesOverride o of
 		Nothing -> ifM (pure (annexdotfiles || not (dotfile file))
-			<&&> (checkFileMatcher largematcher file 
+			<&&> (checkFileMatcher NoLiveUpdate largematcher file 
 			<||> Annex.getRead Annex.force))
 			( start dr si file addunlockedmatcher
 			, if includingsmall
@@ -267,5 +267,5 @@ cleanup :: Key -> Bool -> CommandCleanup
 cleanup key hascontent = do
 	maybeShowJSON $ JSONChunk [("key", serializeKey key)]
 	when hascontent $
-		logStatus key InfoPresent
+		logStatus NoLiveUpdate key InfoPresent
 	return True

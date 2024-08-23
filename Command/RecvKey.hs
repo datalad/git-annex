@@ -30,7 +30,7 @@ start (_, key) = fieldTransfer Download key $ \_p -> do
 	let rsp = RetrievalAllKeysSecure
 	ifM (getViaTmp rsp DefaultVerify key (AssociatedFile Nothing) Nothing go)
 		( do
-			logStatus key InfoPresent
+			logStatus NoLiveUpdate key InfoPresent
 			_ <- quiesce True
 			return True
 		, return False

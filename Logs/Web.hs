@@ -80,7 +80,7 @@ setUrlPresent key url = do
 	-- in the web.
 	case snd (getDownloader url) of
 		OtherDownloader -> return ()
-		_ -> logChange key webUUID InfoPresent
+		_ -> logChange NoLiveUpdate key webUUID InfoPresent
 
 setUrlMissing :: Key -> URLString -> Annex ()
 setUrlMissing key url = do
@@ -94,7 +94,7 @@ setUrlMissing key url = do
 		-- for the key are web urls, the key must not be present
 		-- in the web.
 		when (isweb url && null (filter isweb $ filter (/= url) us)) $
-			logChange key webUUID InfoMissing
+			logChange NoLiveUpdate key webUUID InfoMissing
   where
 	isweb u = case snd (getDownloader u) of
 		OtherDownloader -> False

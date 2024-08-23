@@ -154,7 +154,7 @@ upgradeDirectWorkTree = do
 			locs <- Direct.associatedFiles k
 			unlessM (anyM (Direct.goodContent k) locs) $ do
 				u <- getUUID
-				logChange k u InfoMissing
+				logChange NoLiveUpdate k u InfoMissing
 		)
 	
 	writepointer f k = liftIO $ do

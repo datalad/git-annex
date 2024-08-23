@@ -6,7 +6,6 @@
  -}
 
 {-# LANGUAGE CPP #-}
-{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE QuasiQuotes, TypeFamilies, TemplateHaskell #-}
 {-# LANGUAGE OverloadedStrings, GADTs, FlexibleContexts #-}
 {-# LANGUAGE MultiParamTypeClasses, GeneralizedNewtypeDeriving #-}
@@ -21,6 +20,7 @@
 
 module Database.RepoSize (
 	RepoSizeHandle,
+	getRepoSizeHandle,
 	openDb,
 	closeDb,
 	getRepoSizes,
@@ -31,22 +31,20 @@ module Database.RepoSize (
 ) where
 
 import Annex.Common
-import Annex.LockFile
-import Types.RepoSize
-import Git.Types
+import qualified Annex
+import Database.RepoSize.Handle
 import qualified Database.Handle as H
 import Database.Init
 import Database.Utility
 import Database.Types
+import Annex.LockFile
+import Git.Types
 import qualified Utility.RawFilePath as R
 
 import Database.Persist.Sql hiding (Key)
 import Database.Persist.TH
 import qualified System.FilePath.ByteString as P
 import qualified Data.Map as M
-import qualified Data.Text as T
-
-newtype RepoSizeHandle = RepoSizeHandle (Maybe H.DbHandle)
 
 share [mkPersist sqlSettings, mkMigrate "migrateRepoSizes"] [persistLowerCase|
 -- Corresponds to location log information from the git-annex branch.
@@ -65,6 +63,15 @@ LiveSizeChanges
   change SizeChange
   UniqueLiveSizeChange repo key
 |]
+
+{- Gets a handle to the database. It's cached in Annex state. -}
+getRepoSizeHandle :: Annex RepoSizeHandle
+getRepoSizeHandle = Annex.getState Annex.reposizehandle >>= \case
+	Just h -> return h
+	Nothing -> do
+		h <- openDb
+		Annex.changeState $ \s -> s { Annex.reposizehandle = Just h }
+		return h
 
 {- Opens the database, creating it if it doesn't exist yet.
  -
@@ -155,23 +162,24 @@ recordAnnexBranchCommit branchcommitsha = do
 	deleteWhere ([] :: [Filter AnnexBranch])
 	void $ insertUniqueFast $ AnnexBranch $ toSSha branchcommitsha
 
-data SizeChange = AddingKey | RemovingKey
-
 {- If there is already a size change for the same UUID and Key, it is
  - overwritten with the new size change. -}
-startingLiveSizeChange :: UUID -> Key -> SizeChange -> SqlPersistM ()
-startingLiveSizeChange u k sc = 
-	void $ upsertBy
+startingLiveSizeChange :: RepoSizeHandle -> UUID -> Key -> SizeChange -> IO ()
+startingLiveSizeChange (RepoSizeHandle (Just h)) u k sc = 
+	H.commitDb h $ void $ upsertBy
 		(UniqueLiveSizeChange u k)
 		(LiveSizeChanges u k sc)
 		[LiveSizeChangesChange =. sc]
+startingLiveSizeChange (RepoSizeHandle Nothing) _ _ _ = noop
 
-finishedLiveSizeChange :: UUID -> Key -> SizeChange -> SqlPersistM ()
-finishedLiveSizeChange u k sc = deleteWhere 
-	[ LiveSizeChangesRepo ==. u
-	, LiveSizeChangesKey ==. k
-	, LiveSizeChangesChange ==. sc
-	]
+finishedLiveSizeChange :: RepoSizeHandle -> UUID -> Key -> SizeChange -> IO ()
+finishedLiveSizeChange (RepoSizeHandle (Just h)) u k sc = 
+	H.commitDb h $ deleteWhere 
+		[ LiveSizeChangesRepo ==. u
+		, LiveSizeChangesKey ==. k
+		, LiveSizeChangesChange ==. sc
+		]
+finishedLiveSizeChange (RepoSizeHandle Nothing) _ _ _ = noop
 
 getLiveSizeChanges :: RepoSizeHandle -> IO (M.Map UUID (Key, SizeChange))
 getLiveSizeChanges (RepoSizeHandle (Just h)) = H.queryDb h $ do
@@ -185,14 +193,3 @@ getLiveSizeChanges (RepoSizeHandle Nothing) = return mempty
 
 getLiveSizeChanges' :: SqlPersistM [Entity LiveSizeChanges]
 getLiveSizeChanges' = selectList [] []
-
-instance PersistField SizeChange where
-        toPersistValue AddingKey = toPersistValue (1 :: Int)
-	toPersistValue RemovingKey = toPersistValue (-1 :: Int)
-	fromPersistValue b = fromPersistValue b >>= \case
-		(1 :: Int) -> Right AddingKey
-		-1 -> Right RemovingKey
-		v -> Left $ T.pack $ "bad serialized SizeChange "++ show v
-
-instance PersistFieldSql SizeChange where
-        sqlType _ = SqlInt32

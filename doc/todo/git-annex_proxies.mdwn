@@ -35,10 +35,6 @@ Planned schedule of work:
 
   May not be a bug, needs reproducing and analysis.
 
-* Check if reposizes updates works when using `git-annex transferrer`.
-  Eg, does the location log update happen in the parent process or in
-  the transferrer process?
-
 * Concurrency issues with RepoSizes calculation and balanced content:
 
   * What if 2 concurrent threads are considering sending two different
@@ -145,6 +141,12 @@ Planned schedule of work:
     enough? Could do it every minute, depending on overhead. This could
     also be done by just repeatedly touching a file named with the processes's
     pid in it, to avoid sqlite overhead.
+
+* Check all uses of NoLiveUpdate to see if a live update can be started and
+  performed there. There is one in Annex.Cluster in particular that needs a
+  live update
+
+* Check for TODO XXX markers
 
 * `git-annex info` in the limitedcalc path in cachedAllRepoData
   double-counts redundant information from the journal due to using

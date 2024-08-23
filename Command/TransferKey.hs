@@ -54,7 +54,7 @@ toPerform key af remote = go Upload af $
 	upload' (uuid remote) key af Nothing stdRetry $ \p -> do
 		tryNonAsync (Remote.storeKey remote key af Nothing p) >>= \case
 			Right () -> do
-				Remote.logStatus remote key InfoPresent
+				Remote.logStatus NoLiveUpdate remote key InfoPresent
 				return True
 			Left e -> do
 				warning (UnquotedString (show e))
@@ -63,7 +63,7 @@ toPerform key af remote = go Upload af $
 fromPerform :: Key -> AssociatedFile -> Remote -> CommandPerform
 fromPerform key af remote = go Upload af $
 	download' (uuid remote) key af Nothing stdRetry $ \p ->
-		logStatusAfter key $ getViaTmp (retrievalSecurityPolicy remote) vc key af Nothing $ \t ->
+		logStatusAfter NoLiveUpdate key $ getViaTmp (retrievalSecurityPolicy remote) vc key af Nothing $ \t ->
 			tryNonAsync (Remote.retrieveKeyFile remote key af (fromRawFilePath t) p vc) >>= \case
 				Right v -> return (True, v)	
 				Left e -> do

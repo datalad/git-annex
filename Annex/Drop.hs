@@ -29,9 +29,9 @@ type Reason = String
  - required content, and numcopies settings.
  -
  - Skips trying to drop from remotes that are appendonly, since those drops
- - would presumably fail. Also skips dropping from exporttree/importtree remotes,
- - which don't allow dropping individual keys, and from thirdPartyPopulated
- - remotes.
+ - would presumably fail. Also skips dropping from exporttree/importtree
+ - remotes, which don't allow dropping individual keys, and from
+ - thirdPartyPopulated remotes.
  -
  - The UUIDs are ones where the content is believed to be present.
  - The Remote list can include other remotes that do not have the content;
@@ -92,11 +92,12 @@ handleDropsFrom locs rs reason fromhere key afile si preverified runner = do
 			dropr fs r n >>= go fs rest
 		| otherwise = pure n
 
-	checkdrop fs n u a =
+	checkdrop fs n u a = do
 		let afs = map (AssociatedFile . Just) fs
-		    pcc = Command.Drop.PreferredContentChecked True
-		in ifM (wantDrop True u (Just key) afile (Just afs))
-			( dodrop n u (a pcc)
+		let pcc = Command.Drop.PreferredContentChecked True
+		lu <- prepareLiveUpdate u key RemovingKey
+		ifM (wantDrop lu True u (Just key) afile (Just afs))
+			( dodrop n u (a lu pcc)
 			, return n
 			)
 
@@ -116,12 +117,16 @@ handleDropsFrom locs rs reason fromhere key afile si preverified runner = do
 			, return n
 			)
 
-	dropl fs n = checkdrop fs n Nothing $ \pcc numcopies mincopies ->
+	dropl fs n = checkdrop fs n Nothing $ \lu pcc numcopies mincopies ->
 		stopUnless (inAnnex key) $
-			Command.Drop.startLocal pcc afile ai si numcopies mincopies key preverified (Command.Drop.DroppingUnused False)
+			Command.Drop.startLocal lu pcc afile ai si 
+				numcopies mincopies key preverified
+				(Command.Drop.DroppingUnused False)
 
-	dropr fs r n  = checkdrop fs n (Just $ Remote.uuid r) $ \pcc numcopies mincopies ->
-		Command.Drop.startRemote pcc afile ai si numcopies mincopies key (Command.Drop.DroppingUnused False) r
+	dropr fs r n  = checkdrop fs n (Just $ Remote.uuid r) $ \lu pcc numcopies mincopies ->
+		Command.Drop.startRemote lu pcc afile ai si 
+			numcopies mincopies key
+			(Command.Drop.DroppingUnused False) r
 
 	ai = mkActionItem (key, afile)
 

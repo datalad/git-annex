@@ -11,6 +11,7 @@ import Annex.Locations as X
 import Annex.Debug as X (fastDebug, debug)
 import Messages as X
 import Git.Quote as X
+import Types.RepoSize as X
 #ifndef mingw32_HOST_OS
 import System.Posix.IO as X hiding (createPipe, append)
 #endif

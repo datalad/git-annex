@@ -55,5 +55,5 @@ perform key = ifM (inAnnex key)
 
 cleanup :: Key -> CommandCleanup
 cleanup key = do
-	logStatus key InfoMissing
+	logStatus NoLiveUpdate key InfoMissing
 	return True

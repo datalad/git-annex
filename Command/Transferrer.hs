@@ -67,12 +67,12 @@ start = do
 						warning (UnquotedString (show e))
 						return False
 					Right () -> do
-						Remote.logStatus remote key InfoPresent
+						Remote.logStatus NoLiveUpdate remote key InfoPresent
 						return True
 	runner (AssistantDownloadRequest _ key (TransferAssociatedFile file)) remote =
 		notifyTransfer Download file $
 			download' (Remote.uuid remote) key file Nothing stdRetry $ \p ->
-				logStatusAfter key $ getViaTmp (Remote.retrievalSecurityPolicy remote) (RemoteVerify remote) key file Nothing $ \t -> do
+				logStatusAfter NoLiveUpdate key $ getViaTmp (Remote.retrievalSecurityPolicy remote) (RemoteVerify remote) key file Nothing $ \t -> do
 					r <- tryNonAsync (Remote.retrieveKeyFile remote key file (fromRawFilePath t) p (RemoteVerify remote)) >>= \case
 						Left e -> do
 							warning (UnquotedString (show e))
