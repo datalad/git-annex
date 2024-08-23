@@ -79,6 +79,7 @@ Planned schedule of work:
 
     Add to reposizes db a table for live updates.
     Listing process ID, thread ID, UUID, key, addition or removal
+    (done)
 
     Make checking the balanced preferred content limit record a
     live update in the table and use other live updates in making its

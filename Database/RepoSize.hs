@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE QuasiQuotes, TypeFamilies, TemplateHaskell #-}
 {-# LANGUAGE OverloadedStrings, GADTs, FlexibleContexts #-}
 {-# LANGUAGE MultiParamTypeClasses, GeneralizedNewtypeDeriving #-}
@@ -24,6 +25,9 @@ module Database.RepoSize (
 	closeDb,
 	getRepoSizes,
 	setRepoSizes,
+	getLiveSizeChanges,
+	startingLiveSizeChange,
+	finishedLiveSizeChange,
 ) where
 
 import Annex.Common
@@ -40,6 +44,7 @@ import Database.Persist.Sql hiding (Key)
 import Database.Persist.TH
 import qualified System.FilePath.ByteString as P
 import qualified Data.Map as M
+import qualified Data.Text as T
 
 newtype RepoSizeHandle = RepoSizeHandle (Maybe H.DbHandle)
 
@@ -53,6 +58,12 @@ RepoSizes
 AnnexBranch
   commit SSha
   UniqueCommit commit
+-- Changes that are currently being made that affect repo sizes.
+LiveSizeChanges
+  repo UUID
+  key Key
+  change SizeChange
+  UniqueLiveSizeChange repo key
 |]
 
 {- Opens the database, creating it if it doesn't exist yet.
@@ -143,3 +154,45 @@ recordAnnexBranchCommit :: Sha -> SqlPersistM ()
 recordAnnexBranchCommit branchcommitsha = do
 	deleteWhere ([] :: [Filter AnnexBranch])
 	void $ insertUniqueFast $ AnnexBranch $ toSSha branchcommitsha
+
+data SizeChange = AddingKey | RemovingKey
+
+{- If there is already a size change for the same UUID and Key, it is
+ - overwritten with the new size change. -}
+startingLiveSizeChange :: UUID -> Key -> SizeChange -> SqlPersistM ()
+startingLiveSizeChange u k sc = 
+	void $ upsertBy
+		(UniqueLiveSizeChange u k)
+		(LiveSizeChanges u k sc)
+		[LiveSizeChangesChange =. sc]
+
+finishedLiveSizeChange :: UUID -> Key -> SizeChange -> SqlPersistM ()
+finishedLiveSizeChange u k sc = deleteWhere 
+	[ LiveSizeChangesRepo ==. u
+	, LiveSizeChangesKey ==. k
+	, LiveSizeChangesChange ==. sc
+	]
+
+getLiveSizeChanges :: RepoSizeHandle -> IO (M.Map UUID (Key, SizeChange))
+getLiveSizeChanges (RepoSizeHandle (Just h)) = H.queryDb h $ do
+	m <- M.fromList . map conv <$> getLiveSizeChanges'
+	return m
+  where
+	conv entity = 
+		let LiveSizeChanges u k sc = entityVal entity
+		in (u, (k, sc))
+getLiveSizeChanges (RepoSizeHandle Nothing) = return mempty
+
+getLiveSizeChanges' :: SqlPersistM [Entity LiveSizeChanges]
+getLiveSizeChanges' = selectList [] []
+
+instance PersistField SizeChange where
+        toPersistValue AddingKey = toPersistValue (1 :: Int)
+	toPersistValue RemovingKey = toPersistValue (-1 :: Int)
+	fromPersistValue b = fromPersistValue b >>= \case
+		(1 :: Int) -> Right AddingKey
+		-1 -> Right RemovingKey
+		v -> Left $ T.pack $ "bad serialized SizeChange "++ show v
+
+instance PersistFieldSql SizeChange where
+        sqlType _ = SqlInt32
