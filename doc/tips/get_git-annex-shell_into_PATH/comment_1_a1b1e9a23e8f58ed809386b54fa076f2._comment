@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="gauss@055c9051f507c97fa5612f46c74ce636f5ecde10"
+ nickname="gauss"
+ avatar="http://cdn.libravatar.org/avatar/07c3a0c551ecfe4aa8c047ff5f6f4e79"
+ subject="No root privileges server - annex-shell replaced by git-annex-shell"
+ date="2024-08-23T01:51:49Z"
+ content="""
+I've cloned a git repository through ssh from a server which I don't have root privileges. 
+The clone command is something like:
+
+    git clone ssh://johndoe@somedomain.com:23/home/johndoe/Downloads/gitannextest4/ 
+
+I tried to enable the remote and I get the error: *Remote gitannextest4 does not have git-annex installed; setting annex-ignore*.
+I had no success following the steps here. 
+
+I believe there is an error in the last of the alternatives presented here:
+
+    git config remote.annoyingserver.annex-shell /home/me/bin/git-annex-shell (does not work)
+    git config remote.annoyingserver.git-annex-shell /home/me/bin/git-annex-shell (works!)
+
+So, **annex-shell** should be replaced by **git-annex-shell**.
+
+Hope it helps.   
+
+    
+"""]]
