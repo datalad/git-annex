@@ -71,6 +71,61 @@ Planned schedule of work:
     command behave non-ideally, the same as the thread concurrency
     problems.
 
+  * Possible solution: 
+
+    Add to reposizes db a table for live updates.
+    Listing process ID, thread ID, UUID, key, addition or removal
+
+    Make checking the balanced preferred content limit record a
+    live update in the table and use other live updates in making its
+    decision. With locking as necessary.
+    
+    Note: This will only work when preferred content is being checked.
+    If a git-annex copy without --auto is run, for example, it won't
+    tell other processes that it is in the process of filling up a remote.
+    That seems ok though, because if the user is running a command like
+    that, they are ok with a remote filling up.
+
+    In the unlikely event that one thread of a process is storing a key and
+    another thread is dropping the same key from the same uuid, at the same
+    time, reconcile somehow. How? Or is this perhaps something that cannot
+    happen?
+
+    Also keep an in-memory cache of the live updates being performed by
+    the current process. For use in location log update as follows..
+
+    Make updating location log for a key that is in the in-memory cache
+    of the live update table update the db, removing it from that table,
+    and updating the in-memory reposizes. This needs to have
+    locking to make sure redundant information is never visible:
+    Take lock, journal update, remove from live update table.
+
+    Somehow detect when an upload (or drop) fails, and remove from the live
+    update table and in-memory cache. How? Possibly have a thread that
+    waits on an empty MVar. Fill MVar on location log update. If MVar gets
+    GCed without being filled, the thread will get an exception and can
+    remove from table and cache then. This does rely on GC behavior, but if
+    the GC takes some time, it will just cause a failed upload to take
+    longer to get removed from the table and cache, which will just prevent
+    another upload of a different key from running immediately.
+    (Need to check if MVar GC behavior operates like this.)
+
+    Have a counter in the reposizes table that is updated on write. This
+    can be used to quickly determine if it has changed. On every check of
+    balanced preferred content, check the counter, and if it's been changed
+    by another process, re-run calcRepoSizes. This would be expensive, but
+    it would only happen when another process is running at the same time.
+    The counter could also be a per-UUID counter, so two processes
+    operating on different remotes would not have overhead.
+
+    When loading the live update table, check if processes in it are still
+    running (and are still git-annex), and if not, remove stale entries
+    from it, which can accumulate when processes are interrupted.
+    Note that it will be ok for the wrong git-annex process, running again
+    at a pid to keep a stale item in the live update table, because that
+    is unlikely and exponentially unlikely to happen repeatedly, so stale
+    information will only be used for a short time.
+
 * `git-annex info` in the limitedcalc path in cachedAllRepoData
   double-counts redundant information from the journal due to using
   overLocationLogs. In the other path it does not, and this should be fixed
