@@ -35,6 +35,10 @@ Planned schedule of work:
 
   May not be a bug, needs reproducing and analysis.
 
+* Check if reposizes updates works when using `git-annex transferrer`.
+  Eg, does the location log update happen in the parent process or in
+  the transferrer process?
+
 * Concurrency issues with RepoSizes calculation and balanced content:
 
   * What if 2 concurrent threads are considering sending two different
@@ -102,13 +106,17 @@ Planned schedule of work:
 
     Somehow detect when an upload (or drop) fails, and remove from the live
     update table and in-memory cache. How? Possibly have a thread that
-    waits on an empty MVar. Fill MVar on location log update. If MVar gets
+    waits on an empty MVar. Thread MVar through somehow to location log
+    update. (Seems this would need checking preferred content to return
+    the MVar? Or alternatively, the MVar could be passed into it, which 
+    seems better..) Fill MVar on location log update. If MVar gets
     GCed without being filled, the thread will get an exception and can
     remove from table and cache then. This does rely on GC behavior, but if
     the GC takes some time, it will just cause a failed upload to take
     longer to get removed from the table and cache, which will just prevent
     another upload of a different key from running immediately.
-    (Need to check if MVar GC behavior operates like this.)
+    (Need to check if MVar GC behavior operates like this.
+    See https://stackoverflow.com/questions/10871303/killing-a-thread-when-mvar-is-garbage-collected )
 
     Have a counter in the reposizes table that is updated on write. This
     can be used to quickly determine if it has changed. On every check of
@@ -118,13 +126,24 @@ Planned schedule of work:
     The counter could also be a per-UUID counter, so two processes
     operating on different remotes would not have overhead.
 
-    When loading the live update table, check if processes in it are still
+    When loading the live update table, check if PIDs in it are still
     running (and are still git-annex), and if not, remove stale entries
     from it, which can accumulate when processes are interrupted.
     Note that it will be ok for the wrong git-annex process, running again
     at a pid to keep a stale item in the live update table, because that
     is unlikely and exponentially unlikely to happen repeatedly, so stale
     information will only be used for a short time.
+
+    But then, how to check if a PID is git-annex or not? /proc of course,
+    but what about other OS's? Windows?
+
+    Perhaps stale entries can be found in a different way. Require the live
+    update table to be updated with a timestamp every 5 minutes. The thread
+    that waits on the MVar can do that, as long as the transfer is running. If
+    interrupted, it will become stale in 5 minutes, which is probably good
+    enough? Could do it every minute, depending on overhead. This could
+    also be done by just repeatedly touching a file named with the processes's
+    pid in it, to avoid sqlite overhead.
 
 * `git-annex info` in the limitedcalc path in cachedAllRepoData
   double-counts redundant information from the journal due to using
