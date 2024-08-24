@@ -125,7 +125,7 @@ fixupReq req@(Req {}) opts =
 				unlessM (inAnnex k) $
 					commandAction $
 						starting "get" ai si $
-							Command.Get.perform k af
+							Command.Get.perform NoLiveUpdate k af
 			repoint k
 		  where
 			ai = OnlyActionOn k (ActionItemKey k)

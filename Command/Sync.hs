@@ -926,38 +926,41 @@ syncFile o ebloom rs af k = do
 	
 	return (got || not (null putrs))
   where
-	wantget have inhere = allM id 
+	wantget lu have inhere = allM id 
 		[ pure (pullOption o || operationMode o == SatisfyMode)
 		, pure (not $ null have)
 		, pure (not inhere)
-		, wantGet True (Just k) af
+		, wantGet lu True (Just k) af
 		]
-	handleget have inhere = ifM (wantget have inhere)
-		( return [ get have ]
-		, return []
-		)
-	get have = includeCommandAction $ starting "get" ai si $
-		stopUnless (getKey' k af have) $
+	handleget have inhere = do
+		lu <- prepareLiveUpdate Nothing k AddingKey
+		ifM (wantget lu have inhere)
+			( return [ get lu have ]
+			, return []
+			)
+	get lu have = includeCommandAction $ starting "get" ai si $
+		stopUnless (getKey' lu k af have) $
 			next $ return True
 
-	wantput r
+	wantput lu r
 		| pushOption o == False && operationMode o /= SatisfyMode = return False
 		| Remote.readonly r || remoteAnnexReadOnly (Remote.gitconfig r) = return False
 		| isImport r && not (isExport r) = return False
 		| isExport r && not (exportHasAnnexObjects r) = return False
 		| isThirdPartyPopulated r = return False
-		| otherwise = wantGetBy True (Just k) af (Remote.uuid r)
+		| otherwise = wantGetBy lu True (Just k) af (Remote.uuid r)
 	handleput lack inhere
 		| inhere = catMaybes <$>
-			( forM lack $ \r ->
-				ifM (wantput r <&&> put r)
+			( forM lack $ \r -> do
+				lu <- prepareLiveUpdate (Just (Remote.uuid r)) k AddingKey
+				ifM (wantput lu r <&&> put lu r)
 					( return (Just (Remote.uuid r))
 					, return Nothing
 					)
 			)
 		| otherwise = return []
-	put dest = includeCommandAction $ 
-		Command.Move.toStart' dest Command.Move.RemoveNever af k ai si
+	put lu dest = includeCommandAction $ 
+		Command.Move.toStart' lu dest Command.Move.RemoveNever af k ai si
 
 	ai = mkActionItem (k, af)
 	si = SeekInput []

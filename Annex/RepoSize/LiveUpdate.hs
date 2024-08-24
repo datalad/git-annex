@@ -21,6 +21,7 @@ import qualified Data.Set as S
 
 updateRepoSize :: LiveUpdate -> UUID -> Key -> LogStatus -> Annex ()
 updateRepoSize lu u k s = do
+	-- XXX call finishedLiveUpdate
 	rsv <- Annex.getRead Annex.reposizes
 	liftIO (takeMVar rsv) >>= \case
 		Nothing -> liftIO (putMVar rsv Nothing)
@@ -54,13 +55,6 @@ accumRepoSizes k (newlocs, removedlocs) sizemap =
 	let !sizemap' = foldl' (flip $ M.alter $ addKeyRepoSize k) sizemap newlocs
 	in foldl' (flip $ M.alter $ removeKeyRepoSize k) sizemap' removedlocs
 
--- Called when a preferred content check indicates that a live update is
--- needed. Can be called more than once.
-startLiveUpdate :: LiveUpdate -> Annex ()
-startLiveUpdate (LiveUpdate startv _donev) = 
-	liftIO $ void $ tryPutMVar startv ()
-startLiveUpdate NoLiveUpdate = noop
-
 -- When the UUID is Nothing, it's a live update of the local repository.
 prepareLiveUpdate :: Maybe UUID -> Key -> SizeChange -> Annex LiveUpdate
 prepareLiveUpdate mu k sc = do
@@ -79,7 +73,7 @@ prepareLiveUpdate mu k sc = do
 			waitdone donev h u
 		Left _ -> noop
 	
-	{- Wait for endLiveUpdate to be called, or for the LiveUpdate to
+	{- Wait for finishedLiveUpdate to be called, or for the LiveUpdate to
 	 - get garbage collected in the case where the change didn't
 	 - actually happen. -}
 	waitdone donev h u = tryNonAsync (takeMVar donev) >>= \case
@@ -93,6 +87,13 @@ prepareLiveUpdate mu k sc = do
 			| otherwise -> waitdone donev h u
 		Left _ -> done h u
 	done h u = Db.finishedLiveSizeChange h u k sc
+
+-- Called when a preferred content check indicates that a live update is
+-- needed. Can be called more than once.
+startLiveUpdate :: LiveUpdate -> Annex ()
+startLiveUpdate (LiveUpdate startv _donev) = 
+	liftIO $ void $ tryPutMVar startv ()
+startLiveUpdate NoLiveUpdate = noop
 
 finishedLiveUpdate :: LiveUpdate -> Bool -> UUID -> Key -> SizeChange -> IO ()
 finishedLiveUpdate (LiveUpdate _startv donev) succeeded u k sc =
