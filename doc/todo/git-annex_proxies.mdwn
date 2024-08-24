@@ -90,7 +90,8 @@ Planned schedule of work:
     In the unlikely event that one thread of a process is storing a key and
     another thread is dropping the same key from the same uuid, at the same
     time, reconcile somehow. How? Or is this perhaps something that cannot
-    happen?
+    happen? Could just record the liveupdate for one, and not for the
+    other.
 
     Also keep an in-memory cache of the live updates being performed by
     the current process. For use in location log update as follows..
@@ -144,8 +145,16 @@ Planned schedule of work:
 
 * Still implementing LiveUpdate. Check for TODO XXX markers
 
-* Check all uses of NoLiveUpdate to see if a live update can be started and
-  performed there. 
+* In the case where a copy to a remote fails (due eg to annex.diskreserve),
+  the LiveUpdate thread can not get a chance to catch its exception when
+  the LiveUpdate is gced, before git-annex exits. In this case, the
+  database is left with some stale entries in the live update table.
+
+  This is not a big problem because the same can happen when the process is
+  interrupted. Still it would be cleaner for this not to happen. Is there
+  any way to prevent it? Waiting 1 GC tick before exiting would do it,
+  I'd think, but I tried manually doing a performGC at git-annex shutdown
+  and it didn't help.
 
 * The assistant is using NoLiveUpdate, but it should be posssible to plumb
   a LiveUpdate through it from preferred content checking to location log

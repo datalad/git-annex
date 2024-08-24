@@ -31,7 +31,7 @@ import Types.Messages
 
 {- Parses input arguments, finds a matching Command, and runs it. -}
 dispatch :: Bool -> Bool -> CmdParams -> [Command] -> [(String, String)] -> IO Git.Repo -> String -> String -> IO ()
-dispatch addonok fuzzyok allargs allcmds fields getgitrepo progname progdesc =
+dispatch addonok fuzzyok allargs allcmds fields getgitrepo progname progdesc = do
 	go addonok allcmds $
 		findAddonCommand subcommandname >>= \case
 			Just c -> go addonok (c:allcmds) noop

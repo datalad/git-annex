@@ -18,6 +18,7 @@ import Annex.WorkTree
 import Annex.UUID
 import Annex.Magic
 import Annex.RepoSize
+import Annex.RepoSize.LiveUpdate
 import Logs.MaxSize
 import Annex.Link
 import Types.Link
@@ -598,7 +599,7 @@ limitFullyBalanced :: Maybe UUID -> Annex GroupMap -> MkLimit Annex
 limitFullyBalanced = limitFullyBalanced' "fullybalanced"
 
 limitFullyBalanced' :: String -> Maybe UUID -> Annex GroupMap -> MkLimit Annex
-limitFullyBalanced' = limitFullyBalanced'' $ \n key candidates -> do
+limitFullyBalanced' = limitFullyBalanced'' $ \lu n key candidates -> do
 	maxsizes <- getMaxSizes
 	sizemap <- getRepoSizes False
 	threshhold <- annexFullyBalancedThreshhold <$> Annex.getGitConfig
@@ -632,7 +633,7 @@ repoHasSpace keysize inrepo (RepoSize reposize) (MaxSize maxsize)
 		reposize + keysize <= maxsize
 
 limitFullyBalanced''
-	:: (Int -> Key -> S.Set UUID -> Annex (S.Set UUID))
+	:: (LiveUpdate -> Int -> Key -> S.Set UUID -> Annex (S.Set UUID))
 	-> String
 	-> Maybe UUID
 	-> Annex GroupMap
@@ -650,7 +651,7 @@ limitFullyBalanced'' filtercandidates termname mu getgroupmap want =
 		getgroupmap (toGroup s) n want
 
 limitFullyBalanced'''
-	:: (Int -> Key -> S.Set UUID -> Annex (S.Set UUID))
+	:: (LiveUpdate -> Int -> Key -> S.Set UUID -> Annex (S.Set UUID))
 	-> String
 	-> Maybe UUID
 	-> Annex GroupMap
@@ -662,13 +663,17 @@ limitFullyBalanced''' filtercandidates termname mu getgroupmap g n want = Right 
 		gm <- getgroupmap
 		let groupmembers = fromMaybe S.empty $
 			M.lookup g (uuidsByGroup gm)
-		candidates <- filtercandidates n key groupmembers
-		return $ if S.null candidates
+		-- TODO locking for liveupdate
+		candidates <- filtercandidates lu n key groupmembers
+		let wanted = if S.null candidates
 			then False
 			else case (mu, M.lookup g (balancedPickerByGroup gm)) of
 				(Just u, Just picker) ->
 					u `elem` picker candidates key n
 				_ -> False
+		when wanted $
+			startLiveUpdate lu
+		return wanted
 	, matchNeedsFileName = False
 	, matchNeedsFileContent = False
 	, matchNeedsKey = True
@@ -685,7 +690,7 @@ limitFullySizeBalanced :: Maybe UUID -> Annex GroupMap -> MkLimit Annex
 limitFullySizeBalanced = limitFullySizeBalanced' "fullysizebalanced"
 
 limitFullySizeBalanced' :: String -> Maybe UUID -> Annex GroupMap -> MkLimit Annex
-limitFullySizeBalanced' = limitFullyBalanced'' $ \n key candidates -> do
+limitFullySizeBalanced' = limitFullyBalanced'' $ \lu n key candidates -> do
 	maxsizes <- getMaxSizes
 	sizemap <- getRepoSizes False
 	filterCandidatesFullySizeBalanced maxsizes sizemap n key candidates

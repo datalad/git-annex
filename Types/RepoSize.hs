@@ -27,19 +27,11 @@ newtype MaxSize = MaxSize { fromMaxSize :: Integer }
 -- Used when an action is in progress that will change the current size of
 -- a repository.
 --
--- The live update has been recorded as starting, and filling the MVar with
--- the correct UUID, Key, and SizeChange will record the live update
--- as complete. The Bool should be True when the action successfully
--- added/removed the key from the repository.
---
--- If the MVar gets garbage collected before it is filled, the live update
--- will be removed.
---
 -- This allows other concurrent changes to the same repository take
 -- the changes to its size into account. If NoLiveUpdate is used, it
 -- prevents that.
 data LiveUpdate
-	= LiveUpdate (MVar ()) (MVar (Bool, UUID, Key, SizeChange))
+	= LiveUpdate (MVar ()) (MVar (UUID, Key, SizeChange)) (MVar ())
 	| NoLiveUpdate
 
 data SizeChange = AddingKey | RemovingKey
