@@ -145,6 +145,20 @@ Planned schedule of work:
 
 * Still implementing LiveUpdate. Check for TODO XXX markers
 
+* In an expression like "balanced=foo and exclude=bar",
+  it will start a live update even if the overall expression doesn't
+  match. That is suboptimal, but also this will probably be a rare case,
+  it doesn't really make sense to to that. What will happen in that case
+  is the repo will temporarily be treated as having that key going
+  into it, even when it is not. As soon as the LiveUpdate gets GCed,
+  that resolves. Until then, other keys may not match that usually would,
+  if the repo would have been filled up by that key.
+
+  What could be done in this case is, after checking preferred content,
+  when it's not preferred content, call stopLiveUpdate immediately,
+  rather than relying on GC.
+  That would also help with the next problem...
+
 * In the case where a copy to a remote fails (due eg to annex.diskreserve),
   the LiveUpdate thread can not get a chance to catch its exception when
   the LiveUpdate is gced, before git-annex exits. In this case, the
