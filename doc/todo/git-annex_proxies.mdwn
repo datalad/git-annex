@@ -78,8 +78,9 @@ Planned schedule of work:
     (done)
 
     Make checking the balanced preferred content limit record a
-    live update in the table and use other live updates in making its
-    decision. (done)
+    live update in the table (done)
+
+    ... and use other live updates in making its decision
     
     Note: This will only work when preferred content is being checked.
     If a git-annex copy without --auto is run, for example, it won't
