@@ -79,7 +79,7 @@ Planned schedule of work:
 
     Make checking the balanced preferred content limit record a
     live update in the table and use other live updates in making its
-    decision. With locking as necessary.
+    decision. (done)
     
     Note: This will only work when preferred content is being checked.
     If a git-annex copy without --auto is run, for example, it won't
@@ -87,6 +87,10 @@ Planned schedule of work:
     That seems ok though, because if the user is running a command like
     that, they are ok with a remote filling up.
 
+    Make sure that two threads don't check balanced preferred content at the
+    same time, so each thread always sees a consistent picture of what is
+    happening. Use locking as necessary.
+    
     In the unlikely event that one thread of a process is storing a key and
     another thread is dropping the same key from the same uuid, at the same
     time, reconcile somehow. How? Or is this perhaps something that cannot
@@ -98,23 +102,14 @@ Planned schedule of work:
 
     Make updating location log for a key that is in the in-memory cache
     of the live update table update the db, removing it from that table,
-    and updating the in-memory reposizes. This needs to have
-    locking to make sure redundant information is never visible:
+    and updating the in-memory reposizes. (done)
+
+    Make updading location log have locking to make sure redundant
+    information is never visible:
     Take lock, journal update, remove from live update table.
 
-    Somehow detect when an upload (or drop) fails, and remove from the live
-    update table and in-memory cache. How? Possibly have a thread that
-    waits on an empty MVar. Thread MVar through somehow to location log
-    update. (Seems this would need checking preferred content to return
-    the MVar? Or alternatively, the MVar could be passed into it, which 
-    seems better..) Fill MVar on location log update. If MVar gets
-    GCed without being filled, the thread will get an exception and can
-    remove from table and cache then. This does rely on GC behavior, but if
-    the GC takes some time, it will just cause a failed upload to take
-    longer to get removed from the table and cache, which will just prevent
-    another upload of a different key from running immediately.
-    (Need to check if MVar GC behavior operates like this.
-    See https://stackoverflow.com/questions/10871303/killing-a-thread-when-mvar-is-garbage-collected )
+    Detect when an upload (or drop) fails, and remove from the live
+    update table and in-memory cache. (done)
 
     Have a counter in the reposizes table that is updated on write. This
     can be used to quickly determine if it has changed. On every check of
@@ -135,6 +130,18 @@ Planned schedule of work:
     But then, how to check if a PID is git-annex or not? /proc of course,
     but what about other OS's? Windows?
 
+    How? Possibly have a thread that
+    waits on an empty MVar. Thread MVar through somehow to location log
+    update. (Seems this would need checking preferred content to return
+    the MVar? Or alternatively, the MVar could be passed into it, which 
+    seems better..) Fill MVar on location log update. If MVar gets
+    GCed without being filled, the thread will get an exception and can
+    remove from table and cache then. This does rely on GC behavior, but if
+    the GC takes some time, it will just cause a failed upload to take
+    longer to get removed from the table and cache, which will just prevent
+    another upload of a different key from running immediately.
+    (Need to check if MVar GC behavior operates like this.
+    See https://stackoverflow.com/questions/10871303/killing-a-thread-when-mvar-is-garbage-collected )
     Perhaps stale entries can be found in a different way. Require the live
     update table to be updated with a timestamp every 5 minutes. The thread
     that waits on the MVar can do that, as long as the transfer is running. If
