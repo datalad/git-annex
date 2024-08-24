@@ -1,0 +1,8 @@
+It is desired to be able to get keys which correspond for some commit which would otherwise be not easy/undesired to checkout (too big tree, tree used actively etc) .
+But it seems it is impossible to do so ATM:
+
+```shell
+yoh@typhon:/mnt/DATA/data/yoh/1076_spacetop$ git annex get --branch e6888f70ed97099f83a77d5bcf3372a9a75a2b5e^ '**/*.nii.gz'
+git-annex: Can only specify one of file names, --all, --branch, --unused, --failed, --key, or --incomplete
+
+```
