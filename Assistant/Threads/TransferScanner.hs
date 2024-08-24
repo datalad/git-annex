@@ -171,9 +171,9 @@ expensiveScan urlrenderer rs = batch <~> do
 			"expensive scan found too many copies of object"
 			present key af (SeekInput []) [] callCommandAction
 		ts <- if present
-			then liftAnnex . filterM (wantGetBy True (Just key) af . Remote.uuid . fst)
+			then liftAnnex . filterM (wantGetBy NoLiveUpdate True (Just key) af . Remote.uuid . fst)
 				=<< use syncDataRemotes (genTransfer Upload False)
-			else ifM (liftAnnex $ wantGet True (Just key) af)
+			else ifM (liftAnnex $ wantGet NoLiveUpdate True (Just key) af)
 				( use downloadRemotes (genTransfer Download True) , return [] )
 		let unwanted' = S.difference unwanted slocs
 		return (unwanted', ts)

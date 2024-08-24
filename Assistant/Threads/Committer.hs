@@ -322,7 +322,7 @@ handleAdds lockdowndir havelsof largefilematcher annexdotfiles delayadd cs = ret
 		| not annexdotfiles && dotfile f =
 			return (Right change)
 		| otherwise =
-			ifM (liftAnnex $ checkFileMatcher largefilematcher f)
+			ifM (liftAnnex $ checkFileMatcher NoLiveUpdate largefilematcher f)
 				( return (Left change)
 				, return (Right change)
 				)
@@ -395,7 +395,7 @@ handleAdds lockdowndir havelsof largefilematcher annexdotfiles delayadd cs = ret
 		return Nothing
 
 	done change file key = liftAnnex $ do
-		logStatus key InfoPresent
+		logStatus NoLiveUpdate key InfoPresent
 		mode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus (toRawFilePath file)
 		stagePointerFile (toRawFilePath file) mode =<< hashPointerFile key
 		showEndOk
