@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE RankNTypes, OverloadedStrings #-}
+{-# LANGUAGE RankNTypes, OverloadedStrings, TupleSections #-}
 
 module Annex.Cluster where
 
@@ -19,6 +19,7 @@ import P2P.IO
 import Annex.Proxy
 import Annex.UUID
 import Annex.BranchState
+import Annex.RepoSize.LiveUpdate
 import Logs.Location
 import Logs.PreferredContent
 import Types.Command
@@ -108,10 +109,15 @@ clusterProxySelector clusteruuid protocolversion (Bypass bypass) = do
 		, proxyPUT = \af k -> do
 			locs <- S.fromList <$> loggedLocations k
 			let l = filter (flip S.notMember locs . Remote.uuid . remote) nodes
-			--- XXX FIXME TODO NoLiveUpdate should not be used
-			-- here. Doing a live update here is exactly why
-			-- live update is needed.
-			l' <- filterM (\n -> isPreferredContent NoLiveUpdate (Just (Remote.uuid (remote n))) mempty (Just k) af True) l
+			let checkpreferred n = do
+				let u = Just (Remote.uuid (remote n))
+				lu <- prepareLiveUpdate u k AddingKey
+				ifM (isPreferredContent lu u mempty (Just k) af True)
+					( return $ Just $ n
+						{ remoteLiveUpdate = lu }
+					, return Nothing
+					)
+			l' <- catMaybes <$> mapM checkpreferred l
 			-- PUT to no nodes doesn't work, so fall
 			-- back to all nodes.
 			return $ nonempty [l', l] nodes

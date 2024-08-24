@@ -43,6 +43,7 @@ data RemoteSide = RemoteSide
 	, remoteConnect :: Annex (Maybe (RunState, P2PConnection, ProtoCloser))
 	, remoteTMVar :: TMVar (RunState, P2PConnection, ProtoCloser)
 	, remoteSideId :: RemoteSideId
+	, remoteLiveUpdate :: LiveUpdate
 	}
 
 instance Show RemoteSide where
@@ -54,6 +55,7 @@ mkRemoteSide r remoteconnect = RemoteSide
 	<*> pure remoteconnect
 	<*> liftIO (atomically newEmptyTMVar)
 	<*> liftIO (RemoteSideId <$> newUnique)
+	<*> pure NoLiveUpdate
 
 runRemoteSide :: RemoteSide -> Proto a -> Annex (Either ProtoFailure a)
 runRemoteSide remoteside a = 
@@ -103,9 +105,9 @@ singleProxySelector r = ProxySelector
  - all other actions that a proxy needs to do are provided
  - here. -}
 data ProxyMethods = ProxyMethods
-	{ removedContent :: UUID -> Key -> Annex ()
+	{ removedContent :: LiveUpdate -> UUID -> Key -> Annex ()
 	-- ^ called when content is removed from a repository
-	, addedContent :: UUID -> Key -> Annex ()
+	, addedContent :: LiveUpdate -> UUID -> Key -> Annex ()
 	-- ^ called when content is added to a repository
 	}
 
@@ -443,7 +445,7 @@ proxyRequest proxydone proxyparams requestcomplete requestmessage protoerrhandle
 					_ -> Nothing
 		let v' = map join v
 		let us = concatMap snd $ catMaybes v'
-		mapM_ (\u -> removedContent (proxyMethods proxyparams) u k) us
+		mapM_ (\u -> removedContent (proxyMethods proxyparams) NoLiveUpdate u k) us
 		protoerrhandler requestcomplete $
 			client $ net $ sendMessage $
 				let nonplussed = all (== proxyUUID proxyparams) us 
@@ -511,13 +513,19 @@ proxyRequest proxydone proxyparams requestcomplete requestmessage protoerrhandle
 			requestcomplete ()
 
 	relayPUTRecord k remoteside SUCCESS = do
-		addedContent (proxyMethods proxyparams) (Remote.uuid (remote remoteside)) k
+		addedContent (proxyMethods proxyparams)
+			(remoteLiveUpdate remoteside)
+			(Remote.uuid (remote remoteside))
+			k
 		return $ Just [Remote.uuid (remote remoteside)]
 	relayPUTRecord k remoteside (SUCCESS_PLUS us) = do
-		let us' = (Remote.uuid (remote remoteside)) : us
-		forM_ us' $ \u ->
-			addedContent (proxyMethods proxyparams) u k
-		return $ Just us'
+		addedContent (proxyMethods proxyparams)
+			(remoteLiveUpdate remoteside)
+			(Remote.uuid (remote remoteside))
+			k
+		forM_ us $ \u ->
+			addedContent (proxyMethods proxyparams) NoLiveUpdate u k
+		return $ Just (Remote.uuid (remote remoteside) : us)
 	relayPUTRecord _ _ _ =
 		return Nothing
 

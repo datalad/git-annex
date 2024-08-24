@@ -365,6 +365,6 @@ canProxyForRemote rs myproxies myclusters remoteuuid =
 
 mkProxyMethods :: ProxyMethods
 mkProxyMethods = ProxyMethods
-	{ removedContent = \u k -> logChange NoLiveUpdate k u InfoMissing
-	, addedContent = \u k -> logChange NoLiveUpdate k u InfoPresent
+	{ removedContent = \lu u k -> logChange lu k u InfoMissing
+	, addedContent = \lu u k -> logChange lu k u InfoPresent
 	}

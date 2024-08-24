@@ -142,11 +142,10 @@ Planned schedule of work:
     also be done by just repeatedly touching a file named with the processes's
     pid in it, to avoid sqlite overhead.
 
-* Check for TODO XXX markers
+* Still implementing LiveUpdate. Check for TODO XXX markers
 
 * Check all uses of NoLiveUpdate to see if a live update can be started and
-  performed there. There is one in Annex.Cluster in particular that needs a
-  live update.
+  performed there. 
 
 * The assistant is using NoLiveUpdate, but it should be posssible to plumb
   a LiveUpdate through it from preferred content checking to location log
