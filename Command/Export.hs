@@ -385,7 +385,7 @@ cleanupExport :: Remote -> ExportHandle -> Key -> ExportLocation -> Bool -> Comm
 cleanupExport r db ek loc sent = do
 	liftIO $ addExportedLocation db ek loc
 	when (sent && not (isGitShaKey ek)) $
-		logChange ek (uuid r) InfoPresent
+		logChange NoLiveUpdate ek (uuid r) InfoPresent
 	return True
 
 startUnexport :: Remote -> ExportHandle -> TopFilePath -> [Git.Sha] -> CommandStart
@@ -436,9 +436,9 @@ cleanupUnexport r db eks loc = do
 				if annexObjects (Remote.config r)
 					then tryNonAsync (checkPresent r ek) >>= \case
 						Right False ->
-							logChange ek (uuid r) InfoMissing
+							logChange NoLiveUpdate ek (uuid r) InfoMissing
 						_ -> noop
-					else logChange ek (uuid r) InfoMissing
+					else logChange NoLiveUpdate ek (uuid r) InfoMissing
 	
 	removeEmptyDirectories r db loc eks
 
@@ -618,7 +618,7 @@ filterExport r tree = logExportExcluded (uuid r) $ \logwriter -> do
 				, providedMimeEncoding = Nothing
 				, providedLinkType = Nothing
 				}
-			ifM (checkMatcher' matcher mi mempty)
+			ifM (checkMatcher' matcher mi NoLiveUpdate mempty)
 				( return (Just ti)
 				, excluded
 				)

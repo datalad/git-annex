@@ -256,7 +256,7 @@ startLocal o addunlockedmatcher largematcher mode (srcfile, destfile) =
 				, inodeCache = newcache
 				}
 			}
-		ifM (checkFileMatcher largematcher destfile)
+		ifM (checkFileMatcher NoLiveUpdate largematcher destfile)
 			( ingestAdd' nullMeterUpdate (Just ld') (Just k)
 				>>= maybe
 					stop
