@@ -31,7 +31,13 @@ newtype MaxSize = MaxSize { fromMaxSize :: Integer }
 -- the changes to its size into account. If NoLiveUpdate is used, it
 -- prevents that.
 data LiveUpdate
-	= LiveUpdate (MVar ()) (MVar (UUID, Key, SizeChange)) (MVar ())
+	= LiveUpdate
+		{ liveUpdateNeeded :: MVar ()
+		, liveUpdateStart :: MVar ()
+		, liveUpdateReady :: MVar ()
+		, liveUpdateDone :: MVar (Maybe (UUID, Key, SizeChange))
+		, liveUpdateFinish :: MVar ()
+		}
 	| NoLiveUpdate
 
 data SizeChange = AddingKey | RemovingKey

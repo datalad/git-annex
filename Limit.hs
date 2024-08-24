@@ -672,7 +672,7 @@ limitFullyBalanced''' filtercandidates termname mu getgroupmap g n want = Right 
 					u `elem` picker candidates key n
 				_ -> False
 		when wanted $
-			startLiveUpdate lu
+			needLiveUpdate lu
 		return wanted
 	, matchNeedsFileName = False
 	, matchNeedsFileContent = False

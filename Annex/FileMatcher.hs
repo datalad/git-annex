@@ -42,6 +42,7 @@ import Git.FilePath
 import Types.Remote (RemoteConfig)
 import Types.ProposedAccepted
 import Annex.CheckAttr
+import Annex.RepoSize.LiveUpdate
 import qualified Git.Config
 #ifdef WITH_MAGICMIME
 import Annex.Magic
@@ -88,13 +89,16 @@ checkMatcher matcher mkey afile lu notpresent notconfigured d
 	go mi = checkMatcher' matcher mi lu notpresent
 
 checkMatcher' :: FileMatcher Annex -> MatchInfo -> LiveUpdate -> AssumeNotPresent -> Annex Bool
-checkMatcher' (matcher, (MatcherDesc matcherdesc)) mi lu notpresent = do
-	(matches, desc) <- runWriterT $ matchMrun' matcher $ \op ->
-		matchAction op lu notpresent mi
-	explain (mkActionItem mi) $ UnquotedString <$>
-		describeMatchResult matchDesc desc
-			((if matches then "matches " else "does not match ") ++ matcherdesc ++ ": ")
-	return matches
+checkMatcher' (matcher, (MatcherDesc matcherdesc)) mi lu notpresent =
+	checkLiveUpdate lu go
+  where
+	go = do
+		(matches, desc) <- runWriterT $ matchMrun' matcher $ \op ->
+			matchAction op lu notpresent mi
+		explain (mkActionItem mi) $ UnquotedString <$>
+			describeMatchResult matchDesc desc
+				((if matches then "matches " else "does not match ") ++ matcherdesc ++ ": ")
+		return matches
 
 fileMatchInfo :: RawFilePath -> Maybe Key -> Annex MatchInfo
 fileMatchInfo file mkey = do

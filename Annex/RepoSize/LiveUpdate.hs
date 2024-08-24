@@ -63,30 +63,36 @@ prepareLiveUpdate :: Maybe UUID -> Key -> SizeChange -> Annex LiveUpdate
 prepareLiveUpdate mu k sc = do
 	h <- Db.getRepoSizeHandle
 	u <- maybe getUUID pure mu
+	needv <- liftIO newEmptyMVar
 	startv <- liftIO newEmptyMVar
+	readyv <- liftIO newEmptyMVar
 	donev <- liftIO newEmptyMVar
 	finishv <- liftIO newEmptyMVar
-	void $ liftIO $ forkIO $ waitstart startv donev finishv h u
-	return (LiveUpdate startv donev finishv)
+	void $ liftIO $ forkIO $ waitstart startv readyv donev finishv h u
+	return (LiveUpdate needv startv readyv donev finishv)
   where
-	{- Wait for startLiveUpdate, or for the LiveUpdate to get garbage
-	 - collected in the case where it is never going to start. -}
-	waitstart startv donev finishv h u = tryNonAsync (takeMVar startv) >>= \case
-		Right _ -> do
-			{- Deferring updating the database until here
-			 - avoids overhead except in cases where preferred
-			 - content expressions need live updates. -}
-			Db.startingLiveSizeChange h u k sc
-			waitdone donev finishv h u
-		Left _ -> noop
+	{- Wait for checkLiveUpdate to request a start, or for the
+	 - LiveUpdate to get garbage collected in the case where
+	 - it is not needed. -}
+	waitstart startv readyv donev finishv h u =
+		tryNonAsync (takeMVar startv) >>= \case
+			Right () -> do
+				{- Deferring updating the database until
+				 - here avoids overhead except in cases
+				 - where preferred content expressions
+				 - need live updates. -}
+				Db.startingLiveSizeChange h u k sc
+				putMVar readyv ()
+				waitdone donev finishv h u
+			Left _ -> noop
 	
-	{- Wait for finishedLiveUpdate to be called, or for the LiveUpdate to
-	 - get garbage collected in the case where the change didn't
+	{- Wait for finishedLiveUpdate to be called, or for the LiveUpdate
+	 - to get garbage collected in the case where the change didn't
 	 - actually happen. -}
 	waitdone donev finishv h u = tryNonAsync (takeMVar donev) >>= \case
 		-- TODO need to update RepoSize db
 		-- in same transaction as Db.finishedLiveSizeChange
-		Right (u', k', sc')
+		Right (Just (u', k', sc'))
 			| u' == u && k' == k && sc' == sc -> do
 				done h u
 				putMVar finishv ()
@@ -94,19 +100,37 @@ prepareLiveUpdate mu k sc = do
 			-- causes fanout and so this is called with
 			-- other UUIDs.
 			| otherwise -> waitdone donev finishv h u
+		Right Nothing -> done h u
 		Left _ -> done h u
 	done h u = Db.finishedLiveSizeChange h u k sc
 
 -- Called when a preferred content check indicates that a live update is
--- needed. Can be called more than once.
-startLiveUpdate :: LiveUpdate -> Annex ()
-startLiveUpdate (LiveUpdate startv _donev _finishv) = 
-	liftIO $ void $ tryPutMVar startv ()
-startLiveUpdate NoLiveUpdate = noop
+-- needed. Can be called more than once on the same LiveUpdate.
+needLiveUpdate :: LiveUpdate -> Annex ()
+needLiveUpdate NoLiveUpdate = noop
+needLiveUpdate lu = liftIO $ void $ tryPutMVar (liveUpdateNeeded lu) ()
+
+-- needLiveUpdate has to be called inside this to take effect. If the
+-- action calls needLiveUpdate and then returns True, the live update is
+-- started. If the action calls needLiveUpdate and then returns False,
+-- the live update is not started.
+--
+-- This can be called more than once on the same LiveUpdate. It will
+-- only start it once.
+checkLiveUpdate :: LiveUpdate -> Annex Bool -> Annex Bool
+checkLiveUpdate NoLiveUpdate a = a
+checkLiveUpdate lu a = do
+	r <- a
+	needed <- liftIO $ isJust <$> tryTakeMVar (liveUpdateNeeded lu)
+	when (r && needed) $ do
+		liftIO $ void $ tryPutMVar (liveUpdateStart lu) ()
+		liftIO $ void $ readMVar (liveUpdateReady lu)
+	return r
 
 finishedLiveUpdate :: LiveUpdate -> UUID -> Key -> SizeChange -> IO ()
-finishedLiveUpdate (LiveUpdate _startv donev finishv) u k sc = do
-	tryNonAsync (putMVar donev (u, k, sc)) >>= \case
-		Right () -> void $ tryNonAsync $ readMVar finishv
-		Left _ -> noop
 finishedLiveUpdate NoLiveUpdate _ _ _ = noop
+finishedLiveUpdate lu u k sc = do
+	tryNonAsync (putMVar (liveUpdateDone lu) (Just (u, k, sc))) >>= \case
+		Right () -> void $
+			tryNonAsync $ readMVar $ liveUpdateFinish lu
+		Left _ -> noop
