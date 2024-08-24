@@ -121,7 +121,6 @@ runLocal runst runner a = case a of
 			Right (Left e) -> return $ Left e
 			Right (Right ok) -> runner (next ok)
 	SetPresent k u next -> do
-		-- FIXME: Can a live update be done here?
 		v <- tryNonAsync $ logChange NoLiveUpdate k u InfoPresent
 		case v of
 			Left e -> return $ Left $ ProtoFailureException e
@@ -133,7 +132,6 @@ runLocal runst runner a = case a of
 			Right result -> runner (next result)
 	RemoveContent k mts next -> do
 		let cleanup = do
-			-- FIXME: Can a live update be done here?
 			logStatus NoLiveUpdate k InfoMissing
 			return True
 		let checkts = case mts of
