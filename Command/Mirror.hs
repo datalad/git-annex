@@ -66,10 +66,10 @@ start o si file k = startKey o afile (si, k, ai)
 startKey :: MirrorOptions -> AssociatedFile -> (SeekInput, Key, ActionItem) -> CommandStart
 startKey o afile (si, key, ai) = case fromToOptions o of
 	ToRemote r -> checkFailedTransferDirection ai Upload $ ifM (inAnnex key)
-		( Command.Move.toStart Command.Move.RemoveNever afile key ai si =<< getParsed r
+		( Command.Move.toStart NoLiveUpdate Command.Move.RemoveNever afile key ai si =<< getParsed r
 		, do
 			(numcopies, mincopies) <- getSafestNumMinCopies afile key
-			Command.Drop.startRemote pcc afile ai si numcopies mincopies key (Command.Drop.DroppingUnused False)
+			Command.Drop.startRemote NoLiveUpdate pcc afile ai si numcopies mincopies key (Command.Drop.DroppingUnused False)
 				=<< getParsed r
 		)
 	FromRemote r -> checkFailedTransferDirection ai Download $ do
@@ -78,12 +78,12 @@ startKey o afile (si, key, ai) = case fromToOptions o of
 			Left _ -> stop
 			Right True -> ifM (inAnnex key)
 				( stop
-				, Command.Get.start' (return True) Nothing key afile ai si
+				, Command.Get.start' NoLiveUpdate (return True) Nothing key afile ai si
 				)
 			Right False -> ifM (inAnnex key)
 				( do
 					(numcopies, mincopies) <- getSafestNumMinCopies afile key
-					Command.Drop.startLocal pcc afile ai si numcopies mincopies key [] (Command.Drop.DroppingUnused False)
+					Command.Drop.startLocal NoLiveUpdate pcc afile ai si numcopies mincopies key [] (Command.Drop.DroppingUnused False)
 				, stop
 				)
   where

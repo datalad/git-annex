@@ -72,14 +72,27 @@ seek' o fto = startConcurrency (Command.Move.stages fto) $ do
 			FromAnywhereToRemote _ -> Nothing
 		, usesLocationLog = True
 		}
-	keyaction = Command.Move.startKey fto Command.Move.RemoveNever
+	keyaction = Command.Move.startKey NoLiveUpdate fto Command.Move.RemoveNever
 
 {- A copy is just a move that does not delete the source file.
  - However, auto mode avoids unnecessary copies, and avoids getting or
  - sending non-preferred content. -}
 start :: CopyOptions -> FromToHereOptions -> SeekInput -> RawFilePath -> Key -> CommandStart
-start o fto si file key = stopUnless shouldCopy $ 
-	Command.Move.start fto Command.Move.RemoveNever si file key
+start o fto si file key = do
+	ru <- case fto of
+		FromOrToRemote (ToRemote dest) -> getru dest
+		FromOrToRemote (FromRemote _) -> pure Nothing
+		ToHere -> pure Nothing
+		FromRemoteToRemote _ dest -> getru dest
+		FromAnywhereToRemote dest -> getru dest
+	lu <- prepareLiveUpdate ru key AddingKey
+	start' lu o fto si file key
+  where
+	getru dest = Just . Remote.uuid <$> getParsed dest
+
+start' :: LiveUpdate -> CopyOptions -> FromToHereOptions -> SeekInput -> RawFilePath -> Key -> CommandStart
+start' lu o fto si file key = stopUnless shouldCopy $ 
+	Command.Move.start lu fto Command.Move.RemoveNever si file key
   where
 	shouldCopy
 		| autoMode o = want <||> numCopiesCheck file key (<)
@@ -93,5 +106,5 @@ start o fto si file key = stopUnless shouldCopy $
 
 	checkwantsend dest = 
 		(Remote.uuid <$> getParsed dest) >>=
-			wantGetBy False (Just key) (AssociatedFile (Just file))
-	checkwantget = wantGet False (Just key) (AssociatedFile (Just file))
+			wantGetBy lu False (Just key) (AssociatedFile (Just file))
+	checkwantget = wantGet lu False (Just key) (AssociatedFile (Just file))
