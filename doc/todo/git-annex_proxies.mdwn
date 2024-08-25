@@ -153,6 +153,24 @@ Planned schedule of work:
 
 * Still implementing LiveUpdate. Check for TODO XXX markers
 
+* Could two processes both doing the same operation end up both
+  calling successfullyFinishedLiveSizeChange with the same repo uuid and
+  key? If so, the rolling total would get out of wack.
+
+  Logs.Location.logChange only calls updateRepoSize when the presence
+  actually changed. So if one process does something and then the other
+  process also does the same thing (eg both drop), the second process
+  will see what the first process recorded, and won't update the size
+  redundantly.
+
+  But: What if they're running at the same time? It seems
+  likely that Annex.Branch.maybeChange does not handle that in a way
+  that will guarantee this doesn't happen. Does anything else guarantee
+  it?
+
+  Can additional locking be added to avoid it? Probably, but it
+  will add overhead and so should be avoided in the NoLiveUpdate case.
+
 * In the case where a copy to a remote fails (due eg to annex.diskreserve),
   the LiveUpdate thread can not get a chance to catch its exception when
   the LiveUpdate is gced, before git-annex exits. In this case, the
