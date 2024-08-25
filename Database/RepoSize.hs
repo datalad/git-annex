@@ -50,7 +50,7 @@ share [mkPersist sqlSettings, mkMigrate "migrateRepoSizes"] [persistLowerCase|
 -- Corresponds to location log information from the git-annex branch.
 RepoSizes
   repo UUID
-  size Integer
+  size FileSize
   UniqueRepo repo
 -- The last git-annex branch commit that was used to update RepoSizes.
 AnnexBranch
