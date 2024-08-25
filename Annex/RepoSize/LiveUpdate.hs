@@ -18,12 +18,10 @@ import Annex.UUID
 import Control.Concurrent
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
+import System.Process
 
 updateRepoSize :: LiveUpdate -> UUID -> Key -> LogStatus -> Annex ()
 updateRepoSize lu u k s = do
-	-- TODO update reposizes db
-	-- FIXME locking so the liveupdate is remove in the same
-	-- transaction that updates reposizes and the db too.
 	liftIO $ finishedLiveUpdate lu u k sc
 	rsv <- Annex.getRead Annex.reposizes
 	liftIO (takeMVar rsv) >>= \case
@@ -77,32 +75,35 @@ prepareLiveUpdate mu k sc = do
 	waitstart startv readyv donev finishv h u =
 		tryNonAsync (takeMVar startv) >>= \case
 			Right () -> do
+				pid <- getCurrentPid
+				cid <- mkSizeChangeId pid
 				{- Deferring updating the database until
 				 - here avoids overhead except in cases
 				 - where preferred content expressions
 				 - need live updates. -}
-				Db.startingLiveSizeChange h u k sc
+				Db.startingLiveSizeChange h u k sc cid
 				putMVar readyv ()
-				waitdone donev finishv h u
+				waitdone donev finishv h u cid
 			Left _ -> noop
 	
 	{- Wait for finishedLiveUpdate to be called, or for the LiveUpdate
 	 - to get garbage collected in the case where the change didn't
 	 - actually happen. -}
-	waitdone donev finishv h u = tryNonAsync (takeMVar donev) >>= \case
-		-- TODO need to update RepoSize db
-		-- in same transaction as Db.finishedLiveSizeChange
+	waitdone donev finishv h u cid = tryNonAsync (takeMVar donev) >>= \case
+		-- TODO need to update local state too, and it must be done
+		-- with locking around the state update and this database
+		-- update.
 		Right (Just (u', k', sc'))
 			| u' == u && k' == k && sc' == sc -> do
-				done h u
+				Db.successfullyFinishedLiveSizeChange h u k sc cid
 				putMVar finishv ()
 			-- This can happen when eg, storing to a cluster
 			-- causes fanout and so this is called with
 			-- other UUIDs.
-			| otherwise -> waitdone donev finishv h u
-		Right Nothing -> done h u
-		Left _ -> done h u
-	done h u = Db.finishedLiveSizeChange h u k sc
+			| otherwise -> waitdone donev finishv h u cid
+		Right Nothing -> abandoned h u cid
+		Left _ -> abandoned h u cid
+	abandoned h u cid = Db.staleLiveSizeChange h u k sc cid
 
 -- Called when a preferred content check indicates that a live update is
 -- needed. Can be called more than once on the same LiveUpdate.

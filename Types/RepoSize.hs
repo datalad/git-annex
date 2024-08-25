@@ -15,6 +15,10 @@ import Types.Key
 import Control.Concurrent
 import Database.Persist.Sql hiding (Key)
 import qualified Data.Text as T
+import Data.Unique
+import Text.Read
+import System.Process (Pid)
+import Utility.Split
 
 -- The current size of a repo.
 newtype RepoSize = RepoSize { fromRepoSize :: Integer }
@@ -53,3 +57,38 @@ instance PersistField SizeChange where
 
 instance PersistFieldSql SizeChange where
         sqlType _ = SqlInt32
+
+data SizeChangeId = SizeChangeId
+	{ sizeChangeUniqueId :: Int
+	-- ^ unique per process
+	, sizeChangeProcessId :: Integer
+	-- ^ a pid, using Integer for portability
+	}
+	deriving (Show, Eq)
+
+mkSizeChangeId :: Pid -> IO SizeChangeId
+mkSizeChangeId pid = do
+	u <- newUnique
+	return $ SizeChangeId
+		{ sizeChangeProcessId = fromIntegral pid
+		, sizeChangeUniqueId = hashUnique u
+		}
+
+instance PersistField SizeChangeId where
+        toPersistValue cid = toPersistValue $ 
+		show (sizeChangeProcessId cid) ++ ":" ++ 
+		show (sizeChangeUniqueId cid)
+	fromPersistValue b = fromPersistValue b >>= parse
+	  where
+		parse s = maybe
+			(Left $ T.pack $ "bad serialized SizeChangeId " ++ show s)
+			Right
+			(parse' s)
+		parse' s = case splitc ':' s of
+			(pid:uid:[]) -> SizeChangeId
+				<$> readMaybe pid
+				<*> readMaybe uid
+			_ -> Nothing
+
+instance PersistFieldSql SizeChangeId where
+        sqlType _ = SqlString

@@ -27,7 +27,9 @@ module Database.RepoSize (
 	setRepoSizes,
 	getLiveSizeChanges,
 	startingLiveSizeChange,
-	finishedLiveSizeChange,
+	successfullyFinishedLiveSizeChange,
+	staleLiveSizeChange,
+	getSizeChanges,
 ) where
 
 import Annex.Common
@@ -57,11 +59,20 @@ AnnexBranch
   commit SSha
   UniqueCommit commit
 -- Changes that are currently being made that affect repo sizes.
+-- (Only updated when preferred content expressions are in use that need
+-- live size changes.)
 LiveSizeChanges
   repo UUID
   key Key
+  changeid SizeChangeId
   change SizeChange
-  UniqueLiveSizeChange repo key
+  UniqueLiveSizeChange repo key changeid
+-- A rolling total of size changes that were removed from LiveSizeChanges
+-- upon successful completion.
+SizeChanges
+  repo UUID
+  rollingtotal FileSize
+  UniqueRepoRollingTotal repo
 |]
 
 {- Gets a handle to the database. It's cached in Annex state. -}
@@ -162,34 +173,81 @@ recordAnnexBranchCommit branchcommitsha = do
 	deleteWhere ([] :: [Filter AnnexBranch])
 	void $ insertUniqueFast $ AnnexBranch $ toSSha branchcommitsha
 
-{- If there is already a size change for the same UUID and Key, it is
- - overwritten with the new size change. -}
-startingLiveSizeChange :: RepoSizeHandle -> UUID -> Key -> SizeChange -> IO ()
-startingLiveSizeChange (RepoSizeHandle (Just h)) u k sc = 
+{- If there is already a size change for the same UUID, Key,
+ - and SizeChangeId, it is overwritten with the new size change. -}
+startingLiveSizeChange :: RepoSizeHandle -> UUID -> Key -> SizeChange -> SizeChangeId -> IO ()
+startingLiveSizeChange (RepoSizeHandle (Just h)) u k sc sid = 
 	H.commitDb h $ void $ upsertBy
-		(UniqueLiveSizeChange u k)
-		(LiveSizeChanges u k sc)
-		[LiveSizeChangesChange =. sc]
-startingLiveSizeChange (RepoSizeHandle Nothing) _ _ _ = noop
+		(UniqueLiveSizeChange u k sid)
+		(LiveSizeChanges u k sid sc)
+		[ LiveSizeChangesChange =. sc
+		, LiveSizeChangesChangeid =. sid
+		]
+startingLiveSizeChange (RepoSizeHandle Nothing) _ _ _ _ = noop
 
-finishedLiveSizeChange :: RepoSizeHandle -> UUID -> Key -> SizeChange -> IO ()
-finishedLiveSizeChange (RepoSizeHandle (Just h)) u k sc = 
-	H.commitDb h $ deleteWhere 
+successfullyFinishedLiveSizeChange :: RepoSizeHandle -> UUID -> Key -> SizeChange -> SizeChangeId -> IO ()
+successfullyFinishedLiveSizeChange (RepoSizeHandle (Just h)) u k sc sid =
+	H.commitDb h $ do
+		-- Update the rolling total and remove the live change in the
+		-- same transaction.
+		rollingtotal <- getSizeChangeFor u
+		setSizeChangeFor u (updaterollingtotal rollingtotal)
+		removeLiveSizeChange u k sc sid
+  where
+	updaterollingtotal t = case sc of
+		AddingKey -> t + ksz
+		RemovingKey -> t - ksz
+	ksz = fromMaybe 0 $ fromKey keySize k
+successfullyFinishedLiveSizeChange (RepoSizeHandle Nothing) _ _ _ _ = noop
+
+staleLiveSizeChange :: RepoSizeHandle -> UUID -> Key -> SizeChange -> SizeChangeId -> IO ()
+staleLiveSizeChange (RepoSizeHandle (Just h)) u k sc sid = 
+	H.commitDb h $ removeLiveSizeChange u k sc sid
+staleLiveSizeChange (RepoSizeHandle Nothing) _ _ _ _ = noop
+
+removeLiveSizeChange :: UUID -> Key -> SizeChange -> SizeChangeId -> SqlPersistM ()
+removeLiveSizeChange u k sc sid = 
+	deleteWhere 
 		[ LiveSizeChangesRepo ==. u
 		, LiveSizeChangesKey ==. k
+		, LiveSizeChangesChangeid ==. sid
 		, LiveSizeChangesChange ==. sc
 		]
-finishedLiveSizeChange (RepoSizeHandle Nothing) _ _ _ = noop
 
-getLiveSizeChanges :: RepoSizeHandle -> IO (M.Map UUID (Key, SizeChange))
+getLiveSizeChanges :: RepoSizeHandle -> IO (M.Map UUID (Key, SizeChange, SizeChangeId))
 getLiveSizeChanges (RepoSizeHandle (Just h)) = H.queryDb h $ do
 	m <- M.fromList . map conv <$> getLiveSizeChanges'
 	return m
   where
 	conv entity = 
-		let LiveSizeChanges u k sc = entityVal entity
-		in (u, (k, sc))
+		let LiveSizeChanges u k sid sc = entityVal entity
+		in (u, (k, sc, sid))
 getLiveSizeChanges (RepoSizeHandle Nothing) = return mempty
 
 getLiveSizeChanges' :: SqlPersistM [Entity LiveSizeChanges]
 getLiveSizeChanges' = selectList [] []
+
+getSizeChanges :: RepoSizeHandle -> IO (M.Map UUID FileSize)
+getSizeChanges (RepoSizeHandle (Just h)) = H.queryDb h getSizeChanges'
+getSizeChanges (RepoSizeHandle Nothing) = return mempty
+
+getSizeChanges' :: SqlPersistM (M.Map UUID FileSize)
+getSizeChanges' = M.fromList . map conv <$> selectList [] []
+  where
+	conv entity =
+		let SizeChanges u n = entityVal entity
+		in (u, n)
+
+getSizeChangeFor :: UUID -> SqlPersistM FileSize
+getSizeChangeFor u = do
+	l <- selectList [SizeChangesRepo ==. u] []
+	return $ case l of
+		(s:_) -> sizeChangesRollingtotal $ entityVal s
+		[] -> 0
+
+setSizeChangeFor :: UUID -> FileSize -> SqlPersistM ()
+setSizeChangeFor u sz = 
+	void $ upsertBy
+		(UniqueRepoRollingTotal u)
+		(SizeChanges u sz)
+		[SizeChangesRollingtotal =. sz]
