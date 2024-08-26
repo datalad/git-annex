@@ -412,9 +412,11 @@ change ru file f = lockJournal $ \jl -> f <$> getToChange ru file >>= set jl ru 
 
 {- Applies a function which can modify the content of a file, or not.
  -
- - Returns True when the file was modified. -}
-maybeChange :: Journalable content => RegardingUUID -> RawFilePath -> (L.ByteString -> Maybe content) -> Annex Bool
-maybeChange ru file f = lockJournal $ \jl -> do
+ - When the file was modified, runs the onchange action, and returns
+ - True. The action is run while the journal is still locked,
+ - so another concurrent call to this cannot happen while it is running. -}
+maybeChange :: Journalable content => RegardingUUID -> RawFilePath -> (L.ByteString -> Maybe content) -> Annex () -> Annex Bool
+maybeChange ru file f onchange = lockJournal $ \jl -> do
 	v <- getToChange ru file
 	case f v of
 		Just jv ->
@@ -422,6 +424,7 @@ maybeChange ru file f = lockJournal $ \jl -> do
 			in if v /= b
 				then do
 					set jl ru file b
+					onchange
 					return True
 				else return False
 		_ -> return False

@@ -50,17 +50,19 @@ addLog' ru file logstatus loginfo c =
  - older timestamp, that LogLine is preserved, rather than updating the log
  - with a newer timestamp.
  -
- - Returns True when the log was changed.
+ - When the log was changed, the onchange action is run (with the journal
+ - still locked to prevent any concurrent changes) and True is returned.
  -}
-maybeAddLog :: Annex.Branch.RegardingUUID -> RawFilePath -> LogStatus -> LogInfo -> Annex Bool
-maybeAddLog ru file logstatus loginfo = do
+maybeAddLog :: Annex.Branch.RegardingUUID -> RawFilePath -> LogStatus -> LogInfo -> Annex () -> Annex Bool
+maybeAddLog ru file logstatus loginfo onchange = do
 	c <- currentVectorClock
-	Annex.Branch.maybeChange ru file $ \b ->
+	let f = \b ->
 		let old = parseLog b
 		    line = genLine logstatus loginfo c old
 		in do
 			m <- insertNewStatus line $ logMap old
 			return $ buildLog $ mapLog m
+	Annex.Branch.maybeChange ru file f onchange
 
 genLine :: LogStatus -> LogInfo -> CandidateVectorClock -> [LogLine] -> LogLine
 genLine logstatus loginfo c old = LogLine c' logstatus loginfo

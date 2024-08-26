@@ -36,6 +36,7 @@ recordContentIdentifier (RemoteStateHandle u) cid k = do
 		(Annex.Branch.RegardingUUID [u])
 		(remoteContentIdentifierLogFile config k)
 		(addcid c . parseLog)
+		noop
   where
 	addcid c v
 		| cid `elem` l = Nothing -- no change needed

@@ -77,10 +77,16 @@ Planned schedule of work:
     Listing process ID, thread ID, UUID, key, addition or removal
     (done)
 
+    Add to reposizes db a table for sizechanges. This has for each UUID
+    a rolling total which is the total size changes that have accumulated
+    since the last update of the reposizes table.
+    So adding the reposizes table to sizechanges gives the current
+    size.
+
     Make checking the balanced preferred content limit record a
     live update in the table (done)
 
-    ... and use other live updates in making its decision
+    ... and use other live updates and sizechanges in making its decision
     
     Note: This will only work when preferred content is being checked.
     If a git-annex copy without --auto is run, for example, it won't
@@ -92,33 +98,19 @@ Planned schedule of work:
     same time, so each thread always sees a consistent picture of what is
     happening. Use locking as necessary.
     
-    In the unlikely event that one thread of a process is storing a key and
-    another thread is dropping the same key from the same uuid, at the same
-    time, reconcile somehow. How? Or is this perhaps something that cannot
-    happen? Could just record the liveupdate for one, and not for the
-    other.
+    When updating location log for a key, when there is actually a change,
+    update the db, remove the live update (done) and update the sizechanges
+    table in the same transaction.
 
-    Also keep an in-memory cache of the live updates being performed by
-    the current process. For use in location log update as follows..
-
-    Make updating location log for a key that is in the in-memory cache
-    of the live update table update the db, removing it from that table,
-    and updating the in-memory reposizes. (done)
-
-    Make updading location log have locking to make sure redundant
-    information is never visible:
-    Take lock, journal update, remove from live update table.
+    Two concurrent processes might both start the same action, eg dropping
+    a key, and both succeed, and so both update the location log. One needs
+    to update the log and the sizechanges table. The other needs to see
+    that it has no actual change to report, and so avoid updating the
+    location log (already the case) and avoid updating the sizechanges
+    table. (done)
 
     Detect when an upload (or drop) fails, and remove from the live
-    update table and in-memory cache. (done)
-
-    Have a counter in the reposizes table that is updated on write. This
-    can be used to quickly determine if it has changed. On every check of
-    balanced preferred content, check the counter, and if it's been changed
-    by another process, re-run calcRepoSizes. This would be expensive, but
-    it would only happen when another process is running at the same time.
-    The counter could also be a per-UUID counter, so two processes
-    operating on different remotes would not have overhead.
+    update table. (done)
 
     When loading the live update table, check if PIDs in it are still
     running (and are still git-annex), and if not, remove stale entries
@@ -152,24 +144,6 @@ Planned schedule of work:
     pid in it, to avoid sqlite overhead.
 
 * Still implementing LiveUpdate. Check for TODO XXX markers
-
-* Could two processes both doing the same operation end up both
-  calling successfullyFinishedLiveSizeChange with the same repo uuid and
-  key? If so, the rolling total would get out of wack.
-
-  Logs.Location.logChange only calls updateRepoSize when the presence
-  actually changed. So if one process does something and then the other
-  process also does the same thing (eg both drop), the second process
-  will see what the first process recorded, and won't update the size
-  redundantly.
-
-  But: What if they're running at the same time? It seems
-  likely that Annex.Branch.maybeChange does not handle that in a way
-  that will guarantee this doesn't happen. Does anything else guarantee
-  it?
-
-  Can additional locking be added to avoid it? Probably, but it
-  will add overhead and so should be avoided in the NoLiveUpdate case.
 
 * In the case where a copy to a remote fails (due eg to annex.diskreserve),
   the LiveUpdate thread can not get a chance to catch its exception when

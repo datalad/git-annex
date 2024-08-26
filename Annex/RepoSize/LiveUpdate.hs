@@ -10,7 +10,6 @@
 module Annex.RepoSize.LiveUpdate where
 
 import Annex.Common
-import qualified Annex
 import Logs.Presence.Pure
 import qualified Database.RepoSize as Db
 import Annex.UUID
@@ -20,22 +19,17 @@ import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 import System.Process
 
+{- Called when a location log change is journalled, so the LiveUpdate
+ - is done. This is called with the journal still locked, so no concurrent
+ - changes can happen while it's running. Waits for the database
+ - to be updated. -}
 updateRepoSize :: LiveUpdate -> UUID -> Key -> LogStatus -> Annex ()
-updateRepoSize lu u k s = do
-	liftIO $ finishedLiveUpdate lu u k sc
-	rsv <- Annex.getRead Annex.reposizes
-	liftIO (takeMVar rsv) >>= \case
-		Nothing -> liftIO (putMVar rsv Nothing)
-		Just sizemap -> do
-			let !sizemap' = M.adjust 
-				(fromMaybe (RepoSize 0) . f k . Just)
-				u sizemap
-			liftIO $ putMVar rsv (Just sizemap')
+updateRepoSize lu u k s = liftIO $ finishedLiveUpdate lu u k sc
   where
-	(sc, f) = case s of
-		InfoPresent -> (AddingKey, addKeyRepoSize)
-		InfoMissing -> (RemovingKey, removeKeyRepoSize)
-		InfoDead -> (RemovingKey, removeKeyRepoSize)
+	sc = case s of
+		InfoPresent -> AddingKey
+		InfoMissing -> RemovingKey
+		InfoDead -> RemovingKey
 
 addKeyRepoSize :: Key -> Maybe RepoSize -> Maybe RepoSize
 addKeyRepoSize k mrs = case mrs of
@@ -88,11 +82,8 @@ prepareLiveUpdate mu k sc = do
 	
 	{- Wait for finishedLiveUpdate to be called, or for the LiveUpdate
 	 - to get garbage collected in the case where the change didn't
-	 - actually happen. -}
+	 - actually happen. Updates the database. -}
 	waitdone donev finishv h u cid = tryNonAsync (takeMVar donev) >>= \case
-		-- TODO need to update local state too, and it must be done
-		-- with locking around the state update and this database
-		-- update.
 		Right (Just (u', k', sc'))
 			| u' == u && k' == k && sc' == sc -> do
 				Db.successfullyFinishedLiveSizeChange h u k sc cid

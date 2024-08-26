@@ -84,13 +84,12 @@ logChange lu key u@(UUID _) s
 	| isClusterUUID u = noop
 	| otherwise = do
 		config <- Annex.getGitConfig
-		changed <- maybeAddLog
+		void $ maybeAddLog
 			(Annex.Branch.RegardingUUID [u])
 			(locationLogFile config key)
 			s
 			(LogInfo (fromUUID u))
-		when changed $
-			updateRepoSize lu u key s
+			(updateRepoSize lu u key s)
 logChange _ _ NoUUID _ = noop
 
 {- Returns a list of repository UUIDs that, according to the log, have
