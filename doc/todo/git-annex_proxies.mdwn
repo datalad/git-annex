@@ -100,7 +100,7 @@ Planned schedule of work:
     
     When updating location log for a key, when there is actually a change,
     update the db, remove the live update (done) and update the sizechanges
-    table in the same transaction.
+    table in the same transaction (done).
 
     Two concurrent processes might both start the same action, eg dropping
     a key, and both succeed, and so both update the location log. One needs
@@ -145,6 +145,48 @@ Planned schedule of work:
 
 * Still implementing LiveUpdate. Check for TODO XXX markers
 
+* Concurrency issue noted in commit db89e39df606b6ec292e0f1c3a7a60e317ac60f1
+
+    But: There will be a window where the redundant LiveUpdate is still
+    visible in the db, and processes can see it, combine it with the
+    rollingtotal, and arrive at the wrong size. This is a small window, but
+    it still ought to be addressed. Unsure if it would always be safe to
+    remove the redundant LiveUpdate? Consider the case where two drops and a
+    get are all running concurrently somehow, and the order they finish is
+    [drop, get, drop]. The second drop seems redundant to the first, but
+    it would not be safe to remove it. While this seems unlikely, it's hard
+    to rule out that a get and drop at different stages can both be running
+    at the same time.
+
+  It also is possible for a redundant LiveUpdate to get added to the db
+  just after the rollingtotal was updated. In this case, combining the LiveUpdate
+  with the rollingtotal again yields the wrong reposize.
+
+  So is the rollingtotal doomed to not be accurate?
+
+  A separate table could be kept of recent updates. When combining a LiveUpdate
+  with the rollingtotal to get a reposize, first check if the LiveUpdate is
+  redundant given a recent update. When updating the RepoSizes table, clear the
+  recent updates table and the rolling totals table (in the same transaction).
+  This recent updates table could get fairly large, but only needs to be queried
+  for each current LiveUpdate, of which there are not ususally many running.
+
+  When does a recent update mean a LiveUpdate is redundant? In the case of two drops,
+  the second is clearly redundant. But what about two gets and a drop? In this
+  case, after the first get, we don't know what order operations will
+  happen in. So the fact that the first get is in the recent updates table
+  should not make the second get be treated as redundant.
+
+  So, look up each LiveUpdate in the recent updates table. When the same
+  operation is found there, look to see if there is any other LiveUpdate of
+  the same key and uuid, but with a different SizeChange. Only when there is
+  not is the LiveUpdate redundant.
+
+  What if the recent updates table contains a get and a drop of the same
+  key. Now a get is running. Is it redundant? Perhaps the recent updates
+  table needs timestamps. More simply, when adding a drop to the recent
+  updates table, any existing get of the same key should be removed.
+
 * In the case where a copy to a remote fails (due eg to annex.diskreserve),
   the LiveUpdate thread can not get a chance to catch its exception when
   the LiveUpdate is gced, before git-annex exits. In this case, the
@@ -156,6 +198,11 @@ Planned schedule of work:
   I'd think, but I tried manually doing a performGC at git-annex shutdown
   and it didn't help.
 
+  getLiveRepoSizes is an unfinished try at implementing the above.
+
+* Something needs to empty SizeChanges and RecentChanges when
+  setRepoSizes is called. While avoiding races.
+
 * The assistant is using NoLiveUpdate, but it should be posssible to plumb
   a LiveUpdate through it from preferred content checking to location log
   updating.
@@ -164,6 +211,11 @@ Planned schedule of work:
   double-counts redundant information from the journal due to using
   overLocationLogs. In the other path it does not, and this should be fixed
   for consistency and correctness.
+
+* getLiveRepoSizes has a filterM getRecentChange over the live updates. 
+  This could be optimised to a single sql join. There are usually not many
+  live updates, but sometimes there will be a great many recent changes,
+  so it might be worth doing this optimisation.
 
 ## completed items for August's work on balanced preferred content
 

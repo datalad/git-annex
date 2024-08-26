@@ -94,7 +94,7 @@ prepareLiveUpdate mu k sc = do
 			| otherwise -> waitdone donev finishv h u cid
 		Right Nothing -> abandoned h u cid
 		Left _ -> abandoned h u cid
-	abandoned h u cid = Db.staleLiveSizeChange h u k sc cid
+	abandoned h u cid = Db.removeStaleLiveSizeChange h u k sc cid
 
 -- Called when a preferred content check indicates that a live update is
 -- needed. Can be called more than once on the same LiveUpdate.
