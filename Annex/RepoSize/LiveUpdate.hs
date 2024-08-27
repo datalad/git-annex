@@ -59,14 +59,13 @@ prepareLiveUpdate mu k sc = do
 	startv <- liftIO newEmptyMVar
 	readyv <- liftIO newEmptyMVar
 	donev <- liftIO newEmptyMVar
-	finishv <- liftIO newEmptyMVar
-	void $ liftIO $ forkIO $ waitstart startv readyv donev finishv h u
-	return (LiveUpdate needv startv readyv donev finishv)
+	void $ liftIO $ forkIO $ waitstart startv readyv donev h u
+	return (LiveUpdate needv startv readyv donev)
   where
 	{- Wait for checkLiveUpdate to request a start, or for the
 	 - LiveUpdate to get garbage collected in the case where
 	 - it is not needed. -}
-	waitstart startv readyv donev finishv h u =
+	waitstart startv readyv donev h u =
 		tryNonAsync (takeMVar startv) >>= \case
 			Right () -> do
 				pid <- getCurrentPid
@@ -77,21 +76,23 @@ prepareLiveUpdate mu k sc = do
 				 - need live updates. -}
 				Db.startingLiveSizeChange h u k sc cid
 				putMVar readyv ()
-				waitdone donev finishv h u cid
+				waitdone donev h u cid
 			Left _ -> noop
 	
 	{- Wait for finishedLiveUpdate to be called, or for the LiveUpdate
 	 - to get garbage collected in the case where the change didn't
 	 - actually happen. Updates the database. -}
 	waitdone donev finishv h u cid = tryNonAsync (takeMVar donev) >>= \case
-		Right (Just (u', k', sc'))
+		Right (Just (u', k', sc', finishv))
 			| u' == u && k' == k && sc' == sc -> do
 				Db.successfullyFinishedLiveSizeChange h u k sc cid
 				putMVar finishv ()
 			-- This can happen when eg, storing to a cluster
 			-- causes fanout and so this is called with
 			-- other UUIDs.
-			| otherwise -> waitdone donev finishv h u cid
+			| otherwise -> do
+				putMVar finishv ()
+				waitdone donev finishv h u cid
 		Right Nothing -> abandoned h u cid
 		Left _ -> abandoned h u cid
 	abandoned h u cid = Db.removeStaleLiveSizeChange h u k sc cid
@@ -122,7 +123,7 @@ checkLiveUpdate lu a = do
 finishedLiveUpdate :: LiveUpdate -> UUID -> Key -> SizeChange -> IO ()
 finishedLiveUpdate NoLiveUpdate _ _ _ = noop
 finishedLiveUpdate lu u k sc = do
-	tryNonAsync (putMVar (liveUpdateDone lu) (Just (u, k, sc))) >>= \case
-		Right () -> void $
-			tryNonAsync $ readMVar $ liveUpdateFinish lu
+	finishv <- newEmptyMVar
+	tryNonAsync (putMVar (liveUpdateDone lu) (Just (u, k, sc, finishv))) >>= \case
+		Right () -> void $ tryNonAsync $ takeMVar finishv
 		Left _ -> noop

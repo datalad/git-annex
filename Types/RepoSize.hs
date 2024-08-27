@@ -39,8 +39,7 @@ data LiveUpdate
 		{ liveUpdateNeeded :: MVar ()
 		, liveUpdateStart :: MVar ()
 		, liveUpdateReady :: MVar ()
-		, liveUpdateDone :: MVar (Maybe (UUID, Key, SizeChange))
-		, liveUpdateFinish :: MVar ()
+		, liveUpdateDone :: MVar (Maybe (UUID, Key, SizeChange, MVar ()))
 		}
 	| NoLiveUpdate
 
