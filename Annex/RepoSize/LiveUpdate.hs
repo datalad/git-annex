@@ -109,8 +109,9 @@ checkLiveUpdate lu a = Db.lockDbWhile (const go) go
 
 finishedLiveUpdate :: LiveUpdate -> UUID -> Key -> SizeChange -> IO ()
 finishedLiveUpdate NoLiveUpdate _ _ _ = noop
-finishedLiveUpdate lu u k sc = do
-	finishv <- newEmptyMVar
-	tryNonAsync (putMVar (liveUpdateDone lu) (Just (u, k, sc, finishv))) >>= \case
-		Right () -> void $ tryNonAsync $ takeMVar finishv
-		Left _ -> noop
+finishedLiveUpdate lu u k sc =
+	whenM (not <$> isEmptyMVar (liveUpdateReady lu)) $ do
+		finishv <- newEmptyMVar
+		tryNonAsync (putMVar (liveUpdateDone lu) (Just (u, k, sc, finishv))) >>= \case
+			Right () -> void $ tryNonAsync $ takeMVar finishv
+			Left _ -> noop
