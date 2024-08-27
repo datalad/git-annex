@@ -35,9 +35,11 @@ Planned schedule of work:
 
   May not be a bug, needs reproducing and analysis.
 
-* Make sure that two threads don't check balanced preferred content at the
-  same time, so each thread always sees a consistent picture of what is
-  happening. Use locking as necessary.
+* Test that live repo size data is correct and really works.
+
+* Avoid using checkLiveUpdate except when checking a preferred content
+  expression that does use balanced preferred content. No reason to pay
+  its time penalty otherwise.
 
 * When loading the live update table, check if PIDs in it are still
   running (and are still git-annex), and if not, remove stale entries

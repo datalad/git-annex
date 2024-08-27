@@ -15,8 +15,6 @@ import qualified Database.RepoSize as Db
 import Annex.UUID
 
 import Control.Concurrent
-import qualified Data.Map.Strict as M
-import qualified Data.Set as S
 import System.Process
 
 {- Called when a location log change is journalled, so the LiveUpdate
@@ -93,15 +91,21 @@ needLiveUpdate lu = liftIO $ void $ tryPutMVar (liveUpdateNeeded lu) ()
 --
 -- This can be called more than once on the same LiveUpdate. It will
 -- only start it once.
+--
+-- This serializes calls to the action, so that if the action
+-- queries getLiveRepoSizes it will not race with another such action
+-- that may also be starting a live update.
 checkLiveUpdate :: LiveUpdate -> Annex Bool -> Annex Bool
 checkLiveUpdate NoLiveUpdate a = a
-checkLiveUpdate lu a = do
-	r <- a
-	needed <- liftIO $ isJust <$> tryTakeMVar (liveUpdateNeeded lu)
-	when (r && needed) $ do
-		liftIO $ void $ tryPutMVar (liveUpdateStart lu) ()
-		liftIO $ void $ readMVar (liveUpdateReady lu)
-	return r
+checkLiveUpdate lu a = Db.lockDbWhile (const go) go
+  where
+	go = do
+		r <- a
+		needed <- liftIO $ isJust <$> tryTakeMVar (liveUpdateNeeded lu)
+		when (r && needed) $ do
+			liftIO $ void $ tryPutMVar (liveUpdateStart lu) ()
+			liftIO $ void $ readMVar (liveUpdateReady lu)
+		return r
 
 finishedLiveUpdate :: LiveUpdate -> UUID -> Key -> SizeChange -> IO ()
 finishedLiveUpdate NoLiveUpdate _ _ _ = noop

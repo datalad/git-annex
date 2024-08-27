@@ -23,6 +23,7 @@ module Database.RepoSize (
 	getRepoSizeHandle,
 	openDb,
 	closeDb,
+	lockDbWhile,
 	getRepoSizes,
 	setRepoSizes,
 	startingLiveSizeChange,
@@ -48,6 +49,7 @@ import Database.Persist.TH
 import qualified System.FilePath.ByteString as P
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
+import Control.Exception
 
 share [mkPersist sqlSettings, mkMigrate "migrateRepoSizes"] [persistLowerCase|
 -- Corresponds to location log information from the git-annex branch.
@@ -101,16 +103,14 @@ getRepoSizeHandle = Annex.getState Annex.reposizehandle >>= \case
  - can create it undisturbed.
  -}
 openDb :: Annex RepoSizeHandle
-openDb = do
-	lck <- calcRepo' gitAnnexRepoSizeDbLock
-	catchPermissionDenied permerr $ withExclusiveLock lck $ do
-		dbdir <- calcRepo' gitAnnexRepoSizeDbDir
-		let db = dbdir P.</> "db"
-		unlessM (liftIO $ R.doesPathExist db) $ do
-			initDb db $ void $
-				runMigrationSilent migrateRepoSizes
-		h <- liftIO $ H.openDb db "repo_sizes"
-		return $ RepoSizeHandle (Just h)
+openDb = lockDbWhile permerr $ do
+	dbdir <- calcRepo' gitAnnexRepoSizeDbDir
+	let db = dbdir P.</> "db"
+	unlessM (liftIO $ R.doesPathExist db) $ do
+		initDb db $ void $
+			runMigrationSilent migrateRepoSizes
+	h <- liftIO $ H.openDb db "repo_sizes"
+	return $ RepoSizeHandle (Just h)
   where
 	-- If permissions don't allow opening the database,
 	-- just don't use it. Since this database is just a cache
@@ -122,6 +122,13 @@ openDb = do
 closeDb :: RepoSizeHandle -> Annex ()
 closeDb (RepoSizeHandle (Just h)) = liftIO $ H.closeDb h
 closeDb (RepoSizeHandle Nothing) = noop
+
+-- This does not prevent another process that has already 
+-- opened the db from changing it at the same time.
+lockDbWhile :: (IOException -> Annex a) -> Annex a -> Annex a
+lockDbWhile permerr a = do
+	lck <- calcRepo' gitAnnexRepoSizeDbLock
+	catchPermissionDenied permerr $ withExclusiveLock lck a
 
 {- Gets the sizes of repositories as of a commit to the git-annex
  - branch. -}
