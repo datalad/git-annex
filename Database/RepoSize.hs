@@ -355,7 +355,8 @@ liveRepoOffsets :: RepoSizeHandle -> IO (M.Map UUID SizeOffset)
 liveRepoOffsets (RepoSizeHandle (Just h)) = H.queryDb h $ do
 	sizechanges <- getSizeChanges
 	livechanges <- getLiveSizeChanges
-	let us = nub (M.keys sizechanges ++ M.keys livechanges)
+	let us = S.toList $ S.fromList $
+		M.keys sizechanges ++ M.keys livechanges
 	M.fromList <$> forM us (go sizechanges livechanges)
   where
 	go sizechanges livechanges u = do
