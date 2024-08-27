@@ -64,16 +64,17 @@ prepareLiveUpdate mu k sc = do
   where
 	{- Wait for checkLiveUpdate to request a start, or for the
 	 - LiveUpdate to get garbage collected in the case where
-	 - it is not needed. -}
+	 - it is not needed.
+	 -
+	 - Deferring updating the database until here avoids overhead
+	 - except in cases where preferred content expressions
+	 - need live updates.
+	 -}
 	waitstart startv readyv donev h u =
 		tryNonAsync (takeMVar startv) >>= \case
 			Right () -> do
 				pid <- getCurrentPid
 				cid <- mkSizeChangeId pid
-				{- Deferring updating the database until
-				 - here avoids overhead except in cases
-				 - where preferred content expressions
-				 - need live updates. -}
 				Db.startingLiveSizeChange h u k sc cid
 				putMVar readyv ()
 				waitdone donev h u cid
@@ -82,17 +83,18 @@ prepareLiveUpdate mu k sc = do
 	{- Wait for finishedLiveUpdate to be called, or for the LiveUpdate
 	 - to get garbage collected in the case where the change didn't
 	 - actually happen. Updates the database. -}
-	waitdone donev finishv h u cid = tryNonAsync (takeMVar donev) >>= \case
+	waitdone donev h u cid = tryNonAsync (takeMVar donev) >>= \case
 		Right (Just (u', k', sc', finishv))
 			| u' == u && k' == k && sc' == sc -> do
 				Db.successfullyFinishedLiveSizeChange h u k sc cid
 				putMVar finishv ()
-			-- This can happen when eg, storing to a cluster
+			-- Not the update we were expecting. This can
+			-- happen when eg, storing to a cluster
 			-- causes fanout and so this is called with
 			-- other UUIDs.
 			| otherwise -> do
 				putMVar finishv ()
-				waitdone donev finishv h u cid
+				waitdone donev h u cid
 		Right Nothing -> abandoned h u cid
 		Left _ -> abandoned h u cid
 	abandoned h u cid = Db.removeStaleLiveSizeChange h u k sc cid

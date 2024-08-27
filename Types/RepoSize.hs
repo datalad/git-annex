@@ -44,7 +44,7 @@ data LiveUpdate
 	| NoLiveUpdate
 
 data SizeChange = AddingKey | RemovingKey
-	deriving (Show, Eq)
+	deriving (Show, Eq, Ord)
 
 instance PersistField SizeChange where
         toPersistValue AddingKey = toPersistValue (1 :: Int)

@@ -201,11 +201,6 @@ successfullyFinishedLiveSizeChange (RepoSizeHandle (Just h)) u k sc sid =
 		setSizeChangeFor u (updateRollingTotal rollingtotal sc k)
 		addRecentChange u k sc
 		removeLiveSizeChange u k sc sid
-  where
-	updaterollingtotal t = case sc of
-		AddingKey -> t + ksz
-		RemovingKey -> t - ksz
-	ksz = fromMaybe 0 $ fromKey keySize k
 successfullyFinishedLiveSizeChange (RepoSizeHandle Nothing) _ _ _ _ = noop
 
 updateRollingTotal :: FileSize -> SizeChange -> Key -> FileSize
@@ -288,20 +283,25 @@ getRecentChange u k = do
  - adding the key is used, in order to err on the side of a larger
  - RepoSize.
  -
- - Omits live changes that are redundant due to a recent change already
- - being recorded for the same change.
+ - In the case where the same live change is recorded by two different
+ - processes or threads, the first to complete will record it as a recent
+ - change. This omits live changes that are redundant due to a recent
+ - change already being recorded for the same change.
  - 
  - This is only expensive when there are a lot of live changes happening at
  - the same time.
  -}
-getLiveRepoSizes :: RepoSizeHandle -> IO (M.Map UUID RepoSize, Maybe Sha)
+getLiveRepoSizes :: RepoSizeHandle -> IO (Maybe (M.Map UUID RepoSize, Sha))
 getLiveRepoSizes (RepoSizeHandle (Just h)) = H.queryDb h $ do
-	sizechanges <- getSizeChanges
-	livechanges <- getLiveSizeChanges
-	reposizes <- getRepoSizes'
-	annexbranchsha <- getAnnexBranchCommit
-	m <- M.fromList <$> forM reposizes (go sizechanges livechanges)
-	return (m, annexbranchsha)
+	getAnnexBranchCommit >>= \case
+		Nothing -> return Nothing
+		Just annexbranchsha -> do
+			sizechanges <- getSizeChanges
+			livechanges <- getLiveSizeChanges
+			reposizes <- getRepoSizes'
+			m <- M.fromList <$> forM reposizes
+				(go sizechanges livechanges)
+			return (Just (m, annexbranchsha))
   where
 	go
 		:: M.Map UUID FileSize
@@ -310,8 +310,10 @@ getLiveRepoSizes (RepoSizeHandle (Just h)) = H.queryDb h $ do
 		-> SqlPersistM (UUID, RepoSize)
 	go sizechanges livechanges (u, RepoSize startsize) = do
 		let livechangesbykey = 
-			M.fromListWith (++) $ maybe [] (\v -> [v]) $
-				M.lookup u livechanges
+			M.fromListWith (++) $
+				map (\(k, v) -> (k, [v])) $
+					fromMaybe [] $
+						M.lookup u livechanges
 		livechanges' <- combinelikelivechanges <$> 
 			filterM (nonredundantlivechange livechangesbykey u)
 				(fromMaybe [] $ M.lookup u livechanges)
@@ -348,4 +350,4 @@ getLiveRepoSizes (RepoSizeHandle (Just h)) = H.queryDb h $ do
 		filter (\(sc', cid') -> cid /= cid' && sc' == AddingKey)
 			(fromMaybe [] $ M.lookup k livechangesbykey)
 	competinglivechanges _ _ AddingKey _ = []
-getLiveRepoSizes (RepoSizeHandle Nothing) = return mempty
+getLiveRepoSizes (RepoSizeHandle Nothing) = return Nothing
