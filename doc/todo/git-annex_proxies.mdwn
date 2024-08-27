@@ -35,173 +35,40 @@ Planned schedule of work:
 
   May not be a bug, needs reproducing and analysis.
 
-* Concurrency issues with RepoSizes calculation and balanced content:
+* Make sure that two threads don't check balanced preferred content at the
+  same time, so each thread always sees a consistent picture of what is
+  happening. Use locking as necessary.
 
-  * What if 2 concurrent threads are considering sending two different
-    keys to a repo at the same time. It can hold either but not both.
-    It should avoid sending both in this situation.
+* When loading the live update table, check if PIDs in it are still
+  running (and are still git-annex), and if not, remove stale entries
+  from it, which can accumulate when processes are interrupted.
+  Note that it will be ok for the wrong git-annex process, running again
+  at a pid to keep a stale item in the live update table, because that
+  is unlikely and exponentially unlikely to happen repeatedly, so stale
+  information will only be used for a short time.
 
-  * There can also be a race with 2 concurrent threads where one just
-    finished sending to a repo, but has not yet updated the location log. 
-    So the other one won't see an updated repo size.
-    
-    The fact that location log changes happen in CommandCleanup makes
-    this difficult to fix.
+  But then, how to check if a PID is git-annex or not? /proc of course,
+  but what about other OS's? Windows?
 
-    Could provisionally update Annex.reposizes before starting to send a
-    key, and roll it back if the send fails. But then Logs.Location
-    would update Annex.reposizes redundantly. So would need to remember
-    the provisional update was made until that is called.... But what if it
-    is never called for some reason?
-
-    Also, in a race between two threads at the checking preferred content
-    stage, neither would have started sending yet, and so both would think
-    it was ok for them to.
-
-    This race only really matters when the repo becomes full,
-    then the second thread will fail to send because it's full. Or will
-    send more than the configured maxsize. Still this would be good to
-    fix.
-
-  * If all the above thread concurrency problems are fixed, separate
-    processes will still have concurrency problems. One case where that is
-    bad is a cluster accessed via ssh. Each connection to the cluster is
-    a separate process. So each will be unaware of changes made by others.
-    When `git-annex copy --to cluster -Jn` is used, this makes a single
-    command behave non-ideally, the same as the thread concurrency
-    problems.
-
-  * Possible solution: 
-
-    Add to reposizes db a table for live updates.
-    Listing process ID, thread ID, UUID, key, addition or removal
-    (done)
-
-    Add to reposizes db a table for sizechanges. This has for each UUID
-    a rolling total which is the total size changes that have accumulated
-    since the last update of the reposizes table.
-    So adding the reposizes table to sizechanges gives the current
-    size.
-
-    Make checking the balanced preferred content limit record a
-    live update in the table (done)
-
-    ... and use other live updates and sizechanges in making its decision
-    
-    Note: This will only work when preferred content is being checked.
-    If a git-annex copy without --auto is run, for example, it won't
-    tell other processes that it is in the process of filling up a remote.
-    That seems ok though, because if the user is running a command like
-    that, they are ok with a remote filling up.
-
-    Make sure that two threads don't check balanced preferred content at the
-    same time, so each thread always sees a consistent picture of what is
-    happening. Use locking as necessary.
-    
-    When updating location log for a key, when there is actually a change,
-    update the db, remove the live update (done) and update the sizechanges
-    table in the same transaction (done).
-
-    Two concurrent processes might both start the same action, eg dropping
-    a key, and both succeed, and so both update the location log. One needs
-    to update the log and the sizechanges table. The other needs to see
-    that it has no actual change to report, and so avoid updating the
-    location log (already the case) and avoid updating the sizechanges
-    table. (done)
-
-    Detect when an upload (or drop) fails, and remove from the live
-    update table. (done)
-
-    When loading the live update table, check if PIDs in it are still
-    running (and are still git-annex), and if not, remove stale entries
-    from it, which can accumulate when processes are interrupted.
-    Note that it will be ok for the wrong git-annex process, running again
-    at a pid to keep a stale item in the live update table, because that
-    is unlikely and exponentially unlikely to happen repeatedly, so stale
-    information will only be used for a short time.
-
-    But then, how to check if a PID is git-annex or not? /proc of course,
-    but what about other OS's? Windows?
-
-    How? Possibly have a thread that
-    waits on an empty MVar. Thread MVar through somehow to location log
-    update. (Seems this would need checking preferred content to return
-    the MVar? Or alternatively, the MVar could be passed into it, which 
-    seems better..) Fill MVar on location log update. If MVar gets
-    GCed without being filled, the thread will get an exception and can
-    remove from table and cache then. This does rely on GC behavior, but if
-    the GC takes some time, it will just cause a failed upload to take
-    longer to get removed from the table and cache, which will just prevent
-    another upload of a different key from running immediately.
-    (Need to check if MVar GC behavior operates like this.
-    See https://stackoverflow.com/questions/10871303/killing-a-thread-when-mvar-is-garbage-collected )
-    Perhaps stale entries can be found in a different way. Require the live
-    update table to be updated with a timestamp every 5 minutes. The thread
-    that waits on the MVar can do that, as long as the transfer is running. If
-    interrupted, it will become stale in 5 minutes, which is probably good
-    enough? Could do it every minute, depending on overhead. This could
-    also be done by just repeatedly touching a file named with the processes's
-    pid in it, to avoid sqlite overhead.
-
-* Still implementing LiveUpdate. Check for TODO XXX markers
-
-* Concurrency issue noted in commit db89e39df606b6ec292e0f1c3a7a60e317ac60f1
-
-    But: There will be a window where the redundant LiveUpdate is still
-    visible in the db, and processes can see it, combine it with the
-    rollingtotal, and arrive at the wrong size. This is a small window, but
-    it still ought to be addressed. Unsure if it would always be safe to
-    remove the redundant LiveUpdate? Consider the case where two drops and a
-    get are all running concurrently somehow, and the order they finish is
-    [drop, get, drop]. The second drop seems redundant to the first, but
-    it would not be safe to remove it. While this seems unlikely, it's hard
-    to rule out that a get and drop at different stages can both be running
-    at the same time.
-
-  It also is possible for a redundant LiveUpdate to get added to the db
-  just after the rollingtotal was updated. In this case, combining the LiveUpdate
-  with the rollingtotal again yields the wrong reposize.
-
-  So is the rollingtotal doomed to not be accurate?
-
-  A separate table could be kept of recent updates. When combining a LiveUpdate
-  with the rollingtotal to get a reposize, first check if the LiveUpdate is
-  redundant given a recent update. When updating the RepoSizes table, clear the
-  recent updates table and the rolling totals table (in the same transaction).
-  This recent updates table could get fairly large, but only needs to be queried
-  for each current LiveUpdate, of which there are not ususally many running.
-
-  When does a recent update mean a LiveUpdate is redundant? In the case of two drops,
-  the second is clearly redundant. But what about two gets and a drop? In this
-  case, after the first get, we don't know what order operations will
-  happen in. So the fact that the first get is in the recent updates table
-  should not make the second get be treated as redundant.
-
-  So, look up each LiveUpdate in the recent updates table. When the same
-  operation is found there, look to see if there is any other LiveUpdate of
-  the same key and uuid, but with a different SizeChange. Only when there is
-  not is the LiveUpdate redundant.
-
-  What if the recent updates table contains a get and a drop of the same
-  key. Now a get is running. Is it redundant? Perhaps the recent updates
-  table needs timestamps. More simply, when adding a drop to the recent
-  updates table, any existing get of the same key should be removed.
-
-* In the case where a copy to a remote fails (due eg to annex.diskreserve),
-  the LiveUpdate thread can not get a chance to catch its exception when
-  the LiveUpdate is gced, before git-annex exits. In this case, the
-  database is left with some stale entries in the live update table.
-
-  This is not a big problem because the same can happen when the process is
-  interrupted. Still it would be cleaner for this not to happen. Is there
-  any way to prevent it? Waiting 1 GC tick before exiting would do it,
-  I'd think, but I tried manually doing a performGC at git-annex shutdown
-  and it didn't help.
-
-  getLiveRepoSizes is an unfinished try at implementing the above.
-
-* Something needs to empty SizeChanges and RecentChanges when
-  setRepoSizes is called. While avoiding races.
+  How? Possibly have a thread that
+  waits on an empty MVar. Thread MVar through somehow to location log
+  update. (Seems this would need checking preferred content to return
+  the MVar? Or alternatively, the MVar could be passed into it, which 
+  seems better..) Fill MVar on location log update. If MVar gets
+  GCed without being filled, the thread will get an exception and can
+  remove from table and cache then. This does rely on GC behavior, but if
+  the GC takes some time, it will just cause a failed upload to take
+  longer to get removed from the table and cache, which will just prevent
+  another upload of a different key from running immediately.
+  (Need to check if MVar GC behavior operates like this.
+  See https://stackoverflow.com/questions/10871303/killing-a-thread-when-mvar-is-garbage-collected )
+  Perhaps stale entries can be found in a different way. Require the live
+  update table to be updated with a timestamp every 5 minutes. The thread
+  that waits on the MVar can do that, as long as the transfer is running. If
+  interrupted, it will become stale in 5 minutes, which is probably good
+  enough? Could do it every minute, depending on overhead. This could
+  also be done by just repeatedly touching a file named with the processes's
+  pid in it, to avoid sqlite overhead.
 
 * The assistant is using NoLiveUpdate, but it should be posssible to plumb
   a LiveUpdate through it from preferred content checking to location log
@@ -222,6 +89,7 @@ Planned schedule of work:
 * Balanced preferred content basic implementation, including --rebalance
   option.
 * Implemented [[track_free_space_in_repos_via_git-annex_branch]]
+* Implemented tracking of live changes to repository sizes.
 * `git-annex maxsize`
 * annex.fullybalancedthreshhold
 

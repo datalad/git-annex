@@ -28,6 +28,10 @@ newtype RepoSize = RepoSize { fromRepoSize :: Integer }
 newtype MaxSize = MaxSize { fromMaxSize :: Integer }
 	deriving (Show, Eq, Ord)
 
+-- An offset to the size of a repo.
+newtype SizeOffset = SizeOffset { fromSizeChange :: Integer }
+	deriving (Show, Eq, Ord, Num)
+
 -- Used when an action is in progress that will change the current size of
 -- a repository.
 --

@@ -133,7 +133,7 @@ data AnnexRead = AnnexRead
 	, forcenumcopies :: Maybe NumCopies
 	, forcemincopies :: Maybe MinCopies
 	, forcebackend :: Maybe String
-	, reposizes :: MVar (Maybe (M.Map UUID RepoSize))
+	, reposizes :: MVar (Maybe (M.Map UUID (RepoSize, SizeOffset)))
 	, rebalance :: Bool
 	, useragent :: Maybe String
 	, desktopnotify :: DesktopNotify

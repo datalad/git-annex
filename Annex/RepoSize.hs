@@ -13,10 +13,10 @@ module Annex.RepoSize (
 ) where
 
 import Annex.Common
-import Annex.RepoSize.LiveUpdate
 import qualified Annex
 import Annex.Branch (UnmergedBranches(..), getBranch)
 import qualified Database.RepoSize as Db
+import Annex.Journal
 import Logs
 import Logs.Location
 import Logs.UUID
@@ -36,7 +36,10 @@ import qualified Data.Set as S
  - was called. It does not update while git-annex is running.
  -}
 getRepoSizes :: Bool -> Annex (M.Map UUID RepoSize)
-getRepoSizes quiet = do
+getRepoSizes quiet = M.map fst <$> getRepoSizes' quiet
+
+getRepoSizes' :: Bool -> Annex (M.Map UUID (RepoSize, SizeOffset))
+getRepoSizes' quiet = do
 	rsv <- Annex.getRead Annex.reposizes
 	liftIO (takeMVar rsv) >>= \case
 		Just sizemap -> do
@@ -47,22 +50,24 @@ getRepoSizes quiet = do
 {- Like getRepoSizes, but with live updates. -}
 getLiveRepoSizes :: Bool -> Annex (M.Map UUID RepoSize)
 getLiveRepoSizes quiet = do
-	h <- Db.getRepoSizeHandle
-	liftIO (Db.estimateLiveRepoSizes h) >>= \case
-		Just (m, annexbranchsha) -> return m
-		Nothing -> do
-			-- Db.estimateLiveRepoSizes needs the
-			-- reposizes to be calculated first.
-			m <- getRepoSizes quiet
-			liftIO (Db.estimateLiveRepoSizes h) >>= \case
-				Just (m', annexbranchsha) -> return m'
-				Nothing -> return m
+	sizemap <- getRepoSizes' quiet
+	go sizemap `onException` return (M.map fst sizemap)
+  where
+	go sizemap = do
+		h <- Db.getRepoSizeHandle
+		liveoffsets <- liftIO $ Db.liveRepoOffsets h
+		let calc u (RepoSize size, SizeOffset startoffset) =
+			case M.lookup u liveoffsets of
+				Nothing -> RepoSize size
+				Just (SizeOffset offset) -> RepoSize $
+					size + (offset - startoffset)
+		return $ M.mapWithKey calc sizemap
 
 {- Fills an empty Annex.reposizes MVar with current information
  - from the git-annex branch, supplimented with journalled but
  - not yet committed information.
  -}
-calcRepoSizes :: Bool -> MVar (Maybe (M.Map UUID RepoSize)) -> Annex (M.Map UUID RepoSize)
+calcRepoSizes :: Bool -> MVar (Maybe (M.Map UUID (RepoSize, SizeOffset))) -> Annex (M.Map UUID (RepoSize, SizeOffset))
 calcRepoSizes quiet rsv = go `onException` failed
   where
 	go = do
@@ -73,7 +78,7 @@ calcRepoSizes quiet rsv = go `onException` failed
 			Just oldbranchsha -> do
 				currbranchsha <- getBranch
 				if oldbranchsha == currbranchsha
-					then calcJournalledRepoSizes oldsizemap oldbranchsha
+					then calcJournalledRepoSizes h oldsizemap oldbranchsha
 					else incrementalupdate h oldsizemap oldbranchsha currbranchsha
 		liftIO $ putMVar rsv (Just sizemap)
 		return sizemap
@@ -83,12 +88,12 @@ calcRepoSizes quiet rsv = go `onException` failed
 			showSideAction "calculating repository sizes"
 		(sizemap, branchsha) <- calcBranchRepoSizes
 		liftIO $ Db.setRepoSizes h sizemap branchsha
-		calcJournalledRepoSizes sizemap branchsha
+		calcJournalledRepoSizes h sizemap branchsha
 	
 	incrementalupdate h oldsizemap oldbranchsha currbranchsha = do
 		(sizemap, branchsha) <- diffBranchRepoSizes quiet oldsizemap oldbranchsha currbranchsha
 		liftIO $ Db.setRepoSizes h sizemap branchsha
-		calcJournalledRepoSizes sizemap branchsha
+		calcJournalledRepoSizes h sizemap branchsha
 
 	failed = do
 		liftIO $ putMVar rsv (Just M.empty)
@@ -120,13 +125,21 @@ calcBranchRepoSizes = do
  - data from journalled location logs.
   -}
 calcJournalledRepoSizes
-	:: M.Map UUID RepoSize
+	:: Db.RepoSizeHandle
+	-> M.Map UUID RepoSize
 	-> Sha 
-	-> Annex (M.Map UUID RepoSize)
-calcJournalledRepoSizes startmap branchsha =
-	overLocationLogsJournal startmap branchsha 
-		(\k v m -> pure (accumRepoSizes k v m))
-		Nothing
+	-> Annex (M.Map UUID (RepoSize, SizeOffset))
+calcJournalledRepoSizes h startmap branchsha =
+	-- Lock the journal to prevent updates to the size offsets
+	-- in the repository size database while this is processing
+	-- the journal files.
+	lockJournal $ \_jl -> do
+		sizemap <- overLocationLogsJournal startmap branchsha 
+			(\k v m' -> pure (accumRepoSizes k v m'))
+			Nothing
+		offsets <- liftIO $ Db.recordedRepoOffsets h
+		let getoffset u = fromMaybe (SizeOffset 0) $ M.lookup u offsets
+		return $ M.mapWithKey (\u sz -> (sz, getoffset u)) sizemap
 
 {- Incremental update by diffing. -}
 diffBranchRepoSizes :: Bool -> M.Map UUID RepoSize -> Sha -> Sha -> Annex (M.Map UUID RepoSize, Sha)
@@ -180,3 +193,22 @@ diffBranchRepoSizes quiet oldsizemap oldbranchsha newbranchsha = do
 			(\m u -> M.insertWith (flip const) u (RepoSize 0) m)
 			newsizemap
 			knownuuids
+
+addKeyRepoSize :: Key -> Maybe RepoSize -> Maybe RepoSize
+addKeyRepoSize k mrs = case mrs of
+	Just (RepoSize sz) -> Just $ RepoSize $ sz + ksz
+	Nothing -> Just $ RepoSize ksz
+  where
+	ksz = fromMaybe 0 $ fromKey keySize k
+
+removeKeyRepoSize :: Key -> Maybe RepoSize -> Maybe RepoSize
+removeKeyRepoSize k mrs = case mrs of
+	Just (RepoSize sz) -> Just $ RepoSize $ sz - ksz
+	Nothing -> Nothing
+  where
+	ksz = fromMaybe 0 $ fromKey keySize k
+
+accumRepoSizes :: Key -> (S.Set UUID, S.Set UUID) -> M.Map UUID RepoSize -> M.Map UUID RepoSize
+accumRepoSizes k (newlocs, removedlocs) sizemap = 
+	let !sizemap' = foldl' (flip $ M.alter $ addKeyRepoSize k) sizemap newlocs
+	in foldl' (flip $ M.alter $ removeKeyRepoSize k) sizemap' removedlocs

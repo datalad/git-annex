@@ -31,25 +31,6 @@ updateRepoSize lu u k s = liftIO $ finishedLiveUpdate lu u k sc
 		InfoMissing -> RemovingKey
 		InfoDead -> RemovingKey
 
-addKeyRepoSize :: Key -> Maybe RepoSize -> Maybe RepoSize
-addKeyRepoSize k mrs = case mrs of
-	Just (RepoSize sz) -> Just $ RepoSize $ sz + ksz
-	Nothing -> Just $ RepoSize ksz
-  where
-	ksz = fromMaybe 0 $ fromKey keySize k
-
-removeKeyRepoSize :: Key -> Maybe RepoSize -> Maybe RepoSize
-removeKeyRepoSize k mrs = case mrs of
-	Just (RepoSize sz) -> Just $ RepoSize $ sz - ksz
-	Nothing -> Nothing
-  where
-	ksz = fromMaybe 0 $ fromKey keySize k
-
-accumRepoSizes :: Key -> (S.Set UUID, S.Set UUID) -> M.Map UUID RepoSize -> M.Map UUID RepoSize
-accumRepoSizes k (newlocs, removedlocs) sizemap = 
-	let !sizemap' = foldl' (flip $ M.alter $ addKeyRepoSize k) sizemap newlocs
-	in foldl' (flip $ M.alter $ removeKeyRepoSize k) sizemap' removedlocs
-
 -- When the UUID is Nothing, it's a live update of the local repository.
 prepareLiveUpdate :: Maybe UUID -> Key -> SizeChange -> Annex LiveUpdate
 prepareLiveUpdate mu k sc = do
