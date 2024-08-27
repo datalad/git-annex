@@ -41,6 +41,10 @@ Planned schedule of work:
   expression that does use balanced preferred content. No reason to pay
   its time penalty otherwise.
 
+  Alternatively, make it not use file locking. It could rely on a database
+  transaction, or it could check the live changes before and after and
+  re-run the Annex action if they are not stable.
+
 * When loading the live update table, check if PIDs in it are still
   running (and are still git-annex), and if not, remove stale entries
   from it, which can accumulate when processes are interrupted.
@@ -52,25 +56,19 @@ Planned schedule of work:
   But then, how to check if a PID is git-annex or not? /proc of course,
   but what about other OS's? Windows?
 
-  How? Possibly have a thread that
-  waits on an empty MVar. Thread MVar through somehow to location log
-  update. (Seems this would need checking preferred content to return
-  the MVar? Or alternatively, the MVar could be passed into it, which 
-  seems better..) Fill MVar on location log update. If MVar gets
-  GCed without being filled, the thread will get an exception and can
-  remove from table and cache then. This does rely on GC behavior, but if
-  the GC takes some time, it will just cause a failed upload to take
-  longer to get removed from the table and cache, which will just prevent
-  another upload of a different key from running immediately.
-  (Need to check if MVar GC behavior operates like this.
-  See https://stackoverflow.com/questions/10871303/killing-a-thread-when-mvar-is-garbage-collected )
-  Perhaps stale entries can be found in a different way. Require the live
-  update table to be updated with a timestamp every 5 minutes. The thread
-  that waits on the MVar can do that, as long as the transfer is running. If
-  interrupted, it will become stale in 5 minutes, which is probably good
-  enough? Could do it every minute, depending on overhead. This could
-  also be done by just repeatedly touching a file named with the processes's
-  pid in it, to avoid sqlite overhead.
+  A plan: Have git-annex lock a per-pid file at startup. Then before
+  loading the live updates table, check each other per-pid file, by
+  try to take a shared lock. If able to, that process is no longer running,
+  and its live updates should be considered stale, and can be removed
+  while loading the live updates table.
+
+  Might be better to not lock at startup, but only once live updates are
+  used. annex.pidlock might otherwise prevent running more than one
+  git-annex at a time.
+
+  , or alternatively
+  when checking a preferred content expression that uses balanced preferred
+  content. 
 
 * The assistant is using NoLiveUpdate, but it should be posssible to plumb
   a LiveUpdate through it from preferred content checking to location log
