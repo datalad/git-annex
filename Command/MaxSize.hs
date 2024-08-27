@@ -12,7 +12,6 @@ module Command.MaxSize where
 import Command
 import qualified Remote
 import Annex.RepoSize
-import Types.RepoSize
 import Logs.MaxSize
 import Logs.Trust
 import Utility.DataUnits

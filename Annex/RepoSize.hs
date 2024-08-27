@@ -9,6 +9,7 @@
 
 module Annex.RepoSize (
 	getRepoSizes,
+	getLiveRepoSizes,
 ) where
 
 import Annex.Common
@@ -29,7 +30,11 @@ import Control.Concurrent.Async
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 
-{- Gets the repo size map. Cached for speed. -}
+{- Gets the repo size map. Cached for speed.
+ -
+ - Note that this is the size of all repositories as of the first time it
+ - was called. It does not update while git-annex is running.
+ -}
 getRepoSizes :: Bool -> Annex (M.Map UUID RepoSize)
 getRepoSizes quiet = do
 	rsv <- Annex.getRead Annex.reposizes
@@ -39,14 +44,29 @@ getRepoSizes quiet = do
 			return sizemap
 		Nothing -> calcRepoSizes quiet rsv
 
+{- Like getRepoSizes, but with live updates. -}
+getLiveRepoSizes :: Bool -> Annex (M.Map UUID RepoSize)
+getLiveRepoSizes quiet = do
+	h <- Db.getRepoSizeHandle
+	liftIO (Db.estimateLiveRepoSizes h) >>= \case
+		Just (m, annexbranchsha) -> return m
+		Nothing -> do
+			-- Db.estimateLiveRepoSizes needs the
+			-- reposizes to be calculated first.
+			m <- getRepoSizes quiet
+			liftIO (Db.estimateLiveRepoSizes h) >>= \case
+				Just (m', annexbranchsha) -> return m'
+				Nothing -> return m
+
 {- Fills an empty Annex.reposizes MVar with current information
  - from the git-annex branch, supplimented with journalled but
  - not yet committed information.
  -}
 calcRepoSizes :: Bool -> MVar (Maybe (M.Map UUID RepoSize)) -> Annex (M.Map UUID RepoSize)
-calcRepoSizes quiet rsv = bracket setup cleanup $ \h -> go h `onException` failed
+calcRepoSizes quiet rsv = go `onException` failed
   where
-	go h = do
+	go = do
+		h <- Db.getRepoSizeHandle
 		(oldsizemap, moldbranchsha) <- liftIO $ Db.getRepoSizes h
 		!sizemap <- case moldbranchsha of
 			Nothing -> calculatefromscratch h
@@ -69,10 +89,6 @@ calcRepoSizes quiet rsv = bracket setup cleanup $ \h -> go h `onException` faile
 		(sizemap, branchsha) <- diffBranchRepoSizes quiet oldsizemap oldbranchsha currbranchsha
 		liftIO $ Db.setRepoSizes h sizemap branchsha
 		calcJournalledRepoSizes sizemap branchsha
-
-	setup = Db.getRepoSizeHandle
-
-	cleanup _ = return ()
 
 	failed = do
 		liftIO $ putMVar rsv (Just M.empty)

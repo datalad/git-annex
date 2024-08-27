@@ -599,9 +599,9 @@ limitFullyBalanced :: Maybe UUID -> Annex GroupMap -> MkLimit Annex
 limitFullyBalanced = limitFullyBalanced' "fullybalanced"
 
 limitFullyBalanced' :: String -> Maybe UUID -> Annex GroupMap -> MkLimit Annex
-limitFullyBalanced' = limitFullyBalanced'' $ \lu n key candidates -> do
+limitFullyBalanced' = limitFullyBalanced'' $ \n key candidates -> do
 	maxsizes <- getMaxSizes
-	sizemap <- getRepoSizes False
+	sizemap <- getLiveRepoSizes False
 	threshhold <- annexFullyBalancedThreshhold <$> Annex.getGitConfig
 	let toofull u =
 		case (M.lookup u maxsizes, M.lookup u sizemap) of
@@ -633,7 +633,7 @@ repoHasSpace keysize inrepo (RepoSize reposize) (MaxSize maxsize)
 		reposize + keysize <= maxsize
 
 limitFullyBalanced''
-	:: (LiveUpdate -> Int -> Key -> S.Set UUID -> Annex (S.Set UUID))
+	:: (Int -> Key -> S.Set UUID -> Annex (S.Set UUID))
 	-> String
 	-> Maybe UUID
 	-> Annex GroupMap
@@ -651,7 +651,7 @@ limitFullyBalanced'' filtercandidates termname mu getgroupmap want =
 		getgroupmap (toGroup s) n want
 
 limitFullyBalanced'''
-	:: (LiveUpdate -> Int -> Key -> S.Set UUID -> Annex (S.Set UUID))
+	:: (Int -> Key -> S.Set UUID -> Annex (S.Set UUID))
 	-> String
 	-> Maybe UUID
 	-> Annex GroupMap
@@ -663,8 +663,7 @@ limitFullyBalanced''' filtercandidates termname mu getgroupmap g n want = Right 
 		gm <- getgroupmap
 		let groupmembers = fromMaybe S.empty $
 			M.lookup g (uuidsByGroup gm)
-		-- TODO locking for liveupdate
-		candidates <- filtercandidates lu n key groupmembers
+		candidates <- filtercandidates n key groupmembers
 		let wanted = if S.null candidates
 			then False
 			else case (mu, M.lookup g (balancedPickerByGroup gm)) of
@@ -690,9 +689,9 @@ limitFullySizeBalanced :: Maybe UUID -> Annex GroupMap -> MkLimit Annex
 limitFullySizeBalanced = limitFullySizeBalanced' "fullysizebalanced"
 
 limitFullySizeBalanced' :: String -> Maybe UUID -> Annex GroupMap -> MkLimit Annex
-limitFullySizeBalanced' = limitFullyBalanced'' $ \lu n key candidates -> do
+limitFullySizeBalanced' = limitFullyBalanced'' $ \n key candidates -> do
 	maxsizes <- getMaxSizes
-	sizemap <- getRepoSizes False
+	sizemap <- getLiveRepoSizes False
 	filterCandidatesFullySizeBalanced maxsizes sizemap n key candidates
 
 filterCandidatesFullySizeBalanced

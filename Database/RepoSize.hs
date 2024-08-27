@@ -25,7 +25,7 @@ module Database.RepoSize (
 	closeDb,
 	getRepoSizes,
 	setRepoSizes,
-	getLiveRepoSizes,
+	estimateLiveRepoSizes,
 	startingLiveSizeChange,
 	successfullyFinishedLiveSizeChange,
 	removeStaleLiveSizeChange,
@@ -291,10 +291,9 @@ getRecentChange u k = do
  - This is only expensive when there are a lot of live changes happening at
  - the same time.
  -}
-getLiveRepoSizes :: RepoSizeHandle -> IO (Maybe (M.Map UUID RepoSize, Sha))
-getLiveRepoSizes (RepoSizeHandle (Just h)) = H.queryDb h $ do
+estimateLiveRepoSizes :: RepoSizeHandle -> IO (Maybe (M.Map UUID RepoSize, Sha))
+estimateLiveRepoSizes (RepoSizeHandle (Just h)) = H.queryDb h $ do
 	getAnnexBranchCommit >>= \case
-		Nothing -> return Nothing
 		Just annexbranchsha -> do
 			sizechanges <- getSizeChanges
 			livechanges <- getLiveSizeChanges
@@ -302,6 +301,7 @@ getLiveRepoSizes (RepoSizeHandle (Just h)) = H.queryDb h $ do
 			m <- M.fromList <$> forM reposizes
 				(go sizechanges livechanges)
 			return (Just (m, annexbranchsha))
+		Nothing -> return Nothing
   where
 	go
 		:: M.Map UUID FileSize
@@ -350,4 +350,4 @@ getLiveRepoSizes (RepoSizeHandle (Just h)) = H.queryDb h $ do
 		filter (\(sc', cid') -> cid /= cid' && sc' == AddingKey)
 			(fromMaybe [] $ M.lookup k livechangesbykey)
 	competinglivechanges _ _ AddingKey _ = []
-getLiveRepoSizes (RepoSizeHandle Nothing) = return Nothing
+estimateLiveRepoSizes (RepoSizeHandle Nothing) = return Nothing
