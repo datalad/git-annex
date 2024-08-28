@@ -114,6 +114,7 @@ limitInclude glob = Right $ MatchFiles
 	, matchNeedsFileContent = False
 	, matchNeedsKey = False
 	, matchNeedsLocationLog = False
+	, matchNeedsLiveRepoSize = False
 	, matchDesc = "include" =? glob
 	}
 
@@ -128,6 +129,7 @@ limitExclude glob = Right $ MatchFiles
 	, matchNeedsFileContent = False
 	, matchNeedsKey = False
 	, matchNeedsLocationLog = False
+	, matchNeedsLiveRepoSize = False
 	, matchDesc = "exclude" =? glob
 	}
 
@@ -153,6 +155,7 @@ limitIncludeSameContent glob = Right $ MatchFiles
 	, matchNeedsFileContent = False
 	, matchNeedsKey = False
 	, matchNeedsLocationLog = False
+	, matchNeedsLiveRepoSize = False
 	, matchDesc = "includesamecontent" =? glob
 	}
 
@@ -168,6 +171,7 @@ limitExcludeSameContent glob = Right $ MatchFiles
 	, matchNeedsFileContent = False
 	, matchNeedsKey = False
 	, matchNeedsLocationLog = False
+	, matchNeedsLiveRepoSize = False
 	, matchDesc = "excludesamecontent" =? glob
 	}
 
@@ -244,6 +248,7 @@ matchMagic limitname querymagic selectprovidedinfo selectuserprovidedinfo (Just 
 		, matchNeedsFileContent = True
 		, matchNeedsKey = False
 		, matchNeedsLocationLog = False
+		, matchNeedsLiveRepoSize = False
 		, matchDesc = limitname =? glob
 		}
   where
@@ -271,6 +276,7 @@ addUnlocked = addLimit $ Right $ MatchFiles
 	, matchNeedsFileContent = False
 	, matchNeedsKey = False
 	, matchNeedsLocationLog = False
+	, matchNeedsLiveRepoSize = False
 	, matchDesc = matchDescSimple "unlocked"
 	}
 
@@ -281,6 +287,7 @@ addLocked = addLimit $ Right $ MatchFiles
 	, matchNeedsFileContent = False
 	, matchNeedsKey = False
 	, matchNeedsLocationLog = False
+	, matchNeedsLiveRepoSize = False
 	, matchDesc = matchDescSimple "locked"
 	}
 
@@ -316,6 +323,7 @@ addIn s = do
 		, matchNeedsFileContent = False
 		, matchNeedsKey = True
 		, matchNeedsLocationLog = not inhere
+		, matchNeedsLiveRepoSize = False
 		, matchDesc = "in" =? s
 		}
 	checkinuuid u notpresent key
@@ -346,6 +354,7 @@ addExpectedPresent = do
 		, matchNeedsFileContent = False
 		, matchNeedsKey = True
 		, matchNeedsLocationLog = True
+		, matchNeedsLiveRepoSize = False
 		, matchDesc = matchDescSimple "expected-present"
 		}
 
@@ -363,6 +372,7 @@ limitPresent u = MatchFiles
 	, matchNeedsFileContent = False
 	, matchNeedsKey = True
 	, matchNeedsLocationLog = not (isNothing u)
+	, matchNeedsLiveRepoSize = False
 	, matchDesc = matchDescSimple "present"
 	}
 
@@ -374,6 +384,7 @@ limitInDir dir desc = MatchFiles
 	, matchNeedsFileContent = False
 	, matchNeedsKey = False
 	, matchNeedsLocationLog = False
+	, matchNeedsLiveRepoSize = False
 	, matchDesc = matchDescSimple desc
 	}
   where
@@ -406,6 +417,7 @@ limitCopies want = case splitc ':' want of
 			, matchNeedsFileContent = False
 			, matchNeedsKey = True
 			, matchNeedsLocationLog = True
+			, matchNeedsLiveRepoSize = False
 			, matchDesc = "copies" =? want
 			}
 	go' n good notpresent key = do
@@ -431,6 +443,7 @@ limitLackingCopies desc approx want = case readish want of
 		, matchNeedsFileContent = False
 		, matchNeedsKey = True
 		, matchNeedsLocationLog = True
+		, matchNeedsLiveRepoSize = False
 		, matchDesc = matchDescSimple desc
 		}
 	Nothing -> Left "bad value for number of lacking copies"
@@ -461,6 +474,7 @@ limitUnused = MatchFiles
 	, matchNeedsFileContent = False
 	, matchNeedsKey = True
 	, matchNeedsLocationLog = False
+	, matchNeedsLiveRepoSize = False
 	, matchDesc = matchDescSimple "unused"
 	}
   where
@@ -484,6 +498,7 @@ limitAnything = MatchFiles
 	, matchNeedsFileContent = False
 	, matchNeedsKey = False
 	, matchNeedsLocationLog = False
+	, matchNeedsLiveRepoSize = False
 	, matchDesc = matchDescSimple "anything"
 	}
 
@@ -499,6 +514,7 @@ limitNothing = MatchFiles
 	, matchNeedsFileContent = False
 	, matchNeedsKey = False
 	, matchNeedsLocationLog = False
+	, matchNeedsLiveRepoSize = False
 	, matchDesc = matchDescSimple "nothing"
 	}
 
@@ -522,6 +538,7 @@ limitInAllGroup getgroupmap groupname = Right $ MatchFiles
 	, matchNeedsFileContent = False
 	, matchNeedsKey = True
 	, matchNeedsLocationLog = True
+	, matchNeedsLiveRepoSize = False
 	, matchDesc = "inallgroup" =? groupname
 	}
   where
@@ -547,6 +564,7 @@ limitOnlyInGroup getgroupmap groupname = Right $ MatchFiles
 	, matchNeedsFileContent = False
 	, matchNeedsKey = True
 	, matchNeedsLocationLog = True
+	, matchNeedsLiveRepoSize = False
 	, matchDesc = "inallgroup" =? groupname
 	}
   where
@@ -592,6 +610,7 @@ limitBalanced' termname fullybalanced mu groupname = do
 			matchNeedsLocationLog present ||
 			matchNeedsLocationLog fullybalanced ||
 			matchNeedsLocationLog copies
+		, matchNeedsLiveRepoSize = True
 		, matchDesc = termname =? groupname
 		}
 
@@ -677,6 +696,7 @@ limitFullyBalanced''' filtercandidates termname mu getgroupmap g n want = Right 
 	, matchNeedsFileContent = False
 	, matchNeedsKey = True
 	, matchNeedsLocationLog = False
+	, matchNeedsLiveRepoSize = True
 	, matchDesc = termname =? want
 	}
 
@@ -736,6 +756,7 @@ limitInBackend name = Right $ MatchFiles
 	, matchNeedsFileContent = False
 	, matchNeedsKey = True
 	, matchNeedsLocationLog = False
+	, matchNeedsLiveRepoSize = False
 	, matchDesc = "inbackend" =? name
 	}
   where
@@ -753,6 +774,7 @@ limitSecureHash = MatchFiles
 	, matchNeedsFileContent = False
 	, matchNeedsKey = True
 	, matchNeedsLocationLog = False
+	, matchNeedsLiveRepoSize = False
 	, matchDesc = matchDescSimple "securehash"
 	}
 
@@ -774,6 +796,7 @@ limitSize lb desc vs s = case readSize dataUnits s of
 		, matchNeedsFileContent = False
 		, matchNeedsKey = False
 		, matchNeedsLocationLog = False
+		, matchNeedsLiveRepoSize = False
 		, matchDesc = desc =? s
 		}
   where
@@ -804,6 +827,7 @@ limitMetaData s = case parseMetaDataMatcher s of
 		, matchNeedsFileContent = False
 		, matchNeedsKey = True
 		, matchNeedsLocationLog = False
+		, matchNeedsLiveRepoSize = False
 		, matchDesc = "metadata" =? s
 		}
   where
@@ -820,6 +844,7 @@ addAccessedWithin duration = do
 		, matchNeedsFileContent = False
 		, matchNeedsKey = False
 		, matchNeedsLocationLog = False
+		, matchNeedsLiveRepoSize = False
 		, matchDesc = "accessedwithin" =? fromDuration duration
 		}
   where

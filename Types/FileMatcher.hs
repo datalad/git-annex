@@ -96,6 +96,8 @@ data MatchFiles a = MatchFiles
 	-- ^ does the matchAction look at information about the key?
 	, matchNeedsLocationLog :: Bool
 	-- ^ does the matchAction look at the location log?
+	, matchNeedsLiveRepoSize :: Bool
+	-- ^ does the matchAction need live repo size information?
 	, matchDesc :: Bool -> MatchDesc
 	-- ^ displayed to the user to describe whether it matched or not
 	}

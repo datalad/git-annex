@@ -90,7 +90,7 @@ checkMatcher matcher mkey afile lu notpresent notconfigured d
 
 checkMatcher' :: FileMatcher Annex -> MatchInfo -> LiveUpdate -> AssumeNotPresent -> Annex Bool
 checkMatcher' (matcher, (MatcherDesc matcherdesc)) mi lu notpresent =
-	checkLiveUpdate lu go
+	checkLiveUpdate lu matcher go
   where
 	go = do
 		(matches, desc) <- runWriterT $ matchMrun' matcher $ \op ->
@@ -281,6 +281,7 @@ call desc (Right sub) = Right $ Operation $ MatchFiles
 	, matchNeedsFileContent = any matchNeedsFileContent sub
 	, matchNeedsKey = any matchNeedsKey sub
 	, matchNeedsLocationLog = any matchNeedsLocationLog sub
+	, matchNeedsLiveRepoSize = any matchNeedsLiveRepoSize sub
 	, matchDesc = matchDescSimple desc
 	}
 call _ (Left err) = Left err

@@ -40,12 +40,14 @@ addPreferredContentLimit desc a = do
 	nfc <- introspectPreferredRequiredContent matchNeedsFileContent Nothing
 	nk <- introspectPreferredRequiredContent matchNeedsKey Nothing
 	nl <- introspectPreferredRequiredContent matchNeedsLocationLog Nothing
+	lsz <- introspectPreferredRequiredContent matchNeedsLiveRepoSize Nothing
 	addLimit $ Right $ MatchFiles
 		{ matchAction = const $ const a
 		, matchNeedsFileName = nfn
 		, matchNeedsFileContent = nfc
 		, matchNeedsKey = nk
 		, matchNeedsLocationLog = nl
+		, matchNeedsLiveRepoSize = lsz
 		, matchDesc = matchDescSimple desc
 		}
 

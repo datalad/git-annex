@@ -37,14 +37,6 @@ Planned schedule of work:
 
 * Test that live repo size data is correct and really works.
 
-* Avoid using checkLiveUpdate except when checking a preferred content
-  expression that does use balanced preferred content. No reason to pay
-  its time penalty otherwise.
-
-  Alternatively, make it not use file locking. It could rely on a database
-  transaction, or it could check the live changes before and after and
-  re-run the Annex action if they are not stable.
-
 * When loading the live update table, check if PIDs in it are still
   running (and are still git-annex), and if not, remove stale entries
   from it, which can accumulate when processes are interrupted.

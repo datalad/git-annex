@@ -13,6 +13,8 @@ import Annex.Common
 import Logs.Presence.Pure
 import qualified Database.RepoSize as Db
 import Annex.UUID
+import Types.FileMatcher
+import qualified Utility.Matcher as Matcher
 
 import Control.Concurrent
 import System.Process
@@ -95,9 +97,16 @@ needLiveUpdate lu = liftIO $ void $ tryPutMVar (liveUpdateNeeded lu) ()
 -- This serializes calls to the action, so that if the action
 -- queries getLiveRepoSizes it will not race with another such action
 -- that may also be starting a live update.
-checkLiveUpdate :: LiveUpdate -> Annex Bool -> Annex Bool
-checkLiveUpdate NoLiveUpdate a = a
-checkLiveUpdate lu a = Db.lockDbWhile (const go) go
+checkLiveUpdate
+	:: LiveUpdate
+	-> Matcher.Matcher (MatchFiles Annex)
+	-> Annex Bool
+	-> Annex Bool
+checkLiveUpdate NoLiveUpdate _ a = a
+checkLiveUpdate lu matcher a
+	| Matcher.introspect matchNeedsLiveRepoSize matcher =
+		Db.lockDbWhile (const go) go
+	| otherwise = a
   where
 	go = do
 		r <- a
