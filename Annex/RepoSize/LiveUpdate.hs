@@ -11,13 +11,20 @@ module Annex.RepoSize.LiveUpdate where
 
 import Annex.Common
 import Logs.Presence.Pure
-import qualified Database.RepoSize as Db
+import Database.RepoSize.Handle
 import Annex.UUID
 import Types.FileMatcher
+import Annex.LockFile
+import Annex.LockPool
+import qualified Database.RepoSize as Db
 import qualified Utility.Matcher as Matcher
 
 import Control.Concurrent
 import System.Process
+import Text.Read
+import Data.Time.Clock.POSIX
+import qualified Utility.RawFilePath as R
+import qualified System.FilePath.ByteString as P
 
 {- Called when a location log change is journalled, so the LiveUpdate
  - is done. This is called with the journal still locked, so no concurrent
@@ -124,3 +131,59 @@ finishedLiveUpdate lu u k sc =
 		tryNonAsync (putMVar (liveUpdateDone lu) (Just (u, k, sc, finishv))) >>= \case
 			Right () -> void $ tryNonAsync $ takeMVar finishv
 			Left _ -> noop
+
+{- Checks for other git-annex processes that might have been interrupted
+ - and left the database populated with stale live size changes. Those
+ - are removed from the database. 
+ -
+ - Also registers the current process so that other calls to this will not
+ - consider it stale while it's running.
+ -
+ - This checks the first time it is called, and again if it's been more
+ - than 1 minute since the last check.
+ -}
+checkStaleSizeChanges :: RepoSizeHandle -> Annex ()
+checkStaleSizeChanges h@(RepoSizeHandle (Just _) livev) = do
+	livedir <- calcRepo' gitAnnexRepoSizeLiveDir
+	pid <- liftIO getCurrentPid
+	let pidlockfile = show pid
+	now <- liftIO getPOSIXTime
+	liftIO (takeMVar livev) >>= \case
+		Nothing -> do
+			lck <- takeExclusiveLock $
+				livedir P.</> toRawFilePath pidlockfile
+			go livedir lck pidlockfile now
+		Just v@(lck, lastcheck)
+			| now >= lastcheck + 60 ->
+				go livedir lck pidlockfile now
+			| otherwise ->
+				liftIO $ putMVar livev (Just v)
+  where
+	go livedir lck pidlockfile now = do
+		void $ tryNonAsync $ do
+			lockfiles <- liftIO $ filter (not . dirCruft) 
+				<$> getDirectoryContents (fromRawFilePath livedir)
+			stale <- forM lockfiles $ \lockfile ->
+				if (lockfile /= pidlockfile)
+					then case readMaybe lockfile of
+						Nothing -> return Nothing
+						Just pid -> checkstale livedir lockfile pid
+					else return Nothing
+			let stale' = catMaybes stale
+			unless (null stale') $ liftIO $ do
+				Db.removeStaleLiveSizeChanges h (map fst stale')
+				mapM_ snd stale'
+		liftIO $ putMVar livev (Just (lck, now))
+
+	checkstale livedir lockfile pid =
+		let f = livedir P.</> toRawFilePath lockfile
+		in tryLockShared Nothing f >>= \case
+			Nothing -> return Nothing
+			Just lck -> do
+				return $ Just 
+					( StaleSizeChanger (SizeChangeProcessId pid)
+					, do
+						dropLock lck
+						removeWhenExistsWith R.removeLink f
+					)
+checkStaleSizeChanges (RepoSizeHandle Nothing _) = noop

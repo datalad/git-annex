@@ -17,6 +17,7 @@ import qualified Annex
 import Annex.Branch (UnmergedBranches(..), getBranch)
 import qualified Database.RepoSize as Db
 import Annex.Journal
+import Annex.RepoSize.LiveUpdate
 import Logs
 import Logs.Location
 import Logs.UUID
@@ -55,6 +56,7 @@ getLiveRepoSizes quiet = do
   where
 	go sizemap = do
 		h <- Db.getRepoSizeHandle
+		checkStaleSizeChanges h
 		liveoffsets <- liftIO $ Db.liveRepoOffsets h
 		let calc u (RepoSize size, SizeOffset startoffset) =
 			case M.lookup u liveoffsets of
@@ -86,12 +88,12 @@ calcRepoSizes quiet rsv = go `onException` failed
 	calculatefromscratch h = do
 		unless quiet $
 			showSideAction "calculating repository sizes"
-		(sizemap, branchsha) <- calcBranchRepoSizes
-		liftIO $ Db.setRepoSizes h sizemap branchsha
-		calcJournalledRepoSizes h sizemap branchsha
+		use h =<< calcBranchRepoSizes
 	
-	incrementalupdate h oldsizemap oldbranchsha currbranchsha = do
-		(sizemap, branchsha) <- diffBranchRepoSizes quiet oldsizemap oldbranchsha currbranchsha
+	incrementalupdate h oldsizemap oldbranchsha currbranchsha =
+		use h =<< diffBranchRepoSizes quiet oldsizemap oldbranchsha currbranchsha
+
+	use h (sizemap, branchsha) = do
 		liftIO $ Db.setRepoSizes h sizemap branchsha
 		calcJournalledRepoSizes h sizemap branchsha
 

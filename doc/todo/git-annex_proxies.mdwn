@@ -37,27 +37,6 @@ Planned schedule of work:
 
 * Test that live repo size data is correct and really works.
 
-* When loading the live update table, check if PIDs in it are still
-  running (and are still git-annex), and if not, remove stale entries
-  from it, which can accumulate when processes are interrupted.
-  Note that it will be ok for the wrong git-annex process, running again
-  at a pid to keep a stale item in the live update table, because that
-  is unlikely and exponentially unlikely to happen repeatedly, so stale
-  information will only be used for a short time.
-
-  But then, how to check if a PID is git-annex or not? /proc of course,
-  but what about other OS's? Windows?
-
-  A plan: Have git-annex lock a per-pid file at startup. Then before
-  loading the live updates table, check each other per-pid file, by
-  try to take a shared lock. If able to, that process is no longer running,
-  and its live updates should be considered stale, and can be removed
-  while loading the live updates table.
-
-  Might be better to not lock at startup, but only once live updates are
-  used. annex.pidlock might otherwise prevent running more than one
-  git-annex at a time.
-
 * The assistant is using NoLiveUpdate, but it should be posssible to plumb
   a LiveUpdate through it from preferred content checking to location log
   updating.

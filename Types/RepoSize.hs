@@ -14,11 +14,11 @@ import Types.Key
 
 import Control.Concurrent
 import Database.Persist.Sql hiding (Key)
-import qualified Data.Text as T
 import Data.Unique
 import Text.Read
 import System.Process (Pid)
-import Utility.Split
+import qualified Data.Text as T
+import qualified Data.Set as S
 
 -- The current size of a repo.
 newtype RepoSize = RepoSize { fromRepoSize :: Integer }
@@ -62,36 +62,57 @@ instance PersistFieldSql SizeChange where
         sqlType _ = SqlInt32
 
 data SizeChangeId = SizeChangeId
-	{ sizeChangeUniqueId :: Int
-	-- ^ unique per process
-	, sizeChangeProcessId :: Integer
-	-- ^ a pid, using Integer for portability
+	{ sizeChangeUniqueId :: SizeChangeUniqueId
+	, sizeChangeProcessId :: SizeChangeProcessId
 	}
-	deriving (Show, Eq)
+	deriving (Show, Eq, Ord)
+
+-- A unique value for the current process.
+newtype SizeChangeUniqueId = SizeChangeUniqueId Int
+	deriving (Show, Eq, Ord)
+
+-- A pid, using Integer for portability
+newtype SizeChangeProcessId = SizeChangeProcessId Integer
+	deriving (Show, Eq, Ord)
 
 mkSizeChangeId :: Pid -> IO SizeChangeId
 mkSizeChangeId pid = do
 	u <- newUnique
 	return $ SizeChangeId
-		{ sizeChangeProcessId = fromIntegral pid
-		, sizeChangeUniqueId = hashUnique u
+		{ sizeChangeUniqueId = 
+			SizeChangeUniqueId $ hashUnique u
+		, sizeChangeProcessId = 
+			SizeChangeProcessId $ fromIntegral pid
 		}
 
-instance PersistField SizeChangeId where
-        toPersistValue cid = toPersistValue $ 
-		show (sizeChangeProcessId cid) ++ ":" ++ 
-		show (sizeChangeUniqueId cid)
+instance PersistField SizeChangeUniqueId where
+        toPersistValue (SizeChangeUniqueId i) = toPersistValue (show i)
 	fromPersistValue b = fromPersistValue b >>= parse
 	  where
 		parse s = maybe
-			(Left $ T.pack $ "bad serialized SizeChangeId " ++ show s)
+			(Left $ T.pack $ "bad serialized SizeChangeUniqueId " ++ show s)
 			Right
-			(parse' s)
-		parse' s = case splitc ':' s of
-			(pid:uid:[]) -> SizeChangeId
-				<$> readMaybe pid
-				<*> readMaybe uid
-			_ -> Nothing
+			(SizeChangeUniqueId <$> readMaybe s)
 
-instance PersistFieldSql SizeChangeId where
+instance PersistFieldSql SizeChangeUniqueId where
         sqlType _ = SqlString
+
+instance PersistField SizeChangeProcessId where
+        toPersistValue (SizeChangeProcessId i) = toPersistValue (show i)
+	fromPersistValue b = fromPersistValue b >>= parse
+	  where
+		parse s = maybe
+			(Left $ T.pack $ "bad serialized SizeChangeProcessId " ++ show s)
+			Right
+			(SizeChangeProcessId <$> readMaybe s)
+
+instance PersistFieldSql SizeChangeProcessId where
+        sqlType _ = SqlString
+
+newtype StaleSizeChanger = StaleSizeChanger
+	{ staleSizeChangerProcessId :: SizeChangeProcessId }
+	deriving (Show, Eq, Ord)
+
+isStaleSizeChangeId :: S.Set StaleSizeChanger -> SizeChangeId -> Bool
+isStaleSizeChangeId s cid =
+	StaleSizeChanger (sizeChangeProcessId cid) `S.member` s

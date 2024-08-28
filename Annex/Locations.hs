@@ -77,6 +77,7 @@ module Annex.Locations (
 	gitAnnexImportFeedDbLock,
 	gitAnnexRepoSizeDbDir,
 	gitAnnexRepoSizeDbLock,
+	gitAnnexRepoSizeLiveDir,
 	gitAnnexScheduleState,
 	gitAnnexTransferDir,
 	gitAnnexCredsDir,
@@ -157,7 +158,21 @@ objectDir :: RawFilePath
 objectDir = P.addTrailingPathSeparator $ annexDir P.</> "objects"
 
 {- Annexed file's possible locations relative to the .git directory
- - in a non-bare repository.
+ - in a non-bare eepository.
+
+{- Checks for other git-annex processes that might have been interrupted
+ - and left the database populated with stale live size changes. Those
+ - are removed from the database. 
+ -
+ - Also registers the current process so that other calls to this will not
+ - consider it stale while it's running.
+ -
+ - This checks the first time it is called, and again if it's been more
+ - than 1 minute since the last check.
+ -}
+checkStaleSizeChanges :: Db.RepoSizeHandle -> Annex ()
+checkStaleSizeChanges h = do
+	undefined
  -
  - Normally it is hashDirMixed. However, it's always possible that a
  - bare repository was converted to non-bare, or that the cripped
@@ -520,11 +535,17 @@ gitAnnexImportFeedDbLock r c = gitAnnexImportFeedDbDir r c <> ".lck"
 {- Directory containing reposize database. -}
 gitAnnexRepoSizeDbDir :: Git.Repo -> GitConfig -> RawFilePath
 gitAnnexRepoSizeDbDir r c =
-	fromMaybe (gitAnnexDir r) (annexDbDir c) P.</> "reposize"
+	fromMaybe (gitAnnexDir r) (annexDbDir c) P.</> "reposize" P.</> "db"
 
 {- Lock file for the reposize database. -}
 gitAnnexRepoSizeDbLock :: Git.Repo -> GitConfig -> RawFilePath
-gitAnnexRepoSizeDbLock r c = gitAnnexRepoSizeDbDir r c <> ".lck"
+gitAnnexRepoSizeDbLock r c =
+	fromMaybe (gitAnnexDir r) (annexDbDir c) P.</> "reposize" P.</> "lock"
+
+{- Directory containing liveness pid files. -}
+gitAnnexRepoSizeLiveDir :: Git.Repo -> GitConfig -> RawFilePath
+gitAnnexRepoSizeLiveDir r c =
+	fromMaybe (gitAnnexDir r) (annexDbDir c) P.</> "reposize" P.</> "live"
 
 {- .git/annex/schedulestate is used to store information about when
  - scheduled jobs were last run. -}

@@ -29,6 +29,7 @@ module Database.RepoSize (
 	startingLiveSizeChange,
 	successfullyFinishedLiveSizeChange,
 	removeStaleLiveSizeChange,
+	removeStaleLiveSizeChanges,
 	recordedRepoOffsets,
 	liveRepoOffsets,
 ) where
@@ -50,6 +51,7 @@ import qualified System.FilePath.ByteString as P
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 import Control.Exception
+import Control.Concurrent
 
 share [mkPersist sqlSettings, mkMigrate "migrateRepoSizes"] [persistLowerCase|
 -- Corresponds to location log information from the git-annex branch.
@@ -67,9 +69,10 @@ AnnexBranch
 LiveSizeChanges
   repo UUID
   key Key
-  changeid SizeChangeId
+  changeid SizeChangeUniqueId
+  changepid SizeChangeProcessId
   change SizeChange
-  UniqueLiveSizeChange repo key changeid
+  UniqueLiveSizeChange repo key changeid changepid
 -- A rolling total of size changes that were removed from LiveSizeChanges
 -- upon successful completion.
 SizeChanges
@@ -110,18 +113,22 @@ openDb = lockDbWhile permerr $ do
 		initDb db $ void $
 			runMigrationSilent migrateRepoSizes
 	h <- liftIO $ H.openDb db "repo_sizes"
-	return $ RepoSizeHandle (Just h)
+	mkhandle (Just h)
   where
+	mkhandle mh = do
+		livev <- liftIO $ newMVar Nothing
+		return $ RepoSizeHandle mh livev
+	
 	-- If permissions don't allow opening the database,
 	-- just don't use it. Since this database is just a cache
 	-- of information available in the git-annex branch, the same
 	-- information can be queried from the branch, though much less
 	-- efficiently.
-	permerr _e = return (RepoSizeHandle Nothing)
+	permerr _e = mkhandle Nothing
 
 closeDb :: RepoSizeHandle -> Annex ()
-closeDb (RepoSizeHandle (Just h)) = liftIO $ H.closeDb h
-closeDb (RepoSizeHandle Nothing) = noop
+closeDb (RepoSizeHandle (Just h) _) = liftIO $ H.closeDb h
+closeDb (RepoSizeHandle Nothing _) = noop
 
 -- This does not prevent another process that has already 
 -- opened the db from changing it at the same time.
@@ -133,11 +140,11 @@ lockDbWhile permerr a = do
 {- Gets the sizes of repositories as of a commit to the git-annex
  - branch. -}
 getRepoSizes :: RepoSizeHandle -> IO (M.Map UUID RepoSize, Maybe Sha)
-getRepoSizes (RepoSizeHandle (Just h)) = H.queryDb h $ do
+getRepoSizes (RepoSizeHandle (Just h) _) = H.queryDb h $ do
 	sizemap <- M.fromList <$> getRepoSizes'
 	annexbranchsha <- getAnnexBranchCommit
 	return (sizemap, annexbranchsha)
-getRepoSizes (RepoSizeHandle Nothing) = return (mempty, Nothing)
+getRepoSizes (RepoSizeHandle Nothing _) = return (mempty, Nothing)
 
 getRepoSizes' :: SqlPersistM [(UUID, RepoSize)]
 getRepoSizes' = map conv <$> selectList [] []
@@ -164,7 +171,7 @@ getAnnexBranchCommit = do
  - happen, but ensures that the database is consistent.
  -}
 setRepoSizes :: RepoSizeHandle -> M.Map UUID RepoSize -> Sha -> IO ()
-setRepoSizes (RepoSizeHandle (Just h)) sizemap branchcommitsha = 
+setRepoSizes (RepoSizeHandle (Just h) _) sizemap branchcommitsha = 
 	H.commitDb h $ do
 		l <- getRepoSizes'
 		forM_ (map fst l) $ \u ->
@@ -174,7 +181,7 @@ setRepoSizes (RepoSizeHandle (Just h)) sizemap branchcommitsha =
 			uncurry setRepoSize
 		clearRecentChanges
 		recordAnnexBranchCommit branchcommitsha
-setRepoSizes (RepoSizeHandle Nothing) _ _ = noop
+setRepoSizes (RepoSizeHandle Nothing _) _ _ = noop
 
 setRepoSize :: UUID -> RepoSize -> SqlPersistM ()
 setRepoSize u (RepoSize sz) =
@@ -192,14 +199,20 @@ recordAnnexBranchCommit branchcommitsha = do
 	void $ insertUniqueFast $ AnnexBranch $ toSSha branchcommitsha
 
 startingLiveSizeChange :: RepoSizeHandle -> UUID -> Key -> SizeChange -> SizeChangeId -> IO ()
-startingLiveSizeChange (RepoSizeHandle (Just h)) u k sc sid = 
+startingLiveSizeChange (RepoSizeHandle (Just h) _) u k sc cid = 
 	H.commitDb h $ void $ upsertBy
-		(UniqueLiveSizeChange u k sid)
-		(LiveSizeChanges u k sid sc)
+		(UniqueLiveSizeChange u k
+			(sizeChangeUniqueId cid)
+			(sizeChangeProcessId cid))
+		(LiveSizeChanges u k
+			(sizeChangeUniqueId cid)
+			(sizeChangeProcessId cid)
+			sc)
 		[ LiveSizeChangesChange =. sc
-		, LiveSizeChangesChangeid =. sid
+		, LiveSizeChangesChangeid =. sizeChangeUniqueId cid
+		, LiveSizeChangesChangepid =. sizeChangeProcessId cid
 		]
-startingLiveSizeChange (RepoSizeHandle Nothing) _ _ _ _ = noop
+startingLiveSizeChange (RepoSizeHandle Nothing _) _ _ _ _ = noop
 
 {- A live size change has successfully finished.
  -
@@ -212,7 +225,7 @@ startingLiveSizeChange (RepoSizeHandle Nothing) _ _ _ _ = noop
  - total.
  -}
 successfullyFinishedLiveSizeChange :: RepoSizeHandle -> UUID -> Key -> SizeChange -> SizeChangeId -> IO ()
-successfullyFinishedLiveSizeChange (RepoSizeHandle (Just h)) u k sc sid =
+successfullyFinishedLiveSizeChange (RepoSizeHandle (Just h) _) u k sc cid =
 	H.commitDb h $ do
 		getRecentChange u k >>= \case
 			Just sc' | sc == sc' -> remove
@@ -223,8 +236,8 @@ successfullyFinishedLiveSizeChange (RepoSizeHandle (Just h)) u k sc sid =
 		setSizeChangeFor u (updateRollingTotal rollingtotal sc k)
 		addRecentChange u k sc
 		remove
-	remove = removeLiveSizeChange u k sc sid
-successfullyFinishedLiveSizeChange (RepoSizeHandle Nothing) _ _ _ _ = noop
+	remove = removeLiveSizeChange u k sc cid
+successfullyFinishedLiveSizeChange (RepoSizeHandle Nothing _) _ _ _ _ = noop
 
 updateRollingTotal :: FileSize -> SizeChange -> Key -> FileSize
 updateRollingTotal t sc k = case sc of
@@ -234,28 +247,37 @@ updateRollingTotal t sc k = case sc of
 	ksz = fromMaybe 0 $ fromKey keySize k
 
 removeStaleLiveSizeChange :: RepoSizeHandle -> UUID -> Key -> SizeChange -> SizeChangeId -> IO ()
-removeStaleLiveSizeChange (RepoSizeHandle (Just h)) u k sc sid = 
-	H.commitDb h $ removeLiveSizeChange u k sc sid
-removeStaleLiveSizeChange (RepoSizeHandle Nothing) _ _ _ _ = noop
+removeStaleLiveSizeChange (RepoSizeHandle (Just h) _) u k sc cid = 
+	H.commitDb h $ removeLiveSizeChange u k sc cid
+removeStaleLiveSizeChange (RepoSizeHandle Nothing _) _ _ _ _ = noop
 
 removeLiveSizeChange :: UUID -> Key -> SizeChange -> SizeChangeId -> SqlPersistM ()
-removeLiveSizeChange u k sc sid = 
+removeLiveSizeChange u k sc cid = 
 	deleteWhere 
 		[ LiveSizeChangesRepo ==. u
 		, LiveSizeChangesKey ==. k
-		, LiveSizeChangesChangeid ==. sid
+		, LiveSizeChangesChangeid ==. sizeChangeUniqueId cid
+		, LiveSizeChangesChangepid ==. sizeChangeProcessId cid
 		, LiveSizeChangesChange ==. sc
 		]
+
+removeStaleLiveSizeChanges :: RepoSizeHandle -> [StaleSizeChanger] -> IO ()
+removeStaleLiveSizeChanges (RepoSizeHandle (Just h) _) stale = do
+	let stalepids = map staleSizeChangerProcessId stale
+	H.commitDb h $ deleteWhere [ LiveSizeChangesChangepid <-. stalepids ]
+removeStaleLiveSizeChanges (RepoSizeHandle Nothing _) _ = noop
 
 getLiveSizeChangesMap :: SqlPersistM (M.Map UUID [(Key, (SizeChange, SizeChangeId))])
 getLiveSizeChangesMap = M.fromListWith (++) . map conv <$> getLiveSizeChanges
   where
-	conv (LiveSizeChanges u k sid sc) = (u, [(k, (sc, sid))])
+	conv (LiveSizeChanges u k cid pid sc) = (u, [(k, (sc, sid))])
+	  where
+		sid = SizeChangeId cid pid
 
 getLiveSizeChangesList :: SqlPersistM [(UUID, Key, SizeChange)]
 getLiveSizeChangesList = map conv <$> getLiveSizeChanges
   where
-	conv (LiveSizeChanges u k _sid sc) = (u, k, sc)
+	conv (LiveSizeChanges u k _cid _pid sc) = (u, k, sc)
 
 getLiveSizeChanges :: SqlPersistM [LiveSizeChanges]
 getLiveSizeChanges = map entityVal <$> selectList [] []
@@ -326,9 +348,9 @@ clearRecentChanges = do
 {- Gets the recorded offsets to sizes of Repos, not including live
  - changes. -}
 recordedRepoOffsets :: RepoSizeHandle -> IO (M.Map UUID SizeOffset)
-recordedRepoOffsets (RepoSizeHandle (Just h)) = 
+recordedRepoOffsets (RepoSizeHandle (Just h) _) = 
 	M.map SizeOffset <$> H.queryDb h getSizeChanges
-recordedRepoOffsets (RepoSizeHandle Nothing) = pure mempty
+recordedRepoOffsets (RepoSizeHandle Nothing _) = pure mempty
 
 {- Gets the offsets to sizes of Repos, including all live changes that
  - are happening now.
@@ -351,7 +373,7 @@ recordedRepoOffsets (RepoSizeHandle Nothing) = pure mempty
  - the same time.
  -}
 liveRepoOffsets :: RepoSizeHandle -> IO (M.Map UUID SizeOffset)
-liveRepoOffsets (RepoSizeHandle (Just h)) = H.queryDb h $ do
+liveRepoOffsets (RepoSizeHandle (Just h) _) = H.queryDb h $ do
 	sizechanges <- getSizeChanges
 	livechanges <- getLiveSizeChangesMap
 	let us = S.toList $ S.fromList $
@@ -389,4 +411,4 @@ liveRepoOffsets (RepoSizeHandle (Just h)) = H.queryDb h $ do
 		filter (\(sc', cid') -> cid /= cid' && sc' == AddingKey)
 			(fromMaybe [] $ M.lookup k livechangesbykey)
 	competinglivechanges _ _ AddingKey _ = []
-liveRepoOffsets (RepoSizeHandle Nothing) = pure mempty
+liveRepoOffsets (RepoSizeHandle Nothing _) = pure mempty
