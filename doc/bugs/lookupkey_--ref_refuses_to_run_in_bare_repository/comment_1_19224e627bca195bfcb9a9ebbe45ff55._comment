@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="mih"
+ avatar="http://cdn.libravatar.org/avatar/f881df265a423e4f24eff27c623148fd"
+ subject="Needed to retrieve single file metadata from bare repo"
+ date="2024-08-28T13:58:30Z"
+ content="""
+I ran into the same issue. My actual goal is to retrieve git-annex metadata for a specific file from a bare repo. I only know branch/commit and the path. `git-annex metadata` can only report for a tree or a key. For the former I need to implement path matching for a potentially voluminous output. For the latter I need to look up the key -- which currently is not supported for a bare repo.
+"""]]
