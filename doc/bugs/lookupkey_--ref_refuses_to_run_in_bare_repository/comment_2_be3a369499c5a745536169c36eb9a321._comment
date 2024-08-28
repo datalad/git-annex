@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/59541f50d845e5f81aff06e88a38b9de"
+ subject="comment 2"
+ date="2024-08-28T14:11:36Z"
+ content="""
+@mih if you need a workaround now, you can parse the key from `git show <branch/commit/tag>:<path>` or even just `git show <blob-id-of-the-file>`. In the case of locked files, it will return something like `.git/annex/objects/.../.../<key>/<key>` (i.e. the symlink target), and in the case of unlocked files it is something like `/annex/objects/<key>`. This is what forgejo-aneksajo does here: <https://codeberg.org/matrss/forgejo-aneksajo/src/branch/forgejo/modules/annex/annex.go#L48-L105>. `lookupkey --ref` would massively simplify that code though.
+"""]]
