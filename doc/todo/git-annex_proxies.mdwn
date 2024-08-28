@@ -58,18 +58,14 @@ Planned schedule of work:
   used. annex.pidlock might otherwise prevent running more than one
   git-annex at a time.
 
-  , or alternatively
-  when checking a preferred content expression that uses balanced preferred
-  content. 
-
 * The assistant is using NoLiveUpdate, but it should be posssible to plumb
   a LiveUpdate through it from preferred content checking to location log
   updating.
 
 * `git-annex info` in the limitedcalc path in cachedAllRepoData
   double-counts redundant information from the journal due to using
-  overLocationLogs. In the other path it does not, and this should be fixed
-  for consistency and correctness.
+  overLocationLogs. In the other path it does not (any more; it used to),
+  and this should be fixed for consistency and correctness.
 
 * getLiveRepoSizes has a filterM getRecentChange over the live updates. 
   This could be optimised to a single sql join. There are usually not many

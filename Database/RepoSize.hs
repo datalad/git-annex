@@ -247,19 +247,18 @@ removeLiveSizeChange u k sc sid =
 		, LiveSizeChangesChange ==. sc
 		]
 
-getLiveSizeChanges :: SqlPersistM (M.Map UUID [(Key, (SizeChange, SizeChangeId))])
-getLiveSizeChanges = M.fromListWith (++) . map conv <$> selectList [] []
+getLiveSizeChangesMap :: SqlPersistM (M.Map UUID [(Key, (SizeChange, SizeChangeId))])
+getLiveSizeChangesMap = M.fromListWith (++) . map conv <$> getLiveSizeChanges
   where
-	conv entity = 
-		let LiveSizeChanges u k sid sc = entityVal entity
-		in (u, [(k, (sc, sid))])
+	conv (LiveSizeChanges u k sid sc) = (u, [(k, (sc, sid))])
 
-getLiveSizeChanges' :: SqlPersistM [(UUID, Key, SizeChange)]
-getLiveSizeChanges' = map conv <$> selectList [] []
+getLiveSizeChangesList :: SqlPersistM [(UUID, Key, SizeChange)]
+getLiveSizeChangesList = map conv <$> getLiveSizeChanges
   where
-	conv entity = 
-		let LiveSizeChanges u k _sid sc = entityVal entity
-		in (u, k, sc)
+	conv (LiveSizeChanges u k _sid sc) = (u, k, sc)
+
+getLiveSizeChanges :: SqlPersistM [LiveSizeChanges]
+getLiveSizeChanges = map entityVal <$> selectList [] []
 
 getSizeChanges :: SqlPersistM (M.Map UUID FileSize)
 getSizeChanges = M.fromList . map conv <$> selectList [] []
@@ -310,7 +309,7 @@ getRecentChanges = map conv <$> selectList [] []
  - redundant with a recent change. -}
 clearRecentChanges :: SqlPersistM ()
 clearRecentChanges = do
-	live <- getLiveSizeChanges'
+	live <- getLiveSizeChangesList
 	if null live
 		then deleteWhere ([] :: [Filter RecentChanges])
 		else do
@@ -354,7 +353,7 @@ recordedRepoOffsets (RepoSizeHandle Nothing) = pure mempty
 liveRepoOffsets :: RepoSizeHandle -> IO (M.Map UUID SizeOffset)
 liveRepoOffsets (RepoSizeHandle (Just h)) = H.queryDb h $ do
 	sizechanges <- getSizeChanges
-	livechanges <- getLiveSizeChanges
+	livechanges <- getLiveSizeChangesMap
 	let us = S.toList $ S.fromList $
 		M.keys sizechanges ++ M.keys livechanges
 	M.fromList <$> forM us (go sizechanges livechanges)
