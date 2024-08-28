@@ -57,13 +57,20 @@ getLiveRepoSizes quiet = do
 	go sizemap = do
 		h <- Db.getRepoSizeHandle
 		checkStaleSizeChanges h
-		liveoffsets <- liftIO $ Db.liveRepoOffsets h
+		liveoffsets <- liftIO $ Db.liveRepoOffsets h wantlivesizechange
 		let calc u (RepoSize size, SizeOffset startoffset) =
 			case M.lookup u liveoffsets of
 				Nothing -> RepoSize size
 				Just (SizeOffset offset) -> RepoSize $
 					size + (offset - startoffset)
 		return $ M.mapWithKey calc sizemap
+
+	-- When a live update is in progress, only count it
+	-- when it makes a repository larger. Better to err on the side
+	-- of repositories being too large than assume that drops will
+	-- always succeed.
+	wantlivesizechange AddingKey = True
+	wantlivesizechange RemovingKey = False
 
 {- Fills an empty Annex.reposizes MVar with current information
  - from the git-annex branch, supplimented with journalled but

@@ -353,7 +353,7 @@ recordedRepoOffsets (RepoSizeHandle (Just h) _) =
 recordedRepoOffsets (RepoSizeHandle Nothing _) = pure mempty
 
 {- Gets the offsets to sizes of Repos, including all live changes that
- - are happening now.
+ - are happening now whose SizeChange matches the provided function.
  -
  - This does not necessarily include all changes that have been made,
  - only ones that had startingLiveSizeChange called for them will be
@@ -372,8 +372,8 @@ recordedRepoOffsets (RepoSizeHandle Nothing _) = pure mempty
  - This is only expensive when there are a lot of live changes happening at
  - the same time.
  -}
-liveRepoOffsets :: RepoSizeHandle -> IO (M.Map UUID SizeOffset)
-liveRepoOffsets (RepoSizeHandle (Just h) _) = H.queryDb h $ do
+liveRepoOffsets :: RepoSizeHandle -> (SizeChange -> Bool) -> IO (M.Map UUID SizeOffset)
+liveRepoOffsets (RepoSizeHandle (Just h) _) wantedsizechange = H.queryDb h $ do
 	sizechanges <- getSizeChanges
 	livechanges <- getLiveSizeChangesMap
 	let us = S.toList $ S.fromList $
@@ -390,7 +390,7 @@ liveRepoOffsets (RepoSizeHandle (Just h) _) = H.queryDb h $ do
 			filterM (nonredundantlivechange livechangesbykey u)
 				(fromMaybe [] $ M.lookup u livechanges)
 		let sizechange = foldl' 
-			(\t (k, sc) -> updateRollingTotal t sc k)
+			(\t (k, sc) -> if wantedsizechange sc then updateRollingTotal t sc k else t)
 			(fromMaybe 0 (M.lookup u sizechanges))
 			livechanges'
 		return (u, SizeOffset sizechange)
@@ -411,4 +411,4 @@ liveRepoOffsets (RepoSizeHandle (Just h) _) = H.queryDb h $ do
 		filter (\(sc', cid') -> cid /= cid' && sc' == AddingKey)
 			(fromMaybe [] $ M.lookup k livechangesbykey)
 	competinglivechanges _ _ AddingKey _ = []
-liveRepoOffsets (RepoSizeHandle Nothing _) = pure mempty
+liveRepoOffsets (RepoSizeHandle Nothing _) _ = pure mempty
