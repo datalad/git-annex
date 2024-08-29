@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 4"
+ date="2024-08-29T18:35:47Z"
+ content="""
+just ran into this again with `datalad push` which surprised me (since I do not get into it with regular `git push`), and took me a bit to figure out/find this issue.
+
+>  Unless there's some reason why you need git to pull from the http url rather than from the ssh url?
+
+It is my pattern of working with git -- clone via public URL whenever possible (so I do not have to load/use any ssh key without necessity; could use the same URLs on public and private hosts alike) and only when needed to push, automagically push via ssh.  FWIW I really love such workflow and use it not only for github but other hosting providers too!
+
+And IMHO indeed it would make total sense for a similar separation of \"use public public/read access route regardless of having or not credentials for private/write, and use secure/authenticated route only if write/push is necessary\" for git-annex too. The utility of `insteadOf` is not allowing for such separation, but at least indeed would allow \"location-wide\" overload of using secure/authenticated even when simpler public access route possible.
+
+Indeed adding such a feature parity with `git` might break existing setups, but I would say it should only fix a possible divergence and remove the surprise that annex is behaving differently from how git does it.  IMHO it is unlikely someone had `pushInsteadOf` configured to have `git` push somewhere else (thus git-annex branch going there too) while still somehow interested to use original URL for git-annex.
+"""]]
