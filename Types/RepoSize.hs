@@ -11,12 +11,12 @@ module Types.RepoSize where
 
 import Types.UUID
 import Types.Key
+import Utility.PID
 
 import Control.Concurrent
 import Database.Persist.Sql hiding (Key)
 import Data.Unique
 import Text.Read
-import System.Process (Pid)
 import qualified Data.Text as T
 import qualified Data.Set as S
 
@@ -75,7 +75,7 @@ newtype SizeChangeUniqueId = SizeChangeUniqueId Int
 newtype SizeChangeProcessId = SizeChangeProcessId Integer
 	deriving (Show, Eq, Ord)
 
-mkSizeChangeId :: Pid -> IO SizeChangeId
+mkSizeChangeId :: PID -> IO SizeChangeId
 mkSizeChangeId pid = do
 	u <- newUnique
 	return $ SizeChangeId

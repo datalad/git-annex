@@ -18,9 +18,9 @@ import Annex.LockFile
 import Annex.LockPool
 import qualified Database.RepoSize as Db
 import qualified Utility.Matcher as Matcher
+import Utility.PID
 
 import Control.Concurrent
-import System.Process
 import Text.Read
 import Data.Time.Clock.POSIX
 import qualified Utility.RawFilePath as R
@@ -61,7 +61,7 @@ prepareLiveUpdate mu k sc = do
 	waitstart startv readyv donev h u =
 		tryNonAsync (takeMVar startv) >>= \case
 			Right () -> do
-				pid <- getCurrentPid
+				pid <- getPID
 				cid <- mkSizeChangeId pid
 				Db.startingLiveSizeChange h u k sc cid
 				putMVar readyv ()
@@ -145,7 +145,7 @@ finishedLiveUpdate lu u k sc =
 checkStaleSizeChanges :: RepoSizeHandle -> Annex ()
 checkStaleSizeChanges h@(RepoSizeHandle (Just _) livev) = do
 	livedir <- calcRepo' gitAnnexRepoSizeLiveDir
-	pid <- liftIO getCurrentPid
+	pid <- liftIO getPID
 	let pidlockfile = show pid
 	now <- liftIO getPOSIXTime
 	liftIO (takeMVar livev) >>= \case
