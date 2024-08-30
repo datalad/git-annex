@@ -177,7 +177,7 @@ checkStaleSizeChanges h@(RepoSizeHandle (Just _) livev) = do
 
 	checkstale livedir lockfile pid =
 		let f = livedir P.</> toRawFilePath lockfile
-		in tryLockShared Nothing f >>= \case
+		in trySharedLock f >>= \case
 			Nothing -> return Nothing
 			Just lck -> do
 				return $ Just 

@@ -1,6 +1,6 @@
 {- git-annex lock files.
  -
- - Copyright 2012-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -16,6 +16,7 @@ module Annex.LockFile (
 	withExclusiveLock,
 	takeExclusiveLock,
 	tryExclusiveLock,
+	trySharedLock,
 ) where
 
 import Annex.Common
@@ -111,3 +112,16 @@ tryExclusiveLock lockfile a = debugLocks $ do
 	unlock = maybe noop dropLock
 	go Nothing = return Nothing
 	go (Just _) = Just <$> a
+
+{- Tries to take a shared lock, without blocking.
+ -
+ - Does not create the lock directory or lock file if it does not exist,
+ - taking an exclusive lock will create them.
+ -}
+trySharedLock :: RawFilePath -> Annex (Maybe LockHandle)
+trySharedLock lockfile = debugLocks $
+#ifndef mingw32_HOST_OS
+	tryLockShared Nothing lockfile
+#else
+	liftIO $ lockShared lockfile
+#endif
