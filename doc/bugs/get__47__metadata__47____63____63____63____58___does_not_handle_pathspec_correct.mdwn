@@ -1,0 +1,67 @@
+### Please describe the problem.
+
+Wanted to use `metadata` (to annotate anatomical T1s with metadata), and then tried `get` on a pathspec.
+`git annex` then incorrectly claims that no files patch although I show with `git ls-files` on the same pathspec that there are files:
+
+```shell
+❯ git annex version
+git-annex version: 10.20240731+git17-g6d1592f857-1~ndall+1
+build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Benchmark Feeds Testsuite S3 WebDAV
+...
+
+❯ git ls-files '**/*.nii.gz' | head -n 1
+sub-0001/ses-01/anat/sub-0001_ses-01_acq-MPRAGEXp3X08mm_T1w.nii.gz
+
+❯ git annex metadata '**/*.nii.gz'
+error: pathspec './**/*.nii.gz' did not match any file(s) known to git
+Did you forget to 'git add'?
+metadata: 1 failed
+
+# git-annex changed pathspec to have leading ./ -- let's try with that too:
+❯ git ls-files './**/*.nii.gz' | head -n 1
+sub-0001/ses-01/anat/sub-0001_ses-01_acq-MPRAGEXp3X08mm_T1w.nii.gz
+
+# annex get -- the same story
+❯ git annex get '**/*.nii.gz'
+error: pathspec './**/*.nii.gz' did not match any file(s) known to git
+Did you forget to 'git add'?
+(merging typhon/git-annex into git-annex...)
+(recording state in git...)
+get: 1 failed
+```
+
+From `annex --debug` we can see that annex unconditionally uses `--literal-pathspecs` 
+
+```shell
+❯ git annex --debug get '**/*.nii.gz'
+[2024-08-23 21:29:36.951044831] (Utility.Process) process [3889124] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","ls-files","--stage","-z","--error-unmatch","--","./**/*.nii.gz"]
+```
+
+so, I think then annex should have at least used "literal" in the error, e.g.
+
+```
+error: literal pathspec './**/*.nii.gz' did not match any file(s) known to git
+```
+
+and ideally also hinted on how to disable such behavior (if possible) and do allow for "magical" etc pathspecs there.
+
+FWIW, I have tried with `GIT_GLOB_PATHSPECS=1` env var but that didn't help.... not sure if possible at all looking at the code
+
+```
+fixupRepo :: Repo -> GitConfig -> IO Repo
+fixupRepo r c = do
+    let r' = disableWildcardExpansion r
+    r'' <- fixupUnusualRepos r' c
+    if annexDirect c
+        then return (fixupDirect r'')
+        else return r''
+
+{- Disable git's built-in wildcard expansion, which is not wanted
+ - when using it as plumbing by git-annex. -}
+disableWildcardExpansion :: Repo -> Repo
+disableWildcardExpansion r = r
+    { gitGlobalOpts = gitGlobalOpts r ++ [Param "--literal-pathspecs"] }
+```
+
+[[!meta author=yoh]]
+[[!tag projects/openneuro]]

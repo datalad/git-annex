@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="ewen"
+ avatar="http://cdn.libravatar.org/avatar/605b2981cb52b4af268455dee7a4f64e"
+ subject="Most servers upgraded to TLS v1.2 EMS / TLS v1.3"
+ date="2024-08-13T00:01:05Z"
+ content="""
+For the record, this problem has largely \"solved itself\" by waiting -- one of the podcast feeds I was having problems with upgraded to a new server (ie, off CentOS 7 I think), which supports TLS v1.3, so is no longer a problem.  And around the end of support for CentOS 7 (~ June 2024) the other problem server also stopped being a problem, I'm guessing due to deploying new media servers.
+
+Among other things this means I no longer have a good test case to suggest for testing this problem.
+
+So possibly the problem of \"TLS v1.2 EMS now required\" can be ignored, because at this point it should largely be very old (unmaintained) server installs that still cannot do TLS v1.2 EMS or TLS v1.3
+
+Ewen
+"""]]

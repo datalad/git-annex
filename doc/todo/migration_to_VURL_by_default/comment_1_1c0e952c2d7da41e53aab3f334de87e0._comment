@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/59541f50d845e5f81aff06e88a38b9de"
+ subject="comment 1"
+ date="2024-08-28T08:47:32Z"
+ content="""
+While a migration to VURL by default would be great, I think this issue when dealing with external special remotes should first be fixed: <https://git-annex.branchable.com/bugs/VURL_verification_failure_on_first_download/>. Right now, my datalad-cds extension does not explicitly set the URL backend, so it would break if the default was to change to VURL, but I would really like to use VURL with it if it was possible.
+"""]]

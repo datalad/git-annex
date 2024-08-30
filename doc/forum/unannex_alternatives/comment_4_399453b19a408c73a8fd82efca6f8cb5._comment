@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Spencer"
+ avatar="http://cdn.libravatar.org/avatar/2e0829f36a68480155e09d0883794a55"
+ subject="Still a Problem (on Mac?)"
+ date="2024-08-13T04:21:32Z"
+ content="""
+This is still occurring for me. If I unannex, then commit the deletion, drop the key, and add back the file now with `git add`, annex usurps the commit and commits only a pointer. Then, `git annex find --unlocked` shows the file as an unlocked annexed file.
+
+`git show HASH` shows the pointer, not the file contents, thus my worry that the contents are lost in the git repo. What's worse, `git hash-object` gives the same hash as shown in `git log --raw` so by plain inspection of the log it seems like the content is properly logged in the git repo but it's not!
+
+It appears the bug you mentioned has been closed/deleted (instead of moved to done). I am going to reopen it and put in my details.
+"""]]

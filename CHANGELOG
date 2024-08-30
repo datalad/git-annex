@@ -1,6 +1,5 @@
 git-annex (10.20240831) UNRELEASED; urgency=medium
 
-  * export: Added --from option.
   * Special remotes configured with exporttree=yes annexobjects=yes 
     can store objects in .git/annex/objects, as well as an exported tree.
   * Support proxying to special remotes configured with 
@@ -10,22 +9,24 @@ git-annex (10.20240831) UNRELEASED; urgency=medium
     special remote (or it is a cluster node) and the configured
     remote.name.annex-tracking-branch is received, the tree is
     exported to the special remote.
-  * updateproxy, updatecluster: Prevent using an exporttree=yes special
-    remote that does not have annexobjects=yes, since it will not work.
-  * git-remote-annex: Store objects in exportree=yes special remotes
-    in the same paths used by annexobjects=yes. This is a backwards
-    compatible change.
-  * The config versioning=true is now reserved for use by versioned special
-    remotes. External special remotes should not use that config for their
-    own purposes.
-  * Support "balanced=" and "fullybalanced=" in preferred content expressions.
-  * Support "sizebalanced=" and "fullysizebalanced=" too.
+  * Support "balanced=", "fullybalanced=", "sizebalanced=" and
+    "fullysizebalanced=" in preferred content expressions.
   * Added --rebalance option.
   * maxsize: New command to tell git-annex how large the expected maximum
     size of a repository is, and to display repository sizes.
   * Added the annex.fullybalancedthreshhold git config.
   * vicfg: Include maxsize configuration.
-  * info: Improved speed.
+  * info: Improved speed by using new repository size tracking.
+  * lookupkey: Allow using --ref in a bare repository.
+  * export: Added --from option.
+  * git-remote-annex: Store objects in exportree=yes special remotes
+    in the same paths used by annexobjects=yes. This is a backwards
+    compatible change.
+  * updateproxy, updatecluster: Prevent using an exporttree=yes special
+    remote that does not have annexobjects=yes, since it will not work.
+  * The config versioning=true is now reserved for use by versioned special
+    remotes. External special remotes should not use that config for their
+    own purposes.
 
  -- Joey Hess <id@joeyh.name>  Wed, 31 Jul 2024 15:52:03 -0400
 

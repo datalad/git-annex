@@ -1,0 +1,15 @@
+---
+
+## Contributions
+
+### Contributed Pages
+
+[[!map pages="author(Spencer) and !internal(recentchanges/*) and !comment(*)"
+     show="title"
+     sort="title"]]
+
+### Comments
+
+[[!map pages="author(Spencer) and comment(*)"
+     show="title"
+     sort="title"]]
