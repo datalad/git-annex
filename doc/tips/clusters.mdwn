@@ -63,31 +63,6 @@ clusters.
 A cluster is not a git repository, and so `git pull bigserver-mycluster`
 will not work.
 
-## preferred content of clusters
-
-The preferred content of the cluster can be configured. This tells
-users what files the cluster as a whole should contain.
-
-To configure the preferred content of a cluster, as well as other related
-things like [[groups|git-annex-group]] and [[required_content]], it's easiest
-to do the configuration in a repository that has the cluster as a remote.
-
-For example:
-
-	$ git-annex wanted bigserver-mycluster standard
-	$ git-annex group bigserver-mycluster archive
-
-By default, when a file is uploaded to a cluster, it is stored on every node of
-the cluster. To control which nodes to store to, the [[preferred_content]] of
-each individual node can be configured.
-
-It's also a good idea to configure the preferred content of the cluster's
-gateway. To avoid files redundantly being stored on the gateway
-(which remember, is not a node of the cluster), you might make it not want
-any files:
-
-    $ git-annex wanted bigserver nothing
-
 ## setting up a cluster
 
 A new cluster first needs to be initialized. Run [[git-annex-initcluster]] in
@@ -131,6 +106,41 @@ on more than one at a time will likely be faster.
 
     $ git config annex.jobs cpus
 
+## preferred content of clusters
+
+The preferred content of the cluster can be configured. This tells
+users what files the cluster as a whole should contain.
+
+To configure the preferred content of a cluster, as well as other related
+things like [[groups|git-annex-group]] and [[required_content]], it's easiest
+to do the configuration in a repository that has the cluster as a remote.
+
+For example:
+
+	$ git-annex wanted bigserver-mycluster standard
+	$ git-annex group bigserver-mycluster archive
+
+By default, when a file is uploaded to a cluster, it is stored on every node
+of the cluster. To control which nodes to store to, the [[preferred_content]]
+of each individual node can be configured.
+
+For example, to balance content evenly across nodes:
+
+    $ git-annex groupwanted bigserver-node balanced=bigserver-node
+    $ git-annex group bigserver-node1 bigserver-node
+    $ git-annex group bigserver-node2 bigserver-node
+    $ git-annex group bigserver-node3 bigserver-node
+    $ git-annex wanted bigserver-node1 groupwanted
+    $ git-annex wanted bigserver-node2 groupwanted
+    $ git-annex wanted bigserver-node3 groupwanted
+
+It's also a good idea to configure the preferred content of the cluster's
+gateway. To avoid files redundantly being stored on the gateway
+(which remember, is not a node of the cluster), you might make it not want
+any files:
+
+    $ git-annex wanted bigserver nothing
+
 ## special remotes as cluster nodes
 
 Cluster nodes don't have to be regular git remotes. They can
@@ -138,7 +148,7 @@ also be special remotes.
 
 Even special remotes with `exporttree=yes` can be
 used as cluster nodes. Those also need to be configured with
-`annexobjects=yes` though. And, will also need to configure
+`annexobjects=yes` though. And, you will also need to configure
 `remote.name.annex-tracking-branch` to the branch that will
 trigger an update of the exported tree when it is pushed to the
 cluster gateway.
