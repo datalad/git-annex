@@ -159,21 +159,7 @@ objectDir = P.addTrailingPathSeparator $ annexDir P.</> "objects"
 
 {- Annexed file's possible locations relative to the .git directory
  - in a non-bare eepository.
-
-{- Checks for other git-annex processes that might have been interrupted
- - and left the database populated with stale live size changes. Those
- - are removed from the database. 
- -
- - Also registers the current process so that other calls to this will not
- - consider it stale while it's running.
- -
- - This checks the first time it is called, and again if it's been more
- - than 1 minute since the last check.
- -}
-checkStaleSizeChanges :: Db.RepoSizeHandle -> Annex ()
-checkStaleSizeChanges h = do
-	undefined
- -
+ - 
  - Normally it is hashDirMixed. However, it's always possible that a
  - bare repository was converted to non-bare, or that the cripped
  - filesystem setting changed, so still need to check both. -}
