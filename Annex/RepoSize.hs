@@ -138,11 +138,18 @@ calcJournalledRepoSizes
 	-> M.Map UUID RepoSize
 	-> Sha 
 	-> Annex (M.Map UUID (RepoSize, SizeOffset))
-calcJournalledRepoSizes h startmap branchsha =
+calcJournalledRepoSizes h startmap branchsha
 	-- Lock the journal to prevent updates to the size offsets
 	-- in the repository size database while this is processing
 	-- the journal files.
-	lockJournal $ \_jl -> do
+	| Db.isOpenDb h = lockJournal $ \_jl -> go
+	-- When the repository is not writable, the database won't have
+	-- been opened, and locking the journal would also not succeed.
+	-- But there is no need to lock the journal in this case,
+	-- since no offsets will be read from the database.
+	| otherwise = go
+  where
+	go = do
 		sizemap <- overLocationLogsJournal startmap branchsha 
 			(\k v m' -> pure (accumRepoSizes k v m'))
 			Nothing

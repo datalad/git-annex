@@ -23,6 +23,7 @@ module Database.RepoSize (
 	getRepoSizeHandle,
 	openDb,
 	closeDb,
+	isOpenDb,
 	lockDbWhile,
 	getRepoSizes,
 	setRepoSizes,
@@ -125,6 +126,13 @@ openDb = lockDbWhile permerr $ do
 	-- information can be queried from the branch, though much less
 	-- efficiently.
 	permerr _e = mkhandle Nothing
+
+-- When the repository cannot be written to, openDb returns a
+-- RepoSizeHandle that is not actually open, all operations on it will do
+-- nothing.
+isOpenDb :: RepoSizeHandle -> Bool
+isOpenDb (RepoSizeHandle (Just _) _) = True
+isOpenDb (RepoSizeHandle Nothing _) = False
 
 closeDb :: RepoSizeHandle -> Annex ()
 closeDb (RepoSizeHandle (Just h) _) = liftIO $ H.closeDb h
