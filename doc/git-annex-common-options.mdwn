@@ -79,8 +79,10 @@ Most of these options are accepted by all git-annex commands.
 * `--rebalance`
 
   Changes the behavior of the "balanced" preferred content expression
-  to be the same as "fullbalanced". When that expression is used,
-  this can cause a lot of work to be done to rebalance repositories.
+  to be the same as "fullbalanced" and the "sizebalanced" expression
+  to be the same as "fullsizebalanced". When those expressions are
+  used, this can cause a lot of work to be done to rebalance
+  repositories.
 
 * `--time-limit=time`
 
