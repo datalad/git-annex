@@ -110,5 +110,4 @@ sizeOfDownloadsInProgress. It would be possible to make a
 
 [[!tag projects/openneuro]]
 
-> Current status: This is implemented, but concurrency issues remain.
-> --[[Joey]]
+> [[done]]! > --[[Joey]]

@@ -20,22 +20,21 @@ Planned schedule of work:
 * June: git-annex proxies and clusters
 * July: p2p protocol over http
 * August, part 1: git-annex proxy support for exporttree
-* August, part 2: [[track_free_space_in_repos_via_git-annex_branch]]
-* September, part 1: balanced preferred content
-* September, part 2: streaming through proxy to special remotes (especially S3)
-* October, part 1: streaming through proxy continued
-* October, part 2: proving behavior of balanced preferred content with proxies
+* August, part 2: balanced preferred content
+* September: streaming through proxy to special remotes (especially S3)
+* October: proving behavior of balanced preferred content with proxies
 
 [[!tag projects/openneuro]]
 
 ## work notes
 
+## items deferred until later for balanced preferred content and maxsize tracking
+
 * `git-annex assist --rebalance` of `balanced=foo:2` 
   sometimes needs several runs to stabalize.
 
   May not be a bug, needs reproducing and analysis.
-
-* Test that live repo size data is correct and really works.
+  Deferred for proving behavior of balanced preferred content stage.
 
 * The assistant is using NoLiveUpdate, but it should be posssible to plumb
   a LiveUpdate through it from preferred content checking to location log
@@ -49,7 +48,8 @@ Planned schedule of work:
 * getLiveRepoSizes has a filterM getRecentChange over the live updates. 
   This could be optimised to a single sql join. There are usually not many
   live updates, but sometimes there will be a great many recent changes,
-  so it might be worth doing this optimisation.
+  so it might be worth doing this optimisation. Persistent is not capable
+  of this, would need dependency added on esquelito.
 
 ## completed items for August's work on balanced preferred content
 
