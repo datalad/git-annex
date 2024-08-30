@@ -18,6 +18,7 @@ git-annex (10.20240831) UNRELEASED; urgency=medium
   * The config versioning=true is now reserved for use by versioned special
     remotes. External special remotes should not use that config for their
     own purposes.
+  * lookupkey: Allow using --ref in a bare repository.
 
  -- Joey Hess <id@joeyh.name>  Wed, 31 Jul 2024 15:52:03 -0400
 

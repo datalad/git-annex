@@ -15,7 +15,7 @@ import Utility.Terminal
 import Utility.SafeOutput
 
 cmd :: Command
-cmd = notBareRepo $ noCommit $ noMessages $
+cmd = noCommit $ noMessages $
 	command "lookupkey" SectionPlumbing 
 		"looks up key used for file"
 		(paramRepeating paramFile)
@@ -35,9 +35,11 @@ optParser = LookupKeyOptions
 run :: LookupKeyOptions -> SeekInput -> String -> Annex Bool
 run o _ file
 	| refOption o = catKey (Ref (toRawFilePath file)) >>= display
-	| otherwise = seekSingleGitFile file >>= \case
-		Nothing -> return False
-		Just file' -> catKeyFile file' >>= display
+	| otherwise = do
+		checkNotBareRepo
+		seekSingleGitFile file >>= \case
+			Nothing -> return False
+			Just file' -> catKeyFile file' >>= display
 
 display :: Maybe Key -> Annex Bool
 display (Just k) = do

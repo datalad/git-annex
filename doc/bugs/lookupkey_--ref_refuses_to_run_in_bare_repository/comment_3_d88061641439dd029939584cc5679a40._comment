@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2024-08-30T14:47:41Z"
+ content="""
+Fixed that.
+
+It kind of seems like metadata could have an option to get the metadata for
+a specific ref as well, but since it already has --branch which takes a
+branch ref, adding a --ref which takes a file ref seems confusing. Maybe
+--fileref? There are a decent number of other commands that also use
+parseKeyOptions to support --branch/--key/--all that would also get the new
+option if it were implemented.
+"""]]
