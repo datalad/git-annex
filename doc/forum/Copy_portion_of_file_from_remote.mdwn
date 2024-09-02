@@ -6,7 +6,7 @@ Unfortunately, to do so, we must download entire recordings of ~1GB each, even i
 This can take hours.
 
 My question is: how hard would it be to download specific ranges of bytes from a remote repository (given start/end cursors)? 
-Given that git annex can resume interrupted downloads, I assume there is already some code for readings bytes from a remote, starting a specific position in the file.
+Given that git annex can resume interrupted downloads, I assume there is already some code for readings bytes from a remote, starting from specific positions in a file.
 What would be the easiest way of doing this? Is it achievable via git annex' interface? Or would it require a change in git annex itself?
 (My colleagues and I aren't proficient in Haskell and we can't really maintain binaries for the multiple platforms we work with).
 
