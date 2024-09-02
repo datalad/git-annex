@@ -1,0 +1,15 @@
+Hi,
+
+My peers and I work with longform audio recordings (10-20 hours each).
+We often need to sub-sample small portions (typically 1 percent) of many of these recordings in unpredictable ways, for various reasons.
+Unfortunately, to do so, we must download entire recordings of ~1GB each, even if we end up using only 1% of each of them.
+This can take hours.
+
+My question is: how hard would it be to download specific ranges of bytes from a remote repository (given start/end cursors)? 
+Given that git annex can resume interrupted downloads, I assume there is already some code for readings bytes from a remote, starting from specific positions in a file.
+What would be the easiest way of doing this? Is it achievable via git annex' interface? Or would it require a change in git annex itself?
+(My colleagues and I aren't proficient in Haskell and we can't really maintain binaries for the multiple platforms we work with).
+
+If this requires a patch to git-annex, maybe this would be a feature of interest to a broader share of people? 
+
+Best,
