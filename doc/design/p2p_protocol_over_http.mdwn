@@ -295,7 +295,7 @@ Same as v3, except the JSON will not include "plusuuids".
 
 Identical to v1.
 
-## POST /git-annex/$uuid/v3/remove-before
+### POST /git-annex/$uuid/v3/remove-before
 
 Remove a key's content from the server, but only before a specified time.
 
@@ -313,7 +313,7 @@ removal will fail and the server will respond with: `{"removed": false}`
 This is used to avoid removing content after a point in 
 time where it is no longer locked in other repostitories.
 
-## POST /git-annex/$uuid/v3/gettimestamp
+### POST /git-annex/$uuid/v3/gettimestamp
 
 Gets the current timestamp from the server.
 
