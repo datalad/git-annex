@@ -16,7 +16,7 @@ in `.git/annex/objects`:
 
 It's very important to keep in mind that this makes a nonstandard format
 git-annex repository. In general, this cannot safely be used with
-git-annex older than version 5.20150128. Older version of git-annex will
+git-annex older than version 5.20150128. Older versions of git-annex will
 not understand and will get confused and perhaps do bad things.
 
 Also, it's not safe to merge two separate git repositories that have been
