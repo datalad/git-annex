@@ -28,6 +28,8 @@ Planned schedule of work:
 
 ## work notes
 
+* Currently working in [[todo/proving_preferred_content_behavior]]
+
 ## items deferred until later for balanced preferred content and maxsize tracking
 
 * `git-annex assist --rebalance` of `balanced=foo:2` 
