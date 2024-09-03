@@ -565,7 +565,7 @@ limitOnlyInGroup getgroupmap groupname = Right $ MatchFiles
 	, matchNeedsKey = True
 	, matchNeedsLocationLog = True
 	, matchNeedsLiveRepoSize = False
-	, matchDesc = "inallgroup" =? groupname
+	, matchDesc = "onlyingroup" =? groupname
 	}
   where
 	check notpresent want key = do

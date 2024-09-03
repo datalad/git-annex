@@ -1,3 +1,9 @@
+git-annex (10.20240832) UNRELEASED; urgency=medium
+
+  * Fix --debug display of onlyingroup preferred content expression.
+
+ -- Joey Hess <id@joeyh.name>  Tue, 03 Sep 2024 12:38:42 -0400
+
 git-annex (10.20240831) upstream; urgency=medium
 
   * Special remotes configured with exporttree=yes annexobjects=yes 
