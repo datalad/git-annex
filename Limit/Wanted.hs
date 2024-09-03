@@ -41,6 +41,7 @@ addPreferredContentLimit desc a = do
 	nk <- introspectPreferredRequiredContent matchNeedsKey Nothing
 	nl <- introspectPreferredRequiredContent matchNeedsLocationLog Nothing
 	lsz <- introspectPreferredRequiredContent matchNeedsLiveRepoSize Nothing
+	nu <- introspectPreferredRequiredContent matchNegationUnstable Nothing
 	addLimit $ Right $ MatchFiles
 		{ matchAction = const $ const a
 		, matchNeedsFileName = nfn
@@ -48,6 +49,7 @@ addPreferredContentLimit desc a = do
 		, matchNeedsKey = nk
 		, matchNeedsLocationLog = nl
 		, matchNeedsLiveRepoSize = lsz
+		, matchNegationUnstable = nu
 		, matchDesc = matchDescSimple desc
 		}
 

@@ -172,9 +172,11 @@ elsewhere to allow removing it).
   settings from affecting a subdirectory. For example:
   `auto/* or (include=ad-hoc/* and present)`
 
-  Note that `not present` is a very bad thing to put in a preferred content 
-  expression. It'll make it want to get content that's not present, and
-  drop content that is present! Don't go there..
+  Note that `not present` is not a reasonable thing to put in a preferred
+  content expression. It says to get content that's not present, but then
+  drop it! If that somehow gets into a preferred content expression,
+  git-annex will recognize that the preferred content expression is not stable,
+  and make it never match.
 
 * `inpreferreddir`
 
@@ -304,8 +306,8 @@ elsewhere to allow removing it).
   a lot of files. When this causes git-annex to do a lot of work, it will
   display "(calculating repository sizes)".
 
-  Note that `not balanced` is a bad thing to put in a preferred content
-  expression for the same reason `not present` is.
+  Note that `not balanced` not a reasonable thing to use in a preferred
+  content expression for the same reasons as `not present`.
 
 * `fullybalanced=groupname[:number]`
 
@@ -364,6 +366,9 @@ elsewhere to allow removing it).
   expression instead behave like the `fullysizebalanced` expression, which
   will make repositories want to move files around as necessary in order to
   get fully balanced.
+
+  Note that `not sizebalanced` not a reasonable thing to use in a preferred
+  content expression for the same reasons as `not present`.
 
 * `fullysizebalanced=groupname:number`
 

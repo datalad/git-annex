@@ -98,7 +98,9 @@ data MatchFiles a = MatchFiles
 	-- ^ does the matchAction look at the location log?
 	, matchNeedsLiveRepoSize :: Bool
 	-- ^ does the matchAction need live repo size information?
-	, matchDesc :: Bool -> MatchDesc
+	, matchNegationUnstable :: Bool
+	-- ^ does negating the matchAction lead to unstable behavior?
+	, matchDesc :: Maybe Bool -> MatchDesc
 	-- ^ displayed to the user to describe whether it matched or not
 	}
 

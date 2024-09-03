@@ -95,10 +95,26 @@ checkMatcher' (matcher, (MatcherDesc matcherdesc)) mi lu notpresent =
 	go = do
 		(matches, desc) <- runWriterT $ matchMrun' matcher $ \op ->
 			matchAction op lu notpresent mi
-		explain (mkActionItem mi) $ UnquotedString <$>
-			describeMatchResult matchDesc desc
-				((if matches then "matches " else "does not match ") ++ matcherdesc ++ ": ")
-		return matches
+		let descmsg = UnquotedString <$>
+				describeMatchResult
+					(\o -> matchDesc o . Just) desc
+					((if matches then "matches " else "does not match ") ++ matcherdesc ++ ": ")
+		let unstablenegated = filter matchNegationUnstable (findNegated matcher)
+		if null unstablenegated
+			then do
+				explain (mkActionItem mi) descmsg
+				return matches
+			else do
+				let s = concat 
+					[ ", but that expression is not stable due to negated use of "
+					, unwords $ nub $ 
+						map (fromMatchDesc . flip matchDesc Nothing)
+							unstablenegated
+					, ", so will not be used"
+					]
+				explain (mkActionItem mi) $ Just $
+					fromMaybe mempty descmsg <> UnquotedString s
+				return False
 
 fileMatchInfo :: RawFilePath -> Maybe Key -> Annex MatchInfo
 fileMatchInfo file mkey = do
@@ -282,6 +298,7 @@ call desc (Right sub) = Right $ Operation $ MatchFiles
 	, matchNeedsKey = any matchNeedsKey sub
 	, matchNeedsLocationLog = any matchNeedsLocationLog sub
 	, matchNeedsLiveRepoSize = any matchNeedsLiveRepoSize sub
+	, matchNegationUnstable = any matchNegationUnstable sub
 	, matchDesc = matchDescSimple desc
 	}
 call _ (Left err) = Left err

@@ -31,6 +31,7 @@ module Utility.Matcher (
 	matchMrun,
 	matchMrun',
 	isEmpty,
+	findNegated,
 	combineMatchers,
 	introspect,
 	describeMatchResult,
@@ -54,7 +55,7 @@ data Matcher op = MAny
 	| MOp op
 	deriving (Show, Eq, Foldable)
 
-newtype MatchDesc = MatchDesc String
+newtype MatchDesc = MatchDesc { fromMatchDesc :: String }
 
 data MatchResult op
 	= MatchedOperation Bool op
@@ -222,6 +223,19 @@ matchMrun' m run = go m
 isEmpty :: Matcher a -> Bool
 isEmpty MAny = True
 isEmpty _ = False
+
+{- Finds terms within the matcher that are negated.
+ - Terms that are doubly negated are not returned. -}
+findNegated :: Matcher op -> [op]
+findNegated = go False []
+  where
+	go _ c MAny = c
+	go n c (MAnd a b) = go n (go n c a) b
+	go n c (MOr a b) = go n (go n c a) b
+	go n c (MNot m) = go (not n) c m
+	go n c (MOp o)
+		| n = (o:c)
+		| otherwise = c
 
 {- Combines two matchers, yielding a matcher that will match anything
  - both do. But, if one matcher contains no limits, yield the other one. -}

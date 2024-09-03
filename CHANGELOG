@@ -1,6 +1,10 @@
 git-annex (10.20240832) UNRELEASED; urgency=medium
 
-  * Fix --debug display of onlyingroup preferred content expression.
+  * Detect when a preferred content expression contains "not present",
+    which would lead to repeatedly getting and then dropping files,
+    and make it never match. This also applies to 
+    "not balanced" and "not sizebalanced".
+  * Fix --explain display of onlyingroup preferred content expression.
 
  -- Joey Hess <id@joeyh.name>  Tue, 03 Sep 2024 12:38:42 -0400
 

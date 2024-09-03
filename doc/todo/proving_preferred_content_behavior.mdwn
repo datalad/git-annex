@@ -10,18 +10,16 @@ It would be very handy to provide some way to prove things about behavior
 of preferred content expressions, or a way to simulate the behavior of a
 network of git-annex repositories with a given preferred content configuration 
 
-For example, consider two reposities A and B. A is in group M and B is in
-group N. A has preferred content `not inallgroup=N` and B has `not inallgroup=M`.
-
-If A contains a file, then B will want to also get a copy. And things
-stabilize there. But if the file is removed from A, then B also wants to
-remove it. And once B has removed it, A wants a copy of it. And then B also
-wants a copy of it. So the result is that the file got transferred twice,
-to end up right back where we started.
-
 The worst case of this is `not present`, where the file gets dropped and
 transferred over and over again. The docs warn against using that one. But
 they can't warn about every bad preferred content expression.
+
+Mostly, git-annex manages to keep things stable that seem like they would
+not be. Consider repo A that is not in group foo, and B is in group foo. A
+has preferred content "onlyingroup=foo". This will make A want a file that
+is in B. And once it has it, it will not want to drop it. That's because
+when dropping, it considers if it would be preferred content after the
+drop. In this case it would, so it doesn't drop it.
 
 ## balanced preferred content
 
@@ -35,7 +33,7 @@ matter the sizes of the underlying repositories, but balanced preferred
 content does take repository fullness into account, which further
 complicates fully understanding the behavior.
 
-Notice that `fullbalanced()` is not stable when used
+Notice that `fullybalanced()` is not stable when used
 on its own, and so `balanced()` adds an "or present" to stabilize it.
 And so `not balanced()` includes `not present`, which is bad!
 
@@ -53,16 +51,31 @@ would be good if git-annex warned and/or refused to set such an expression
 if it could detect it. Similarly `not groupwanted` could be detected as a
 problem when the group's preferred content expression contains `present`.
 
-Is there is a more general purpose and not expensive way to detect such
-problematic expressions, that can find problems such as the 
-`not inallgroup=N` example above?
+> This is now detected and such an unstable expression never matches.
+> --debug explains why too.
+>
+> Note that the detection will not be trigged by `"not (not present)"`,
+> but it will by `"include=* or (not present)"` even though that is always
+> stable, because `"include=*"` always matches and so what it's ORed with
+> doesn't matter. Probably noone will set something like that in real life
+> though.
+> 
+> It's problimatic to make `git-annex wanted` warn about it. Consider
+> if in one repository, groupwanted is set to "present". In another
+> repository, which is disconnected, wanted is set to "not groupwanted".
+> Both operations are ok, but upon merging the two repositories,
+> the combined effect is that "not present" has been set.
+> 
+> So while it could warn sometimes on setting "not present", 
+> it would sometimes not be able to. Better to not warn inconsistently.
+> --[[Joey]]
 
 ## simulation
 
 Simulation seems fairly straightforward, just simulate the network of
 git-annex repositories with random files with different sizes and
-metadata. Be sure to enforce invariants like numcopies the same as
-git-annex does.
+metadata. Or use the current files and metadata. 
+Be sure to enforce invariants like numcopies the same as git-annex does.
 
 Since users can write preferred content expressions, this should be
 targeted at being used by end users.

@@ -69,7 +69,8 @@ getMatcher = run <$> getMatcher'
 			Utility.Matcher.matchMrun' matcher $ \o ->
 				matchAction o NoLiveUpdate S.empty i
 		explain (mkActionItem i) $ UnquotedString <$>
-			Utility.Matcher.describeMatchResult matchDesc desc
+			Utility.Matcher.describeMatchResult
+				(\o -> matchDesc o . Just) desc
 				(if match then "matches:" else "does not match:")
 		return match
 
@@ -115,6 +116,7 @@ limitInclude glob = Right $ MatchFiles
 	, matchNeedsKey = False
 	, matchNeedsLocationLog = False
 	, matchNeedsLiveRepoSize = False
+	, matchNegationUnstable = False
 	, matchDesc = "include" =? glob
 	}
 
@@ -130,6 +132,7 @@ limitExclude glob = Right $ MatchFiles
 	, matchNeedsKey = False
 	, matchNeedsLocationLog = False
 	, matchNeedsLiveRepoSize = False
+	, matchNegationUnstable = False
 	, matchDesc = "exclude" =? glob
 	}
 
@@ -156,6 +159,7 @@ limitIncludeSameContent glob = Right $ MatchFiles
 	, matchNeedsKey = False
 	, matchNeedsLocationLog = False
 	, matchNeedsLiveRepoSize = False
+	, matchNegationUnstable = False
 	, matchDesc = "includesamecontent" =? glob
 	}
 
@@ -172,6 +176,7 @@ limitExcludeSameContent glob = Right $ MatchFiles
 	, matchNeedsKey = False
 	, matchNeedsLocationLog = False
 	, matchNeedsLiveRepoSize = False
+	, matchNegationUnstable = False
 	, matchDesc = "excludesamecontent" =? glob
 	}
 
@@ -249,6 +254,7 @@ matchMagic limitname querymagic selectprovidedinfo selectuserprovidedinfo (Just 
 		, matchNeedsKey = False
 		, matchNeedsLocationLog = False
 		, matchNeedsLiveRepoSize = False
+		, matchNegationUnstable = False
 		, matchDesc = limitname =? glob
 		}
   where
@@ -277,6 +283,7 @@ addUnlocked = addLimit $ Right $ MatchFiles
 	, matchNeedsKey = False
 	, matchNeedsLocationLog = False
 	, matchNeedsLiveRepoSize = False
+	, matchNegationUnstable = False
 	, matchDesc = matchDescSimple "unlocked"
 	}
 
@@ -288,6 +295,7 @@ addLocked = addLimit $ Right $ MatchFiles
 	, matchNeedsKey = False
 	, matchNeedsLocationLog = False
 	, matchNeedsLiveRepoSize = False
+	, matchNegationUnstable = False
 	, matchDesc = matchDescSimple "locked"
 	}
 
@@ -324,6 +332,7 @@ addIn s = do
 		, matchNeedsKey = True
 		, matchNeedsLocationLog = not inhere
 		, matchNeedsLiveRepoSize = False
+		, matchNegationUnstable = False
 		, matchDesc = "in" =? s
 		}
 	checkinuuid u notpresent key
@@ -355,6 +364,7 @@ addExpectedPresent = do
 		, matchNeedsKey = True
 		, matchNeedsLocationLog = True
 		, matchNeedsLiveRepoSize = False
+		, matchNegationUnstable = True
 		, matchDesc = matchDescSimple "expected-present"
 		}
 
@@ -373,6 +383,7 @@ limitPresent u = MatchFiles
 	, matchNeedsKey = True
 	, matchNeedsLocationLog = not (isNothing u)
 	, matchNeedsLiveRepoSize = False
+	, matchNegationUnstable = True
 	, matchDesc = matchDescSimple "present"
 	}
 
@@ -385,6 +396,7 @@ limitInDir dir desc = MatchFiles
 	, matchNeedsKey = False
 	, matchNeedsLocationLog = False
 	, matchNeedsLiveRepoSize = False
+	, matchNegationUnstable = False
 	, matchDesc = matchDescSimple desc
 	}
   where
@@ -418,6 +430,7 @@ limitCopies want = case splitc ':' want of
 			, matchNeedsKey = True
 			, matchNeedsLocationLog = True
 			, matchNeedsLiveRepoSize = False
+			, matchNegationUnstable = False
 			, matchDesc = "copies" =? want
 			}
 	go' n good notpresent key = do
@@ -444,6 +457,7 @@ limitLackingCopies desc approx want = case readish want of
 		, matchNeedsKey = True
 		, matchNeedsLocationLog = True
 		, matchNeedsLiveRepoSize = False
+		, matchNegationUnstable = False
 		, matchDesc = matchDescSimple desc
 		}
 	Nothing -> Left "bad value for number of lacking copies"
@@ -475,6 +489,7 @@ limitUnused = MatchFiles
 	, matchNeedsKey = True
 	, matchNeedsLocationLog = False
 	, matchNeedsLiveRepoSize = False
+	, matchNegationUnstable = False
 	, matchDesc = matchDescSimple "unused"
 	}
   where
@@ -499,6 +514,7 @@ limitAnything = MatchFiles
 	, matchNeedsKey = False
 	, matchNeedsLocationLog = False
 	, matchNeedsLiveRepoSize = False
+	, matchNegationUnstable = False
 	, matchDesc = matchDescSimple "anything"
 	}
 
@@ -515,6 +531,7 @@ limitNothing = MatchFiles
 	, matchNeedsKey = False
 	, matchNeedsLocationLog = False
 	, matchNeedsLiveRepoSize = False
+	, matchNegationUnstable = False
 	, matchDesc = matchDescSimple "nothing"
 	}
 
@@ -539,6 +556,7 @@ limitInAllGroup getgroupmap groupname = Right $ MatchFiles
 	, matchNeedsKey = True
 	, matchNeedsLocationLog = True
 	, matchNeedsLiveRepoSize = False
+	, matchNegationUnstable = False
 	, matchDesc = "inallgroup" =? groupname
 	}
   where
@@ -565,6 +583,7 @@ limitOnlyInGroup getgroupmap groupname = Right $ MatchFiles
 	, matchNeedsKey = True
 	, matchNeedsLocationLog = True
 	, matchNeedsLiveRepoSize = False
+	, matchNegationUnstable = False
 	, matchDesc = "onlyingroup" =? groupname
 	}
   where
@@ -585,6 +604,7 @@ limitBalanced' termname fullybalanced mu groupname = do
 		then groupname
 		else groupname ++ ":1"
 	let present = limitPresent mu
+	let combo f = f present || f fullybalanced || f copies
 	Right $ MatchFiles
 		{ matchAction = \lu a i ->
 			ifM (Annex.getRead Annex.rebalance)
@@ -594,25 +614,15 @@ limitBalanced' termname fullybalanced mu groupname = do
 						<&&> matchAction fullybalanced lu a i
 					)
 				)
-		, matchNeedsFileName =
-			matchNeedsFileName present ||
-			matchNeedsFileName fullybalanced ||
-			matchNeedsFileName copies
-		, matchNeedsFileContent =
-			matchNeedsFileContent present ||
-			matchNeedsFileContent fullybalanced ||
-			matchNeedsFileContent copies
-		, matchNeedsKey =
-			matchNeedsKey present ||
-			matchNeedsKey fullybalanced ||
-			matchNeedsKey copies
-		, matchNeedsLocationLog =
-			matchNeedsLocationLog present ||
-			matchNeedsLocationLog fullybalanced ||
-			matchNeedsLocationLog copies
+		, matchNeedsFileName = combo matchNeedsFileName
+		, matchNeedsFileContent = combo matchNeedsFileContent
+		, matchNeedsKey = combo matchNeedsKey
+		, matchNeedsLocationLog = combo matchNeedsLocationLog
 		, matchNeedsLiveRepoSize = True
+		, matchNegationUnstable = combo matchNegationUnstable
 		, matchDesc = termname =? groupname
 		}
+
 
 limitFullyBalanced :: Maybe UUID -> Annex GroupMap -> MkLimit Annex
 limitFullyBalanced = limitFullyBalanced' "fullybalanced"
@@ -697,6 +707,7 @@ limitFullyBalanced''' filtercandidates termname mu getgroupmap g n want = Right 
 	, matchNeedsKey = True
 	, matchNeedsLocationLog = False
 	, matchNeedsLiveRepoSize = True
+	, matchNegationUnstable = False
 	, matchDesc = termname =? want
 	}
 
@@ -757,6 +768,7 @@ limitInBackend name = Right $ MatchFiles
 	, matchNeedsKey = True
 	, matchNeedsLocationLog = False
 	, matchNeedsLiveRepoSize = False
+	, matchNegationUnstable = False
 	, matchDesc = "inbackend" =? name
 	}
   where
@@ -775,6 +787,7 @@ limitSecureHash = MatchFiles
 	, matchNeedsKey = True
 	, matchNeedsLocationLog = False
 	, matchNeedsLiveRepoSize = False
+	, matchNegationUnstable = False
 	, matchDesc = matchDescSimple "securehash"
 	}
 
@@ -797,6 +810,7 @@ limitSize lb desc vs s = case readSize dataUnits s of
 		, matchNeedsKey = False
 		, matchNeedsLocationLog = False
 		, matchNeedsLiveRepoSize = False
+		, matchNegationUnstable = False
 		, matchDesc = desc =? s
 		}
   where
@@ -828,6 +842,7 @@ limitMetaData s = case parseMetaDataMatcher s of
 		, matchNeedsKey = True
 		, matchNeedsLocationLog = False
 		, matchNeedsLiveRepoSize = False
+		, matchNegationUnstable = False
 		, matchDesc = "metadata" =? s
 		}
   where
@@ -845,6 +860,7 @@ addAccessedWithin duration = do
 		, matchNeedsKey = False
 		, matchNeedsLocationLog = False
 		, matchNeedsLiveRepoSize = False
+		, matchNegationUnstable = False
 		, matchDesc = "accessedwithin" =? fromDuration duration
 		}
   where
@@ -866,9 +882,10 @@ checkKey a (MatchingFile fi) = lookupFileKey fi >>= maybe (return False) a
 checkKey a (MatchingInfo p) = maybe (return False) a (providedKey p)
 checkKey a (MatchingUserInfo p) = a =<< getUserInfo (userProvidedKey p)
 
-matchDescSimple :: String -> (Bool -> Utility.Matcher.MatchDesc)
-matchDescSimple s b = Utility.Matcher.MatchDesc $ s ++
+matchDescSimple :: String -> (Maybe Bool -> Utility.Matcher.MatchDesc)
+matchDescSimple s (Just b) = Utility.Matcher.MatchDesc $ s ++
 	if b then "[TRUE]" else "[FALSE]"
+matchDescSimple s Nothing = Utility.Matcher.MatchDesc s
 
-(=?) :: String -> String -> (Bool -> Utility.Matcher.MatchDesc)
+(=?) :: String -> String -> (Maybe Bool -> Utility.Matcher.MatchDesc)
 k =? v = matchDescSimple (k ++ "=" ++ v)
