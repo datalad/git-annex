@@ -80,4 +80,36 @@ Be sure to enforce invariants like numcopies the same as git-annex does.
 Since users can write preferred content expressions, this should be
 targeted at being used by end users.
 
+The sim could be run in a clone of a repository, and update location
+logs as it runs. This would let the user query with `whereis` and
+`maxsize` etc to see what happens.
+
+Such a repository's location tracking would no longer match reality,
+so it would need to be clearly marked as a simulation result, and be
+prevented from merging back into another repository. This can be done by
+adding a new Difference to the repository.
+
+The sim would need a map of repositories with connections between them.
+Perhaps `git-annex map` could be used?
+
+For each step of the sim, it would pick a repository from the map
+(excluding special remotes), and simulate an operation being run in that
+repository, affecting it and its remotes.
+
+Split brain needs to be simulated, so the operations in the sim should
+include pushing and fetching the git-annex branch. The ref of each
+git-annex branch of each repository would be stored, with
+refs/heads/git-annex being set to the git-annex branch of the repository 
+it is currently simulating an operation in.
+
+The other operations would include get, drop, copy, move, sync, all
+with preferred content respected.
+
+May want to also simulate adding files to a repository, which would be
+generated (without any actual content) according to simulation parameters.
+Also file moves and deletions. `git-annex fuzztest` has some prior art.
+
+The location log history could be examined at the end of the simulation
+to find problems like instability.
+
 [[!tag projects/openneuro]]
