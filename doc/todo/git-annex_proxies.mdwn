@@ -21,8 +21,8 @@ Planned schedule of work:
 * July: p2p protocol over http
 * August, part 1: git-annex proxy support for exporttree
 * August, part 2: balanced preferred content
-* September: streaming through proxy to special remotes (especially S3)
 * October: proving behavior of balanced preferred content with proxies
+* September: streaming through proxy to special remotes (especially S3)
 
 [[!tag projects/openneuro]]
 

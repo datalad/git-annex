@@ -35,18 +35,9 @@ matter the sizes of the underlying repositories, but balanced preferred
 content does take repository fullness into account, which further
 complicates fully understanding the behavior.
 
-Notice that `balanced()` (in the current design) is not stable when used
-on its own, and has to be used as part of a larger expression to make it
-stable, eg:
-
-    ((balanced(backup) and not (copies=backup:1)) or present
-
-So perhaps `balanced()` should include the other checks in it,
-to avoid the user shooting themselves in the foot. On the other 
-hand, if `balanced()` implicitly contains `present`, then `not balanced()`
-would include `not present`, which is bad!
-
-(For that matter, what does `not balanced()` even do currently?)
+Notice that `fullbalanced()` is not stable when used
+on its own, and so `balanced()` adds an "or present" to stabilize it.
+And so `not balanced()` includes `not present`, which is bad!
 
 ## proof
 
