@@ -32,7 +32,7 @@ import qualified Data.Set as S
 import qualified Data.Semigroup as Sem
 import Prelude
 
--- Describes differences from the v5 repository format.
+-- Describes differences from the standard repository format.
 --
 -- The serialization is stored in difference.log, so avoid changes that
 -- would break compatibility.
