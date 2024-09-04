@@ -29,6 +29,7 @@ Planned schedule of work:
 ## work notes
 
 * Currently working in [[todo/proving_preferred_content_behavior]]
+  in the `sim` branch.
 
 ## items deferred until later for balanced preferred content and maxsize tracking
 
