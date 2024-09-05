@@ -123,20 +123,23 @@ applySimCommand
 	-> SimState
 	-> Either String (Either (Annex SimState) SimState)
 applySimCommand (CommandInit reponame) st =
-	let (u, st') = genSimUUID st reponame
-	in Right $ Right $ st'
-		{ simRepos = M.insert reponame u (simRepos st')
-		}
-applySimCommand (CommandInitRemote reponame) st =
-	let (u, st') = genSimUUID st reponame
-	in Right $ Right $ st'
-		{ simSpecialRemotes = M.insert reponame u (simSpecialRemotes st')
-		}
+	checkNonexistantRepo reponame st $
+		let (u, st') = genSimUUID st reponame
+		in Right $ Right $ st'
+			{ simRepos = M.insert reponame u (simRepos st')
+			}
+applySimCommand (CommandInitRemote reponame) st = 
+	checkNonexistantRepo reponame st $
+		let (u, st') = genSimUUID st reponame
+		in Right $ Right $ st'
+			{ simSpecialRemotes = M.insert reponame u (simSpecialRemotes st')
+			}
 applySimCommand (CommandUse reponame s) st =
 	case existingRepoByName (simExistingRepoByName st) s of
-		(u:[], _) -> Right $ Right $ st
-			{ simSpecialRemotes = M.insert reponame u (simSpecialRemotes st)
-			}
+		(u:[], _) -> checkNonexistantRepo reponame st $
+			Right $ Right $ st
+				{ simSpecialRemotes = M.insert reponame u (simSpecialRemotes st)
+				}
 		(_, msg) -> Left $ "Unable to use a repository \"" 
 			++ fromRepoName reponame 
 			++ "\" in the simulation because " ++ msg
@@ -234,6 +237,12 @@ applySimCommand (CommandMaxSize repo sz) st = checkKnownRepo repo st $
 applySimCommand (CommandRebalance b) st = Right $ Right $ st
 	{ simRebalance = b
 	}
+
+checkNonexistantRepo :: RepoName -> SimState -> Either String a -> Either String a
+checkNonexistantRepo reponame st a = case M.lookup reponame (simRepos st) of
+	Nothing -> a
+	Just _ -> Left $ "There is already a repository in the simulation named \""
+		++ fromRepoName reponame ++ "\"."
 
 checkKnownRepo :: RepoName -> SimState -> Either String a -> Either String a
 checkKnownRepo reponame st a = case M.lookup reponame (simRepos st) of
