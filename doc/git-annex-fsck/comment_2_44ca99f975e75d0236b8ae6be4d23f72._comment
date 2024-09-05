@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="tapesafer"
+ avatar="http://cdn.libravatar.org/avatar/8a62b25ea58309a6e15cac10a5c33f1d"
+ subject="PS"
+ date="2024-09-04T15:48:01Z"
+ content="""
+If I am understanding the documentation of the borg special remote, then having something like `appendonly=yes` for the special directory remote would likely help in my scenario.
+"""]]

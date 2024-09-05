@@ -1,0 +1,64 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 10"
+ date="2024-09-05T14:52:51Z"
+ content="""
+but may be it is actually a separate issue of the unlocked mode since it does drop the file
+
+```
+reprostim@reproiner:/data/reprostim$ find .git/annex -iname *377.mkv
+.git/annex/objects/Qp/XF/MD5E-s20610854--4fa8311cf5fc0ea247dca2b0ae556bab.377.mkv
+.git/annex/objects/Qp/XF/MD5E-s20610854--4fa8311cf5fc0ea247dca2b0ae556bab.377.mkv/MD5E-s20610854--4fa8311cf5fc0ea247dca2b0ae556bab.377.mkv
+reprostim@reproiner:/data/reprostim$ git annex drop Videos/2024/08/2024.08.30-11.31.56.000--2024.08.30-11.48.03.377.mkv
+drop Videos/2024/08/2024.08.30-11.31.56.000--2024.08.30-11.48.03.377.mkv (locking rolando...) ok
+(recording state in git...)
+reprostim@reproiner:/data/reprostim$ find .git/annex -iname *377.mkv
+reprostim@reproiner:/data/reprostim$ cat Videos/2024/08/2024.08.30-11.31.56.000--2024.08.30-11.48.03.377.mkv
+/annex/objects/MD5E-s20610854--4fa8311cf5fc0ea247dca2b0ae556bab.377.mkv
+
+```
+
+but then when I get it, it does not actually copy into the tree:
+
+```
+reprostim@reproiner:/data/reprostim$ git annex get --json Videos/2024/08/2024.08.30-11.31.56.000--2024.08.30-11.48.03.377.mkv
+{\"command\":\"get\",\"error-messages\":[],\"file\":\"Videos/2024/08/2024.08.30-11.31.56.000--2024.08.30-11.48.03.377.mkv\",\"input\":[\"Videos/2024/08/2024.08.30-11.31.56.000--2024.08.30-11.48.03.377.mkv\"],\"key\":\"MD5E-s20610854--4fa8311cf5fc0ea247dca2b0ae556bab.377.mkv\",\"note\":\"from rolando...\",\"success\":true}
+reprostim@reproiner:/data/reprostim$ cat Videos/2024/08/2024.08.30-11.31.56.000--2024.08.30-11.48.03.377.mkv
+/annex/objects/MD5E-s20610854--4fa8311cf5fc0ea247dca2b0ae556bab.377.mkv
+reprostim@reproiner:/data/reprostim$ find .git/annex -iname *377.mkv
+.git/annex/objects/Qp/XF/MD5E-s20610854--4fa8311cf5fc0ea247dca2b0ae556bab.377.mkv
+.git/annex/objects/Qp/XF/MD5E-s20610854--4fa8311cf5fc0ea247dca2b0ae556bab.377.mkv/MD5E-s20610854--4fa8311cf5fc0ea247dca2b0ae556bab.377.mkv
+
+```
+
+```
+reprostim@reproiner:/data/reprostim$ cat .git/config
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+[annex]
+	uuid = 9806a90e-4cdd-48cb-b03d-7a113663fce7
+	version = 10
+	addunlocked = false
+[filter \"annex\"]
+	smudge = git-annex smudge -- %f
+	clean = git-annex smudge --clean -- %f
+	process = git-annex filter-process
+[remote \"rolando\"]
+	url = bids@rolando.cns.dartmouth.edu:VIDS/
+	fetch = +refs/heads/*:refs/remotes/rolando/*
+	annex-uuid = 285d851e-77a8-4d31-b24c-fa72deb4d3cc
+[branch \"master\"]
+	remote = rolando
+	merge = refs/heads/master
+
+reprostim@reproiner:/data/reprostim$ git annex version
+git-annex version: 10.20240831-1~ndall+1
+
+```
+
+
+"""]]

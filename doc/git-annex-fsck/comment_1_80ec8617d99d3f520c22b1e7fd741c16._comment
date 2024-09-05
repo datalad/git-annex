@@ -1,0 +1,56 @@
+[[!comment format=mdwn
+ username="tapesafer"
+ avatar="http://cdn.libravatar.org/avatar/8a62b25ea58309a6e15cac10a5c33f1d"
+ subject="numcopies & force-trusting is ignored by fsck on readonly directory remotes?"
+ date="2024-09-04T14:50:16Z"
+ content="""
+I have old readonly backup media, say something like
+
+- `tapeA1/apples.txt`
+- `tapeA2/apples.txt`
+- `tapeB1/earth.svg`
+- `tapeB2/earth.svg`
+
+I use git-annex special directory remotes to be able to navigate the directory tree that lives on those media (e.g. to decide if and which media I need to find to copy a file from that I need).
+I added the remotes like so (they are too big to import with content):
+
+```
+git annex initremote tapeA1 type=directory directory=/tapes/tapeA1 encryption=none importtree=yes
+git annex import master:tapeA1 --from tapeA1 --no-content
+git annex merge --allow-unrelated-histories tapeA1/main
+```
+
+At some point I may buy new hardware and recreate those backup media as proper git-annex remotes, but wouldn't it be great to keep the existing backups as long as they show no sign of bitrot and together hold enough copies?
+
+Though, git-annex fsck behaves unexpected: It seems I cannot force trust these remotes nor does `--numcopies=0 --mincopies=0` have the desired effect.
+
+Concretely, when calling `git annex fsck --from=tapeA1 --numcopies=0 --mincopies=0 --trust=tapeA1 --force`,
+for every file that is still intact on tapeA1, git-annex fsck reports a failure as follows
+
+```
+fsck tapeA1/apples.txt
+  Only these untrusted locations may have copies of tapeA1/apples.txt
+        abc-def-ghi -- [tapeA1]
+  Back it up to trusted locations with git-annex copy.
+failed
+```
+
+while I'd be happy to (semi)trust tapeA1 or to accept no copies whatsoever. So fsck ignores `--trust=tapeA1 --force` and/or `--numcopies=0 --mincopies=0` which are common git-annex options that should work for fsck?
+
+Ideally, I would be able to (semi)trust my readonly tape remotes (which likely should be behind a `--force` as it may lead to data loss in classical directory remote settings). Then I can use git-annex to index those tapes, but also to monitor their health via fsck (so I can over the years replace the tapes that are showing signs of corruption).
+
+As for the corruption, I emulated bitrot on a test directory remote, which then leads to a fsck failure as follows:
+
+```
+fsck tapeB2/earth.svg
+  verification of content failed
+(checksum...) 
+  tapeB2/earth.svg: Bad file content; failed to drop fromtapeB2: dropping content from this remote is not supported because it is configured with importtree=yes
+```
+
+This suffices to detect tapes that should be replaced, and it's kinda expected that files cannot be dropped.
+
+Somehow fsck does not work as I would expect -- am I misunderstanding the numcopies/mincopies arguments here? Is there really no way to force-trust a directory remote, which to me seems appropriate in this case? Is there another way to achieve what I have in mind with git-annex?
+
+Thanks for this great piece of software – also use the assistant in another day-to-day usecase and it's simply great!
+"""]]
