@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="ping on this issue : how to recover?"
+ date="2024-09-05T14:49:06Z"
+ content="""
+I got back to this issue, since even after upgrade of git-annex to `10.20240831-1~ndall+1` and trying on a sample file which I guess was screwed up
+
+```
+reprostim@reproiner:/data/reprostim$ git annex get --json Videos/2024/08/2024.08.30-11.31.56.000--2024.08.30-11.48.03.377.mkv
+
+reprostim@reproiner:/data/reprostim$ git annex find --in here
+Videos/2024/08/2024.08.30-11.31.56.000--2024.08.30-11.48.03.377.mkv
+
+reprostim@reproiner:/data/reprostim$ ls -lL Videos/2024/08/2024.08.30-11.31.56.000--2024.08.30-11.48.03.377.mkv
+-rw-r--r-- 2 reprostim reprostim 72 Sep  5 10:42 Videos/2024/08/2024.08.30-11.31.56.000--2024.08.30-11.48.03.377.mkv
+
+reprostim@reproiner:/data/reprostim$ cat Videos/2024/08/2024.08.30-11.31.56.000--2024.08.30-11.48.03.377.mkv
+/annex/objects/MD5E-s20610854--4fa8311cf5fc0ea247dca2b0ae556bab.377.mkv
+```
+
+so, I need to figure out how to actually get that key/file here.
+"""]]
