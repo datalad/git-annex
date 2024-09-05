@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-09-05T12:56:27Z"
+ content="""
+The reason for reflink=always is that git-annex wants it to fail when
+reflink is not supported and the copy is going to be slow.
+Then it falls back to copying the file itself, which allows an interrupted
+copy of a large file to be resumed, rather than restarted from the beginning
+as cp would do when it's not making a reflink.
+
+So, at first it seemed to me that the solution will need to involve
+git-annex using `copy_file_range` itself.
+
+But, git-annex would like to checksum the file as it's copying it (unless
+annex.verify is not set), in order to avoid needing to re-read it to hash it
+after the fact, which would double the disk IO in many cases. 
+Using `copy_file_range` by default would prevent git-annex from doing that.
+
+So it needs to either be probed, or be a config setting. And whichever way
+git-annex determines it, it may as well use `cp reflink=auto` then
+rather than using `copy_file_range` itself.
+
+I'd certainly rather avoid a config setting if I can. But if this is specific to
+NFS on ZFS, I don't know what would be a good way to probe for that? Or is this
+happening on NFS when not on ZFS as well?
+"""]]
