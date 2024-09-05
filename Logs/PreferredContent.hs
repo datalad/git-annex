@@ -1,6 +1,6 @@
 {- git-annex preferred content matcher configuration
  -
- - Copyright 2012-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -25,11 +25,6 @@ module Logs.PreferredContent (
 	prop_standardGroups_parse,
 ) where
 
-import qualified Data.Map as M
-import qualified Data.Set as S
-import Data.Either
-import qualified Data.Attoparsec.ByteString.Lazy as A
-
 import Annex.Common
 import Logs.PreferredContent.Raw
 import qualified Annex.Branch
@@ -39,12 +34,14 @@ import Logs.UUIDBased
 import Utility.Matcher
 import Annex.FileMatcher
 import Annex.UUID
-import Types.Group
-import Types.Remote (RemoteConfig)
 import Logs.Group
 import Logs.Remote
 import Types.StandardGroups
 import Limit
+
+import qualified Data.Map as M
+import qualified Data.Set as S
+import qualified Data.Attoparsec.ByteString.Lazy as A
 
 {- Checks if a file is preferred content (or required content) for the
  - specified repository (or the current repository if none is specified). -}
@@ -99,7 +96,8 @@ preferredRequiredMapsLoad' matcherf mktokens = do
 	groupmap <- groupMap
 	configmap <- remoteConfigMap
 	let genmap l gm = 
-		let mk u = makeMatcher groupmap configmap gm u matcherf mktokens
+		let mk u = makeMatcher groupmap configmap
+			gm u matcherf mktokens (Right (unknownMatcher u))
 		in simpleMap
 			. parseLogOldWithUUID (\u -> mk u . decodeBS <$> A.takeByteString)
 			<$> Annex.Branch.get l
@@ -115,46 +113,11 @@ preferredRequiredMapsLoad' matcherf mktokens = do
 	combiner (Left a)  (Right _) = Left a
 	combiner (Right _) (Left b)  = Left b
 
-{- This intentionally never fails, even on unparsable expressions,
+{- Parsing preferred content expressions intentionally never fails,
  - because the configuration is shared among repositories and newer
- - versions of git-annex may add new features. -}
-makeMatcher
-	:: GroupMap
-	-> M.Map UUID RemoteConfig
-	-> M.Map Group PreferredContentExpression
-	-> UUID
-	-> (Matcher (MatchFiles Annex) -> Matcher (MatchFiles Annex))
-	-> (PreferredContentData -> [ParseToken (MatchFiles Annex)])
-	-> PreferredContentExpression
-	-> Either String (Matcher (MatchFiles Annex))
-makeMatcher groupmap configmap groupwantedmap u matcherf mktokens = go True True
-  where
-	go expandstandard expandgroupwanted expr
-		| null (lefts tokens) = Right $ matcherf $ generate $ rights tokens
-		| otherwise = Left $ unwords $ lefts tokens
-	  where
-		tokens = preferredContentParser (mktokens pcd) expr
-		pcd = PCD
-			{ matchStandard = matchstandard
-			, matchGroupWanted = matchgroupwanted
-			, getGroupMap = pure groupmap
-			, configMap = configmap
-			, repoUUID = Just u
-			}
-		matchstandard
-			| expandstandard = maybe (Right $ unknownMatcher u) (go False False)
-				(standardPreferredContent <$> getStandardGroup mygroups)
-			| otherwise = Right $ unknownMatcher u
-		matchgroupwanted
-			| expandgroupwanted = maybe (Right $ unknownMatcher u) (go True False)
-				(groupwanted mygroups)
-			| otherwise = Right $ unknownMatcher u
-		mygroups = fromMaybe S.empty (u `M.lookup` groupsByUUID groupmap)
-		groupwanted s = case M.elems $ M.filterWithKey (\k _ -> S.member k s) groupwantedmap of
-			[pc] -> Just pc
-			_ -> Nothing
-
-{- When a preferred content expression cannot be parsed, but is already
+ - versions of git-annex may add new features.
+ -
+ - When a preferred content expression cannot be parsed, but is already
  - in the log (eg, put there by a newer version of git-annex),
  - the fallback behavior is to match only files that are currently present.
  -
@@ -164,22 +127,6 @@ unknownMatcher :: UUID -> Matcher (MatchFiles Annex)
 unknownMatcher u = generate [present]
   where
 	present = Operation $ limitPresent (Just u)
-
-{- Checks if an expression can be parsed, if not returns Just error -}
-checkPreferredContentExpression :: PreferredContentExpression -> Maybe String
-checkPreferredContentExpression expr = 
-	case parsedToMatcher (MatcherDesc mempty) tokens of
-		Left e -> Just e
-		Right _ -> Nothing
-  where
-	tokens = preferredContentParser (preferredContentTokens pcd) expr
-	pcd = PCD
-		{ matchStandard = Right matchAll
-		, matchGroupWanted = Right matchAll
-		, getGroupMap = pure emptyGroupMap
-		, configMap = M.empty
-		, repoUUID = Nothing
-		}
 
 {- Puts a UUID in a standard group, and sets its preferred content to use
  - the standard expression for that group (unless preferred content is

@@ -13,10 +13,12 @@ module Annex.FileMatcher (
 	checkFileMatcher',
 	checkMatcher,
 	checkMatcher',
+	makeMatcher,
 	matchAll,
 	PreferredContentData(..),
 	preferredContentTokens,
 	preferredContentParser,
+	checkPreferredContentExpression,
 	ParseToken,
 	parsedToMatcher,
 	mkMatchExpressionParser,
@@ -41,6 +43,8 @@ import Annex.SpecialRemote.Config (preferreddirField)
 import Git.FilePath
 import Types.Remote (RemoteConfig)
 import Types.ProposedAccepted
+import Types.StandardGroups
+import Logs.Group
 import Annex.CheckAttr
 import Annex.RepoSize.LiveUpdate
 import qualified Git.Config
@@ -302,3 +306,56 @@ call desc (Right sub) = Right $ Operation $ MatchFiles
 	, matchDesc = matchDescSimple desc
 	}
 call _ (Left err) = Left err
+
+makeMatcher
+	:: GroupMap
+	-> M.Map UUID RemoteConfig
+	-> M.Map Group PreferredContentExpression
+	-> UUID
+	-> (Matcher (MatchFiles Annex) -> Matcher (MatchFiles Annex))
+	-> (PreferredContentData -> [ParseToken (MatchFiles Annex)])
+	-> Either String (Matcher (MatchFiles Annex))
+	-> PreferredContentExpression
+	-> Either String (Matcher (MatchFiles Annex))
+makeMatcher groupmap configmap groupwantedmap u matcherf mktokens unknownmatcher = go True True
+  where
+	go expandstandard expandgroupwanted expr
+		| null (lefts tokens) = Right $ matcherf $ generate $ rights tokens
+		| otherwise = Left $ unwords $ lefts tokens
+	  where
+		tokens = preferredContentParser (mktokens pcd) expr
+		pcd = PCD
+			{ matchStandard = matchstandard
+			, matchGroupWanted = matchgroupwanted
+			, getGroupMap = pure groupmap
+			, configMap = configmap
+			, repoUUID = Just u
+			}
+		matchstandard
+			| expandstandard = maybe unknownmatcher (go False False)
+				(standardPreferredContent <$> getStandardGroup mygroups)
+			| otherwise = unknownmatcher
+		matchgroupwanted
+			| expandgroupwanted = maybe unknownmatcher (go True False)
+				(groupwanted mygroups)
+			| otherwise = unknownmatcher
+		mygroups = fromMaybe S.empty (u `M.lookup` groupsByUUID groupmap)
+		groupwanted s = case M.elems $ M.filterWithKey (\k _ -> S.member k s) groupwantedmap of
+			[pc] -> Just pc
+			_ -> Nothing
+
+{- Checks if an expression can be parsed, if not returns Just error -}
+checkPreferredContentExpression :: PreferredContentExpression -> Maybe String
+checkPreferredContentExpression expr = 
+	case parsedToMatcher (MatcherDesc mempty) tokens of
+		Left e -> Just e
+		Right _ -> Nothing
+  where
+	tokens = preferredContentParser (preferredContentTokens pcd) expr
+	pcd = PCD
+		{ matchStandard = Right matchAll
+		, matchGroupWanted = Right matchAll
+		, getGroupMap = pure emptyGroupMap
+		, configMap = M.empty
+		, repoUUID = Nothing
+		}
