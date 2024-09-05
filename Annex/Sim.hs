@@ -19,6 +19,7 @@ import Annex (Annex)
 import Backend.Hash (genTestKey)
 import Annex.UUID
 import Utility.FileSystemEncoding
+import qualified Remote
 
 import System.Random
 import Data.Word
@@ -51,11 +52,12 @@ data SimState = SimState
 	, simGroupWanted :: M.Map GroupName Matcher
 	, simMaxSize :: M.Map RepoName MaxSize
 	, simRebalance :: Bool
+	, simExistingRepoByName :: ExistingRepoByName
 	}
 	deriving (Show)
 
-emptySimState :: Int -> SimState
-emptySimState rngseed = SimState
+emptySimState :: Int -> ExistingRepoByName -> SimState
+emptySimState rngseed repobyname = SimState
 	{ simRepos = mempty
 	, simSpecialRemotes = mempty
 	, simRepoState = mempty
@@ -69,6 +71,7 @@ emptySimState rngseed = SimState
 	, simGroupWanted = mempty
 	, simMaxSize = mempty
 	, simRebalance = False
+	, simExistingRepoByName = repobyname
 	}
 
 -- State that can vary between different repos in the simulation.
@@ -130,7 +133,14 @@ applySimCommand (CommandInitRemote reponame) st =
 	in Right $ st'
 		{ simSpecialRemotes = M.insert reponame u (simSpecialRemotes st')
 		}
-applySimCommand (CommandUse reponame s) st = error "TODO" -- XXX
+applySimCommand (CommandUse reponame s) st =
+	case existingRepoByName (simExistingRepoByName st) reponame of
+		(u:[], _) -> Right $ st
+			{ simSpecialRemotes = M.insert reponame u (simSpecialRemotes st)
+			}
+		(_, msg) -> Left $ "Unable to use a repository \"" 
+			++ fromRepoName reponame 
+			++ "\" in the simulation because " ++ msg
 applySimCommand (CommandConnect repo remote) st = Right $ st
 	{ simConnections = 
 		let s = case M.lookup repo (simConnections st) of
@@ -235,3 +245,15 @@ genSimUUID st (RepoName reponame) = simRandom st (randomWords 1024)
 simUUIDNameSpace :: U.UUID
 simUUIDNameSpace = U5.generateNamed U5.namespaceURL $
         B.unpack "http://git-annex.branchable.com/git-annex-sim/"
+
+newtype ExistingRepoByName = ExistingRepoByName 
+	{ existingRepoByName :: RepoName -> ([UUID], String)
+	}
+
+instance Show ExistingRepoByName where
+	show _ = "ExistingRepoByName"
+
+mkExistingRepoByName :: Annex ExistingRepoByName
+mkExistingRepoByName = do
+	f <- Remote.nameToUUID''
+	return $ ExistingRepoByName $ f . fromRepoName
