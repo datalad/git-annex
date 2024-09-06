@@ -9,22 +9,26 @@
 
 module Annex.Sim where
 
+import Annex.Common
 import Utility.DataUnits
 import Types.NumCopies
-import Types.RepoSize
-import Types.Key
-import Types.UUID
+import Types.Group
 import Types.StandardGroups
-import Annex (Annex)
+import Types.TrustLevel
+import Git.Types
+import Git
 import Backend.Hash (genTestKey)
 import Annex.UUID
 import Annex.FileMatcher
-import Utility.FileSystemEncoding
+import Logs.Group
+import Logs.Trust
+import Logs.PreferredContent
+import Logs.Remote
+import Logs.MaxSize
 import qualified Remote
 
 import System.Random
 import Data.Word
-import Data.Maybe
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 import qualified Data.ByteString as B
@@ -42,29 +46,29 @@ stepSimulation st = undefined -- XXX TODO
 data SimState = SimState
 	{ simRepos :: M.Map RepoName UUID
 	, simRepoState :: M.Map RepoName SimRepoState
-	, simSpecialRemotes :: M.Map RepoName UUID
 	, simConnections :: M.Map RepoName (S.Set RepoName)
 	, simFiles :: M.Map FilePath Key
 	, simRng :: StdGen
+	, simTrustLevels :: M.Map RepoName TrustLevel
 	, simNumCopies :: NumCopies
-	, simGroups :: M.Map RepoName (S.Set GroupName)
+	, simGroups :: M.Map RepoName (S.Set Group)
 	, simWanted :: M.Map RepoName PreferredContentExpression
 	, simRequired :: M.Map RepoName PreferredContentExpression
-	, simGroupWanted :: M.Map GroupName PreferredContentExpression
+	, simGroupWanted :: M.Map Group PreferredContentExpression
 	, simMaxSize :: M.Map RepoName MaxSize
 	, simRebalance :: Bool
-	, simExistingRepoByName :: ExistingRepoByName
+	, simGetExistingRepoByName :: GetExistingRepoByName
 	}
 	deriving (Show)
 
-emptySimState :: Int -> ExistingRepoByName -> SimState
+emptySimState :: Int -> GetExistingRepoByName -> SimState
 emptySimState rngseed repobyname = SimState
 	{ simRepos = mempty
-	, simSpecialRemotes = mempty
 	, simRepoState = mempty
 	, simConnections = mempty
 	, simFiles = mempty
 	, simRng = mkStdGen rngseed
+	, simTrustLevels = mempty
 	, simNumCopies = configuredNumCopies 1
 	, simGroups = mempty
 	, simWanted = mempty
@@ -72,17 +76,15 @@ emptySimState rngseed repobyname = SimState
 	, simGroupWanted = mempty
 	, simMaxSize = mempty
 	, simRebalance = False
-	, simExistingRepoByName = repobyname
+	, simGetExistingRepoByName = repobyname
 	}
 
 -- State that can vary between different repos in the simulation.
 data SimRepoState = SimRepoState
 	{ simLocations :: M.Map Key (S.Set RepoName)
+	, simIsSpecialRemote :: Bool
 	}
 	deriving (Show, Eq)
-
-emptySimRepoState :: SimRepoState
-emptySimRepoState = SimRepoState mempty
 
 setPresentKey :: RepoName -> Key -> SimRepoState -> SimRepoState
 setPresentKey repo k rst = rst
@@ -91,9 +93,6 @@ setPresentKey repo k rst = rst
 	}
 
 newtype RepoName = RepoName { fromRepoName :: String }
-	deriving (Show, Eq, Ord)
-
-newtype GroupName = GroupName { fromGroupName :: String }
 	deriving (Show, Eq, Ord)
 
 data SimCommand
@@ -109,11 +108,12 @@ data SimCommand
 	| CommandPresent RepoName FilePath
 	| CommandNotPresent RepoName FilePath
 	| CommandNumCopies Int
-	| CommandGroup RepoName GroupName
-	| CommandUngroup RepoName GroupName
+	| CommandTrustLevel RepoName String
+	| CommandGroup RepoName Group
+	| CommandUngroup RepoName Group
 	| CommandWanted RepoName PreferredContentExpression
 	| CommandRequired RepoName PreferredContentExpression
-	| CommandGroupWanted GroupName PreferredContentExpression
+	| CommandGroupWanted Group PreferredContentExpression
 	| CommandMaxSize RepoName MaxSize
 	| CommandRebalance Bool
 	deriving (Show)
@@ -125,22 +125,16 @@ applySimCommand
 applySimCommand (CommandInit reponame) st =
 	checkNonexistantRepo reponame st $
 		let (u, st') = genSimUUID st reponame
-		in Right $ Right $ st'
-			{ simRepos = M.insert reponame u (simRepos st')
-			}
+		in Right $ Right $ addRepo reponame (newSimRepoConfig u False) st'
 applySimCommand (CommandInitRemote reponame) st = 
 	checkNonexistantRepo reponame st $
 		let (u, st') = genSimUUID st reponame
-		in Right $ Right $ st'
-			{ simSpecialRemotes = M.insert reponame u (simSpecialRemotes st')
-			}
+		in Right $ Right $ addRepo reponame (newSimRepoConfig u True) st'
 applySimCommand (CommandUse reponame s) st =
-	case existingRepoByName (simExistingRepoByName st) s of
-		(u:[], _) -> checkNonexistantRepo reponame st $
-			Right $ Right $ st
-				{ simSpecialRemotes = M.insert reponame u (simSpecialRemotes st)
-				}
-		(_, msg) -> Left $ "Unable to use a repository \"" 
+	case getExistingRepoByName (simGetExistingRepoByName st) s of
+		Right existingrepo -> checkNonexistantRepo reponame st $
+			Right $ Right $ addRepo reponame existingrepo st
+		Left msg -> Left $ "Unable to use a repository \"" 
 			++ fromRepoName reponame 
 			++ "\" in the simulation because " ++ msg
 applySimCommand (CommandConnect repo remote) st = 
@@ -167,11 +161,11 @@ applySimCommand (CommandAdd file sz repo) st = checkKnownRepo repo st $
 	let (k, st') = genSimKey sz st
 	in Right $ Right $ st'
 		{ simFiles = M.insert file k (simFiles st')
-		, simRepoState = 
-			let rst = fromMaybe emptySimRepoState $
-				M.lookup repo (simRepoState st')
-			    rst' = setPresentKey repo k rst
-			in M.insert repo rst' (simRepoState st')
+		, simRepoState = case M.lookup repo (simRepoState st') of
+			Just rst -> M.insert repo
+				(setPresentKey repo k rst)
+				(simRepoState st')
+			Nothing -> error "no simRepoState in applySimCommand CommandAdd"
 		}
 applySimCommand (CommandStep n) st
 	| n > 0 = applySimCommand
@@ -208,15 +202,22 @@ applySimCommand (CommandNotPresent repo file) st = checkKnownRepo repo st $
 applySimCommand (CommandNumCopies n) st = Right $ Right $ st
 	{ simNumCopies = configuredNumCopies n
 	}
-applySimCommand (CommandGroup repo group) st = checkKnownRepo repo st $
+applySimCommand (CommandTrustLevel repo s) st = checkKnownRepo repo st $
+	case readTrustLevel s of
+		Just trustlevel -> Right $ Right $ st
+			{ simTrustLevels = M.insert repo trustlevel
+				(simTrustLevels st)
+			}
+		Nothing -> Left $ "Unknown trust level \"" ++ s ++ "\"."
+applySimCommand (CommandGroup repo groupname) st = checkKnownRepo repo st $
 	Right $ Right $ st
 		{ simGroups = M.insertWith S.union repo
-			(S.singleton group)
+			(S.singleton groupname)
 			(simGroups st)
 		}
-applySimCommand (CommandUngroup repo group) st = checkKnownRepo repo st $
+applySimCommand (CommandUngroup repo groupname) st = checkKnownRepo repo st $
 	Right $ Right $ st
-		{ simGroups = M.adjust (S.delete group) repo (simGroups st)
+		{ simGroups = M.adjust (S.delete groupname) repo (simGroups st)
 		}
 applySimCommand (CommandWanted repo expr) st = checkKnownRepo repo st $
 	checkValidPreferredContentExpression expr $ Right $ st
@@ -226,9 +227,9 @@ applySimCommand (CommandRequired repo expr) st = checkKnownRepo repo st $
 	checkValidPreferredContentExpression expr $ Right $ st
 		{ simRequired = M.insert repo expr (simRequired st)
 		}
-applySimCommand (CommandGroupWanted group expr) st =
+applySimCommand (CommandGroupWanted groupname expr) st =
 	checkValidPreferredContentExpression expr $ Right $ st
-		{ simGroupWanted = M.insert group expr (simGroupWanted st)
+		{ simGroupWanted = M.insert groupname expr (simGroupWanted st)
 		}
 applySimCommand (CommandMaxSize repo sz) st = checkKnownRepo repo st $
 	Right $ Right $ st
@@ -285,12 +286,113 @@ simUUIDNameSpace :: U.UUID
 simUUIDNameSpace = U5.generateNamed U5.namespaceURL $
         B.unpack "http://git-annex.branchable.com/git-annex-sim/"
 
-newtype ExistingRepoByName = ExistingRepoByName 
-	{ existingRepoByName :: String -> ([UUID], String)
+newtype GetExistingRepoByName = GetExistingRepoByName 
+	{ getExistingRepoByName :: String -> Either String SimRepoConfig
 	}
 
-instance Show ExistingRepoByName where
-	show _ = "ExistingRepoByName"
+instance Show GetExistingRepoByName where
+	show _ = "GetExistingRepoByName"
 
-mkExistingRepoByName :: Annex ExistingRepoByName
-mkExistingRepoByName = ExistingRepoByName <$> Remote.nameToUUID''
+data SimRepoConfig = SimRepoConfig
+	{ simRepoUUID :: UUID
+	, simRepoIsSpecialRemote :: Bool
+	, simRepoGroups :: S.Set Group
+	, simRepoTrustLevel :: TrustLevel
+	, simRepoPreferredContent :: Maybe PreferredContentExpression
+	, simRepoRequiredContent :: Maybe PreferredContentExpression
+	, simRepoGroupPreferredContent :: M.Map Group PreferredContentExpression
+	, simRepoMaxSize :: Maybe MaxSize
+	}
+	deriving (Show)
+
+newSimRepoConfig :: UUID -> Bool -> SimRepoConfig
+newSimRepoConfig u isspecialremote = SimRepoConfig
+	{ simRepoUUID = u 
+	, simRepoIsSpecialRemote = isspecialremote
+	, simRepoGroups = mempty
+	, simRepoTrustLevel = def
+	, simRepoPreferredContent = Nothing
+	, simRepoRequiredContent = Nothing
+	, simRepoGroupPreferredContent = mempty
+	, simRepoMaxSize = Nothing
+	}
+
+addRepo :: RepoName -> SimRepoConfig -> SimState -> SimState
+addRepo reponame simrepo st = st
+	{ simRepos = M.insert reponame (simRepoUUID simrepo) (simRepos st)
+	, simRepoState = M.insert reponame rst (simRepoState st)
+	, simConnections = M.insert reponame mempty (simConnections st)
+	, simGroups = M.insert reponame (simRepoGroups simrepo) (simGroups st)
+	, simTrustLevels = M.insert reponame
+		(simRepoTrustLevel simrepo)
+		(simTrustLevels st)
+	, simWanted = M.alter
+		(const $ simRepoPreferredContent simrepo)
+		reponame 
+		(simWanted st)
+	, simRequired = M.alter
+		(const $ simRepoRequiredContent simrepo)
+		reponame 
+		(simRequired st)
+	, simGroupWanted = M.union 
+		(simRepoGroupPreferredContent simrepo)
+		(simGroupWanted st)
+	, simMaxSize = M.alter
+		(const $ simRepoMaxSize simrepo)
+		reponame
+		(simMaxSize st)
+	}
+  where
+	rst = SimRepoState
+		{ simLocations = mempty
+		, simIsSpecialRemote = simRepoIsSpecialRemote simrepo
+		}
+
+mkGetExistingRepoByName :: Annex GetExistingRepoByName
+mkGetExistingRepoByName = do
+	groupmap <- groupMap
+	trustmap <- trustMap
+	pcmap <- preferredContentMapRaw
+	rcmap <- requiredContentMapRaw
+	gpcmap <- groupPreferredContentMapRaw
+	maxsizes <- getMaxSizes
+	nametouuid <- Remote.nameToUUID''
+	remoteconfigmap <- readRemoteLog
+	return $ GetExistingRepoByName $ \name -> 
+		case nametouuid name of
+			(u:[], _) -> Right $ 
+				let gs = fromMaybe S.empty $
+					M.lookup u (groupsByUUID groupmap)
+				in SimRepoConfig
+					{ simRepoUUID = u
+					, simRepoIsSpecialRemote =
+						M.member u remoteconfigmap
+					, simRepoGroups = gs
+					, simRepoTrustLevel =
+						lookupTrust' u trustmap
+					, simRepoPreferredContent =
+						M.lookup u pcmap
+					, simRepoRequiredContent =
+						M.lookup u rcmap
+					, simRepoGroupPreferredContent =
+						M.restrictKeys gpcmap gs
+					, simRepoMaxSize =
+						M.lookup u maxsizes
+					}
+			(_, msg) -> Left msg
+
+cloneSimRepo :: RepoName -> UUID -> Repo -> FilePath -> IO ()
+cloneSimRepo simreponame u parent dest = do
+	cloned <- boolSystem "git" 
+		[ Param "clone"
+		, Param "--shared"
+		, Param "--quiet"
+		-- Avoid overhead of checking out the working tree.
+		-- Note that, on visiting the simulated repo,
+		-- the working tree needs to be reset.
+		, Param "--no-checkout"
+		, File (fromRawFilePath (repoPath parent))
+		, File dest
+		]
+	unless cloned $ giveup "git clone failed"
+	-- TODO delete origin remote from clone, to avoid foot-shooting
