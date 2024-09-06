@@ -6,55 +6,43 @@ git-annex sim - simulate a network of repositories
 
 git annex sim start [my.sim]
 
-git annex sim step N
-
 git annex sim command
+
+git annex sim visit repo
 
 git annex sim end
 
 # DESCRIPTION
 
 This command simulates the behavior of git-annex in a network of
-repositories, recording which files would reach which repositories
+repositories, determining which files would reach which repositories
 according to the configuration of preferred content, numcopies,
 trust level, etc.
 
-The input to the simulation is the configuration contained in the
-repository it is run in, supplimented with an optional sim file,
-which can be used to add repositories, change configuration, etc.
+The input to the simulation is a sim file, and/or sim commands that are
+run after starting it. These are in the form "git annex sim command"
+with the command in the same format used in the sim file (see sim commands
+list below). For example, "git annex sim step 1" runs the simulation one step.
 
 The simulation writes to an output sim file as it runs, which contains the
 entire simulation input, as well as the results of the simulation.
 This allows re-running the same simulation later, as well as analyzing
 the results of the simulation.
 
-While a simulation is running, the git-annex branch of the current
-repository is updated along the way with the simulated repositories and the
-simulated locations of files. Additional annexed files can also be staged
-in the index. This allows using any git-annex command, such
-as `git-annex whereis` to examine the state of the simulation. git-annex
-will refuse to merge the simulated git-annex branch with other
-non-simulated git-annex branches, to avoid the simulation leaking out into
-the real world.
-
-Ending the simulation  returns the git-annex branch to its original state,
-and undoes any staged changes to the index. Note that the reflog will still
-contain the simulated states of the git-annex branch, which will increase
-the size of the git repository for some time before git eventually garbage
-collects them.
-
-The simulation can be run for a number of steps with eg
-`git-annex sim step 10`. On each step, a simulated repository is selected,
+On each step of the simulation, a simulated repository is selected,
 and an action is performed in it. The actions include pushing and pulling
 the git-annex branch to and from remotes of the simulated repository, and
 simulating the transfer of annexed files to and from remotes according to
 the configuration.
 
-The configuration of the simulation can be changed while it is running by
-using the usual git-annex commands, eg "git-annex numcopies 3" as well as
-by using "git annex sim [command]" to run a command in the same format used
-in the sim file. Configuration changes take effect in the next step of the 
-simulation, and are recorded in the output sim file.
+While a simulation is running, the command "git annex visit repo", where
+"repo" is the name of one of the repositories in the simulation, will spawn
+a subshell in a git repository whose git-annex branch contains the state of
+that simulated repository. This allows running any git-annex command, such
+as `git-annex whereis` to examine the state of the simulation.
+Exit the subshell to end the visit.
+
+Use "git annex sim end" to finish the simulation, and clean up.
 
 # THE SIM FILE
 
@@ -116,9 +104,12 @@ as passed to "git annex sim" while a simulation is running.
 * `use name here|remote|description|uuid`
 
   Use an existing repository in the simulation, with its existing
-  configuration. The repository is given a name for the purposes of
-  the simulation. The repository to use can be specified by remote name,
-  uuid, etc. Example: "use myrepo here"
+  configuration (trust level, groups, preferred and required content,
+  maxsize, and the groupwanted configuration of its groups).
+
+  The repository is given a name for the purposes of the simulation.
+  The repository to use can be specified by remote name, uuid, etc.
+  Example: "use myrepo here"
 
 * `connect repo [<-|->|<->] repo [...]`
 
@@ -203,6 +194,11 @@ as passed to "git annex sim" while a simulation is running.
 
   Sets the desired number of copies. This is equivilant to
   [[git-annex-numcopies]](1).
+
+* `trustlevel repo trusted|untrusted|semitrusted|dead`
+
+  Sets the trust level of the repository. This is equivilant to
+  [[git-annex-trust]](1), [[git-annex-untrust]](1), etc.
 
 * `group repo group`
 
