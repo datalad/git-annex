@@ -15,17 +15,24 @@ import Types.NumCopies
 import Types.Group
 import Types.StandardGroups
 import Types.TrustLevel
+import Types.Difference
 import Git.Types
 import Git
 import Backend.Hash (genTestKey)
 import Annex.UUID
 import Annex.FileMatcher
+import Annex.Init
+import Annex.Startup
 import Logs.Group
 import Logs.Trust
 import Logs.PreferredContent
 import Logs.Remote
 import Logs.MaxSize
+import Logs.Difference
+import qualified Annex
 import qualified Remote
+import qualified Git.Construct
+import qualified Git.Remote.Remove
 
 import System.Random
 import Data.Word
@@ -61,13 +68,13 @@ data SimState = SimState
 	}
 	deriving (Show)
 
-emptySimState :: Int -> GetExistingRepoByName -> SimState
-emptySimState rngseed repobyname = SimState
+emptySimState :: StdGen -> GetExistingRepoByName -> SimState
+emptySimState rng repobyname = SimState
 	{ simRepos = mempty
 	, simRepoState = mempty
 	, simConnections = mempty
 	, simFiles = mempty
-	, simRng = mkStdGen rngseed
+	, simRng = rng
 	, simTrustLevels = mempty
 	, simNumCopies = configuredNumCopies 1
 	, simGroups = mempty
@@ -83,8 +90,11 @@ emptySimState rngseed repobyname = SimState
 data SimRepoState = SimRepoState
 	{ simLocations :: M.Map Key (S.Set RepoName)
 	, simIsSpecialRemote :: Bool
+	, simRepo :: Maybe SimRepo
 	}
-	deriving (Show, Eq)
+
+instance Show SimRepoState where
+	show _ = "SimRepoState"
 
 setPresentKey :: RepoName -> Key -> SimRepoState -> SimRepoState
 setPresentKey repo k rst = rst
@@ -346,6 +356,7 @@ addRepo reponame simrepo st = st
 	rst = SimRepoState
 		{ simLocations = mempty
 		, simIsSpecialRemote = simRepoIsSpecialRemote simrepo
+		, simRepo = Nothing
 		}
 
 mkGetExistingRepoByName :: Annex GetExistingRepoByName
@@ -381,8 +392,16 @@ mkGetExistingRepoByName = do
 					}
 			(_, msg) -> Left msg
 
-cloneSimRepo :: RepoName -> UUID -> Repo -> FilePath -> IO ()
-cloneSimRepo simreponame u parent dest = do
+-- Information about a git repository that is cloned and used to represent
+-- a repository in the simulation
+data SimRepo = SimRepo
+	{ simRepoGitRepo :: Repo
+	, simRepoAnnex :: (Annex.AnnexState, Annex.AnnexRead)
+	, simRepoCurrState :: SimState
+	}
+
+cloneSimRepo :: RepoName -> UUID -> Repo -> FilePath -> SimState -> IO SimRepo
+cloneSimRepo simreponame u parent dest st = do
 	cloned <- boolSystem "git" 
 		[ Param "clone"
 		, Param "--shared"
@@ -391,8 +410,46 @@ cloneSimRepo simreponame u parent dest = do
 		-- Note that, on visiting the simulated repo,
 		-- the working tree needs to be reset.
 		, Param "--no-checkout"
+		-- Make sure the origin gets that name.
+		, Param "--origin", Param "origin"
 		, File (fromRawFilePath (repoPath parent))
 		, File dest
 		]
-	unless cloned $ giveup "git clone failed"
-	-- TODO delete origin remote from clone, to avoid foot-shooting
+	unless cloned $
+		giveup "git clone failed"
+	simrepo <- Git.Construct.fromPath (toRawFilePath dest)
+	ast <- Annex.new simrepo
+	((), ast') <- Annex.run ast $ doQuietAction $ do
+		-- Disconnect simulated repository from origin, so its
+		-- git-annex branch is not used, and also to prevent any
+		-- accidental foot shooting pushes to it.
+		inRepo $ Git.Remote.Remove.remove "origin"
+		storeUUID u
+		-- Prevent merging this simulated git-annex branch with
+		-- any real one. Writing to the git-annex branch here also
+		-- avoids checkSharedClone enabling the shared clone
+		-- setting, which is not wanted here.
+		recordDifferences simulationDifferences u
+		let desc = "simulated repository " ++ fromRepoName simreponame
+		initialize startupAnnex (Just desc) Nothing
+	updateSimRepoState st $ SimRepo
+		{ simRepoGitRepo = simrepo
+		, simRepoAnnex = ast'
+		, simRepoCurrState = emptySimState
+			(simRng st)
+			(simGetExistingRepoByName st)
+		}
+
+updateSimRepoState :: SimState -> SimRepo -> IO SimRepo
+updateSimRepoState st sr = do
+	((), ast) <- Annex.run (simRepoAnnex sr) $ doQuietAction $ do
+		let oldst = simRepoCurrState sr
+		-- simTrustLevels st
+		error "TODO diff and update everything" -- XXX
+	return $ sr
+		{ simRepoAnnex = ast
+		, simRepoCurrState = st
+		}
+
+simulationDifferences :: Differences
+simulationDifferences = mkDifferences $ S.singleton Simulation
