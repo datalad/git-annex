@@ -1,0 +1,93 @@
+### Please describe the problem.
+
+Came up in the course of 
+- [BF: allow for empty output directory to be specified to run](https://github.com/datalad/datalad/pull/7654#issuecomment-2334087030)
+
+### What steps will reproduce the problem?
+
+Here is a bash script
+
+```
+#!/bin/bash
+# https://github.com/datalad/datalad/pull/7654#issuecomment-2334087030
+
+export PS4='> '
+set -x
+set -eu
+
+cd "$(mktemp -d ${TMPDIR:-/tmp}/dl-XXXXXXX)"
+
+function annexsync() {
+    # call we have in datalad
+    # git -c diff.ignoreSubmodules=none -c core.quotepath=false annex sync --no-push --no-pull --no-resolvemerge --no-content -c annex.dotfiles=true --no-commit
+    git annex sync
+    :
+}
+
+git init
+git annex init
+
+mkdir empty full
+touch emptyfile full/emptyfile
+
+echo c1 > full/withcontent
+echo c2 > withcontent
+
+git annex add *
+git commit -m 'Initial commit'
+
+echo content >| empty/withcontent
+touch empty/emptyfile
+
+git annex add empty/*
+git commit -m 'Added empty/ files'
+
+annexsync
+
+pwd
+ls -l 
+
+git status
+git diff
+
+```
+
+which if ran on TMPDIR to be on a crippled FS, e.g. vfat, it would report at the end `git diff` for all empty files, **but not for files with content**, e.g. using our [eval_under_testloopfs helper](https://github.com/datalad/datalad/blob/maint/tools/eval_under_testloopfs)
+
+```shell
+❯ DATALAD_TESTS_TEMP_FSSIZE=300 tools/eval_under_testloopfs ../trash/adjusted-git-diff.sh
+...
+> ls -l
+total 24
+drwxr-xr-x 2 yoh root 8192 Sep  6 09:59 empty
+-rwxr-xr-x 1 yoh root    0 Sep  6 09:59 emptyfile
+drwxr-xr-x 2 yoh root 8192 Sep  6 09:59 full
+-rwxr-xr-x 1 yoh root    3 Sep  6 09:59 withcontent
+> git status
+On branch adjusted/master(unlocked)
+nothing to commit, working tree clean
+> git diff
+diff --git a/empty/emptyfile b/empty/emptyfile
+--- a/empty/emptyfile
++++ b/empty/emptyfile
+@@ -1 +0,0 @@
+-/annex/objects/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+diff --git a/emptyfile b/emptyfile
+--- a/emptyfile
++++ b/emptyfile
+@@ -1 +0,0 @@
+-/annex/objects/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+diff --git a/full/emptyfile b/full/emptyfile
+--- a/full/emptyfile
++++ b/full/emptyfile
+@@ -1 +0,0 @@
+-/annex/objects/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+I: done, unmounting
+```
+
+### What version of git-annex are you using? On what operating system?
+
+first locally with 10.20240430 and then current `10.20240831+git21-gd717e9aca0-1~ndall+1` 
+
+[[!meta author=yoh]]
+[[!tag projects/repronim]]
