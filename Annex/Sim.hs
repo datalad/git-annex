@@ -132,6 +132,12 @@ data SimCommand
 	| CommandRebalance Bool
 	deriving (Show)
 
+runSimCommand :: SimCommand -> SimState -> Annex SimState
+runSimCommand cmd st = case applySimCommand cmd st of
+	Left err -> giveup err
+	Right (Right st') -> return st'
+	Right (Left mkst) -> mkst
+
 applySimCommand
 	:: SimCommand
 	-> SimState
@@ -408,6 +414,44 @@ data SimRepo = SimRepo
 	, simRepoCurrState :: SimState
 	}
 
+{- Clones and updates SimRepos to reflect the SimState. -}
+updateSimRepos :: Repo -> (UUID -> FilePath) -> SimState -> IO SimState
+updateSimRepos parent getdest st = do
+	st' <- updateSimRepoStates st
+	cloneNewSimRepos parent getdest st'
+
+updateSimRepoStates :: SimState -> IO SimState
+updateSimRepoStates st = go st (M.toList $ simRepoState st)
+  where
+	go st' [] = return st
+	go st' ((reponame, rst):rest) = case simRepo rst of
+		Just sr -> do
+			sr' <- updateSimRepoState st sr
+			let rst' = rst { simRepo = Just sr' }
+			let st'' = st
+				{ simRepoState = M.insert reponame rst'
+					(simRepoState st)
+				}
+			go st'' rest
+		Nothing -> go st' rest
+
+cloneNewSimRepos :: Repo -> (UUID -> FilePath) -> SimState -> IO SimState
+cloneNewSimRepos parent getdest = \st -> go st (M.toList $ simRepoState st)
+  where
+	go st [] = return st
+	go st ((reponame, rst):rest) =
+		case (simRepo rst, M.lookup reponame (simRepos st)) of
+			(Nothing, Just u) -> do
+				sr <- cloneSimRepo reponame u parent
+					(getdest u) st
+				let rst' = rst { simRepo = Just sr }
+				let st' = st
+					{ simRepoState = M.insert reponame rst'
+						(simRepoState st)
+					}
+				go st' rest
+			_ -> go st rest
+
 cloneSimRepo :: RepoName -> UUID -> Repo -> FilePath -> SimState -> IO SimRepo
 cloneSimRepo simreponame u parent dest st = do
 	cloned <- boolSystem "git" 
@@ -489,6 +533,7 @@ updateSimRepoState newst sr = do
 			, addDiff = recordMaxSize
 			, removeDiff = flip recordMaxSize (MaxSize 0)
 			}
+		-- XXX TODO update location logs from simLocations
 	let ard' = ard { Annex.rebalance = simRebalance newst }
 	return $ sr
 		{ simRepoAnnex = (ast, ard')
