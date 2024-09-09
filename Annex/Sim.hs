@@ -30,6 +30,7 @@ import Logs.NumCopies
 import Logs.Remote
 import Logs.MaxSize
 import Logs.Difference
+import Logs.UUID
 import qualified Annex
 import qualified Remote
 import qualified Git.Construct
@@ -482,7 +483,7 @@ cloneSimRepo simreponame u parent dest st = do
 		-- avoids checkSharedClone enabling the shared clone
 		-- setting, which is not wanted here.
 		recordDifferences simulationDifferences u
-		let desc = "simulated repository " ++ fromRepoName simreponame
+		let desc = simulatedRepositoryDescription simreponame
 		initialize startupAnnex (Just desc) Nothing
 	updateSimRepoState st $ SimRepo
 		{ simRepoGitRepo = simrepo
@@ -492,6 +493,10 @@ cloneSimRepo simreponame u parent dest st = do
 			(simGetExistingRepoByName st)
 		}
 
+simulatedRepositoryDescription :: RepoName -> String
+simulatedRepositoryDescription simreponame = 
+	"simulated repository " ++ fromRepoName simreponame
+
 simulationDifferences :: Differences
 simulationDifferences = mkDifferences $ S.singleton Simulation
 
@@ -499,6 +504,13 @@ updateSimRepoState :: SimState -> SimRepo -> IO SimRepo
 updateSimRepoState newst sr = do
 	((), (ast, ard)) <- Annex.run (simRepoAnnex sr) $ doQuietAction $ do
 		let oldst = simRepoCurrState sr
+		let setdesc = \r u -> describeUUID u $ toUUIDDesc $
+			simulatedRepositoryDescription r
+		updateField oldst newst simRepos $ DiffUpdate
+			{ replaceDiff = setdesc
+			, addDiff = setdesc
+			, removeDiff = const noop
+			}
 		updateField oldst newst simTrustLevels $ DiffUpdate
 			{ replaceDiff = trustSet
 			, addDiff = trustSet
