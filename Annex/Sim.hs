@@ -53,7 +53,7 @@ data SimState = SimState
 	{ simRepos :: M.Map RepoName UUID
 	, simRepoList :: [RepoName]
 	, simRepoState :: M.Map RepoName SimRepoState
-	, simConnections :: M.Map RepoName (S.Set RemoteName)
+	, simConnections :: M.Map UUID (S.Set RemoteName)
 	, simFiles :: M.Map RawFilePath Key
 	, simRng :: StdGen
 	, simTrustLevels :: M.Map UUID TrustLevel
@@ -161,7 +161,7 @@ applySimCommand
 applySimCommand (CommandStep n) st
 	| n > 0 = case randomRepo st of
 		(Just (_repo, u), st') ->
-			let (act, st'') = randomAction st'
+			let (act, st'') = randomAction u st'
 			    st''' = applySimAction u act st''
 			in applySimCommand (CommandStep (pred n)) st'''
 		(Nothing, st') -> Right $ Right st'
@@ -189,20 +189,20 @@ applySimCommand' (CommandUse reponame s) st =
 			++ fromRepoName reponame 
 			++ "\" in the simulation because " ++ msg
 applySimCommand' (CommandConnect repo remote) st = 
-	checkKnownRepo repo st $ const $ Right $ Right $ st
+	checkKnownRepo repo st $ \u -> Right $ Right $ st
 		{ simConnections = 
-			let s = case M.lookup repo (simConnections st) of
+			let s = case M.lookup u (simConnections st) of
 				Just cs -> S.insert remote cs
 				Nothing -> S.singleton remote
-			in M.insert repo s (simConnections st)
+			in M.insert u s (simConnections st)
 		}
 applySimCommand' (CommandDisconnect repo remote) st = 
-	checkKnownRepo repo st $ const $ Right $ Right $ st
+	checkKnownRepo repo st $ \u -> Right $ Right $ st
 		{ simConnections = 
-			let sc = case M.lookup repo (simConnections st) of
+			let sc = case M.lookup u (simConnections st) of
 				Just s -> S.delete remote s
 				Nothing -> S.empty
-			in M.insert repo sc (simConnections st)
+			in M.insert u sc (simConnections st)
 		}
 applySimCommand' (CommandAddTree repo expr) st =
 	checkKnownRepo repo st $ const $
@@ -335,8 +335,27 @@ randomRepo st
 			u <- M.lookup r (simRepos st)
 			return (r, u)
 
-randomAction :: SimState -> (SimAction, SimState)
-randomAction = undefined -- XXX TODO
+randomAction :: UUID -> SimState -> (SimAction, SimState)
+randomAction u st = case M.lookup u (simConnections st) of
+	Just cs | not (S.null cs) ->
+		let (mkact, st') = simRandom st (randomR (0, length mkactions - 1))
+			(mkactions !!)
+		    (remote, st'') = simRandom st' (randomR (0, S.size cs - 1))
+		    	(`S.elemAt` cs)
+		in (mkact remote, st'')
+	-- When there are no remotes, this is the only possible action.
+	_ -> (ActionDropUnwanted Nothing, st)
+  where
+	mkactions =
+		[ ActionPull
+		, ActionPush
+		, ActionGetWanted
+		, ActionDropUnwanted . Just
+		, const (ActionDropUnwanted Nothing)
+		, ActionSendWanted
+		, ActionGitPush
+		, ActionGitPull
+		]
 
 randomWords :: Int -> StdGen -> ([Word8], StdGen)
 randomWords = go []
@@ -400,7 +419,7 @@ addRepo reponame simrepo st = st
 		then simRepoList st
 		else reponame : simRepoList st
 	, simRepoState = M.insert reponame rst (simRepoState st)
-	, simConnections = M.insert reponame mempty (simConnections st)
+	, simConnections = M.insert u mempty (simConnections st)
 	, simGroups = M.insert u (simRepoGroups simrepo) (simGroups st)
 	, simTrustLevels = M.insert u
 		(simRepoTrustLevel simrepo)
