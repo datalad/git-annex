@@ -634,6 +634,7 @@ limitFullyBalanced' = limitFullyBalanced'' $ \n key candidates -> do
 	threshhold <- annexFullyBalancedThreshhold <$> Annex.getGitConfig
 	let toofull u =
 		case (M.lookup u maxsizes, M.lookup u sizemap) of
+			(Just (MaxSize 0), _) -> False
 			(Just (MaxSize maxsize), Just (RepoSize reposize)) ->
 				fromIntegral reposize >= fromIntegral maxsize * threshhold
 			_ -> False

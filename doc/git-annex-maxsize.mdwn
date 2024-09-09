@@ -40,6 +40,8 @@ thing stored on that drive, and `annex.diskreserve` is configured to 1
 gigabyte, then it would make sense to run
 `git-annex maxsize here "999 gigabytes"`
 
+To stop checking maximum size of a repository, set the maxsize to 0.
+
 # OPTIONS
 
 * `--bytes`  
