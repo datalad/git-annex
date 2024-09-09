@@ -23,7 +23,6 @@ import Annex.UUID
 import Annex.FileMatcher
 import Annex.Init
 import Annex.Startup
-import Annex.Locations
 import Annex.Link
 import Logs.Group
 import Logs.Trust
@@ -33,6 +32,7 @@ import Logs.Remote
 import Logs.MaxSize
 import Logs.Difference
 import Logs.UUID
+import Logs.Location
 import qualified Annex
 import qualified Remote
 import qualified Git.Construct
@@ -97,7 +97,7 @@ emptySimState rng repobyname = SimState
 
 -- State that can vary between different repos in the simulation.
 data SimRepoState = SimRepoState
-	{ simLocations :: M.Map Key (S.Set RepoName)
+	{ simLocations :: M.Map Key (S.Set UUID)
 	, simIsSpecialRemote :: Bool
 	, simRepo :: Maybe SimRepo
 	}
@@ -105,10 +105,10 @@ data SimRepoState = SimRepoState
 instance Show SimRepoState where
 	show _ = "SimRepoState"
 
-setPresentKey :: RepoName -> Key -> SimRepoState -> SimRepoState
-setPresentKey repo k rst = rst
+setPresentKey :: UUID -> Key -> SimRepoState -> SimRepoState
+setPresentKey u k rst = rst
 	{ simLocations = 
-		M.insertWith S.union k (S.singleton repo) (simLocations rst)
+		M.insertWith S.union k (S.singleton u) (simLocations rst)
 	}
 
 newtype RepoName = RepoName { fromRepoName :: String }
@@ -183,13 +183,13 @@ applySimCommand (CommandAddTree repo expr) st =
 	checkKnownRepo repo st $ const $
 		checkValidPreferredContentExpression expr $ Left $
 			error "TODO" -- XXX
-applySimCommand (CommandAdd file sz repo) st = checkKnownRepo repo st $ const $
+applySimCommand (CommandAdd file sz repo) st = checkKnownRepo repo st $ \u ->
 	let (k, st') = genSimKey sz st
 	in Right $ Right $ st'
 		{ simFiles = M.insert (toRawFilePath file) k (simFiles st')
 		, simRepoState = case M.lookup repo (simRepoState st') of
 			Just rst -> M.insert repo
-				(setPresentKey repo k rst)
+				(setPresentKey u k rst)
 				(simRepoState st')
 			Nothing -> error "no simRepoState in applySimCommand CommandAdd"
 		}
@@ -201,10 +201,10 @@ applySimCommand (CommandStep n) st
 applySimCommand (CommandSeed rngseed) st = Right $ Right $ st
 	{ simRng = mkStdGen rngseed
 	}
-applySimCommand (CommandPresent repo file) st = checkKnownRepo repo st $ const $
+applySimCommand (CommandPresent repo file) st = checkKnownRepo repo st $ \u ->
 	case (M.lookup (toRawFilePath file) (simFiles st), M.lookup repo (simRepoState st)) of
 		(Just k, Just rst) -> case M.lookup k (simLocations rst) of
-			Just locs | S.member repo locs -> Right $ Right st
+			Just locs | S.member u locs -> Right $ Right st
 			_ -> missing
 		(Just _, Nothing) -> missing
 		(Nothing, _) -> Left $ "Expected " ++ file
@@ -213,10 +213,10 @@ applySimCommand (CommandPresent repo file) st = checkKnownRepo repo st $ const $
   where
 	missing = Left $ "Expected " ++ file ++ " to be present in " 
 		++ fromRepoName repo ++ ", but it is not."
-applySimCommand (CommandNotPresent repo file) st = checkKnownRepo repo st $ const $
+applySimCommand (CommandNotPresent repo file) st = checkKnownRepo repo st $ \u ->
 	case (M.lookup (toRawFilePath file) (simFiles st), M.lookup repo (simRepoState st)) of
 		(Just k, Just rst) -> case M.lookup k (simLocations rst) of
-			Just locs | S.notMember repo locs -> Right $ Right st
+			Just locs | S.notMember u locs -> Right $ Right st
 			_ -> present
 		(Just _, Nothing) -> present
 		(Nothing, _) -> Left $ "Expected " ++ file
@@ -418,6 +418,7 @@ data SimRepo = SimRepo
 	{ simRepoGitRepo :: Repo
 	, simRepoAnnex :: (Annex.AnnexState, Annex.AnnexRead)
 	, simRepoCurrState :: SimState
+	, simRepoName :: RepoName
 	}
 
 {- Clones and updates SimRepos to reflect the SimState. -}
@@ -494,6 +495,7 @@ cloneSimRepo simreponame u parent dest st = do
 		, simRepoCurrState = emptySimState
 			(simRng st)
 			(simGetExistingRepoByName st)
+		, simRepoName = simreponame
 		}
 
 simulatedRepositoryDescription :: RepoName -> String
@@ -508,49 +510,57 @@ updateSimRepoState newst sr = do
 	((), (ast, ard)) <- Annex.run (simRepoAnnex sr) $ doQuietAction $ do
 		let oldst = simRepoCurrState sr
 		updateField oldst newst simRepos $ DiffUpdate
-			{ replaceDiff = setdesc
+			{ replaceDiff = const . setdesc
 			, addDiff = setdesc
-			, removeDiff = const noop
+			, removeDiff = const $ const noop
 			}
 		updateField oldst newst simTrustLevels $ DiffUpdate
-			{ replaceDiff = trustSet
+			{ replaceDiff = const . trustSet
 			, addDiff = trustSet
-			, removeDiff = flip trustSet def
+			, removeDiff = const . flip trustSet def
 			}
 		when (simNumCopies oldst /= simNumCopies newst) $
 			setGlobalNumCopies (simNumCopies newst)
 		when (simMinCopies oldst /= simMinCopies newst) $
 			setGlobalMinCopies (simMinCopies newst)
 		updateField oldst newst simGroups $ DiffUpdate
-			{ replaceDiff = \u -> groupChange u . const
+			{ replaceDiff = \u -> const . groupChange u . const
 			, addDiff = \u -> groupChange u . const
-			, removeDiff = flip groupChange (const mempty)
+			, removeDiff = const . flip groupChange (const mempty)
 			}
 		updateField oldst newst simWanted $ DiffUpdate
-			{ replaceDiff = preferredContentSet
+			{ replaceDiff = const . preferredContentSet
 			, addDiff = preferredContentSet
-			, removeDiff = flip preferredContentSet mempty
+			, removeDiff = const . flip preferredContentSet mempty
 			}
 		updateField oldst newst simRequired $ DiffUpdate
-			{ replaceDiff = requiredContentSet
+			{ replaceDiff = const . requiredContentSet
 			, addDiff = requiredContentSet
-			, removeDiff = flip requiredContentSet mempty
+			, removeDiff = const . flip requiredContentSet mempty
 			}
 		updateField oldst newst simGroupWanted $ DiffUpdate
-			{ replaceDiff = groupPreferredContentSet
+			{ replaceDiff = const . groupPreferredContentSet
 			, addDiff = groupPreferredContentSet
-			, removeDiff = flip groupPreferredContentSet mempty
+			, removeDiff = const . flip groupPreferredContentSet mempty
 			}
 		updateField oldst newst simMaxSize $ DiffUpdate
-			{ replaceDiff = recordMaxSize
+			{ replaceDiff = const . recordMaxSize
 			, addDiff = recordMaxSize
-			, removeDiff = flip recordMaxSize (MaxSize 0)
+			, removeDiff = const . flip recordMaxSize (MaxSize 0)
 			}
-		-- XXX TODO update location logs from simLocations
+		updateField oldst newst getlocations $ DiffUpdate
+			{ replaceDiff = \k oldls newls -> do
+				setlocations InfoPresent k
+					(S.difference newls oldls)
+				setlocations InfoMissing k
+					(S.difference oldls newls)
+			, addDiff = setlocations InfoPresent
+			, removeDiff = setlocations InfoMissing
+			}
 		updateField oldst newst simFiles $ DiffUpdate
-			{ replaceDiff = stageannexedfile
+			{ replaceDiff = const . stageannexedfile
 			, addDiff = stageannexedfile
-			, removeDiff = unstageannexedfile
+			, removeDiff = const . unstageannexedfile
 			}
 		Annex.Queue.flush
 	let ard' = ard { Annex.rebalance = simRebalance newst }
@@ -569,11 +579,17 @@ updateSimRepoState newst sr = do
 		liftIO $ removeWhenExistsWith R.removeLink $
 			annexedfilepath f
 	annexedfilepath f = repoPath (simRepoGitRepo sr) P.</> f
+	getlocations = maybe mempty simLocations
+		. M.lookup (simRepoName sr)
+		. simRepoState
+	setlocations s k ls = 
+		mapM_ (\l -> logChange NoLiveUpdate k l s) (S.toList ls)
 
 data DiffUpdate a b m = DiffUpdate
-	{ replaceDiff :: a -> b -> m ()
+	{ replaceDiff :: a -> b -> b -> m ()
+	-- ^ The first value is the new one, the second is the old one.
 	, addDiff :: a -> b -> m ()
-	, removeDiff :: a -> m ()
+	, removeDiff :: a -> b -> m ()
 	}
 
 updateMap
@@ -586,11 +602,11 @@ updateMap old new diffupdate = do
 	forM_ (M.toList $ M.intersectionWith (,) new old) $ 
 		\(k, (newv, oldv))->
 			when (newv /= oldv) $
-				replaceDiff diffupdate k newv
+				replaceDiff diffupdate k newv oldv
 	forM_ (M.toList $ M.difference new old) $
 		uncurry (addDiff diffupdate)
-	forM_ (M.keys $ M.difference old new) $
-		removeDiff diffupdate
+	forM_ (M.toList $ M.difference old new) $
+		\(k, oldv) -> removeDiff diffupdate k oldv
 
 updateField
 	:: (Monad m, Ord a, Eq b)
