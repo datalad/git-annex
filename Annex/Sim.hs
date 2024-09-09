@@ -158,22 +158,37 @@ applySimCommand
 	:: SimCommand
 	-> SimState
 	-> Either String (Either (Annex SimState) SimState)
-applySimCommand (CommandInit reponame) st =
+applySimCommand (CommandStep n) st
+	| n > 0 = case randomRepo st of
+		(Just (_repo, u), st') ->
+			let (act, st'') = randomAction st'
+			    st''' = applySimAction u act st''
+			in applySimCommand (CommandStep (pred n)) st'''
+		(Nothing, st') -> Right $ Right st'
+	| otherwise = Right $ Right st
+applySimCommand c st = 
+	applySimCommand' c $ st { simHistory = c : simHistory st }
+
+applySimCommand'
+	:: SimCommand
+	-> SimState
+	-> Either String (Either (Annex SimState) SimState)
+applySimCommand' (CommandInit reponame) st =
 	checkNonexistantRepo reponame st $
 		let (u, st') = genSimUUID st reponame
 		in Right $ Right $ addRepo reponame (newSimRepoConfig u False) st'
-applySimCommand (CommandInitRemote reponame) st = 
+applySimCommand' (CommandInitRemote reponame) st = 
 	checkNonexistantRepo reponame st $
 		let (u, st') = genSimUUID st reponame
 		in Right $ Right $ addRepo reponame (newSimRepoConfig u True) st'
-applySimCommand (CommandUse reponame s) st =
+applySimCommand' (CommandUse reponame s) st =
 	case getExistingRepoByName (simGetExistingRepoByName st) s of
 		Right existingrepo -> checkNonexistantRepo reponame st $
 			Right $ Right $ addRepo reponame existingrepo st
 		Left msg -> Left $ "Unable to use a repository \"" 
 			++ fromRepoName reponame 
 			++ "\" in the simulation because " ++ msg
-applySimCommand (CommandConnect repo remote) st = 
+applySimCommand' (CommandConnect repo remote) st = 
 	checkKnownRepo repo st $ const $ Right $ Right $ st
 		{ simConnections = 
 			let s = case M.lookup repo (simConnections st) of
@@ -181,7 +196,7 @@ applySimCommand (CommandConnect repo remote) st =
 				Nothing -> S.singleton remote
 			in M.insert repo s (simConnections st)
 		}
-applySimCommand (CommandDisconnect repo remote) st = 
+applySimCommand' (CommandDisconnect repo remote) st = 
 	checkKnownRepo repo st $ const $ Right $ Right $ st
 		{ simConnections = 
 			let sc = case M.lookup repo (simConnections st) of
@@ -189,11 +204,11 @@ applySimCommand (CommandDisconnect repo remote) st =
 				Nothing -> S.empty
 			in M.insert repo sc (simConnections st)
 		}
-applySimCommand (CommandAddTree repo expr) st =
+applySimCommand' (CommandAddTree repo expr) st =
 	checkKnownRepo repo st $ const $
 		checkValidPreferredContentExpression expr $ Left $
 			error "TODO" -- XXX
-applySimCommand (CommandAdd file sz repo) st = checkKnownRepo repo st $ \u ->
+applySimCommand' (CommandAdd file sz repo) st = checkKnownRepo repo st $ \u ->
 	let (k, st') = genSimKey sz st
 	in Right $ Right $ st'
 		{ simFiles = M.insert (toRawFilePath file) k (simFiles st')
@@ -203,36 +218,14 @@ applySimCommand (CommandAdd file sz repo) st = checkKnownRepo repo st $ \u ->
 				(simRepoState st')
 			Nothing -> error "no simRepoState in applySimCommand CommandAdd"
 		}
-applySimCommand (CommandStep n) st
-	| n > 0 = undefined -- XXX TODO
-{-
-		let (repo, st') = randomRepo st
-		    (act, st'') = randomAction st'
-		    st''' = applySimCommand (CommandAction repo act) st''
-		    st'''' = st''' { simHistory = act : simHistory st''' }
-		in applySimCommand (CommandStep (pred n)) st''''
--}
-	| otherwise = Right $ Right st
-applySimCommand (CommandAction repo (ActionPull remote)) st = 
-	 checkKnownRepo repo st $ \u -> undefined -- XXX TODO
-applySimCommand (CommandAction repo (ActionPush remote)) st = 
-	 checkKnownRepo repo st $ \u -> undefined -- XXX TODO
-applySimCommand (CommandAction repo (ActionGetWanted remote)) st = 
-	 checkKnownRepo repo st $ \u -> undefined -- XXX TODO
-applySimCommand (CommandAction repo (ActionDropUnwanted Nothing)) st = 
-	 checkKnownRepo repo st $ \u -> undefined -- XXX TODO
-applySimCommand (CommandAction repo (ActionDropUnwanted (Just remote))) st = 
-	 checkKnownRepo repo st $ \u -> undefined -- XXX TODO
-applySimCommand (CommandAction repo (ActionSendWanted remote)) st = 
-	 checkKnownRepo repo st $ \u -> undefined -- XXX TODO
-applySimCommand (CommandAction repo (ActionGitPush remote)) st = 
-	 checkKnownRepo repo st $ \u -> undefined -- XXX TODO
-applySimCommand (CommandAction repo (ActionGitPull remote)) st = 
-	 checkKnownRepo repo st $ \u -> undefined -- XXX TODO
-applySimCommand (CommandSeed rngseed) st = Right $ Right $ st
+applySimCommand' (CommandStep _) _ = error "applySimCommand' CommandStep"
+applySimCommand' (CommandAction repo act) st =
+	checkKnownRepo repo st $ \u -> 
+		Right $ Right $ applySimAction u act st
+applySimCommand' (CommandSeed rngseed) st = Right $ Right $ st
 	{ simRng = mkStdGen rngseed
 	}
-applySimCommand (CommandPresent repo file) st = checkKnownRepo repo st $ \u ->
+applySimCommand' (CommandPresent repo file) st = checkKnownRepo repo st $ \u ->
 	case (M.lookup (toRawFilePath file) (simFiles st), M.lookup repo (simRepoState st)) of
 		(Just k, Just rst) -> case M.lookup k (simLocations rst) of
 			Just locs | S.member u locs -> Right $ Right st
@@ -244,7 +237,7 @@ applySimCommand (CommandPresent repo file) st = checkKnownRepo repo st $ \u ->
   where
 	missing = Left $ "Expected " ++ file ++ " to be present in " 
 		++ fromRepoName repo ++ ", but it is not."
-applySimCommand (CommandNotPresent repo file) st = checkKnownRepo repo st $ \u ->
+applySimCommand' (CommandNotPresent repo file) st = checkKnownRepo repo st $ \u ->
 	case (M.lookup (toRawFilePath file) (simFiles st), M.lookup repo (simRepoState st)) of
 		(Just k, Just rst) -> case M.lookup k (simLocations rst) of
 			Just locs | S.notMember u locs -> Right $ Right st
@@ -256,48 +249,59 @@ applySimCommand (CommandNotPresent repo file) st = checkKnownRepo repo st $ \u -
   where
 	present = Left $ "Expected " ++ file ++ " not to be present in " 
 		++ fromRepoName repo ++ ", but it is present."
-applySimCommand (CommandNumCopies n) st = Right $ Right $ st
+applySimCommand' (CommandNumCopies n) st = Right $ Right $ st
 	{ simNumCopies = configuredNumCopies n
 	}
-applySimCommand (CommandMinCopies n) st = Right $ Right $ st
+applySimCommand' (CommandMinCopies n) st = Right $ Right $ st
 	{ simMinCopies = configuredMinCopies n
 	}
-applySimCommand (CommandTrustLevel repo s) st = checkKnownRepo repo st $ \u ->
+applySimCommand' (CommandTrustLevel repo s) st = checkKnownRepo repo st $ \u ->
 	case readTrustLevel s of
 		Just trustlevel -> Right $ Right $ st
 			{ simTrustLevels = M.insert u trustlevel
 				(simTrustLevels st)
 			}
 		Nothing -> Left $ "Unknown trust level \"" ++ s ++ "\"."
-applySimCommand (CommandGroup repo groupname) st = checkKnownRepo repo st $ \u ->
+applySimCommand' (CommandGroup repo groupname) st = checkKnownRepo repo st $ \u ->
 	Right $ Right $ st
 		{ simGroups = M.insertWith S.union u
 			(S.singleton groupname)
 			(simGroups st)
 		}
-applySimCommand (CommandUngroup repo groupname) st = checkKnownRepo repo st $ \u ->
+applySimCommand' (CommandUngroup repo groupname) st = checkKnownRepo repo st $ \u ->
 	Right $ Right $ st
 		{ simGroups = M.adjust (S.delete groupname) u (simGroups st)
 		}
-applySimCommand (CommandWanted repo expr) st = checkKnownRepo repo st $ \u ->
+applySimCommand' (CommandWanted repo expr) st = checkKnownRepo repo st $ \u ->
 	checkValidPreferredContentExpression expr $ Right $ st
 		{ simWanted = M.insert u expr (simWanted st)
 		}
-applySimCommand (CommandRequired repo expr) st = checkKnownRepo repo st $ \u ->
+applySimCommand' (CommandRequired repo expr) st = checkKnownRepo repo st $ \u ->
 	checkValidPreferredContentExpression expr $ Right $ st
 		{ simRequired = M.insert u expr (simRequired st)
 		}
-applySimCommand (CommandGroupWanted groupname expr) st =
+applySimCommand' (CommandGroupWanted groupname expr) st =
 	checkValidPreferredContentExpression expr $ Right $ st
 		{ simGroupWanted = M.insert groupname expr (simGroupWanted st)
 		}
-applySimCommand (CommandMaxSize repo sz) st = checkKnownRepo repo st $ \u ->
+applySimCommand' (CommandMaxSize repo sz) st = checkKnownRepo repo st $ \u ->
 	Right $ Right $ st
 		{ simMaxSize = M.insert u sz (simMaxSize st)
 		}
-applySimCommand (CommandRebalance b) st = Right $ Right $ st
+applySimCommand' (CommandRebalance b) st = Right $ Right $ st
 	{ simRebalance = b
 	}
+
+-- XXX todo
+applySimAction :: UUID -> SimAction -> SimState -> SimState
+applySimAction u (ActionPull remote) st = undefined
+applySimAction u (ActionPush remote) st = undefined
+applySimAction u (ActionGetWanted remote) st = undefined
+applySimAction u (ActionDropUnwanted Nothing) st = undefined
+applySimAction u (ActionDropUnwanted (Just remote)) st = undefined
+applySimAction u (ActionSendWanted remote) st = undefined
+applySimAction u (ActionGitPush remote) st = undefined
+applySimAction u (ActionGitPull remote) st = undefined
 
 checkNonexistantRepo :: RepoName -> SimState -> Either String a -> Either String a
 checkNonexistantRepo reponame st a = case M.lookup reponame (simRepos st) of
@@ -322,12 +326,14 @@ simRandom st mk f =
 	let (v, rng) = mk (simRng st)
 	in (f v, st { simRng = rng })
 
-randomRepo :: SimState -> (Maybe RepoName, SimState)
+randomRepo :: SimState -> (Maybe (RepoName, UUID), SimState)
 randomRepo st
 	| null (simRepoList st) = (Nothing, st)
 	| otherwise = simRandom st
-		(randomR (0, length (simRepoList st) - 1))
-		(\n -> Just $ simRepoList st !! n)
+		(randomR (0, length (simRepoList st) - 1)) $ \n -> do
+			let r = simRepoList st !! n
+			u <- M.lookup r (simRepos st)
+			return (r, u)
 
 randomAction :: SimState -> (SimAction, SimState)
 randomAction = undefined -- XXX TODO
