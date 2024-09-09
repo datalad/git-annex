@@ -29,7 +29,7 @@ seek _ = do
 		st' <- runSimCommand (CommandInit (RepoName "foo")) st
 			>>= runSimCommand (CommandTrustLevel (RepoName "foo") "trusted")
 			>>= runSimCommand (CommandUse (RepoName "bar") "here")
-			>>= runSimCommand (CommandConnect (RepoName "foo") (RepoName "bar"))
+			>>= runSimCommand (CommandConnect (RepoName "foo") (RemoteName "bar"))
 			>>= runSimCommand (CommandAdd "foo" 100000 (RepoName "foo"))
 		let simdir = \u -> tmpdir </> fromUUID u
 		st'' <- liftIO $ updateSimRepos r simdir st'

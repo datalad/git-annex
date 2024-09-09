@@ -16,7 +16,6 @@ import Types.Group
 import Types.StandardGroups
 import Types.TrustLevel
 import Types.Difference
-import Git.Types
 import Git
 import Backend.Hash (genTestKey)
 import Annex.UUID
@@ -50,17 +49,11 @@ import qualified Data.UUID.V5 as U5
 import qualified Utility.RawFilePath as R
 import qualified System.FilePath.ByteString as P
 
--- Runs the simulation one step. As well as the updated SimState,
--- returns SimCommands for every change that the simulation made.
--- Eg, CommandPresent is returned when a file's content is added to a repo,
--- and CommandNotPresent when a file's content is dropped.
-stepSimulation :: SimState -> (SimState, [SimCommand])
-stepSimulation st = undefined -- XXX TODO
-
 data SimState = SimState
 	{ simRepos :: M.Map RepoName UUID
+	, simRepoList :: [RepoName]
 	, simRepoState :: M.Map RepoName SimRepoState
-	, simConnections :: M.Map RepoName (S.Set RepoName)
+	, simConnections :: M.Map RepoName (S.Set RemoteName)
 	, simFiles :: M.Map RawFilePath Key
 	, simRng :: StdGen
 	, simTrustLevels :: M.Map UUID TrustLevel
@@ -73,12 +66,14 @@ data SimState = SimState
 	, simMaxSize :: M.Map UUID MaxSize
 	, simRebalance :: Bool
 	, simGetExistingRepoByName :: GetExistingRepoByName
+	, simHistory :: [SimCommand]
 	}
 	deriving (Show)
 
 emptySimState :: StdGen -> GetExistingRepoByName -> SimState
 emptySimState rng repobyname = SimState
 	{ simRepos = mempty
+	, simRepoList = mempty
 	, simRepoState = mempty
 	, simConnections = mempty
 	, simFiles = mempty
@@ -93,6 +88,7 @@ emptySimState rng repobyname = SimState
 	, simMaxSize = mempty
 	, simRebalance = False
 	, simGetExistingRepoByName = repobyname
+	, simHistory = []
 	}
 
 -- State that can vary between different repos in the simulation.
@@ -114,15 +110,19 @@ setPresentKey u k rst = rst
 newtype RepoName = RepoName { fromRepoName :: String }
 	deriving (Show, Eq, Ord)
 
+newtype RemoteName = RemoteName { fromRemoteName :: String }
+	deriving (Show, Eq, Ord)
+
 data SimCommand
 	= CommandInit RepoName
 	| CommandInitRemote RepoName
 	| CommandUse RepoName String
-	| CommandConnect RepoName RepoName
-	| CommandDisconnect RepoName RepoName
+	| CommandConnect RepoName RemoteName
+	| CommandDisconnect RepoName RemoteName
 	| CommandAddTree RepoName PreferredContentExpression
 	| CommandAdd FilePath ByteSize RepoName
 	| CommandStep Int
+	| CommandAction RepoName SimAction
 	| CommandSeed Int
 	| CommandPresent RepoName FilePath
 	| CommandNotPresent RepoName FilePath
@@ -136,6 +136,16 @@ data SimCommand
 	| CommandGroupWanted Group PreferredContentExpression
 	| CommandMaxSize RepoName MaxSize
 	| CommandRebalance Bool
+	deriving (Show)
+
+data SimAction
+	= ActionPull RemoteName
+	| ActionPush RemoteName
+	| ActionGetWanted RemoteName
+	| ActionDropUnwanted (Maybe RemoteName)
+	| ActionSendWanted RemoteName
+	| ActionGitPush RemoteName
+	| ActionGitPull RemoteName
 	deriving (Show)
 
 runSimCommand :: SimCommand -> SimState -> Annex SimState
@@ -164,7 +174,7 @@ applySimCommand (CommandUse reponame s) st =
 			++ fromRepoName reponame 
 			++ "\" in the simulation because " ++ msg
 applySimCommand (CommandConnect repo remote) st = 
-	checkKnownRepo repo st $ const $ checkKnownRepo remote st $ const $ Right $ Right $ st
+	checkKnownRepo repo st $ const $ Right $ Right $ st
 		{ simConnections = 
 			let s = case M.lookup repo (simConnections st) of
 				Just cs -> S.insert remote cs
@@ -172,7 +182,7 @@ applySimCommand (CommandConnect repo remote) st =
 			in M.insert repo s (simConnections st)
 		}
 applySimCommand (CommandDisconnect repo remote) st = 
-	checkKnownRepo repo st $ const $ checkKnownRepo remote st $ const $ Right $ Right $ st
+	checkKnownRepo repo st $ const $ Right $ Right $ st
 		{ simConnections = 
 			let sc = case M.lookup repo (simConnections st) of
 				Just s -> S.delete remote s
@@ -194,10 +204,31 @@ applySimCommand (CommandAdd file sz repo) st = checkKnownRepo repo st $ \u ->
 			Nothing -> error "no simRepoState in applySimCommand CommandAdd"
 		}
 applySimCommand (CommandStep n) st
-	| n > 0 = applySimCommand
-		(CommandStep (pred n))
-		(fst $ stepSimulation st)
+	| n > 0 = undefined -- XXX TODO
+{-
+		let (repo, st') = randomRepo st
+		    (act, st'') = randomAction st'
+		    st''' = applySimCommand (CommandAction repo act) st''
+		    st'''' = st''' { simHistory = act : simHistory st''' }
+		in applySimCommand (CommandStep (pred n)) st''''
+-}
 	| otherwise = Right $ Right st
+applySimCommand (CommandAction repo (ActionPull remote)) st = 
+	 checkKnownRepo repo st $ \u -> undefined -- XXX TODO
+applySimCommand (CommandAction repo (ActionPush remote)) st = 
+	 checkKnownRepo repo st $ \u -> undefined -- XXX TODO
+applySimCommand (CommandAction repo (ActionGetWanted remote)) st = 
+	 checkKnownRepo repo st $ \u -> undefined -- XXX TODO
+applySimCommand (CommandAction repo (ActionDropUnwanted Nothing)) st = 
+	 checkKnownRepo repo st $ \u -> undefined -- XXX TODO
+applySimCommand (CommandAction repo (ActionDropUnwanted (Just remote))) st = 
+	 checkKnownRepo repo st $ \u -> undefined -- XXX TODO
+applySimCommand (CommandAction repo (ActionSendWanted remote)) st = 
+	 checkKnownRepo repo st $ \u -> undefined -- XXX TODO
+applySimCommand (CommandAction repo (ActionGitPush remote)) st = 
+	 checkKnownRepo repo st $ \u -> undefined -- XXX TODO
+applySimCommand (CommandAction repo (ActionGitPull remote)) st = 
+	 checkKnownRepo repo st $ \u -> undefined -- XXX TODO
 applySimCommand (CommandSeed rngseed) st = Right $ Right $ st
 	{ simRng = mkStdGen rngseed
 	}
@@ -291,6 +322,16 @@ simRandom st mk f =
 	let (v, rng) = mk (simRng st)
 	in (f v, st { simRng = rng })
 
+randomRepo :: SimState -> (Maybe RepoName, SimState)
+randomRepo st
+	| null (simRepoList st) = (Nothing, st)
+	| otherwise = simRandom st
+		(randomR (0, length (simRepoList st) - 1))
+		(\n -> Just $ simRepoList st !! n)
+
+randomAction :: SimState -> (SimAction, SimState)
+randomAction = undefined -- XXX TODO
+
 randomWords :: Int -> StdGen -> ([Word8], StdGen)
 randomWords = go []
   where
@@ -349,6 +390,9 @@ newSimRepoConfig u isspecialremote = SimRepoConfig
 addRepo :: RepoName -> SimRepoConfig -> SimState -> SimState
 addRepo reponame simrepo st = st
 	{ simRepos = M.insert reponame u (simRepos st)
+	, simRepoList = if reponame `elem` simRepoList st
+		then simRepoList st
+		else reponame : simRepoList st
 	, simRepoState = M.insert reponame rst (simRepoState st)
 	, simConnections = M.insert reponame mempty (simConnections st)
 	, simGroups = M.insert u (simRepoGroups simrepo) (simGroups st)

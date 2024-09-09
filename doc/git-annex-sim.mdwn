@@ -25,15 +25,10 @@ with the command in the same format used in the sim file (see sim commands
 list below). For example, "git annex sim step 1" runs the simulation one step.
 
 The simulation writes to an output sim file as it runs, which contains the
-entire simulation input, as well as the results of the simulation.
+entire simulation input, as well as the actions performed in the
+simulation, and the results of the simulation.
 This allows re-running the same simulation later, as well as analyzing
 the results of the simulation.
-
-On each step of the simulation, a simulated repository is selected,
-and an action is performed in it. The actions include pushing and pulling
-the git-annex branch to and from remotes of the simulated repository, and
-simulating the transfer of annexed files to and from remotes according to
-the configuration.
 
 While a simulation is running, the command "git annex visit repo", where
 "repo" is the name of one of the repositories in the simulation, will spawn
@@ -164,6 +159,43 @@ as passed to "git annex sim" while a simulation is running.
 * `step N`
 
   Run the simulation forward by this many steps.
+
+  On each step of the simulation, a simulated repository is selected
+  at random, and a random action is performed in it.
+
+* `action repo pull remote`
+
+  Simulate the equivilant of [[git-annex-pull]](1).
+
+* `action repo pull remote`
+  
+  Simulate the equivilant of [[git-annex-push]](1).
+
+* `action repo getwanted remote`
+
+  Simulate the repository getting files it wants from the remote.
+
+* `action repo dropunwanted`
+
+  Simulate the repository dropping files it does not want, 
+  when it is able to verify enough copies exist on remotes.
+
+* `action repo dropunwanted remote`
+
+  Simulate the repository dropping files from the remote that the remote
+  does not want, when it is able to verify enouh copies exist.
+
+* `action repo sendwanted remote`
+
+  Simulate the repository sending files that the remote wants to it.
+
+* `action repo gitpush remote`
+
+  Simulate the repository pushing the git-annex branch to the remote.
+
+* `action repo gitpull remote`
+
+  Simulate the repository pulling the git-annex branch from the remote.
 
 * `seed N`
 
