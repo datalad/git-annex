@@ -23,6 +23,8 @@ import Annex.UUID
 import Annex.FileMatcher
 import Annex.Init
 import Annex.Startup
+import Annex.Locations
+import Annex.Link
 import Logs.Group
 import Logs.Trust
 import Logs.PreferredContent
@@ -35,6 +37,7 @@ import qualified Annex
 import qualified Remote
 import qualified Git.Construct
 import qualified Git.Remote.Remove
+import qualified Annex.Queue
 
 import System.Random
 import Data.Word
@@ -44,6 +47,8 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import qualified Data.UUID as U
 import qualified Data.UUID.V5 as U5
+import qualified Utility.RawFilePath as R
+import qualified System.FilePath.ByteString as P
 
 -- Runs the simulation one step. As well as the updated SimState,
 -- returns SimCommands for every change that the simulation made.
@@ -56,7 +61,7 @@ data SimState = SimState
 	{ simRepos :: M.Map RepoName UUID
 	, simRepoState :: M.Map RepoName SimRepoState
 	, simConnections :: M.Map RepoName (S.Set RepoName)
-	, simFiles :: M.Map FilePath Key
+	, simFiles :: M.Map RawFilePath Key
 	, simRng :: StdGen
 	, simTrustLevels :: M.Map UUID TrustLevel
 	, simNumCopies :: NumCopies
@@ -181,7 +186,7 @@ applySimCommand (CommandAddTree repo expr) st =
 applySimCommand (CommandAdd file sz repo) st = checkKnownRepo repo st $ const $
 	let (k, st') = genSimKey sz st
 	in Right $ Right $ st'
-		{ simFiles = M.insert file k (simFiles st')
+		{ simFiles = M.insert (toRawFilePath file) k (simFiles st')
 		, simRepoState = case M.lookup repo (simRepoState st') of
 			Just rst -> M.insert repo
 				(setPresentKey repo k rst)
@@ -197,7 +202,7 @@ applySimCommand (CommandSeed rngseed) st = Right $ Right $ st
 	{ simRng = mkStdGen rngseed
 	}
 applySimCommand (CommandPresent repo file) st = checkKnownRepo repo st $ const $
-	case (M.lookup file (simFiles st), M.lookup repo (simRepoState st)) of
+	case (M.lookup (toRawFilePath file) (simFiles st), M.lookup repo (simRepoState st)) of
 		(Just k, Just rst) -> case M.lookup k (simLocations rst) of
 			Just locs | S.member repo locs -> Right $ Right st
 			_ -> missing
@@ -209,7 +214,7 @@ applySimCommand (CommandPresent repo file) st = checkKnownRepo repo st $ const $
 	missing = Left $ "Expected " ++ file ++ " to be present in " 
 		++ fromRepoName repo ++ ", but it is not."
 applySimCommand (CommandNotPresent repo file) st = checkKnownRepo repo st $ const $
-	case (M.lookup file (simFiles st), M.lookup repo (simRepoState st)) of
+	case (M.lookup (toRawFilePath file) (simFiles st), M.lookup repo (simRepoState st)) of
 		(Just k, Just rst) -> case M.lookup k (simLocations rst) of
 			Just locs | S.notMember repo locs -> Right $ Right st
 			_ -> present
@@ -504,8 +509,6 @@ updateSimRepoState :: SimState -> SimRepo -> IO SimRepo
 updateSimRepoState newst sr = do
 	((), (ast, ard)) <- Annex.run (simRepoAnnex sr) $ doQuietAction $ do
 		let oldst = simRepoCurrState sr
-		let setdesc = \r u -> describeUUID u $ toUUIDDesc $
-			simulatedRepositoryDescription r
 		updateField oldst newst simRepos $ DiffUpdate
 			{ replaceDiff = setdesc
 			, addDiff = setdesc
@@ -546,11 +549,24 @@ updateSimRepoState newst sr = do
 			, removeDiff = flip recordMaxSize (MaxSize 0)
 			}
 		-- XXX TODO update location logs from simLocations
+		updateField oldst newst simFiles $ DiffUpdate
+			{ replaceDiff = addannexedfile
+			, addDiff = addannexedfile
+			, removeDiff = liftIO . removeWhenExistsWith R.removeLink 
+			}
+		Annex.Queue.flush
 	let ard' = ard { Annex.rebalance = simRebalance newst }
 	return $ sr
 		{ simRepoAnnex = (ast, ard')
 		, simRepoCurrState = newst
 		}
+  where
+	setdesc r u = describeUUID u $ toUUIDDesc $
+		simulatedRepositoryDescription r
+	addannexedfile f k = do
+		let f' = repoPath (simRepoGitRepo sr) P.</> f
+		l <- calcRepo $ gitAnnexLink f' k
+		addAnnexLink l f'
 
 data DiffUpdate a b m = DiffUpdate
 	{ replaceDiff :: a -> b -> m ()
