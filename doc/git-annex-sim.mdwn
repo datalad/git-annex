@@ -195,6 +195,11 @@ as passed to "git annex sim" while a simulation is running.
   Sets the desired number of copies. This is equivilant to
   [[git-annex-numcopies]](1).
 
+* `mincopies N`
+
+  Sets the minimum number of copies. This is equivilant to
+  [[git-annex-mincopies]](1).
+
 * `trustlevel repo trusted|untrusted|semitrusted|dead`
 
   Sets the trust level of the repository. This is equivilant to

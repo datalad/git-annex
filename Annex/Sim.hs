@@ -26,6 +26,7 @@ import Annex.Startup
 import Logs.Group
 import Logs.Trust
 import Logs.PreferredContent
+import Logs.NumCopies
 import Logs.Remote
 import Logs.MaxSize
 import Logs.Difference
@@ -56,13 +57,14 @@ data SimState = SimState
 	, simConnections :: M.Map RepoName (S.Set RepoName)
 	, simFiles :: M.Map FilePath Key
 	, simRng :: StdGen
-	, simTrustLevels :: M.Map RepoName TrustLevel
+	, simTrustLevels :: M.Map UUID TrustLevel
 	, simNumCopies :: NumCopies
-	, simGroups :: M.Map RepoName (S.Set Group)
-	, simWanted :: M.Map RepoName PreferredContentExpression
-	, simRequired :: M.Map RepoName PreferredContentExpression
+	, simMinCopies :: MinCopies
+	, simGroups :: M.Map UUID (S.Set Group)
+	, simWanted :: M.Map UUID PreferredContentExpression
+	, simRequired :: M.Map UUID PreferredContentExpression
 	, simGroupWanted :: M.Map Group PreferredContentExpression
-	, simMaxSize :: M.Map RepoName MaxSize
+	, simMaxSize :: M.Map UUID MaxSize
 	, simRebalance :: Bool
 	, simGetExistingRepoByName :: GetExistingRepoByName
 	}
@@ -77,6 +79,7 @@ emptySimState rng repobyname = SimState
 	, simRng = rng
 	, simTrustLevels = mempty
 	, simNumCopies = configuredNumCopies 1
+	, simMinCopies = configuredMinCopies 1
 	, simGroups = mempty
 	, simWanted = mempty
 	, simRequired = mempty
@@ -118,6 +121,7 @@ data SimCommand
 	| CommandPresent RepoName FilePath
 	| CommandNotPresent RepoName FilePath
 	| CommandNumCopies Int
+	| CommandMinCopies Int
 	| CommandTrustLevel RepoName String
 	| CommandGroup RepoName Group
 	| CommandUngroup RepoName Group
@@ -148,7 +152,7 @@ applySimCommand (CommandUse reponame s) st =
 			++ fromRepoName reponame 
 			++ "\" in the simulation because " ++ msg
 applySimCommand (CommandConnect repo remote) st = 
-	checkKnownRepo repo st $ checkKnownRepo remote st $ Right $ Right $ st
+	checkKnownRepo repo st $ const $ checkKnownRepo remote st $ const $ Right $ Right $ st
 		{ simConnections = 
 			let s = case M.lookup repo (simConnections st) of
 				Just cs -> S.insert remote cs
@@ -156,7 +160,7 @@ applySimCommand (CommandConnect repo remote) st =
 			in M.insert repo s (simConnections st)
 		}
 applySimCommand (CommandDisconnect repo remote) st = 
-	checkKnownRepo repo st $ checkKnownRepo remote st $ Right $ Right $ st
+	checkKnownRepo repo st $ const $ checkKnownRepo remote st $ const $ Right $ Right $ st
 		{ simConnections = 
 			let sc = case M.lookup repo (simConnections st) of
 				Just s -> S.delete remote s
@@ -164,10 +168,10 @@ applySimCommand (CommandDisconnect repo remote) st =
 			in M.insert repo sc (simConnections st)
 		}
 applySimCommand (CommandAddTree repo expr) st =
-	checkKnownRepo repo st $
+	checkKnownRepo repo st $ const $
 		checkValidPreferredContentExpression expr $ Left $
 			error "TODO" -- XXX
-applySimCommand (CommandAdd file sz repo) st = checkKnownRepo repo st $
+applySimCommand (CommandAdd file sz repo) st = checkKnownRepo repo st $ const $
 	let (k, st') = genSimKey sz st
 	in Right $ Right $ st'
 		{ simFiles = M.insert file k (simFiles st')
@@ -185,7 +189,7 @@ applySimCommand (CommandStep n) st
 applySimCommand (CommandSeed rngseed) st = Right $ Right $ st
 	{ simRng = mkStdGen rngseed
 	}
-applySimCommand (CommandPresent repo file) st = checkKnownRepo repo st $
+applySimCommand (CommandPresent repo file) st = checkKnownRepo repo st $ const $
 	case (M.lookup file (simFiles st), M.lookup repo (simRepoState st)) of
 		(Just k, Just rst) -> case M.lookup k (simLocations rst) of
 			Just locs | S.member repo locs -> Right $ Right st
@@ -197,7 +201,7 @@ applySimCommand (CommandPresent repo file) st = checkKnownRepo repo st $
   where
 	missing = Left $ "Expected " ++ file ++ " to be present in " 
 		++ fromRepoName repo ++ ", but it is not."
-applySimCommand (CommandNotPresent repo file) st = checkKnownRepo repo st $
+applySimCommand (CommandNotPresent repo file) st = checkKnownRepo repo st $ const $
 	case (M.lookup file (simFiles st), M.lookup repo (simRepoState st)) of
 		(Just k, Just rst) -> case M.lookup k (simLocations rst) of
 			Just locs | S.notMember repo locs -> Right $ Right st
@@ -212,38 +216,41 @@ applySimCommand (CommandNotPresent repo file) st = checkKnownRepo repo st $
 applySimCommand (CommandNumCopies n) st = Right $ Right $ st
 	{ simNumCopies = configuredNumCopies n
 	}
-applySimCommand (CommandTrustLevel repo s) st = checkKnownRepo repo st $
+applySimCommand (CommandMinCopies n) st = Right $ Right $ st
+	{ simMinCopies = configuredMinCopies n
+	}
+applySimCommand (CommandTrustLevel repo s) st = checkKnownRepo repo st $ \u ->
 	case readTrustLevel s of
 		Just trustlevel -> Right $ Right $ st
-			{ simTrustLevels = M.insert repo trustlevel
+			{ simTrustLevels = M.insert u trustlevel
 				(simTrustLevels st)
 			}
 		Nothing -> Left $ "Unknown trust level \"" ++ s ++ "\"."
-applySimCommand (CommandGroup repo groupname) st = checkKnownRepo repo st $
+applySimCommand (CommandGroup repo groupname) st = checkKnownRepo repo st $ \u ->
 	Right $ Right $ st
-		{ simGroups = M.insertWith S.union repo
+		{ simGroups = M.insertWith S.union u
 			(S.singleton groupname)
 			(simGroups st)
 		}
-applySimCommand (CommandUngroup repo groupname) st = checkKnownRepo repo st $
+applySimCommand (CommandUngroup repo groupname) st = checkKnownRepo repo st $ \u ->
 	Right $ Right $ st
-		{ simGroups = M.adjust (S.delete groupname) repo (simGroups st)
+		{ simGroups = M.adjust (S.delete groupname) u (simGroups st)
 		}
-applySimCommand (CommandWanted repo expr) st = checkKnownRepo repo st $
+applySimCommand (CommandWanted repo expr) st = checkKnownRepo repo st $ \u ->
 	checkValidPreferredContentExpression expr $ Right $ st
-		{ simWanted = M.insert repo expr (simWanted st)
+		{ simWanted = M.insert u expr (simWanted st)
 		}
-applySimCommand (CommandRequired repo expr) st = checkKnownRepo repo st $
+applySimCommand (CommandRequired repo expr) st = checkKnownRepo repo st $ \u ->
 	checkValidPreferredContentExpression expr $ Right $ st
-		{ simRequired = M.insert repo expr (simRequired st)
+		{ simRequired = M.insert u expr (simRequired st)
 		}
 applySimCommand (CommandGroupWanted groupname expr) st =
 	checkValidPreferredContentExpression expr $ Right $ st
 		{ simGroupWanted = M.insert groupname expr (simGroupWanted st)
 		}
-applySimCommand (CommandMaxSize repo sz) st = checkKnownRepo repo st $
+applySimCommand (CommandMaxSize repo sz) st = checkKnownRepo repo st $ \u ->
 	Right $ Right $ st
-		{ simMaxSize = M.insert repo sz (simMaxSize st)
+		{ simMaxSize = M.insert u sz (simMaxSize st)
 		}
 applySimCommand (CommandRebalance b) st = Right $ Right $ st
 	{ simRebalance = b
@@ -255,9 +262,9 @@ checkNonexistantRepo reponame st a = case M.lookup reponame (simRepos st) of
 	Just _ -> Left $ "There is already a repository in the simulation named \""
 		++ fromRepoName reponame ++ "\"."
 
-checkKnownRepo :: RepoName -> SimState -> Either String a -> Either String a
+checkKnownRepo :: RepoName -> SimState -> (UUID -> Either String a) -> Either String a
 checkKnownRepo reponame st a = case M.lookup reponame (simRepos st) of
-	Just _ -> a
+	Just u -> a u
 	Nothing -> Left $ "No repository in the simulation is named \""
 		++ fromRepoName reponame ++ "\"."
 
@@ -329,30 +336,31 @@ newSimRepoConfig u isspecialremote = SimRepoConfig
 
 addRepo :: RepoName -> SimRepoConfig -> SimState -> SimState
 addRepo reponame simrepo st = st
-	{ simRepos = M.insert reponame (simRepoUUID simrepo) (simRepos st)
+	{ simRepos = M.insert reponame u (simRepos st)
 	, simRepoState = M.insert reponame rst (simRepoState st)
 	, simConnections = M.insert reponame mempty (simConnections st)
-	, simGroups = M.insert reponame (simRepoGroups simrepo) (simGroups st)
-	, simTrustLevels = M.insert reponame
+	, simGroups = M.insert u (simRepoGroups simrepo) (simGroups st)
+	, simTrustLevels = M.insert u
 		(simRepoTrustLevel simrepo)
 		(simTrustLevels st)
 	, simWanted = M.alter
 		(const $ simRepoPreferredContent simrepo)
-		reponame 
+		u
 		(simWanted st)
 	, simRequired = M.alter
 		(const $ simRepoRequiredContent simrepo)
-		reponame 
+		u
 		(simRequired st)
 	, simGroupWanted = M.union 
 		(simRepoGroupPreferredContent simrepo)
 		(simGroupWanted st)
 	, simMaxSize = M.alter
 		(const $ simRepoMaxSize simrepo)
-		reponame
+		u
 		(simMaxSize st)
 	}
   where
+	u = simRepoUUID simrepo
 	rst = SimRepoState
 		{ simLocations = mempty
 		, simIsSpecialRemote = simRepoIsSpecialRemote simrepo
@@ -440,16 +448,80 @@ cloneSimRepo simreponame u parent dest st = do
 			(simGetExistingRepoByName st)
 		}
 
-updateSimRepoState :: SimState -> SimRepo -> IO SimRepo
-updateSimRepoState st sr = do
-	((), ast) <- Annex.run (simRepoAnnex sr) $ doQuietAction $ do
-		let oldst = simRepoCurrState sr
-		-- simTrustLevels st
-		error "TODO diff and update everything" -- XXX
-	return $ sr
-		{ simRepoAnnex = ast
-		, simRepoCurrState = st
-		}
-
 simulationDifferences :: Differences
 simulationDifferences = mkDifferences $ S.singleton Simulation
+
+updateSimRepoState :: SimState -> SimRepo -> IO SimRepo
+updateSimRepoState newst sr = do
+	((), (ast, ard)) <- Annex.run (simRepoAnnex sr) $ doQuietAction $ do
+		let oldst = simRepoCurrState sr
+		updateField oldst newst simTrustLevels $ DiffUpdate
+			{ replaceDiff = trustSet
+			, addDiff = trustSet
+			, removeDiff = flip trustSet def
+			}
+		when (simNumCopies oldst /= simNumCopies newst) $
+			setGlobalNumCopies (simNumCopies newst)
+		when (simMinCopies oldst /= simMinCopies newst) $
+			setGlobalMinCopies (simMinCopies newst)
+		updateField oldst newst simGroups $ DiffUpdate
+			{ replaceDiff = \u -> groupChange u . const
+			, addDiff = \u -> groupChange u . const
+			, removeDiff = flip groupChange (const mempty)
+			}
+		updateField oldst newst simWanted $ DiffUpdate
+			{ replaceDiff = preferredContentSet
+			, addDiff = preferredContentSet
+			, removeDiff = flip preferredContentSet mempty
+			}
+		updateField oldst newst simRequired $ DiffUpdate
+			{ replaceDiff = requiredContentSet
+			, addDiff = requiredContentSet
+			, removeDiff = flip requiredContentSet mempty
+			}
+		updateField oldst newst simGroupWanted $ DiffUpdate
+			{ replaceDiff = groupPreferredContentSet
+			, addDiff = groupPreferredContentSet
+			, removeDiff = flip groupPreferredContentSet mempty
+			}
+		updateField oldst newst simMaxSize $ DiffUpdate
+			{ replaceDiff = recordMaxSize
+			, addDiff = recordMaxSize
+			, removeDiff = flip recordMaxSize (MaxSize 0)
+			}
+	let ard' = ard { Annex.rebalance = simRebalance newst }
+	return $ sr
+		{ simRepoAnnex = (ast, ard')
+		, simRepoCurrState = newst
+		}
+
+data DiffUpdate a b m = DiffUpdate
+	{ replaceDiff :: a -> b -> m ()
+	, addDiff :: a -> b -> m ()
+	, removeDiff :: a -> m ()
+	}
+
+updateMap
+	:: (Monad m, Ord a, Eq b)
+	=> M.Map a b
+	-> M.Map a b
+	-> DiffUpdate a b m
+	-> m ()
+updateMap old new diffupdate = do
+	forM_ (M.toList $ M.intersectionWith (,) new old) $ 
+		\(k, (newv, oldv))->
+			when (newv /= oldv) $
+				replaceDiff diffupdate k newv
+	forM_ (M.toList $ M.difference new old) $
+		uncurry (addDiff diffupdate)
+	forM_ (M.keys $ M.difference old new) $
+		removeDiff diffupdate
+
+updateField
+	:: (Monad m, Ord a, Eq b)
+	=> v
+	-> v
+	-> (v -> M.Map a b)
+	-> DiffUpdate a b m
+	-> m ()
+updateField old new f = updateMap (f old) (f new)
