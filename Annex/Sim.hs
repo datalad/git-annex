@@ -465,8 +465,6 @@ cloneSimRepo simreponame u parent dest st = do
 		, Param "--shared"
 		, Param "--quiet"
 		-- Avoid overhead of checking out the working tree.
-		-- Note that, on visiting the simulated repo,
-		-- the working tree needs to be reset.
 		, Param "--no-checkout"
 		-- Make sure the origin gets that name.
 		, Param "--origin", Param "origin"
@@ -550,9 +548,9 @@ updateSimRepoState newst sr = do
 			}
 		-- XXX TODO update location logs from simLocations
 		updateField oldst newst simFiles $ DiffUpdate
-			{ replaceDiff = addannexedfile
-			, addDiff = addannexedfile
-			, removeDiff = liftIO . removeWhenExistsWith R.removeLink 
+			{ replaceDiff = stageannexedfile
+			, addDiff = stageannexedfile
+			, removeDiff = unstageannexedfile
 			}
 		Annex.Queue.flush
 	let ard' = ard { Annex.rebalance = simRebalance newst }
@@ -563,10 +561,14 @@ updateSimRepoState newst sr = do
   where
 	setdesc r u = describeUUID u $ toUUIDDesc $
 		simulatedRepositoryDescription r
-	addannexedfile f k = do
-		let f' = repoPath (simRepoGitRepo sr) P.</> f
+	stageannexedfile f k = do
+		let f' = annexedfilepath f
 		l <- calcRepo $ gitAnnexLink f' k
 		addAnnexLink l f'
+	unstageannexedfile f = do
+		liftIO $ removeWhenExistsWith R.removeLink $
+			annexedfilepath f
+	annexedfilepath f = repoPath (simRepoGitRepo sr) P.</> f
 
 data DiffUpdate a b m = DiffUpdate
 	{ replaceDiff :: a -> b -> m ()
