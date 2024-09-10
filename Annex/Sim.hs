@@ -67,6 +67,7 @@ data SimState = SimState
 	, simRebalance :: Bool
 	, simGetExistingRepoByName :: GetExistingRepoByName
 	, simHistory :: [SimCommand]
+	, simVectorClock :: VectorClock
 	}
 	deriving (Show)
 
@@ -89,11 +90,12 @@ emptySimState rng repobyname = SimState
 	, simRebalance = False
 	, simGetExistingRepoByName = repobyname
 	, simHistory = []
+	, simVectorClock = VectorClock 0
 	}
 
 -- State that can vary between different repos in the simulation.
 data SimRepoState = SimRepoState
-	{ simLocations :: M.Map Key (S.Set UUID)
+	{ simLocations :: M.Map Key (M.Map UUID LocationState)
 	, simIsSpecialRemote :: Bool
 	, simRepo :: Maybe SimRepo
 	}
@@ -101,17 +103,43 @@ data SimRepoState = SimRepoState
 instance Show SimRepoState where
 	show _ = "SimRepoState"
 
-setPresentKey :: UUID -> Key -> SimRepoState -> SimRepoState
-setPresentKey u k rst = rst
+data LocationState = LocationState VectorClock Bool
+	deriving (Eq, Show)
+
+newtype VectorClock = VectorClock Int
+	deriving (Eq, Ord, Show)
+
+newerLocationState ::  LocationState -> LocationState -> LocationState
+newerLocationState l1@(LocationState vc1 _) l2@(LocationState vc2 _)
+	| vc1 > vc2 = l1
+	| otherwise = l2
+
+setPresentKey :: VectorClock -> UUID -> Key -> SimRepoState -> SimRepoState
+setPresentKey vc u k rst = rst
 	{ simLocations = 
-		M.insertWith S.union k (S.singleton u) (simLocations rst)
+		M.insertWith (M.unionWith newerLocationState) k
+			(M.singleton u (LocationState vc True))
+			(simLocations rst)
 	}
+
+getSimLocations :: SimRepoState -> Key -> S.Set UUID
+getSimLocations rst k =
+	maybe mempty getSimLocations' $
+		M.lookup k (simLocations rst)
+
+getSimLocations' :: M.Map UUID LocationState -> S.Set UUID
+getSimLocations' = M.keysSet . M.filter present
+  where
+	present (LocationState _ b) = b
 
 newtype RepoName = RepoName { fromRepoName :: String }
 	deriving (Show, Eq, Ord)
 
 newtype RemoteName = RemoteName { fromRemoteName :: String }
 	deriving (Show, Eq, Ord)
+
+remoteNameToRepoName :: RemoteName -> RepoName
+remoteNameToRepoName (RemoteName n) = RepoName n
 
 data SimCommand
 	= CommandInit RepoName
@@ -149,6 +177,14 @@ data SimAction
 	deriving (Show)
 
 runSimCommand :: SimCommand -> SimState -> Annex SimState
+runSimCommand (CommandStep n) st
+	| n > 0 = case randomRepo st of
+		(Just (repo, u), st') ->
+			let (act, st'') = randomAction u st'
+			in runSimCommand (CommandAction repo act) st''
+				>>= runSimCommand (CommandStep (pred n))
+		(Nothing, st') -> return st'
+	| otherwise = return st
 runSimCommand cmd st = case applySimCommand cmd st of
 	Left err -> giveup err
 	Right (Right st') -> return st'
@@ -158,16 +194,13 @@ applySimCommand
 	:: SimCommand
 	-> SimState
 	-> Either String (Either (Annex SimState) SimState)
-applySimCommand (CommandStep n) st
-	| n > 0 = case randomRepo st of
-		(Just (_repo, u), st') ->
-			let (act, st'') = randomAction u st'
-			    st''' = applySimAction u act st''
-			in applySimCommand (CommandStep (pred n)) st'''
-		(Nothing, st') -> Right $ Right st'
-	| otherwise = Right $ Right st
 applySimCommand c st = 
-	applySimCommand' c $ st { simHistory = c : simHistory st }
+	applySimCommand' c $ st
+		{ simHistory = c : simHistory st
+		, simVectorClock = 
+			let (VectorClock c) = simVectorClock st 
+			in VectorClock (succ c)
+		}
 
 applySimCommand'
 	:: SimCommand
@@ -214,22 +247,23 @@ applySimCommand' (CommandAdd file sz repo) st = checkKnownRepo repo st $ \u ->
 		{ simFiles = M.insert (toRawFilePath file) k (simFiles st')
 		, simRepoState = case M.lookup repo (simRepoState st') of
 			Just rst -> M.insert repo
-				(setPresentKey u k rst)
+				(setPresentKey (simVectorClock st) u k rst)
 				(simRepoState st')
 			Nothing -> error "no simRepoState in applySimCommand CommandAdd"
 		}
 applySimCommand' (CommandStep _) _ = error "applySimCommand' CommandStep"
 applySimCommand' (CommandAction repo act) st =
 	checkKnownRepo repo st $ \u -> 
-		Right $ Right $ applySimAction u act st
+		applySimAction repo u act st
 applySimCommand' (CommandSeed rngseed) st = Right $ Right $ st
 	{ simRng = mkStdGen rngseed
 	}
 applySimCommand' (CommandPresent repo file) st = checkKnownRepo repo st $ \u ->
 	case (M.lookup (toRawFilePath file) (simFiles st), M.lookup repo (simRepoState st)) of
-		(Just k, Just rst) -> case M.lookup k (simLocations rst) of
-			Just locs | S.member u locs -> Right $ Right st
-			_ -> missing
+		(Just k, Just rst)
+			| u `S.member` getSimLocations rst k ->
+				Right $ Right st
+			| otherwise -> missing
 		(Just _, Nothing) -> missing
 		(Nothing, _) -> Left $ "Expected " ++ file
 			++ " to be present in " ++ fromRepoName repo 
@@ -239,9 +273,10 @@ applySimCommand' (CommandPresent repo file) st = checkKnownRepo repo st $ \u ->
 		++ fromRepoName repo ++ ", but it is not."
 applySimCommand' (CommandNotPresent repo file) st = checkKnownRepo repo st $ \u ->
 	case (M.lookup (toRawFilePath file) (simFiles st), M.lookup repo (simRepoState st)) of
-		(Just k, Just rst) -> case M.lookup k (simLocations rst) of
-			Just locs | S.notMember u locs -> Right $ Right st
-			_ -> present
+		(Just k, Just rst)
+			| u `S.notMember` getSimLocations rst k ->
+				Right $ Right st
+			| otherwise -> present
 		(Just _, Nothing) -> present
 		(Nothing, _) -> Left $ "Expected " ++ file
 			++ " to not be present in " ++ fromRepoName repo 
@@ -293,15 +328,46 @@ applySimCommand' (CommandRebalance b) st = Right $ Right $ st
 	}
 
 -- XXX todo
-applySimAction :: UUID -> SimAction -> SimState -> SimState
-applySimAction u (ActionPull remote) st = undefined
-applySimAction u (ActionPush remote) st = undefined
-applySimAction u (ActionGetWanted remote) st = undefined
-applySimAction u (ActionDropUnwanted Nothing) st = undefined
-applySimAction u (ActionDropUnwanted (Just remote)) st = undefined
-applySimAction u (ActionSendWanted remote) st = undefined
-applySimAction u (ActionGitPush remote) st = undefined
-applySimAction u (ActionGitPull remote) st = undefined
+applySimAction
+	:: RepoName
+	-> UUID
+	-> SimAction
+	-> SimState 
+	-> Either String (Either (Annex SimState) SimState)
+applySimAction r u (ActionPull remote) st = undefined
+applySimAction r u (ActionPush remote) st = undefined
+applySimAction r u (ActionGetWanted remote) st = undefined
+applySimAction r u (ActionDropUnwanted Nothing) st = undefined
+applySimAction r u (ActionDropUnwanted (Just remote)) st = undefined
+applySimAction r u (ActionSendWanted remote) st = undefined
+applySimAction r u (ActionGitPush remote) st =
+	checkKnownRemote remote r u st $ \_ ->
+		simulateGitAnnexMerge r (remoteNameToRepoName remote) st
+applySimAction r u (ActionGitPull remote) st =
+	checkKnownRemote remote r u st $ \_ ->
+		simulateGitAnnexMerge (remoteNameToRepoName remote) r st
+
+simulateGitAnnexMerge
+	:: RepoName
+	-> RepoName
+	-> SimState
+	-> Either String (Either (Annex SimState) SimState)
+simulateGitAnnexMerge src dest st = 
+	case M.lookup dest (simRepoState st) of
+		Nothing -> Left $ "Unable to find simRepoState for " ++ fromRepoName dest
+		Just destst -> case M.lookup src (simRepoState st) of
+			Nothing -> Left $ "Unable to find simRepoState for " ++ fromRepoName src
+			Just srcst -> Right $ Right $
+				let locs = M.unionWith
+					(M.unionWith newerLocationState)
+					(simLocations destst)
+					(simLocations srcst)
+				    destst' = destst { simLocations = locs }
+				in st
+					{ simRepoState = M.insert dest
+						destst'
+						(simRepoState st)
+					}
 
 checkNonexistantRepo :: RepoName -> SimState -> Either String a -> Either String a
 checkNonexistantRepo reponame st a = case M.lookup reponame (simRepos st) of
@@ -314,6 +380,15 @@ checkKnownRepo reponame st a = case M.lookup reponame (simRepos st) of
 	Just u -> a u
 	Nothing -> Left $ "No repository in the simulation is named \""
 		++ fromRepoName reponame ++ "\"."
+
+checkKnownRemote :: RemoteName -> RepoName -> UUID -> SimState -> (UUID -> Either String a) -> Either String a
+checkKnownRemote remotename reponame u st a =
+	let rs = fromMaybe mempty $ M.lookup u (simConnections st)
+	in if S.member remotename rs
+		then checkKnownRepo (remoteNameToRepoName remotename) st a
+		else Left $ "Repository " ++ fromRepoName reponame 
+			++ " does not have a remote named \"" 
+			++ fromRemoteName remotename ++ "\"."
 
 checkValidPreferredContentExpression :: PreferredContentExpression -> v -> Either String v
 checkValidPreferredContentExpression expr v =
@@ -499,7 +574,7 @@ updateSimRepos parent getdest st = do
 updateSimRepoStates :: SimState -> IO SimState
 updateSimRepoStates st = go st (M.toList $ simRepoState st)
   where
-	go st' [] = return st
+	go st' [] = return st'
 	go st' ((reponame, rst):rest) = case simRepo rst of
 		Just sr -> do
 			sr' <- updateSimRepoState st sr
@@ -619,12 +694,16 @@ updateSimRepoState newst sr = do
 			}
 		updateField oldst newst getlocations $ DiffUpdate
 			{ replaceDiff = \k oldls newls -> do
+				let olds = getSimLocations' oldls
+				let news = getSimLocations' newls
 				setlocations InfoPresent k
-					(S.difference newls oldls)
+					(S.difference news olds)
 				setlocations InfoMissing k
-					(S.difference oldls newls)
-			, addDiff = setlocations InfoPresent
-			, removeDiff = setlocations InfoMissing
+					(S.difference olds news)
+			, addDiff = \k ls -> setlocations InfoPresent k
+				(getSimLocations' ls)
+			, removeDiff = \k ls -> setlocations InfoMissing k
+				(getSimLocations' ls)
 			}
 		updateField oldst newst simFiles $ DiffUpdate
 			{ replaceDiff = const . stageannexedfile
@@ -651,8 +730,7 @@ updateSimRepoState newst sr = do
 	getlocations = maybe mempty simLocations
 		. M.lookup (simRepoName sr)
 		. simRepoState
-	setlocations s k ls = 
-		mapM_ (\l -> logChange NoLiveUpdate k l s) (S.toList ls)
+	setlocations s k = mapM_ (\l -> logChange NoLiveUpdate k l s)
 
 data DiffUpdate a b m = DiffUpdate
 	{ replaceDiff :: a -> b -> b -> m ()
