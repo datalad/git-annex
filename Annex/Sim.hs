@@ -168,7 +168,7 @@ data SimCommand
 	| CommandNotPresent RepoName RawFilePath
 	| CommandNumCopies Int
 	| CommandMinCopies Int
-	| CommandTrustLevel RepoName String
+	| CommandTrustLevel RepoName TrustLevel
 	| CommandGroup RepoName Group
 	| CommandUngroup RepoName Group
 	| CommandWanted RepoName PreferredContentExpression
@@ -305,13 +305,12 @@ applySimCommand' (CommandNumCopies n) st = Right $ Right $ st
 applySimCommand' (CommandMinCopies n) st = Right $ Right $ st
 	{ simMinCopies = configuredMinCopies n
 	}
-applySimCommand' (CommandTrustLevel repo s) st = checkKnownRepo repo st $ \u ->
-	case readTrustLevel s of
-		Just trustlevel -> Right $ Right $ st
+applySimCommand' (CommandTrustLevel repo trustlevel) st =
+	checkKnownRepo repo st $ \u ->
+		 Right $ Right $ st
 			{ simTrustLevels = M.insert u trustlevel
 				(simTrustLevels st)
 			}
-		Nothing -> Left $ "Unknown trust level \"" ++ s ++ "\"."
 applySimCommand' (CommandGroup repo groupname) st = checkKnownRepo repo st $ \u ->
 	Right $ Right $ st
 		{ simGroups = M.insertWith S.union u

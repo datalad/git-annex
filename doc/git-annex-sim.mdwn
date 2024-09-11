@@ -79,7 +79,7 @@ Here is an example sim file:
 
     # remove foo's remote bar and see if a new file added to foo reaches bar
     disconnect foo -> bar
-    add foo foo.mp3 2mb
+    add foo.mp3 2mb foo
     step 5
 
 # SIM COMMANDS

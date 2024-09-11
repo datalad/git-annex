@@ -29,7 +29,6 @@ seek _ = do
 		let getpath = GetSimRepoPath $ \u -> tmpdir </> fromUUID u
 		let st = emptySimState rng repobyname getpath
 		st' <- runSimCommand (CommandInit (RepoName "foo")) st
-			>>= runSimCommand (CommandTrustLevel (RepoName "foo") "trusted")
 			>>= runSimCommand (CommandUse (RepoName "bar") "here")
 			>>= runSimCommand (CommandConnect (RepoName "foo") (RemoteName "bar"))
 			>>= runSimCommand (CommandConnect (RepoName "bar") (RemoteName "foo"))
