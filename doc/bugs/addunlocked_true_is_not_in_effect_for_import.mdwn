@@ -1,0 +1,56 @@
+### Please describe the problem.
+
+Here is a reproducer
+```
+#!/bin/bash
+
+export PS4='> '
+set -x
+set -eu
+cd "$(mktemp -d ${TMPDIR:-/tmp}/dl-XXXXXXX)"
+
+mkdir d-in d-repo 
+echo content >| d-in/file 
+
+function dance() {
+    git annex import master --from d-in
+    # but we need to merge it
+    git merge d-in/master
+    ls -l
+    grep -e . *
+}
+
+cd d-repo 
+git init
+git annex init 
+git annex initremote d-in type=directory directory=../d-in exporttree=yes importtree=yes encryption=none
+git config annex.addunlocked true
+
+ls -l ../d-in
+dance
+
+echo "sample" > samplefile
+git annex add samplefile
+git commit -m 'Committing explicitly samplefile'
+ls -l samplefile
+git show
+
+dance
+
+```
+
+which even if using super fresh annex 10.20240831+git21-gd717e9aca0-1~ndall+1 shows that files which were obtained via `annex import` and not added unlocked, whenever those which are `git annex add`ed directly, are:
+
+```
+> ls -l
+total 8
+lrwxrwxrwx 1 yoh yoh 178 Sep 11 16:45 file -> .git/annex/objects/zm/2W/SHA256E-s8--434728a410a78f56fc1b5899c3593436e61ab0c731e9072d95e96db290205e53/SHA256E-s8--434728a410a78f56fc1b5899c3593436e61ab0c731e9072d95e96db290205e53
+-rw-rw-r-- 1 yoh yoh   7 Sep 11 16:45 samplefile
+```
+
+IMHO behavior of `import` should respect setting of `annex.addunlocked`.
+
+This was to consider using `import` for a folder with DANDI stats. For now I will just add them directly.
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]
