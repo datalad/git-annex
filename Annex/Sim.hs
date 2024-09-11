@@ -336,46 +336,67 @@ applySimCommand' (CommandRebalance b) st = Right $ Right $ st
 	{ simRebalance = b
 	}
 
--- XXX todo
 applySimAction
 	:: RepoName
 	-> UUID
 	-> SimAction
 	-> SimState 
 	-> Either String (Either (Annex SimState) SimState)
-applySimAction r u (ActionPull remote) st = undefined
-applySimAction r u (ActionPush remote) st = undefined
+applySimAction r u (ActionPull remote) st = undefined -- TODO
+applySimAction r u (ActionPush remote) st = undefined -- TODO
 applySimAction r u (ActionGetWanted remote) st =
-	checkKnownRemote remote r u st $ \remoteu ->
-		Right $ Left $ liftIO $
-			runSimRepo r st $ \rst ->
-				let l = M.toList $
-					M.filter (knowninremote remoteu rst) $
-					simFiles st
-				in go l st
+	overFilesRemote r u remote S.member wanted go st
   where
-	go [] st' = return st'
-	go ((f, k):rest) st' = do
-		ifM (wantGet NoLiveUpdate False (Just k) af)
-			( go rest $ setPresentKey u k r $
-				addHistory st' $ CommandPresent r f
-			, go rest st'
-			)
-	  where
-		af = AssociatedFile $ Just f
-
-	knowninremote remoteu rst k = 
-		remoteu `S.member` getSimLocations rst k
-
-applySimAction r u (ActionDropUnwanted Nothing) st = undefined
-applySimAction r u (ActionDropUnwanted (Just remote)) st = undefined
-applySimAction r u (ActionSendWanted remote) st = undefined
+	wanted k f _ = wantGet NoLiveUpdate False k f
+	go u _ f k r st' = setPresentKey u k r $
+		addHistory st' $ CommandPresent r f
+applySimAction r u (ActionSendWanted remote) st = 
+	overFilesRemote r u remote S.notMember wanted go st
+  where
+	wanted = wantGetBy NoLiveUpdate False
+	go _ remoteu f k r st' = setPresentKey remoteu k r $
+		-- Sending to a remote updates the location log
+		-- of both the repository sending and the remote.
+		setPresentKey remoteu k (remoteNameToRepoName remote) $
+		addHistory st' $ CommandPresent (remoteNameToRepoName remote) f
+applySimAction r u (ActionDropUnwanted Nothing) st = undefined -- TODO
+applySimAction r u (ActionDropUnwanted (Just remote)) st = undefined -- TODO
 applySimAction r u (ActionGitPush remote) st =
 	checkKnownRemote remote r u st $ \_ ->
 		simulateGitAnnexMerge r (remoteNameToRepoName remote) st
 applySimAction r u (ActionGitPull remote) st =
 	checkKnownRemote remote r u st $ \_ ->
 		simulateGitAnnexMerge (remoteNameToRepoName remote) r st
+
+overFilesRemote
+	:: RepoName
+	-> UUID
+	-> RemoteName
+	-> (UUID -> S.Set UUID -> Bool) 
+	-> (Maybe Key -> AssociatedFile -> UUID -> Annex Bool)
+        -> (UUID -> UUID -> RawFilePath -> Key -> RepoName -> SimState -> SimState)
+	-> SimState
+	-> Either String (Either (Annex SimState) SimState)
+overFilesRemote r u remote remotepred checkwant handlewanted st = 
+	checkKnownRemote remote r u st $ \remoteu ->
+		Right $ Left $ liftIO $
+			runSimRepo r st $ \rst ->
+				let l = M.toList $
+					M.filter (checkremotepred remoteu rst) $
+					simFiles st
+				in go remoteu l st
+  where
+	go _ [] st' = return st'
+	go remoteu ((f, k):rest) st' = do
+		ifM (checkwant (Just k) af remoteu)
+			( go remoteu rest $ handlewanted u remoteu f k r st'
+			, go remoteu rest st'
+			)
+	  where
+		af = AssociatedFile $ Just f
+
+	checkremotepred remoteu rst k =
+		remotepred remoteu (getSimLocations rst k)
 
 simulateGitAnnexMerge
 	:: RepoName
