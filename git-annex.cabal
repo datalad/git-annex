@@ -578,6 +578,7 @@ Executable git-annex
     Annex.RepoSize.LiveUpdate
     Annex.SafeDropProof
     Annex.Sim
+    Annex.Sim.File
     Annex.SpecialRemote
     Annex.SpecialRemote.Config
     Annex.Ssh

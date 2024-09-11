@@ -11,6 +11,7 @@ module Command.Sim where
 
 import Command
 import Annex.Sim
+import Annex.Sim.File
 import Utility.Tmp.Dir
 
 import System.Random
@@ -32,7 +33,7 @@ seek _ = do
 			>>= runSimCommand (CommandUse (RepoName "bar") "here")
 			>>= runSimCommand (CommandConnect (RepoName "foo") (RemoteName "bar"))
 			>>= runSimCommand (CommandConnect (RepoName "bar") (RemoteName "foo"))
-			>>= runSimCommand (CommandAdd "bigfile" 1000000 (RepoName "foo"))
+			>>= runSimCommand (CommandAdd "bigfile" 1000000 [RepoName "foo"])
 			>>= runSimCommand (CommandAction (RepoName "bar") (ActionGitPull (RemoteName "foo")))
 			>>= runSimCommand (CommandAction (RepoName "bar") (ActionGetWanted (RemoteName "foo")))
 		st'' <- liftIO $ updateSimRepos st'

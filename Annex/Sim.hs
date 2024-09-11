@@ -36,7 +36,6 @@ import Logs.Location
 import qualified Annex
 import qualified Remote
 import qualified Git.Construct
-import qualified Git.Remote.Remove
 import qualified Annex.Queue
 
 import System.Random
@@ -161,7 +160,7 @@ data SimCommand
 	| CommandConnect RepoName RemoteName
 	| CommandDisconnect RepoName RemoteName
 	| CommandAddTree RepoName PreferredContentExpression
-	| CommandAdd RawFilePath ByteSize RepoName
+	| CommandAdd RawFilePath ByteSize [RepoName]
 	| CommandStep Int
 	| CommandAction RepoName SimAction
 	| CommandSeed Int
@@ -177,6 +176,8 @@ data SimCommand
 	| CommandGroupWanted Group PreferredContentExpression
 	| CommandMaxSize RepoName MaxSize
 	| CommandRebalance Bool
+	| CommandComment String
+	| CommandBlank
 	deriving (Show)
 
 data SimAction
@@ -207,11 +208,11 @@ applySimCommand
 	:: SimCommand
 	-> SimState
 	-> Either String (Either (Annex SimState) SimState)
-applySimCommand c st = 
-	applySimCommand' c $ flip addHistory c $ st
+applySimCommand cmd st = 
+	applySimCommand' cmd $ flip addHistory cmd $ st
 		{ simVectorClock = 
-			let (VectorClock c) = simVectorClock st 
-			in VectorClock (succ c)
+			let (VectorClock clk) = simVectorClock st 
+			in VectorClock (succ clk)
 		}
 
 applySimCommand'
@@ -253,11 +254,16 @@ applySimCommand' (CommandAddTree repo expr) st =
 	checkKnownRepo repo st $ const $
 		checkValidPreferredContentExpression expr $ Left $
 			error "TODO" -- XXX
-applySimCommand' (CommandAdd file sz repo) st = checkKnownRepo repo st $ \u ->
+applySimCommand' (CommandAdd file sz repos) st = 
 	let (k, st') = genSimKey sz st
-	in Right $ Right $ setPresentKey u k repo $ st'
-		{ simFiles = M.insert file k (simFiles st')
-		}
+	in go k st' repos
+  where
+	go k st' [] = Right $ Right st
+	go k st' (repo:rest) = checkKnownRepo repo st' $ \u ->
+		let st'' = setPresentKey u k repo $ st'
+			{ simFiles = M.insert file k (simFiles st')
+			}
+		in go k st'' rest
 applySimCommand' (CommandStep _) _ = error "applySimCommand' CommandStep"
 applySimCommand' (CommandAction repo act) st =
 	checkKnownRepo repo st $ \u -> 
@@ -335,6 +341,8 @@ applySimCommand' (CommandMaxSize repo sz) st = checkKnownRepo repo st $ \u ->
 applySimCommand' (CommandRebalance b) st = Right $ Right $ st
 	{ simRebalance = b
 	}
+applySimCommand' (CommandComment _) st = Right $ Right st
+applySimCommand' CommandBlank st = Right $ Right st
 
 applySimAction
 	:: RepoName

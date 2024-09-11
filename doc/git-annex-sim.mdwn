@@ -167,7 +167,7 @@ as passed to "git annex sim" while a simulation is running.
 
   Simulate the equivilant of [[git-annex-pull]](1).
 
-* `action repo pull remote`
+* `action repo push remote`
   
   Simulate the equivilant of [[git-annex-push]](1).
 
