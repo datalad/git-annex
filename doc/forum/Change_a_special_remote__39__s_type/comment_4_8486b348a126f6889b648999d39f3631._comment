@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="mike@2d6d71f56ce2a992244350475251df87c26fe351"
+ nickname="mike"
+ avatar="http://cdn.libravatar.org/avatar/183fa439752e2f0c6f39ede658d81050"
+ subject="comment 4"
+ date="2024-09-12T05:22:18Z"
+ content="""
+When trying to change a remote to the new rclone special remote (from `type=external externaltype=rclone`), I encountered this:
+
+```
+$ git annex enableremote halde-pcloud type=rclone 
+enableremote halde-pcloud 
+git-annex: getRemoteConfigValue externaltype found value of unexpected type PassedThrough. This is a bug in git-annex!
+CallStack (from HasCallStack):
+  error, called at ./Annex/SpecialRemote/Config.hs:192:28 in main:Annex.SpecialRemote.Config
+  getRemoteConfigValue, called at ./Remote/External.hs:920:35 in main:Remote.External
+failed
+enableremote: 1 failed
+```
+
+(The reason I tried it this way is that I didn't want to lose the encrypted files (`encryption=shared`))
+"""]]
