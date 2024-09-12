@@ -1,0 +1,14 @@
+Some git hosting sites (e.g forgejo instances tweaked to support git-annex) can store annexed contents.
+The goal here would be to encrypt the annexed file contents, but not the git repo.
+What would it take?
+
+Git-annex encryption can be enabled for special remotes, but in this case there is only a "regular" git remote so there is no way to set the config.
+
+My first intuition was to initialize a type=git special remote pointing to the same location, but it does not support encryption
+(`initremote` fails with `git-annex: Unexpected parameters: encryption keyid`).
+
+There is the gcrypt special remote (and it worked with the forgejo instance I tried), but it encrypts / obfuscates everything (file names, commits etc.) and turns each push into a force push.
+
+The advantage of having the annexed files but not the git repo encrypted is that the file tree, commit history, readme and all the things typically displayed by the site would still be viewable (communicating repository layout, contents), but GPG keys would be used to control practical access (possibly on top of site's access premissions).
+
+Thanks in advance for considering! -- MSz
