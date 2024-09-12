@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="mike@2d6d71f56ce2a992244350475251df87c26fe351"
+ nickname="mike"
+ avatar="http://cdn.libravatar.org/avatar/183fa439752e2f0c6f39ede658d81050"
+ subject="comment 4"
+ date="2024-09-12T15:40:24Z"
+ content="""
+Here are a few pointers for switching from `git-annex-remote-rclone` (old helper program) to `rclone gitannex` (rclone's builtin support):
+
+0. Figure out `rcloneprefix` (directory relative to the rclone remote (rclone term here)) and `rclonelayout` (layout of the git-annex content therein). If you set it up just like in `git-annex-remote-rclone`'s README, those are `git-annex` and `lower`.
+1. Update rclone and git-annex
+2. Rename the old remote, `git remote rename my_rclone_remote my_rclone_remote.old; git annex renameremote my_rclone_remote my_rclone_remote.old`
+3. Create a new remote, copying the encryption settings: `git annex initremote my_rclone_remote --sameas=my_rclone_remote.old type=rclone rcloneremotename=my_rclone_remote rcloneprefix=git-annex rclonelayout=lower`
+
+It might be possible to just change the type of the remote but at the time I'm writing this, that didn't work so I renamed the old remote and created a new one, with `--sameas` to not lose any encryption settings.
+"""]]
