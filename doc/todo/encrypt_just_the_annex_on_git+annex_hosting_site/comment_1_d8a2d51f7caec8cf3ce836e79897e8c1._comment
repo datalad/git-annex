@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="👍 +1 for encrypting the annex on regular git remotes"
+ date="2024-09-12T14:51:20Z"
+ content="""
+Funny, playing around with my own forgejo-aneksajo instance, I thought about exactly that 😀 Being able to encrypt only the annex but keeping the repo open would be cool.
+"""]]
