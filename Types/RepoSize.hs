@@ -26,7 +26,7 @@ newtype RepoSize = RepoSize { fromRepoSize :: Integer }
 
 -- The maximum size of a repo.
 newtype MaxSize = MaxSize { fromMaxSize :: Integer }
-	deriving (Show, Eq, Ord)
+	deriving (Show, Read, Eq, Ord)
 
 -- An offset to the size of a repo.
 newtype SizeOffset = SizeOffset { fromSizeChange :: Integer }

@@ -68,7 +68,7 @@ instance NFData KeyData
 data Key = MkKey
 	{ keyData :: KeyData
 	, keySerialization :: S.ShortByteString
-	} deriving (Show, Generic)
+	} deriving (Show, Read, Generic)
 
 instance Eq Key where
 	-- comparing the serialization would be unnecessary work

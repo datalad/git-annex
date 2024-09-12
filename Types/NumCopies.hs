@@ -44,7 +44,7 @@ import Control.Monad.IO.Class (MonadIO)
 import Data.Time.Clock.POSIX (POSIXTime)
 
 newtype NumCopies = NumCopies Int
-	deriving (Ord, Eq, Show)
+	deriving (Ord, Eq, Show, Read)
 
 -- Smart constructor; prevent configuring numcopies to 0 which would
 -- cause data loss.
@@ -57,7 +57,7 @@ fromNumCopies :: NumCopies -> Int
 fromNumCopies (NumCopies n) = n
 
 newtype MinCopies = MinCopies Int
-	deriving (Ord, Eq, Show)
+	deriving (Ord, Eq, Show, Read)
 
 configuredMinCopies :: Int -> MinCopies
 configuredMinCopies n
