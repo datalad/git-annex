@@ -153,12 +153,49 @@ newtype RemoteName = RemoteName { fromRemoteName :: String }
 remoteNameToRepoName :: RemoteName -> RepoName
 remoteNameToRepoName (RemoteName n) = RepoName n
 
+repoNameToRemoteName :: RepoName -> RemoteName
+repoNameToRemoteName (RepoName n) = RemoteName n
+
+data Connections
+	= RepoName :-> RemoteName
+	| RemoteName :<- RepoName
+	| RepoName :<-> RepoName
+	| RepoName :=> Connections
+	| RemoteName :<= Connections
+	| RepoName :<=> Connections
+	deriving (Show)
+
+leftSideOfConnection :: Connections -> RepoName
+leftSideOfConnection (reponame :-> _) = reponame
+leftSideOfConnection (remotename :<- _) = remoteNameToRepoName remotename
+leftSideOfConnection (reponame :<-> _) = reponame
+leftSideOfConnection (reponame :=> _) = reponame
+leftSideOfConnection (remotename :<= _) = remoteNameToRepoName remotename
+leftSideOfConnection (reponame :<=> _) = reponame
+
+getConnection :: Connections -> (RepoName, RemoteName, Maybe Connections)
+getConnection (reponame :-> remotename) = (reponame, remotename, Nothing)
+getConnection (remotename :<- reponame) = (reponame, remotename, Nothing)
+getConnection (reponame1 :<-> reponame2) =
+	( reponame1
+	, repoNameToRemoteName reponame2
+	, Just (reponame2 :-> repoNameToRemoteName reponame1)
+	)
+getConnection (reponame :=> c) =
+	(reponame, repoNameToRemoteName (leftSideOfConnection c), Just c)
+getConnection (remotename :<= c) = (leftSideOfConnection c, remotename, Just c)
+getConnection (reponame :<=> c) = 
+	( reponame
+	, repoNameToRemoteName (leftSideOfConnection c)
+	, Just (reponame :=> c)
+	)
+
 data SimCommand
 	= CommandInit RepoName
 	| CommandInitRemote RepoName
 	| CommandUse RepoName String
-	| CommandConnect RepoName RemoteName
-	| CommandDisconnect RepoName RemoteName
+	| CommandConnect Connections
+	| CommandDisconnect Connections
 	| CommandAddTree RepoName PreferredContentExpression
 	| CommandAdd RawFilePath ByteSize [RepoName]
 	| CommandStep Int
@@ -234,22 +271,34 @@ applySimCommand' (CommandUse reponame s) st =
 		Left msg -> Left $ "Unable to use a repository \"" 
 			++ fromRepoName reponame 
 			++ "\" in the simulation because " ++ msg
-applySimCommand' (CommandConnect repo remote) st = 
-	checkKnownRepo repo st $ \u -> Right $ Right $ st
-		{ simConnections = 
-			let s = case M.lookup u (simConnections st) of
-				Just cs -> S.insert remote cs
-				Nothing -> S.singleton remote
-			in M.insert u s (simConnections st)
-		}
-applySimCommand' (CommandDisconnect repo remote) st = 
-	checkKnownRepo repo st $ \u -> Right $ Right $ st
-		{ simConnections = 
-			let sc = case M.lookup u (simConnections st) of
-				Just s -> S.delete remote s
-				Nothing -> S.empty
-			in M.insert u sc (simConnections st)
-		}
+applySimCommand' (CommandConnect connections) st =
+	let (repo, remote, mconnections) = getConnection connections
+	in checkKnownRepo repo st $ \u -> 
+		let st' = st
+			{ simConnections = 
+				let s = case M.lookup u (simConnections st) of
+					Just cs -> S.insert remote cs
+					Nothing -> S.singleton remote
+				in M.insert u s (simConnections st)
+			}
+		in case mconnections of
+			Nothing -> Right $ Right st'
+			Just connections' ->
+				applySimCommand' (CommandConnect connections') st'
+applySimCommand' (CommandDisconnect connections) st = 
+	let (repo, remote, mconnections) = getConnection connections
+	in checkKnownRepo repo st $ \u -> 
+		let st' = st
+			{ simConnections = 
+				let sc = case M.lookup u (simConnections st) of
+					Just s -> S.delete remote s
+					Nothing -> S.empty
+				in M.insert u sc (simConnections st)
+			}
+		in case mconnections of
+			Nothing -> Right $ Right $ st
+			Just connections' ->
+				applySimCommand' (CommandDisconnect connections') st'
 applySimCommand' (CommandAddTree repo expr) st =
 	checkKnownRepo repo st $ const $
 		checkValidPreferredContentExpression expr $ Left $

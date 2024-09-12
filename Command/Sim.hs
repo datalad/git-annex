@@ -30,8 +30,6 @@ seek _ = do
 		let st = emptySimState rng repobyname getpath
 		st' <- runSimCommand (CommandInit (RepoName "foo")) st
 			>>= runSimCommand (CommandUse (RepoName "bar") "here")
-			>>= runSimCommand (CommandConnect (RepoName "foo") (RemoteName "bar"))
-			>>= runSimCommand (CommandConnect (RepoName "bar") (RemoteName "foo"))
 			>>= runSimCommand (CommandAdd "bigfile" 1000000 [RepoName "foo"])
 			>>= runSimCommand (CommandAction (RepoName "bar") (ActionGitPull (RemoteName "foo")))
 			>>= runSimCommand (CommandAction (RepoName "bar") (ActionGetWanted (RemoteName "foo")))
