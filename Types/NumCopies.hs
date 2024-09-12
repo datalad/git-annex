@@ -26,6 +26,8 @@ module Types.NumCopies (
 	mkSafeDropProof,
 	ContentRemovalLock(..),
 	p2pDefaultLockContentRetentionDuration,
+	safeDropAnalysis,
+	SafeDropAnalysis(..),
 ) where
 
 import Types.UUID

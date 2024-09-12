@@ -227,6 +227,9 @@ as passed to "git annex sim" while a simulation is running.
   Sets the desired number of copies. This is equivilant to
   [[git-annex-numcopies]](1).
 
+  Note that other configuration that sets numcopies, such as .gitattributes
+  files, is not used by the simulation.
+
 * `mincopies N`
 
   Sets the minimum number of copies. This is equivilant to

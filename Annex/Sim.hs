@@ -115,22 +115,21 @@ newerLocationState l1@(LocationState vc1 _) l2@(LocationState vc2 _)
 	| vc1 > vc2 = l1
 	| otherwise = l2
 		
-{- Updates the state of repou to indicate that a key is
- - present or not in u. -}
-setPresentKey :: UUID -> Key -> UUID -> SimState -> SimState
-setPresentKey u k repou st = st
-	{ simRepoState = case M.lookup repou (simRepoState st) of
-		Just rst -> M.insert repou
-			(setPresentKey' (simVectorClock st) u k rst)
+{- Updates the state of stu to indicate that a key is present or not in u. -}
+setPresentKey :: Bool -> UUID -> Key -> UUID -> SimState -> SimState
+setPresentKey present u k stu st = st
+	{ simRepoState = case M.lookup stu (simRepoState st) of
+		Just rst -> M.insert stu
+			(setPresentKey' present (simVectorClock st) u k rst)
 			(simRepoState st)
 		Nothing -> error "no simRepoState in setPresentKey"
 	}
 
-setPresentKey' :: VectorClock -> UUID -> Key -> SimRepoState -> SimRepoState
-setPresentKey' vc u k rst = rst
+setPresentKey' :: Bool -> VectorClock -> UUID -> Key -> SimRepoState -> SimRepoState
+setPresentKey' present vc u k rst = rst
 	{ simLocations = 
 		M.insertWith (M.unionWith newerLocationState) k
-			(M.singleton u (LocationState vc True))
+			(M.singleton u (LocationState vc present))
 			(simLocations rst)
 	}
 
@@ -310,9 +309,9 @@ applySimCommand' (CommandAdd file sz repos) st =
 	let (k, st') = genSimKey sz st
 	in go k st' repos
   where
-	go k st' [] = Right $ Right st
+	go _k st' [] = Right $ Right st'
 	go k st' (repo:rest) = checkKnownRepo repo st' $ \u ->
-		let st'' = setPresentKey u k u $ st'
+		let st'' = setPresentKey True u k u $ st'
 			{ simFiles = M.insert file k (simFiles st')
 			}
 		in go k st'' rest
@@ -401,26 +400,68 @@ applySimAction
 	-> SimAction
 	-> SimState 
 	-> Either String (Either (Annex SimState) SimState)
-applySimAction r u (ActionPull remote) st = undefined -- TODO
-applySimAction r u (ActionPush remote) st = undefined -- TODO
+applySimAction _r _u (ActionPull _remote) _st = undefined -- TODO
+applySimAction _r _u (ActionPush _remote) _st = undefined -- TODO
 applySimAction r u (ActionGetWanted remote) st =
 	overFilesRemote r u remote S.member wanted go st
   where
 	wanted k f _ = wantGet NoLiveUpdate False k f
-	go u _ f k r st' = setPresentKey u k u $
+	go _remoteu f k _r st' = setPresentKey True u k u $
 		addHistory st' $ CommandPresent r f
 applySimAction r u (ActionSendWanted remote) st = 
 	overFilesRemote r u remote S.notMember wanted go st
   where
 	wanted = wantGetBy NoLiveUpdate False
-	go _ remoteu f k r st' = 
+	go remoteu f k _r st' = 
 		-- Sending to a remote updates the location log
 		-- of both the repository sending and the remote.
-		setPresentKey remoteu k remoteu $
-		setPresentKey remoteu k u $
+		setPresentKey True remoteu k remoteu $
+		setPresentKey True remoteu k u $
 		addHistory st' $ CommandPresent (remoteNameToRepoName remote) f
-applySimAction r u (ActionDropUnwanted Nothing) st = undefined -- TODO
-applySimAction r u (ActionDropUnwanted (Just remote)) st = undefined -- TODO
+applySimAction _r u (ActionDropUnwanted Nothing) st =
+	Right $ Left $ liftIO $ runSimRepo u st $ \rst ->
+		go rst (M.toList $ M.filter (present rst) $ simFiles st) st
+  where
+	present rst k = u `S.member` getSimLocations rst k
+
+	go _ [] st' = return st'
+	go rst ((f, k):rest) st' = do
+		ifM (wantDrop NoLiveUpdate False Nothing (Just k) af Nothing)
+			( go rst rest $ checkdrop rst k st'
+			, go rst rest st'
+			)
+	  where
+		af = AssociatedFile $ Just f
+
+	checkdrop rst k st' =
+		let numcopies = simNumCopies st'
+		    mincopies = simMinCopies st'
+		    verifiedcopies = mapMaybe (verifypresent k st') $
+		    	filter (/= u) $ S.toList $ getSimLocations rst k
+		in case safeDropAnalysis numcopies mincopies verifiedcopies Nothing of
+			UnsafeDrop -> st'
+			SafeDrop -> dodrop k st'
+			SafeDropCheckTime -> dodrop k st'
+
+	dodrop k = setPresentKey False u k u
+	
+	remotes = S.fromList $ mapMaybe 
+		(\remote -> M.lookup (remoteNameToRepoName remote) (simRepos st))
+		(maybe mempty S.toList $ M.lookup u $ simConnections st)
+	
+	verifypresent k st' ru = do
+		rst <- M.lookup ru (simRepoState st')
+		if present rst k
+			then if ru `S.member` remotes
+				then Just $ if simIsSpecialRemote rst
+					then mkVerifiedCopy RecentlyVerifiedCopy ru
+					else mkVerifiedCopy LockedCopy ru
+				else case M.lookup ru (simTrustLevels st') of
+					Just Trusted -> Just $
+						mkVerifiedCopy TrustedCopy ru
+					_ -> Nothing
+			else Nothing
+applySimAction _r _u (ActionDropUnwanted (Just _remote)) _st = undefined -- TODO
 applySimAction r u (ActionGitPush remote) st =
 	checkKnownRemote remote r u st $ \_ ->
 		simulateGitAnnexMerge r (remoteNameToRepoName remote) st
@@ -434,7 +475,7 @@ overFilesRemote
 	-> RemoteName
 	-> (UUID -> S.Set UUID -> Bool) 
 	-> (Maybe Key -> AssociatedFile -> UUID -> Annex Bool)
-        -> (UUID -> UUID -> RawFilePath -> Key -> RepoName -> SimState -> SimState)
+        -> (UUID -> RawFilePath -> Key -> RepoName -> SimState -> SimState)
 	-> SimState
 	-> Either String (Either (Annex SimState) SimState)
 overFilesRemote r u remote remotepred checkwant handlewanted st = 
@@ -449,7 +490,7 @@ overFilesRemote r u remote remotepred checkwant handlewanted st =
 	go _ [] st' = return st'
 	go remoteu ((f, k):rest) st' = do
 		ifM (checkwant (Just k) af remoteu)
-			( go remoteu rest $ handlewanted u remoteu f k r st'
+			( go remoteu rest $ handlewanted remoteu f k r st'
 			, go remoteu rest st'
 			)
 	  where
