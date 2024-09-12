@@ -27,8 +27,9 @@ seek :: CmdParams -> CommandSeek
 seek ("start":[]) = start Nothing
 seek ("start":simfile:[]) = start (Just simfile)
 seek ("end":[]) = do
-	simdir <- fromRepo gitAnnexSimDir
-	liftIO $ removeDirectoryRecursive $ fromRawFilePath simdir
+	simdir <- fromRawFilePath <$> fromRepo gitAnnexSimDir
+	whenM (liftIO $ doesDirectoryExist simdir) $ do
+		liftIO $ removeDirectoryRecursive simdir
 seek ("visit":reponame:[]) = do
 	simdir <- fromRepo gitAnnexSimDir
 	liftIO (restoreSim simdir) >>= \case
@@ -76,9 +77,10 @@ start simfile = do
 		{ simFile = Just simlogfile }
 	case simfile of
 		Nothing -> startup simdir st []
-		Just f -> case parseSimFile f of
-			Left err -> giveup err
-			Right cs -> startup simdir st cs
+		Just f -> liftIO (readFile f) >>= \c -> 
+			case parseSimFile c of
+				Left err -> giveup err
+				Right cs -> startup simdir st cs
 	showLongNote $ UnquotedString "Sim started, logging to sim file " 
 		<> QuotedPath (toRawFilePath simlogfile)
   where
