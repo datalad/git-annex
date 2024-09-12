@@ -52,7 +52,7 @@ import qualified System.FilePath.ByteString as P
 data SimState = SimState
 	{ simRepos :: M.Map RepoName UUID
 	, simRepoList :: [RepoName]
-	, simRepoState :: M.Map RepoName SimRepoState
+	, simRepoState :: M.Map UUID SimRepoState
 	, simConnections :: M.Map UUID (S.Set RemoteName)
 	, simFiles :: M.Map RawFilePath Key
 	, simRng :: StdGen
@@ -100,6 +100,7 @@ data SimRepoState = SimRepoState
 	{ simLocations :: M.Map Key (M.Map UUID LocationState)
 	, simIsSpecialRemote :: Bool
 	, simRepo :: Maybe SimRepo
+	, simRepoName :: RepoName
 	}
 	deriving (Show)
 
@@ -114,10 +115,12 @@ newerLocationState l1@(LocationState vc1 _) l2@(LocationState vc2 _)
 	| vc1 > vc2 = l1
 	| otherwise = l2
 		
-setPresentKey :: UUID -> Key -> RepoName -> SimState -> SimState
-setPresentKey u k repo st = st
-	{ simRepoState = case M.lookup repo (simRepoState st) of
-		Just rst -> M.insert repo
+{- Updates the state of repou to indicate that a key is
+ - present or not in u. -}
+setPresentKey :: UUID -> Key -> UUID -> SimState -> SimState
+setPresentKey u k repou st = st
+	{ simRepoState = case M.lookup repou (simRepoState st) of
+		Just rst -> M.insert repou
 			(setPresentKey' (simVectorClock st) u k rst)
 			(simRepoState st)
 		Nothing -> error "no simRepoState in setPresentKey"
@@ -309,7 +312,7 @@ applySimCommand' (CommandAdd file sz repos) st =
   where
 	go k st' [] = Right $ Right st
 	go k st' (repo:rest) = checkKnownRepo repo st' $ \u ->
-		let st'' = setPresentKey u k repo $ st'
+		let st'' = setPresentKey u k u $ st'
 			{ simFiles = M.insert file k (simFiles st')
 			}
 		in go k st'' rest
@@ -321,7 +324,7 @@ applySimCommand' (CommandSeed rngseed) st = Right $ Right $ st
 	{ simRng = mkStdGen rngseed
 	}
 applySimCommand' (CommandPresent repo file) st = checkKnownRepo repo st $ \u ->
-	case (M.lookup file (simFiles st), M.lookup repo (simRepoState st)) of
+	case (M.lookup file (simFiles st), M.lookup u (simRepoState st)) of
 		(Just k, Just rst)
 			| u `S.member` getSimLocations rst k ->
 				Right $ Right st
@@ -335,7 +338,7 @@ applySimCommand' (CommandPresent repo file) st = checkKnownRepo repo st $ \u ->
 		++ " to be present in " 
 		++ fromRepoName repo ++ ", but it is not."
 applySimCommand' (CommandNotPresent repo file) st = checkKnownRepo repo st $ \u ->
-	case (M.lookup file (simFiles st), M.lookup repo (simRepoState st)) of
+	case (M.lookup file (simFiles st), M.lookup u (simRepoState st)) of
 		(Just k, Just rst)
 			| u `S.notMember` getSimLocations rst k ->
 				Right $ Right st
@@ -404,16 +407,17 @@ applySimAction r u (ActionGetWanted remote) st =
 	overFilesRemote r u remote S.member wanted go st
   where
 	wanted k f _ = wantGet NoLiveUpdate False k f
-	go u _ f k r st' = setPresentKey u k r $
+	go u _ f k r st' = setPresentKey u k u $
 		addHistory st' $ CommandPresent r f
 applySimAction r u (ActionSendWanted remote) st = 
 	overFilesRemote r u remote S.notMember wanted go st
   where
 	wanted = wantGetBy NoLiveUpdate False
-	go _ remoteu f k r st' = setPresentKey remoteu k r $
+	go _ remoteu f k r st' = 
 		-- Sending to a remote updates the location log
 		-- of both the repository sending and the remote.
-		setPresentKey remoteu k (remoteNameToRepoName remote) $
+		setPresentKey remoteu k remoteu $
+		setPresentKey remoteu k u $
 		addHistory st' $ CommandPresent (remoteNameToRepoName remote) f
 applySimAction r u (ActionDropUnwanted Nothing) st = undefined -- TODO
 applySimAction r u (ActionDropUnwanted (Just remote)) st = undefined -- TODO
@@ -436,7 +440,7 @@ overFilesRemote
 overFilesRemote r u remote remotepred checkwant handlewanted st = 
 	checkKnownRemote remote r u st $ \remoteu ->
 		Right $ Left $ liftIO $
-			runSimRepo r st $ \rst ->
+			runSimRepo u st $ \rst ->
 				let l = M.toList $
 					M.filter (checkremotepred remoteu rst) $
 					simFiles st
@@ -460,21 +464,23 @@ simulateGitAnnexMerge
 	-> SimState
 	-> Either String (Either (Annex SimState) SimState)
 simulateGitAnnexMerge src dest st = 
-	case M.lookup dest (simRepoState st) of
-		Nothing -> Left $ "Unable to find simRepoState for " ++ fromRepoName dest
-		Just destst -> case M.lookup src (simRepoState st) of
-			Nothing -> Left $ "Unable to find simRepoState for " ++ fromRepoName src
-			Just srcst -> Right $ Right $
-				let locs = M.unionWith
-					(M.unionWith newerLocationState)
-					(simLocations destst)
-					(simLocations srcst)
-				    destst' = destst { simLocations = locs }
-				in st
-					{ simRepoState = M.insert dest
-						destst'
-						(simRepoState st)
-					}
+	case (M.lookup src (simRepos st), M.lookup dest (simRepos st)) of
+		(Just srcu, Just destu) -> case M.lookup destu (simRepoState st) of
+			Nothing -> Left $ "Unable to find simRepoState for " ++ fromRepoName dest
+			Just destst -> case M.lookup srcu (simRepoState st) of
+				Nothing -> Left $ "Unable to find simRepoState for " ++ fromRepoName src
+				Just srcst -> Right $ Right $
+					let locs = M.unionWith
+						(M.unionWith newerLocationState)
+						(simLocations destst)
+						(simLocations srcst)
+					    destst' = destst { simLocations = locs }
+					in st
+						{ simRepoState = M.insert destu
+							destst'
+							(simRepoState st)
+						}
+		_ -> Left $ "Unable to find " ++ fromRepoName src ++ " or " ++ fromRepoName dest ++ " in simRepos"
 
 checkNonexistantRepo :: RepoName -> SimState -> Either String a -> Either String a
 checkNonexistantRepo reponame st a = case M.lookup reponame (simRepos st) of
@@ -576,27 +582,27 @@ instance Show GetSimRepoPath where
 	show _ = "GetSimRepoPath"
 
 data SimRepoConfig = SimRepoConfig
-	{ simRepoUUID :: UUID
-	, simRepoIsSpecialRemote :: Bool
-	, simRepoGroups :: S.Set Group
-	, simRepoTrustLevel :: TrustLevel
-	, simRepoPreferredContent :: Maybe PreferredContentExpression
-	, simRepoRequiredContent :: Maybe PreferredContentExpression
-	, simRepoGroupPreferredContent :: M.Map Group PreferredContentExpression
-	, simRepoMaxSize :: Maybe MaxSize
+	{ simRepoConfigUUID :: UUID
+	, simRepoConfigIsSpecialRemote :: Bool
+	, simRepoConfigGroups :: S.Set Group
+	, simRepoConfigTrustLevel :: TrustLevel
+	, simRepoConfigPreferredContent :: Maybe PreferredContentExpression
+	, simRepoConfigRequiredContent :: Maybe PreferredContentExpression
+	, simRepoConfigGroupPreferredContent :: M.Map Group PreferredContentExpression
+	, simRepoConfigMaxSize :: Maybe MaxSize
 	}
 	deriving (Show)
 
 newSimRepoConfig :: UUID -> Bool -> SimRepoConfig
 newSimRepoConfig u isspecialremote = SimRepoConfig
-	{ simRepoUUID = u 
-	, simRepoIsSpecialRemote = isspecialremote
-	, simRepoGroups = mempty
-	, simRepoTrustLevel = def
-	, simRepoPreferredContent = Nothing
-	, simRepoRequiredContent = Nothing
-	, simRepoGroupPreferredContent = mempty
-	, simRepoMaxSize = Nothing
+	{ simRepoConfigUUID = u 
+	, simRepoConfigIsSpecialRemote = isspecialremote
+	, simRepoConfigGroups = mempty
+	, simRepoConfigTrustLevel = def
+	, simRepoConfigPreferredContent = Nothing
+	, simRepoConfigRequiredContent = Nothing
+	, simRepoConfigGroupPreferredContent = mempty
+	, simRepoConfigMaxSize = Nothing
 	}
 
 addRepo :: RepoName -> SimRepoConfig -> SimState -> SimState
@@ -605,34 +611,35 @@ addRepo reponame simrepo st = st
 	, simRepoList = if reponame `elem` simRepoList st
 		then simRepoList st
 		else reponame : simRepoList st
-	, simRepoState = M.insert reponame rst (simRepoState st)
+	, simRepoState = M.insert u rst (simRepoState st)
 	, simConnections = M.insert u mempty (simConnections st)
-	, simGroups = M.insert u (simRepoGroups simrepo) (simGroups st)
+	, simGroups = M.insert u (simRepoConfigGroups simrepo) (simGroups st)
 	, simTrustLevels = M.insert u
-		(simRepoTrustLevel simrepo)
+		(simRepoConfigTrustLevel simrepo)
 		(simTrustLevels st)
 	, simWanted = M.alter
-		(const $ simRepoPreferredContent simrepo)
+		(const $ simRepoConfigPreferredContent simrepo)
 		u
 		(simWanted st)
 	, simRequired = M.alter
-		(const $ simRepoRequiredContent simrepo)
+		(const $ simRepoConfigRequiredContent simrepo)
 		u
 		(simRequired st)
 	, simGroupWanted = M.union 
-		(simRepoGroupPreferredContent simrepo)
+		(simRepoConfigGroupPreferredContent simrepo)
 		(simGroupWanted st)
 	, simMaxSize = M.alter
-		(const $ simRepoMaxSize simrepo)
+		(const $ simRepoConfigMaxSize simrepo)
 		u
 		(simMaxSize st)
 	}
   where
-	u = simRepoUUID simrepo
+	u = simRepoConfigUUID simrepo
 	rst = SimRepoState
 		{ simLocations = mempty
-		, simIsSpecialRemote = simRepoIsSpecialRemote simrepo
+		, simIsSpecialRemote = simRepoConfigIsSpecialRemote simrepo
 		, simRepo = Nothing
+		, simRepoName = reponame
 		}
 
 mkGetExistingRepoByName :: Annex GetExistingRepoByName
@@ -651,19 +658,19 @@ mkGetExistingRepoByName = do
 				let gs = fromMaybe S.empty $
 					M.lookup u (groupsByUUID groupmap)
 				in SimRepoConfig
-					{ simRepoUUID = u
-					, simRepoIsSpecialRemote =
+					{ simRepoConfigUUID = u
+					, simRepoConfigIsSpecialRemote =
 						M.member u remoteconfigmap
-					, simRepoGroups = gs
-					, simRepoTrustLevel =
+					, simRepoConfigGroups = gs
+					, simRepoConfigTrustLevel =
 						lookupTrust' u trustmap
-					, simRepoPreferredContent =
+					, simRepoConfigPreferredContent =
 						M.lookup u pcmap
-					, simRepoRequiredContent =
+					, simRepoConfigRequiredContent =
 						M.lookup u rcmap
-					, simRepoGroupPreferredContent =
+					, simRepoConfigGroupPreferredContent =
 						M.restrictKeys gpcmap gs
-					, simRepoMaxSize =
+					, simRepoConfigMaxSize =
 						M.lookup u maxsizes
 					}
 			(_, msg) -> Left msg
@@ -674,7 +681,7 @@ data SimRepo = SimRepo
 	{ simRepoGitRepo :: Repo
 	, simRepoAnnex :: (Annex.AnnexState, Annex.AnnexRead)
 	, simRepoCurrState :: SimState
-	, simRepoName :: RepoName
+	, simRepoUUID :: UUID
 	}
 
 instance Show SimRepo where
@@ -688,12 +695,12 @@ updateSimRepoStates :: SimState -> IO SimState
 updateSimRepoStates st = go st (M.toList $ simRepoState st)
   where
 	go st' [] = return st'
-	go st' ((reponame, rst):rest) = case simRepo rst of
+	go st' ((u, rst):rest) = case simRepo rst of
 		Just sr -> do
 			sr' <- updateSimRepoState st sr
 			let rst' = rst { simRepo = Just sr' }
 			let st'' = st
-				{ simRepoState = M.insert reponame rst'
+				{ simRepoState = M.insert u rst'
 					(simRepoState st)
 				}
 			go st'' rest
@@ -703,14 +710,14 @@ initNewSimRepos :: SimState -> IO SimState
 initNewSimRepos = \st -> go st (M.toList $ simRepoState st)
   where
 	go st [] = return st
-	go st ((reponame, rst):rest) =
-		case (simRepo rst, M.lookup reponame (simRepos st)) of
-			(Nothing, Just u) -> do
+	go st ((u, rst):rest) =
+		case simRepo rst of
+			Nothing -> do
 				let GetSimRepoPath getdest = simGetSimRepoPath st
-				sr <- initSimRepo reponame u (getdest u) st
+				sr <- initSimRepo (simRepoName rst) u (getdest u) st
 				let rst' = rst { simRepo = Just sr }
 				let st' = st
-					{ simRepoState = M.insert reponame rst'
+					{ simRepoState = M.insert u rst'
 						(simRepoState st)
 					}
 				go st' rest
@@ -741,7 +748,7 @@ initSimRepo simreponame u dest st = do
 			(simRng st)
 			(simGetExistingRepoByName st)
 			(simGetSimRepoPath st)
-		, simRepoName = simreponame
+		, simRepoUUID = u
 		}
 
 simulatedRepositoryDescription :: RepoName -> String
@@ -751,10 +758,10 @@ simulatedRepositoryDescription simreponame =
 simulationDifferences :: Differences
 simulationDifferences = mkDifferences $ S.singleton Simulation
 
-runSimRepo :: RepoName -> SimState -> (SimRepoState -> Annex SimState) -> IO SimState
-runSimRepo reponame st a = do
+runSimRepo :: UUID -> SimState -> (SimRepoState -> Annex SimState) -> IO SimState
+runSimRepo u st a = do
 	st' <- updateSimRepos st
-	case M.lookup reponame (simRepoState st') of
+	case M.lookup u (simRepoState st') of
 		Just rst -> case simRepo rst of
 			Just sr -> do
 				(st'', strd) <- Annex.run (simRepoAnnex sr) $
@@ -765,11 +772,11 @@ runSimRepo reponame st a = do
 				return $ st''
 					{ simRepoState = M.adjust
 						(\rst' -> rst' { simRepo = Just sr' })
-						(simRepoName sr)
+						u
 						(simRepoState st'')
 					}
-			Nothing -> error $ "runSimRepo simRepo not set for " ++ fromRepoName reponame
-		Nothing -> error $ "runSimRepo simRepoState not found for " ++ fromRepoName reponame
+			Nothing -> error $ "runSimRepo simRepo not set for " ++ fromUUID u
+		Nothing -> error $ "runSimRepo simRepoState not found for " ++ fromUUID u
 
 updateSimRepoState :: SimState -> SimRepo -> IO SimRepo
 updateSimRepoState newst sr = do
@@ -850,7 +857,7 @@ updateSimRepoState newst sr = do
 			annexedfilepath f
 	annexedfilepath f = repoPath (simRepoGitRepo sr) P.</> f
 	getlocations = maybe mempty simLocations
-		. M.lookup (simRepoName sr)
+		. M.lookup (simRepoUUID sr)
 		. simRepoState
 	setlocations s k =
 		mapM_ (\l -> logChange NoLiveUpdate k l s)
