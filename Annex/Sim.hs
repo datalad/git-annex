@@ -238,11 +238,36 @@ runSimCommand (CommandStep n) repobyname st
 				>>= runSimCommand (CommandStep (pred n)) repobyname
 		(Nothing, st') -> return st'
 	| otherwise = return st
+runSimCommand (CommandAction reponame (ActionPull remote)) repobyname st =
+	runCompoundSimAction repobyname
+		[ CommandAction reponame (ActionGitPull remote)
+		, CommandAction reponame (ActionGetWanted remote)
+		, CommandAction reponame (ActionDropUnwanted Nothing)
+		] st
+runSimCommand (CommandAction reponame (ActionPush remote)) repobyname st =
+	runCompoundSimAction repobyname
+		[ CommandAction reponame (ActionSendWanted remote)
+		, CommandAction reponame (ActionDropUnwanted (Just remote))
+		, CommandAction reponame (ActionGitPush remote)
+		] st
+runSimCommand (CommandAction reponame (ActionSync remote)) repobyname st =
+	runCompoundSimAction repobyname
+		[ CommandAction reponame (ActionGitPull remote)
+		, CommandAction reponame (ActionGetWanted remote)
+		, CommandAction reponame (ActionSendWanted remote)
+		, CommandAction reponame (ActionDropUnwanted (Just remote))
+		, CommandAction reponame (ActionGitPush remote)
+		] st
 runSimCommand cmd repobyname st = 
 	case applySimCommand cmd st repobyname of
 		Left err -> giveup err
 		Right (Right st') -> return st'
 		Right (Left mkst) -> mkst
+
+runCompoundSimAction :: GetExistingRepoByName -> [SimCommand] -> SimState SimRepo -> Annex (SimState SimRepo)
+runCompoundSimAction repobyname (a:as) st = 
+	runSimCommand a repobyname st >>= runCompoundSimAction repobyname as
+runCompoundSimAction _ [] st = return st
 
 applySimCommand
 	:: SimCommand
@@ -412,9 +437,6 @@ applySimAction
 	-> SimAction
 	-> SimState SimRepo
 	-> Either String (Either (Annex (SimState SimRepo)) (SimState SimRepo))
-applySimAction _r _u (ActionPull _remote) _st = undefined -- TODO
-applySimAction _r _u (ActionPush _remote) _st = undefined -- TODO
-applySimAction _r _u (ActionSync _remote) _st = undefined -- TODO
 applySimAction r u (ActionGetWanted remote) st =
 	overFilesRemote r u remote S.member wanted go st
   where
@@ -481,6 +503,10 @@ applySimAction r u (ActionGitPush remote) st =
 applySimAction r u (ActionGitPull remote) st =
 	checkKnownRemote remote r u st $ \_ ->
 		simulateGitAnnexMerge (remoteNameToRepoName remote) r st
+-- These are handled by runSimCommand
+applySimAction _r _u (ActionPull _remote) _st = error "applySimAction ActionPull"
+applySimAction _r _u (ActionPush _remote) _st = error "applySimAction ActionPush"
+applySimAction _r _u (ActionSync _remote) _st = error "applySimAction ActionSync"
 
 overFilesRemote
 	:: RepoName
