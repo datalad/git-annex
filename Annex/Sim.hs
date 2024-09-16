@@ -221,6 +221,7 @@ data SimCommand
 data SimAction
 	= ActionPull RemoteName
 	| ActionPush RemoteName
+	| ActionSync RemoteName
 	| ActionGetWanted RemoteName
 	| ActionDropUnwanted (Maybe RemoteName)
 	| ActionSendWanted RemoteName
@@ -413,6 +414,7 @@ applySimAction
 	-> Either String (Either (Annex (SimState SimRepo)) (SimState SimRepo))
 applySimAction _r _u (ActionPull _remote) _st = undefined -- TODO
 applySimAction _r _u (ActionPush _remote) _st = undefined -- TODO
+applySimAction _r _u (ActionSync _remote) _st = undefined -- TODO
 applySimAction r u (ActionGetWanted remote) st =
 	overFilesRemote r u remote S.member wanted go st
   where
@@ -593,6 +595,7 @@ randomAction u st = case M.lookup u (simConnections st) of
 	mkactions =
 		[ ActionPull
 		, ActionPush
+		, ActionSync
 		, ActionGetWanted
 		, ActionDropUnwanted . Just
 		, const (ActionDropUnwanted Nothing)

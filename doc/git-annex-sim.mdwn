@@ -163,14 +163,6 @@ as passed to "git annex sim" while a simulation is running.
   On each step of the simulation, a simulated repository is selected
   at random, and a random action is performed in it.
 
-* `action repo pull remote`
-
-  Simulate the equivilant of [[git-annex-pull]](1).
-
-* `action repo push remote`
-  
-  Simulate the equivilant of [[git-annex-push]](1).
-
 * `action repo getwanted remote`
 
   Simulate the repository getting files it wants from the remote.
@@ -196,6 +188,21 @@ as passed to "git annex sim" while a simulation is running.
 * `action repo gitpull remote`
 
   Simulate the repository pulling the git-annex branch from the remote.
+
+* `action repo pull remote`
+
+  Simulate the equivilant of [[git-annex-pull]](1), by combining
+  the actions gitpull, getwanted, and dropunwanted.
+
+* `action repo push remote`
+
+  Simulate the equivilant of [[git-annex-push]](1) by combining
+  the actions sendwanted, dropunwanted, and gitpush.
+
+* `action repo sync remote`
+
+  Simulate the equivilant of [[git-annex-sync]](1) by combining
+  the actions gitpull, getwanted, sendwanted, dropunwanted, and gitpush.
 
 * `seed N`
 

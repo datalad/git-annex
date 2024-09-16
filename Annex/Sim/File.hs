@@ -55,6 +55,8 @@ generateSimFile = unlines . map unwords . go
 		["action", repo, "pull", remote] : go rest
 	go (CommandAction (RepoName repo) (ActionPush (RemoteName remote)) : rest) =
 		["action", repo, "push", remote] : go rest
+	go (CommandAction (RepoName repo) (ActionSync (RemoteName remote)) : rest) =
+		["action", repo, "sync", remote] : go rest
 	go (CommandAction (RepoName repo) (ActionGetWanted (RemoteName remote)) : rest) =
 		["action", repo, "getwanted", remote] : go rest
 	go (CommandAction (RepoName repo) (ActionDropUnwanted (Just (RemoteName remote))) : rest) =
@@ -130,6 +132,9 @@ parseSimCommand ("action":repo:"pull":remote:[]) =
 parseSimCommand ("action":repo:"push":remote:[]) =
 	Right $ CommandAction (RepoName repo)
 		(ActionPush (RemoteName remote))
+parseSimCommand ("action":repo:"sync":remote:[]) =
+	Right $ CommandAction (RepoName repo)
+		(ActionSync (RemoteName remote))
 parseSimCommand ("action":repo:"getwanted":remote:[]) =
 	Right $ CommandAction (RepoName repo)
 		(ActionGetWanted (RemoteName remote))
