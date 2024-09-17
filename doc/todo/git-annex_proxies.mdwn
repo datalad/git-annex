@@ -32,8 +32,6 @@ Planned schedule of work:
 
 * sim: Test concurrency over actions.
 
-* sim: Test ActionDropUnwanted Nothing
-
 * sim: implement addtree
 
 * sim: implement ActionDropUnwanted

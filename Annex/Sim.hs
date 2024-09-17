@@ -478,7 +478,7 @@ getSimActionComponents (ActionDropUnwanted repo Nothing) st =
 	
 	verifypresent u k st' ru = do
 		rst <- M.lookup ru (simRepoState st')
-		if present u rst k
+		if present ru rst k
 			then if ru `S.member` remotes u
 				then Just $ if simIsSpecialRemote rst
 					then mkVerifiedCopy RecentlyVerifiedCopy ru
