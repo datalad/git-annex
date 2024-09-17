@@ -94,8 +94,9 @@ start simfile = do
 	startup simdir st cs = do
 		repobyname <- mkGetExistingRepoByName
 		createAnnexDirectory (toRawFilePath simdir)
-		st' <- go st repobyname cs
-		liftIO $ saveState st'
+		let st' = recordSeed st cs
+		st'' <- go st' repobyname cs
+		liftIO $ saveState st''
 
 	go st _ [] = return st
 	go st repobyname (c:cs) = do

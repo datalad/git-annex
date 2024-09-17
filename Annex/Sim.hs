@@ -145,6 +145,10 @@ getSimLocations' = M.keysSet . M.filter present
 addHistory :: SimState t -> SimCommand -> SimState t
 addHistory st c = st { simHistory = c : simHistory st }
 
+recordSeed :: SimState t -> [SimCommand] -> SimState t
+recordSeed st (CommandSeed _:_) = st
+recordSeed st _ = addHistory st (CommandSeed (simRng st))
+
 newtype RepoName = RepoName { fromRepoName :: String }
 	deriving (Show, Read, Eq, Ord)
 
