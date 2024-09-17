@@ -195,6 +195,8 @@ parseSimAction ("action":repo:"sync":remote:rest) =
 	mkAction rest $ ActionSync (RepoName repo) (RemoteName remote)
 parseSimAction ("action":repo:"getwanted":remote:rest) =
 	mkAction rest $ ActionGetWanted (RepoName repo) (RemoteName remote)
+parseSimAction ("action":repo:"sendwanted":remote:rest) =
+	mkAction rest $ ActionSendWanted (RepoName repo) (RemoteName remote)
 parseSimAction ("action":repo:"dropunwanted":rest) =
 	mkAction rest $ ActionDropUnwanted (RepoName repo) Nothing
 parseSimAction ("action":repo:"dropunwanted":remote:rest) =
