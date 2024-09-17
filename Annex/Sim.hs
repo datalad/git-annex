@@ -920,22 +920,22 @@ updateSimRepoState newst sr = do
 			, removeDiff = const . flip groupChange (const mempty)
 			}
 		updateField oldst newst simWanted $ DiffUpdate
-			{ replaceDiff = const . preferredContentSet
+			{ replaceDiff = replaceNew preferredContentSet
 			, addDiff = preferredContentSet
 			, removeDiff = const . flip preferredContentSet mempty
 			}
 		updateField oldst newst simRequired $ DiffUpdate
-			{ replaceDiff = const . requiredContentSet
+			{ replaceDiff = replaceNew requiredContentSet
 			, addDiff = requiredContentSet
 			, removeDiff = const . flip requiredContentSet mempty
 			}
 		updateField oldst newst simGroupWanted $ DiffUpdate
-			{ replaceDiff = const . groupPreferredContentSet
+			{ replaceDiff = replaceNew groupPreferredContentSet
 			, addDiff = groupPreferredContentSet
 			, removeDiff = const . flip groupPreferredContentSet mempty
 			}
 		updateField oldst newst simMaxSize $ DiffUpdate
-			{ replaceDiff = const . recordMaxSize
+			{ replaceDiff = replaceNew recordMaxSize
 			, addDiff = recordMaxSize
 			, removeDiff = const . flip recordMaxSize (MaxSize 0)
 			}
@@ -953,7 +953,7 @@ updateSimRepoState newst sr = do
 				(getSimLocations' ls)
 			}
 		updateField oldst newst simFiles $ DiffUpdate
-			{ replaceDiff = const . stageannexedfile
+			{ replaceDiff = replaceNew stageannexedfile
 			, addDiff = stageannexedfile
 			, removeDiff = const . unstageannexedfile
 			}
@@ -986,6 +986,9 @@ data DiffUpdate a b m = DiffUpdate
 	, addDiff :: a -> b -> m ()
 	, removeDiff :: a -> b -> m ()
 	}
+
+replaceNew :: (a -> b -> m ()) -> a -> b -> b -> m ()
+replaceNew f a new _old = f a new
 
 updateMap
 	:: (Monad m, Ord a, Eq b)
