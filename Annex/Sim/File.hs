@@ -49,6 +49,8 @@ generateSimFile = unlines . map unwords . go
 		["addtree", name, expr] : go rest
 	go (CommandAdd f sz repos : rest) =
 		(["add", fromRawFilePath f, showsize sz] ++ map fromRepoName repos) : go rest
+	go (CommandAddMulti n suffix minsz maxsz repos : rest) =
+		(["addmulti", show n, suffix, showsize minsz, showsize maxsz] ++ map fromRepoName repos) : go rest
 	go (CommandStep n : rest) =
 		["step", show n] : go rest
 	go (CommandAction act : rest) = formatAction act : go rest
@@ -127,6 +129,16 @@ parseSimCommand ("add":filename:size:repos) =
 			sz
 			(map RepoName repos)
 		Nothing -> Left $ "Unable to parse file size \"" ++ size ++ "\""
+parseSimCommand ("addmulti":num:suffix:minsize:maxsize:repos) =
+	case readSize dataUnits minsize of
+		Just minsz -> case readSize dataUnits maxsize of
+			Just maxsz -> case readMaybe num of
+				Just n -> Right $ CommandAddMulti 
+					n suffix minsz maxsz
+					(map RepoName repos)
+				Nothing -> Left $ "Unable to parse number \"" ++ num ++ "\""
+			Nothing -> Left $ "Unable to parse file size \"" ++ maxsize ++ "\""
+		Nothing -> Left $ "Unable to parse file size \"" ++ minsize ++ "\""
 parseSimCommand ("step":n:[]) =
 	case readMaybe n of
 			Just n' -> Right $ CommandStep n'

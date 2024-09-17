@@ -34,9 +34,6 @@ Planned schedule of work:
 
 * sim: Test ActionDropUnwanted Nothing
 
-* sim: Command to create a set of files with random sizes in a specified
-  range.
-
 * sim: implement addtree
 
 * sim: implement ActionDropUnwanted

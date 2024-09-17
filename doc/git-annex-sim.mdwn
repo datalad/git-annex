@@ -137,6 +137,9 @@ as passed to "git annex sim" while a simulation is running.
   This can be used with the same files more than once, to make multiple
   repositories in the simulation contain the same files.
 
+  Note that adding a large number of files to the simulation can slow it
+  down and make it use a lot of memory.
+
 * `add filename size repo [repo ...]`
 
   Create a simulated annexed file with the specified filename and size,
@@ -155,6 +158,23 @@ as passed to "git annex sim" while a simulation is running.
   Note that the simulation does not cover adding conflicting files to
   different repositories. The files in the simulation are the same across
   all simulated repositories.
+
+* `addmulti N suffix minsize maxsize repo [repo ...]
+
+  Add multiple simulated annexed files, with random sizes in the range
+  between minsize and maxsize.
+
+  The files are named by combining the number, which starts at 1 and goes
+  up to N, with the suffix.
+
+  For example:
+
+    addmulti 100 testfile.jpg 100kb 10mb foo
+
+  That adds files named "1testfile.jpg", 2testfile.jpg", etc.
+
+  Note that adding a large number of files to the simulation can slow it
+  down and make it use a lot of memory.
 
 * `step N`
 

@@ -199,6 +199,7 @@ data SimCommand
 	| CommandDisconnect Connections
 	| CommandAddTree RepoName PreferredContentExpression
 	| CommandAdd RawFilePath ByteSize [RepoName]
+	| CommandAddMulti Int String ByteSize ByteSize [RepoName]
 	| CommandStep Int
 	| CommandAction SimAction
 	| CommandSeed Int
@@ -319,6 +320,16 @@ applySimCommand' (CommandAdd file sz repos) st _ =
 			{ simFiles = M.insert file k (simFiles st')
 			}
 		in go k st'' rest
+applySimCommand' (CommandAddMulti n suffix minsz maxsz repos) st repobyname = 
+	let (sz, st') = simRandom st (randomR (minsz, maxsz)) id
+	    file = toRawFilePath (show n ++ suffix)
+	in case applySimCommand' (CommandAdd file sz repos) st' repobyname of
+		Left err -> Left err
+		Right (Right st'') -> 
+			case pred n of
+				0 -> Right (Right st'')
+				n' -> applySimCommand' (CommandAddMulti n' suffix minsz maxsz repos) st'' repobyname
+		Right (Left _) -> error "applySimCommand' CommandAddMulti"
 applySimCommand' (CommandStep _) _ _ = error "applySimCommand' CommandStep"
 applySimCommand' (CommandAction act) st _ =
 	case getSimActionComponents act st of
