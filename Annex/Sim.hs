@@ -67,7 +67,7 @@ data SimState t = SimState
 	, simRebalance :: Bool
 	, simHistory :: [SimCommand]
 	, simVectorClock :: VectorClock
-	, simFile :: Maybe FilePath
+	, simLogFile :: Maybe FilePath
 	, simRootDirectory :: FilePath
 	}
 	deriving (Show, Read)
@@ -90,7 +90,7 @@ emptySimState rngseed rootdir = SimState
 	, simRebalance = False
 	, simHistory = []
 	, simVectorClock = VectorClock 0
-	, simFile = Nothing
+	, simLogFile = Nothing
 	, simRootDirectory = rootdir
 	}
 

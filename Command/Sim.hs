@@ -30,6 +30,7 @@ seek ("end":[]) = do
 	simdir <- fromRawFilePath <$> fromRepo gitAnnexSimDir
 	whenM (liftIO $ doesDirectoryExist simdir) $ do
 		liftIO $ removeDirectoryRecursive simdir
+	showLongNote $ UnquotedString "Sim ended."
 seek ("visit":reponame:[]) = do
 	simdir <- fromRepo gitAnnexSimDir
 	liftIO (restoreSim simdir) >>= \case
@@ -51,6 +52,13 @@ seek ("visit":reponame:[]) = do
 				, "Choose from:" 
 				, unwords $ map fromRepoName $ M.keys (simRepos st)
 				]
+seek ("show":[]) = do
+	simdir <- fromRepo gitAnnexSimDir
+	liftIO (restoreSim simdir) >>= \case
+		Left err -> giveup err
+		Right st -> case simLogFile st of
+			Just f -> liftIO $ putStr =<< readFile f
+			Nothing -> return ()
 seek ps = case parseSimCommand ps of
 	Left err -> giveup err
 	Right simcmd -> do
@@ -74,15 +82,14 @@ start simfile = do
 	
 	rng <- fst . random <$> initStdGen
 	let st = (emptySimState rng simdir)
-		{ simFile = Just simlogfile }
+		{ simLogFile = Just simlogfile }
 	case simfile of
 		Nothing -> startup simdir st []
 		Just f -> liftIO (readFile f) >>= \c -> 
 			case parseSimFile c of
 				Left err -> giveup err
 				Right cs -> startup simdir st cs
-	showLongNote $ UnquotedString "Sim started, logging to sim file " 
-		<> QuotedPath (toRawFilePath simlogfile)
+	showLongNote $ UnquotedString "Sim started."
   where
 	startup simdir st cs = do
 		repobyname <- mkGetExistingRepoByName
@@ -98,6 +105,6 @@ start simfile = do
 saveState :: SimState SimRepo -> IO ()
 saveState st = do
 	suspendSim st
-	case simFile st of
+	case simLogFile st of
 		Just f -> writeFile f $ generateSimFile $ reverse $ simHistory st
 		Nothing -> noop

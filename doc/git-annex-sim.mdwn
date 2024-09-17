@@ -10,6 +10,8 @@ git annex sim command
 
 git annex sim visit repo
 
+git annex sim show
+
 git annex sim end
 
 # DESCRIPTION
@@ -24,17 +26,18 @@ run after starting it. These are in the form "git annex sim command"
 with the command in the same format used in the sim file (see sim commands
 list below). For example, "git annex sim step 1" runs the simulation one step.
 
-The simulation writes to an output sim file as it runs, which contains the
+The simulation keeps a log as it runs, which contains the
 entire simulation input, as well as the actions performed in the
-simulation, and the results of the simulation.
-This allows re-running the same simulation later, as well as analyzing
-the results of the simulation.
+simulation, and the results of the simulation. Use "git-annex sim show"
+to display the log. This allows re-running the same simulation later,
+as well as analyzing the results of the simulation.
 
-While a simulation is running, the command "git annex visit repo", where
+While a simulation is running, the command "git annex sim visit repo", where
 "repo" is the name of one of the repositories in the simulation, will spawn
 a subshell in a git repository whose git-annex branch contains the state of
 that simulated repository. This allows running any git-annex command, such
 as `git-annex whereis` to examine the state of the simulation.
+You should avoid making any changes to git-annex state.
 Exit the subshell to end the visit.
 
 Use "git annex sim end" to finish the simulation, and clean up.
