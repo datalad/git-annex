@@ -30,10 +30,16 @@ Planned schedule of work:
 
 * Currently working in [[todo/proving_preferred_content_behavior]]
 
-* sim: Add concurrency over actions.
+* sim: Test concurrency over actions.
+
+* sim: Test ActionDropUnwanted Nothing
 
 * sim: Command to create a set of files with random sizes in a specified
   range.
+
+* sim: implement addtree
+
+* sim: implement ActionDropUnwanted
 
 ## items deferred until later for balanced preferred content and maxsize tracking
 

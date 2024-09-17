@@ -239,36 +239,11 @@ runSimCommand (CommandStep n) repobyname st
 				>>= runSimCommand (CommandStep (pred n)) repobyname
 		(Nothing, st') -> return st'
 	| otherwise = return st
-runSimCommand (CommandAction (ActionPull repo remote)) repobyname st =
-	runCompoundSimAction repobyname
-		[ CommandAction (ActionGitPull repo remote)
-		, CommandAction (ActionGetWanted repo remote)
-		, CommandAction (ActionDropUnwanted repo Nothing)
-		] st
-runSimCommand (CommandAction (ActionPush repo remote)) repobyname st =
-	runCompoundSimAction repobyname
-		[ CommandAction (ActionSendWanted repo remote)
-		, CommandAction (ActionDropUnwanted repo (Just remote))
-		, CommandAction (ActionGitPush repo remote)
-		] st
-runSimCommand (CommandAction (ActionSync repo remote)) repobyname st =
-	runCompoundSimAction repobyname
-		[ CommandAction (ActionGitPull repo remote)
-		, CommandAction (ActionGetWanted repo remote)
-		, CommandAction (ActionSendWanted repo remote)
-		, CommandAction (ActionDropUnwanted repo (Just remote))
-		, CommandAction (ActionGitPush repo remote)
-		] st
 runSimCommand cmd repobyname st = 
 	case applySimCommand cmd st repobyname of
 		Left err -> giveup err
 		Right (Right st') -> return st'
 		Right (Left mkst) -> mkst
-
-runCompoundSimAction :: GetExistingRepoByName -> [SimCommand] -> SimState SimRepo -> Annex (SimState SimRepo)
-runCompoundSimAction repobyname (a:as) st = 
-	runSimCommand a repobyname st >>= runCompoundSimAction repobyname as
-runCompoundSimAction _ [] st = return st
 
 applySimCommand
 	:: SimCommand
@@ -530,11 +505,42 @@ getSimActionComponents (ActionWhile a b) st =
 		in if coinflip
 			then mingle subas (subb:subbs) st'' (suba:c)
 			else mingle (suba:subas) subbs st'' (subb:c)
--- These are handled by runSimCommand
--- XXX move to here
-getSimActionComponents (ActionPull _ _) _st = error "applySimAction ActionPull"
-getSimActionComponents (ActionPush _ _) _st = error "applySimAction ActionPush"
-getSimActionComponents (ActionSync _ _) _st = error "applySimAction ActionSync"
+getSimActionComponents (ActionPull repo remote) st =
+	simActionSequence
+		[ ActionGitPull repo remote
+		, ActionGetWanted repo remote
+		, ActionDropUnwanted repo Nothing
+		] st
+getSimActionComponents (ActionPush repo remote) st =
+	simActionSequence
+		[ ActionSendWanted repo remote
+		, ActionDropUnwanted repo (Just remote)
+		, ActionGitPush repo remote
+		] st
+getSimActionComponents (ActionSync repo remote) st =
+	simActionSequence
+		[ ActionGitPull repo remote
+		, ActionGetWanted repo remote
+		, ActionSendWanted repo remote
+		, ActionDropUnwanted repo (Just remote)
+		, ActionGitPush repo remote
+		] st
+
+simActionSequence
+	:: [SimAction]
+	-> SimState SimRepo
+	-> Either String (Either (SimState SimRepo, [SimState SimRepo -> Annex (SimState SimRepo)]) (SimState SimRepo))
+simActionSequence [] st = Right (Right st)
+simActionSequence (a:as) st = case getSimActionComponents a st of
+	Left err -> Left err
+	Right (Right st') -> simActionSequence as st'
+	Right (Left (st', subas)) -> go st' subas as
+  where
+	go st' c [] = Right $ Left (st', c)
+	go st' c (a':as') = case getSimActionComponents a' st' of
+		Left err -> Left err
+		Right (Right st'') -> go st'' c as'
+		Right (Left (st'', subas)) -> go st'' (c ++ subas) as'
 
 overFilesRemote
 	:: RepoName
