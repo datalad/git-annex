@@ -204,12 +204,26 @@ as passed to "git annex sim" while a simulation is running.
   Simulate the equivilant of [[git-annex-sync]](1) by combining
   the actions gitpull, getwanted, sendwanted, dropunwanted, and gitpush.
 
+* `action [...] while action [...]`
+
+  Simulate running the two actions concurrently. While the simulation only
+  actually simulates one thing happening at a time, when the actions each
+  operate on multiple files, they will be interleaved randomly.
+
+  Any number of actions can be combined this way.
+
+  For example:
+
+    action foo dropunwanted while action bar getwanted foo
+
+  In this example, bar may or may not get a file before foo drops it.
+
 * `seed N`
 
   Sets the random seed to a given number. Using this should make the
   results of the simulation deterministic. The output sim file
-  always has the random seed included in it, so usually you don't need to
-  specify this.
+  always has the random seed included in it, so it can be used to replay
+  the simulation.
 
 * `present repo file`
 

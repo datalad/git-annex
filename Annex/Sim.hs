@@ -200,7 +200,7 @@ data SimCommand
 	| CommandAddTree RepoName PreferredContentExpression
 	| CommandAdd RawFilePath ByteSize [RepoName]
 	| CommandStep Int
-	| CommandAction RepoName SimAction
+	| CommandAction SimAction
 	| CommandSeed Int
 	| CommandPresent RepoName RawFilePath
 	| CommandNotPresent RepoName RawFilePath
@@ -219,44 +219,45 @@ data SimCommand
 	deriving (Show, Read)
 
 data SimAction
-	= ActionPull RemoteName
-	| ActionPush RemoteName
-	| ActionSync RemoteName
-	| ActionGetWanted RemoteName
-	| ActionDropUnwanted (Maybe RemoteName)
-	| ActionSendWanted RemoteName
-	| ActionGitPush RemoteName
-	| ActionGitPull RemoteName
+	= ActionPull RepoName RemoteName
+	| ActionPush RepoName RemoteName
+	| ActionSync RepoName RemoteName
+	| ActionGetWanted RepoName RemoteName
+	| ActionDropUnwanted RepoName (Maybe RemoteName)
+	| ActionSendWanted RepoName RemoteName
+	| ActionGitPush RepoName RemoteName
+	| ActionGitPull RepoName RemoteName
+	| ActionWhile SimAction SimAction
 	deriving (Show, Read)
 
 runSimCommand :: SimCommand -> GetExistingRepoByName -> SimState SimRepo -> Annex (SimState SimRepo)
 runSimCommand (CommandStep n) repobyname st
 	| n > 0 = case randomRepo st of
 		(Just (repo, u), st') ->
-			let (act, st'') = randomAction u st'
-			in runSimCommand (CommandAction repo act) repobyname st''
+			let (act, st'') = randomAction repo u st'
+			in runSimCommand (CommandAction act) repobyname st''
 				>>= runSimCommand (CommandStep (pred n)) repobyname
 		(Nothing, st') -> return st'
 	| otherwise = return st
-runSimCommand (CommandAction reponame (ActionPull remote)) repobyname st =
+runSimCommand (CommandAction (ActionPull repo remote)) repobyname st =
 	runCompoundSimAction repobyname
-		[ CommandAction reponame (ActionGitPull remote)
-		, CommandAction reponame (ActionGetWanted remote)
-		, CommandAction reponame (ActionDropUnwanted Nothing)
+		[ CommandAction (ActionGitPull repo remote)
+		, CommandAction (ActionGetWanted repo remote)
+		, CommandAction (ActionDropUnwanted repo Nothing)
 		] st
-runSimCommand (CommandAction reponame (ActionPush remote)) repobyname st =
+runSimCommand (CommandAction (ActionPush repo remote)) repobyname st =
 	runCompoundSimAction repobyname
-		[ CommandAction reponame (ActionSendWanted remote)
-		, CommandAction reponame (ActionDropUnwanted (Just remote))
-		, CommandAction reponame (ActionGitPush remote)
+		[ CommandAction (ActionSendWanted repo remote)
+		, CommandAction (ActionDropUnwanted repo (Just remote))
+		, CommandAction (ActionGitPush repo remote)
 		] st
-runSimCommand (CommandAction reponame (ActionSync remote)) repobyname st =
+runSimCommand (CommandAction (ActionSync repo remote)) repobyname st =
 	runCompoundSimAction repobyname
-		[ CommandAction reponame (ActionGitPull remote)
-		, CommandAction reponame (ActionGetWanted remote)
-		, CommandAction reponame (ActionSendWanted remote)
-		, CommandAction reponame (ActionDropUnwanted (Just remote))
-		, CommandAction reponame (ActionGitPush remote)
+		[ CommandAction (ActionGitPull repo remote)
+		, CommandAction (ActionGetWanted repo remote)
+		, CommandAction (ActionSendWanted repo remote)
+		, CommandAction (ActionDropUnwanted repo (Just remote))
+		, CommandAction (ActionGitPush repo remote)
 		] st
 runSimCommand cmd repobyname st = 
 	case applySimCommand cmd st repobyname of
@@ -344,9 +345,14 @@ applySimCommand' (CommandAdd file sz repos) st _ =
 			}
 		in go k st'' rest
 applySimCommand' (CommandStep _) _ _ = error "applySimCommand' CommandStep"
-applySimCommand' (CommandAction repo act) st _ =
-	checkKnownRepo repo st $ \u -> 
-		applySimAction repo u act st
+applySimCommand' (CommandAction act) st _ =
+	case getSimActionComponents act st of
+		Left err -> Left err
+		Right (Right st') -> Right (Right st')
+		Right (Left (st', l)) -> Right $ Left $ go l st'
+  where
+	go [] st' = return st'
+	go (a:as) st' = a st' >>= go as
 applySimCommand' (CommandSeed rngseed) st _ =
 	Right $ Right $ st
 		{ simRng = rngseed
@@ -431,63 +437,63 @@ applySimCommand' (CommandRebalance b) st _ =
 applySimCommand' (CommandComment _) st _ = Right $ Right st
 applySimCommand' CommandBlank st _ = Right $ Right st
 
-applySimAction
-	:: RepoName
-	-> UUID
-	-> SimAction
+getSimActionComponents
+	:: SimAction
 	-> SimState SimRepo
-	-> Either String (Either (Annex (SimState SimRepo)) (SimState SimRepo))
-applySimAction r u (ActionGetWanted remote) st =
-	overFilesRemote r u remote S.member wanted go st
+	-> Either String (Either (SimState SimRepo, [SimState SimRepo -> Annex (SimState SimRepo)]) (SimState SimRepo))
+getSimActionComponents (ActionGetWanted repo remote) st =
+	checkKnownRepo repo st $ \u -> 
+		let go _remoteu f k _r st' = setPresentKey True u k u $
+			addHistory st' $ CommandPresent repo f
+		in overFilesRemote repo u remote S.member wanted go st
   where
 	wanted k f _ = wantGet NoLiveUpdate False k f
-	go _remoteu f k _r st' = setPresentKey True u k u $
-		addHistory st' $ CommandPresent r f
-applySimAction r u (ActionSendWanted remote) st = 
-	overFilesRemote r u remote S.notMember wanted go st
+getSimActionComponents (ActionSendWanted repo remote) st = 
+	checkKnownRepo repo st $ \u ->
+		overFilesRemote repo u remote S.notMember wanted (go u) st
   where
 	wanted = wantGetBy NoLiveUpdate False
-	go remoteu f k _r st' = 
+	go u remoteu f k _r st' = 
 		-- Sending to a remote updates the location log
 		-- of both the repository sending and the remote.
 		setPresentKey True remoteu k remoteu $
 		setPresentKey True remoteu k u $
 		addHistory st' $ CommandPresent (remoteNameToRepoName remote) f
-applySimAction _r u (ActionDropUnwanted Nothing) st =
-	Right $ Left $ liftIO $ runSimRepo u st $ \rst ->
-		go rst (M.toList $ M.filter (present rst) $ simFiles st) st
+getSimActionComponents (ActionDropUnwanted repo Nothing) st =
+	checkKnownRepo repo st $ \u ->
+		Right $ Left (st, map (go u) $ M.toList $ simFiles st)
   where
-	present rst k = u `S.member` getSimLocations rst k
+	go u (f, k) st' = liftIO $ runSimRepo u st' $ \rst ->
+		let af = AssociatedFile $ Just f
+		in if present u rst k
+			then ifM (wantDrop NoLiveUpdate False Nothing (Just k) af Nothing)
+				( return $ checkdrop u rst k st'
+				, return st'
+				)
+			else return st'
+	
+	present u rst k = u `S.member` getSimLocations rst k
 
-	go _ [] st' = return st'
-	go rst ((f, k):rest) st' = do
-		ifM (wantDrop NoLiveUpdate False Nothing (Just k) af Nothing)
-			( go rst rest $ checkdrop rst k st'
-			, go rst rest st'
-			)
-	  where
-		af = AssociatedFile $ Just f
-
-	checkdrop rst k st' =
+	checkdrop u rst k st' =
 		let numcopies = simNumCopies st'
 		    mincopies = simMinCopies st'
-		    verifiedcopies = mapMaybe (verifypresent k st') $
+		    verifiedcopies = mapMaybe (verifypresent u k st') $
 		    	filter (/= u) $ S.toList $ getSimLocations rst k
 		in case safeDropAnalysis numcopies mincopies verifiedcopies Nothing of
 			UnsafeDrop -> st'
-			SafeDrop -> dodrop k st'
-			SafeDropCheckTime -> dodrop k st'
+			SafeDrop -> dodrop u k st'
+			SafeDropCheckTime -> dodrop u k st'
 
-	dodrop k = setPresentKey False u k u
+	dodrop u k = setPresentKey False u k u
 	
-	remotes = S.fromList $ mapMaybe 
+	remotes u = S.fromList $ mapMaybe 
 		(\remote -> M.lookup (remoteNameToRepoName remote) (simRepos st))
 		(maybe mempty S.toList $ M.lookup u $ simConnections st)
 	
-	verifypresent k st' ru = do
+	verifypresent u k st' ru = do
 		rst <- M.lookup ru (simRepoState st')
-		if present rst k
-			then if ru `S.member` remotes
+		if present u rst k
+			then if ru `S.member` remotes u
 				then Just $ if simIsSpecialRemote rst
 					then mkVerifiedCopy RecentlyVerifiedCopy ru
 					else mkVerifiedCopy LockedCopy ru
@@ -496,17 +502,39 @@ applySimAction _r u (ActionDropUnwanted Nothing) st =
 						mkVerifiedCopy TrustedCopy ru
 					_ -> Nothing
 			else Nothing
-applySimAction _r _u (ActionDropUnwanted (Just _remote)) _st = undefined -- TODO
-applySimAction r u (ActionGitPush remote) st =
-	checkKnownRemote remote r u st $ \_ ->
-		simulateGitAnnexMerge r (remoteNameToRepoName remote) st
-applySimAction r u (ActionGitPull remote) st =
-	checkKnownRemote remote r u st $ \_ ->
-		simulateGitAnnexMerge (remoteNameToRepoName remote) r st
+getSimActionComponents (ActionDropUnwanted _repo (Just _remote)) _st =
+	undefined -- TODO
+getSimActionComponents (ActionGitPush repo remote) st =
+	checkKnownRepo repo st $ \u -> 
+		checkKnownRemote remote repo u st $ \_ ->
+			simulateGitAnnexMerge repo (remoteNameToRepoName remote) st
+getSimActionComponents (ActionGitPull repo remote) st =
+	checkKnownRepo repo st $ \u -> 
+		checkKnownRemote remote repo u st $ \_ ->
+			simulateGitAnnexMerge (remoteNameToRepoName remote) repo st
+getSimActionComponents (ActionWhile a b) st =
+	case getSimActionComponents a st of
+		Left err -> Left err
+		Right (Right st') -> getSimActionComponents b st'
+		Right (Left (st', as)) ->
+			case getSimActionComponents b st' of
+				Left err -> Left err
+				Right (Right st'') -> Right $ Left (st'', as)
+				Right (Left (st'', bs)) ->
+					Right $ Left $ mingle as bs st'' []
+  where
+	mingle [] subbs st' c = (st', reverse c ++ subbs)
+	mingle subas [] st' c = (st', reverse c ++ subas)
+	mingle (suba:subas) (subb:subbs) st' c = 
+		let (coinflip, st'') = simRandom st' random id
+		in if coinflip
+			then mingle subas (subb:subbs) st'' (suba:c)
+			else mingle (suba:subas) subbs st'' (subb:c)
 -- These are handled by runSimCommand
-applySimAction _r _u (ActionPull _remote) _st = error "applySimAction ActionPull"
-applySimAction _r _u (ActionPush _remote) _st = error "applySimAction ActionPush"
-applySimAction _r _u (ActionSync _remote) _st = error "applySimAction ActionSync"
+-- XXX move to here
+getSimActionComponents (ActionPull _ _) _st = error "applySimAction ActionPull"
+getSimActionComponents (ActionPush _ _) _st = error "applySimAction ActionPush"
+getSimActionComponents (ActionSync _ _) _st = error "applySimAction ActionSync"
 
 overFilesRemote
 	:: RepoName
@@ -516,25 +544,20 @@ overFilesRemote
 	-> (Maybe Key -> AssociatedFile -> UUID -> Annex Bool)
         -> (UUID -> RawFilePath -> Key -> RepoName -> SimState SimRepo -> SimState SimRepo)
 	-> SimState SimRepo
-	-> Either String (Either (Annex (SimState SimRepo)) (SimState SimRepo))
+	-> Either String (Either (SimState SimRepo, [SimState SimRepo -> Annex (SimState SimRepo)]) (SimState SimRepo))
 overFilesRemote r u remote remotepred checkwant handlewanted st = 
 	checkKnownRemote remote r u st $ \remoteu ->
-		Right $ Left $ liftIO $
-			runSimRepo u st $ \rst -> do
-				let l = M.toList $
-					M.filter (checkremotepred remoteu rst) $
-					simFiles st
-				go remoteu l st
+		Right (Left (st, map (go remoteu) $ M.toList $ simFiles st))
   where
-	go _ [] st' = return st'
-	go remoteu ((f, k):rest) st' = do
-		ifM (checkwant (Just k) af remoteu)
-			( go remoteu rest $ handlewanted remoteu f k r st'
-			, go remoteu rest st'
-			)
-	  where
-		af = AssociatedFile $ Just f
-
+	go remoteu (f, k) st' = 
+	  	let af = AssociatedFile $ Just f
+		in liftIO $ runSimRepo u st' $ \rst ->
+			if checkremotepred remoteu rst k
+				then ifM (checkwant (Just k) af remoteu)
+					( return $ handlewanted remoteu f k r st'
+					, return st'
+					)
+				else return st'
 	checkremotepred remoteu rst k =
 		remotepred remoteu (getSimLocations rst k)
 
@@ -542,7 +565,7 @@ simulateGitAnnexMerge
 	:: RepoName
 	-> RepoName
 	-> SimState SimRepo
-	-> Either String (Either (Annex (SimState SimRepo)) (SimState SimRepo))
+	-> Either String (Either a (SimState SimRepo))
 simulateGitAnnexMerge src dest st = 
 	case (M.lookup src (simRepos st), M.lookup dest (simRepos st)) of
 		(Just srcu, Just destu) -> case M.lookup destu (simRepoState st) of
@@ -607,24 +630,24 @@ randomRepo st
   where
 	repolist = M.keys (simRepos st)
 
-randomAction :: UUID -> SimState SimRepo -> (SimAction, SimState SimRepo)
-randomAction u st = case M.lookup u (simConnections st) of
+randomAction :: RepoName -> UUID -> SimState SimRepo -> (SimAction, SimState SimRepo)
+randomAction repo u st = case M.lookup u (simConnections st) of
 	Just cs | not (S.null cs) ->
 		let (mkact, st') = simRandom st (randomR (0, length mkactions - 1))
 			(mkactions !!)
 		    (remote, st'') = simRandom st' (randomR (0, S.size cs - 1))
 		    	(`S.elemAt` cs)
-		in (mkact remote, st'')
+		in (mkact repo remote, st'')
 	-- When there are no remotes, this is the only possible action.
-	_ -> (ActionDropUnwanted Nothing, st)
+	_ -> (ActionDropUnwanted repo Nothing, st)
   where
 	mkactions =
 		[ ActionPull
 		, ActionPush
 		, ActionSync
 		, ActionGetWanted
-		, ActionDropUnwanted . Just
-		, const (ActionDropUnwanted Nothing)
+		, \repo' remote -> ActionDropUnwanted repo' (Just remote)
+		, \repo' _remote -> ActionDropUnwanted repo' Nothing
 		, ActionSendWanted
 		, ActionGitPush
 		, ActionGitPull

@@ -51,24 +51,7 @@ generateSimFile = unlines . map unwords . go
 		(["add", fromRawFilePath f, showsize sz] ++ map fromRepoName repos) : go rest
 	go (CommandStep n : rest) =
 		["step", show n] : go rest
-	go (CommandAction (RepoName repo) (ActionPull (RemoteName remote)) : rest) =
-		["action", repo, "pull", remote] : go rest
-	go (CommandAction (RepoName repo) (ActionPush (RemoteName remote)) : rest) =
-		["action", repo, "push", remote] : go rest
-	go (CommandAction (RepoName repo) (ActionSync (RemoteName remote)) : rest) =
-		["action", repo, "sync", remote] : go rest
-	go (CommandAction (RepoName repo) (ActionGetWanted (RemoteName remote)) : rest) =
-		["action", repo, "getwanted", remote] : go rest
-	go (CommandAction (RepoName repo) (ActionDropUnwanted (Just (RemoteName remote))) : rest) =
-		["action", repo, "dropunwanted", remote] : go rest
-	go (CommandAction (RepoName repo) (ActionDropUnwanted Nothing) : rest) =
-		["action", repo, "dropunwanted"] : go rest
-	go (CommandAction (RepoName repo) (ActionSendWanted (RemoteName remote)) : rest) =
-		["action", repo, "sendwanted", remote] : go rest
-	go (CommandAction (RepoName repo) (ActionGitPush (RemoteName remote)) : rest) =
-		["action", repo, "gitpush", remote] : go rest
-	go (CommandAction (RepoName repo) (ActionGitPull (RemoteName remote)) : rest) =
-		["action", repo, "gitpull", remote] : go rest
+	go (CommandAction act : rest) = formatAction act : go rest
 	go (CommandSeed n : rest) =
 		["seed", show n] : go rest
 	go (CommandPresent (RepoName repo) f : rest) =
@@ -102,6 +85,28 @@ generateSimFile = unlines . map unwords . go
 
 	showsize = filter (not . isSpace) . preciseSize storageUnits True
 
+formatAction :: SimAction -> [String]
+formatAction (ActionPull (RepoName repo) (RemoteName remote)) =
+	["action", repo, "pull", remote]
+formatAction (ActionPush (RepoName repo) (RemoteName remote)) =
+	["action", repo, "push", remote]
+formatAction (ActionSync (RepoName repo) (RemoteName remote)) =
+	["action", repo, "sync", remote]
+formatAction (ActionGetWanted (RepoName repo) (RemoteName remote)) =
+	["action", repo, "getwanted", remote]
+formatAction (ActionDropUnwanted (RepoName repo) (Just (RemoteName remote))) =
+	["action", repo, "dropunwanted", remote]
+formatAction (ActionDropUnwanted (RepoName repo) Nothing) =
+	["action", repo, "dropunwanted"]
+formatAction (ActionSendWanted (RepoName repo) (RemoteName remote)) =
+	["action", repo, "sendwanted", remote]
+formatAction (ActionGitPush (RepoName repo) (RemoteName remote)) =
+	["action", repo, "gitpush", remote]
+formatAction (ActionGitPull (RepoName repo) (RemoteName remote)) =
+	["action", repo, "gitpull", remote]
+formatAction (ActionWhile a b) =
+	formatAction a ++ ["while"] ++ formatAction b
+
 parseSimCommand :: [String] -> Either String SimCommand
 parseSimCommand ("init":name:[]) = 
 	Right $ CommandInit (RepoName name)
@@ -126,30 +131,9 @@ parseSimCommand ("step":n:[]) =
 	case readMaybe n of
 			Just n' -> Right $ CommandStep n'
 			Nothing -> Left $ "Unable to parse step value \"" ++ n ++ "\""
-parseSimCommand ("action":repo:"pull":remote:[]) =
-	Right $ CommandAction (RepoName repo)
-		(ActionPull (RemoteName remote))
-parseSimCommand ("action":repo:"push":remote:[]) =
-	Right $ CommandAction (RepoName repo)
-		(ActionPush (RemoteName remote))
-parseSimCommand ("action":repo:"sync":remote:[]) =
-	Right $ CommandAction (RepoName repo)
-		(ActionSync (RemoteName remote))
-parseSimCommand ("action":repo:"getwanted":remote:[]) =
-	Right $ CommandAction (RepoName repo)
-		(ActionGetWanted (RemoteName remote))
-parseSimCommand	("action":repo:"dropunwanted":[]) =
-	Right $ CommandAction (RepoName repo)
-		(ActionDropUnwanted Nothing)
-parseSimCommand ("action":repo:"dropunwanted":remote:[]) =
-	Right $ CommandAction (RepoName repo)
-		(ActionDropUnwanted (Just (RemoteName remote)))
-parseSimCommand ("action":repo:"gitpush":remote:[]) =
-	Right $ CommandAction (RepoName repo) 
-		(ActionGitPush (RemoteName remote))
-parseSimCommand ("action":repo:"gitpull":remote:[]) =
-	Right $ CommandAction (RepoName repo)
-		(ActionGitPull (RemoteName remote))
+parseSimCommand l@("action":_) = case parseSimAction l of
+	Right act -> Right $ CommandAction act
+	Left err -> Left err
 parseSimCommand	("seed":n:[]) =
 	case readMaybe n of
 		Just n' -> Right $ CommandSeed n'
@@ -188,7 +172,37 @@ parseSimCommand ("maxsize":repo:size:[]) =
 parseSimCommand ("rebalance":onoff:[]) = case isTrueFalse onoff of
 	Just b -> Right $ CommandRebalance b
 	Nothing -> Left $ "Unable to parse rebalance value \"" ++ onoff ++ "\""
-parseSimCommand ws = Left $ "Unable to parse sim command: \"" ++ unwords ws ++ "\""
+parseSimCommand ws = parseError ws
+
+parseSimAction :: [String] -> Either String SimAction
+parseSimAction ("action":repo:"pull":remote:rest) =
+	mkAction rest $ ActionPull (RepoName repo) (RemoteName remote)
+parseSimAction ("action":repo:"push":remote:rest) =
+	mkAction rest $ ActionPush (RepoName repo) (RemoteName remote)
+parseSimAction ("action":repo:"sync":remote:rest) =
+	mkAction rest $ ActionSync (RepoName repo) (RemoteName remote)
+parseSimAction ("action":repo:"getwanted":remote:rest) =
+	mkAction rest $ ActionGetWanted (RepoName repo) (RemoteName remote)
+parseSimAction ("action":repo:"dropunwanted":rest) =
+	mkAction rest $ ActionDropUnwanted (RepoName repo) Nothing
+parseSimAction ("action":repo:"dropunwanted":remote:rest) =
+	mkAction rest $ ActionDropUnwanted (RepoName repo)
+		(Just (RemoteName remote))
+parseSimAction ("action":repo:"gitpush":remote:rest) =
+	mkAction rest $ ActionGitPush (RepoName repo) (RemoteName remote)
+parseSimAction ("action":repo:"gitpull":remote:rest) =
+	mkAction rest $ ActionGitPull (RepoName repo) (RemoteName remote)
+parseSimAction ws = parseError ws
+
+mkAction :: [String] -> SimAction -> Either String SimAction
+mkAction [] a = Right a
+mkAction ("while":rest) a = case parseSimAction rest of
+	Right b -> Right (ActionWhile a b)
+	Left err -> Left err
+mkAction ws _ = parseError ws
+
+parseError :: [String] -> Either String a
+parseError ws = Left $ "Unable to parse sim command: \"" ++ unwords ws ++ "\""
 
 parseConnections :: [String] -> Either String Connections
 parseConnections = go . reverse
