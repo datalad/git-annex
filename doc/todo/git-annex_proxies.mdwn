@@ -34,6 +34,18 @@ Planned schedule of work:
 
 * sim: implement addtree
 
+* sim: May need to use LiveUpdate to make size balanced preferred content
+  work
+
+* sim: Can a cluster using size balanced preferred content be simulated?
+  May need the sim to get the concept of a cluster gateway, since the
+  gateway is what picks amoung the nodes on the basis of size. On the other
+  hand, it may suffice to connect the sending repo directly to each node of
+  the cluster, and let that repo pick which nodes to send to.
+
+* sim: Add support for metadata, so preferred content that matches on it
+  will work
+
 ## items deferred until later for balanced preferred content and maxsize tracking
 
 * `git-annex assist --rebalance` of `balanced=foo:2` 

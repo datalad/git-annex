@@ -535,12 +535,15 @@ overFilesRemote r u remote remotepred checkwant handlewanted st =
 	go remoteu (f, k) st' = 
 	  	let af = AssociatedFile $ Just f
 		in liftIO $ runSimRepo u st' $ \rst ->
-			if checkremotepred remoteu rst k
-				then ifM (checkwant (Just k) af remoteu)
-					( return $ handlewanted remoteu f k r st'
-					, return st'
-					)
-				else return st'
+			case M.lookup remoteu (simRepoState st') of
+				Nothing -> return st'
+				Just rmtst
+					| not (checkremotepred remoteu rst k) -> return st'
+					| not (checkremotepred remoteu rmtst k) -> return st'
+					| otherwise -> ifM (checkwant (Just k) af remoteu)
+						( return $ handlewanted remoteu f k r st'
+						, return st'
+						)
 	checkremotepred remoteu rst k =
 		remotepred remoteu (getSimLocations rst k)
 
