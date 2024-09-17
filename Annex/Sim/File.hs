@@ -97,7 +97,7 @@ formatAction (ActionSync (RepoName repo) (RemoteName remote)) =
 formatAction (ActionGetWanted (RepoName repo) (RemoteName remote)) =
 	["action", repo, "getwanted", remote]
 formatAction (ActionDropUnwanted (RepoName repo) (Just (RemoteName remote))) =
-	["action", repo, "dropunwanted", remote]
+	["action", repo, "dropunwantedfrom", remote]
 formatAction (ActionDropUnwanted (RepoName repo) Nothing) =
 	["action", repo, "dropunwanted"]
 formatAction (ActionSendWanted (RepoName repo) (RemoteName remote)) =
@@ -197,11 +197,11 @@ parseSimAction ("action":repo:"getwanted":remote:rest) =
 	mkAction rest $ ActionGetWanted (RepoName repo) (RemoteName remote)
 parseSimAction ("action":repo:"sendwanted":remote:rest) =
 	mkAction rest $ ActionSendWanted (RepoName repo) (RemoteName remote)
-parseSimAction ("action":repo:"dropunwanted":rest) =
-	mkAction rest $ ActionDropUnwanted (RepoName repo) Nothing
-parseSimAction ("action":repo:"dropunwanted":remote:rest) =
+parseSimAction ("action":repo:"dropunwantedfrom":remote:rest) =
 	mkAction rest $ ActionDropUnwanted (RepoName repo)
 		(Just (RemoteName remote))
+parseSimAction ("action":repo:"dropunwanted":rest) =
+	mkAction rest $ ActionDropUnwanted (RepoName repo) Nothing
 parseSimAction ("action":repo:"gitpush":remote:rest) =
 	mkAction rest $ ActionGitPush (RepoName repo) (RemoteName remote)
 parseSimAction ("action":repo:"gitpull":remote:rest) =

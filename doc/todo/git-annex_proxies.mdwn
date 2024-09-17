@@ -34,8 +34,6 @@ Planned schedule of work:
 
 * sim: implement addtree
 
-* sim: implement ActionDropUnwanted
-
 ## items deferred until later for balanced preferred content and maxsize tracking
 
 * `git-annex assist --rebalance` of `balanced=foo:2` 

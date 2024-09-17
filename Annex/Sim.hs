@@ -447,49 +447,11 @@ getSimActionComponents (ActionSendWanted repo remote) st =
 		addHistory st' $ CommandPresent (remoteNameToRepoName remote) f
 getSimActionComponents (ActionDropUnwanted repo Nothing) st =
 	checkKnownRepo repo st $ \u ->
-		Right $ Left (st, map (go u) $ M.toList $ simFiles st)
-  where
-	go u (f, k) st' = liftIO $ runSimRepo u st' $ \rst ->
-		let af = AssociatedFile $ Just f
-		in if present u rst k
-			then ifM (wantDrop NoLiveUpdate False Nothing (Just k) af Nothing)
-				( return $ checkdrop u rst k st'
-				, return st'
-				)
-			else return st'
-	
-	present u rst k = u `S.member` getSimLocations rst k
-
-	checkdrop u rst k st' =
-		let numcopies = simNumCopies st'
-		    mincopies = simMinCopies st'
-		    verifiedcopies = mapMaybe (verifypresent u k st') $
-		    	filter (/= u) $ S.toList $ getSimLocations rst k
-		in case safeDropAnalysis numcopies mincopies verifiedcopies Nothing of
-			UnsafeDrop -> st'
-			SafeDrop -> dodrop u k st'
-			SafeDropCheckTime -> dodrop u k st'
-
-	dodrop u k = setPresentKey False u k u
-	
-	remotes u = S.fromList $ mapMaybe 
-		(\remote -> M.lookup (remoteNameToRepoName remote) (simRepos st))
-		(maybe mempty S.toList $ M.lookup u $ simConnections st)
-	
-	verifypresent u k st' ru = do
-		rst <- M.lookup ru (simRepoState st')
-		if present ru rst k
-			then if ru `S.member` remotes u
-				then Just $ if simIsSpecialRemote rst
-					then mkVerifiedCopy RecentlyVerifiedCopy ru
-					else mkVerifiedCopy LockedCopy ru
-				else case M.lookup ru (simTrustLevels st') of
-					Just Trusted -> Just $
-						mkVerifiedCopy TrustedCopy ru
-					_ -> Nothing
-			else Nothing
-getSimActionComponents (ActionDropUnwanted _repo (Just _remote)) _st =
-	undefined -- TODO
+		simulateDropUnwanted st u repo u
+getSimActionComponents (ActionDropUnwanted repo (Just remote)) st =
+	checkKnownRepo repo st $ \u ->
+		checkKnownRemote remote repo u st $ \ru ->
+			simulateDropUnwanted st u (remoteNameToRepoName remote) ru
 getSimActionComponents (ActionGitPush repo remote) st =
 	checkKnownRepo repo st $ \u -> 
 		checkKnownRemote remote repo u st $ \_ ->
@@ -601,6 +563,58 @@ simulateGitAnnexMerge src dest st =
 							(simRepoState st)
 						}
 		_ -> Left $ "Unable to find " ++ fromRepoName src ++ " or " ++ fromRepoName dest ++ " in simRepos"
+
+simulateDropUnwanted
+	:: SimState SimRepo
+	-> UUID
+	-> RepoName
+	-> UUID
+	-> Either String (Either (SimState SimRepo, [SimState SimRepo -> Annex (SimState SimRepo)]) (SimState SimRepo))
+simulateDropUnwanted st u dropfromname dropfrom =
+	Right $ Left (st, map go $ M.toList $ simFiles st)
+  where
+	go (f, k) st' = liftIO $ runSimRepo u st' $ \rst ->
+		let af = AssociatedFile $ Just f
+		in if present dropfrom rst k
+			then ifM (wantDrop NoLiveUpdate False (Just dropfrom) (Just k) af Nothing)
+				( return $ checkdrop rst k f st'
+				, return st'
+				)
+			else return st'
+	
+	present ru rst k = ru `S.member` getSimLocations rst k
+
+	checkdrop rst k f st' =
+		let numcopies = simNumCopies st'
+		    mincopies = simMinCopies st'
+		    verifiedcopies = mapMaybe (verifypresent k st') $
+		    	filter (/= dropfrom) $ S.toList $ getSimLocations rst k
+		in case safeDropAnalysis numcopies mincopies verifiedcopies Nothing of
+			UnsafeDrop -> st'
+			SafeDrop -> dodrop k f st'
+			SafeDropCheckTime -> dodrop k f st'
+
+	dodrop k f st' =
+		setPresentKey False dropfrom k u $
+			setPresentKey False dropfrom k dropfrom $
+				addHistory st' $ CommandNotPresent dropfromname f
+	
+	remotes = S.fromList $ mapMaybe 
+		(\remote -> M.lookup (remoteNameToRepoName remote) (simRepos st))
+		(maybe mempty S.toList $ M.lookup u $ simConnections st)
+	
+	verifypresent k st' ru = do
+		rst <- M.lookup ru (simRepoState st')
+		if present ru rst k
+			then if ru `S.member` remotes || ru == u
+				then Just $ if simIsSpecialRemote rst
+					then mkVerifiedCopy RecentlyVerifiedCopy ru
+					else mkVerifiedCopy LockedCopy ru
+				else case M.lookup ru (simTrustLevels st') of
+					Just Trusted -> Just $
+						mkVerifiedCopy TrustedCopy ru
+					_ -> Nothing
+			else Nothing
 
 checkNonexistantRepo :: RepoName -> SimState SimRepo -> Either String a -> Either String a
 checkNonexistantRepo reponame st a = case M.lookup reponame (simRepos st) of

@@ -192,7 +192,7 @@ as passed to "git annex sim" while a simulation is running.
   Simulate the repository dropping files it does not want, 
   when it is able to verify enough copies exist on remotes.
 
-* `action repo dropunwanted remote`
+* `action repo dropunwantedfrom remote`
 
   Simulate the repository dropping files from the remote that the remote
   does not want, when it is able to verify enouh copies exist.
@@ -217,7 +217,7 @@ as passed to "git annex sim" while a simulation is running.
 * `action repo push remote`
 
   Simulate the equivilant of [[git-annex-push]](1) by combining
-  the actions sendwanted, dropunwanted, and gitpush.
+  the actions sendwanted, dropunwantedfrom, and gitpush.
 
 * `action repo sync remote`
 
