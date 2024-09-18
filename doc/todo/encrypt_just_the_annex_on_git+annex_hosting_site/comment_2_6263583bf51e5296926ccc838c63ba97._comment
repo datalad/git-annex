@@ -1,0 +1,39 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2024-09-18T12:17:02Z"
+ content="""
+Another place this came up is
+<https://git-annex.branchable.com/design/passthrough_proxy/#index14h2>
+where a proxy to an encrypted special remote necessarily does encryption
+server side, but the user may not want the server to see their unencrypted
+files.
+
+There I suggested "adding a special remote that does its own client-side
+encryption in front of the proxy". Such a layered special remote could also be
+used with a git remote. There would be some complexity cost, since you would
+have two remote names, one used for git and the other for git-annex.
+
+Implementing object encryption in git remotes is certianly possible, but it
+would be a special case and the existing code for encrypting special
+remotes (particularly Remote.Helper.Special.specialRemote) 
+would not be able to be reused.
+
+There's also the problem that, if such a git repository is added as a
+regular remote, and the git-annex branch that indicates that it is
+encrypted has not yet been pulled, git-annex would not realize that it is
+supposed to be encrypted, so would send unencrypted objects to it. This
+seems like an easy situation to accidentially get into eg:
+
+	git remote add foo http://example.com/
+	git annex move --to foo # oops unencrypted
+
+Overall I prefer the idea of layering an encrypted special remote to
+complicating the git remote with encryption. Enabling that special remote
+could make git-annex treat the underlying remote as annex-ignore, to
+prevent accidentially sending unencrypted objects to it.
+
+There could also be situations where you want to store some files unencrypted
+on a git hosting site to let them be accessible via its UI, but encrypt other
+files, and the layered special remote also allows for that kind of thing.
+"""]]
