@@ -30,8 +30,6 @@ Planned schedule of work:
 
 * Currently working in [[todo/proving_preferred_content_behavior]]
 
-* sim: implement addtree
-
 * sim: May need to use LiveUpdate to make size balanced preferred content
   work
 

@@ -17,6 +17,7 @@ import Types.StandardGroups
 import Types.TrustLevel
 import Types.Difference
 import Git
+import Git.FilePath
 import Backend.Hash (genTestKey)
 import Annex.UUID
 import Annex.FileMatcher
@@ -24,6 +25,7 @@ import Annex.Init
 import Annex.Startup
 import Annex.Link
 import Annex.Wanted
+import Annex.CatFile
 import Logs.Group
 import Logs.Trust
 import Logs.PreferredContent
@@ -36,6 +38,7 @@ import Logs.Location
 import qualified Annex
 import qualified Remote
 import qualified Git.Construct
+import qualified Git.LsFiles
 import qualified Annex.Queue
 
 import System.Random
@@ -311,9 +314,39 @@ applySimCommand' (CommandDisconnect connections) st repobyname =
 			Just connections' ->
 				applySimCommand' (CommandDisconnect connections') st' repobyname
 applySimCommand' (CommandAddTree repo expr) st _ =
-	checkKnownRepo repo st $ const $
-		checkValidPreferredContentExpression expr $ Left $
-			error "TODO" -- XXX
+	checkKnownRepo repo st $ \u ->
+		checkValidPreferredContentExpression expr $ Left $ do
+			matcher <- makematcher u
+			(l, cleanup) <- inRepo $ Git.LsFiles.inRepo [] []
+			st' <- go matcher u st l
+			liftIO $ void cleanup
+			return st'
+  where
+	go _ _ st' [] = return st'
+	go matcher u st' (f:fs) = catKeyFile f  >>= \case
+		Just k -> do
+			afile <- AssociatedFile . Just . getTopFilePath
+				<$> inRepo (toTopFilePath f)
+			ifM (checkMatcher matcher (Just k) afile NoLiveUpdate mempty (pure False) (pure False))
+				( let st'' = setPresentKey True u k u $ st'
+					{ simFiles = M.insert f k (simFiles st')
+					}
+				  in go matcher u st'' fs
+				, go matcher u st' fs 
+				)
+		Nothing -> go matcher u st' fs
+	makematcher :: UUID -> Annex (FileMatcher Annex)
+	makematcher u = do
+		groupmap <- groupMap
+		configmap <- remoteConfigMap
+		gm <- groupPreferredContentMapRaw
+		case makeMatcher groupmap configmap gm u id preferredContentTokens parseerr expr of
+			Right matcher -> return
+				( matcher
+				, MatcherDesc "provided preferred content expression"
+				)
+			Left err -> giveup err
+	parseerr = Left "preferred content expression parse error"
 applySimCommand' (CommandAdd file sz repos) st _ = 
 	let (k, st') = genSimKey sz st
 	in go k st' repos
@@ -990,6 +1023,8 @@ updateSimRepoState newst sr = do
 	stageannexedfile f k = do
 		let f' = annexedfilepath f
 		l <- calcRepo $ gitAnnexLink f' k
+		liftIO $ createDirectoryIfMissing True $
+			takeDirectory $ fromRawFilePath f'
 		addAnnexLink l f'
 	unstageannexedfile f = do
 		liftIO $ removeWhenExistsWith R.removeLink $

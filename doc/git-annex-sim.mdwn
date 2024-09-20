@@ -137,11 +137,11 @@ as passed to "git annex sim" while a simulation is running.
   quantity of files that have the particular properties you are interested
   in.
 
+  When run in a subdirectory of the repository, only files in that
+  subdirectory are considered for addition.
+
   This can be used with the same files more than once, to make multiple
   repositories in the simulation contain the same files.
-
-  Note that adding a large number of files to the simulation can slow it
-  down and make it use a lot of memory.
 
 * `add filename size repo [repo ...]`
 
