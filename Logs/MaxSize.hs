@@ -39,6 +39,7 @@ recordMaxSize uuid maxsize = do
 		(buildLogNew buildMaxSize)
 			. changeLog c uuid maxsize
 			. parseLogNew parseMaxSize
+	Annex.changeState $ \s -> s { Annex.maxsizes = Nothing }
 
 buildMaxSize :: MaxSize -> Builder
 buildMaxSize (MaxSize n) = byteString (encodeBS (show n))
