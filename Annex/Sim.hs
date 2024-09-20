@@ -606,16 +606,16 @@ overFilesRemote r u remote remotepred localpred checkwant handlewanted st =
   where
 	go remoteu (f, k) st' = 
 	  	let af = AssociatedFile $ Just f
-		in liftIO $ runSimRepo u st' $ \rst ->
-			case M.lookup remoteu (simRepoState st') of
-				Nothing -> return (st', False)
+		in liftIO $ runSimRepo u st' $ \st'' rst ->
+			case M.lookup remoteu (simRepoState st'') of
+				Nothing -> return (st'', False)
 				Just rmtst
-					| not (checkremotepred remoteu rst k) -> return (st', False)
-					| not (checkremotepred remoteu rmtst k) -> return (st', False)
-					| not (checklocalpred rst k) -> return (st', False)
+					| not (checkremotepred remoteu rst k) -> return (st'', False)
+					| not (checkremotepred remoteu rmtst k) -> return (st'', False)
+					| not (checklocalpred rst k) -> return (st'', False)
 					| otherwise -> ifM (checkwant (Just k) af remoteu)
-						( return (handlewanted remoteu f k r st', True)
-						, return (st', False)
+						( return (handlewanted remoteu f k r st'', True)
+						, return (st'', False)
 						)
 	checkremotepred remoteu rst k =
 		remotepred remoteu (getSimLocations rst k)
@@ -655,14 +655,14 @@ simulateDropUnwanted
 simulateDropUnwanted st u dropfromname dropfrom =
 	Right $ Left (st, map go $ M.toList $ simFiles st)
   where
-	go (f, k) st' = liftIO $ runSimRepo u st' $ \rst ->
+	go (f, k) st' = liftIO $ runSimRepo u st' $ \st'' rst ->
 		let af = AssociatedFile $ Just f
 		in if present dropfrom rst k
 			then ifM (wantDrop NoLiveUpdate False (Just dropfrom) (Just k) af Nothing)
-				( return $ checkdrop rst k f st'
-				, return (st', False)
+				( return $ checkdrop rst k f st''
+				, return (st'', False)
 				)
-			else return (st', False)
+			else return (st'', False)
 
 	present ru rst k = ru `S.member` getSimLocations rst k
 
@@ -949,14 +949,14 @@ simulatedRepositoryDescription simreponame =
 simulationDifferences :: Differences
 simulationDifferences = mkDifferences $ S.singleton Simulation
 
-runSimRepo :: UUID -> SimState SimRepo -> (SimRepoState SimRepo -> Annex (SimState SimRepo, t)) -> IO (SimState SimRepo, t)
+runSimRepo :: UUID -> SimState SimRepo -> (SimState SimRepo -> SimRepoState SimRepo -> Annex (SimState SimRepo, t)) -> IO (SimState SimRepo, t)
 runSimRepo u st a = do
 	st' <- updateSimRepos st
 	case M.lookup u (simRepoState st') of
 		Just rst -> case simRepo rst of
 			Just sr -> do
 				((st'', t), strd) <- Annex.run (simRepoAnnex sr) $
-					doQuietAction (a rst)
+					doQuietAction (a st' rst)
 				let sr' = sr
 					{ simRepoAnnex = strd
 					}
