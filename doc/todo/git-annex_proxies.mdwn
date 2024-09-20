@@ -30,8 +30,15 @@ Planned schedule of work:
 
 * Currently working in [[todo/proving_preferred_content_behavior]]
 
-* sim: May need to use LiveUpdate to make size balanced preferred content
-  work
+* sim: For size balanced preferred content to work, getLiveRepoSizes
+  needs to reflect keys that were added/dropped from the repository by
+  earlier stages of the sim. That is not currently done, because
+  NoLiveUpdate is used, and the structure of the sim prevents using the
+  usual live update machinery. And live updates are not needed because the
+  sim only ever actually runs one action at a time.
+
+  What could be done is, at each simulated get/drop of a key in a simulated
+  repo, update the SizeChanges table in its database accordingly.
 
 * sim: Can a cluster using size balanced preferred content be simulated?
   May need the sim to get the concept of a cluster gateway, since the
@@ -41,6 +48,16 @@ Planned schedule of work:
 
 * sim: Add support for metadata, so preferred content that matches on it
   will work
+
+* sim: Make an action that considers every action that preferred content
+  allows to happen, and picks random actions to perform. When there are no
+  more actions that preferred content allows, the simulation has reached a
+  stable point and it can stop.
+
+* sim: Detect instability. This can be done by examining the history,
+  if a file is added or removed from the same repository repeatedly,
+  there is probably instability, although it may be an instability that
+  dampens out later.
 
 ## items deferred until later for balanced preferred content and maxsize tracking
 
