@@ -43,11 +43,40 @@ Planned schedule of work:
 * sim: Can a cluster using size balanced preferred content be simulated?
   May need the sim to get the concept of a cluster gateway, since the
   gateway is what picks amoung the nodes on the basis of size. On the other
-  hand, it may suffice to connect the sending repo directly to each node of
+  hand, it may suffice to connect the client repo directly to each node of
   the cluster, and let that repo pick which nodes to send to.
 
-* sim: Add support for metadata, so preferred content that matches on it
-  will work
+  The difference between having a cluster gateway and direct connections to
+  the nodes is when there are multiple clients. The cluster gateway updates
+  its location logs to reflect changes in the nodes that get proxies via
+  it. So it will pick a node that is not full when using size balanced
+  preferred content. If two clients are accessing a node directly without a
+  cluster gateway, that doesn't happen.
+
+  So, for a cluster accessed via a single client, direct connections to the
+  nodes are ok for the sim. But for multiple clients, the sim would need to
+  support clusters.
+
+  Would it suffice, if a repo is a node in a cluster, for every change to
+  its location log to be immediately propagated to every other repo in the
+  sim that has a connection to it? That simulates the centralized view that
+  the cluster gateway has, without the complication of actually simulating
+  a cluster gateway.
+
+  That would not allows simulating a cluster node that is
+  also accessed directly via another repository. But cluster nodes
+  generally should not be accessed except via the gateway. Still, to allow
+  simulating that, it would be possible to have a new type of connection,
+  which is via a gateway. Use eg "-g->" for it. Then to simulate a cluster,
+  which foo is accessing via a gateway:
+
+    connect node1 <-g- foo -g-> node2
+
+  The only thing that does not allow simulating is 2 cluster gateways
+  that each proxy for some of the same nodes. In that situation, there
+  are two views of the contents of the nodes, which is simular to two
+  clients having direct connections to the nodes, but not the same when
+  there are more than 2 clients connected to the 2 gateways.
 
 * sim: Make an action that considers every action that preferred content
   allows to happen, and picks random actions to perform. When there are no
@@ -58,6 +87,9 @@ Planned schedule of work:
   if a file is added or removed from the same repository repeatedly,
   there is probably instability, although it may be an instability that
   dampens out later.
+
+* sim: Add support for metadata, so preferred content that matches on it
+  will work
 
 ## items deferred until later for balanced preferred content and maxsize tracking
 
