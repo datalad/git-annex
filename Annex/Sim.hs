@@ -248,12 +248,41 @@ applySimCommand
 	-> SimState SimRepo
 	-> GetExistingRepoByName 
 	-> Either String (Either (Annex (SimState SimRepo)) (SimState SimRepo))
-applySimCommand cmd st = 
-	applySimCommand' cmd $ flip addHistory cmd $ st
+applySimCommand (CommandPresent repo file) st _ = checkKnownRepo repo st $ \u ->
+	case (M.lookup file (simFiles st), M.lookup u (simRepoState st)) of
+		(Just k, Just rst)
+			| u `S.member` getSimLocations rst k ->
+				Right $ Right st
+			| otherwise -> missing
+		(Just _, Nothing) -> missing
+		(Nothing, _) -> Left $ "Expected " ++ fromRawFilePath file
+			++ " to be present in " ++ fromRepoName repo 
+			++ ", but the simulation does not include that file."
+  where
+	missing = Left $ "Expected " ++ fromRawFilePath file
+		++ " to be present in " 
+		++ fromRepoName repo ++ ", but it is not."
+applySimCommand (CommandNotPresent repo file) st _ = checkKnownRepo repo st $ \u ->
+	case (M.lookup file (simFiles st), M.lookup u (simRepoState st)) of
+		(Just k, Just rst)
+			| u `S.notMember` getSimLocations rst k ->
+				Right $ Right st
+			| otherwise -> present
+		(Just _, Nothing) -> present
+		(Nothing, _) -> Left $ "Expected " ++ fromRawFilePath file
+			++ " to not be present in " ++ fromRepoName repo 
+			++ ", but the simulation does not include that file."
+  where
+	present = Left $ "Expected " ++ fromRawFilePath file 
+		++ " not to be present in " 
+		++ fromRepoName repo ++ ", but it is present."
+applySimCommand cmd st repobyname = 
+	let st' = flip addHistory cmd $ st
 		{ simVectorClock = 
 			let (VectorClock clk) = simVectorClock st 
 			in VectorClock (succ clk)
 		}
+	in applySimCommand' cmd st' repobyname
 
 applySimCommand'
 	:: SimCommand
@@ -373,34 +402,6 @@ applySimCommand' (CommandSeed rngseed) st _ =
 	Right $ Right $ st
 		{ simRng = rngseed
 		}
-applySimCommand' (CommandPresent repo file) st _ = checkKnownRepo repo st $ \u ->
-	case (M.lookup file (simFiles st), M.lookup u (simRepoState st)) of
-		(Just k, Just rst)
-			| u `S.member` getSimLocations rst k ->
-				Right $ Right st
-			| otherwise -> missing
-		(Just _, Nothing) -> missing
-		(Nothing, _) -> Left $ "Expected " ++ fromRawFilePath file
-			++ " to be present in " ++ fromRepoName repo 
-			++ ", but the simulation does not include that file."
-  where
-	missing = Left $ "Expected " ++ fromRawFilePath file
-		++ " to be present in " 
-		++ fromRepoName repo ++ ", but it is not."
-applySimCommand' (CommandNotPresent repo file) st _ = checkKnownRepo repo st $ \u ->
-	case (M.lookup file (simFiles st), M.lookup u (simRepoState st)) of
-		(Just k, Just rst)
-			| u `S.notMember` getSimLocations rst k ->
-				Right $ Right st
-			| otherwise -> present
-		(Just _, Nothing) -> present
-		(Nothing, _) -> Left $ "Expected " ++ fromRawFilePath file
-			++ " to not be present in " ++ fromRepoName repo 
-			++ ", but the simulation does not include that file."
-  where
-	present = Left $ "Expected " ++ fromRawFilePath file 
-		++ " not to be present in " 
-		++ fromRepoName repo ++ ", but it is present."
 applySimCommand' (CommandNumCopies n) st _ =
 	Right $ Right $ st
 		{ simNumCopies = configuredNumCopies n
@@ -452,7 +453,9 @@ applySimCommand' (CommandRebalance b) st _ =
 		}
 applySimCommand' (CommandComment _) st _ = Right $ Right st
 applySimCommand' CommandBlank st _ = Right $ Right st
-	
+applySimCommand' (CommandPresent _ _) _ _ = error "applySimCommand' CommandPresent"
+applySimCommand' (CommandNotPresent _ _) _ _ = error "applySimCommand' CommandNotPresent"
+
 handleStep :: Int -> Int -> SimState SimRepo -> Annex (SimState SimRepo)
 handleStep startn n st
 	| n > 0 = do
