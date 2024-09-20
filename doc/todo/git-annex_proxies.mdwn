@@ -88,6 +88,11 @@ Planned schedule of work:
   there is probably instability, although it may be an instability that
   dampens out later.
 
+* sim: Set a random preferred content expression. Rather than generating a
+  fully random expression, it would probably be most useful to take a set
+  of terms and build an expression that randomly combines them with
+  and/or/not and parens.
+
 * sim: Add support for metadata, so preferred content that matches on it
   will work
 
