@@ -75,6 +75,7 @@ start simfile = do
 	whenM (liftIO $ doesDirectoryExist simdir) $
 		giveup "A sim was previously started. Use `git-annex sim end` to stop it before starting a new one."
 	
+	showLongNote $ UnquotedString "Sim started."
 	rng <- fst . random <$> initStdGen
 	let st = emptySimState rng simdir
 	case simfile of
@@ -83,7 +84,6 @@ start simfile = do
 			case parseSimFile c of
 				Left err -> giveup err
 				Right cs -> startup simdir st cs
-	showLongNote $ UnquotedString "Sim started."
   where
 	startup simdir st cs = do
 		repobyname <- mkGetExistingRepoByName

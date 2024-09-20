@@ -458,8 +458,10 @@ handleStep startn n st
 	| n > 0 = do
 		let (st', actions) = getcomponents [] st $
 			getactions [] (M.toList (simRepos st))
-		st'' <- runoneaction actions st'
-		handleStep startn (pred n) st''
+		(st'', stable) <- runoneaction actions st'
+		if stable
+			then return st''
+			else handleStep startn (pred n) st''
 	| otherwise = return st
   where
 	getactions c [] = c
@@ -480,9 +482,9 @@ handleStep startn n st
 	runoneaction [] st' = do
 		showLongNote $ UnquotedString $ 
 			"Simulation has stabilized after "
-				++ show (n - startn)
+				++ show (startn - n)
 				++ " steps."
-		return st'
+		return (st', True)
 	runoneaction actions st' = do
 		let (idx, st'') = simRandom st'
                   	(randomR (0, length actions - 1))
@@ -491,7 +493,7 @@ handleStep startn n st
 		let restactions = take idx actions ++ drop (idx+1) actions
 		action st'' >>= \case
 			(st''', False) -> runoneaction restactions st'''
-			(st''', True) -> return st'''
+			(st''', True) -> return (st''', False)
 
 getSimActionComponents
 	:: SimAction
@@ -501,12 +503,12 @@ getSimActionComponents (ActionGetWanted repo remote) st =
 	checkKnownRepo repo st $ \u -> 
 		let go _remoteu f k _r st' = setPresentKey True u k u $
 			addHistory st' $ CommandPresent repo f
-		in overFilesRemote repo u remote S.member wanted go st
+		in overFilesRemote repo u remote S.member S.notMember wanted go st
   where
 	wanted k f _ = wantGet NoLiveUpdate False k f
 getSimActionComponents (ActionSendWanted repo remote) st = 
 	checkKnownRepo repo st $ \u ->
-		overFilesRemote repo u remote S.notMember wanted (go u) st
+		overFilesRemote repo u remote S.notMember S.member wanted (go u) st
   where
 	wanted = wantGetBy NoLiveUpdate False
 	go u remoteu f k _r st' = 
@@ -590,11 +592,12 @@ overFilesRemote
 	-> UUID
 	-> RemoteName
 	-> (UUID -> S.Set UUID -> Bool) 
+	-> (UUID -> S.Set UUID -> Bool) 
 	-> (Maybe Key -> AssociatedFile -> UUID -> Annex Bool)
         -> (UUID -> RawFilePath -> Key -> RepoName -> SimState SimRepo -> SimState SimRepo)
 	-> SimState SimRepo
 	-> Either String (Either (SimState SimRepo, [SimState SimRepo -> Annex (SimState SimRepo, Bool)]) (SimState SimRepo))
-overFilesRemote r u remote remotepred checkwant handlewanted st = 
+overFilesRemote r u remote remotepred localpred checkwant handlewanted st = 
 	checkKnownRemote remote r u st $ \remoteu ->
 		Right (Left (st, map (go remoteu) $ M.toList $ simFiles st))
   where
@@ -606,12 +609,15 @@ overFilesRemote r u remote remotepred checkwant handlewanted st =
 				Just rmtst
 					| not (checkremotepred remoteu rst k) -> return (st', False)
 					| not (checkremotepred remoteu rmtst k) -> return (st', False)
+					| not (checklocalpred rst k) -> return (st', False)
 					| otherwise -> ifM (checkwant (Just k) af remoteu)
 						( return (handlewanted remoteu f k r st', True)
 						, return (st', False)
 						)
 	checkremotepred remoteu rst k =
 		remotepred remoteu (getSimLocations rst k)
+	checklocalpred rst k =
+		localpred u (getSimLocations rst k)
 
 simulateGitAnnexMerge
 	:: RepoName
