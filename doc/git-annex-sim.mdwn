@@ -183,8 +183,12 @@ as passed to "git annex sim" while a simulation is running.
 
   Run the simulation forward by this many steps.
 
-  On each step of the simulation, a simulated repository is selected
-  at random, and a random action is performed in it.
+  On each step of the simulation, one file is either transferred
+  or dropped, according to the preferred content and other configuration.
+  
+  If there are no more files that can be either transferred or dropped
+  according to the current configuration, a message will be displayed
+  to indicate that the simulation has stabilized.
 
 * `action repo getwanted remote`
 

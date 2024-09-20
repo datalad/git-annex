@@ -30,6 +30,9 @@ Planned schedule of work:
 
 * Currently working in [[todo/proving_preferred_content_behavior]]
 
+* bug sim step does not detect stabalization. Seems to keep getting files
+  that are already in a repo.
+
 * sim: For size balanced preferred content to work, getLiveRepoSizes
   needs to reflect keys that were added/dropped from the repository by
   earlier stages of the sim. That is not currently done, because
@@ -77,11 +80,6 @@ Planned schedule of work:
   are two views of the contents of the nodes, which is simular to two
   clients having direct connections to the nodes, but not the same when
   there are more than 2 clients connected to the 2 gateways.
-
-* sim: Make an action that considers every action that preferred content
-  allows to happen, and picks random actions to perform. When there are no
-  more actions that preferred content allows, the simulation has reached a
-  stable point and it can stop.
 
 * sim: Detect instability. This can be done by examining the history,
   if a file is added or removed from the same repository repeatedly,

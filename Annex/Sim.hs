@@ -237,14 +237,6 @@ data SimAction
 	deriving (Show, Read)
 
 runSimCommand :: SimCommand -> GetExistingRepoByName -> SimState SimRepo -> Annex (SimState SimRepo)
-runSimCommand (CommandStep n) repobyname st
-	| n > 0 = case randomRepo st of
-		(Just (repo, u), st') ->
-			let (act, st'') = randomAction repo u st'
-			in runSimCommand (CommandAction act) repobyname st''
-				>>= runSimCommand (CommandStep (pred n)) repobyname
-		(Nothing, st') -> return st'
-	| otherwise = return st
 runSimCommand cmd repobyname st = 
 	case applySimCommand cmd st repobyname of
 		Left err -> giveup err
@@ -360,12 +352,13 @@ applySimCommand' (CommandAddMulti n suffix minsz maxsz repos) st repobyname =
 	    file = toRawFilePath (show n ++ suffix)
 	in case applySimCommand' (CommandAdd file sz repos) st' repobyname of
 		Left err -> Left err
-		Right (Right st'') -> 
+		Right (Right st'') ->
 			case pred n of
 				0 -> Right (Right st'')
 				n' -> applySimCommand' (CommandAddMulti n' suffix minsz maxsz repos) st'' repobyname
 		Right (Left _) -> error "applySimCommand' CommandAddMulti"
-applySimCommand' (CommandStep _) _ _ = error "applySimCommand' CommandStep"
+applySimCommand' (CommandStep n) st _ = 
+	Right $ Left $ handleStep n n st
 applySimCommand' (CommandAction act) st _ =
 	case getSimActionComponents act st of
 		Left err -> Left err
@@ -373,7 +366,9 @@ applySimCommand' (CommandAction act) st _ =
 		Right (Left (st', l)) -> Right $ Left $ go l st'
   where
 	go [] st' = return st'
-	go (a:as) st' = a st' >>= go as
+	go (a:as) st' = do
+		(st'', _) <- a st'
+		go as st''
 applySimCommand' (CommandSeed rngseed) st _ =
 	Right $ Right $ st
 		{ simRng = rngseed
@@ -457,11 +452,51 @@ applySimCommand' (CommandRebalance b) st _ =
 		}
 applySimCommand' (CommandComment _) st _ = Right $ Right st
 applySimCommand' CommandBlank st _ = Right $ Right st
+	
+handleStep :: Int -> Int -> SimState SimRepo -> Annex (SimState SimRepo)
+handleStep startn n st
+	| n > 0 = do
+		let (st', actions) = getcomponents [] st $
+			getactions [] (M.toList (simRepos st))
+		st'' <- runoneaction actions st'
+		handleStep startn (pred n) st''
+	| otherwise = return st
+  where
+	getactions c [] = c
+	getactions c ((repo, u):repos) = 
+		case M.lookup u (simConnections st) of
+			Nothing -> getactions c repos
+			Just remotes ->
+				let c' = map (ActionSync repo)
+					(S.toList remotes)
+				in getactions (c'++c) repos
+	
+	getcomponents c st' [] = (st', concat c)
+	getcomponents c st' (a:as) = case getSimActionComponents a st' of
+		Left _ -> getcomponents c st' as
+		Right (Right st'') -> getcomponents c st'' as
+		Right (Left (st'', cs)) -> getcomponents (cs:c) st'' as
+	
+	runoneaction [] st' = do
+		showLongNote $ UnquotedString $ 
+			"Simulation has stabilized after "
+				++ show (n - startn)
+				++ " steps."
+		return st'
+	runoneaction actions st' = do
+		let (idx, st'') = simRandom st'
+                  	(randomR (0, length actions - 1))
+			id
+		let action = actions !! idx
+		let restactions = take idx actions ++ drop (idx+1) actions
+		action st'' >>= \case
+			(st''', False) -> runoneaction restactions st'''
+			(st''', True) -> return st'''
 
 getSimActionComponents
 	:: SimAction
 	-> SimState SimRepo
-	-> Either String (Either (SimState SimRepo, [SimState SimRepo -> Annex (SimState SimRepo)]) (SimState SimRepo))
+	-> Either String (Either (SimState SimRepo, [SimState SimRepo -> Annex (SimState SimRepo, Bool)]) (SimState SimRepo))
 getSimActionComponents (ActionGetWanted repo remote) st =
 	checkKnownRepo repo st $ \u -> 
 		let go _remoteu f k _r st' = setPresentKey True u k u $
@@ -537,7 +572,7 @@ getSimActionComponents (ActionSync repo remote) st =
 simActionSequence
 	:: [SimAction]
 	-> SimState SimRepo
-	-> Either String (Either (SimState SimRepo, [SimState SimRepo -> Annex (SimState SimRepo)]) (SimState SimRepo))
+	-> Either String (Either (SimState SimRepo, [SimState SimRepo -> Annex (SimState SimRepo, Bool)]) (SimState SimRepo))
 simActionSequence [] st = Right (Right st)
 simActionSequence (a:as) st = case getSimActionComponents a st of
 	Left err -> Left err
@@ -558,7 +593,7 @@ overFilesRemote
 	-> (Maybe Key -> AssociatedFile -> UUID -> Annex Bool)
         -> (UUID -> RawFilePath -> Key -> RepoName -> SimState SimRepo -> SimState SimRepo)
 	-> SimState SimRepo
-	-> Either String (Either (SimState SimRepo, [SimState SimRepo -> Annex (SimState SimRepo)]) (SimState SimRepo))
+	-> Either String (Either (SimState SimRepo, [SimState SimRepo -> Annex (SimState SimRepo, Bool)]) (SimState SimRepo))
 overFilesRemote r u remote remotepred checkwant handlewanted st = 
 	checkKnownRemote remote r u st $ \remoteu ->
 		Right (Left (st, map (go remoteu) $ M.toList $ simFiles st))
@@ -567,13 +602,13 @@ overFilesRemote r u remote remotepred checkwant handlewanted st =
 	  	let af = AssociatedFile $ Just f
 		in liftIO $ runSimRepo u st' $ \rst ->
 			case M.lookup remoteu (simRepoState st') of
-				Nothing -> return st'
+				Nothing -> return (st', False)
 				Just rmtst
-					| not (checkremotepred remoteu rst k) -> return st'
-					| not (checkremotepred remoteu rmtst k) -> return st'
+					| not (checkremotepred remoteu rst k) -> return (st', False)
+					| not (checkremotepred remoteu rmtst k) -> return (st', False)
 					| otherwise -> ifM (checkwant (Just k) af remoteu)
-						( return $ handlewanted remoteu f k r st'
-						, return st'
+						( return (handlewanted remoteu f k r st', True)
+						, return (st', False)
 						)
 	checkremotepred remoteu rst k =
 		remotepred remoteu (getSimLocations rst k)
@@ -607,7 +642,7 @@ simulateDropUnwanted
 	-> UUID
 	-> RepoName
 	-> UUID
-	-> Either String (Either (SimState SimRepo, [SimState SimRepo -> Annex (SimState SimRepo)]) (SimState SimRepo))
+	-> Either String (Either (SimState SimRepo, [SimState SimRepo -> Annex (SimState SimRepo, Bool)]) (SimState SimRepo))
 simulateDropUnwanted st u dropfromname dropfrom =
 	Right $ Left (st, map go $ M.toList $ simFiles st)
   where
@@ -616,10 +651,10 @@ simulateDropUnwanted st u dropfromname dropfrom =
 		in if present dropfrom rst k
 			then ifM (wantDrop NoLiveUpdate False (Just dropfrom) (Just k) af Nothing)
 				( return $ checkdrop rst k f st'
-				, return st'
+				, return (st', False)
 				)
-			else return st'
-	
+			else return (st', False)
+
 	present ru rst k = ru `S.member` getSimLocations rst k
 
 	checkdrop rst k f st' =
@@ -628,9 +663,9 @@ simulateDropUnwanted st u dropfromname dropfrom =
 		    verifiedcopies = mapMaybe (verifypresent k st') $
 		    	filter (/= dropfrom) $ S.toList $ getSimLocations rst k
 		in case safeDropAnalysis numcopies mincopies verifiedcopies Nothing of
-			UnsafeDrop -> st'
-			SafeDrop -> dodrop k f st'
-			SafeDropCheckTime -> dodrop k f st'
+			UnsafeDrop -> (st', False)
+			SafeDrop -> (dodrop k f st', True)
+			SafeDropCheckTime -> (dodrop k f st', True)
 
 	dodrop k f st' =
 		setPresentKey False dropfrom k u $
@@ -698,29 +733,6 @@ randomRepo st
 			return (r, u)
   where
 	repolist = M.keys (simRepos st)
-
-randomAction :: RepoName -> UUID -> SimState SimRepo -> (SimAction, SimState SimRepo)
-randomAction repo u st = case M.lookup u (simConnections st) of
-	Just cs | not (S.null cs) ->
-		let (mkact, st') = simRandom st (randomR (0, length mkactions - 1))
-			(mkactions !!)
-		    (remote, st'') = simRandom st' (randomR (0, S.size cs - 1))
-		    	(`S.elemAt` cs)
-		in (mkact repo remote, st'')
-	-- When there are no remotes, this is the only possible action.
-	_ -> (ActionDropUnwanted repo Nothing, st)
-  where
-	mkactions =
-		[ ActionPull
-		, ActionPush
-		, ActionSync
-		, ActionGetWanted
-		, \repo' remote -> ActionDropUnwanted repo' (Just remote)
-		, \repo' _remote -> ActionDropUnwanted repo' Nothing
-		, ActionSendWanted
-		, ActionGitPush
-		, ActionGitPull
-		]
 
 randomWords :: Int -> StdGen -> ([Word8], StdGen)
 randomWords = go []
@@ -928,23 +940,24 @@ simulatedRepositoryDescription simreponame =
 simulationDifferences :: Differences
 simulationDifferences = mkDifferences $ S.singleton Simulation
 
-runSimRepo :: UUID -> SimState SimRepo -> (SimRepoState SimRepo -> Annex (SimState SimRepo)) -> IO (SimState SimRepo)
+runSimRepo :: UUID -> SimState SimRepo -> (SimRepoState SimRepo -> Annex (SimState SimRepo, t)) -> IO (SimState SimRepo, t)
 runSimRepo u st a = do
 	st' <- updateSimRepos st
 	case M.lookup u (simRepoState st') of
 		Just rst -> case simRepo rst of
 			Just sr -> do
-				(st'', strd) <- Annex.run (simRepoAnnex sr) $
+				((st'', t), strd) <- Annex.run (simRepoAnnex sr) $
 					doQuietAction (a rst)
 				let sr' = sr
 					{ simRepoAnnex = strd
 					}
-				return $ st''
+				let st''' = st''
 					{ simRepoState = M.adjust
 						(\rst' -> rst' { simRepo = Just sr' })
 						u
 						(simRepoState st'')
 					}
+				return (st''', t)
 			Nothing -> error $ "runSimRepo simRepo not set for " ++ fromUUID u
 		Nothing -> error $ "runSimRepo simRepoState not found for " ++ fromUUID u
 
