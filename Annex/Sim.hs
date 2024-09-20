@@ -1089,13 +1089,14 @@ restoreSim rootdir =
 		Right c -> case readMaybe c :: Maybe (SimState ()) of
 			Nothing -> return (Left "unable to parse sim state file")
 			Just st -> do
+				let st' = st { simRootDirectory = fromRawFilePath rootdir }
 				repostate <- M.fromList
-					<$> mapM (thaw st) (M.toList (simRepoState st))
-				let st' = st
+					<$> mapM (thaw st') (M.toList (simRepoState st))
+				let st'' = st'
 					{ simRepoState = 
-						M.map (finishthaw st') repostate
+						M.map (finishthaw st'') repostate
 					}
-				return (Right st')
+				return (Right st'')
   where
 	thaw st (u, rst) = tryNonAsync (thaw' st u) >>= return . \case
 		Left _ -> (u, rst { simRepo = Nothing })
