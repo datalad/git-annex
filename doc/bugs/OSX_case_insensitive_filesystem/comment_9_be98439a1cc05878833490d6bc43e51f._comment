@@ -1,0 +1,44 @@
+[[!comment format=mdwn
+ username="AaronBrooks"
+ avatar="http://cdn.libravatar.org/avatar/8e5acc2d60673d585360c70a67614722"
+ subject="reinject files -- more efficiently"
+ date="2024-09-22T22:19:12Z"
+ content="""
+Thanks to Thowz for the [above solution](https://git-annex.branchable.com/bugs/OSX_case_insensitive_filesystem/#comment-da73206eb25b9ca43d5a9cd3ba4822c6).
+
+There's a couple of scaling issues for large numbers of files (100K+ files in my case) which makes it go slowly and actually breaks the command line length (\"Argument list too long\").
+
+Here's my modification for the first two commands:
+
+[[!format  bash \"\"\"
+# Enable write permissions on *directories* containing misfiled items
+find -xtype l -printf \"%l\0\" \
+  |sed -z -r \"s#.*(\.git/annex/objects)/(.)(.)/(.)(.)/([^/]*).*#\1/[\L\2\U\2][\L\3\U\3]/[\L\4\U\4][\L\5\U\5]/\E\6#\" \
+  |sort -z \
+  |uniq -z \
+  |xargs -0 -ifoo bash -c \"chmod u+w foo\"
+
+# Reinject the *files* into the annex (note different sed pattern)
+find -xtype l -printf \"%l\0\" \
+  |sed -z -r \"s#.*(\.git/annex/objects)/(.)(.)/(.)(.)/(.*)#\1/[\L\2\U\2][\L\3\U\3]/[\L\4\U\4][\L\5\U\5]/\E\6#\" \
+  |sort -z \
+  |uniq -z \
+  |xargs -0 -ifoo bash -c \"git-annex reinject --known foo\"
+\"\"\"]]
+
+If you used bsdtar (or some other method that attempts to copy over [Apple metadata resource forks](https://en.wikipedia.org/wiki/AppleSingle_and_AppleDouble_formats)) you'll see a ton of `._` prepended files in your archive. If you're using this on Linux going forward and want these to be cleaned up (and enable the below directory cleanups to actually succeed and know you don't actually want any of the metadata) you'll want to delete these with something like this:
+
+[[!format bash \"\"\"
+find .git/annex/objects -name ._\* -print0 |xargs -0 rm
+\"\"\"]]
+
+You can then continue with his last two commands:
+
+[[!format bash \"\"\"
+# Remove empty directories (rmdir will fail on the non-empty directories)
+find .git/annex/objects -mindepth 3 -maxdepth 3 -type d -exec rmdir {} \;
+find .git/annex/objects -mindepth 2 -maxdepth 2 -type d -exec rmdir {} \;
+# And, if you want to be thorough...
+find .git/annex/objects -mindepth 1 -maxdepth 1 -type d -exec rmdir {} \;
+\"\"\"]]
+"""]]
