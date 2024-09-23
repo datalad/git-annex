@@ -287,11 +287,11 @@ applySimCommand c@(CommandVisit repo cmdparams) st _ =
 		unlessM (liftIO $ doesDirectoryExist dir) $
 			giveup "Simulated repository unavailable."
 		(cmd, params) <- case cmdparams of
-			(cmd:params) -> return (cmd, params)
 			[] -> do
 				showLongNote "Starting a shell in the simulated repository."
 				shellcmd <- liftIO $ fromMaybe "sh" <$> getEnv "SHELL"
 				return (shellcmd, [])
+			_ -> return ("sh", ["-c", unwords cmdparams])
 		exitcode <- liftIO $
 			safeSystem' cmd (map Param params)
 				(\p -> p { cwd = Just dir })
