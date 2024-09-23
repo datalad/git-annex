@@ -193,8 +193,8 @@ as passed to "git annex sim" while a simulation is running.
   according to the current configuration, a message will be displayed
   to indicate that the simulation has stabilized.
 
-  (A step also simulates git pull and git push being run in each repository,
-  to all of its remotes. That happens before the file transfer or drop.)
+  This also simulates git pull and git push being run in each repository,
+  as needed in order to find additional things to do.
 
 * `action repo getwanted remote`
 

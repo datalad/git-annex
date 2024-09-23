@@ -120,11 +120,6 @@ present bar 9testfile
   clients having direct connections to the nodes, but not the same when
   there are more than 2 clients connected to the 2 gateways.
 
-* sim: Detect instability. This can be done by examining the history,
-  if a file is added or removed from the same repository repeatedly,
-  there is probably instability, although it may be an instability that
-  dampens out later.
-
 * sim: Set a random preferred content expression. Rather than generating a
   fully random expression, it would probably be most useful to take a set
   of terms and build an expression that randomly combines them with
@@ -139,12 +134,6 @@ present bar 9testfile
   and re-run the sim from the start to resume.
 
 ## items deferred until later for balanced preferred content and maxsize tracking
-
-* `git-annex assist --rebalance` of `balanced=foo:2` 
-  sometimes needs several runs to stabalize.
-
-  May not be a bug, needs reproducing and analysis.
-  Deferred for proving behavior of balanced preferred content stage.
 
 * The assistant is using NoLiveUpdate, but it should be posssible to plumb
   a LiveUpdate through it from preferred content checking to location log

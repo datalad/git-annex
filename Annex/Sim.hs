@@ -490,22 +490,39 @@ applySimCommand' (CommandNotPresent _ _) _ _ = error "applySimCommand' CommandNo
 handleStep :: Int -> Int -> SimState SimRepo -> Annex (SimState SimRepo)
 handleStep startn n st
 	| n > 0 = do
-		let (st', actions) = getcomponents [] st $
-			getactions [] (M.toList (simRepos st))
-		(st'', stable) <- runoneaction actions st'
-		if stable
-			then return st''
+		let (st', actions) = getactions unsyncactions st
+		(st'', nothingtodo) <- runoneaction actions st'
+		if nothingtodo
+			then do
+				let (st''', actions') = getactions [ActionSync] st''
+				(st'''', stable) <- runoneaction actions' st'''
+				if stable
+					then do
+						showLongNote $ UnquotedString $ 
+							"Simulation has stabilized after "
+							++ show (startn - n)
+							++ " steps."
+						return st''''
+					else handleStep startn (pred n) st''''
 			else handleStep startn (pred n) st''
 	| otherwise = return st
   where
-	getactions c [] = c
-	getactions c ((repo, u):repos) = 
+	unsyncactions = 
+		[ ActionGetWanted
+		, ActionSendWanted
+		, \repo remote -> ActionDropUnwanted repo (Just remote)
+		]
+
+	getactions mks st' = getcomponents [] st' $
+		getactions' mks [] (M.toList (simRepos st'))
+
+	getactions' _ c [] = concat c
+	getactions' mks c ((repo, u):repos) = 
 		case M.lookup u (simConnections st) of
-			Nothing -> getactions c repos
+			Nothing -> getactions' mks c repos
 			Just remotes ->
-				let c' = map (ActionSync repo)
-					(S.toList remotes)
-				in getactions (c'++c) repos
+				let l = [mk repo remote | remote <- S.toList remotes, mk <- mks]
+				in getactions' mks (l:c) repos
 	
 	getcomponents c st' [] = (st', concat c)
 	getcomponents c st' (a:as) = case getSimActionComponents a st' of
@@ -513,12 +530,7 @@ handleStep startn n st
 		Right (Right st'') -> getcomponents c st'' as
 		Right (Left (st'', cs)) -> getcomponents (cs:c) st'' as
 	
-	runoneaction [] st' = do
-		showLongNote $ UnquotedString $ 
-			"Simulation has stabilized after "
-				++ show (startn - n)
-				++ " steps."
-		return (st', True)
+	runoneaction [] st' = return (st', True)
 	runoneaction actions st' = do
 		let (idx, st'') = simRandom st'
                   	(randomR (0, length actions - 1))
