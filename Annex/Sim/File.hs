@@ -80,6 +80,8 @@ generateSimFile = unlines . map unwords . go
 		["maxsize", repo, showsize (fromMaxSize maxsize)] : go rest
 	go (CommandRebalance b : rest) =
 		["rebalance", if b then "on" else "off"] : go rest
+	go (CommandVisit (RepoName repo) cmdparams : rest) =
+		(["visit", repo] ++ cmdparams) : go rest
 	go (CommandComment s : rest) = 
 		[s] : go rest
 	go (CommandBlank : rest) = 
@@ -184,6 +186,8 @@ parseSimCommand ("maxsize":repo:size:[]) =
 parseSimCommand ("rebalance":onoff:[]) = case isTrueFalse onoff of
 	Just b -> Right $ CommandRebalance b
 	Nothing -> Left $ "Unable to parse rebalance value \"" ++ onoff ++ "\""
+parseSimCommand ("visit":repo:cmdparams) =
+	Right $ CommandVisit (RepoName repo) cmdparams
 parseSimCommand ws = parseError ws
 
 parseSimAction :: [String] -> Either String SimAction

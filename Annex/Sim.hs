@@ -35,6 +35,7 @@ import Logs.MaxSize
 import Logs.Difference
 import Logs.UUID
 import Logs.Location
+import Utility.Env
 import qualified Annex
 import qualified Remote
 import qualified Git.Construct
@@ -222,6 +223,7 @@ data SimCommand
 	| CommandGroupWanted Group PreferredContentExpression
 	| CommandMaxSize RepoName MaxSize
 	| CommandRebalance Bool
+	| CommandVisit RepoName [String]
 	| CommandComment String
 	| CommandBlank
 	deriving (Show, Read)
@@ -278,6 +280,32 @@ applySimCommand (CommandNotPresent repo file) st _ = checkKnownRepo repo st $ \u
 	present = Left $ "Expected " ++ fromRawFilePath file 
 		++ " not to be present in " 
 		++ fromRepoName repo ++ ", but it is present."
+applySimCommand c@(CommandVisit repo cmdparams) st _ =
+	checkKnownRepo repo st $ \u -> Right $ Left $ do
+		st' <- liftIO $ updateSimRepos st
+		let dir = simRepoDirectory st' u
+		unlessM (liftIO $ doesDirectoryExist dir) $
+			giveup "Simulated repository unavailable."
+		(cmd, params) <- case cmdparams of
+			(cmd:params) -> return (cmd, params)
+			[] -> do
+				showLongNote "Starting a shell in the simulated repository."
+				shellcmd <- liftIO $ fromMaybe "sh" <$> getEnv "SHELL"
+				return (shellcmd, [])
+		exitcode <- liftIO $
+			safeSystem' cmd (map Param params)
+				(\p -> p { cwd = Just dir })
+		when (null cmdparams) $
+			showLongNote "Finished visit to simulated repository."
+		if null cmdparams
+			then return st'
+			else if exitcode == ExitSuccess
+				then return $ addHistory st' c
+				else do
+					showLongNote $ UnquotedString $ 
+						"Command " ++ unwords cmdparams ++
+							" exited nonzero."
+					liftIO $ exitWith exitcode
 applySimCommand cmd st repobyname = 
 	let st' = flip addHistory cmd $ st
 		{ simVectorClock = 
@@ -455,6 +483,7 @@ applySimCommand' (CommandRebalance b) st _ =
 		}
 applySimCommand' (CommandComment _) st _ = Right $ Right st
 applySimCommand' CommandBlank st _ = Right $ Right st
+applySimCommand' (CommandVisit _ _) _ _ = error "applySimCommand' CommandVisit"
 applySimCommand' (CommandPresent _ _) _ _ = error "applySimCommand' CommandPresent"
 applySimCommand' (CommandNotPresent _ _) _ _ = error "applySimCommand' CommandNotPresent"
 
@@ -716,7 +745,8 @@ checkKnownRepo :: RepoName -> SimState SimRepo -> (UUID -> Either String a) -> E
 checkKnownRepo reponame st a = case M.lookup reponame (simRepos st) of
 	Just u -> a u
 	Nothing -> Left $ "No repository in the simulation is named \""
-		++ fromRepoName reponame ++ "\"."
+		++ fromRepoName reponame ++ "\". Choose from: "
+		++ unwords (map fromRepoName $ M.keys (simRepos st))
 
 checkKnownRemote :: RemoteName -> RepoName -> UUID -> SimState SimRepo -> (UUID -> Either String a) -> Either String a
 checkKnownRemote remotename reponame u st a =

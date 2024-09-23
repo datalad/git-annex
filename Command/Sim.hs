@@ -13,10 +13,8 @@ import Command
 import Annex.Sim
 import Annex.Sim.File
 import Annex.Perms
-import Utility.Env
 
 import System.Random
-import qualified Data.Map as M
 
 cmd :: Command
 cmd = command "sim" SectionTesting
@@ -31,27 +29,6 @@ seek ("end":[]) = do
 	whenM (liftIO $ doesDirectoryExist simdir) $ do
 		liftIO $ removeDirectoryRecursive simdir
 	showLongNote $ UnquotedString "Sim ended."
-seek ("visit":reponame:[]) = do
-	simdir <- fromRepo gitAnnexSimDir
-	liftIO (restoreSim simdir) >>= \case
-		Left err -> giveup err
-		Right st -> case M.lookup (RepoName reponame) (simRepos st) of
-			Just u -> do
-				let dir = simRepoDirectory st u
-				unlessM (liftIO $ doesDirectoryExist dir) $
-					giveup "Simulated repository unavailable."
-				showLongNote "Starting a shell in the simulated repository."
-				shellcmd <- liftIO $ fromMaybe "sh" <$> getEnv "SHELL"
-				exitcode <- liftIO $
-					safeSystem' shellcmd []
-						(\p -> p { cwd = Just dir })
-				showLongNote "Finished visit to simulated repository."
-				liftIO $ exitWith exitcode
-			Nothing -> giveup $ unwords
-				[ "There is no simulated repository with that name."
-				, "Choose from:" 
-				, unwords $ map fromRepoName $ M.keys (simRepos st)
-				]
 seek ("show":[]) = do
 	simdir <- fromRepo gitAnnexSimDir
 	liftIO (restoreSim simdir) >>= \case
