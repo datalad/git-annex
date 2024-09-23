@@ -185,10 +185,13 @@ as passed to "git annex sim" while a simulation is running.
 
   On each step of the simulation, one file is either transferred
   or dropped, according to the preferred content and other configuration.
-  
+
   If there are no more files that can be either transferred or dropped
   according to the current configuration, a message will be displayed
   to indicate that the simulation has stabilized.
+
+  (A step also simulates git pull and git push being run in each repository,
+  to all of its remotes. That happens before the file transfer or drop.)
 
 * `action repo getwanted remote`
 

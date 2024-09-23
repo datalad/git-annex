@@ -40,6 +40,7 @@ import qualified Remote
 import qualified Git.Construct
 import qualified Git.LsFiles
 import qualified Annex.Queue
+import qualified Database.RepoSize
 
 import System.Random
 import Data.Word
@@ -98,6 +99,7 @@ emptySimState rngseed rootdir = SimState
 -- State that can vary between different repos in the simulation.
 data SimRepoState t = SimRepoState
 	{ simLocations :: M.Map Key (M.Map UUID LocationState)
+	, simLiveSizeChanges :: M.Map UUID SizeOffset
 	, simIsSpecialRemote :: Bool
 	, simRepo :: Maybe t
 	, simRepoName :: RepoName
@@ -126,7 +128,7 @@ setPresentKey present u k stu st = st
 	}
 
 setPresentKey' :: Bool -> VectorClock -> UUID -> Key -> SimRepoState t -> SimRepoState t
-setPresentKey' present vc u k rst = rst
+setPresentKey' present vc u k rst = rememberLiveSizeChanges present u k rst $ rst
 	{ simLocations = 
 		M.insertWith (M.unionWith newerLocationState) k
 			(M.singleton u (LocationState vc present))
@@ -613,10 +615,11 @@ overFilesRemote r u remote remotepred localpred checkwant handlewanted st =
 					| not (checkremotepred remoteu rst k) -> return (st'', False)
 					| not (checkremotepred remoteu rmtst k) -> return (st'', False)
 					| not (checklocalpred rst k) -> return (st'', False)
-					| otherwise -> ifM (checkwant (Just k) af remoteu)
-						( return (handlewanted remoteu f k r st'', True)
-						, return (st'', False)
-						)
+					| otherwise -> updateLiveSizeChanges rst $
+						ifM (checkwant (Just k) af remoteu)
+							( return (handlewanted remoteu f k r st'', True)
+							, return (st'', False)
+							)
 	checkremotepred remoteu rst k =
 		remotepred remoteu (getSimLocations rst k)
 	checklocalpred rst k =
@@ -634,17 +637,21 @@ simulateGitAnnexMerge src dest st =
 			Just destst -> case M.lookup srcu (simRepoState st) of
 				Nothing -> Left $ "Unable to find simRepoState for " ++ fromRepoName src
 				Just srcst -> Right $ Right $
-					let locs = M.unionWith
-						(M.unionWith newerLocationState)
-						(simLocations destst)
-						(simLocations srcst)
-					    destst' = destst { simLocations = locs }
-					in st
-						{ simRepoState = M.insert destu
-							destst'
-							(simRepoState st)
-						}
+					simulateGitAnnexMerge' srcst destst destu st
 		_ -> Left $ "Unable to find " ++ fromRepoName src ++ " or " ++ fromRepoName dest ++ " in simRepos"
+
+simulateGitAnnexMerge' :: SimRepoState SimRepo -> SimRepoState SimRepo -> UUID -> SimState SimRepo -> SimState SimRepo
+simulateGitAnnexMerge' srcst destst destu st = 
+	let locs = M.unionWith
+		(M.unionWith newerLocationState)
+		(simLocations destst)
+		(simLocations srcst)
+	    destst' = calcLiveSizeChanges $ destst
+	    	{ simLocations = locs
+		}
+	in st
+		{ simRepoState = M.insert destu destst' (simRepoState st)
+		}
 
 simulateDropUnwanted
 	:: SimState SimRepo
@@ -658,10 +665,11 @@ simulateDropUnwanted st u dropfromname dropfrom =
 	go (f, k) st' = liftIO $ runSimRepo u st' $ \st'' rst ->
 		let af = AssociatedFile $ Just f
 		in if present dropfrom rst k
-			then ifM (wantDrop NoLiveUpdate False (Just dropfrom) (Just k) af Nothing)
-				( return $ checkdrop rst k f st''
-				, return (st'', False)
-				)
+			then updateLiveSizeChanges rst $
+				ifM (wantDrop NoLiveUpdate False (Just dropfrom) (Just k) af Nothing)
+					( return $ checkdrop rst k f st''
+					, return (st'', False)
+					)
 			else return (st'', False)
 
 	present ru rst k = ru `S.member` getSimLocations rst k
@@ -827,6 +835,7 @@ addRepo reponame simrepo st = st
 	u = simRepoConfigUUID simrepo
 	rst = SimRepoState
 		{ simLocations = mempty
+		, simLiveSizeChanges = mempty
 		, simIsSpecialRemote = simRepoConfigIsSpecialRemote simrepo
 		, simRepo = Nothing
 		, simRepoName = reponame
@@ -969,6 +978,59 @@ runSimRepo u st a = do
 				return (st''', t)
 			Nothing -> error $ "runSimRepo simRepo not set for " ++ fromUUID u
 		Nothing -> error $ "runSimRepo simRepoState not found for " ++ fromUUID u
+
+rememberLiveSizeChanges :: Bool -> UUID -> Key -> SimRepoState t -> SimRepoState t -> SimRepoState t
+rememberLiveSizeChanges present u k oldrst newrst
+	| u `S.member` getSimLocations oldrst k == present = newrst
+	| otherwise = 
+		let m = M.alter go u (simLiveSizeChanges newrst)
+		in newrst { simLiveSizeChanges = m }
+  where
+	ksz = fromMaybe 0 $ fromKey keySize k
+	change
+		| present = SizeOffset ksz
+		| otherwise = SizeOffset (negate ksz)
+
+	go Nothing = Just change
+	go (Just oldoffset) = Just (oldoffset + change)
+
+calcLiveSizeChanges :: SimRepoState t -> SimRepoState t
+calcLiveSizeChanges rst = rst
+	{ simLiveSizeChanges = go mempty $ M.toList $ simLocations rst
+	}
+  where
+	go m [] = m
+	go m ((k, locm):rest) = go (go' k m (M.toList locm)) rest
+
+	go' _ m [] = m
+	go' k m ((u, locst):rest) = go' k (M.alter (calc k locst) u m) rest
+
+	calc k (LocationState _ present) msz
+		| not present = msz
+		| otherwise = Just $ fromMaybe (SizeOffset 0) msz + 
+			SizeOffset (fromMaybe 0 $ fromKey keySize k)
+
+{- Update the RepoSize database in a simulated repository as if LiveUpdate
+ - were done for the simulated changes in keys locations that have occurred
+ - in the simulation up to this point.
+ - 
+ - This relies on the SizeChanges table being a rolling total. When the
+ - simulation is suspended, the location logs get updated with changes
+ - corresponding to the size changes recorded here. When the simulation is
+ - later resumed, the values written here are taken as the start values
+ - for the rolling total, and so getLiveRepoSizes will only see the
+ - difference between that start value and whatever new value is written
+ - here.
+ -
+ - This assumes that the simulation is not interrupted after calling
+ - this, but before it can update the location logs.
+ -}
+updateLiveSizeChanges :: SimRepoState t -> Annex a -> Annex a
+updateLiveSizeChanges rst a = do
+	h <- Database.RepoSize.getRepoSizeHandle
+	liftIO $ Database.RepoSize.setSizeChanges h $
+		M.map fromSizeOffset $ simLiveSizeChanges rst
+	a
 
 updateSimRepoState :: SimState SimRepo -> SimRepo -> IO SimRepo
 updateSimRepoState newst sr = do
