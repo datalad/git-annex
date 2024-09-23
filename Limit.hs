@@ -736,8 +736,8 @@ filterCandidatesFullySizeBalanced
 filterCandidatesFullySizeBalanced maxsizes sizemap n key candidates = do
 	currentlocs <- S.fromList <$> loggedLocations key
  	let keysize = fromMaybe 0 (fromKey keySize key)
-	let go u = case (M.lookup u maxsizes, M.lookup u sizemap, u `S.member` currentlocs) of
-		(Just maxsize, Just reposize, inrepo)
+	let go u = case (M.lookup u maxsizes, fromMaybe (RepoSize 0) (M.lookup u sizemap), u `S.member` currentlocs) of
+		(Just maxsize, reposize, inrepo)
 			| repoHasSpace keysize inrepo reposize maxsize ->
 				proportionfree keysize inrepo u reposize maxsize
 			| otherwise -> Nothing
