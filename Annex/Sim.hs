@@ -508,7 +508,7 @@ handleStep startn n st
 	| otherwise = return st
   where
 	runrest actions st' n'
-		| n > 0 = do
+		| n' > 0 = do
 			(st'', restactions) <- runoneaction actions st'
 			if null restactions
 				then handleStep startn n' st'
