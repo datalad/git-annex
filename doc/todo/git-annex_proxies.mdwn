@@ -30,18 +30,6 @@ Planned schedule of work:
 
 * Currently working in [[todo/proving_preferred_content_behavior]]
 
-* sim bug: This sim file when run has initNewSimRepos run 3 times on repo foo.
-  While it works ok, that must be a bug, and it seems related to the bug below,
-  since it also calls preferredContentSet repeatedly in repo foo.
-
-seed 5338836154135478106
-init foo
-init bar
-wanted foo anything
-connect foo <-> bar
-addmulti 1 testfile 100.0kB 10.0MB foo
-action bar pull foo
-
 * sim: updateSimRepoState turns out to call preferredContentSet repeatedly
   and also preferred content changes made part way through the sim 
   seem to not take effect. Test case is this, which should not end 
@@ -52,9 +40,6 @@ action bar pull foo
   step is run in a separate git-annex sim command. It's only when
   it's run by git-annex sim start that it does.
 
-  Also, with more thna 1 step at the end, there is a mixture of 
-  present bar and notpresent bar. Including for the same filename.
-
 seed 5338836154135478106
 init foo
 init bar
@@ -63,24 +48,23 @@ addmulti 10 testfile 100.0kB 10.0MB foo
 wanted bar anything
 wanted foo anything
 step 20
-present bar 6testfile
-present bar 7testfile
-present bar 9testfile
-present bar 3testfile
-present bar 10testfile
 present bar 8testfile
-present bar 2testfile
-present bar 5testfile
-present bar 1testfile
+present bar 6testfile
 present bar 4testfile
-step 3
-wanted bar nothing
-step 3
-notpresent bar 7testfile
-notpresent bar 4testfile
-notpresent bar 9testfile
-step 1
+present bar 5testfile
+present bar 7testfile
+present bar 1testfile
 present bar 9testfile
+present bar 2testfile
+present bar 10testfile
+present bar 3testfile
+wanted bar nothing
+step 5
+notpresent bar 6testfile
+notpresent bar 1testfile
+notpresent bar 8testfile
+notpresent bar 10testfile
+present bar 1testfile
 
 * sim: Can a cluster using size balanced preferred content be simulated?
   May need the sim to get the concept of a cluster gateway, since the
