@@ -1,0 +1,19 @@
+# size balanced preferred content sim  
+seed -4592890916829221843  
+init foo  
+init bar  
+init baz  
+connect foo -> bar  
+connect foo -> baz  
+group bar test  
+group baz test  
+wanted bar sizebalanced=test  
+wanted baz sizebalanced=test  
+maxsize bar 20gb  
+maxsize baz 50gb  
+addmulti 10 bigfile 1GB 10GB foo  
+step 30  
+add smallfile 500kb foo  
+step 1  
+visit foo git-annex whereis  
+visit foo git-annex maxsize  

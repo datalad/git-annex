@@ -340,12 +340,10 @@ as passed to "git annex sim" while a simulation is running.
 
 * The [[git-annex-common-options]](1) can be used.
 
-# HASKELL INTERFACE
+# SIM FILE COLLECTION
 
-There is also a Haskell interface to the simulation,
-in the git-annex source tree in the Annex.Sim module. This allows
-implementing simulations in pure Haskell code, without the overhead of
-using a git repository.
+git-annex includes a collection of sim files,
+at <https://git-annex.branchable.com/sims/>
 
 # SEE ALSO
 
