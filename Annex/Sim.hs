@@ -491,22 +491,30 @@ handleStep :: Int -> Int -> SimState SimRepo -> Annex (SimState SimRepo)
 handleStep startn n st
 	| n > 0 = do
 		let (st', actions) = getactions unsyncactions st
-		(st'', nothingtodo) <- runoneaction actions st'
-		if nothingtodo
+		(st'', restactions) <- runoneaction actions st'
+		if null restactions
 			then do
 				let (st''', actions') = getactions [ActionSync] st''
-				(st'''', stable) <- runoneaction actions' st'''
-				if stable
+				(st'''', restactions') <- runoneaction actions' st'''
+				if null restactions'
 					then do
 						showLongNote $ UnquotedString $ 
 							"Simulation has stabilized after "
 							++ show (startn - n)
 							++ " steps."
 						return st''''
-					else handleStep startn (pred n) st''''
-			else handleStep startn (pred n) st''
+					else runrest restactions' st'''' (pred n)
+			else runrest restactions st'' (pred n)
 	| otherwise = return st
   where
+	runrest actions st' n'
+		| n > 0 = do
+			(st'', restactions) <- runoneaction actions st'
+			if null restactions
+				then handleStep startn n' st'
+				else runrest restactions st'' (pred n')
+		| otherwise = return st'
+
 	unsyncactions = 
 		[ ActionGetWanted
 		, ActionSendWanted
@@ -530,7 +538,7 @@ handleStep startn n st
 		Right (Right st'') -> getcomponents c st'' as
 		Right (Left (st'', cs)) -> getcomponents (cs:c) st'' as
 	
-	runoneaction [] st' = return (st', True)
+	runoneaction [] st' = return (st', [])
 	runoneaction actions st' = do
 		let (idx, st'') = simRandom st'
                   	(randomR (0, length actions - 1))
@@ -539,7 +547,7 @@ handleStep startn n st
 		let restactions = take idx actions ++ drop (idx+1) actions
 		action st'' >>= \case
 			(st''', False) -> runoneaction restactions st'''
-			(st''', True) -> return (st''', False)
+			(st''', True) -> return (st''', restactions)
 
 getSimActionComponents
 	:: SimAction
