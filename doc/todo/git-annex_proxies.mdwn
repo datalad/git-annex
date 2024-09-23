@@ -30,6 +30,18 @@ Planned schedule of work:
 
 * Currently working in [[todo/proving_preferred_content_behavior]]
 
+* sim bug: This sim file when run has initNewSimRepos run 3 times on repo foo.
+  While it works ok, that must be a bug, and it seems related to the bug below,
+  since it also calls preferredContentSet repeatedly in repo foo.
+
+seed 5338836154135478106
+init foo
+init bar
+wanted foo anything
+connect foo <-> bar
+addmulti 1 testfile 100.0kB 10.0MB foo
+action bar pull foo
+
 * sim: updateSimRepoState turns out to call preferredContentSet repeatedly
   and also preferred content changes made part way through the sim 
   seem to not take effect. Test case is this, which should not end 
@@ -39,6 +51,9 @@ Planned schedule of work:
   Note that this test case does not behave this way if the final
   step is run in a separate git-annex sim command. It's only when
   it's run by git-annex sim start that it does.
+
+  Also, with more thna 1 step at the end, there is a mixture of 
+  present bar and notpresent bar. Including for the same filename.
 
 seed 5338836154135478106
 init foo
@@ -66,9 +81,6 @@ notpresent bar 4testfile
 notpresent bar 9testfile
 step 1
 present bar 9testfile
-
-* bug sim step does not detect stabalization. Seems to keep getting files
-  that are already in a repo.
 
 * sim: For size balanced preferred content to work, getLiveRepoSizes
   needs to reflect keys that were added/dropped from the repository by
