@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="adehnert"
+ avatar="http://cdn.libravatar.org/avatar/a4fc9cc6278919b6f40df8e3cc84355b"
+ subject="Settable default preferred content?"
+ date="2024-09-24T00:02:20Z"
+ content="""
+Is there any way to set a default preferred content setting -- either used when a new clone is made or whenever a repo doesn't specify one?
+
+I've got an annex that has a couple servers with all the content, and several clients[1] -- which I create more often and more manually -- that just want the content I pick. Basically every time I set up another client, I run `git annex sync --content`, am surprised to see a bunch of `get ...` lines, go kill the sync, set group and preferred content to be manual/standard, and run the sync again. It'd be handy if I could set up the repo in advance to just configure that by default. (I guess I could make an alias that does like `git clone $server/$repo && cd $repo && git annex wanted . standard && git annex group . manual`, but it'd be nice if I could just do the `git clone` I'm used to and it would all work.)
+
+[1] AIUI, the \"client\" group means \"get every file referenced in HEAD, unless it's in archive/, and skip older versions\"? I guess that makes sense for like a software project with some media assets. I've mostly used git-annex for situations where most files aren't being actively worked with and clients only have a few of them, which is where it seems to really shine over GitLFS. I've always been vaguely surprised by how the client group works as a result. Any sense of how commonly people use it for different use cases? It is *excellent* for the sparse checkout case though.
+"""]]
