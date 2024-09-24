@@ -337,6 +337,11 @@ applySimCommand' (CommandUse reponame s) st repobyname =
 applySimCommand' (CommandConnect connections) st repobyname =
 	let (repo, remote, mconnections) = getConnection connections
 	in checkKnownRepo repo st $ \u -> 
+		if maybe False simIsSpecialRemote (M.lookup u (simRepoState st))
+			then Left $ fromRepoName repo ++ " is a special remote, and cannot connect to " ++ fromRemoteName remote
+			else go u remote mconnections
+  where
+	go u remote mconnections =
 		let st' = st
 			{ simConnections = 
 				let s = case M.lookup u (simConnections st) of
@@ -554,14 +559,14 @@ getSimActionComponents
 	-> SimState SimRepo
 	-> Either String (Either (SimState SimRepo, [SimState SimRepo -> Annex (SimState SimRepo, Bool)]) (SimState SimRepo))
 getSimActionComponents (ActionGetWanted repo remote) st =
-	checkKnownRepo repo st $ \u -> 
+	checkKnownRepoNotSpecialRemote repo st $ \u -> 
 		let go _remoteu f k _r st' = setPresentKey True u k u $
 			addHistory st' $ CommandPresent repo f
 		in overFilesRemote repo u remote S.member S.notMember wanted go st
   where
 	wanted k f _ = wantGet NoLiveUpdate False k f
 getSimActionComponents (ActionSendWanted repo remote) st = 
-	checkKnownRepo repo st $ \u ->
+	checkKnownRepoNotSpecialRemote repo st $ \u ->
 		overFilesRemote repo u remote S.notMember S.member wanted (go u) st
   where
 	wanted = wantGetBy NoLiveUpdate False
@@ -572,18 +577,18 @@ getSimActionComponents (ActionSendWanted repo remote) st =
 		setPresentKey True remoteu k u $
 		addHistory st' $ CommandPresent (remoteNameToRepoName remote) f
 getSimActionComponents (ActionDropUnwanted repo Nothing) st =
-	checkKnownRepo repo st $ \u ->
+	checkKnownRepoNotSpecialRemote repo st $ \u ->
 		simulateDropUnwanted st u repo u
 getSimActionComponents (ActionDropUnwanted repo (Just remote)) st =
 	checkKnownRepo repo st $ \u ->
 		checkKnownRemote remote repo u st $ \ru ->
 			simulateDropUnwanted st u (remoteNameToRepoName remote) ru
 getSimActionComponents (ActionGitPush repo remote) st =
-	checkKnownRepo repo st $ \u -> 
+	checkKnownRepoNotSpecialRemote repo st $ \u -> 
 		checkKnownRemote remote repo u st $ \_ ->
 			simulateGitAnnexMerge repo (remoteNameToRepoName remote) st
 getSimActionComponents (ActionGitPull repo remote) st =
-	checkKnownRepo repo st $ \u -> 
+	checkKnownRepoNotSpecialRemote repo st $ \u -> 
 		checkKnownRemote remote repo u st $ \_ ->
 			simulateGitAnnexMerge (remoteNameToRepoName remote) repo st
 getSimActionComponents (ActionWhile a b) st =
@@ -767,6 +772,13 @@ checkKnownRepo reponame st a = case M.lookup reponame (simRepos st) of
 	Nothing -> Left $ "No repository in the simulation is named \""
 		++ fromRepoName reponame ++ "\". Choose from: "
 		++ unwords (map fromRepoName $ M.keys (simRepos st))
+
+checkKnownRepoNotSpecialRemote :: RepoName -> SimState SimRepo -> (UUID -> Either String a) -> Either String a
+checkKnownRepoNotSpecialRemote reponame st a =
+	checkKnownRepo reponame st $ \u -> 
+		 if maybe False simIsSpecialRemote (M.lookup u (simRepoState st))
+		 	then Left $ fromRepoName reponame ++ " is a special remote, so git-annex cannot run on it."
+			else a u
 
 checkKnownRemote :: RemoteName -> RepoName -> UUID -> SimState SimRepo -> (UUID -> Either String a) -> Either String a
 checkKnownRemote remotename reponame u st a =
