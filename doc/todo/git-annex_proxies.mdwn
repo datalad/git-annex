@@ -30,42 +30,6 @@ Planned schedule of work:
 
 * Currently working in [[todo/proving_preferred_content_behavior]]
 
-* sim: updateSimRepoState turns out to call preferredContentSet repeatedly
-  and also preferred content changes made part way through the sim 
-  seem to not take effect. Test case is this, which should not end 
-  by getting a file into bar that it no longer wants, and which was just
-  dropped.
-
-  Note that this test case does not behave this way if the final
-  step is run in a separate git-annex sim command. It's only when
-  it's run by git-annex sim start that it does.
-
-seed 5338836154135478106
-init foo
-init bar
-connect foo <-> bar
-addmulti 10 testfile 100.0kB 10.0MB foo
-wanted bar anything
-wanted foo anything
-step 20
-present bar 8testfile
-present bar 6testfile
-present bar 4testfile
-present bar 5testfile
-present bar 7testfile
-present bar 1testfile
-present bar 9testfile
-present bar 2testfile
-present bar 10testfile
-present bar 3testfile
-wanted bar nothing
-step 5
-notpresent bar 6testfile
-notpresent bar 1testfile
-notpresent bar 8testfile
-notpresent bar 10testfile
-present bar 1testfile
-
 * sim: Can a cluster using size balanced preferred content be simulated?
   May need the sim to get the concept of a cluster gateway, since the
   gateway is what picks amoung the nodes on the basis of size. On the other

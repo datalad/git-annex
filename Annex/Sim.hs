@@ -941,19 +941,19 @@ updateSimRepos :: SimState SimRepo -> IO (SimState SimRepo)
 updateSimRepos st = updateSimRepoStates st >>= initNewSimRepos
 
 updateSimRepoStates :: SimState SimRepo -> IO (SimState SimRepo)
-updateSimRepoStates st = go st (M.toList $ simRepoState st)
+updateSimRepoStates inst = go inst (M.toList $ simRepoState inst)
   where
-	go st' [] = return st'
-	go st' ((u, rst):rest) = case simRepo rst of
+	go st [] = return st
+	go st ((u, rst):rest) = case simRepo rst of
 		Just sr -> do
 			sr' <- updateSimRepoState st sr
 			let rst' = rst { simRepo = Just sr' }
-			let st'' = st
+			let st' = st
 				{ simRepoState = M.insert u rst'
 					(simRepoState st)
 				}
-			go st'' rest
-		Nothing -> go st' rest
+			go st' rest
+		Nothing -> go st rest
 
 initNewSimRepos :: SimState SimRepo -> IO (SimState SimRepo)
 initNewSimRepos = \st -> go st (M.toList $ simRepoState st)
