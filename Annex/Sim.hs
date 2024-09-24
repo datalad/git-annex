@@ -221,6 +221,9 @@ data SimCommand
 	| CommandWanted RepoName PreferredContentExpression
 	| CommandRequired RepoName PreferredContentExpression
 	| CommandGroupWanted Group PreferredContentExpression
+	| CommandRandomWanted RepoName [PreferredContentExpression]
+	| CommandRandomRequired RepoName [PreferredContentExpression]
+	| CommandRandomGroupWanted Group [PreferredContentExpression]
 	| CommandMaxSize RepoName MaxSize
 	| CommandRebalance Bool
 	| CommandVisit RepoName [String]
@@ -369,7 +372,7 @@ applySimCommand' (CommandDisconnect connections) st repobyname =
 				applySimCommand' (CommandDisconnect connections') st' repobyname
 applySimCommand' (CommandAddTree repo expr) st _ =
 	checkKnownRepo repo st $ \u ->
-		checkValidPreferredContentExpression expr $ Left $ do
+		checkValidPreferredContentExpression [expr] $ Left $ do
 			matcher <- makematcher u
 			(l, cleanup) <- inRepo $ Git.LsFiles.inRepo [] []
 			st' <- go matcher u st l
@@ -465,18 +468,35 @@ applySimCommand' (CommandUngroup repo groupname) st _ =
 			}
 applySimCommand' (CommandWanted repo expr) st _ = 
 	checkKnownRepo repo st $ \u ->
-		checkValidPreferredContentExpression expr $ Right $ st
+		checkValidPreferredContentExpression [expr] $ Right $ st
 			{ simWanted = M.insert u expr (simWanted st)
 			}
 applySimCommand' (CommandRequired repo expr) st _ = 
 	checkKnownRepo repo st $ \u ->
-		checkValidPreferredContentExpression expr $ Right $ st
+		checkValidPreferredContentExpression [expr] $ Right $ st
 			{ simRequired = M.insert u expr (simRequired st)
 			}
 applySimCommand' (CommandGroupWanted groupname expr) st _ =
-	checkValidPreferredContentExpression expr $ Right $ st
+	checkValidPreferredContentExpression [expr] $ Right $ st
 		{ simGroupWanted = M.insert groupname expr (simGroupWanted st)
 		}
+applySimCommand' (CommandRandomWanted repo terms) st _ = 
+	checkKnownRepo repo st $ \u ->
+		checkValidPreferredContentExpression terms $ Right $
+			randomPreferredContentExpression st terms $ \(expr, st') -> st' 
+				{ simWanted = M.insert u expr (simWanted st')
+				}
+applySimCommand' (CommandRandomRequired repo terms) st _ = 
+	checkKnownRepo repo st $ \u ->
+		checkValidPreferredContentExpression terms $ Right $
+			randomPreferredContentExpression st terms $ \(expr, st') -> st' 
+				{ simRequired = M.insert u expr (simRequired st)
+				}
+applySimCommand' (CommandRandomGroupWanted groupname terms) st _ =
+	checkValidPreferredContentExpression terms $ Right $
+		randomPreferredContentExpression st terms $ \(expr, st') -> st' 
+			{ simGroupWanted = M.insert groupname expr (simGroupWanted st)
+			}
 applySimCommand' (CommandMaxSize repo sz) st _ = 
 	checkKnownRepo repo st $ \u ->
 		Right $ Right $ st
@@ -789,10 +809,11 @@ checkKnownRemote remotename reponame u st a =
 			++ " does not have a remote \"" 
 			++ fromRemoteName remotename ++ "\"."
 
-checkValidPreferredContentExpression :: PreferredContentExpression -> v -> Either String v
-checkValidPreferredContentExpression expr v =
+checkValidPreferredContentExpression :: [PreferredContentExpression] -> v -> Either String v
+checkValidPreferredContentExpression [] v = Right v
+checkValidPreferredContentExpression (expr:rest) v =
 	case checkPreferredContentExpression expr of
-		Nothing -> Right v
+		Nothing -> checkValidPreferredContentExpression rest v
 		Just e -> Left $ "Failed parsing \"" ++ expr ++ "\": " ++ e
 
 simRandom :: SimState t -> (StdGen -> (v, StdGen)) -> (v -> r) -> (r, SimState t)
@@ -802,16 +823,29 @@ simRandom st mk f =
 	    (newseed, _) = random rng'
 	in (f v, st { simRng = newseed })
 
-randomRepo :: SimState SimRepo -> (Maybe (RepoName, UUID), SimState SimRepo)
-randomRepo st
-	| null repolist = (Nothing, st)
-	| otherwise = simRandom st
-		(randomR (0, length repolist - 1)) $ \n -> do
-			let r = repolist !! n
-			u <- M.lookup r (simRepos st)
-			return (r, u)
+randomPreferredContentExpression :: SimState SimRepo -> [String] -> ((PreferredContentExpression, SimState SimRepo) -> t) -> t
+randomPreferredContentExpression st terms f = 
+	f (simRandom st (randomPreferredContentExpression' terms) id)
+
+randomPreferredContentExpression' :: [String] -> StdGen -> (PreferredContentExpression, StdGen)
+randomPreferredContentExpression' terms rng = 
+	let (n, rng') = randomR (1, nterms) rng
+	in go [] n rng'
   where
-	repolist = M.keys (simRepos st)
+	go c 0 rng' = (unwords (concat c), rng')
+	go c n rng' = 
+		let (idx, rng'') = randomR (0, nterms - 1) rng'
+		    term = terms !! idx
+		    (notted, rng''') = random rng''
+		    (combineand, rng'''') = random rng'''
+		    combiner = if null c
+		    	then []
+			else if combineand then ["and"] else ["or"]
+		    subexpr = if notted 
+		    	then "not":term:combiner
+		    	else term:combiner
+		in go (subexpr:c) (pred n) rng''''
+	nterms = length terms
 
 randomWords :: Int -> StdGen -> ([Word8], StdGen)
 randomWords = go []

@@ -61,17 +61,24 @@ Planned schedule of work:
   which foo is accessing via a gateway:
 
     connect node1 <-g- foo -g-> node2
+    connect node1 <-g- bar -g-> node2
+
+  What that would do is, for every change in foo's location log for node1
+  or node2, immediately propagate it to bar's location log.
+
+  Or an alternative syntax:
+
+    cluster g node1 node2
+    connect g-node1 <- foo -> g-node2
+    connect g-node1 <- bar -> g-node2
 
   The only thing that does not allow simulating is 2 cluster gateways
   that each proxy for some of the same nodes. In that situation, there
-  are two views of the contents of the nodes, which is simular to two
+  are two views of the contents of the nodes, which is similar to two
   clients having direct connections to the nodes, but not the same when
-  there are more than 2 clients connected to the 2 gateways.
-
-* sim: Set a random preferred content expression. Rather than generating a
-  fully random expression, it would probably be most useful to take a set
-  of terms and build an expression that randomly combines them with
-  and/or/not and parens.
+  there are more than 2 clients connected to the 2 gateways. Simulating
+  that would require a first-class gateway simulation with its own location
+  log and node selection.
 
 * sim: Add support for metadata, so preferred content that matches on it
   will work

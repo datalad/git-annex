@@ -76,6 +76,12 @@ generateSimFile = unlines . map unwords . go
 		["required", repo, expr] : go rest
 	go (CommandGroupWanted group expr : rest) =
 		["groupwanted", fromGroup group, expr] : go rest
+	go (CommandRandomWanted (RepoName repo) terms : rest) =
+		("randomwanted" : repo : terms) : go rest
+	go (CommandRandomRequired (RepoName repo) terms : rest) =
+		("randomrequired" : repo : terms) : go rest
+	go (CommandRandomGroupWanted group terms : rest) =
+		("randomgroupwanted" : fromGroup group : terms) : go rest
 	go (CommandMaxSize (RepoName repo) maxsize : rest) =
 		["maxsize", repo, showsize (fromMaxSize maxsize)] : go rest
 	go (CommandRebalance b : rest) =
@@ -179,6 +185,12 @@ parseSimCommand ("required":repo:expr) =
 	Right $ CommandRequired (RepoName repo) (unwords expr)
 parseSimCommand ("groupwanted":group:expr) =
 	Right $ CommandGroupWanted (toGroup group) (unwords expr)
+parseSimCommand ("randomwanted":repo:terms) =
+	Right $ CommandRandomWanted (RepoName repo) terms
+parseSimCommand ("randomrequired":repo:terms) =
+	Right $ CommandRandomRequired (RepoName repo) terms
+parseSimCommand ("randomgroupwanted":group:terms) =
+	Right $ CommandRandomGroupWanted (toGroup group) terms
 parseSimCommand ("maxsize":repo:size:[]) =
 	case readSize dataUnits size of
 		Just sz -> Right $ CommandMaxSize (RepoName repo) (MaxSize sz)
