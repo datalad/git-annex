@@ -531,7 +531,7 @@ applySimCommand' (CommandNotPresent _ _) _ _ = error "applySimCommand' CommandNo
 
 handleStep :: Bool -> Int -> Int -> SimState SimRepo -> Annex (SimState SimRepo)
 handleStep muststabilize startn n st
-	| n > 0 = do
+	| n >= 0 = do
 		let (st', actions) = getactions unsyncactions st
 		(st'', restactions) <- runoneaction actions st'
 		if null restactions
@@ -550,7 +550,7 @@ handleStep muststabilize startn n st
 	| otherwise = checkstabalized st
   where
 	runrest actions st' n'
-		| n' > 0 = do
+		| n' >= 0 = do
 			(st'', restactions) <- runoneaction actions st'
 			if null restactions
 				then handleStep muststabilize startn n' st'

@@ -12,6 +12,8 @@ git annex sim show
 
 git annex sim end
 
+git annex sim run my.sim
+
 # DESCRIPTION
 
 This command simulates the behavior of git-annex in a network of
@@ -31,6 +33,10 @@ to display the log. This allows re-running the same simulation later,
 as well as analyzing the results of the simulation.
 
 Use "git annex sim end" to finish the simulation, and clean up.
+
+As a convenience, to run a sim from a file, and then stop it, use
+"git-annex sim run". If there is a problem running the sim, it will be
+shown before it is stopped.
 
 # THE SIM FILE
 

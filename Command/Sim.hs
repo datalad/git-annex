@@ -22,19 +22,21 @@ cmd = command "sim" SectionTesting
 	paramCommand (withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek ("start":[]) = start Nothing
-seek ("start":simfile:[]) = start (Just simfile)
-seek ("end":[]) = do
-	simdir <- fromRawFilePath <$> fromRepo gitAnnexSimDir
-	whenM (liftIO $ doesDirectoryExist simdir) $ do
-		liftIO $ removeDirectoryRecursive simdir
-	showLongNote $ UnquotedString "Sim ended."
+seek ("start":[]) = startsim Nothing
+seek ("start":simfile:[]) = startsim (Just simfile)
+seek ("end":[]) = endsim
 seek ("show":[]) = do
 	simdir <- fromRepo gitAnnexSimDir
 	liftIO (restoreSim simdir) >>= \case
 		Left err -> giveup err
-		Right st -> liftIO $ putStr $ generateSimFile $
-			reverse $ simHistory st
+		Right st -> showsim st
+seek ("run":simfile:[]) = startsim' (Just simfile) >>= cleanup
+  where
+	cleanup st = do 
+		endsim
+		when (simFailed st) $ do
+			showsim st
+			giveup "Simulation shown above had errors."
 seek ps = case parseSimCommand ps of
 	Left err -> giveup err
 	Right simcmd -> do
@@ -48,8 +50,16 @@ seek ps = case parseSimCommand ps of
 				when (simFailed st' && not (simFailed st)) $
 					giveup "Simulation had errors."
 
-start :: Maybe FilePath -> CommandSeek
-start simfile = do
+startsim :: Maybe FilePath -> CommandSeek
+startsim simfile = startsim' simfile >>= cleanup
+  where
+	cleanup st = do
+		liftIO $ suspendSim st
+		when (simFailed st) $
+			giveup "Simulation had errors."
+
+startsim' :: Maybe FilePath -> Annex (SimState SimRepo)
+startsim' simfile = do
 	simdir <- fromRawFilePath <$> fromRepo gitAnnexSimDir
 	whenM (liftIO $ doesDirectoryExist simdir) $
 		giveup "A sim was previously started. Use `git-annex sim end` to stop it before starting a new one."
@@ -68,12 +78,19 @@ start simfile = do
 		repobyname <- mkGetExistingRepoByName
 		createAnnexDirectory (toRawFilePath simdir)
 		let st' = recordSeed st cs
-		st'' <- go st' repobyname cs
-		liftIO $ suspendSim st''
-		when (simFailed st'') $
-			giveup "Simulation had errors."
+		go st' repobyname cs
 
 	go st _ [] = return st
 	go st repobyname (c:cs) = do
 		st' <- runSimCommand c repobyname st
 		go st' repobyname cs
+	
+endsim :: CommandSeek
+endsim = do
+	simdir <- fromRawFilePath <$> fromRepo gitAnnexSimDir
+	whenM (liftIO $ doesDirectoryExist simdir) $ do
+		liftIO $ removeDirectoryRecursive simdir
+	showLongNote $ UnquotedString "Sim ended."
+		
+showsim :: SimState SimRepo -> Annex ()
+showsim = liftIO . putStr . generateSimFile . reverse . simHistory
