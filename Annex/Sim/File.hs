@@ -53,6 +53,8 @@ generateSimFile = unlines . map unwords . go
 		(["addmulti", show n, suffix, showsize minsz, showsize maxsz] ++ map fromRepoName repos) : go rest
 	go (CommandStep n : rest) =
 		["step", show n] : go rest
+	go (CommandStepStable n : rest) =
+		["stepstable", show n] : go rest
 	go (CommandAction act : rest) = formatAction act : go rest
 	go (CommandSeed n : rest) =
 		["seed", show n] : go rest
@@ -150,6 +152,10 @@ parseSimCommand ("addmulti":num:suffix:minsize:maxsize:repos) =
 parseSimCommand ("step":n:[]) =
 	case readMaybe n of
 			Just n' -> Right $ CommandStep n'
+			Nothing -> Left $ "Unable to parse step value \"" ++ n ++ "\""
+parseSimCommand ("stepstable":n:[]) =
+	case readMaybe n of
+			Just n' -> Right $ CommandStepStable n'
 			Nothing -> Left $ "Unable to parse step value \"" ++ n ++ "\""
 parseSimCommand l@("action":_) = case parseSimAction l of
 	Right act -> Right $ CommandAction act

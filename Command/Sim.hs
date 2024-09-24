@@ -42,9 +42,11 @@ seek ps = case parseSimCommand ps of
 		simdir <- fromRepo gitAnnexSimDir
 		liftIO (restoreSim simdir) >>= \case
 			Left err -> giveup err
-			Right st -> 
-				runSimCommand simcmd repobyname st
-					>>= liftIO . suspendSim
+			Right st -> do
+				st' <- runSimCommand simcmd repobyname st
+				liftIO $ suspendSim st'
+				when (simFailed st' && not (simFailed st)) $
+					giveup "Simulation had errors."
 
 start :: Maybe FilePath -> CommandSeek
 start simfile = do
@@ -68,6 +70,8 @@ start simfile = do
 		let st' = recordSeed st cs
 		st'' <- go st' repobyname cs
 		liftIO $ suspendSim st''
+		when (simFailed st'') $
+			giveup "Simulation had errors."
 
 	go st _ [] = return st
 	go st repobyname (c:cs) = do

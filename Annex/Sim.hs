@@ -73,6 +73,7 @@ data SimState t = SimState
 	, simHistory :: [SimCommand]
 	, simVectorClock :: VectorClock
 	, simRootDirectory :: FilePath
+	, simFailed :: Bool
 	}
 	deriving (Show, Read)
 
@@ -95,6 +96,7 @@ emptySimState rngseed rootdir = SimState
 	, simHistory = []
 	, simVectorClock = VectorClock 0
 	, simRootDirectory = rootdir
+	, simFailed = False
 	}
 
 -- State that can vary between different repos in the simulation.
@@ -209,6 +211,7 @@ data SimCommand
 	| CommandAdd RawFilePath ByteSize [RepoName]
 	| CommandAddMulti Int String ByteSize ByteSize [RepoName]
 	| CommandStep Int
+	| CommandStepStable Int
 	| CommandAction SimAction
 	| CommandSeed Int
 	| CommandPresent RepoName RawFilePath
@@ -262,13 +265,19 @@ applySimCommand (CommandPresent repo file) st _ = checkKnownRepo repo st $ \u ->
 				Right $ Right st
 			| otherwise -> missing
 		(Just _, Nothing) -> missing
-		(Nothing, _) -> Left $ "Expected " ++ fromRawFilePath file
-			++ " to be present in " ++ fromRepoName repo 
-			++ ", but the simulation does not include that file."
+		(Nothing, _) -> Right $ Left $ do
+			showLongNote $ UnquotedString $
+				"Expected " ++ fromRawFilePath file
+					++ " to be present in " ++ fromRepoName repo 
+					++ ", but the simulation does not include that file."
+			return $ st { simFailed = True }
   where
-	missing = Left $ "Expected " ++ fromRawFilePath file
-		++ " to be present in " 
-		++ fromRepoName repo ++ ", but it is not."
+	missing = Right $ Left $ do
+		showLongNote $ UnquotedString $
+			"Expected " ++ fromRawFilePath file
+				++ " to be present in " 
+				++ fromRepoName repo ++ ", but it is not."
+		return $ st { simFailed = True }
 applySimCommand (CommandNotPresent repo file) st _ = checkKnownRepo repo st $ \u ->
 	case (M.lookup file (simFiles st), M.lookup u (simRepoState st)) of
 		(Just k, Just rst)
@@ -276,13 +285,19 @@ applySimCommand (CommandNotPresent repo file) st _ = checkKnownRepo repo st $ \u
 				Right $ Right st
 			| otherwise -> present
 		(Just _, Nothing) -> present
-		(Nothing, _) -> Left $ "Expected " ++ fromRawFilePath file
-			++ " to not be present in " ++ fromRepoName repo 
-			++ ", but the simulation does not include that file."
+		(Nothing, _) -> Right $ Left $ do
+			showLongNote $ UnquotedString $ 
+				"Expected " ++ fromRawFilePath file
+					++ " to not be present in " ++ fromRepoName repo 
+					++ ", but the simulation does not include that file."
+			return $ st { simFailed = True }
   where
-	present = Left $ "Expected " ++ fromRawFilePath file 
-		++ " not to be present in " 
-		++ fromRepoName repo ++ ", but it is present."
+	present = Right $ Left $ do
+		showLongNote $ UnquotedString $
+			"Expected " ++ fromRawFilePath file 
+			++ " not to be present in " 
+			++ fromRepoName repo ++ ", but it is present."
+		return $ st { simFailed = True }
 applySimCommand c@(CommandVisit repo cmdparams) st _ =
 	checkKnownRepo repo st $ \u -> Right $ Left $ do
 		st' <- liftIO $ updateSimRepos st
@@ -425,7 +440,9 @@ applySimCommand' (CommandAddMulti n suffix minsz maxsz repos) st repobyname =
 				n' -> applySimCommand' (CommandAddMulti n' suffix minsz maxsz repos) st'' repobyname
 		Right (Left _) -> error "applySimCommand' CommandAddMulti"
 applySimCommand' (CommandStep n) st _ = 
-	Right $ Left $ handleStep n n st
+	Right $ Left $ handleStep False n n st
+applySimCommand' (CommandStepStable n) st _ = 
+	Right $ Left $ handleStep True n n st
 applySimCommand' (CommandAction act) st _ =
 	case getSimActionComponents act st of
 		Left err -> Left err
@@ -512,8 +529,8 @@ applySimCommand' (CommandVisit _ _) _ _ = error "applySimCommand' CommandVisit"
 applySimCommand' (CommandPresent _ _) _ _ = error "applySimCommand' CommandPresent"
 applySimCommand' (CommandNotPresent _ _) _ _ = error "applySimCommand' CommandNotPresent"
 
-handleStep :: Int -> Int -> SimState SimRepo -> Annex (SimState SimRepo)
-handleStep startn n st
+handleStep :: Bool -> Int -> Int -> SimState SimRepo -> Annex (SimState SimRepo)
+handleStep muststabilize startn n st
 	| n > 0 = do
 		let (st', actions) = getactions unsyncactions st
 		(st'', restactions) <- runoneaction actions st'
@@ -530,14 +547,22 @@ handleStep startn n st
 						return st''''
 					else runrest restactions' st'''' (pred n)
 			else runrest restactions st'' (pred n)
-	| otherwise = return st
+	| otherwise = checkstabalized st
   where
 	runrest actions st' n'
 		| n' > 0 = do
 			(st'', restactions) <- runoneaction actions st'
 			if null restactions
-				then handleStep startn n' st'
+				then handleStep muststabilize startn n' st'
 				else runrest restactions st'' (pred n')
+		| otherwise = checkstabalized st'
+
+	checkstabalized st'
+		| muststabilize = do
+			showLongNote $ UnquotedString $ 
+				"Simulation failed to stabilize after "
+					++ show startn ++ " steps."
+			return $ st' { simFailed = True }
 		| otherwise = return st'
 
 	unsyncactions = 

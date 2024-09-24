@@ -196,6 +196,14 @@ as passed to "git annex sim" while a simulation is running.
   This also simulates git pull and git push being run in each repository,
   as needed in order to find additional things to do.
 
+* `stepstable N`
+
+  Run the simulation forward by this many steps, at which point it is
+  expected to have stabilized.
+
+  If the simulation does not stabilize, the command will exit with a
+  nonzero exit state.
+
 * `action repo getwanted remote`
 
   Simulate the repository getting files it wants from the remote.
