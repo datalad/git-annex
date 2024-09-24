@@ -26,6 +26,7 @@ import Annex.Startup
 import Annex.Link
 import Annex.Wanted
 import Annex.CatFile
+import Annex.Action (quiesce)
 import Logs.Group
 import Logs.Trust
 import Logs.PreferredContent
@@ -1012,12 +1013,26 @@ updateSimRepos :: SimState SimRepo -> IO (SimState SimRepo)
 updateSimRepos st = updateSimRepoStates st >>= initNewSimRepos
 
 updateSimRepoStates :: SimState SimRepo -> IO (SimState SimRepo)
-updateSimRepoStates inst = go inst (M.toList $ simRepoState inst)
+updateSimRepoStates = overSimRepoStates updateSimRepoState
+
+quiesceSim :: SimState SimRepo -> IO (SimState SimRepo)
+quiesceSim = overSimRepoStates go
+  where
+	go st sr = do
+		((), astrd) <- Annex.run (simRepoAnnex sr) $ doQuietAction $
+			quiesce False
+		return $ sr
+			{ simRepoAnnex = astrd
+			, simRepoCurrState = st
+			}
+
+overSimRepoStates :: (SimState SimRepo -> SimRepo -> IO SimRepo) -> SimState SimRepo -> IO (SimState SimRepo)
+overSimRepoStates a inst = go inst (M.toList $ simRepoState inst)
   where
 	go st [] = return st
 	go st ((u, rst):rest) = case simRepo rst of
 		Just sr -> do
-			sr' <- updateSimRepoState st sr
+			sr' <- a st sr
 			let rst' = rst { simRepo = Just sr' }
 			let st' = st
 				{ simRepoState = M.insert u rst'
@@ -1278,11 +1293,11 @@ suspendSim :: SimState SimRepo -> IO ()
 suspendSim st = do
 	-- Update the sim repos before suspending, so that at restore time
 	-- they are up-to-date.
-	st' <- updateSimRepos st
+	st' <- quiesceSim =<< updateSimRepos st
 	let st'' = st'
-		{ simRepoState = M.map freeze (simRepoState st)
+		{ simRepoState = M.map freeze (simRepoState st')
 		}
-	writeFile (simRootDirectory st </> "state") (show st'')
+	writeFile (simRootDirectory st'' </> "state") (show st'')
   where
 	freeze :: SimRepoState SimRepo -> SimRepoState ()
 	freeze rst = rst { simRepo = Nothing }

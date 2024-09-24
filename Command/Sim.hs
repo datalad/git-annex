@@ -33,9 +33,10 @@ seek ("show":[]) = do
 seek ("run":simfile:[]) = startsim' (Just simfile) >>= cleanup
   where
 	cleanup st = do 
+		st' <- liftIO $ quiesceSim st
 		endsim
-		when (simFailed st) $ do
-			showsim st
+		when (simFailed st') $ do
+			showsim st'
 			giveup "Simulation shown above had errors."
 seek ps = case parseSimCommand ps of
 	Left err -> giveup err
