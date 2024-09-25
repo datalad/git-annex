@@ -88,12 +88,6 @@ generateSimFile = unlines . map unwords . go
 		["maxsize", repo, showsize (fromMaxSize maxsize)] : go rest
 	go (CommandRebalance b : rest) =
 		["rebalance", if b then "on" else "off"] : go rest
-	go (CommandInitCluster (RepoName repo) : rest) =
-		["initcluster", repo] : go rest
-	go (CommandAddCluster (RepoName repo) nodes : rest) =
-		("addcluster" : repo : map fromRemoteName nodes) : go rest
-	go (CommandRemoveCluster (RepoName repo) (RemoteName node) : rest) =
-		["removecluster", repo, node] : go rest
 	go (CommandVisit (RepoName repo) cmdparams : rest) =
 		(["visit", repo] ++ cmdparams) : go rest
 	go (CommandComment s : rest) = 
@@ -210,12 +204,6 @@ parseSimCommand ("maxsize":repo:size:[]) =
 parseSimCommand ("rebalance":onoff:[]) = case isTrueFalse onoff of
 	Just b -> Right $ CommandRebalance b
 	Nothing -> Left $ "Unable to parse rebalance value \"" ++ onoff ++ "\""
-parseSimCommand ("initcluster":name:[]) =
-	Right $ CommandInitCluster (RepoName name)
-parseSimCommand ("addcluster":name:nodes) =
-	Right $ CommandAddCluster (RepoName name) (map RemoteName nodes)
-parseSimCommand ("removecluster":name:node:[]) =
-	Right $ CommandRemoveCluster (RepoName name) (RemoteName node)
 parseSimCommand ("visit":repo:cmdparams) =
 	Right $ CommandVisit (RepoName repo) cmdparams
 parseSimCommand ws = parseError ws

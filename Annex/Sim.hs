@@ -71,7 +71,6 @@ data SimState t = SimState
 	, simGroupWanted :: M.Map Group PreferredContentExpression
 	, simMaxSize :: M.Map UUID MaxSize
 	, simRebalance :: Bool
-	, simClusters :: M.Map RepoName (S.Set RemoteName)
 	, simHistory :: [SimCommand]
 	, simVectorClock :: VectorClock
 	, simRootDirectory :: FilePath
@@ -95,7 +94,6 @@ emptySimState rngseed rootdir = SimState
 	, simGroupWanted = mempty
 	, simMaxSize = mempty
 	, simRebalance = False
-	, simClusters = mempty
 	, simHistory = []
 	, simVectorClock = VectorClock 0
 	, simRootDirectory = rootdir
@@ -232,9 +230,6 @@ data SimCommand
 	| CommandRandomGroupWanted Group [PreferredContentExpression]
 	| CommandMaxSize RepoName MaxSize
 	| CommandRebalance Bool
-	| CommandInitCluster RepoName
-	| CommandAddCluster RepoName [RemoteName]
-	| CommandRemoveCluster RepoName RemoteName
 	| CommandVisit RepoName [String]
 	| CommandComment String
 	| CommandBlank
@@ -529,34 +524,6 @@ applySimCommand' (CommandRebalance b) st _ =
 	Right $ Right $ st
 		{ simRebalance = b
 		}
-applySimCommand' (CommandInitCluster clustername) st _ =
-	checkNonexistantRepo clustername st $
-		let (u, st') = genSimUUID st clustername
-		    st'' = st'
-		    	{ simClusters = M.insert clustername mempty
-				(simClusters st')
-			}
-		in Right $ Right $
-			addRepo clustername (newSimRepoConfig u False) st''
-applySimCommand' (CommandAddCluster clustername nodes) st _ =
-	checkKnownRepo clustername st $ \u ->
-		case M.lookup clustername (simClusters st) of
-			Nothing -> Left $ fromRepoName clustername ++ " is not a cluster (use initcluster before addcluster)"
-			Just nodeset -> 
-				let nodeset' = S.union nodeset (S.fromList nodes)
-				in Right $ Right $ st
-				 	{ simClusters = M.insert clustername nodeset'
-						(simClusters st)
-					}
-applySimCommand' (CommandRemoveCluster clustername node) st _ =
-	case M.lookup clustername (simClusters st) of
-		Nothing -> Left $ fromRepoName clustername ++ " is not a cluster"
-		Just nodeset -> 
-			let nodeset' = S.delete node nodeset
-			in Right $ Right $ st
-				{ simClusters = M.insert clustername nodeset'
-					(simClusters st)
-				}
 applySimCommand' (CommandComment _) st _ = Right $ Right st
 applySimCommand' CommandBlank st _ = Right $ Right st
 applySimCommand' (CommandVisit _ _) _ _ = error "applySimCommand' CommandVisit"
