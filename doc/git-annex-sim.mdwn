@@ -398,6 +398,8 @@ as passed to "git annex sim" while a simulation is running.
     group node2 cluster
     wanted node1 sizebalanced=cluster
     wanted node2 sizebalanced=cluster
+    maxsize node1 100gb
+    maxsize node2 100gb
     connect cluster-node2 <- foo -> cluster-node1
     connect cluster-node2 <- bar -> cluster-node1
     addmulti 10 foo 1gb 2gb foo 
@@ -405,9 +407,9 @@ as passed to "git annex sim" while a simulation is running.
     action foo sendwanted cluster-node1 while action foo sendwanted cluster-node2 while action bar sendwanted cluster-node1 while action bar sendwanted cluster-node2
 
   In the above example, while foo and bar are both concurrently sending
-  wanted files to both nodes, each will know immediately which files have
-  been sent by the other, and so the files will be sizebalanced between
-  them optimally.
+  wanted files to both cluster nodes, each will know immediately which
+  files have been sent by the other, and so the files will be sizebalanced
+  between them optimally.
 
 # OPTIONS
 

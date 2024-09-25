@@ -88,6 +88,8 @@ generateSimFile = unlines . map unwords . go
 		["maxsize", repo, showsize (fromMaxSize maxsize)] : go rest
 	go (CommandRebalance b : rest) =
 		["rebalance", if b then "on" else "off"] : go rest
+	go (CommandClusterNode (RepoName nodename) (RepoName repo) : rest) =
+		["clusternode", nodename, repo] : go rest
 	go (CommandVisit (RepoName repo) cmdparams : rest) =
 		(["visit", repo] ++ cmdparams) : go rest
 	go (CommandComment s : rest) = 
@@ -201,6 +203,8 @@ parseSimCommand ("maxsize":repo:size:[]) =
 	case readSize dataUnits size of
 		Just sz -> Right $ CommandMaxSize (RepoName repo) (MaxSize sz)
 		Nothing -> Left $ "Unable to parse maxsize \"" ++ size ++ "\""
+parseSimCommand ("clusternode":nodename:repo:[]) =
+	Right $ CommandClusterNode (RepoName nodename) (RepoName repo)
 parseSimCommand ("rebalance":onoff:[]) = case isTrueFalse onoff of
 	Just b -> Right $ CommandRebalance b
 	Nothing -> Left $ "Unable to parse rebalance value \"" ++ onoff ++ "\""

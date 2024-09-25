@@ -60,6 +60,7 @@ data SimState t = SimState
 	{ simRepos :: M.Map RepoName UUID
 	, simRepoState :: M.Map UUID (SimRepoState t)
 	, simConnections :: M.Map UUID (S.Set RemoteName)
+	, simClusterNodes :: M.Map RepoName UUID
 	, simFiles :: M.Map RawFilePath Key
 	, simRng :: Int
 	, simTrustLevels :: M.Map UUID TrustLevel
@@ -83,6 +84,7 @@ emptySimState rngseed rootdir = SimState
 	{ simRepos = mempty
 	, simRepoState = mempty
 	, simConnections = mempty
+	, simClusterNodes = mempty
 	, simFiles = mempty
 	, simRng = rngseed
 	, simTrustLevels = mempty
@@ -121,15 +123,36 @@ newerLocationState l1@(LocationState vc1 _) l2@(LocationState vc2 _)
 	| vc1 > vc2 = l1
 	| otherwise = l2
 		
-{- Updates the state of stu to indicate that a key is present or not in u. -}
-setPresentKey :: Bool -> UUID -> Key -> UUID -> SimState SimRepo -> SimState SimRepo
-setPresentKey present u k stu st = st
+{- Updates the state of stu to indicate that a key is present or not in u.
+ -
+ - Also, when the reponame is the name of a cluster node, updates
+ - the state of every other repository that has a connection to that
+ - same cluster node.
+ -}
+setPresentKey :: Bool -> (UUID, RepoName) -> Key -> UUID -> SimState SimRepo -> SimState SimRepo
+setPresentKey present (u, reponame) k stu st = handleclusters $ st
 	{ simRepoState = case M.lookup stu (simRepoState st) of
 		Just rst -> M.insert stu
 			(setPresentKey' present (simVectorClock st) u k rst)
 			(simRepoState st)
 		Nothing -> error "no simRepoState in setPresentKey"
 	}
+  where
+	handleclusters st' = case M.lookup reponame (simClusterNodes st') of
+		Just u' | u' == u -> handleclusters' st' $ 
+			filter (/= stu) $ M.keys $ 
+				M.filter (S.member (repoNameToRemoteName reponame))
+					(simConnections st')
+		_ -> st'
+	handleclusters' st' [] = st'
+	handleclusters' st' (cu:cus) =
+		flip handleclusters' cus $ st'
+			{ simRepoState = case M.lookup cu (simRepoState st') of
+				Just rst -> M.insert cu
+					(setPresentKey' present (simVectorClock st') u k rst)
+					(simRepoState st')
+				Nothing -> simRepoState st'
+			}
 
 setPresentKey' :: Bool -> VectorClock -> UUID -> Key -> SimRepoState t -> SimRepoState t
 setPresentKey' present vc u k rst = rememberLiveSizeChanges present u k rst $ rst
@@ -230,6 +253,7 @@ data SimCommand
 	| CommandRandomGroupWanted Group [PreferredContentExpression]
 	| CommandMaxSize RepoName MaxSize
 	| CommandRebalance Bool
+	| CommandClusterNode RepoName RepoName
 	| CommandVisit RepoName [String]
 	| CommandComment String
 	| CommandBlank
@@ -401,7 +425,7 @@ applySimCommand' (CommandAddTree repo expr) st _ =
 			afile <- AssociatedFile . Just . getTopFilePath
 				<$> inRepo (toTopFilePath f)
 			ifM (checkMatcher matcher (Just k) afile NoLiveUpdate mempty (pure False) (pure False))
-				( let st'' = setPresentKey True u k u $ st'
+				( let st'' = setPresentKey True (u, repo) k u $ st'
 					{ simFiles = M.insert f k (simFiles st')
 					}
 				  in go matcher u st'' fs
@@ -426,7 +450,7 @@ applySimCommand' (CommandAdd file sz repos) st _ =
   where
 	go _k st' [] = Right $ Right st'
 	go k st' (repo:rest) = checkKnownRepo repo st' $ \u ->
-		let st'' = setPresentKey True u k u $ st'
+		let st'' = setPresentKey True (u, repo) k u $ st'
 			{ simFiles = M.insert file k (simFiles st')
 			}
 		in go k st'' rest
@@ -520,6 +544,13 @@ applySimCommand' (CommandMaxSize repo sz) st _ =
 		Right $ Right $ st
 			{ simMaxSize = M.insert u sz (simMaxSize st)
 			}
+applySimCommand' (CommandClusterNode nodename repo) st _ =
+	checkKnownRepo repo st $ \u ->
+		checkNonexistantRepo nodename st $
+			Right $ Right $ st
+				{ simClusterNodes = M.insert nodename u
+					(simClusterNodes st)
+				}
 applySimCommand' (CommandRebalance b) st _ = 
 	Right $ Right $ st
 		{ simRebalance = b
@@ -606,7 +637,7 @@ getSimActionComponents
 	-> Either String (Either (SimState SimRepo, [SimState SimRepo -> Annex (SimState SimRepo, Bool)]) (SimState SimRepo))
 getSimActionComponents (ActionGetWanted repo remote) st =
 	checkKnownRepoNotSpecialRemote repo st $ \u -> 
-		let go _remoteu f k _r st' = setPresentKey True u k u $
+		let go _remoteu f k _r st' = setPresentKey True (u, repo) k u $
 			addHistory st' $ CommandPresent repo f
 		in overFilesRemote repo u remote S.member S.notMember wanted go st
   where
@@ -619,9 +650,11 @@ getSimActionComponents (ActionSendWanted repo remote) st =
 	go u remoteu f k _r st' = 
 		-- Sending to a remote updates the location log
 		-- of both the repository sending and the remote.
-		setPresentKey True remoteu k remoteu $
-		setPresentKey True remoteu k u $
+		setpresent remoteu $
+		setpresent u $
 		addHistory st' $ CommandPresent (remoteNameToRepoName remote) f
+	  where
+	  	setpresent = setPresentKey True (remoteu, remoteNameToRepoName remote) k
 getSimActionComponents (ActionDropUnwanted repo Nothing) st =
 	checkKnownRepoNotSpecialRemote repo st $ \u ->
 		simulateDropUnwanted st u repo u
@@ -785,8 +818,8 @@ simulateDropUnwanted st u dropfromname dropfrom =
 			SafeDropCheckTime -> (dodrop k f st', True)
 
 	dodrop k f st' =
-		setPresentKey False dropfrom k u $
-			setPresentKey False dropfrom k dropfrom $
+		setPresentKey False (dropfrom, dropfromname) k u $
+			setPresentKey False (dropfrom, dropfromname) k dropfrom $
 				addHistory st' $ CommandNotPresent dropfromname f
 	
 	remotes = S.fromList $ mapMaybe 
@@ -808,16 +841,21 @@ simulateDropUnwanted st u dropfromname dropfrom =
 
 checkNonexistantRepo :: RepoName -> SimState SimRepo -> Either String a -> Either String a
 checkNonexistantRepo reponame st a = case M.lookup reponame (simRepos st) of
-	Nothing -> a
+	Nothing -> case M.lookup reponame (simClusterNodes st) of
+		Just _ -> Left $ "There is already a cluster node in the simulation named \""
+			++ fromRepoName reponame ++ "\"."
+		Nothing -> a
 	Just _ -> Left $ "There is already a repository in the simulation named \""
 		++ fromRepoName reponame ++ "\"."
 
 checkKnownRepo :: RepoName -> SimState SimRepo -> (UUID -> Either String a) -> Either String a
 checkKnownRepo reponame st a = case M.lookup reponame (simRepos st) of
 	Just u -> a u
-	Nothing -> Left $ "No repository in the simulation is named \""
-		++ fromRepoName reponame ++ "\". Choose from: "
-		++ unwords (map fromRepoName $ M.keys (simRepos st))
+	Nothing -> case M.lookup reponame (simClusterNodes st) of
+		Just u -> a u
+		Nothing -> Left $ "No repository in the simulation is named \""
+			++ fromRepoName reponame ++ "\". Choose from: "
+			++ unwords (map fromRepoName $ M.keys (simRepos st))
 
 checkKnownRepoNotSpecialRemote :: RepoName -> SimState SimRepo -> (UUID -> Either String a) -> Either String a
 checkKnownRepoNotSpecialRemote reponame st a =
