@@ -368,6 +368,47 @@ as passed to "git annex sim" while a simulation is running.
     step 100
     rebalance off
 
+* `clusternode name repo`
+
+  Simulate a repository being a node of a cluster, which can be referred to
+  using the specified name.
+
+  Rather than a cluster gateway being simulated as a separate entity, any
+  connection to a cluster node with that name is treated as accessing that
+  repository via the same cluster gateway.
+
+  Since a cluster gateway knows about all changes that are made to nodes
+  via it, every repository that has a connection to a cluster node will
+  immediately know about changes that are made via that node, without
+  needing a simulated git pull.
+
+  To simulate a repository being a node of more than one cluster, or behind
+  multiple gateways in the same cluster, use this command to give it
+  multiple names.
+
+  For example:
+
+    init foo
+    init bar
+    init node1
+    init node2
+    clusternode cluster-node1 node1
+    clusternode cluster-node2 node2
+    group node1 cluster
+    group node2 cluster
+    wanted node1 sizebalanced=cluster
+    wanted node2 sizebalanced=cluster
+    connect cluster-node2 <- foo -> cluster-node1
+    connect cluster-node2 <- bar -> cluster-node1
+    addmulti 10 foo 1gb 2gb foo 
+    addmulti 10 bar 1gb 2gb bar
+    action foo sendwanted cluster-node1 while action foo sendwanted cluster-node2 while action bar sendwanted cluster-node1 while action bar sendwanted cluster-node2
+
+  In the above example, while foo and bar are both concurrently sending
+  wanted files to both nodes, each will know immediately which files have
+  been sent by the other, and so the files will be sizebalanced between
+  them optimally.
+
 # OPTIONS
 
 * The [[git-annex-common-options]](1) can be used.

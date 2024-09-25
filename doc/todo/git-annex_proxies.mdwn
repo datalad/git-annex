@@ -92,7 +92,38 @@ Planned schedule of work:
     clusternode mycluster-foo foo
     clusternode othercluster-foo foo
 
-  
+  Implementation plan for this:
+
+  * clusternode initializes a new cluster node UUID, and adds to
+    simRepos.
+  * add `simClusterNodes :: M.Map UUID (UUID, RemoteName)`,
+    which maps from the cluster node UUID to the UUID of the underlying
+    repo, and its node name.
+  * clusternode also adds to simClusterNodes.
+  * setPresentKey checks if the UUID is in simClusterNodes.
+  * If it is, it makes the key present/missing in the underlying repo
+    UUID as well.
+  * And, it looks through simConnections to find any other repos that
+    also have a connection to the cluster node with that name.
+    Each of those repos also gets its simLocations updated.
+
+  But: The cluster node UUID would need to have the same preferred content
+  etc as the underlying repo. And, it would need to be in the same groups.
+  And it would be counted as another copy. Could use a cluster UUID to
+  avoid the numcopies count. But can adding a separate UUID be avoided?
+
+  Implementation plan for this without separate UUID:
+
+  * add `simClusterNodes :: M.Map RepoName UUID`,
+  * clusternode adds to simClusterNodes.
+  * checkKnownRemote needs to check simClusterNodes as well as
+    simRepos so that cluster nodes can be used as remotes.
+  * Plumb repo name through to setPresentKey.
+  * setPresentKey checks if repo name is in simClusterNodes.
+  * If it is, it looks through simConnections to find any other
+    repos that also have a connection to the cluster node with
+    that name. Each of those repos also gets its simLocations updated
+    for the change being logged.
 
 * sim: Add support for metadata, so preferred content that matches on it
   will work
