@@ -38,7 +38,7 @@ Planned schedule of work:
 
   The difference between having a cluster gateway and direct connections to
   the nodes is when there are multiple clients. The cluster gateway updates
-  its location logs to reflect changes in the nodes that get proxies via
+  its location logs to reflect changes in the nodes that get proxied via
   it. So it will pick a node that is not full when using size balanced
   preferred content. If two clients are accessing a node directly without a
   cluster gateway, that doesn't happen.
@@ -53,7 +53,7 @@ Planned schedule of work:
   the cluster gateway has, without the complication of actually simulating
   a cluster gateway.
 
-  That would not allows simulating a cluster node that is
+  That would not allow simulating a cluster node that is
   also accessed directly via another repository. But cluster nodes
   generally should not be accessed except via the gateway. Still, to allow
   simulating that, it would be possible to have a new type of connection,
@@ -79,6 +79,20 @@ Planned schedule of work:
   there are more than 2 clients connected to the 2 gateways. Simulating
   that would require a first-class gateway simulation with its own location
   log and node selection.
+
+  Alternative approach: Let a cluster node be initialized, which is an
+  overlay over a repository which shares all of its configuration
+  except for its uuid. Every change to the location log of a cluster
+  node is immediately propigated to every repository that has a connection
+  to it. It is also propigated to the underlaying repository. This lets
+  more than one cluster node be initialized for the same repository, for
+  when it is in multiple clusters or behind multiple gateways in the same
+  cluster.
+
+    clusternode mycluster-foo foo
+    clusternode othercluster-foo foo
+
+  
 
 * sim: Add support for metadata, so preferred content that matches on it
   will work
