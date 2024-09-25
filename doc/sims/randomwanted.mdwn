@@ -1,6 +1,6 @@
 -- This is a simulation of random preferred content expressions.  
--- git-annex sim run this in a loop to explore if an expression can fail to
--- stabilize
+-- git-annex sim run this in a loop to explore if an expression can fail to  
+-- stabilize  
 init foo  
 init bar  
 connect foo <-> bar  
