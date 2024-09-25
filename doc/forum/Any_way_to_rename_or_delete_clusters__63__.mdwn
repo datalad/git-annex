@@ -1,0 +1,5 @@
+I'm pretty happy with the new clusters feature, but gave the main cluster I'm using a name I'd like to change. 
+
+I tried just manually editing [annex "cluster"] in .git/config, but annex doesn't seem to recognize that change. 
+
+Is there a way to change it I'm missing?  
