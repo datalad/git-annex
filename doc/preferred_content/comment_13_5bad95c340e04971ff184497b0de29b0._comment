@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="Re: default preferred content"
+ date="2024-09-25T09:25:42Z"
+ content="""
+@adehnert: [Setting default preferred content expressions](https://git-annex.branchable.com/todo/Setting_default_preferred_content_expressions/) is an open todo and Joey acknowledges that it's useful, but he didn't implement it yet. You could voice your motivation for this feature over in [that todo](https://git-annex.branchable.com/todo/Setting_default_preferred_content_expressions/), to keep everything sorted. I'm fully with you that this is very much needed and I always fall into the trap of running `git annex assist` directly after a `git clone`, wondering why I'm getting a million files shoved into my face, CTRL+C'ing it, being left with a weird unclean work tree for the download-aborted unlocked files, so I have to `git restore .` again, then configuring `git annex wanted present` before I continue.
+
+
+"""]]
