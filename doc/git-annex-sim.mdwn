@@ -388,7 +388,7 @@ as passed to "git annex sim" while a simulation is running.
   multiple names.
 
   For example:
-
+    
 	init foo
 	init bar
 	init node1
