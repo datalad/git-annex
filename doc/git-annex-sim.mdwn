@@ -42,7 +42,8 @@ shown before it is stopped.
 
 This text file is used to configure the simulation and also to report on
 the results of the simulation. Each line takes the form of a command
-followed by parameters to the command. Lines starting with "#" are comments.
+followed by parameters to the command. Lines starting with "#" or "--"
+are comments.
 
 Here is an example sim file:
 

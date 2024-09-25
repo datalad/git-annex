@@ -1,6 +1,6 @@
-# This is a simulation of random preferred content expressions.  
-# git-annex sim run this in a loop to explore if an expression can fail to
-# stabilize
+-- This is a simulation of random preferred content expressions.  
+-- git-annex sim run this in a loop to explore if an expression can fail to
+-- stabilize
 init foo  
 init bar  
 connect foo <-> bar  
@@ -8,6 +8,6 @@ addmulti 10 .x 100.0kB 10.0MB foo
 addmulti 10 .y 100.0kB 10.0MB foo  
 randomwanted bar largerthan=1MB include=*.x anything present  
 randomwanted foo largerthan=1MB include=*.x anything present  
-# 40 is the maximum possible steps, in case bar wants to get all 20 files,  
-# and foo wants to drop them all  
+-- 40 is the maximum possible steps, in case bar wants to get all 20 files,  
+-- and foo wants to drop them all  
 stepstable 40  

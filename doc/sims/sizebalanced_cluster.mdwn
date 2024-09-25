@@ -1,8 +1,8 @@
-# Size balanced preferred content sim with multiple repositories sending  
-# concurrently to the same repositories, in a cluster.  
-#   
-# This demonstrates that size balanced preferred content does not get out  
-# of balance when used with cluster nodes.  
+-- Size balanced preferred content sim with multiple repositories sending  
+-- concurrently to the same repositories, in a cluster.  
+--  
+-- This demonstrates that size balanced preferred content does not get out  
+-- of balance when used with cluster nodes.  
 init foo  
 init bar  
 init node1  

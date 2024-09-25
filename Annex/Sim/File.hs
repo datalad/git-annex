@@ -27,7 +27,8 @@ parseSimFile = go [] . lines
 
 parseSimFileLine :: String -> Either String SimCommand
 parseSimFileLine s
-	| "#" `isPrefixOf` s = Right (CommandComment s)
+	| "#" `isPrefixOf` s || "--" `isPrefixOf` s = 
+		Right (CommandComment s)
 	| all isSpace s = Right (CommandBlank)
 	| otherwise = parseSimCommand (words s)
 

@@ -1,4 +1,4 @@
-# size balanced preferred content sim  
+-- size balanced preferred content sim  
 seed -4592890916829221843  
 init foo  
 init bar  
