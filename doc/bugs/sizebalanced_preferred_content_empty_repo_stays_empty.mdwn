@@ -1,0 +1,9 @@
+When using sizebalanced preferred content, a `git-annex copy --auto` to a
+repository that is currently empty will not fill it.
+
+It seems that getLiveRepoSizes returns a map that does not contain the
+repo's UUID, and filterCandidatesFullySizeBalanced filters out repos that
+are not in the map.
+--[[Joey]]
+
+> [[fixed|done]] --[[Joey]]

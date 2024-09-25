@@ -22,7 +22,7 @@ import Data.Ord
 import Types.UUID
 
 data TrustLevel = DeadTrusted | UnTrusted | SemiTrusted | Trusted
-	deriving (Eq, Enum, Ord, Bounded, Show)
+	deriving (Eq, Enum, Ord, Bounded, Show, Read)
 
 instance Default TrustLevel  where
 	def = SemiTrusted

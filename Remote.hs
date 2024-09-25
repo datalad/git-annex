@@ -52,6 +52,7 @@ module Remote (
 	remoteLocations,
 	nameToUUID,
 	nameToUUID',
+	nameToUUID'',
 	showTriedRemotes,
 	listRemoteNames,
 	showLocations,
@@ -148,8 +149,11 @@ byNameWithUUID = checkuuid <=< byName
 		| otherwise = return $ Just r
 
 byName' :: RemoteName -> Annex (Either String Remote)
-byName' "" = return $ Left "no repository name specified"
-byName' n = go . filter matching <$> remoteList
+byName' n = byName'' n <$> remoteList
+
+byName'' :: RemoteName -> [Remote] -> Either String Remote
+byName'' "" _ = Left "no repository name specified"
+byName'' n remotelist = go $ filter matching remotelist
   where
 	go [] = Left $ "there is no available git remote named \"" ++ n ++ "\""
 	go (match:_) = Right match
@@ -182,20 +186,31 @@ nameToUUID n = nameToUUID' n >>= \case
 	(_, msg) -> giveup msg
 
 nameToUUID' :: RemoteName -> Annex ([UUID], String)
-nameToUUID' n
+nameToUUID' n = do
+	f <- nameToUUID''
+	return (f n)
+
+nameToUUID'' :: Annex (RemoteName -> ([UUID], String))
+nameToUUID'' = do
+	l <- remoteList
+	u <- getUUID
+	m <- uuidDescMap
+	return $ \n -> nameToUUID''' n l u m
+
+nameToUUID''' :: RemoteName -> [Remote] -> UUID -> UUIDDescMap -> ([UUID], String)
+nameToUUID''' n remotelist hereu m
 	| n == "." = currentrepo
 	| n == "here" = currentrepo
-	| otherwise = byName' n >>= go
+	| otherwise = go (byName'' n remotelist)
   where
-	currentrepo = mkone <$> getUUID
+	currentrepo = mkone hereu
 
-	go (Right r) = return $ case uuid r of
+	go (Right r) = case uuid r of
 		NoUUID -> ([], noRemoteUUIDMsg r)
 		u -> mkone u
-	go (Left e) = do
-		m <- uuidDescMap
+	go (Left e) =
 		let descn = UUIDDesc (encodeBS n)
-		return $ case M.keys (M.filter (== descn) m) of
+		in case M.keys (M.filter (== descn) m) of
 			[] -> 
 				let u = toUUID n
 				in case M.keys (M.filterWithKey (\k _ -> k == u) m) of

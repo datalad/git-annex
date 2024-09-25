@@ -1,0 +1,23 @@
+# Size balanced preferred content sim with multiple repositories sending  
+# concurrently to the same repositories, in a cluster.  
+#   
+# This demonstrates that size balanced preferred content does not get out  
+# of balance when used with cluster nodes.  
+init foo  
+init bar  
+init node1  
+init node2  
+clusternode cluster-node1 node1  
+clusternode cluster-node2 node2  
+group node1 cluster  
+group node2 cluster  
+wanted node1 sizebalanced=cluster  
+wanted node2 sizebalanced=cluster  
+maxsize node1 100gb  
+maxsize node2 100gb  
+connect cluster-node2 <- foo -> cluster-node1  
+connect cluster-node2 <- bar -> cluster-node1  
+addmulti 10 foo 1gb 2gb foo   
+addmulti 10 bar 1gb 2gb bar  
+action foo sendwanted cluster-node1 while action foo sendwanted cluster-node2 while action bar sendwanted cluster-node1 while action bar sendwanted cluster-node2  
+visit foo git-annex maxsize  

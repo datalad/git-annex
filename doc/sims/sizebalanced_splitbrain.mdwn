@@ -1,0 +1,61 @@
+# Size balanced preferred content sim with multiple repositories sending  
+# concurrently to the same repositories, without communication.  
+#  
+# This demonstrates how size balanced preferred content can get out of  
+# balance in this situation. Since there is no random seed, each  
+# git-annex sim start of this file will display a different result.  
+init foo  
+init fii  
+init fum  
+init bar  
+init baz  
+connect baz <- foo -> bar  
+connect baz <- fii -> bar  
+connect baz <- fum -> bar  
+group bar test  
+group baz test  
+wanted bar sizebalanced=test  
+wanted baz sizebalanced=test  
+maxsize bar 60gb  
+maxsize baz 200gb  
+add foo1 1GB foo  
+add foo2 2GB foo  
+add foo3 3GB foo  
+add foo4 4GB foo  
+add foo5 5GB foo  
+add foo6 6GB foo  
+add foo7 7GB foo  
+add foo8 8GB foo  
+add foo9 9GB foo  
+add foo10 10GB foo  
+add fii1 1GB fii  
+add fii2 2GB fii  
+add fii3 3GB fii  
+add fii4 4GB fii  
+add fii5 5GB fii  
+add fii6 6GB fii  
+add fii7 7GB fii  
+add fii8 8GB fii  
+add fii9 9GB fii  
+add fii10 10GB fii  
+add fum1 1GB fum  
+add fum2 2GB fum  
+add fum3 3GB fum  
+add fum4 4GB fum  
+add fum5 5GB fum  
+add fum6 6GB fum  
+add fum7 7GB fum  
+add fum8 8GB fum  
+add fum9 9GB fum  
+add fum10 10GB fum  
+action foo sendwanted bar while action foo sendwanted baz while action fii sendwanted bar while action fii sendwanted baz while action fum sendwanted bar while action fum sendwanted baz  
+action foo sendwanted bar while action foo sendwanted baz while action fii sendwanted bar while action fii sendwanted baz while action fum sendwanted bar while action fum sendwanted baz  
+action foo sendwanted bar while action foo sendwanted baz while action fii sendwanted bar while action fii sendwanted baz while action fum sendwanted bar while action fum sendwanted baz  
+action foo sendwanted bar while action foo sendwanted baz while action fii sendwanted bar while action fii sendwanted baz while action fum sendwanted bar while action fum sendwanted baz  
+connect fum <- foo -> fii  
+action foo gitpull fii  
+action foo gitpull fum  
+visit foo git-annex maxsize  
+#rebalance on  
+#step 100  
+#visit foo echo "after rebalance:"; git-annex maxsize  

@@ -577,6 +577,8 @@ Executable git-annex
     Annex.RepoSize
     Annex.RepoSize.LiveUpdate
     Annex.SafeDropProof
+    Annex.Sim
+    Annex.Sim.File
     Annex.SpecialRemote
     Annex.SpecialRemote.Config
     Annex.Ssh
@@ -732,6 +734,7 @@ Executable git-annex
     Command.SendKey
     Command.SetKey
     Command.SetPresentKey
+    Command.Sim
     Command.Smudge
     Command.Status
     Command.Sync

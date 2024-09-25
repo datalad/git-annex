@@ -36,12 +36,14 @@ setGlobalNumCopies new = do
 	curr <- getGlobalNumCopies
 	when (curr /= Just new) $
 		setLog (Annex.Branch.RegardingUUID []) numcopiesLog new
+	Annex.changeState $ \s -> s { Annex.globalnumcopies = Nothing }
 
 setGlobalMinCopies :: MinCopies -> Annex ()
 setGlobalMinCopies new = do
 	curr <- getGlobalMinCopies
 	when (curr /= Just new) $
 		setLog (Annex.Branch.RegardingUUID []) mincopiesLog new
+	Annex.changeState $ \s -> s { Annex.globalmincopies = Nothing }
 
 {- Value configured in the numcopies log. Cached for speed. -}
 getGlobalNumCopies :: Annex (Maybe NumCopies)

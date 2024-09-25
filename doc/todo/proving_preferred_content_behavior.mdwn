@@ -113,3 +113,5 @@ The location log history could be examined at the end of the simulation
 to find problems like instability.
 
 [[!tag projects/openneuro]]
+
+> [[done]], see `git-annex sim` command. --[[Joey]]

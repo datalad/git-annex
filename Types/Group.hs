@@ -22,7 +22,7 @@ import qualified Data.Set as S
 import qualified Data.ByteString as S
 
 newtype Group = Group S.ByteString
-	deriving (Eq, Ord, Show)
+	deriving (Eq, Ord, Show, Read)
 
 fromGroup :: Group -> String
 fromGroup (Group g) = decodeBS g

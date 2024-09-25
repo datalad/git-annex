@@ -1,0 +1,5 @@
+This is a collection of sim files for the [[git-annex-sim]] command.
+
+[[!inline pages="./sims/* and !./sims/*/* 
+and !*/Discussion" actions=yes postform=yes postformtext="Add a new sim titled:"
+show=0 feedlimit=10 archive=yes template=buglist]]

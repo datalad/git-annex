@@ -33,6 +33,7 @@ module Database.RepoSize (
 	removeStaleLiveSizeChanges,
 	recordedRepoOffsets,
 	liveRepoOffsets,
+	setSizeChanges,
 ) where
 
 import Annex.Common
@@ -310,6 +311,11 @@ setSizeChangeFor u sz =
 		(UniqueRepoRollingTotal u)
 		(SizeChanges u sz)
 		[SizeChangesRollingtotal =. sz]
+
+setSizeChanges :: RepoSizeHandle -> M.Map UUID FileSize -> IO ()
+setSizeChanges (RepoSizeHandle (Just h) _) sizemap = 
+	H.commitDb h $ forM_ (M.toList sizemap) $ uncurry setSizeChangeFor
+setSizeChanges (RepoSizeHandle Nothing _) _ = noop
 
 addRecentChange :: UUID -> Key -> SizeChange -> SqlPersistM ()
 addRecentChange u k sc =

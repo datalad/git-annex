@@ -1,0 +1,433 @@
+# NAME
+
+git-annex sim - simulate a network of repositories
+
+# SYNOPSIS
+
+git annex sim start [my.sim]
+
+git annex sim command
+
+git annex sim show
+
+git annex sim end
+
+git annex sim run my.sim
+
+# DESCRIPTION
+
+This command simulates the behavior of git-annex in a network of
+repositories, determining which files would reach which repositories
+according to the configuration of preferred content, numcopies,
+trust level, etc.
+
+The input to the simulation is a sim file, and/or sim commands that are
+run after starting it. These are in the form "git annex sim command"
+with the command in the same format used in the sim file (see sim commands
+list below). For example, "git annex sim step 1" runs the simulation one step.
+
+The simulation keeps a log as it runs, which contains the
+entire simulation input, as well as the actions performed in the
+simulation, and the results of the simulation. Use "git-annex sim show"
+to display the log. This allows re-running the same simulation later,
+as well as analyzing the results of the simulation.
+
+Use "git annex sim end" to finish the simulation, and clean up.
+
+As a convenience, to run a sim from a file, and then stop it, use
+"git-annex sim run". If there is a problem running the sim, it will be
+shown before it is stopped.
+
+# THE SIM FILE
+
+This text file is used to configure the simulation and also to report on
+the results of the simulation. Each line takes the form of a command
+followed by parameters to the command. Lines starting with "#" are comments.
+
+Here is an example sim file:
+
+	# add repositories to the simulation and connect them as remotes
+	init foo
+	init bar
+	connect foo <-> bar
+	
+	# add a special remote
+	initremote baz
+	connect foo -> baz <- bar
+	
+	# configure repositories
+	numcopies 2
+	group foo client
+	wanted foo standard
+	group bar archive
+	wanted bar standard
+	wanted baz include=*.mp3
+	
+	# add annexed files in the working tree to the simulation, as if they
+	# were just added to repository foo
+	addtree foo include=*.mp3
+	addtree foo include=*.jpg
+	addtree foo include=bigfiles/
+	
+	# add simulated annexed files
+	add bigfile 100gb bar
+	add hugefile 10tb foo
+	
+	# run the simulation forward by ten steps
+	step 10
+	
+	# remove foo's remote bar and see if a new file added to foo reaches bar
+	disconnect foo -> bar
+	add foo.mp3 2mb foo
+	step 5
+
+# SIM COMMANDS
+
+This is the full set of commands that can be used in the sim file as well
+as passed to "git annex sim" while a simulation is running.
+
+* `init name`
+
+  Initialize a simulated repository, giving it a name that will be used
+  in the simulation.
+
+* `initremote name`
+
+  Initialize a simulated special remote.
+
+* `use name here|remote|description|uuid`
+
+  Use an existing repository in the simulation, with its existing
+  configuration (trust level, groups, preferred and required content,
+  maxsize, and the groupwanted configuration of its groups).
+
+  The repository is given a name for the purposes of the simulation.
+  The repository to use can be specified by remote name, uuid, etc.
+  Example: "use myrepo here"
+
+* `visit repo [command]`
+
+  Runs the specified shell command inside the simulated repository,
+  and waits for it to exit.
+
+  When no shell command is specified, it runs an interactive shell.
+
+  The command is run in a git repository whosegit-annex branch contains
+  the state of that simulated repository. This allows running any 
+  git-annex commands, such as `git-annex whereis` to examine the
+  state of the simulation. You should avoid making any changes to
+  git-annex state.
+
+* `connect repo [<-|->|<->] repo [...]`
+
+  Add a connection between two or more repositories. The arrow indicates
+  which direction the connection runs, and it can be bidirectional. For
+  example, "connect foo -> bar" makes bar be a remote of foo, while
+  "connect foo <-> bar" makes each be the remote of the other. A chain
+  of connections can extend to many repositories, eg 
+  "connect foo -> bar -> baz -> foo"
+
+* `disconnect repo [<-|->|<->] repo [...]`
+
+  Removes connections between repositories.
+
+  For example, "disconnect foo -> bar" makes foo no longer have bar as a
+  remote.
+
+* `addtree repo expression`
+
+  Adds annexed files from the git repository to the simulation making them
+  be present in the specified repository. 
+
+  The expression is a preferred content expression
+  (see [[git-annex-preferred-content]](1)) specifying which annexed files
+  to add. While it is possible to include all or a large number of files
+  this way, note that often it's more efficient to simulate a small
+  quantity of files that have the particular properties you are interested
+  in.
+
+  When run in a subdirectory of the repository, only files in that
+  subdirectory are considered for addition.
+
+  This can be used with the same files more than once, to make multiple
+  repositories in the simulation contain the same files.
+
+* `add filename size repo [repo ...]`
+
+  Create a simulated annexed file with the specified filename and size,
+  that is present in the specified repository, or repositories.
+
+  The size can be specified using any usual units, eg "10mb" or
+  "3.3terabytes"
+
+  The filename cannot contain a space.
+
+  This stages a file in the index, so that regular git-annex commands can
+  be used to query the state of the simulated annexed file. If there is
+  already an annexed file by that name, it will be overwritten with the new
+  file.
+
+  Note that the simulation does not cover adding conflicting files to
+  different repositories. The files in the simulation are the same across
+  all simulated repositories.
+
+* `addmulti N suffix minsize maxsize repo [repo ...]
+
+  Add multiple simulated annexed files, with random sizes in the range
+  between minsize and maxsize.
+
+  The files are named by combining the number, which starts at 1 and goes
+  up to N, with the suffix.
+
+  For example:
+
+	addmulti 100 testfile.jpg 100kb 10mb foo
+
+  That adds files named "1testfile.jpg", 2testfile.jpg", etc.
+
+  Note that adding a large number of files to the simulation can slow it
+  down and make it use a lot of memory.
+
+* `step N`
+
+  Run the simulation forward by this many steps.
+
+  On each step of the simulation, one file is either transferred
+  or dropped, according to the preferred content and other configuration.
+
+  If there are no more files that can be either transferred or dropped
+  according to the current configuration, a message will be displayed
+  to indicate that the simulation has stabilized.
+
+  This also simulates git pull and git push being run in each repository,
+  as needed in order to find additional things to do.
+
+* `stepstable N`
+
+  Run the simulation forward by this many steps, at which point it is
+  expected to have stabilized.
+
+  If the simulation does not stabilize, the command will exit with a
+  nonzero exit state.
+
+* `action repo getwanted remote`
+
+  Simulate the repository getting files it wants from the remote.
+
+* `action repo dropunwanted`
+
+  Simulate the repository dropping files it does not want, 
+  when it is able to verify enough copies exist on remotes.
+
+* `action repo dropunwantedfrom remote`
+
+  Simulate the repository dropping files from the remote that the remote
+  does not want, when it is able to verify enouh copies exist.
+
+* `action repo sendwanted remote`
+
+  Simulate the repository sending files that the remote wants to it.
+
+* `action repo gitpush remote`
+
+  Simulate the repository pushing the git-annex branch to the remote.
+
+* `action repo gitpull remote`
+
+  Simulate the repository pulling the git-annex branch from the remote.
+
+* `action repo pull remote`
+
+  Simulate the equivilant of [[git-annex-pull]](1), by combining
+  the actions gitpull, getwanted, and dropunwanted.
+
+* `action repo push remote`
+
+  Simulate the equivilant of [[git-annex-push]](1) by combining
+  the actions sendwanted, dropunwantedfrom, and gitpush.
+
+* `action repo sync remote`
+
+  Simulate the equivilant of [[git-annex-sync]](1) by combining
+  the actions gitpull, getwanted, sendwanted, dropunwanted, and gitpush.
+
+* `action [...] while action [...]`
+
+  Simulate running the two actions concurrently. While the simulation only
+  actually simulates one thing happening at a time, when the actions each
+  operate on multiple files, they will be interleaved randomly.
+
+  Any number of actions can be combined this way.
+
+  For example:
+
+	action foo dropunwanted while action bar getwanted foo
+
+  In this example, bar may or may not get a file before foo drops it.
+
+* `seed N`
+
+  Sets the random seed to a given number. Using this should make the
+  results of the simulation deterministic. The output sim file
+  always has the random seed included in it, so it can be used to replay
+  the simulation.
+
+* `present repo file`
+
+  This indicates the expected state of the simulation at this point. The
+  repository should contain the content of the file. If it does not, the
+  discrepancy will be indicated on standard error, and the `git-annex sim`
+  command will eventually exit nonzero.
+
+  This is added to the output sim file as the simulation runs.
+
+* `notpresent repo file` 
+  
+  This indicates the expected state of the simulation at this point. The
+  repository should not contain the content of the file. If it does, the
+  discrepancy will be indicated on standard error, and the `git-annex sim`
+  command will eventually exit nonzero.
+  
+  This is added to the output sim file as the simulation runs.
+
+* `numcopies N`
+
+  Sets the desired number of copies. This is equivilant to
+  [[git-annex-numcopies]](1).
+
+  Note that other configuration that sets numcopies, such as .gitattributes
+  files, is not used by the simulation.
+
+* `mincopies N`
+
+  Sets the minimum number of copies. This is equivilant to
+  [[git-annex-mincopies]](1).
+
+* `trustlevel repo trusted|untrusted|semitrusted|dead`
+
+  Sets the trust level of the repository. This is equivilant to
+  [[git-annex-trust]](1), [[git-annex-untrust]](1), etc.
+
+* `group repo group`
+
+  Add a repository to a group. This is equivilant to
+  [[git-annex-group]](1).
+
+* `ungroup repo group`
+
+  Remove a repository from a group. This is equivilant to
+  [[git-annex-ungroup]](1).
+
+* `wanted repo expression`
+
+  Configure the preferred content of a repository. This is equivilant
+  to [[git-annex-wanted]](1).
+
+* `required repo expression`
+
+  Configure the required content of a repository. This is equivilant
+  to [[git-annex-required]](1).
+
+* `groupwanted group expression`
+
+  Configure the groupwanted expression. This is equivilant to
+  [[git-annex-groupwanted]](1).
+
+* `randomwanted repo term...`
+
+  Configure the preferred content of a repository to a random expression
+  generated by combining a random selection of the provided terms with
+  "and", "or", and "not".
+
+  For example, "randomwanted foo exclude=*.x include=*.x largerthan=100kb"
+  might generate an expression of "exclude=*.x or not largerthan=100kb and include=*.x"
+  or it might generate an expression of "include=*.x and exclude=*.x"
+
+* `randomrequired repo term...`
+  
+  Configure the required content of a repository to a random expression.
+
+* `randomgroupwanted group term...`
+  
+  Configure the groupwanted to a random expression.
+
+* `maxsize repo size`
+
+  Configure the maximum size of a repository. This is equivilant to
+  [[git-annex-maxsize]](1).
+
+* `rebalance [on|off]`
+
+  Setting "rebalance on" is the equivilant of passing the --rebalance
+  option to git-annex. Setting "rebalance off" undoes that.
+
+  For example:
+
+	maxsize foo 1tb
+	rebalance on
+	step 100
+	rebalance off
+
+* `clusternode name repo`
+
+  Simulate a repository being a node of a cluster, which can be referred to
+  using the specified name.
+
+  Rather than a cluster gateway being simulated as a separate entity, any
+  connection to a cluster node with that name is treated as accessing that
+  repository via the same cluster gateway.
+
+  Since a cluster gateway knows about all changes that are made to nodes
+  via it, every repository that has a connection to a cluster node will
+  immediately know about changes that are made via that node, without
+  needing a simulated git pull.
+
+  To simulate a repository being a node of more than one cluster, or behind
+  multiple gateways in the same cluster, use this command to give it
+  multiple names.
+
+  For example:
+
+	init foo
+	init bar
+	init node1
+	init node2
+	clusternode cluster-node1 node1
+	clusternode cluster-node2 node2
+	group node1 cluster
+	group node2 cluster
+	wanted node1 sizebalanced=cluster
+	wanted node2 sizebalanced=cluster
+	maxsize node1 100gb
+	maxsize node2 100gb
+	connect cluster-node2 <- foo -> cluster-node1
+	connect cluster-node2 <- bar -> cluster-node1
+	addmulti 10 foo 1gb 2gb foo 
+	addmulti 10 bar 1gb 2gb bar
+	action foo sendwanted cluster-node1 while action foo sendwanted cluster-node2 while action bar sendwanted cluster-node1 while action bar sendwanted cluster-node2
+
+  In the above example, while foo and bar are both concurrently sending
+  wanted files to both cluster nodes, each will know immediately which
+  files have been sent by the other, and so the files will be sizebalanced
+  between them optimally.
+
+# OPTIONS
+
+* The [[git-annex-common-options]](1) can be used.
+
+# SIM FILE COLLECTION
+
+git-annex includes a collection of sim files,
+at <https://git-annex.branchable.com/sims/>
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+[[git-annex-test]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

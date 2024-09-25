@@ -838,6 +838,13 @@ content from the key-value store.
   
   See [[git-annex-testremote]](1) for details.
 
+* `sim`
+
+  This simulates a network of git-annex repositories. It can be used to
+  test a configuration before using it in the real world.
+  
+  See [[git-annex-sim]](1) for details.
+
 * `fuzztest`
 
   Generates random changes to files in the current repository,

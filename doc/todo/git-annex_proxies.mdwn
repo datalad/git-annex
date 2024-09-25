@@ -31,13 +31,26 @@ Planned schedule of work:
 * Currently working in [[todo/proving_preferred_content_behavior]]
   in the `sim` branch.
 
+* sim: Add support for metadata, so preferred content that matches on it
+  will work
+
+* The sim cannot be safely interrupted, or two processes be run
+  concurrently. Both unlike other git-annex commands. Either document these
+  limitations, or add locking and make it detect when it was interrupted
+  and re-run the sim from the start to resume.
+
+## completed items for September's work on proving behavior of preferred content
+
+* Static analysis to detect "not present", "not balanced", and similar
+  unstable preferred content expressions and avoid problems with them.
+* Implemented `git-annex sim` command.
+* Simulated a variety of repository networks, and random preferred content
+  expressions, checking that a stable state is always reached.
+* Fix bug that prevented anything being stored in an empty
+  repository whose preferred content expression uses sizebalanced.
+  (Identified via `git-annex sim`)
+
 ## items deferred until later for balanced preferred content and maxsize tracking
-
-* `git-annex assist --rebalance` of `balanced=foo:2` 
-  sometimes needs several runs to stabalize.
-
-  May not be a bug, needs reproducing and analysis.
-  Deferred for proving behavior of balanced preferred content stage.
 
 * The assistant is using NoLiveUpdate, but it should be posssible to plumb
   a LiveUpdate through it from preferred content checking to location log

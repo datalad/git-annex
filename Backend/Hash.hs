@@ -9,13 +9,14 @@
 
 module Backend.Hash (
 	backends,
-	testKeyBackend,
 	keyHash,
 	descChecksum,
 	Hash(..),
 	cryptographicallySecure,
 	hashFile,
-	checkKeyChecksum
+	checkKeyChecksum,
+	testKeyBackend,
+	genTestKey,
 ) where
 
 import Annex.Common
@@ -296,13 +297,25 @@ descChecksum = "checksum"
  -}
 testKeyBackend :: Backend
 testKeyBackend = 
-	let b = genBackendE (SHA2Hash (HashSize 256))
+	let b = genBackendE testKeyHash
 	    gk = case genKey b of
 		Nothing -> Nothing
 		Just f -> Just (\ks p -> addTestE <$> f ks p)
 	in b { genKey = gk }
+
+addTestE :: Key -> Key
+addTestE k = alterKey k $ \d -> d
+	{ keyName = keyName d <> longext
+	}
   where
-	addTestE k = alterKey k $ \d -> d
-		{ keyName = keyName d <> longext
-		}
 	longext = ".this-is-a-test-key"
+
+testKeyHash :: Hash
+testKeyHash = SHA2Hash (HashSize 256)
+
+genTestKey :: L.ByteString -> Key
+genTestKey content = addTestE $ mkKey $ \kd -> kd
+	{ keyName = S.toShort $ encodeBS $
+		(fst $ hasher testKeyHash) content
+	, keyVariety = backendVariety testKeyBackend
+	}

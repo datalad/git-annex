@@ -108,6 +108,7 @@ module Annex.Locations (
 	gitAnnexSshDir,
 	gitAnnexRemotesDir,
 	gitAnnexAssistantDefaultDir,
+	gitAnnexSimDir,
 	HashLevels(..),
 	hashDirMixed,
 	hashDirLower,
@@ -674,6 +675,9 @@ gitAnnexRemotesDir r =
  - repositories, by default. -}
 gitAnnexAssistantDefaultDir :: FilePath
 gitAnnexAssistantDefaultDir = "annex"
+
+gitAnnexSimDir :: Git.Repo -> RawFilePath
+gitAnnexSimDir r = P.addTrailingPathSeparator $ gitAnnexDir r P.</> "sim"
 
 {- Sanitizes a String that will be used as part of a Key's keyName,
  - dealing with characters that cause problems.

@@ -39,6 +39,7 @@ describeUUID uuid desc = do
 	c <- currentVectorClock
 	Annex.Branch.change (Annex.Branch.RegardingUUID [uuid]) uuidLog $
 		buildLogOld builder . changeLog c uuid desc . parseUUIDLog
+	Annex.changeState $ \s -> s { Annex.uuiddescmap = Nothing }
   where
 	builder (UUIDDesc b) = byteString (escnewline b)
 	-- Escape any newline in the description, since newlines cannot
