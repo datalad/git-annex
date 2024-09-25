@@ -46,40 +46,40 @@ followed by parameters to the command. Lines starting with "#" are comments.
 
 Here is an example sim file:
 
-    # add repositories to the simulation and connect them as remotes
-    init foo
-    init bar
-    connect foo <-> bar
-    
-    # add a special remote
-    initremote baz
-    connect foo -> baz <- bar
-    
-    # configure repositories
-    numcopies 2
-    group foo client
-    wanted foo standard
-    group bar archive
-    wanted bar standard
-    wanted baz include=*.mp3
-
-    # add annexed files in the working tree to the simulation, as if they
-    # were just added to repository foo
-    addtree foo include=*.mp3
-    addtree foo include=*.jpg
-    addtree foo include=bigfiles/
-
-    # add simulated annexed files
-    add bigfile 100gb bar
-    add hugefile 10tb foo
-
-    # run the simulation forward by ten steps
-    step 10
-
-    # remove foo's remote bar and see if a new file added to foo reaches bar
-    disconnect foo -> bar
-    add foo.mp3 2mb foo
-    step 5
+	# add repositories to the simulation and connect them as remotes
+	init foo
+	init bar
+	connect foo <-> bar
+	
+	# add a special remote
+	initremote baz
+	connect foo -> baz <- bar
+	
+	# configure repositories
+	numcopies 2
+	group foo client
+	wanted foo standard
+	group bar archive
+	wanted bar standard
+	wanted baz include=*.mp3
+	
+	# add annexed files in the working tree to the simulation, as if they
+	# were just added to repository foo
+	addtree foo include=*.mp3
+	addtree foo include=*.jpg
+	addtree foo include=bigfiles/
+	
+	# add simulated annexed files
+	add bigfile 100gb bar
+	add hugefile 10tb foo
+	
+	# run the simulation forward by ten steps
+	step 10
+	
+	# remove foo's remote bar and see if a new file added to foo reaches bar
+	disconnect foo -> bar
+	add foo.mp3 2mb foo
+	step 5
 
 # SIM COMMANDS
 
@@ -181,7 +181,7 @@ as passed to "git annex sim" while a simulation is running.
 
   For example:
 
-    addmulti 100 testfile.jpg 100kb 10mb foo
+	addmulti 100 testfile.jpg 100kb 10mb foo
 
   That adds files named "1testfile.jpg", 2testfile.jpg", etc.
 
@@ -261,7 +261,7 @@ as passed to "git annex sim" while a simulation is running.
 
   For example:
 
-    action foo dropunwanted while action bar getwanted foo
+	action foo dropunwanted while action bar getwanted foo
 
   In this example, bar may or may not get a file before foo drops it.
 
@@ -363,10 +363,10 @@ as passed to "git annex sim" while a simulation is running.
 
   For example:
 
-    maxsize foo 1tb
-    rebalance on
-    step 100
-    rebalance off
+	maxsize foo 1tb
+	rebalance on
+	step 100
+	rebalance off
 
 * `clusternode name repo`
 
@@ -388,23 +388,23 @@ as passed to "git annex sim" while a simulation is running.
 
   For example:
 
-    init foo
-    init bar
-    init node1
-    init node2
-    clusternode cluster-node1 node1
-    clusternode cluster-node2 node2
-    group node1 cluster
-    group node2 cluster
-    wanted node1 sizebalanced=cluster
-    wanted node2 sizebalanced=cluster
-    maxsize node1 100gb
-    maxsize node2 100gb
-    connect cluster-node2 <- foo -> cluster-node1
-    connect cluster-node2 <- bar -> cluster-node1
-    addmulti 10 foo 1gb 2gb foo 
-    addmulti 10 bar 1gb 2gb bar
-    action foo sendwanted cluster-node1 while action foo sendwanted cluster-node2 while action bar sendwanted cluster-node1 while action bar sendwanted cluster-node2
+	init foo
+	init bar
+	init node1
+	init node2
+	clusternode cluster-node1 node1
+	clusternode cluster-node2 node2
+	group node1 cluster
+	group node2 cluster
+	wanted node1 sizebalanced=cluster
+	wanted node2 sizebalanced=cluster
+	maxsize node1 100gb
+	maxsize node2 100gb
+	connect cluster-node2 <- foo -> cluster-node1
+	connect cluster-node2 <- bar -> cluster-node1
+	addmulti 10 foo 1gb 2gb foo 
+	addmulti 10 bar 1gb 2gb bar
+	action foo sendwanted cluster-node1 while action foo sendwanted cluster-node2 while action bar sendwanted cluster-node1 while action bar sendwanted cluster-node2
 
   In the above example, while foo and bar are both concurrently sending
   wanted files to both cluster nodes, each will know immediately which
