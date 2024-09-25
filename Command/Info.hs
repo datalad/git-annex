@@ -40,7 +40,7 @@ import Annex.NumCopies
 import Git.Config (boolConfig)
 import qualified Git.LsTree as LsTree
 import Utility.Percentage
-import Utility.Aeson hiding (json)
+import Utility.Aeson
 import Types.Transfer
 import Logs.Transfer
 import Types.Key

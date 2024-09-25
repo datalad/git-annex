@@ -18,11 +18,7 @@ module Utility.Aeson (
 	textKey,
 ) where
 
-#if MIN_VERSION_aeson(2,0,0)
-import Data.Aeson as X hiding (ToJSON, toJSON, encode, Key)
-#else
-import Data.Aeson as X hiding (ToJSON, toJSON, encode)
-#endif
+import Data.Aeson as X (decode, eitherDecode, parseJSON, FromJSON, Object, object, Value(..), (.=), (.:), (.:?))
 import Data.Aeson hiding (encode)
 import qualified Data.Aeson
 #if MIN_VERSION_aeson(2,0,0)
