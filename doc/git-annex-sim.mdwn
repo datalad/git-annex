@@ -368,6 +368,31 @@ as passed to "git annex sim" while a simulation is running.
     step 100
     rebalance off
 
+* `initcluster name`
+
+  Initializes a simulated cluster with the given name.
+
+* `addcluster name [node ...]`
+
+  Adds each of the listed nodes to the cluster. The cluster is connected to
+  each node, and will accept files sent to it and store them on the nodes.
+  Repositories that are connected to the cluster will also be able to
+  receive files from it.
+
+  Note that adding a connection to a cluster does not automatically
+  set up connections to its nodes. To replicate git-annex's behavior with
+  a real cluster remote, those connections can be manually configured. For
+  example:
+
+    addcluster mycluster node1 node2
+    connect foo -> mycluster
+    connect foo -> node1
+    connect foo -> node2
+
+* `removecluster name node`
+
+  Removes a node from the cluster.
+
 # OPTIONS
 
 * The [[git-annex-common-options]](1) can be used.
