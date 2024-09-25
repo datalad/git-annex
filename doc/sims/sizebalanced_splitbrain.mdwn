@@ -1,6 +1,5 @@
 -- Size balanced preferred content sim with multiple repositories sending  
 -- concurrently to the same repositories, without communication.  
--- 
 -- This demonstrates how size balanced preferred content can get out of  
 -- balance in this situation. Since there is no random seed, each  
 -- git-annex sim start of this file will display a different result.  
