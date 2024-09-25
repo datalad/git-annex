@@ -391,7 +391,7 @@ as passed to "git annex sim" while a simulation is running.
 
 * The [[git-annex-common-options]](1) can be used.
 
-# SIM FILE COLLECTION
+# EXAMPLES
 
 git-annex includes a collection of sim files,
 at <https://git-annex.branchable.com/sims/>
