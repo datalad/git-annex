@@ -190,7 +190,7 @@ runFuzzAction (FuzzPause d) = randomDelay d
 
 genFuzzAction :: Annex FuzzAction
 genFuzzAction = do
-	tmpl <- liftIO $ Prelude.head <$> sample' (arbitrary :: Gen FuzzAction)
+	tmpl <- liftIO $ generate (arbitrary :: Gen FuzzAction)
 	-- Fix up template action to make sense in the current repo tree.
 	case tmpl of
 		FuzzAdd _ -> do
