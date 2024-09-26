@@ -73,6 +73,8 @@ generateSimFile = unlines . map unwords . go
 		["group", repo, fromGroup group] : go rest
 	go (CommandUngroup (RepoName repo) group : rest) =
 		["ungroup", repo, fromGroup group] : go rest
+	go (CommandMetaData f modmeta : rest) =
+		["metadata", fromRawFilePath f, modmeta] : go rest
 	go (CommandWanted (RepoName repo) expr : rest) =
 		["wanted", repo, expr] : go rest
 	go (CommandRequired (RepoName repo) expr : rest) =
@@ -188,6 +190,8 @@ parseSimCommand ("group":repo:group:[]) =
 	Right $ CommandGroup (RepoName repo) (toGroup group)
 parseSimCommand ("ungroup":repo:group:[]) =
 	Right $ CommandUngroup (RepoName repo) (toGroup group)
+parseSimCommand ("metadata":file:modmeta:[]) =
+	Right $ CommandMetaData (toRawFilePath file) modmeta
 parseSimCommand ("wanted":repo:expr) =
 	Right $ CommandWanted (RepoName repo) (unwords expr)
 parseSimCommand ("required":repo:expr) =

@@ -28,11 +28,7 @@ Planned schedule of work:
 
 ## work notes
 
-* Currently working in [[todo/proving_preferred_content_behavior]]
-  in the `sim` branch.
-
-* sim: Add support for metadata, so preferred content that matches on it
-  will work
+* Currently working in [[todo/proving_preferred_content_behavior]].
 
 * The sim cannot be safely interrupted, or two processes be run
   concurrently. Both unlike other git-annex commands. Either document these

@@ -62,7 +62,7 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as B8
 
 newtype MetaData = MetaData (M.Map MetaField (S.Set MetaValue))
-	deriving (Show, Eq, Ord)
+	deriving (Read, Show, Eq, Ord)
 
 instance ToJSON' MetaData where
 	toJSON' (MetaData m) = object $ map go (M.toList m)

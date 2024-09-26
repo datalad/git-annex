@@ -27,6 +27,7 @@ import Annex.Link
 import Annex.Wanted
 import Annex.CatFile
 import Annex.Action (quiesce)
+import Annex.MetaData
 import Logs.Group
 import Logs.Trust
 import Logs.PreferredContent
@@ -36,6 +37,7 @@ import Logs.MaxSize
 import Logs.Difference
 import Logs.UUID
 import Logs.Location
+import Logs.MetaData
 import Utility.Env
 import qualified Annex
 import qualified Remote
@@ -67,6 +69,7 @@ data SimState t = SimState
 	, simNumCopies :: NumCopies
 	, simMinCopies :: MinCopies
 	, simGroups :: M.Map UUID (S.Set Group)
+	, simMetaData :: M.Map Key MetaData
 	, simWanted :: M.Map UUID PreferredContentExpression
 	, simRequired :: M.Map UUID PreferredContentExpression
 	, simGroupWanted :: M.Map Group PreferredContentExpression
@@ -91,6 +94,7 @@ emptySimState rngseed rootdir = SimState
 	, simNumCopies = configuredNumCopies 1
 	, simMinCopies = configuredMinCopies 1
 	, simGroups = mempty
+	, simMetaData = mempty
 	, simWanted = mempty
 	, simRequired = mempty
 	, simGroupWanted = mempty
@@ -245,6 +249,7 @@ data SimCommand
 	| CommandTrustLevel RepoName TrustLevel
 	| CommandGroup RepoName Group
 	| CommandUngroup RepoName Group
+	| CommandMetaData RawFilePath String
 	| CommandWanted RepoName PreferredContentExpression
 	| CommandRequired RepoName PreferredContentExpression
 	| CommandGroupWanted Group PreferredContentExpression
@@ -508,6 +513,19 @@ applySimCommand' (CommandUngroup repo groupname) st _ =
 		Right $ Right $ st
 			{ simGroups = M.adjust (S.delete groupname) u (simGroups st)
 			}
+applySimCommand' (CommandMetaData file modmetaexpr) st _ =
+	case parseModMeta modmetaexpr of
+		Left err -> Left err
+		Right modmeta -> case M.lookup file (simFiles st) of
+			Nothing -> Left $ "Cannot set metadata of unknown file " ++ fromRawFilePath file
+			Just k -> Right $ Right $ st
+				{ simMetaData = M.alter (addmeta modmeta) k
+					(simMetaData st)
+				}
+  where
+	addmeta modmeta (Just metadata) = Just $ unionMetaData metadata $
+		modMeta metadata modmeta
+	addmeta modmeta Nothing = Just $ modMeta emptyMetaData modmeta
 applySimCommand' (CommandWanted repo expr) st _ = 
 	checkKnownRepo repo st $ \u ->
 		checkValidPreferredContentExpression [expr] $ Right $ st
@@ -1228,6 +1246,12 @@ updateSimRepoState newst sr = do
 			{ replaceDiff = \u -> const . groupChange u . const
 			, addDiff = \u -> groupChange u . const
 			, removeDiff = const . flip groupChange (const mempty)
+			}
+		updateField oldst newst simMetaData $ DiffUpdate
+			{ replaceDiff = replaceNew addMetaData
+			, addDiff = addMetaData
+			, removeDiff = \k old -> addMetaData k $
+				modMeta old DelAllMeta
 			}
 		updateField oldst newst simWanted $ DiffUpdate
 			{ replaceDiff = replaceNew preferredContentSet

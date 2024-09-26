@@ -309,16 +309,6 @@ as passed to "git annex sim" while a simulation is running.
   Sets the trust level of the repository. This is equivilant to
   [[git-annex-trust]](1), [[git-annex-untrust]](1), etc.
 
-* `group repo group`
-
-  Add a repository to a group. This is equivilant to
-  [[git-annex-group]](1).
-
-* `ungroup repo group`
-
-  Remove a repository from a group. This is equivilant to
-  [[git-annex-ungroup]](1).
-
 * `wanted repo expression`
 
   Configure the preferred content of a repository. This is equivilant
@@ -351,6 +341,22 @@ as passed to "git annex sim" while a simulation is running.
 * `randomgroupwanted group term...`
   
   Configure the groupwanted to a random expression.
+
+* `group repo group`
+
+  Add a repository to a group. This is equivilant to
+  [[git-annex-group]](1).
+
+* `ungroup repo group`
+
+  Remove a repository from a group. This is equivilant to
+  [[git-annex-ungroup]](1).
+
+* `metadata filename expression`
+
+  Change the metadata of the simulated file. The expression is
+  in the same format as the --set option of the [[git-annex-metadata]]
+  command. For example: `metadata foo year=2025`
 
 * `maxsize repo size`
 
