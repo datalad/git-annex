@@ -473,7 +473,8 @@ claimingUrl = claimingUrl' (const True)
 claimingUrl' :: (Remote -> Bool) -> URLString -> Annex Remote
 claimingUrl' remotefilter url = do
 	rs <- remoteList
-	let web = Prelude.head $ filter (\r -> uuid r == webUUID) rs
+	let web = fromMaybe (error "internal") $ headMaybe $
+		filter (\r -> uuid r == webUUID) rs
 	fromMaybe web <$> firstM checkclaim (filter remotefilter rs)
   where
 	checkclaim = maybe (pure False) (`id` url) . claimUrl

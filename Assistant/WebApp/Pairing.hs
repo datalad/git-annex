@@ -35,8 +35,9 @@ newWormholePairingState = newTVarIO M.empty
 addWormholePairingState :: WormholePairingHandle -> WormholePairingState -> IO WormholePairingId
 addWormholePairingState h tv = atomically $ do
 	m <- readTVar tv
-	-- use of head is safe because allids is infinite
-	let i = Prelude.head $ filter (`notElem` M.keys m) allids
+	-- safe because allids is infinite
+	let i = fromMaybe (error "internal") $ 
+		headMaybe $ filter (`notElem` M.keys m) allids
 	writeTVar tv (M.insert i h m)
 	return i
   where
