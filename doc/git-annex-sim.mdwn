@@ -38,6 +38,11 @@ As a convenience, to run a sim from a file, and then stop it, use
 "git-annex sim run". If there is a problem running the sim, it will be
 shown before it is stopped.
 
+Note that interrupting this command while it is running may leave the
+simulation in an inconsistent state. And running multiple sim commands at
+the same time can as well, although it is safe to run "git annex sim visit"
+while running other sim commands.
+
 # THE SIM FILE
 
 This text file is used to configure the simulation and also to report on

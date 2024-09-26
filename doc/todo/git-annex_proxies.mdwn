@@ -30,11 +30,6 @@ Planned schedule of work:
 
 * Currently working in [[todo/proving_preferred_content_behavior]].
 
-* The sim cannot be safely interrupted, or two processes be run
-  concurrently. Both unlike other git-annex commands. Either document these
-  limitations, or add locking and make it detect when it was interrupted
-  and re-run the sim from the start to resume.
-
 ## completed items for September's work on proving behavior of preferred content
 
 * Static analysis to detect "not present", "not balanced", and similar
