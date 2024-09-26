@@ -52,9 +52,8 @@ readFileStrict = readFile >=> \s -> length s `seq` return s
 separate :: (a -> Bool) -> [a] -> ([a], [a])
 separate c l = unbreak $ break c l
   where
-	unbreak r@(a, b)
-		| null b = r
-		| otherwise = (a, tail b)
+	unbreak (a, (_:b)) = (a, b)
+	unbreak r = r
 
 separate' :: (Word8 -> Bool) -> S.ByteString -> (S.ByteString, S.ByteString)
 separate' c l = unbreak $ S.break c l

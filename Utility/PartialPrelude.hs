@@ -9,8 +9,6 @@
 
 module Utility.PartialPrelude (
 	Utility.PartialPrelude.read,
-	Utility.PartialPrelude.head,
-	Utility.PartialPrelude.tail,
 	Utility.PartialPrelude.init,
 	Utility.PartialPrelude.last,
 	Utility.PartialPrelude.readish,
@@ -26,16 +24,6 @@ import qualified Data.Maybe
  - Instead, use: readish -}
 read :: Read a => String -> a
 read = Prelude.read
-
-{- head is a partial function; head [] is an error
- - Instead, use: take 1 or headMaybe -}
-head :: [a] -> a
-head = Prelude.head
-
-{- tail is also partial
- - Instead, use: drop 1 -}
-tail :: [a] -> [a]
-tail = Prelude.tail
 
 {- init too
  - Instead, use: beginning -}

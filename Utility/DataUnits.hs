@@ -180,16 +180,16 @@ compareSizes units abbrev old new
 
 {- Parses strings like "10 kilobytes" or "0.5tb". -}
 readSize :: [Unit] -> String -> Maybe ByteSize
-readSize units input
-	| null parsednum || null parsedunit = Nothing
-	| otherwise = Just $ round $ number * fromIntegral multiplier
+readSize units input = case parsednum of
+	[] -> Nothing
+	((number, rest):_) ->
+		let unitname = takeWhile isAlpha $ dropWhile isSpace rest
+		in case lookupUnit units unitname of
+			[] -> Nothing
+			(multiplier:_) -> 
+				Just $ round $ number * fromIntegral multiplier
   where
-	(number, rest) = head parsednum
-	multiplier = head parsedunit
-	unitname = takeWhile isAlpha $ dropWhile isSpace rest
-
 	parsednum = reads input :: [(Double, String)]
-	parsedunit = lookupUnit units unitname
 
 	lookupUnit _ [] = [1] -- no unit given, assume bytes
 	lookupUnit [] _ = []

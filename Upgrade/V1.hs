@@ -167,7 +167,7 @@ readKey1' v
 		}
   where
 	bits = splitc ':' v
-	b = Prelude.head bits
+	b = fromMaybe (error "unable to parse v0 key") (headMaybe bits)
 	n = intercalate ":" $ drop (if wormy then 3 else 1) bits
 	t = if wormy
 		then readMaybe (bits !! 1) :: Maybe EpochTime

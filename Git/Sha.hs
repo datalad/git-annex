@@ -13,6 +13,7 @@ import Common
 import Git.Types
 
 import qualified Data.ByteString as S
+import qualified Data.List.NonEmpty as NE
 import Data.Char
 
 {- Runs an action that causes a git subcommand to emit a Sha, and strips
@@ -44,16 +45,15 @@ extractSha s
 		]
 
 {- Sizes of git shas. -}
-shaSizes :: [Int]
+shaSizes :: NE.NonEmpty Int
 shaSizes = 
-	[ 40 -- sha1 (must come first)
-	, 64 -- sha256
-	]
+	       40 -- sha1 (must come first)
+	NE.:| [64] -- sha256
 
 {- Git plumbing often uses a all 0 sha to represent things like a
  - deleted file. -}
-nullShas :: [Sha]
-nullShas = map (\n -> Ref (S.replicate n zero)) shaSizes
+nullShas :: NE.NonEmpty Sha
+nullShas = NE.map (\n -> Ref (S.replicate n zero)) shaSizes
   where
 	zero = fromIntegral (ord '0')
 
@@ -63,7 +63,7 @@ nullShas = map (\n -> Ref (S.replicate n zero)) shaSizes
  - sha1 to the sha256, or probably just treat all null sha1 specially
  - the same as all null sha256. -}
 deleteSha :: Sha
-deleteSha = Prelude.head nullShas
+deleteSha = NE.head nullShas
 
 {- Git's magic empty tree.
  -

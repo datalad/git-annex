@@ -40,7 +40,7 @@ regionMap :: Service -> M.Map Text Region
 regionMap = M.fromList . regionInfo
 
 defaultRegion :: Service -> Region
-defaultRegion = snd . Prelude.head . regionInfo
+defaultRegion = snd . fromMaybe (error "internal") . headMaybe . regionInfo
 
 data ServiceRegion = BothRegion Region | S3Region Region | GlacierRegion Region
 

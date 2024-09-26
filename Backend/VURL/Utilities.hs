@@ -31,7 +31,8 @@ migrateFromURLToVURL oldkey newbackend _af inannex
   where
 	-- Relies on the first hash being cryptographically secure, and the
 	-- default hash used by git-annex.
-	hashbackend = Prelude.head Backend.Hash.backends
+	hashbackend = fromMaybe (error "internal") $ 
+		headMaybe Backend.Hash.backends
 
 migrateFromVURLToURL :: Key -> Backend -> AssociatedFile -> Bool -> Annex (Maybe Key)
 migrateFromVURLToURL oldkey newbackend _af _

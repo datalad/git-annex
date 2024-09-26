@@ -80,7 +80,7 @@ addHiddenService appname uid ident = do
 		((p, _s):_) -> waithiddenservice 1 p
 		_ -> do
 			highports <- R.getStdRandom mkhighports
-			let newport = Prelude.head $
+			let newport = fromMaybe (error "internal") $ headMaybe $
 				filter (`notElem` map fst portssocks) highports
 			torrc <- findTorrc
 			writeFile torrc $ unlines $
