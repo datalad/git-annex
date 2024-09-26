@@ -42,6 +42,7 @@ import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
 import Data.Either
 import Control.Concurrent.STM hiding (check)
+import qualified Data.List.NonEmpty as NE
 
 cmd :: Command
 cmd = command "testremote" SectionTesting
@@ -83,8 +84,10 @@ start o = starting "testremote" (ActionItemOther (Just (UnquotedString (testRemo
 			then giveup "This remote is readonly, so you need to use the --test-readonly option."
 			else do
 				showAction "generating test keys"
-				mapM randKey (keySizes basesz fast)
-		fs -> mapM (getReadonlyKey r . toRawFilePath) fs
+				NE.fromList
+					<$> mapM randKey (keySizes basesz fast)
+		fs -> NE.fromList
+			<$> mapM (getReadonlyKey r . toRawFilePath) fs
 	let r' = if null (testReadonlyFile o)
 		then r
 		else r { Remote.readonly = True }
@@ -100,7 +103,7 @@ start o = starting "testremote" (ActionItemOther (Just (UnquotedString (testRemo
 	basesz = fromInteger $ sizeOption o
 	si = SeekInput [testRemote o]
 
-perform :: [Described (Annex (Maybe Remote))] -> Maybe Remote -> Annex (Maybe Remote) -> [Key] -> CommandPerform
+perform :: [Described (Annex (Maybe Remote))] -> Maybe Remote -> Annex (Maybe Remote) -> NE.NonEmpty Key -> CommandPerform
 perform drs unavailr exportr ks = do
 	st <- liftIO . newTVarIO =<< (,)
 		<$> Annex.getState id
@@ -110,12 +113,12 @@ perform drs unavailr exportr ks = do
 		drs
 		(pure unavailr)
 		exportr
-		(map (\k -> Described (desck k) (pure k)) ks)
+		(NE.map (\k -> Described (desck k) (pure k)) ks)
 	ok <- case tryIngredients [consoleTestReporter] mempty tests of
 		Nothing -> error "No tests found!?"
 		Just act -> liftIO act
 	rs <- catMaybes <$> mapM getVal drs
-	next $ cleanup rs ks ok
+	next $ cleanup rs (NE.toList ks) ok
   where
 	desck k = unwords [ "key size", show (fromKey keySize k) ]
 
@@ -216,12 +219,12 @@ mkTestTrees
 	-> [Described (Annex (Maybe Remote))]
 	-> Annex (Maybe Remote)
 	-> Annex (Maybe Remote)
-	-> [Described (Annex Key)]
+	-> (NE.NonEmpty (Described (Annex Key)))
 	-> [TestTree]
 mkTestTrees runannex mkrs mkunavailr mkexportr mkks = concat $
-	[ [ testGroup "unavailable remote" (testUnavailable runannex mkunavailr (getVal (Prelude.head mkks))) ]
-	, [ testGroup (desc mkr mkk) (test runannex (getVal mkr) (getVal mkk)) | mkk <- mkks, mkr <- mkrs ]
-	, [ testGroup (descexport mkk1 mkk2) (testExportTree runannex mkexportr (getVal mkk1) (getVal mkk2)) | mkk1 <- take 2 mkks, mkk2 <- take 2 (reverse mkks) ]
+	[ [ testGroup "unavailable remote" (testUnavailable runannex mkunavailr (getVal (NE.head mkks))) ]
+	, [ testGroup (desc mkr mkk) (test runannex (getVal mkr) (getVal mkk)) | mkk <- NE.toList mkks, mkr <- mkrs ]
+	, [ testGroup (descexport mkk1 mkk2) (testExportTree runannex mkexportr (getVal mkk1) (getVal mkk2)) | mkk1 <- take 2 (NE.toList mkks), mkk2 <- take 2 (reverse (NE.toList mkks)) ]
 	]
    where
 	desc r k = intercalate "; " $ map unwords

@@ -23,11 +23,12 @@ import Options.Applicative (switch, long, short, help, internal, maybeReader, op
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy.UTF8 as BU8
 import Control.Concurrent.STM hiding (check)
+import qualified Utility.RawFilePath as R
+import qualified Data.List.NonEmpty as NE
+import Data.String
 
 import Common
 import CmdLine.GitAnnex.Options
-import qualified Utility.RawFilePath as R
-import Data.String
 
 import qualified Utility.ShellEscape
 import qualified Annex
@@ -251,7 +252,7 @@ testRemote testvariants remotetype setupremote =
 			cv <- annexeval cache
 			liftIO $ atomically $ putTMVar v
 				(r, (unavailr, (exportr, (ks, cv))))
-	go getv = Command.TestRemote.mkTestTrees runannex mkrs mkunavailr mkexportr mkks
+	go getv = Command.TestRemote.mkTestTrees runannex mkrs mkunavailr mkexportr (NE.fromList mkks)
 	  where
 		runannex = inmainrepo . annexeval
 		mkrs = if testvariants
