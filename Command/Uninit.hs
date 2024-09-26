@@ -79,7 +79,7 @@ checkCanUninit recordok =
 	
 	current_branch = 
 		ifM (inRepo Git.Ref.headExists)
-			( Just . Git.Ref . encodeBS . Prelude.head . lines . decodeBS <$> revhead
+			( headMaybe . map (Git.Ref . encodeBS) . lines . decodeBS <$> revhead
 			, return Nothing
 			)
 	revhead = inRepo $ Git.Command.pipeReadStrict
