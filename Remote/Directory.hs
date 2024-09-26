@@ -17,6 +17,7 @@ module Remote.Directory (
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
+import qualified Data.List.NonEmpty as NE
 import qualified System.FilePath.ByteString as P
 import Data.Default
 import System.PosixCompat.Files (isRegularFile, deviceID)
@@ -166,8 +167,11 @@ directorySetup _ mu _ c gc = do
 {- Locations to try to access a given Key in the directory.
  - We try more than one since we used to write to different hash
  - directories. -}
-locations :: RawFilePath -> Key -> [RawFilePath]
-locations d k = map (d P.</>) (keyPaths k)
+locations :: RawFilePath -> Key -> NE.NonEmpty RawFilePath
+locations d k = NE.map (d P.</>) (keyPaths k)
+
+locations' :: RawFilePath -> Key -> [RawFilePath]
+locations' d k = NE.toList (locations d k)
 
 {- Returns the location off a Key in the directory. If the key is
  - present, returns the location that is actually used, otherwise
@@ -175,8 +179,9 @@ locations d k = map (d P.</>) (keyPaths k)
 getLocation :: RawFilePath -> Key -> IO RawFilePath
 getLocation d k = do
 	let locs = locations d k
-	fromMaybe (Prelude.head locs)
-		<$> firstM (doesFileExist . fromRawFilePath) locs
+	fromMaybe (NE.head locs)
+		<$> firstM (doesFileExist . fromRawFilePath)
+			(NE.toList locs)
 
 {- Directory where the file(s) for a key are stored. -}
 storeDir :: RawFilePath -> Key -> RawFilePath
@@ -246,7 +251,7 @@ finalizeStoreGeneric d tmp dest = do
 	dest' = fromRawFilePath dest
 
 retrieveKeyFileM :: RawFilePath -> ChunkConfig -> CopyCoWTried -> Retriever
-retrieveKeyFileM d (LegacyChunks _) _ = Legacy.retrieve locations d
+retrieveKeyFileM d (LegacyChunks _) _ = Legacy.retrieve locations' d
 retrieveKeyFileM d NoChunks cow = fileRetriever' $ \dest k p iv -> do
 	src <- liftIO $ fromRawFilePath <$> getLocation d k
 	void $ liftIO $ fileCopier cow src (fromRawFilePath dest) p iv
@@ -311,8 +316,8 @@ removeDirGeneric removeemptyparents topdir dir = do
 		goparents (upFrom subdir) =<< tryIO (removeDirectory d)
 
 checkPresentM :: RawFilePath -> ChunkConfig -> CheckPresent
-checkPresentM d (LegacyChunks _) k = Legacy.checkKey d locations k
-checkPresentM d _ k = checkPresentGeneric d (locations d k)
+checkPresentM d (LegacyChunks _) k = Legacy.checkKey d locations' k
+checkPresentM d _ k = checkPresentGeneric d (locations' d k)
 
 checkPresentGeneric :: RawFilePath -> [RawFilePath] -> Annex Bool
 checkPresentGeneric d ps = checkPresentGeneric' d $

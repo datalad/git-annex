@@ -118,6 +118,7 @@ module Annex.Locations (
 
 import Data.Char
 import Data.Default
+import qualified Data.List.NonEmpty as NE
 import qualified Data.ByteString.Char8 as S8
 import qualified System.FilePath.ByteString as P
 
@@ -775,5 +776,5 @@ keyPath key hasher = hasher key P.</> f P.</> f
  - This is compatible with the annexLocationsNonBare and annexLocationsBare,
  - for interoperability between special remotes and git-annex repos.
  -}
-keyPaths :: Key -> [RawFilePath]
-keyPaths key = map (\h -> keyPath key (h def)) dirHashes
+keyPaths :: Key -> NE.NonEmpty RawFilePath
+keyPaths key = NE.map (\h -> keyPath key (h def)) dirHashes

@@ -307,7 +307,7 @@ bup2GitRemote r
 	| otherwise = Git.Construct.fromUrl $ "ssh://" ++ host ++ slash dir
   where
 	bits = splitc ':' r
-	host = Prelude.head bits
+	host = fromMaybe "" $ headMaybe bits
 	dir = intercalate ":" $ drop 1 bits
 	-- "host:~user/dir" is not supported specially by bup;
 	-- "host:dir" is relative to the home directory;

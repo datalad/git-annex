@@ -9,10 +9,12 @@ module Assistant.Gpg where
 
 import Utility.Gpg
 import Utility.UserInfo
+import Utility.PartialPrelude
 import Types.Remote (RemoteConfigField)
 import Annex.SpecialRemote.Config
 import Types.ProposedAccepted
 
+import Data.Maybe
 import qualified Data.Map as M
 import Control.Applicative
 import Prelude
@@ -23,10 +25,11 @@ newUserId cmd = do
 	oldkeys <- secretKeys cmd
 	username <- either (const "unknown") id <$> myUserName
 	let basekeyname = username ++ "'s git-annex encryption key"
-	return $ Prelude.head $ filter (\n -> M.null $ M.filter (== n) oldkeys)
-		( basekeyname
-		: map (\n -> basekeyname ++ show n) ([2..] :: [Int])
-		)
+	return $ fromMaybe (error "internal") $ headMaybe $
+		filter (\n -> M.null $ M.filter (== n) oldkeys)
+			( basekeyname
+			: map (\n -> basekeyname ++ show n) ([2..] :: [Int])
+			)
 
 data EnableEncryption = HybridEncryption | SharedEncryption | NoEncryption
 	deriving (Eq)

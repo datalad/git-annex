@@ -51,6 +51,7 @@ import Annex.Verify
 import qualified Utility.RawFilePath as R
 
 import qualified Data.Map as M
+import qualified Data.List.NonEmpty as NE
 
 remote :: RemoteType
 remote = specialRemoteType $ RemoteType
@@ -222,7 +223,7 @@ rsyncSetup _ mu _ c gc = do
 store :: RsyncOpts -> Key -> FilePath -> MeterUpdate -> Annex ()
 store o k src meterupdate = storeGeneric o meterupdate basedest populatedest
   where
-	basedest = fromRawFilePath $ Prelude.head (keyPaths k)
+	basedest = fromRawFilePath $ NE.head (keyPaths k)
 	populatedest dest = liftIO $ if canrename
 		then do
 			R.rename (toRawFilePath src) (toRawFilePath dest)

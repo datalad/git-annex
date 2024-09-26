@@ -1,4 +1,4 @@
-{- git-annex file locations
+{- git-annex object file locations
  -
  - Copyright 2010-2019 Joey Hess <id@joeyh.name>
  -
@@ -19,6 +19,7 @@ module Annex.DirHashes (
 
 import Data.Default
 import Data.Bits
+import qualified Data.List.NonEmpty as NE
 import qualified Data.ByteArray as BA
 import qualified Data.ByteArray.Encoding as BA
 import qualified Data.ByteString as S
@@ -60,8 +61,8 @@ branchHashDir = hashDirLower . branchHashLevels
  - To support that, some git-annex repositories use the lower case-hash.
  - All special remotes use the lower-case hash for new data, but old data
  - may still use the mixed case hash. -}
-dirHashes :: [HashLevels -> Hasher]
-dirHashes = [hashDirLower, hashDirMixed]
+dirHashes :: NE.NonEmpty (HashLevels -> Hasher)
+dirHashes = hashDirLower NE.:| [hashDirMixed]
 
 hashDirs :: HashLevels -> Int -> S.ByteString -> RawFilePath
 hashDirs (HashLevels 1) sz s = P.addTrailingPathSeparator $ S.take sz s

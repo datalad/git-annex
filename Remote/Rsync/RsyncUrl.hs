@@ -22,6 +22,7 @@ import Utility.Split
 
 import Data.Default
 import System.FilePath.Posix
+import qualified Data.List.NonEmpty as NE
 
 type RsyncUrl = String
 
@@ -42,7 +43,7 @@ mkRsyncUrl :: RsyncOpts -> FilePath -> RsyncUrl
 mkRsyncUrl o f = rsyncUrl o </> rsyncEscape o f
 
 rsyncUrls :: RsyncOpts -> Key -> [RsyncUrl]
-rsyncUrls o k = map use dirHashes
+rsyncUrls o k = map use (NE.toList dirHashes)
   where
 	use h = rsyncUrl o </> hash h </> rsyncEscape o (f </> f)
 	f = fromRawFilePath (keyFile k)
