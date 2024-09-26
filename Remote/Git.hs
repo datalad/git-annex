@@ -72,6 +72,7 @@ import Messages.Progress
 import Control.Concurrent
 import qualified Data.Map as M
 import qualified Data.Set as S
+import qualified Data.List.NonEmpty as NE
 import qualified Data.ByteString as B
 import qualified Utility.RawFilePath as R
 import Network.URI
@@ -937,7 +938,7 @@ listProxied proxies rs = concat <$> mapM go rs
 				Git.fullconfig r
 			in r 
 				{ Git.remoteName = Just proxyname
-				, Git.config = M.map Prelude.head c
+				, Git.config = M.map NE.head c
 				, Git.fullconfig = c
 				}
 		
@@ -948,19 +949,19 @@ listProxied proxies rs = concat <$> mapM go rs
 				adjustclusternode clusters $
 				inheritconfigs $ Git.fullconfig r'
 			in r'
-				{ Git.config = M.map Prelude.head c
+				{ Git.config = M.map NE.head c
 				, Git.fullconfig = c
 				}
 
-		adduuid ck = M.insert ck
-			[Git.ConfigValue $ fromUUID $ proxyRemoteUUID p]
+		adduuid ck = M.insert ck $ NE.singleton $
+			Git.ConfigValue $ fromUUID $ proxyRemoteUUID p
 
-		addurl = M.insert (mkRemoteConfigKey renamedr (remoteGitConfigKey UrlField))
-			[Git.ConfigValue $ encodeBS $ Git.repoLocation r]
+		addurl = M.insert (mkRemoteConfigKey renamedr (remoteGitConfigKey UrlField)) $
+			NE.singleton $ Git.ConfigValue $ encodeBS $ Git.repoLocation r
 		
 		addproxiedby = case remoteAnnexUUID gc of
 			Just u -> addremoteannexfield ProxiedByField
-				[Git.ConfigValue $ fromUUID u]
+				(Git.ConfigValue $ fromUUID u)
 			Nothing -> id
 		
 		-- A node of a cluster that is being proxied along with
@@ -975,15 +976,16 @@ listProxied proxies rs = concat <$> mapM go rs
 				Just cs
 					| any (\c -> S.member (fromClusterUUID c) proxieduuids) (S.toList cs) ->
 						addremoteannexfield SyncField
-							[Git.ConfigValue $ Git.Config.boolConfig' False]
+							(Git.ConfigValue $ Git.Config.boolConfig' False)
 						. addremoteannexfield CostField 
-							[Git.ConfigValue $ encodeBS $ show $ defaultRepoCost r + 0.1]
+							(Git.ConfigValue $ encodeBS $ show $ defaultRepoCost r + 0.1)
 				_ -> id
 
 		proxieduuids = S.map proxyRemoteUUID proxied
 
 		addremoteannexfield f = M.insert
-			(mkRemoteConfigKey renamedr (remoteGitConfigKey f))
+			(mkRemoteConfigKey renamedr (remoteGitConfigKey f)) 
+			. NE.singleton
 
 		inheritconfigs c = foldl' inheritconfig c proxyInheritedFields
 		

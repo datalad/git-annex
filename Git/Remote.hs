@@ -19,6 +19,7 @@ import Data.Char
 import qualified Data.Map as M
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Char8 as S8
+import qualified Data.List.NonEmpty as NE
 import Network.URI
 #ifdef mingw32_HOST_OS
 import Git.FilePath
@@ -117,7 +118,7 @@ parseRemoteLocation s knownurl repo = go
 			(_, NoConfigValue) -> False
 		filterconfig f = filter f $
 			concatMap splitconfigs $ M.toList $ fullconfig repo
-		splitconfigs (k, vs) = map (\v -> (k, v)) vs
+		splitconfigs (k, vs) = map (\v -> (k, v)) (NE.toList vs)
 		(prefix, suffix) = ("url." , ".insteadof")
 	-- git supports URIs that contain unescaped characters such as
 	-- spaces. So to test if it's a (git) URI, escape those.

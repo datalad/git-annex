@@ -12,6 +12,7 @@ module Git.Config where
 import qualified Data.Map as M
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Char8 as S8
+import qualified Data.List.NonEmpty as NE
 import Data.Char
 import qualified System.FilePath.ByteString as P
 import Control.Concurrent.Async
@@ -31,7 +32,7 @@ get key fallback repo = M.findWithDefault fallback key (config repo)
 
 {- Returns a list of values. -}
 getList :: ConfigKey -> Repo -> [ConfigValue]
-getList key repo = M.findWithDefault [] key (fullconfig repo)
+getList key repo = maybe [] NE.toList $ M.lookup key (fullconfig repo)
 
 {- Returns a single git config setting, if set. -}
 getMaybe :: ConfigKey -> Repo -> Maybe ConfigValue
@@ -118,7 +119,8 @@ hRead repo st h = do
 	val <- S.hGetContents h
 	let c = parse val st
 	debug (DebugSource "Git.Config") $ "git config read: " ++
-		show (map (\(k, v) -> (show k, map show v)) (M.toList c))
+		show (map (\(k, v) -> (show k, map show (NE.toList v))) 
+			(M.toList c))
 	storeParsed c repo
 
 {- Stores a git config into a Repo, returning the new version of the Repo.
@@ -128,10 +130,10 @@ hRead repo st h = do
 store :: S.ByteString -> ConfigStyle -> Repo -> IO Repo
 store s st = storeParsed (parse s st)
 
-storeParsed :: M.Map ConfigKey [ConfigValue] -> Repo -> IO Repo
+storeParsed :: M.Map ConfigKey (NE.NonEmpty ConfigValue) -> Repo -> IO Repo
 storeParsed c repo = updateLocation $ repo
-	{ config = (M.map Prelude.head c) `M.union` config repo
-	, fullconfig = M.unionWith (++) c (fullconfig repo)
+	{ config = (M.map NE.head c) `M.union` config repo
+	, fullconfig = M.unionWith (<>) c (fullconfig repo)
 	}
 
 {- Stores a single config setting in a Repo, returning the new version of
@@ -139,7 +141,8 @@ storeParsed c repo = updateLocation $ repo
 store' :: ConfigKey -> ConfigValue -> Repo -> Repo
 store' k v repo = repo
 	{ config = M.singleton k v `M.union` config repo
-	, fullconfig = M.unionWith (++) (M.singleton k [v]) (fullconfig repo)
+	, fullconfig = M.unionWith (<>) (M.singleton k (NE.singleton v))
+		(fullconfig repo)
 	}
 
 {- Updates the location of a repo, based on its configuration.
@@ -191,7 +194,7 @@ data ConfigStyle = ConfigList | ConfigNullList
 
 {- Parses git config --list or git config --null --list output into a
  - config map. -}
-parse :: S.ByteString -> ConfigStyle -> M.Map ConfigKey [ConfigValue]
+parse :: S.ByteString -> ConfigStyle -> M.Map ConfigKey (NE.NonEmpty ConfigValue)
 parse s st
 	| S.null s = M.empty
 	| otherwise = case st of
@@ -201,8 +204,8 @@ parse s st
 	nl = fromIntegral (ord '\n')
 	eq = fromIntegral (ord '=')
 
-	sep c = M.fromListWith (++)
-		. map (\(k,v) -> (ConfigKey k, [mkval v])) 
+	sep c = M.fromListWith (<>)
+		. map (\(k,v) -> (ConfigKey k, (NE.singleton (mkval v))) )
 		. map (S.break (== c))
 	
 	mkval v 

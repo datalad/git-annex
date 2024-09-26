@@ -14,6 +14,7 @@ import Data.String
 import Data.Default
 import qualified Data.Map as M
 import qualified Data.ByteString as S
+import qualified Data.List.NonEmpty as NE
 import System.Posix.Types
 import Utility.SafeCommand
 import Utility.FileSystemEncoding
@@ -42,7 +43,7 @@ data Repo = Repo
 	{ location :: RepoLocation
 	, config :: M.Map ConfigKey ConfigValue
 	-- a given git config key can actually have multiple values
-	, fullconfig :: M.Map ConfigKey [ConfigValue]
+	, fullconfig :: M.Map ConfigKey (NE.NonEmpty ConfigValue)
 	-- remoteName holds the name used for this repo in some other
 	-- repo's list of remotes, when this repo is such a remote
 	, remoteName :: Maybe RemoteName
