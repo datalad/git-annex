@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="mike@2d6d71f56ce2a992244350475251df87c26fe351"
+ nickname="mike"
+ avatar="http://cdn.libravatar.org/avatar/183fa439752e2f0c6f39ede658d81050"
+ subject="corruption using git-annex-remote-rclone"
+ date="2024-09-27T12:18:41Z"
+ content="""
+Perhaps Joey can help me out here a bit with some background knowledge:
+
+I've been seeing sporadic corruption with this setup: 
+
+* chunking 
+* encryption 
+* old helper program git-annex-remote-rclone 
+* rclone's pcloud backend
+
+As it seems, rclone keeps partial files under the name of the full file when a transfer is interrupted, for the pcloud backend. (This is for rclone <= 1.67.0; 1.68.0 has changes for pcloud, which may fix this.) My theory how the corruption might have happened:
+
+* First interrupted run of git-annex uploads chunks A and a partial(!) chunk B
+* Second run skips chunks A and B(!); and proceedsto upload the rest of the chunks (C and D)
+* At the end we have uploaded A, C and D and a corrupted/partial chunk B
+
+Joey: Is this a possible error scenario?
+
+"""]]
