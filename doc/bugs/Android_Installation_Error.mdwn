@@ -1,0 +1,30 @@
+### Please describe the problem.
+
+When attempting to install git-annex in Termux on an Android device, the following error is received:
+
+    Running on Android.. Tuning for optimal behavior.
+    sed: can't read /data/data/com.termux/files/home/git-annex.linux/git-remote-annex: No such file or directory
+
+The installation fails and git-annex cannot be run.
+
+### What steps will reproduce the problem?
+
+Following the instructions found at <https://git-annex.branchable.com/Android/>:
+
+    pkg install wget
+    wget https://git-annex.branchable.com/install/Android/git-annex-install
+    source git-annex-install
+
+### What version of git-annex are you using? On what operating system?
+
+* git-annex: I have tried both the latest and the nightly builds of arm64 ancient as of 2024-09-30.
+* Android 14
+* Termux 0.118.1
+
+### Please provide any additional information below.
+
+I have tried downloading the `.tar.gz` file and extracting it manually. Inside I find the file `git-remote-annex`.  I then run `./runshell`, receive the error above, and when I `ls` the directory, I find that the file `git-remote-annex` is missing from the folder.  This seems to be a case of the file being moved by the installer before it can be modified by `sed`.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Works great on all of my Fedora, Ubuntu, and Rocky machines!
