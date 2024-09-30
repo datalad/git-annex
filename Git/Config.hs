@@ -141,7 +141,7 @@ storeParsed c repo = updateLocation $ repo
 store' :: ConfigKey -> ConfigValue -> Repo -> Repo
 store' k v repo = repo
 	{ config = M.singleton k v `M.union` config repo
-	, fullconfig = M.unionWith (<>) (M.singleton k (NE.singleton v))
+	, fullconfig = M.unionWith (<>) (M.singleton k (v NE.:| []))
 		(fullconfig repo)
 	}
 
@@ -205,7 +205,7 @@ parse s st
 	eq = fromIntegral (ord '=')
 
 	sep c = M.fromListWith (<>)
-		. map (\(k,v) -> (ConfigKey k, (NE.singleton (mkval v))) )
+		. map (\(k,v) -> (ConfigKey k, mkval v NE.:| []))
 		. map (S.break (== c))
 	
 	mkval v 

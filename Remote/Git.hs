@@ -953,11 +953,13 @@ listProxied proxies rs = concat <$> mapM go rs
 				, Git.fullconfig = c
 				}
 
-		adduuid ck = M.insert ck $ NE.singleton $
-			Git.ConfigValue $ fromUUID $ proxyRemoteUUID p
+		adduuid ck = M.insert ck $ 
+			(Git.ConfigValue $ fromUUID $ proxyRemoteUUID p)
+				NE.:| []
 
 		addurl = M.insert (mkRemoteConfigKey renamedr (remoteGitConfigKey UrlField)) $
-			NE.singleton $ Git.ConfigValue $ encodeBS $ Git.repoLocation r
+			(Git.ConfigValue $ encodeBS $ Git.repoLocation r)
+				NE.:| []
 		
 		addproxiedby = case remoteAnnexUUID gc of
 			Just u -> addremoteannexfield ProxiedByField
@@ -985,7 +987,7 @@ listProxied proxies rs = concat <$> mapM go rs
 
 		addremoteannexfield f = M.insert
 			(mkRemoteConfigKey renamedr (remoteGitConfigKey f)) 
-			. NE.singleton
+			. (\v -> v NE.:| [])
 
 		inheritconfigs c = foldl' inheritconfig c proxyInheritedFields
 		
