@@ -66,7 +66,7 @@ startsim' simfile = do
 		giveup "A sim was previously started. Use `git-annex sim end` to stop it before starting a new one."
 	
 	showLongNote $ UnquotedString "Sim started."
-	rng <- fst . random <$> getStdGen
+	rng <- liftIO $ fst . random <$> getStdGen
 	let st = emptySimState rng simdir
 	case simfile of
 		Nothing -> startup simdir st []
