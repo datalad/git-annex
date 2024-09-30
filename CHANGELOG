@@ -12,7 +12,7 @@ git-annex (10.20240927) upstream; urgency=medium
     and see how preferred content and other configuration makes file
     content flow through it.
 
- -- Joey Hess <id@joeyh.name>  Wed, 25 Sep 2024 14:43:26 -0400
+ -- Joey Hess <id@joeyh.name>  Mon, 30 Sep 2024 19:15:35 -0400
 
 git-annex (10.20240831) upstream; urgency=medium
 
