@@ -1,0 +1,3 @@
+For p2phttp support in forgejo-aneksajo I decided to just spawn a `git annex p2phttp --wideopen` server, do authentication on the Forgejo side, and then proxy requests to p2phttp. Since p2phttp only supports serving one repository at the moment this means that I have to allocate one free port per repository. Actually finding a free port adds complexity and a race condition, as there also seems to be no way to set `--port 0` for p2phttp and then figure out which port it bound to.
+
+This would be simplified if p2phttp could listen on unix domain sockets instead.
