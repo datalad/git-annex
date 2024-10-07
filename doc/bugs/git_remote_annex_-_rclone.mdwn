@@ -28,7 +28,7 @@ git-annex: unable to use special remote due to protocol error
 
 This might be a fairly innocuous bug relating to the order of steps the helper takes to perform checks of the remote. However, it does raise some interesting questions about the compatibility of the helper with more complex remotes like rclone:
 
-- Can the helper support non-`lower` rclonelayouts? (`nodir` in particular)?
+- Can the helper support non-`directory` rclonelayouts? (`nodir` or `lower` in particular)?
 - Are the remaining rclone options not shown in the URL (and neither shown by e.g. `git annex info`) inherited from the `remote.log` or part of the bug here?
 - Could spaces in the `rcloneprefix` (path) affect the URL specification?
 
@@ -36,8 +36,6 @@ This might be a fairly innocuous bug relating to the order of steps the helper t
 
 1. Init an rclone remote using --with-url (technically I just added annex:: as url to an existing remote)
 1. Try simple operations like `git remote show <rclone remote>`
-1. I think it tries to seek the manifest file in an undefined point in the protocol leading to the error
-1. I wonder if the rclone remote layout affects the usability of this, although mine is set to lower for now to maintain compatibility
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
