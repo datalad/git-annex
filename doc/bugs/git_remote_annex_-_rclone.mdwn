@@ -30,6 +30,7 @@ This might be a fairly innocuous bug relating to the order of steps the helper t
 
 - Can the helper support non-`lower` rclonelayouts? (`nodir` in particular)?
 - Are the remaining rclone options not shown in the URL (and neither shown by e.g. `git annex info`) inherited from the `remote.log` or part of the bug here?
+- Could spaces in the `rcloneprefix` (path) affect the URL specification?
 
 ### What steps will reproduce the problem?
 
