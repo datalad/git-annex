@@ -364,6 +364,10 @@ remote to the usual temp object file on the proxy, but without moving that
 to the annex object file at the end. As the temp object file grows, stream
 the content out via the proxy. 
 
+> This needs the same process to read and write the same file, which is
+> disallowed in Haskell (without going lowlevel in a way that seems
+> difficult).
+
 Some special remotes will overwrite or truncate an existing temp object
 file when starting a download. So the proxy should wait until the file is
 growing to start streaming it.
@@ -382,6 +386,20 @@ a way to indicate when a special remote writes out of order. And don't
 stream downloads from such special remotes. So there will be a perhaps long
 delay before the client sees their download start. Extend the P2P protocol
 with a way to send pre-download progress perhaps?
+
+> That seems pretty complicated. Alternatively, require that
+> retrieveKeyFile only writes to the file in-order. Even the bittorrent
+> special remote currently does, since it waits for the bittorrent download
+> to complete before moving the file to the destination. All other
+> special remotes built into git-annex are ok as well. 
+> 
+> Possibly some external special remote does not (eg maybe rclone in some
+> situation)?
+> 
+> This could be handled with a special remote protocol extension that asks
+> the special remote to confirm if it retrieves in order. When a special
+> remote does not support that extension, Remote.External can just download
+> to a temp file and rename after download.
 
 A simple approach for proxying uploads is to buffer the upload to the temp
 object file, and once it's complete (and hash verified), send it on to the
@@ -411,6 +429,16 @@ object from a special remote. If a download is already in progress,
 another process could open the temp file and stream it out to its client.
 But how to detect when the whole content has been received? Could check key
 size, but what about unsized keys? 
+
+## special remotes using P2P protocol
+
+Another way to handle proxying to special remotes would be to make some
+special remotes speak the P2P protocol. Then the proxy can just proxy P2P
+protocol to them the same as it does to git-annex remotes.
+
+The difficulty with this though is that encryption and chunking are
+implemented as transformations of special remotes, and would need to be
+re-implemented on top of the P2P protocol.
 
 ## chunking
 

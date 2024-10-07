@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2024-10-07T17:57:05Z"
+ content="""
+Strictly speaking it's possible to do better than `git-annex copy --from --to` currently does.
+
+When git-annex is used as a proxy to a P2P remote, it streams the P2P
+protocol from client to remote, and so needs no temp files.
+
+So in a way, the P2P protocol is the real solution to this? Except special
+remote don't use the P2P protocol.
+"""]]
