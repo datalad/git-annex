@@ -28,7 +28,6 @@ Planned schedule of work:
 
 ## work notes
 
-* Currently working in [[todo/proving_preferred_content_behavior]].
 
 ## completed items for September's work on proving behavior of preferred content
 
