@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="annex@9cc004f218c318a28099ff2645959be0fcbc6d94"
+ nickname="annex"
+ avatar="http://cdn.libravatar.org/avatar/18c7af44d49b8f2e318b49d6026c84fb"
+ subject="Support for importtree"
+ date="2024-10-09T06:42:40Z"
+ content="""
+What's the reason for not supporting importtree via webdav?
+
+Would be nice to keep a tree in sync on my nextcloud and sync to my phone etc.
+"""]]
