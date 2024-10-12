@@ -1,0 +1,48 @@
+Related to [git-remote-annex](https://git-annex.branchable.com/tips/storing_a_git_repository_on_any_special_remote/) development.
+
+Special Remote type: [rclone (dropbox)](https://git-annex.branchable.com/special_remotes/rclone/)
+
+Implementation (brew, OSX):
+
+[[!format txt """
+git-annex version: 10.20240927
+build flags: Assistant Webapp Pairing FsEvents TorrentParser MagicMime Servant Benchmark Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.24.2 bloomfilter-2.0.1.2 crypton-1.0.0 DAV-1.3.4 feed-1.3.2.1 ghc-9.8.2 http-client-0.7.17 persistent-sqlite-2.13.3.0 torrent-10000.1.3 uuid-1.3.16 yesod-1.6.2.1
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL GITBUNDLE GITMANIFEST VURL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg rclone hook external
+operating system: darwin aarch64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
+local repository version: 10
+"""]]
+
+# Protocol Error on Git Remote Annex
+
+My rclone remote is producing the following error on attempting to treat the special remote as a git remote
+
+[[!format txt """
+Full remote url: annex::1eb4e389-9aea-4968-a947-498fd52645e0?chunk=10MiB&encryption=none&type=rclone
+  external special remote protocol error, unexpectedly received "CHECKPRESENT-FAILURE GITMANIFEST--1eb4e389-9aea-4968-a947-498fd52645e0" (command not allowed at this time)
+git-annex: unable to use special remote due to protocol error
+"""]]
+
+This might be a fairly innocuous bug relating to the order of steps the helper takes to perform checks of the remote. However, it does raise some interesting questions about the compatibility of the helper with more complex remotes like rclone:
+
+- Can the helper support non-`directory` rclonelayouts? (`nodir` or `lower` in particular)?
+- Are the remaining rclone options not shown in the URL (and neither shown by e.g. `git annex info`) inherited from the `remote.log` or part of the bug here?
+- Could spaces in the `rcloneprefix` (path) affect the URL specification?
+
+### What steps will reproduce the problem?
+
+1. Init an rclone remote using --with-url (technically I just added annex:: as url to an existing remote)
+1. Try simple operations like `git remote show <rclone remote>`
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I'm slowly integrating it into everything I do because it's so cool. Right now, I'm trying to solve the problem of keeping personal info private and thus not uploading git repos to an insecure place like github.com. For now I'm exploring using cloud storages - I use Dropbox almost exclusively - to store the repos. I've tried:
+
+- [`git-remote-rclone`](https://github.com/datalad/git-remote-rclone) (Datalad's version or Redstreet's `tar.gz` implementation). Syncing is a little fragile (may need to delete `.git/rclone` to refresh corrupt syncs, but also irreparably breaks if you do any forgetting on the annex branch or history rewriting (new tip fails to contain commits the helper expects and there's no force push option)
+- [`git-remote-dropbox`](https://github.com/anishathalye/git-remote-dropbox) Incredibly slow for having to upload each and every object individually and the upload API for dropbox is slow.
+- git-remote-annex - Seems incredibly promising despite issues I've had getting it to install (see below) let alone work quite yet
+
+Also, if anyone is having issue using git-remote-annex, like I did running on OSX installed via homebrew, the solution is to add a symlink manually from (e.g.) `$(realpath /opt/homebrew/bin/git-annex[-shell]) <- /opt/homebrew/bin/git-remote-annex`. In other words, the current homebrew recipe simply doesn't symlink the git-annex command to git-remote-annex on your path, which git annex automagically act like a git remote helper if called like this so luckily it's an easy fix.

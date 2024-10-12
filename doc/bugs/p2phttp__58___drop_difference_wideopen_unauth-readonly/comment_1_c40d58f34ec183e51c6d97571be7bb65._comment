@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/59541f50d845e5f81aff06e88a38b9de"
+ subject="comment 1"
+ date="2024-10-07T14:12:23Z"
+ content="""
+This bug report might have been a bit prematurely, I just noticed that p2phttp returns a 403 for the file locking endpoints in the case of unauth-readonly, while my forgejo-aneksajo implementation returns a 401. This seems to make git-annex prompt for a password instead of falling back to just checking presence.
+"""]]

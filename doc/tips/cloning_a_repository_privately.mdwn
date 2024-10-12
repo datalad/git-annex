@@ -48,8 +48,14 @@ recover any files stored in it.
 When the git config "remote.name.private" is set, git-annex will avoid
 recording anything in the git-annex branch about the remote. This is
 set by `git-annex initremote --private`, and could also be set for
-git remotes. This could be useful, perhaps. Update this tip if you have a
-good way to use it.
+git remotes. This may be useful if, for example, you are trying to deduplicate content,
+bifurcate repositories, or reinject it using a temporary annex as a staging area.
+Git annex is excellent for these tasks because it naturally hashes all file content,
+therefore if a 'copy' appears in one repo that should belong in another, you can drop
+its content or move it to deduplicate. However, in this case, git-annex logging a relationship
+between the two repos is undesirable. Especially if the repos are otherwise unrelated or
+one of them is temporary (to be deleted once emptied), `remote.private` is preferrable to declaring
+the repo dead and doing a `forget --drop-dead --force` operation.
 
 ## where the data is actually stored
 

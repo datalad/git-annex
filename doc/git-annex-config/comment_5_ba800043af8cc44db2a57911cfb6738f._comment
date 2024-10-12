@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="Spencer"
+ avatar="http://cdn.libravatar.org/avatar/2e0829f36a68480155e09d0883794a55"
+ subject="[FR] Remote Settings for All Clones"
+ date="2024-10-09T23:10:17Z"
+ content="""
+I'd like to set a few additional configurations so that all clones treat a special remote similarly.
+
+Particularly I'd like to set the trustlevel and tracking-branch for an exporttree special remote so that any clone that enables this remote also have these configurations enabled.
+In particular this is justified for a certain remote of mine because it exports to a version controlled environment that I trust, so it would just be nice not to have to run `git config remote.name.annex-tracking-branch` and `git annex trust name semitrusted` for every clone.
+
+Of course, are `git annex config --set remote.name.annex-trustlevel \"semitrusted\"` and `git annex config --set remote.name.annex-tracking-branch \"main\"` (called once) any easier than the above called multiple times? Maybe not, but it would be slightly less mental overhead to not do the above.
+
+Off hand can you imagine any caveats that would preclude adding these settings to the list of supported for this command? I agree that only some make sense for all clones to see rather than anything one can set in git config but of course that specification requires manual addition of config cases that do make sense. Maybe this is one of them.
+"""]]

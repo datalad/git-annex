@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="Spencer"
+ avatar="http://cdn.libravatar.org/avatar/2e0829f36a68480155e09d0883794a55"
+ subject="How to Clone?"
+ date="2024-10-07T20:00:24Z"
+ content="""
+To access the manifest and bundles, one needs the UUID of the special remote initially configured. Then one can run
+
+[[!format sh \"\"\"
+git clone 'annex::<UUID>?type=directory&encryption=none&directory=/path/to/space%20sanitized%20directory'
+\"\"\"]]
+
+A bit tedious for both the need to type all settings (even those not shown by the remote helper when doing the push operations from the initial repo, in this case the directory, in other cases all required settings to init the remote in the first place) and for having to HTML sanitize any URL disallowed characters. But doable
+
+The other option would be to manually clone by initializing the new empty repo, then adding the special remote the normal git annex way. This doesn't work right just yet because `--uuid` is not an allowed option for `initremote`. It would be nice if this were an option simply to avoid the tedium of typing the URL as above (one could copy and paste `git --no-pager show git-annex:remote.log` into `initremote`)
+
+Despite the URL tedium, an exciting result of the current system is that *any number* of repos and file annexes can share one directory! Like an entire organization (or repo group) in one folder. Datalad has a similar archetype (remote indexed archives) which offer (slightly) improved user friendliness by filing each repo UUID into meaningfully-named folders (unhashed first three/remaining is nice for being actually the UUID but it still doesn't let me easily copy/paste the UUID for cloning). Although I kind of like how git-annex's implementation encourages a single unified \"annex\" (rather than RIA's `UUID/Annex`which gives each UUID a separate annex) and of course bundles over loose git files, especially for cloud special remotes which can be slow to upload each and every loose file.
+
+Looking forward to seeing how this feature develops!
+"""]]

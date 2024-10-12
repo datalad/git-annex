@@ -1,0 +1,6 @@
+From my experimentation it seems to be that git-annex does not discover the `annex.url` config after the initial clone of a repository. There are at least two situations in which this would be useful though:
+
+1. If the server-side supports p2phttp, but the repository is cloned with an older version of git-annex that doesn't, the annexurl won't be picked up even if the client-side git-annex is later updated to a version that does support p2phttp.
+2. Likewise, if the server-side initially didn't support p2phttp and didn't set `annex.url` when the repository was cloned, but is later updated to support it, git-annex doesn't automatically pick up this change.
+
+This automatic discovery would be nice for p2phttp support in forgejo-aneksajo, as existing clones could automatically start making use of it as soon as the instance is updated to support it on the server-side and the git-annex version is updated to be recent enough on the client-side.
