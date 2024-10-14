@@ -58,13 +58,16 @@ jobs:
         run: |
           # use if decide to get most recent release of singularity
           # release="$(gh api --jq .tag_name repos/sylabs/singularity/releases/latest)"
-          release="v3.10.4"
+          release="v4.1.4"
           codename="$(lsb_release -cs)"
           arch="$(dpkg --print-architecture)"
           cd /tmp
+          sudo apt-get install libfuse2t64
           wget -O singularity-ce.deb https://github.com/sylabs/singularity/releases/download/$release/singularity-ce_${release#v}-${codename}_$arch.deb
-          sudo dpkg -i singularity-ce.deb
+          sudo dpkg -i singularity-ce.deb || :
           sudo apt-get install -f
+          # Verify that singularity functions since might have failed before
+          singularity --version
 
       - name: Determine git-annex ref to build
         run: |
