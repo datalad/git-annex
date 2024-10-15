@@ -59,6 +59,7 @@ chainGen addr r u rc gc rs = do
 		, name = Git.repoDescribe r
 		, storeKey = store u gc protorunner
 		, retrieveKeyFile = retrieve gc protorunner
+		, retrieveKeyFileInOrder = pure True
 		, retrieveKeyFileCheap = Nothing
 		, retrievalSecurityPolicy = RetrievalAllKeysSecure
 		, removeKey = remove u protorunner

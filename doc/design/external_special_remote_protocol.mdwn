@@ -55,8 +55,8 @@ any extensions it wants to use.
 
 Next, git-annex will generally send a message telling the special
 remote to start up. (Or it might send an INITREMOTE or EXPORTSUPPORTED or
-LISTCONFIGS, or perhaps other things in the future, so don't hardcode this
-order.)
+LISTCONFIGS, or perhaps other things in the future, so don't
+hardcode this order.)
 
 	PREPARE
 
@@ -118,7 +118,7 @@ The following requests *must* all be supported by the special remote.
 * `PREPARE`  
   Tells the remote that it's time to prepare itself to be used.  
   Only a few requests for details about the remote can come before this
-  (EXTENSIONS, INITREMOTE, EXPORTSUPPORTED, and LISTCONFIGS,
+  (EXTENSIONS, INITREMOTE, EXPORTSUPPORTED and LISTCONFIGS,
   but others may be added later).
   * `PREPARE-SUCCESS`  
     Sent as a response to PREPARE once the special remote is ready for use.
@@ -203,6 +203,15 @@ the special remote can reply with `UNSUPPORTED-REQUEST`.
   (See Config/Cost.hs for some standard costs.)
   * `COST Int`  
     Indicates the cost of the remote.
+* `GETORDERED`  
+  Asks the remote if it will always write files in order when performing a
+  `TRANSFER RETRIEVE`. Writing in order lets a proxy stream content from
+  the remote. When this is not implemented, git-annex assumes the
+  remote may write parts of the file out of order.
+  * `ORDERED`
+    Indicates that files are written in order.
+  * `UNORDERED`
+    Indicates that files are not written in order.
 * `GETAVAILABILITY`  
   Asks the remote if it is locally or globally available.
   (Ie stored in the cloud vs on a local disk.)  
@@ -221,6 +230,8 @@ the special remote can reply with `UNSUPPORTED-REQUEST`.
     trying to use the remote.  
     Older versions of git-annex do not support this response, so avoid
     sending it unless the `UNAVAILABLERESPONSE` extension is enabled.
+* `ORDERED`
+  
 * `CLAIMURL Url`  
   Asks the remote if it wishes to claim responsibility for downloading
   an url.

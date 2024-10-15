@@ -68,7 +68,7 @@ gen rt externalprogram r u rc gc rs
 	| externalprogram' == ExternalType "readonly" = do
 		c <- parsedRemoteConfig remote rc
 		cst <- remoteCost gc c expensiveRemoteCost
-		let rmt = mk c cst (pure GloballyAvailable)
+		let rmt = mk c cst (pure True) (pure GloballyAvailable)
 			Nothing
 			(externalInfo externalprogram')
 			Nothing
@@ -105,7 +105,9 @@ gen rt externalprogram r u rc gc rs
 		let cheapexportsupported = if exportsupported
 			then exportIsSupported
 			else exportUnsupported
-		let rmt = mk c cst (getAvailability external)
+		let rmt = mk c cst
+			(getOrdered external)
+			(getAvailability external)
 			(Just (whereisKeyM external))
 			(getInfoM external)
 			(Just (claimUrlM external))
@@ -119,13 +121,14 @@ gen rt externalprogram r u rc gc rs
 			(checkPresentM external)
 			rmt
   where
-	mk c cst avail towhereis togetinfo toclaimurl tocheckurl exportactions cheapexportsupported =
+	mk c cst ordered avail towhereis togetinfo toclaimurl tocheckurl exportactions cheapexportsupported =
 		Remote
 			{ uuid = u
 			, cost = cst
 			, name = Git.repoDescribe r
 			, storeKey = storeKeyDummy
 			, retrieveKeyFile = retrieveKeyFileDummy
+			, retrieveKeyFileInOrder = ordered
 			, retrieveKeyFileCheap = Nothing
 			-- External special remotes use many http libraries
 			-- and have no protection against redirects to
@@ -800,6 +803,14 @@ getAvailability external = catchNonAsync query (const (pure defavail))
 		UNSUPPORTED_REQUEST -> result defavail
 		_ -> Nothing
 	defavail = GloballyAvailable
+
+getOrdered :: External -> Annex Bool
+getOrdered external = catchNonAsync query (const (pure False))
+  where
+	query = handleRequest external GETORDERED Nothing $ \req -> case req of
+		ORDERED -> result True
+		UNORDERED -> result False
+		_ -> result False
 
 claimUrlM :: External -> URLString -> Annex Bool
 claimUrlM external url =

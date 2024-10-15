@@ -79,6 +79,7 @@ gen r u rc gc rs = do
 		, name = Git.repoDescribe r
 		, storeKey = storeKeyDummy
 		, retrieveKeyFile = retrieveKeyFileDummy
+		, retrieveKeyFileInOrder = pure True
 		, retrieveKeyFileCheap = Nothing
 		-- ddar communicates over ssh, not subject to http redirect
 		-- type attacks

@@ -89,6 +89,9 @@ gen r u rc gc rs = do
 		, name = Git.repoDescribe r
 		, storeKey = store rs hdl
 		, retrieveKeyFile = retrieve rs hdl
+		-- Unsure about whether tahoe might sometimes write chunks
+		-- out of order.
+		, retrieveKeyFileInOrder = pure False
 		, retrieveKeyFileCheap = Nothing
 		-- Tahoe cryptographically verifies content.
 		, retrievalSecurityPolicy = RetrievalAllKeysSecure

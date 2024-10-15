@@ -86,6 +86,7 @@ gen r u rc gc rs = do
 		, name = Git.repoDescribe r
 		, storeKey = storeKeyDummy
 		, retrieveKeyFile = retrieveKeyFileDummy
+		, retrieveKeyFileInOrder = pure True
 		, retrieveKeyFileCheap = Nothing
 		-- Borg cryptographically verifies content.
 		, retrievalSecurityPolicy = RetrievalAllKeysSecure

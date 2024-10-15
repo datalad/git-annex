@@ -168,6 +168,7 @@ data Request
 	| INITREMOTE
 	| GETCOST
 	| GETAVAILABILITY
+	| GETORDERED
 	| CLAIMURL URLString
 	| CHECKURL URLString
 	| TRANSFER Direction SafeKey FilePath
@@ -200,6 +201,7 @@ instance Proto.Sendable Request where
 	formatMessage INITREMOTE = ["INITREMOTE"]
 	formatMessage GETCOST = ["GETCOST"]
 	formatMessage GETAVAILABILITY = ["GETAVAILABILITY"]
+	formatMessage GETORDERED = ["GETORDERED"]
 	formatMessage (CLAIMURL url) = [ "CLAIMURL", Proto.serialize url ]
 	formatMessage (CHECKURL url) = [ "CHECKURL", Proto.serialize url ]
 	formatMessage (TRANSFER direction key file) =
@@ -248,6 +250,8 @@ data Response
 	| REMOVE_FAILURE Key ErrorMsg
 	| COST Cost
 	| AVAILABILITY Availability
+	| ORDERED
+	| UNORDERED
 	| INITREMOTE_SUCCESS
 	| INITREMOTE_FAILURE ErrorMsg
 	| CLAIMURL_SUCCESS
@@ -284,6 +288,8 @@ instance Proto.Receivable Response where
 	parseCommand "REMOVE-FAILURE" = Proto.parse2 REMOVE_FAILURE
 	parseCommand "COST" = Proto.parse1 COST
 	parseCommand "AVAILABILITY" = Proto.parse1 AVAILABILITY
+	parseCommand "ORDERED" = Proto.parse0 ORDERED
+	parseCommand "UNORDERED" = Proto.parse0 UNORDERED
 	parseCommand "INITREMOTE-SUCCESS" = Proto.parse0 INITREMOTE_SUCCESS
 	parseCommand "INITREMOTE-FAILURE" = Proto.parse1 INITREMOTE_FAILURE
 	parseCommand "CLAIMURL-SUCCESS" = Proto.parse0 CLAIMURL_SUCCESS

@@ -77,6 +77,7 @@ gen r u rc gc rs = do
 		, name = Git.repoDescribe r
 		, storeKey = uploadKey
 		, retrieveKeyFile = downloadKey urlincludeexclude
+		, retrieveKeyFileInOrder = pure True
 		, retrieveKeyFileCheap = Nothing
 		-- HttpManagerRestricted is used here, so this is
 		-- secure.

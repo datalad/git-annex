@@ -364,10 +364,6 @@ remote to the usual temp object file on the proxy, but without moving that
 to the annex object file at the end. As the temp object file grows, stream
 the content out via the proxy. 
 
-> This needs the same process to read and write the same file, which is
-> disallowed in Haskell (without going lowlevel in a way that seems
-> difficult).
-
 Some special remotes will overwrite or truncate an existing temp object
 file when starting a download. So the proxy should wait until the file is
 growing to start streaming it.

@@ -36,6 +36,9 @@ When that branch is pushed to the proxy, it will update the tree exported
 to the special remote. When files are copied to the remote via the proxy,
 it will also update the exported tree.
 
+Note that proxying for a special remote can temporarily use disk space
+in the repository, to temporarily hold the content of annexed files.
+
 # OPTIONS
 
 * The [[git-annex-common-options]](1) can be used.

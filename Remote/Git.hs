@@ -210,6 +210,7 @@ gen r u rc gc rs
 			, name = Git.repoDescribe r
 			, storeKey = copyToRemote new st
 			, retrieveKeyFile = copyFromRemote new st
+			, retrieveKeyFileInOrder = pure True
 			, retrieveKeyFileCheap = copyFromRemoteCheap st r
 			, retrievalSecurityPolicy = RetrievalAllKeysSecure
 			, removeKey = dropKey new st

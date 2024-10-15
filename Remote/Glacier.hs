@@ -81,6 +81,7 @@ gen r u rc gc rs = do
 			, name = Git.repoDescribe r
 			, storeKey = storeKeyDummy
 			, retrieveKeyFile = retrieveKeyFileDummy
+			, retrieveKeyFileInOrder = pure True
 			, retrieveKeyFileCheap = Nothing
 			-- glacier-cli does not follow redirects and does
 			-- not support file://, as far as we know, but

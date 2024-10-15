@@ -67,6 +67,7 @@ gen r u rc gc rs = do
 		, name = Git.repoDescribe r
 		, storeKey = cannotModify
 		, retrieveKeyFile = retrieveKeyFileDummy
+		, retrieveKeyFileInOrder = pure True
 		, retrieveKeyFileCheap = Nothing
 		-- HttpManagerRestricted is used here, so this is
 		-- secure.

@@ -222,6 +222,12 @@ while read line; do
 				;;
 			esac
 		;;
+		GETORDERED)
+			# This remote writes to files in order when
+			# retrieving them. If it didn't, it
+			# would be important to respond with UNORDERED.
+			echo ORDERED
+		;;
 		CHECKPRESENT)
 			key="$2"
 			calclocation "$key"

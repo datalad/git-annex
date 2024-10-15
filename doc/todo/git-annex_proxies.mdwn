@@ -30,6 +30,12 @@ Planned schedule of work:
 
 * Currently working on streaming download via proxy from special remote.
 
+## completed items for October's work on streaming through proxy to special remotes
+
+* Stream downloads through proxy for all special remotes that indicate
+  they download in order.
+* Added ORDERED message to external special remote protocol.
+
 ## completed items for September's work on proving behavior of preferred content
 
 * Static analysis to detect "not present", "not balanced", and similar

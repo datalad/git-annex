@@ -248,12 +248,13 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv oclosedv mexportdb = go
 		writeVerifyChunk iv h b
 		storetofile iv h (n - fromIntegral (B.length b)) bs
 
-	proxyget offset af k = withproxytmpfile k $ \tmpfile ->
+	proxyget offset af k = withproxytmpfile k $ \tmpfile -> do
 		let retrieve = tryNonAsync $ Remote.retrieveKeyFile r k af
 			(fromRawFilePath tmpfile) nullMeterUpdate vc
-		in case fromKey keySize k of
+		ordered <- Remote.retrieveKeyFileInOrder r
+		case fromKey keySize k of
 #ifndef mingw32_HOST_OS
-			Just size | size > 0 -> do
+			Just size | size > 0 && ordered -> do
 				cancelv <- liftIO newEmptyMVar
 				donev <- liftIO newEmptyMVar
 				streamer <- liftIO $ async $

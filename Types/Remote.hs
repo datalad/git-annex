@@ -98,6 +98,8 @@ data RemoteA a = Remote
 	-- sequentially to the file.)
 	-- Throws exception on failure.
 	, retrieveKeyFile :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfigA a -> a Verification
+	{- Will retrieveKeyFile write to the file in order? -}
+	, retrieveKeyFileInOrder :: a Bool
 	-- Retrieves a key's contents to a tmp file, if it can be done cheaply.
 	-- It's ok to create a symlink or hardlink.
 	-- Throws exception on failure.

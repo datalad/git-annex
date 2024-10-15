@@ -62,6 +62,7 @@ gen r u rc gc rs = do
 			, name = Git.repoDescribe r
 			, storeKey = storeKeyDummy
 			, retrieveKeyFile = retrieveKeyFileDummy
+			, retrieveKeyFileInOrder = pure False
 			, retrieveKeyFileCheap = Nothing
 			-- A hook could use http and be vulnerable to
 			-- redirect to file:// attacks, etc.

@@ -69,6 +69,9 @@ gen r _ rc gc rs = do
 		, name = Git.repoDescribe r
 		, storeKey = uploadKey
 		, retrieveKeyFile = downloadKey
+		-- Bittorrent downloads out of order, but downloadTorrentContent
+		-- moves the downloaded file to the destination at the end.
+		, retrieveKeyFileInOrder = pure True
 		, retrieveKeyFileCheap = Nothing
 		-- Bittorrent does its own hash checks.
 		, retrievalSecurityPolicy = RetrievalAllKeysSecure

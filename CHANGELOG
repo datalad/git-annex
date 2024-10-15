@@ -1,6 +1,9 @@
 git-annex (10.20240928) UNRELEASED; urgency=medium
 
   * Sped up proxied downloads from special remotes, by streaming.
+  * Added GETORDERED request to external special remote protocol. 
+    When the external special remote responds with ORDERED, it can stream
+    through a proxy.
 
  -- Joey Hess <id@joeyh.name>  Tue, 15 Oct 2024 12:12:18 -0400
 
