@@ -307,7 +307,7 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv oclosedv mexportdb = go
 				)
 
 		getcontents n h = unsafeInterleaveIO $ do
-			isdone <- isEmptyMVar donev <||> isEmptyMVar cancelv
+			isdone <- (not <$> isEmptyMVar donev) <||> (not <$> isEmptyMVar cancelv)
 			c <- BS.hGet h defaultChunkSize
 			let n' = n - fromIntegral (BS.length c)
 			let c' = L.fromChunks [BS.take (fromIntegral n) c]
