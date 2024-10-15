@@ -46,6 +46,12 @@ Planned schedule of work:
   and would support resume from offset as well for special remotes for
   which that makes sense.
 
+  But this would need encryption and chunking to be implemented on top of
+  the P2P protocol, and all special remotes rewritten, and a bridge for the
+  current external special remote interface or rewrite all external special
+  remotes. Probably not worth it to unify the two things like this, if the
+  only benefit is streaming through a proxy.
+
 ## completed items for September's work on proving behavior of preferred content
 
 * Static analysis to detect "not present", "not balanced", and similar
