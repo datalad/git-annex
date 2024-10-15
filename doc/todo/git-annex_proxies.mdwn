@@ -30,27 +30,10 @@ Planned schedule of work:
 
 * Currently working on streaming download via proxy from special remote.
 
-* Tried implementing a background thread in the proxy that runs while
-  retrieving a file, to stream it out as it comes in. That failed because
-  reading from a file that the same process is writing to is prevented by
-  locking in haskell. (Could be gotten around by using FD rather than Handle,
-  but would need to read from the FD and use packCString to make a ByteString.)
-  
-  But also, remotes using fileRetriever retrieve to the temp object file,
+* Remotes using fileRetriever retrieve to the temp object file,
   before it is renamed to the requested file. In the case of a proxy,
   that is a different file, and so it won't see the file until it's all
   been transferred and renamed.
-
-* Could the P2P protocol be used as an alternate interface for a special
-  remote? Would avoid needing temp files when proxying for special remotes,
-  and would support resume from offset as well for special remotes for
-  which that makes sense.
-
-  But this would need encryption and chunking to be implemented on top of
-  the P2P protocol, and all special remotes rewritten, and a bridge for the
-  current external special remote interface or rewrite all external special
-  remotes. Probably not worth it to unify the two things like this, if the
-  only benefit is streaming through a proxy.
 
 ## completed items for September's work on proving behavior of preferred content
 

@@ -1,3 +1,9 @@
+git-annex (10.20240928) UNRELEASED; urgency=medium
+
+  * Sped up proxied downloads from special remotes, by streaming.
+
+ -- Joey Hess <id@joeyh.name>  Tue, 15 Oct 2024 12:12:18 -0400
+
 git-annex (10.20240927) upstream; urgency=medium
 
   * Detect when a preferred content expression contains "not present",
