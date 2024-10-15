@@ -173,7 +173,7 @@ locations d k = NE.map (d P.</>) (keyPaths k)
 locations' :: RawFilePath -> Key -> [RawFilePath]
 locations' d k = NE.toList (locations d k)
 
-{- Returns the location off a Key in the directory. If the key is
+{- Returns the location of a Key in the directory. If the key is
  - present, returns the location that is actually used, otherwise
  - returns the first, default location. -}
 getLocation :: RawFilePath -> Key -> IO RawFilePath

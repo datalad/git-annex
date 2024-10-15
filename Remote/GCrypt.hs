@@ -409,9 +409,9 @@ store' repo r rsyncopts accessmethod
 	storersync = fileStorer $ Remote.Rsync.store rsyncopts
 
 retrieve :: Remote -> Remote.Rsync.RsyncOpts -> AccessMethod -> Retriever
-retrieve r rsyncopts accessmethod k p miv sink = do
+retrieve r rsyncopts accessmethod k p dest miv sink = do
 	repo <- getRepo r
-	retrieve' repo r rsyncopts accessmethod k p miv sink
+	retrieve' repo r rsyncopts accessmethod k p dest miv sink
 
 retrieve' :: Git.Repo -> Remote -> Remote.Rsync.RsyncOpts -> AccessMethod -> Retriever
 retrieve' repo r rsyncopts accessmethod

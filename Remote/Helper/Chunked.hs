@@ -294,8 +294,10 @@ retrieveChunks retriever u vc chunkconfig encryptor basek dest basep enc encc
 			let p = maybe basep
 				(offsetMeterUpdate basep . toBytesProcessed)
 				offset
-			v <- tryNonAsync $
-				retriever (encryptor k) p Nothing $ \content ->
+			v <- tryNonAsync $ do
+				let enck = encryptor k
+				objloc <- fromRepo $ gitAnnexTmpObjectLocation enck
+				retriever enck p objloc Nothing $ \content ->
 					bracket (maybe opennew openresume offset) (liftIO . hClose . fst) $ \(h, iv) -> do
 						retrieved iv (Just h) p content
 						let sz = toBytesProcessed $
@@ -316,7 +318,9 @@ retrieveChunks retriever u vc chunkconfig encryptor basek dest basep enc encc
 	getrest p h iv sz bytesprocessed (k:ks) = do
 		let p' = offsetMeterUpdate p bytesprocessed
 		liftIO $ p' zeroBytesProcessed
-		retriever (encryptor k) p' Nothing $ 
+		let enck = encryptor k
+		objloc <- fromRepo $ gitAnnexTmpObjectLocation enck
+		retriever enck p' objloc Nothing $ 
 			retrieved iv (Just h) p'
 		getrest p h iv sz (addBytesProcessed bytesprocessed sz) ks
 
@@ -324,7 +328,7 @@ retrieveChunks retriever u vc chunkconfig encryptor basek dest basep enc encc
 		iv <- startVerifyKeyContentIncrementally vc basek
 		case enc of
 			Just _ -> do
-				retriever (encryptor basek) basep Nothing $
+				retriever (encryptor basek) basep (toRawFilePath dest) Nothing $
 					retrieved iv Nothing basep
 				return (Right iv)
 			-- Not chunked and not encrypted, so ask the
@@ -333,7 +337,7 @@ retrieveChunks retriever u vc chunkconfig encryptor basek dest basep enc encc
 			-- passing the whole file content to the
 			-- incremental verifier though.
 			Nothing -> do
-				retriever (encryptor basek) basep iv $
+				retriever (encryptor basek) basep (toRawFilePath dest) iv $
 					retrieved iv Nothing basep
 				return $ case iv of
 					Nothing -> Right iv

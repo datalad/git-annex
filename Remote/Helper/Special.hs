@@ -42,6 +42,7 @@ import Types.StoreRetrieve
 import Types.Remote
 import Annex.Verify
 import Annex.UUID
+import Annex.Perms
 import Config
 import Config.Cost
 import Utility.Metered
@@ -106,10 +107,10 @@ byteStorer a k c m = withBytes c $ \b -> a k b m
 -- A Retriever that generates a lazy ByteString containing the Key's
 -- content, and passes it to a callback action which will fully consume it
 -- before returning.
-byteRetriever :: (Key -> (L.ByteString -> Annex a) -> Annex a) -> Key -> MeterUpdate -> Maybe IncrementalVerifier -> (ContentSource -> Annex a) -> Annex a
-byteRetriever a k _m _miv callback = a k (callback . ByteContent)
+byteRetriever :: (Key -> (L.ByteString -> Annex a) -> Annex a) -> Key -> MeterUpdate -> RawFilePath -> Maybe IncrementalVerifier -> (ContentSource -> Annex a) -> Annex a
+byteRetriever a k _m _dest _miv callback = a k (callback . ByteContent)
 
--- A Retriever that writes the content of a Key to a provided file.
+-- A Retriever that writes the content of a Key to a file.
 -- The action is responsible for updating the progress meter as it 
 -- retrieves data. The incremental verifier is updated in the background as
 -- the action writes to the file, but may not be updated with the entire
@@ -119,15 +120,15 @@ fileRetriever a = fileRetriever' $ \f k m miv ->
 	let retrieve = a f k m
 	in tailVerify miv f retrieve
 
-{- A Retriever that writes the content of a Key to a provided file.
+{- A Retriever that writes the content of a Key to a file.
  - The action is responsible for updating the progress meter and the 
  - incremental verifier as it retrieves data.
  -}
 fileRetriever' :: (RawFilePath -> Key -> MeterUpdate -> Maybe IncrementalVerifier -> Annex ()) -> Retriever
-fileRetriever' a k m miv callback = do
-	f <- prepTmp k
-	a f k m miv
-	pruneTmpWorkDirBefore f (callback . FileContent . fromRawFilePath)
+fileRetriever' a k m dest miv callback = do
+	createAnnexDirectory (parentDir dest)
+	a dest k m miv
+	pruneTmpWorkDirBefore dest (callback . FileContent . fromRawFilePath)
 
 {- The base Remote that is provided to specialRemote needs to have
  - storeKey, retrieveKeyFile, removeKey, and checkPresent methods,

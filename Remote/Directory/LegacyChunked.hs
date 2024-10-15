@@ -98,7 +98,7 @@ store repotop chunksize finalizer k b p = storeHelper repotop finalizer k $ \des
  - :/ This is legacy code..
  -}
 retrieve :: (RawFilePath -> Key -> [RawFilePath]) -> RawFilePath -> Retriever
-retrieve locations d basek p miv c = withOtherTmp $ \tmpdir -> do
+retrieve locations d basek p _dest miv c = withOtherTmp $ \tmpdir -> do
 	showLongNote "This remote uses the deprecated chunksize setting. So this will be quite slow."
 	let tmp = tmpdir P.</> keyFile basek <> ".directorylegacy.tmp"
 	let tmp' = fromRawFilePath tmp
@@ -110,7 +110,7 @@ retrieve locations d basek p miv c = withOtherTmp $ \tmpdir -> do
 		b <- liftIO $ L.readFile tmp'
 		liftIO $ removeWhenExistsWith R.removeLink tmp
 		sink b
-	byteRetriever go basek p miv c
+	byteRetriever go basek p tmp miv c
 
 checkKey :: RawFilePath -> (RawFilePath -> Key -> [RawFilePath]) -> Key -> Annex Bool
 checkKey d locations k = liftIO $

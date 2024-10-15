@@ -35,12 +35,15 @@ type Storer = Key -> ContentSource -> MeterUpdate -> Annex ()
 -- Throws exception if key is not present, or remote is not accessible.
 --
 -- When it retrieves FileContent, it is responsible for updating the
--- MeterUpdate. And when the IncrementalVerifier is passed to it,
+-- MeterUpdate, and the provided FilePath can be used to store the file
+-- it retrieves. 
+--
+-- When the IncrementalVerifier is passed to it,
 -- and it retrieves FileContent, it can feed some or all of the file's
 -- content to the verifier before running the callback.
 -- This should not be done when it retrieves ByteContent.
 type Retriever = forall a.
-	Key -> MeterUpdate -> Maybe IncrementalVerifier
+	Key -> MeterUpdate -> RawFilePath -> Maybe IncrementalVerifier
 		-> (ContentSource -> Annex a) -> Annex a
 
 -- Action that removes a Key's content from a remote.

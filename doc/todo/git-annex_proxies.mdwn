@@ -30,11 +30,6 @@ Planned schedule of work:
 
 * Currently working on streaming download via proxy from special remote.
 
-* Remotes using fileRetriever retrieve to the temp object file,
-  before it is renamed to the requested file. In the case of a proxy,
-  that is a different file, and so it won't see the file until it's all
-  been transferred and renamed.
-
 ## completed items for September's work on proving behavior of preferred content
 
 * Static analysis to detect "not present", "not balanced", and similar

@@ -177,7 +177,7 @@ store' r k b p = go =<< glacierEnv c gc u
 		forceSuccessProcess cmd pid
 	go' _ _ _ _ _ = error "internal"
 
-retrieve :: forall a. Remote -> Key -> MeterUpdate -> Maybe IncrementalVerifier -> (ContentSource -> Annex a) -> Annex a
+retrieve :: forall a. Remote -> Key -> MeterUpdate -> RawFilePath -> Maybe IncrementalVerifier -> (ContentSource -> Annex a) -> Annex a
 retrieve = byteRetriever . retrieve'
 
 retrieve' :: forall a. Remote -> Key -> (L.ByteString -> Annex a) -> Annex a
