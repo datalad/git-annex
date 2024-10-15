@@ -252,9 +252,9 @@ finalizeStoreGeneric d tmp dest = do
 
 retrieveKeyFileM :: RawFilePath -> ChunkConfig -> CopyCoWTried -> Retriever
 retrieveKeyFileM d (LegacyChunks _) _ = Legacy.retrieve locations' d
---retrieveKeyFileM d NoChunks cow = fileRetriever' $ \dest k p iv -> do
---	src <- liftIO $ fromRawFilePath <$> getLocation d k
---	void $ liftIO $ fileCopier cow src (fromRawFilePath dest) p iv
+retrieveKeyFileM d NoChunks cow = fileRetriever' $ \dest k p iv -> do
+	src <- liftIO $ fromRawFilePath <$> getLocation d k
+	void $ liftIO $ fileCopier cow src (fromRawFilePath dest) p iv
 retrieveKeyFileM d _ _ = byteRetriever $ \k sink ->
 	sink =<< liftIO (L.readFile . fromRawFilePath =<< getLocation d k)
 
