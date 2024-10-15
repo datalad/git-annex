@@ -28,16 +28,15 @@ import Logs.UUID
 import Logs.Location
 import Utility.Tmp.Dir
 import Utility.Metered
-import Utility.ThreadScheduler
 import Git.Types
 import qualified Database.Export as Export
 #ifndef mingw32_HOST_OS
 import Utility.OpenFile
 #endif
 
+import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Concurrent.Async
-import Control.Concurrent.MVar
 import qualified Data.ByteString as B
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as L
@@ -300,7 +299,7 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv oclosedv mexportdb = go
 			Right sz | sz > 0 && sz >= offset -> return ()
 			_ -> ifM (isEmptyMVar cancelv <&&> isEmptyMVar donev)
 				( do
-					threadDelaySeconds (Seconds 1)
+					threadDelay 40000
 					waitforfile
 				, do
 					return ()
@@ -317,7 +316,7 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv oclosedv mexportdb = go
 					else do
 						-- Wait for more data to be
 						-- written to the file.
-						threadDelaySeconds (Seconds 1)
+						threadDelay 40000
 						getcontents n h
 				else if n' > 0
 					then do
