@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/59541f50d845e5f81aff06e88a38b9de"
+ subject="comment 1"
+ date="2024-10-14T12:21:54Z"
+ content="""
+It seems like I can make git-annex discover a newly added `annex.url` setting by unsetting `remote.<name>.annex-uuid` and then doing `git annex init` again or trying to copy something to the remote.
+"""]]
