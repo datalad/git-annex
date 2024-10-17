@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-10-17T14:07:02Z"
+ content="""
+Yes, it's safe to enable this build flag. It makes the `git-annex p2phttp`
+command work, but users still have to choose to run that server.
+
+The only reason it's a build flag is that the version of servant needed is
+not available in some old build environments. The flag actually should be
+enabled by default when the necessary dependencies are installable
+(in the case of a cabal build) or installed (in Debian's case).
+"""]]
