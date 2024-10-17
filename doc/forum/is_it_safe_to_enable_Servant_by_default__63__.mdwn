@@ -1,0 +1,11 @@
+We have received [a request](https://alioth-lists.debian.net/pipermail/neurodebian-users/2024-October/001278.html) to enable Servant for the NeuroDebian builds of git-annex. ATM by default it is not enabled
+
+```
+Flag Servant
+  Description: Use the servant library, enabling using annex+http urls and git-annex p2phttp
+
+```
+
+before I patch it, I thought to ask if it is "safe" as would it cause any possible side-effects, or why it is not enabled by default? (unclear from description)
+
+Thanks in advance for the clarification
