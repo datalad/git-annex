@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2024-10-17T17:28:20Z"
+ content="""
+If you are building on debian stable the issue is probably the version of
+stm bundled with ghc being too old. This build flag needs stm 2.5.1
+(also warp 3.2.8 and warp-tls 3.2.2)
+
+I've applied a patch that will let the build flag work with older versions
+of stm (commit [[!commit 3a53c6012101dcb76786ee497ca4223a8e28ceab]]).
+"""]]
