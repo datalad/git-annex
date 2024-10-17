@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2024-10-17T17:04:06Z"
+ content="""
+you do have servant libraries in debian/control and they are present but the build we are getting is lacking Servant support:
+
+```
+❯ pwd
+/home/yoh/proj/datalad/ci/git-annex/builds/2024/10/cron-20241016/build-ubuntu.yaml-1678-1929a4fc-success/git-annex-debianstandalone-packages_10.20240927+git31-gc4dfeaef53_amd64
+
+❯ grep libghc-serv -r git-annex_10.20240927+git31-gc4dfeaef53-1~ndall+1_amd64.buildinfo
+ libghc-servant-client-core-dev (= 0.19-1+b4),
+ libghc-servant-client-dev (= 0.19-1+b4),
+ libghc-servant-dev (= 0.19-1+b4),
+ libghc-servant-server-dev (= 0.19.1-1+b4),
+
+❯ dpkg -x git-annex-standalone_10.20240927+git31-gc4dfeaef53-1\~ndall+1_amd64.deb X
+❯ X/usr/lib/git-annex.linux/git-annex version
+git-annex version: 10.20240927+git31-gc4dfeaef53-1~ndall+1
+build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Benchmark Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22.1 bloomfilter-2.0.1.0 cryptonite-0.29 DAV-1.3.4 feed-1.3.2.1 ghc-9.0.2 http-client-0.7.13.1 persistent-sqlite-2.13.1.0 torrent-10000.1.1 uuid-1.3.15 yesod-1.6.2.1
+...
+```
+
+where is the catch or did I misunderstand you statement?
+"""]]
