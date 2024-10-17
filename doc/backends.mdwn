@@ -54,7 +54,7 @@ in `.gitattributes`:
   `BLAKE2SP224E`, `BLAKE2SP256E`
   -- Fast [Blake2 hash](https://blake2.net/) variants optimised for 
   8-way CPUs.
-  `VURL` -- This is like an `URL` (see below) but the content can
+* `VURL` -- This is like an `URL` (see below) but the content can
   be verified with a cryptographically secure checksum that is
   recorded in the git-annex branch. It's generated when using 
   eg `git-annex addurl --fast --verifiable`.
