@@ -130,8 +130,8 @@ jobs:
           if ! singularity exec /tmp/buildenv.sif \
                bash -c "set -x; export LANG=C; dpkg-source -x *.dsc git-annex-source && cd git-annex-source && dpkg-buildpackage -b $opts" >| "${bbuild_log}" 2>&1; then
                  echo "E: build failed"
-                 echo "I: the tail of the log"
-                 tail -n 50 "${bbuild_log}"
+                 echo "I: log:"
+                 cat "${bbuild_log}"
                  echo "I: FAIL line matches with some context"
                  grep -B10 '^FAIL$' "${bbuild_log}"
                  exit 1
