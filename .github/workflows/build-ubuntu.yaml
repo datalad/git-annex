@@ -62,7 +62,6 @@ jobs:
           codename="$(lsb_release -cs)"
           arch="$(dpkg --print-architecture)"
           cd /tmp
-          sudo apt-get install libfuse2t64
           wget -O singularity-ce.deb https://github.com/sylabs/singularity/releases/download/$release/singularity-ce_${release#v}-${codename}_$arch.deb
           sudo dpkg -i singularity-ce.deb || :
           sudo apt-get install -f
