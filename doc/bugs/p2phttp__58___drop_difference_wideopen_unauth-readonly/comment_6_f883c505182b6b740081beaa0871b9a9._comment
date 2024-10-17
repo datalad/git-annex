@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2024-10-17T15:07:12Z"
+ content="""
+I've implemented combining --unauth-readonly (or --unauth-appendonly) with
+--authenv/--authenv-http.
+
+Read-only drop locking in that configuration still needs to be addressed, it
+does prompt for authentication currently.
+"""]]

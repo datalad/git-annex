@@ -52,8 +52,14 @@ data P2PHttpServerState = P2PHttpServerState
 
 type AnnexWorkerPool = TMVar (WorkerPool (Annex.AnnexState, Annex.AnnexRead))
 
--- Nothing when the server is not allowed to serve any requests.
-type GetServerMode = IsSecure -> Maybe Auth -> Maybe P2P.ServerMode
+type GetServerMode = IsSecure -> Maybe Auth -> ServerMode
+
+data ServerMode
+	= ServerMode
+		{ serverMode :: P2P.ServerMode
+		, authenticationAllowed :: Bool
+		}
+	| CannotServeRequests
 
 mkP2PHttpServerState :: AcquireP2PConnection -> AnnexWorkerPool -> GetServerMode -> IO P2PHttpServerState
 mkP2PHttpServerState acquireconn annexworkerpool getservermode = P2PHttpServerState
@@ -143,19 +149,34 @@ checkAuthActionClass
 	-> (P2P.ServerMode -> Handler a)
 	-> Handler a
 checkAuthActionClass st sec auth actionclass go =
-	case (getServerMode st sec auth, actionclass) of
-		(Just P2P.ServeReadWrite, _) -> go P2P.ServeReadWrite
-		(Just P2P.ServeAppendOnly, RemoveAction) -> throwError err403
-		(Just P2P.ServeAppendOnly, _) -> go P2P.ServeAppendOnly
-		(Just P2P.ServeReadOnly, ReadAction) -> go P2P.ServeReadOnly
-		(Just P2P.ServeReadOnly, _) -> throwError err403
-		(Nothing, _) -> throwError basicAuthRequired
+	case (sm, actionclass) of
+		(ServerMode { serverMode = P2P.ServeReadWrite }, _) ->
+			go P2P.ServeReadWrite
+		(ServerMode { serverMode = P2P.ServeAppendOnly }, RemoveAction) -> 
+			throwError $ forbiddenWithoutAuth sm
+		(ServerMode { serverMode = P2P.ServeAppendOnly }, _) ->
+			go P2P.ServeAppendOnly
+		(ServerMode { serverMode = P2P.ServeReadOnly }, ReadAction) ->
+			go P2P.ServeReadOnly
+		(ServerMode { serverMode = P2P.ServeReadOnly }, _) -> 
+			throwError $ forbiddenWithoutAuth sm
+		(CannotServeRequests, _) -> throwError basicAuthRequired
+  where
+	sm = getServerMode st sec auth
+
+forbiddenAction :: ServerError
+forbiddenAction = err403
 
 basicAuthRequired :: ServerError
 basicAuthRequired = err401 { errHeaders = [(h, v)] }
   where
 	h = "WWW-Authenticate"
 	v = "Basic realm=\"git-annex\", charset=\"UTF-8\""
+
+forbiddenWithoutAuth :: ServerMode -> ServerError
+forbiddenWithoutAuth sm
+	| authenticationAllowed sm = basicAuthRequired
+	| otherwise = forbiddenAction
 
 data ConnectionParams = ConnectionParams
 	{ connectionProtocolVersion :: P2P.ProtocolVersion

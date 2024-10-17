@@ -1,3 +1,11 @@
+git-annex (10.20240928) UNRELEASED; urgency=medium
+
+  * p2phttp: Support serving unauthenticated users while requesting
+    authentication for operations that need it. Eg, --unauth-readonly
+    can be combined with --authenv.
+
+ -- Joey Hess <id@joeyh.name>  Thu, 17 Oct 2024 11:02:17 -0400
+
 git-annex (10.20240927) upstream; urgency=medium
 
   * Detect when a preferred content expression contains "not present",

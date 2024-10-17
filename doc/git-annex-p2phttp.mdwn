@@ -116,10 +116,16 @@ convenient way to download the content of any key, by using the path
   Allows unauthenticated users to read the repository, but not make
   modifications to it.
 
+  This can be combined with `--authenv` or `--authenv-http` to allow
+  anonymous readonly access, and authenticated write access.
+
 * `--unauth-appendonly`
 
   Allows unauthenticated users to read the repository, and store data in
   it, but not remove data from it.
+  
+  This can be combined with `--authenv` or `--authenv-http` to allow
+  anonymous appendonly access, and authenticated remove access.
 
 * `--wideopen`
 

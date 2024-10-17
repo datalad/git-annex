@@ -128,10 +128,15 @@ seek o = getAnnexWorkerPool $ \workerpool ->
 
 mkGetServerMode :: M.Map Auth P2P.ServerMode -> Options -> GetServerMode
 mkGetServerMode _ o _ Nothing
-	| wideOpenOption o = Just P2P.ServeReadWrite
-	| unauthAppendOnlyOption o = Just P2P.ServeAppendOnly
-	| unauthReadOnlyOption o = Just P2P.ServeReadOnly
-	| otherwise = Nothing
+	| wideOpenOption o =
+		ServerMode P2P.ServeReadWrite False
+	| unauthAppendOnlyOption o =
+		ServerMode P2P.ServeAppendOnly canauth
+	| unauthReadOnlyOption o =
+		ServerMode P2P.ServeReadOnly canauth
+	| otherwise = CannotServeRequests
+  where
+	canauth = authEnvOption o || authEnvHttpOption o
 mkGetServerMode authenv o issecure (Just auth) =
 	case (issecure, authEnvOption o, authEnvHttpOption o) of
 		(Secure, True, _) -> checkauth
@@ -139,9 +144,10 @@ mkGetServerMode authenv o issecure (Just auth) =
 		_ -> noauth
   where
 	checkauth = case M.lookup auth authenv of
-		Just servermode -> Just servermode
+		Just servermode -> ServerMode servermode False
 		Nothing -> noauth
-	noauth = mkGetServerMode authenv o issecure Nothing
+	noauth = mkGetServerMode authenv noautho issecure Nothing
+	noautho = o { authEnvOption = False, authEnvHttpOption = False }
 
 getAuthEnv :: IO (M.Map Auth P2P.ServerMode)
 getAuthEnv = do
