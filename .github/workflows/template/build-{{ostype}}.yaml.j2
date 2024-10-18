@@ -217,11 +217,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Choose stack config and enable building with magic
+      - name: Enable building with magic
         run: |
-          # Need to use that LTS ATM on Windows
-          # ref: https://github.com/datalad/git-annex/issues/168#issuecomment-1665910564
-          cp stack-lts-18.13.yaml stack.yaml
           perl -pli -e 's/magicmime: false/magicmime: true/' stack.yaml
 
       - name: Set UPGRADE_LOCATION
