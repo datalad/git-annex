@@ -247,9 +247,15 @@ jobs:
           ls "$GIT_ANNEX_DIR"/*magic* "$GIT_ANNEX_DIR"/*gnurx*
           ls "$GIT_ANNEX_DIR"/../share/misc/*magic*
 
-      - name: Check git-annex version for MagicMime flag
+
+      - name: Check git-annex version for some expected build flags
         run: |
-          git annex version | grep 'build flags:.*MagicMime'
+          # apparently order is not alphabetic, so cannot be relied upon for a single grep
+          flags=$(git annex version | grep 'build flags:')
+          for f in Assistant MagicMime Servant S3; do
+            echo -n "Checking for $f: "
+            echo "$flags" | grep --color "$f" || { echo "FAIL"; exit 1; }
+          done
 
       - name: Print git-annex version
         run: git annex version
