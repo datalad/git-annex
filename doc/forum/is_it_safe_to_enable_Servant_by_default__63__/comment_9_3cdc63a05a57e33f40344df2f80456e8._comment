@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 9"
+ date="2024-10-18T13:10:37Z"
+ content="""
+should we expect Servant being built/enabled for Windows builds as well? (they [FTBFS ATM](https://git-annex.branchable.com/bugs/windows_FTBFS__58___Could_not_find_module_System.Posix/?updated) so do not get to \"build flags:\" to check)
+"""]]
