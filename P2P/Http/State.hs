@@ -35,12 +35,12 @@ import Annex.Proxy
 import Annex.Cluster
 import qualified P2P.Proxy as Proxy
 import qualified Types.Remote as Remote
+import Utility.STM
 
 import Servant
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 import Control.Concurrent.Async
-import Control.Concurrent.STM
 import Data.Time.Clock.POSIX
 
 data P2PHttpServerState = P2PHttpServerState

@@ -1119,6 +1119,7 @@ Executable git-annex
     Utility.SshConfig
     Utility.SshHost
     Utility.StatelessOpenPGP
+    Utility.STM
     Utility.Su
     Utility.SystemDirectory
     Utility.Terminal

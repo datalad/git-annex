@@ -36,6 +36,7 @@ import P2P.Http.Url
 import Annex.Concurrent
 import Utility.Url (BasicAuth(..))
 import Utility.HumanTime
+import Utility.STM
 import qualified Git.Credential as Git
 
 import Servant hiding (BasicAuthData(..))
@@ -46,7 +47,6 @@ import Network.HTTP.Client
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy.Internal as LI
 import qualified Data.Map as M
-import Control.Concurrent.STM
 import Control.Concurrent.Async
 import Control.Concurrent
 import System.IO.Unsafe
@@ -533,11 +533,6 @@ clientKeepLocked lckid remoteuuid unablelock callback clientenv (ProtocolVersion
 		_ :<|> _ :<|> _ :<|>
 		_ :<|> _ :<|> _ :<|> _ :<|>
 		v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
-
-#if ! MIN_VERSION_stm(2,5,1)
-	writeTMVar t new = tryTakeTMVar t >> putTMVar t new
-#endif
-
 #else
 clientKeepLocked _ _ _ _ = ()
 #endif
