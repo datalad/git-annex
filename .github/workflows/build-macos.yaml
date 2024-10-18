@@ -216,6 +216,16 @@ jobs:
       - name: Install coreutils (for timeout)
         run: brew install coreutils
 
+
+      - name: Check git-annex version for some expected build flags
+        run: |
+          # apparently order is not alphabetic, so cannot be relied upon for a single grep
+          flags=$(git annex version | grep 'build flags:')
+          for f in Assistant MagicMime Servant S3; do
+            echo -n "Checking for $f: "
+            echo "$flags" | grep --color "$f" || { echo "FAIL"; exit 1; }
+          done
+
       - name: Print git-annex version
         run: git annex version
 
