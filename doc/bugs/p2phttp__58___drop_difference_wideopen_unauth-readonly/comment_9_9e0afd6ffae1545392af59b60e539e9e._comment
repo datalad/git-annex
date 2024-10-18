@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/59541f50d845e5f81aff06e88a38b9de"
+ subject="comment 9"
+ date="2024-10-18T16:56:46Z"
+ content="""
+I agree, this would be easy to deal with if the user intent was somehow made clear.
+
+_Technically_ anonymous is a valid username in Forgejo.
+
+The way I've implemented it so far the user interface only exposes the `http(s)://` URL for the normal git remote and the `annex+http(s)://` URL is then taken from the server-side git config (on `git annex init`). Since I believe that git-annex will always try to read the config without authentication first I don't yet see a way to distinguish user intent. It _could_ show the user different URLs for the git remote depending on if the user is logged in or not, but I don't think there is way to make it dependent on the plain-git remote URL? That also doesn't sound like the best idea, and I am not sure if it really is a good proxy for user intent; I would expect people to not be authenticated in the web interface and still want to push files to the server after cloning (e.g. maybe they got logged out from a timeout, don't notice, and now go to a public repository of their own to clone it and make changes).
+
+To mark a remote as read-only there is the already existing `remote.<remote>.annex-readonly` config option that could be used. But when to set it...
+
+I still think the most practical option would be to special-case lockcontent... I'd expect that any user who seriously uses http will have some kind of credential helper configured. If they have used copy/move/sync/assist/etc then they will already have their credentials in the helper and the lockcontent request can just use them, and if they have just gotten some files and now drop them and don't have credentials for the remote in their helper then I think it is safe to assume they don't want to specify them just for dropping, i.e. fallback to checkpresent. In a situation where a lock is really necessary for dropping and it wouldn't succeed without git-annex could still ask for credentials. Is there a situation in which that wouldn't do \"the right thing\"?
+"""]]
