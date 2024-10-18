@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2024-10-18T14:28:12Z"
+ content="""
+The windows build uses stack and the stack.yaml enables the flag, so yes.
+
+By the way, still waiting on this change: <https://github.com/datalad/git-annex/issues/204>
+"""]]
