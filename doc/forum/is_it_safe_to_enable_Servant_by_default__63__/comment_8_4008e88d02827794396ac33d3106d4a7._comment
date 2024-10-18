@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 8"
+ date="2024-10-18T13:01:25Z"
+ content="""
+Great! Confirming that we got it!
+
+```
+❯ pwd
+/home/yoh/proj/datalad/ci/git-annex/builds/2024/10/cron-20241018/build-ubuntu.yaml-1683-844a1bc5-success
+❯ git grep -h 'build flags: .*Servant'
+2024-10-18T03:11:57.0121660Z build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Servant Benchmark Feeds Testsuite S3 WebDAV
+```
+
+I will add a \"test\" to ensure we \"do not loose it\" from our builds ;-)
+"""]]

@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2024-10-15T16:33:06Z"
+ content="""
+It's not a special case about locking. p2phttp always uses 403 when 
+the mode it's serving does not allow the class of action.
+
+Eg with --unauth-appendonly a remove request will cause a 403 response.
+And with --unauth-readonly any non-read request does.
+
+The docs say:
+
+"When authentication is successful but does not allow a request to be
+performed, it will fail with 403 Forbidden."
+
+A 401 does make git-annex prompt for a password. p2phttp responds to that
+when --authenv is used and the client didn't basic authenticate.
+"""]]

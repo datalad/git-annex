@@ -28,7 +28,11 @@ Planned schedule of work:
 
 ## work notes
 
-* Currently working on streaming download via proxy from special remote.
+* Currently working on streaming special remotes via proxy 
+  in the `streamproxy` branch.
+
+* Downloads from special remotes can stream (though using a temp file on
+  the proxy). Next: Streaming uploads via the proxy.
 
 ## completed items for October's work on streaming through proxy to special remotes
 

@@ -407,6 +407,15 @@ sending SUCCESS, leading to a perhaps long delay on the client before an
 upload finishes. Perhaps extend the P2P protocol with progress information
 for the uploads?
 
+To stream uploads via the proxy, storeKey would need its interface changed
+to not read the object file itself, but read from eg a lazy ByteString.
+Chunking and encryption would complicate that. Chunking seems fairly
+straightforward since it uses a lazy ByteString internally.
+storeExport would change similarly. The external special remote protocol
+would also need a change if it was to support that.
+
+----
+
 Both of those file-based approaches need the proxy to have enough free disk
 space to buffer the largest file, times the number of concurrent
 uploads+downloads. So the proxy will need to check annex.diskreserve

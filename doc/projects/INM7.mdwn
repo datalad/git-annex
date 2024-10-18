@@ -1,0 +1,32 @@
+The INM7 data hosting infrastructure uses git-annex. This is a tracking
+page for issues relating to that project. It includes issues relating to
+[forgejo-aneksajo](https://codeberg.org/matrss/forgejo-aneksajo).
+
+TODOs
+=====
+
+[[!inline pages="todo/* and !todo/done and !link(todo/done) and
+tagged(projects/INM7)" sort=mtime feeds=no actions=yes archive=yes show=0 template=buglist]]
+
+
+<details>
+<summary>Done</summary>
+
+[[!inline pages="todo/* and !todo/done and link(todo/done) and
+tagged(projects/INM7)" feeds=no actions=yes archive=yes show=0 template=buglist]]
+
+</details>
+
+Bugs
+====
+
+[[!inline pages="bugs/* and !bugs/done and !link(bugs/done) and
+tagged(projects/INM7)" sort=mtime feeds=no actions=yes archive=yes show=0  template=buglist template=buglist]]
+
+<details>
+<summary>Fixed</summary>
+
+[[!inline pages="(bugs/* and !bugs/done and link(bugs/done)) and
+tagged(projects/INM7)" feeds=no actions=yes archive=yes show=0  template=buglist]]
+
+</details>

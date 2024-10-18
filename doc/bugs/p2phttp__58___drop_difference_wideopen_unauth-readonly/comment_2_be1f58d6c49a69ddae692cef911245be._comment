@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/59541f50d845e5f81aff06e88a38b9de"
+ subject="comment 2"
+ date="2024-10-14T12:01:40Z"
+ content="""
+I've solved my issue in forgejo-aneksajo by special-casing the lockcontent endpoint to return a 403 for unauthorized requests, instead of a 401 like all other POST endpoints (put, remove, etc.). I presume that this is also what `git annex p2phttp` itself does, is that right? Maybe the specific response expected by git-annex in case of an unauthorized requests could be part of the protocol specification...
+"""]]

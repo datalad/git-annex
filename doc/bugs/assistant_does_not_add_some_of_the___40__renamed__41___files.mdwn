@@ -1,0 +1,54 @@
+### Please describe the problem.
+
+We are running 10.20240831-1~ndall+1 as assistant
+
+```
+reprostim@reproiner:/data/reprostim$ ps auxw | grep assist
+reprost+ 1102847  2.1  0.3 1074496300 122428 ?   Ssl  Sep05 1225:13 /usr/lib/git-annex.linux/exe/git-annex --library-path /usr/lib/git-annex.linux//lib/x86_64-linux-gnu:/usr/lib/git-annex.linux//lib/x86_64-linux-gnu: /usr/lib/git-annex.linux/shimmed/git-annex/git-annex assistant
+```
+
+and our underlying script produces bunch of files online while later renaming them. i.e. we are producing
+
+```
+reprostim@reproiner:/data/reprostim$ ls -l Videos/2024/10/2024.10.15-14.02.40.327--.mkv*
+-rw-r--r--  1 reprostim reprostim 165285526 Oct 15 14:12 Videos/2024/10/2024.10.15-14.02.40.327--.mkv
+-rw-r--r--  2 reprostim reprostim         0 Oct 15 14:02 Videos/2024/10/2024.10.15-14.02.40.327--.mkv.duct_info.json
+-rw-r--r-- 11 reprostim reprostim      8218 Oct 15 14:11 Videos/2024/10/2024.10.15-14.02.40.327--.mkv.duct_usage.json
+-rw-r--r--  1 reprostim reprostim   7036928 Oct 15 14:12 Videos/2024/10/2024.10.15-14.02.40.327--.mkv.log
+```
+
+and whenever done, renaming to something like
+
+```
+reprostim@reproiner:/data/reprostim$ ls -l Videos/2024/10/2024.10.15-14.02.27.765--2024.10.15-14.02.34.175.mkv*
+-rw-r--r-- 2 reprostim reprostim   71 Oct 15 14:02 Videos/2024/10/2024.10.15-14.02.27.765--2024.10.15-14.02.34.175.mkv
+-rw-r--r-- 3 reprostim reprostim 1841 Oct 15 14:02 Videos/2024/10/2024.10.15-14.02.27.765--2024.10.15-14.02.34.175.mkv.duct_info.json
+-rw-r--r-- 3 reprostim reprostim  805 Oct 15 14:02 Videos/2024/10/2024.10.15-14.02.27.765--2024.10.15-14.02.34.175.mkv.duct_usage.json
+-rw-r--r-- 2 reprostim reprostim   69 Oct 15 14:02 Videos/2024/10/2024.10.15-14.02.27.765--2024.10.15-14.02.34.175.mkv.log
+```
+
+but the problem is that git-annex does not add to git **some** of the `.duct_*.json` files, i.e. it does add some times but not always:
+
+```
+reprostim@reproiner:/data/reprostim$ git ls-tree -r HEAD | grep '2024.10.15-.*\.duct_.*\.json'
+100644 blob e69de29bb2d1d6434b8b29ae775ad8c2e48c5391	Videos/2024/10/2024.10.15-14.02.40.327--.mkv.duct_info.json
+100644 blob efcd26e5fe702855b5fe583fc846fd21a27e0acc	Videos/2024/10/2024.10.15-14.02.40.327--.mkv.duct_usage.json
+reprostim@reproiner:/data/reprostim$ ls -ld Videos/2024/10/2024.10.15-.*\.duct_.*\.json
+ls: cannot access 'Videos/2024/10/2024.10.15-.*.duct_.*.json': No such file or directory
+reprostim@reproiner:/data/reprostim$ ls -ld Videos/2024/10/2024.10.15-*.duct_*.json
+-rw-r--r--  3 reprostim reprostim  1865 Oct 15 08:44 Videos/2024/10/2024.10.15-08.43.47.149--2024.10.15-08.44.13.219.mkv.duct_info.json
+-rw-r--r--  3 reprostim reprostim  1620 Oct 15 08:44 Videos/2024/10/2024.10.15-08.43.47.149--2024.10.15-08.44.13.219.mkv.duct_usage.json
+-rw-r--r--  3 reprostim reprostim  1874 Oct 15 08:47 Videos/2024/10/2024.10.15-08.46.22.715--2024.10.15-08.47.13.706.mkv.duct_info.json
+-rw-r--r--  3 reprostim reprostim  1623 Oct 15 08:47 Videos/2024/10/2024.10.15-08.46.22.715--2024.10.15-08.47.13.706.mkv.duct_usage.json
+-rw-r--r--  3 reprostim reprostim  1839 Oct 15 08:49 Videos/2024/10/2024.10.15-08.49.44.705--2024.10.15-08.49.51.117.mkv.duct_info.json
+-rw-r--r--  3 reprostim reprostim   805 Oct 15 08:49 Videos/2024/10/2024.10.15-08.49.44.705--2024.10.15-08.49.51.117.mkv.duct_usage.json
+-rw-r--r--  3 reprostim reprostim  1893 Oct 15 10:13 Videos/2024/10/2024.10.15-09.16.28.939--2024.10.15-10.13.16.646.mkv.duct_info.json
+-rw-r--r-- 59 reprostim reprostim 47555 Oct 15 10:13 Videos/2024/10/2024.10.15-09.16.28.939--2024.10.15-10.13.16.646.mkv.duct_usage.json
+-rw-r--r--  3 reprostim reprostim  1841 Oct 15 14:02 Videos/2024/10/2024.10.15-14.02.27.765--2024.10.15-14.02.34.175.mkv.duct_info.json
+-rw-r--r--  3 reprostim reprostim   805 Oct 15 14:02 Videos/2024/10/2024.10.15-14.02.27.765--2024.10.15-14.02.34.175.mkv.duct_usage.json
+-rw-r--r--  2 reprostim reprostim     0 Oct 15 14:02 Videos/2024/10/2024.10.15-14.02.40.327--.mkv.duct_info.json
+-rw-r--r-- 14 reprostim reprostim 10672 Oct 15 14:14 Videos/2024/10/2024.10.15-14.02.40.327--.mkv.duct_usage.json
+```
+
+[[!meta author=yoh]]
+[[!tag projects/repronim]]

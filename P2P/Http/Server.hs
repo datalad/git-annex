@@ -32,13 +32,13 @@ import Annex.WorkerPool
 import Types.WorkerPool
 import Types.Direction
 import Utility.Metered
+import Utility.STM
 
 import Servant
 import qualified Servant.Types.SourceT as S
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Lazy.Internal as LI
-import Control.Concurrent.STM
 import Control.Concurrent.Async
 import Control.Concurrent
 import System.IO.Unsafe

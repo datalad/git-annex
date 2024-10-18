@@ -1,0 +1,57 @@
+### Please describe the problem.
+
+Somewhat not relevant details: We have freeze/thaw scripts configured at the level of a user
+
+When operating on POSIX compliant filesystem (not ACL nfs4 one), our freeze/thaw scripts fail -- exit with non-0:
+
+```
+[f006rq8@discovery-01 ds000003-qc]$ /dartfs/rc/lab/D/DBIC/DBIC/archive/bin-annex/thaw-content code
+Operation to request attribute not supported: code
+Operation to request attribute not supported: code
+Failed while inserting ACE(s).
+An error occurred during recursive file tree walk.
+[f006rq8@discovery-01 ds000003-qc]$ echo $?
+1
+```
+
+but git-annex seems to not care and proceeds forward
+
+```
+[f006rq8@discovery-01 ds000003-qc]$ git annex version
+git-annex version: 10.20240831+git21-gd717e9aca0-1~ndall+1
+
+[f006rq8@discovery-01 ds000003-qc]$ dd if=/dev/random of=binary count=10
+0+10 records in
+0+1 records out
+366 bytes copied, 3.99037 s, 0.1 kB/s
+
+[f006rq8@discovery-01 ds000003-qc]$ file binary
+binary: data
+
+[f006rq8@discovery-01 ds000003-qc]$ git annex add binary
+add binary 
+Operation to request attribute not supported: binary
+Operation to request attribute not supported: /scratch/repro-AXDLDiY/ds000003-qc/binary
+Failed to instantiate ACL.
+An error occurred during recursive file tree walk.
+100%  366 B           582 KiB/s 0s
+Operation to request attribute not supported: .git/annex/objects/mj/mj/MD5E-s366--023ff41f7d20c35b2d78c69aa3ce088b
+Operation to request attribute not supported: .git/annex/objects/mj/mj/MD5E-s366--023ff41f7d20c35b2d78c69aa3ce088b
+Failed while inserting ACE(s).
+An error occurred during recursive file tree walk.
+Operation to request attribute not supported: .git/annex/objects/mj/mj/MD5E-s366--023ff41f7d20c35b2d78c69aa3ce088b/MD5E-s366--023ff41f7d20c35b2d78c69aa3ce088b
+Operation to request attribute not supported: /scratch/repro-AXDLDiY/ds000003-qc/.git/annex/objects/mj/mj/MD5E-s366--023ff41f7d20c35b2d78c69aa3ce088b/MD5E-s366--023ff41f7d20c35b2d78c69aa3ce088b
+Failed to instantiate ACL.
+An error occurred during recursive file tree walk.
+Operation to request attribute not supported: .git/annex/objects/mj/mj/MD5E-s366--023ff41f7d20c35b2d78c69aa3ce088b
+Operation to request attribute not supported: /scratch/repro-AXDLDiY/ds000003-qc/.git/annex/objects/mj/mj/MD5E-s366--023ff41f7d20c35b2d78c69aa3ce088b
+add binary ok
+(recording state in git...)
+[f006rq8@discovery-01 ds000003-qc]$ echo $?
+0
+```
+
+even though it is like a "feature" for us, so that the same freeze/thaw could be specified at user level, I think generally this is not a desired behavior -- if underlying freeze/thaw script fails, git-annex also should fail!
+
+[[!meta author=yoh]]
+[[!tag projects/repronim]]

@@ -5,7 +5,11 @@
  - License: BSD-2-clause
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Utility.OpenFile where
+
+#ifndef mingw32_HOST_OS
 
 import System.IO
 import System.Posix.IO
@@ -30,3 +34,5 @@ openFileBeingWritten f = do
 	fd <- openFdWithMode f ReadOnly Nothing defaultFileFlags
 	(fd', fdtype) <- mkFD (fromIntegral fd) ReadMode (Just (Stream, 0, 0)) False False
 	mkHandleFromFD fd' fdtype (fromRawFilePath f) ReadMode False Nothing
+
+#endif

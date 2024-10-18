@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/59541f50d845e5f81aff06e88a38b9de"
+ subject="comment 4"
+ date="2024-10-16T12:09:02Z"
+ content="""
+I see. Is a combination of `--unauth-*` and `--authenv` supposed to work?
+
+I just tested it and if I serve a repository with `git annex p2phttp --unauth-readonly --authenv-http -J2 --port 54321` and try to do a `git annex drop --from origin` then it responds with a 403 and doesn't ask for credentials, even though there is a user configured that has write permissions and dropping works without the `--unauth-readonly`. Even if I previously authenticated and have the credentials in my keyring it still 403s, as git-annex seems to always first try the request without authentication.
+
+This means the `--unauth-readonly` option currently isn't \"allow unauthenticated read-access\", but \"*only* allow unauthenticated read-access, deny all writes\".
+
+I think wanting anonymous read and authenticated write access is quite common, so maybe this should be supported?
+
+This kind of thing starts to work as soon as p2phttp responds with 401 for non-read requests, prompting git-annex to ask for credentials, but then you get the issue that a drop on the client-side will try to lock, gets a 401, and asks for credentials, instead of falling back to the read-only way of dropping (which is where lockcontent is special: it isn't strictly necessary for a drop to succeed, compared to the other endpoints which have nothing meaningful to fallback to).
+
+This is why I assumed that lockcontent was handled specially already, and maybe it should be?
+
+I think the way it is written in the design document doesn't support the current behavior. It says \"When authentication is successful but does not allow a request to be performed, it will fail with 403 Forbidden.\" but authentication hasn't even been attempted before returning a 403 with `--unauth-readonly`. Instead, it also says \"When a request needs authentication, it will fail with 401 Unauthorized.\", which would apply to this situation (under the assumption that `--unauth-readonly` doesn't mean \"no authentication possible at all\", which I had).
+"""]]

@@ -12,3 +12,5 @@ There is the gcrypt special remote (and it worked with the forgejo instance I tr
 The advantage of having the annexed files but not the git repo encrypted is that the file tree, commit history, readme and all the things typically displayed by the site would still be viewable (communicating repository layout, contents), but GPG keys would be used to control practical access (possibly on top of site's access premissions).
 
 Thanks in advance for considering! -- MSz
+
+[[!tag projects/INM7]]

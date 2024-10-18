@@ -1,0 +1,5 @@
+`git annex import` seems to unconditionally ignore all kinds of symbolic links in the source importtree remote. We have some "legacy" datasets that I would like to wholesale import into git-annex repositories, and they use symbolic links pointing at other files within the same directory to avoid some duplication.
+
+Is there an option to make `git annex import` not ignore those symlinks, that I have overlooked? If not then this is a request to have such an option.
+
+I think it could either resolve the symlink, check that the target is within the to-be-imported directory, and import it just like a regular file if it is, or it could import the symlink as-is with no modifications.

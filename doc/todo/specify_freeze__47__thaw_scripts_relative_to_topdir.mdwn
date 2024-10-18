@@ -1,0 +1,27 @@
+If I try to specify custom scripts for freeze/thaw in `.git/config` of a repository with relative paths (since absolute paths are not robust to renames etc and thus IMHO should be avoided):
+
+```
+(datalad) [f006rq8@discovery-01 subdir]$ pwd
+/dartfs/rc/lab/D/DBIC/DBIC/CON/asmacdo/tmp/test-local-thaw/subdir
+
+(datalad) [f006rq8@discovery-01 subdir]$ git config get annex.thawcontent-command
+.git/annex/thaw-content %path
+
+(datalad) [f006rq8@discovery-01 subdir]$ git config get annex.freezecontent-command
+.git/annex/freeze-content %path
+
+```
+
+their invocation fails when ran from subdirectory
+
+```
+[2024-10-16 14:47:08.941720897] (Annex.Perms) freezing content ../.git/annex/objects/6k/VJ/MD5E-s115--9a295e3f5f148380d74c3ff3ebdaa173/MD5E-s115--9a295e3f5f148380d74c3ff3ebdaa173            
+[2024-10-16 14:47:08.948171243] (Utility.Process) process [2572997] call: sh ["-c",".git/annex/freeze-content '../.git/annex/objects/6k/VJ/MD5E-s115--9a295e3f5f148380d74c3ff3ebdaa173/MD5E-s1
+15--9a295e3f5f148380d74c3ff3ebdaa173'"]                                                                                                                                                       
+sh: .git/annex/freeze-content: No such file or directory  
+```
+
+I wonder if there could be a way added to be able to specify them relative to the top of the repository.
+
+[[!meta author=yoh]]
+[[!tag projects/repronim]]

@@ -1,0 +1,68 @@
+### Please describe the problem.
+
+I am yet to grasp what is "the best" or "legit" functioning here but I think it should be consistent between `git add` and `git annex add`, but we observe that on an ACL powered filesystem, `git add` commits **without executable bit set**, whenever `git-annex add` even if adding to git, results in **executable bit set**.
+
+Gory details
+
+```
+(datalad) [f006rq8@discovery-01 ds-perms]$ cat .gitattributes 
+* annex.backend=MD5E
+**/.git* annex.largefiles=nothing
+* annex.largefiles=((mimeencoding=binary)and(largerthan=0))
+
+(datalad) [f006rq8@discovery-01 ds-perms]$ git --version
+git version 2.39.2
+
+(datalad) [f006rq8@discovery-01 ds-perms]$ git annex version --raw; echo
+10.20240831+git21-gd717e9aca0-1~ndall+1
+
+(datalad) [f006rq8@discovery-01 ds-perms]$ echo text > by-git-add
+(datalad) [f006rq8@discovery-01 ds-perms]$ echo text > by-git-annex-add
+(datalad) [f006rq8@discovery-01 ds-perms]$ git add by-git-add
+(datalad) [f006rq8@discovery-01 ds-perms]$ git annex add by-git-annex-add
+add by-git-annex-add (non-large file; adding content to git repository) ok
+(recording state in git...)
+
+(datalad) [f006rq8@discovery-01 ds-perms]$ git commit -m 'added two files, one with git-annex, one with git'
+[master 1ed76d5] added two files, one with git-annex, one with git
+ 2 files changed, 2 insertions(+)
+ create mode 100644 by-git-add
+ create mode 100755 by-git-annex-add
+```
+
+So the git added one committed with mode 100644 whenever git-annex added -- with 100755.
+
+Both files appear "identical" at POSIX or ACL level of permissions:
+
+```
+(datalad) [f006rq8@discovery-01 ds-perms]$ nfs4_getfacl by-git-add by-git-annex-add
+# file: by-git-add
+A::OWNER@:rwadxtTnNcy
+A:g:rc-DBIC-admin@KIEWIT.DARTMOUTH.EDU:rwadxtTnNcCoy
+A::d11124v@KIEWIT.DARTMOUTH.EDU:rwadxtTnNcCoy
+A::f002d6b@KIEWIT.DARTMOUTH.EDU:rwadxtTnNcCoy
+A::f00275v@KIEWIT.DARTMOUTH.EDU:rwadxtTnNcCoy
+A::d31548v@KIEWIT.DARTMOUTH.EDU:rwadxtTnNcCoy
+A::GROUP@:rwadxtTnNcy
+A::d26427b@KIEWIT.DARTMOUTH.EDU:rwadxtTnNcCoy
+A:g:rc-DartFSadmin@KIEWIT.DARTMOUTH.EDU:rwadxtTnNcCoy
+
+# file: by-git-annex-add
+A::OWNER@:rwadxtTnNcy
+A:g:rc-DBIC-admin@KIEWIT.DARTMOUTH.EDU:rwadxtTnNcCoy
+A::d11124v@KIEWIT.DARTMOUTH.EDU:rwadxtTnNcCoy
+A::f002d6b@KIEWIT.DARTMOUTH.EDU:rwadxtTnNcCoy
+A::f00275v@KIEWIT.DARTMOUTH.EDU:rwadxtTnNcCoy
+A::d31548v@KIEWIT.DARTMOUTH.EDU:rwadxtTnNcCoy
+A::GROUP@:rwadxtTnNcy
+A::d26427b@KIEWIT.DARTMOUTH.EDU:rwadxtTnNcCoy
+A:g:rc-DartFSadmin@KIEWIT.DARTMOUTH.EDU:rwadxtTnNcCoy
+
+(datalad) [f006rq8@discovery-01 ds-perms]$ ls -l by-git-*
+-rwxrwx---+ 1 f006rq8 rc-DBIC 5 Oct 16 15:05 by-git-add
+-rwxrwx---+ 1 f006rq8 rc-DBIC 5 Oct 16 15:05 by-git-annex-add
+
+```
+
+[[!meta author=yoh]]
+[[!tag projects/repronim]]

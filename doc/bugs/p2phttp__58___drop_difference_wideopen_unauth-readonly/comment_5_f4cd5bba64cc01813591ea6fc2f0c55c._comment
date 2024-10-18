@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2024-10-17T13:36:56Z"
+ content="""
+> I see. Is a combination of `--unauth-*` and `--authenv` supposed to work?
+
+I didn't consider combining the two in the current implementation, so
+behavior is essentially undefined. It happens to check for `--unauth-*`
+before `--authenv` currently.
+
+> I think wanting anonymous read and authenticated write access is quite common, so maybe this should be supported?
+
+Agreed.
+
+> the issue that a drop on the client-side will try to lock, gets a 401,
+> and asks for credentials, instead of falling back to the read-only way of
+> dropping 
+
+Well there are benefits to it actually locking rather than the fallback. It
+allows dropping in more situations. So falling back on a 401 does not seem
+like a good idea to me.
+
+It might be that lockcontent should be allowed in a readonly connection.
+The only possible issue is that would allow an anon to keep an object locked
+indefinitely as some kind of DOS attack, so long as they were willing to
+keep a connection open for keeplocked.
+"""]]

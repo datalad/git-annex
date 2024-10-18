@@ -36,6 +36,7 @@ import P2P.Http.Url
 import Annex.Concurrent
 import Utility.Url (BasicAuth(..))
 import Utility.HumanTime
+import Utility.STM
 import qualified Git.Credential as Git
 
 import Servant hiding (BasicAuthData(..))
@@ -46,7 +47,6 @@ import Network.HTTP.Client
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy.Internal as LI
 import qualified Data.Map as M
-import Control.Concurrent.STM
 import Control.Concurrent.Async
 import Control.Concurrent
 import System.IO.Unsafe
