@@ -39,7 +39,8 @@ Authentication is done using HTTP basic auth. The realm to use when
 authenticating is "git-annex". The charset is UTF-8.
 
 When authentication is successful but does not allow a request to be
-performed, it will fail with 403 Forbidden.
+performed, it will fail with 403 Forbidden. (This also is sent when the
+server does not support authentication.)
 
 Note that HTTP basic auth is not encrypted so is only secure when used
 over HTTPS.
