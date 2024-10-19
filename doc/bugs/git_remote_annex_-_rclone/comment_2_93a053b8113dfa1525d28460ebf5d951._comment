@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2024-10-19T21:51:48Z"
+ content="""
+About using rclone with git-remote-annex, I wonder how practical it will
+be, since rclone does need its own configuration. To clone from it you will
+need to have rclone configured already, it seems.
+
+If the rclone special remote could include the complete rclone
+configuration in its configuration, it would be possible to make a
+git-remote-annex url that could be cloned with no additional configuration. 
+"""]]
