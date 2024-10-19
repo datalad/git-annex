@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-10-19T20:23:21Z"
+ content="""
+Here I see the error after `git-annex get`, but not after `git-annex add`.
+
+git version 2.45.2
+"""]]
