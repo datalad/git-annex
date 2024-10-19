@@ -354,6 +354,7 @@ parseKeyVariety "WORM"         = WORMKey
 parseKeyVariety "URL"          = URLKey
 parseKeyVariety "VURL"         = VURLKey
 parseKeyVariety "GITBUNDLE"    = GitBundleKey
+parseKeyVariety "GITMANIFEST"  = GitManifestKey
 parseKeyVariety b
 	| "X" `S.isPrefixOf` b = 
 		let b' = S.tail b

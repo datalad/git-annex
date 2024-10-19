@@ -5,6 +5,8 @@ git-annex (10.20240928) UNRELEASED; urgency=medium
     can be combined with --authenv.
   * Allow enabling the servant build flag with older versions of stm,
     allowing building with ghc 9.0.2.
+  * git-remote-annex: Fix bug that prevented using it with external special
+    remotes, leading to protocol error messages involving "GITMANIFEST".
 
  -- Joey Hess <id@joeyh.name>  Thu, 17 Oct 2024 11:02:17 -0400
 
