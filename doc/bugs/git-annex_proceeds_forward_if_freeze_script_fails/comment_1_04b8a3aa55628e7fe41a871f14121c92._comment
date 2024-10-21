@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-10-21T14:49:49Z"
+ content="""
+Given the number of different ways freezeContent is called, it would be
+very difficult to implement error unwinding for it. So a failure would
+leave things in a potentially unusual state. For example a failure during
+`git-annex add` at one point would leave the file moved into the
+repository, but without an annex symlink pointing to it.
+
+Or in some cases, freezeContent is the last thing that is done, so failing
+would leave it in the same state as not failing.
+
+Looking at this another way, there are two ways a freezecontent hook can
+fail:
+
+1. It exists successfully, but has not actually managed to freeze the
+   content.
+2. It exits nonzero.
+
+git-annex cannot detect the first case. So there does not seem to be much
+benefit to complicating git-annex to detect the second case and handle it
+specially.
+
+Regular lock down of files by removing permissions can also fail, in an
+expected way, in a shared repository when the "wrong" user is running
+git-annex . `git-annex fsck` deals with that by trying again to freeze the
+content and checking if the file has the desired permission, and warning if
+not.
+
+Since fsck does run the freeze hook, it will display those error messages
+again, which at least will remind the user that the hook is broken. And if
+they fix it, fsck will freeze the content.
+"""]]
