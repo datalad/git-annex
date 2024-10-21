@@ -19,7 +19,7 @@ optParser :: CmdParamsDesc -> Parser Adjustment
 optParser _ =
 	(LinkAdjustment <$> linkAdjustmentParser)
 	<|> (PresenceAdjustment <$> presenceAdjustmentParser <*> maybeLinkAdjustmentParser)
-	<|> (LinkPresentAdjustment <$> linkPresentAdjustmentParser)
+	<|> (LockUnlockPresentAdjustment <$> lockUnlockPresentAdjustmentParser)
 
 linkAdjustmentParser :: Parser LinkAdjustment
 linkAdjustmentParser =
@@ -46,8 +46,8 @@ presenceAdjustmentParser =
 		<> help "hide annexed files whose content is not present"
 		)
 
-linkPresentAdjustmentParser :: Parser LinkPresentAdjustment
-linkPresentAdjustmentParser =
+lockUnlockPresentAdjustmentParser :: Parser LockUnlockPresentAdjustment
+lockUnlockPresentAdjustmentParser =
 	flag' UnlockPresentAdjustment
 		( long "unlock-present"
 		<> help "unlock files whose content is present; lock rest"

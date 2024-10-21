@@ -11,7 +11,7 @@ module Annex.AdjustedBranch (
 	Adjustment(..),
 	LinkAdjustment(..),
 	PresenceAdjustment(..),
-	LinkPresentAdjustment(..),
+	LockUnlockPresentAdjustment(..),
 	adjustmentHidesFiles,
 	adjustmentIsStable,
 	OrigBranch,
@@ -88,11 +88,11 @@ instance AdjustTreeItem Adjustment where
 		adjustTreeItem p t >>= \case
 			Nothing -> return Nothing
 			Just t' -> adjustTreeItem l t'
-	adjustTreeItem (LinkPresentAdjustment l) t = adjustTreeItem l t
+	adjustTreeItem (LockUnlockPresentAdjustment l) t = adjustTreeItem l t
 
 	adjustmentIsStable (LinkAdjustment l) = adjustmentIsStable l
 	adjustmentIsStable (PresenceAdjustment p _) = adjustmentIsStable p
-	adjustmentIsStable (LinkPresentAdjustment l) = adjustmentIsStable l
+	adjustmentIsStable (LockUnlockPresentAdjustment l) = adjustmentIsStable l
 
 instance AdjustTreeItem LinkAdjustment where
 	adjustTreeItem UnlockAdjustment =
@@ -115,7 +115,7 @@ instance AdjustTreeItem PresenceAdjustment where
 	adjustmentIsStable HideMissingAdjustment = False
 	adjustmentIsStable ShowMissingAdjustment = True
 
-instance AdjustTreeItem LinkPresentAdjustment where
+instance AdjustTreeItem LockUnlockPresentAdjustment where
 	adjustTreeItem UnlockPresentAdjustment = 
 		ifPresent adjustToPointer adjustToSymlink
 	adjustTreeItem LockPresentAdjustment =
