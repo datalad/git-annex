@@ -1,0 +1,44 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/59541f50d845e5f81aff06e88a38b9de"
+ subject="comment 2"
+ date="2024-10-21T16:32:18Z"
+ content="""
+I understand those concerns, but I think skipping all symbolic links is doing too much in this case.
+
+I am interested in preserving symbolic links that point at other files within the same to-be-imported directory. I think this could be done safely by either resolving the symlink and importing the target file if it is a file within the importtree directory, or just importing the symlink as a symbolic link into git. I am starting to prefer the latter, and since it wouldn't import any actual file content it would even be safe to import symlinks pointing outside of the importtree directory.
+
+This is what a small part of these datasets looks like:
+
+```
+.
+├── 0630_1
+│   ├── falcon_avionik.nc -> ../falcon/nasa/avionik/bin/cmet_080630a.nc
+│   ├── falcon_cmet.nc -> ../falcon/nasa/cmet/bin/f080630a_TG_all_V3.nc
+│   ├── falcon_fish.nc -> ../falcon/fish/bin/ff080630_1.dat.1_s.CALC.nc
+│   ├── falcon_jno2.nc -> ../falcon/nasa/jno2/bin/JNO2_final_F080630a.nc
+<...>
+├── falcon
+│   ├── fish
+│   │   ├── bin
+│   │   │   ├── ff080630_1.dat.1_s.CALC.nc
+<...>
+│   ├── nasa
+│   │   ├── avionik
+│   │   │   ├── bin
+│   │   │   │   ├── cmet_080630a.nc
+<...>
+│   │   ├── cmet
+│   │   │   ├── bin
+│   │   │   │   ├── f080630a_TG_all_V3.nc
+<...>
+│   │   └── jno2
+│   │       ├── bin
+│   │       │   ├── JNO2_final_F080630a.nc
+<...>
+```
+
+I would like to meaningfully preserve these symbolic links when using `git annex import`. Right now these paths are simply missing after the import.
+
+I think @Ilya_Shlyakhter has been asking for this as well in the linked bug report.
+"""]]
