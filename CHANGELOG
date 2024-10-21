@@ -10,6 +10,8 @@ git-annex (10.20240928) UNRELEASED; urgency=medium
     allowing building with ghc 9.0.2.
   * git-remote-annex: Fix bug that prevented using it with external special
     remotes, leading to protocol error messages involving "GITMANIFEST".
+  * adjust: Allow any order of options when combining --hide-missing with
+    options like --unlock.
 
  -- Joey Hess <id@joeyh.name>  Thu, 17 Oct 2024 11:02:17 -0400
 

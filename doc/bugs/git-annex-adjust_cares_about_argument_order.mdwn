@@ -40,3 +40,5 @@ This is admittedly arguably consistent with https://git-annex.branchable.com/git
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes, I've been really happy using it to manage a bunch of videos, where I only need some on my laptop at any given time. Way better than my previous "manually scp things around" strategy.
+
+> [[fixed|done]] --[[Joey]] 
