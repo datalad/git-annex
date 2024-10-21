@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2024-10-21T13:46:00Z"
+ content="""
+Ok I decided to allow locking for unauthenticated users by default.
+
+In case that gets abused there is a --unauth-nolocking option which will
+result in a 401 when --authenv is used, or a 403 otherwise.
+"""]]

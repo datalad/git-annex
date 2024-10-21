@@ -127,6 +127,19 @@ convenient way to download the content of any key, by using the path
   This can be combined with `--authenv` or `--authenv-http` to allow
   anonymous appendonly access, and authenticated remove access.
 
+* `--unauth-nolocking`
+
+  By default, when `--unauth-readonly` or `--unauth-appendonly` is used,
+  unauthenticated users are allowed to lock content in the repository.
+  This option prevents that.
+
+  Locking content prevents it from being dropped from the repository
+  so it may be that an unauthenticated user abuses that, and this option
+  can be used in such a situation.
+
+  Note that enabling this option will prevent unauthenticated users from
+  dropping content from their other remotes in some cases.
+
 * `--wideopen`
 
   Gives unauthenticated users full read+write+remove access to the
