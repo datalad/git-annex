@@ -30,7 +30,7 @@ here
 XX__ file.ext
 ```
 
-Is there a way to have added files automatically transferred to the remote?
+Is there a way to have added files automatically transfer to the remote?
 
 I also noticed that the web app hangs for 30s every 4-5 clicks. Something seems to be wrong with my setup and configuration. What can it be?
 
