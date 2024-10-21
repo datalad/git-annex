@@ -35,3 +35,41 @@ Is there a way to have added files automatically transferred to the remote?
 I also noticed that the web app hangs for 30s every 4-5 clicks. Something seems to be wrong with my setup and configuration. What can it be?
 
 Thanks, this seems to be a really great a versatile tool!
+
+---
+
+Update:
+
+Looks like the git-annex service doesn't really run:
+
+```sh
+$ brew services
+Name      Status  User     File
+git-annex stopped username ~/Library/LaunchAgents/homebrew.mxcl.git-annex.plist
+```
+
+Trying to start it yields:
+
+```sh
+$ brew services start git-annex
+Bootstrap failed: 5: Input/output error
+Try re-running the command as root for richer errors.
+Error: Failure while executing; `/bin/launchctl bootstrap gui/501 /Users/username/Library/LaunchAgents/homebrew.mxcl.git-annex.plist` exited with 5.
+```
+
+Restarting does not show any errors
+
+```sh
+$ brew services restart git-annex
+Stopping `git-annex`... (might take a while)
+==> Successfully stopped `git-annex` (label: homebrew.mxcl.git-annex)
+==> Successfully started `git-annex` (label: homebrew.mxcl.git-annex)
+```
+
+yet it makes no difference:
+
+```sh
+$ brew services
+Name      Status  User     File
+git-annex stopped username ~/Library/LaunchAgents/homebrew.mxcl.git-annex.plist
+```
