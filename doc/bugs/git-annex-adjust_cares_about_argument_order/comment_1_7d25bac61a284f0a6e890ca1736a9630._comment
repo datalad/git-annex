@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-10-21T19:06:47Z"
+ content="""
+This is not intentional behavior, and is surprising. I don't think an
+applicative option parser should ever behave this way. Weird!
+"""]]
