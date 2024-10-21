@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: corruption using git-annex-remote-rclone"""
+ date="2024-10-21T14:35:17Z"
+ content="""
+This is plausible. git-annex requires that special remotes only show a file
+as present after a successful upload. If the data store doesn't work that
+way, the file needs to be uploaded to a temporary name and renamed
+atomically instead. If that's not possible, the data store is not safe for
+use by git-annex.
+
+Given all the different types data stores supported by rclone, this may be
+difficult, but it's the right thing for the external special remote to do.
+I think you should file a bug.
+
+(Does `rclone gitannex` also have this problem?)
+"""]]
