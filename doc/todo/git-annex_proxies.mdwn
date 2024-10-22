@@ -26,13 +26,23 @@ Planned schedule of work:
 
 [[!tag projects/openneuro]]
 
-## work notes
+## remaining things to do
 
-* Currently working on streaming special remotes via proxy 
-  in the `streamproxy` branch.
+* Streaming uploads to special remotes via the proxy. Possibly; if a
+  workable design can be developed. It seems difficult without changing the
+  external special remote protocol, unless a fifo is used. Make ORDERED
+  response in p2p protocol allow using a fifo?
 
-* Downloads from special remotes can stream (though using a temp file on
-  the proxy). Next: Streaming uploads via the proxy.
+* Indirect uploads when proxying for special remote is an alternative that
+  would work for OpenNeuro's use case.
+
+* If not implementing upload streaming to proxied special remotes, 
+  this needs to be addressed:
+  When an upload to a cluster is distributed to multiple special remotes,
+  a temporary file is written for each one, which may even happen in
+  parallel. This is a lot of extra work and may use excess disk space.
+  It should be possible to only write a single temp file.
+  (With streaming this wouldn't be an issue.)
 
 ## completed items for October's work on streaming through proxy to special remotes
 
@@ -146,21 +156,8 @@ Planned schedule of work:
 * Resuming an interrupted download from proxied special remote makes the proxy
   re-download the whole content. It could instead keep some of the 
   object files around when the client does not send SUCCESS. This would
-  use more disk, but without streaming, proxying a special remote already
-  needs some disk. And it could minimize to eg, the last 2 or so.
+  use more disk, but could minimize to eg, the last 2 or so.
   The design doc has some more thoughts about this.
-
-* Streaming download from proxied special remotes. See design.
-  (Planned for September)
-
-* When an upload to a cluster is distributed to multiple special remotes,
-  a temporary file is written for each one, which may even happen in
-  parallel. This is a lot of extra work and may use excess disk space.
-  It should be possible to only write a single temp file.
-  (With streaming this won't be an issue.)
-
-* Indirect uploads when proxying for special remote
-  (to be considered). See design.
 
 * Getting a key from a cluster currently picks from amoung
   the lowest cost remotes at random. This could be smarter,
@@ -178,8 +175,6 @@ Planned schedule of work:
 
   If seriously tackling this, it might be worth making enough information
   available to use spanning tree protocol for routing inside clusters.
-
-* Optimise proxy speed. See design for ideas.
 
 * Speed: A proxy to a local git repository spawns git-annex-shell 
   to communicate with it. It would be more efficient to operate

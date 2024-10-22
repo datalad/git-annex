@@ -687,7 +687,7 @@ provides to the client.
 
 An example use case involves
 [presigned S3 urls](https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-presigned-url.html).
-When one of the proxy's nodes is a S3 bucket, having the client upload
+When the proxy is to a S3 bucket, having the client upload
 directly to S3 would avoid needing double traffic through the proxy's
 network.
 
@@ -695,15 +695,33 @@ This would need a special remote that generates the presigned S3 url.
 Probably an external, so the external special remote protocol would need to
 be updated as well as the P2P protocol.
 
-Since an upload to a proxy can be distributed to multiple nodes, should
-the proxy be able to indicate more than one url that the client
-should upload to? Also the proxy might want an upload to still be sent to
+Since an upload to a cluster can be distributed to multiple nodes, should
+it be able to indicate more than one url that the client
+should upload to? Also the cluster might want an upload to still be sent to
 it in addition to url(s). Of course the downside is that the client would
-need to upload more than once, which eliminates one benefit of the proxy.
-So it might be reasonable to only support one url, but what if the proxy 
-has multiple remotes that want to provide urls, how does it pick which one
-wins?
+need to upload more than once, which eliminates one benefit of the cluster.
+
+> Seems reasonable to only allow this to specify 1 url for the client to
+> upload to. If a cluster has several remotes that can use urls, it would
+> need to pick 1, or it would need to have the client upload to it, and
+> distribute it to the multiple nodes.
 
 Is only an URL enough for the client to be able to upload to wherever? It
 may be that the HTTP verb is also necessary. Consider POST vs PUT. Some
 services might need additional HTTP headers.
+
+S3 can optionally verify the upload of a presigned url by using
+the Content-MD5 header. The right md5 would not be known when generating a
+presigned url, unless the key happened to by an md5 key. The client could
+hash the content and fill in an md5 in a template. Added complixity in this
+particular case does not seem likely to be worthwhile. git-annex does not
+usually have S3 verify the checksum.
+
+S3 also supports using POST from a web browser, which is similar to a
+presigned url:
+<https://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-UsingHTTPPOST.html>
+This does have a bunch of headers but also uses `multipart/form-data`,
+so just dumping the file into the body won't work.
+Seems unneccessary to support since javascript should be able to access
+the file that the user has selected to upload, and PUT its content to the
+presigned url.
