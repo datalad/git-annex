@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-10-22T17:35:54Z"
+ content="""
+[[tips/Decrypting_files_in_special_remotes_without_git-annex]] has an
+example using `openssl dgst -sha1 -hmac`
+"""]]
