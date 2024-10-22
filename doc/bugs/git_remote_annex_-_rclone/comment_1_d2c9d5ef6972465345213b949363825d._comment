@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-10-19T20:48:11Z"
+ content="""
+I got this protocol level dump:
+
+	[2024-10-19 16:59:54.229607011] (Annex.ExternalAddonProcess) /home/joey/bin/rclone[1] <-- CHECKPRESENT GITMANIFEST--1eb4e389-9aea-4968-a947-498fd52645e0
+	[2024-10-19 16:59:54.230079229] (Annex.ExternalAddonProcess) /home/joey/bin/rclone[1] --> CHECKPRESENT-FAILURE GITMANIFEST--1eb4e389-9aea-4968-a947-498fd52645e0
+
+That protocol looks fine, problem is parseKeyVariety does not have a parser for the
+GITMANIFEST key type. Once I added that, it got to a different failure that
+looked due to my lack of setup of rclone, presumably it would work with a
+properly setup rclone.
+
+I think this probably affects using any special remote with git-remote-annex.
+This is still a fairly new and not much used feature, and I may not have tested
+it with external special remotes when developing it.
+
+Re your questions, git-remote-annex doesn't care about the details of how
+the special remote is configured, it's up to you to provide an url that
+provides all necessary configuration options for the special remote,
+whatever those are. Spaces in a path should work if properly url-encoded.
+"""]]

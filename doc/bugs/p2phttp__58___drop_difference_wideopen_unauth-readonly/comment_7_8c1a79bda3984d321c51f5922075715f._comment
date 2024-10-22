@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2024-10-18T14:56:10Z"
+ content="""
+In a sense the underlying problem here is that git-annex as a client to
+p2phttp does not know if the user wants it to be read-only or prompt for a
+password as necessary to perform write operations.
+
+Another way that would be a problem is if a p2phttp server supports both
+readonly and authenticated operation, but the user does not have an
+account, and is using say, `git-annex assist`, which wants to store content
+on the server if possible. So it will prompt repeatedly for a login and
+password which the user does not have.
+
+In this sense, the server is fine in sending a 401, the problem is that the
+client doesn't know when the user doesn't want that to result in a
+password prompt. If the client did know it could treat that 401 the same as
+a 403.
+
+Looking at drop locking through this lens, if the client wants to avoid
+password prompts and the server requires authentication for lockcontent,
+it's reasonable for the client to fall back to checkpresent for dropping.
+The same as it's reasonable for checkpresent to be used when the remote is
+a dumb http git remote.
+
+The url to the p2phttp remote seems like the natural way for the user to
+tell git-annex if they want an anonymous or an authenticated connection.
+
+It already works to use `annex+http://joey@example.com/git-annex/`,
+which will make it prompt for my password when operations need
+authentication.
+
+So it would make sense to support "anonymous@" and special case that
+to treat 401 the same as 403.
+"""]]

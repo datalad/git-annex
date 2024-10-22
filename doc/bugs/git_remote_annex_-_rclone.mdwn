@@ -46,3 +46,7 @@ I'm slowly integrating it into everything I do because it's so cool. Right now, 
 - git-remote-annex - Seems incredibly promising despite issues I've had getting it to install (see below) let alone work quite yet
 
 Also, if anyone is having issue using git-remote-annex, like I did running on OSX installed via homebrew, the solution is to add a symlink manually from (e.g.) `$(realpath /opt/homebrew/bin/git-annex[-shell]) <- /opt/homebrew/bin/git-remote-annex`. In other words, the current homebrew recipe simply doesn't symlink the git-annex command to git-remote-annex on your path, which git annex automagically act like a git remote helper if called like this so luckily it's an easy fix.
+
+> [[fixed|done]] I *think*, please comment if not --[[Joey]]
+
+[[!tag projects/INM7]]

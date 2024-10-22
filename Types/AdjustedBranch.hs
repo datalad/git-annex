@@ -10,7 +10,7 @@ module Types.AdjustedBranch where
 data Adjustment
 	= LinkAdjustment LinkAdjustment
 	| PresenceAdjustment PresenceAdjustment (Maybe LinkAdjustment)
-	| LinkPresentAdjustment LinkPresentAdjustment
+	| LockUnlockPresentAdjustment LockUnlockPresentAdjustment
 	deriving (Show, Eq)
 
 data LinkAdjustment
@@ -25,7 +25,7 @@ data PresenceAdjustment
 	| ShowMissingAdjustment
 	deriving (Show, Eq)
 
-data LinkPresentAdjustment
+data LockUnlockPresentAdjustment
 	= UnlockPresentAdjustment
 	| LockPresentAdjustment
 	deriving (Show, Eq)
@@ -41,8 +41,8 @@ instance ReversableAdjustment Adjustment where
 		LinkAdjustment (reverseAdjustment l)
 	reverseAdjustment (PresenceAdjustment p ml) =
 		PresenceAdjustment (reverseAdjustment p) (fmap reverseAdjustment ml)
-	reverseAdjustment (LinkPresentAdjustment l) =
-		LinkPresentAdjustment (reverseAdjustment l)
+	reverseAdjustment (LockUnlockPresentAdjustment l) =
+		LockUnlockPresentAdjustment (reverseAdjustment l)
 
 instance ReversableAdjustment LinkAdjustment where
 	reverseAdjustment UnlockAdjustment = LockAdjustment
@@ -55,7 +55,7 @@ instance ReversableAdjustment PresenceAdjustment where
 	reverseAdjustment HideMissingAdjustment = ShowMissingAdjustment
 	reverseAdjustment ShowMissingAdjustment = HideMissingAdjustment
 
-instance ReversableAdjustment LinkPresentAdjustment where
+instance ReversableAdjustment LockUnlockPresentAdjustment where
 	reverseAdjustment UnlockPresentAdjustment = LockPresentAdjustment
 	reverseAdjustment LockPresentAdjustment = UnlockPresentAdjustment
 

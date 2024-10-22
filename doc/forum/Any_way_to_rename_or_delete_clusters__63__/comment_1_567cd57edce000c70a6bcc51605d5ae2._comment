@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-10-21T23:11:11Z"
+ content="""
+The name of the cluster ends up in git-annex:proxy.log. So probably the
+easiest thing to do is to `git-annex initcluster` a new cluster with the new name,
+change the git configs remote.foo.annex-cluster-node to be set to the new
+name, and run `git-annex updatecluster`. 
+
+That will remove all the nodes from the old cluster name and add them to the new
+cluster name, and without any nodes left the old cluster name will never be
+displayed anywhere.
+"""]]

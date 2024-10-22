@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: numcopies & force-trusting is ignored by fsck on readonly directory remotes?"""
+ date="2024-10-21T18:54:55Z"
+ content="""
+importtree=yes remotes are always untrusted. The reason is that
+something else is assumed to be writing to those remotes, which is what
+populates them with files. And that could delete or change any file at any
+time. So if git-annex didn't untrust the remote, and relied on it to hold
+the only copy of a file, such a change would cause data loss.
+
+There would need to be a new config setting to add the concept of
+guaranteed readonly importtree=yes remotes.
+
+git-annex does not allow --numcopies to be set to 0 as that can cause data
+loss.
+"""]]

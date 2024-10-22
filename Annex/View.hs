@@ -513,7 +513,7 @@ applyView'' mkviewedfile getfilemetadata view madj l clean conv = do
 		Nothing -> stagesymlink uh f k
 		Just (LinkAdjustment UnlockAdjustment) ->
 			stagepointerfile uh f k mtreeitemtype
-		Just (LinkPresentAdjustment UnlockPresentAdjustment) ->
+		Just (LockUnlockPresentAdjustment UnlockPresentAdjustment) ->
 			ifM (inAnnex k)
 				( stagepointerfile uh f k mtreeitemtype
 				, stagesymlink uh f k

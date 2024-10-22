@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-10-21T15:34:26Z"
+ content="""
+See [[bugs/git-annex-import_imports_outside_of_directory]] where following
+symlinks on import turned into a serious foot bomb.
+"""]]

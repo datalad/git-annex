@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2024-10-21T15:25:22Z"
+ content="""
+One simple solution is the put the script somewhere in PATH and then set
+the config to the name of the script rather than its location.
+
+In the case of the freeze and thaw hooks, these are run a lot and so
+git-annex shouldn't be checking if .git/hooks/annex-freeze-content exists
+every time.
+"""]]

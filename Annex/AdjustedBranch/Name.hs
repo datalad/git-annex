@@ -37,7 +37,7 @@ instance SerializeAdjustment Adjustment where
 		serializeAdjustment p
 	serializeAdjustment (PresenceAdjustment p (Just l)) = 
 		serializeAdjustment p <> "-" <> serializeAdjustment l
-	serializeAdjustment (LinkPresentAdjustment l) =
+	serializeAdjustment (LockUnlockPresentAdjustment l) =
 		serializeAdjustment l
 	deserializeAdjustment s = 
 		(LinkAdjustment <$> deserializeAdjustment s)
@@ -46,7 +46,7 @@ instance SerializeAdjustment Adjustment where
 			<|>
 		(PresenceAdjustment <$> deserializeAdjustment s <*> pure Nothing)
 			<|>
-		(LinkPresentAdjustment <$> deserializeAdjustment s)
+		(LockUnlockPresentAdjustment <$> deserializeAdjustment s)
 	  where
 		(s1, s2) = separate' (== (fromIntegral (ord '-'))) s
 
@@ -68,7 +68,7 @@ instance SerializeAdjustment PresenceAdjustment where
 	deserializeAdjustment "showmissing" = Just ShowMissingAdjustment
 	deserializeAdjustment _ = Nothing
 
-instance SerializeAdjustment LinkPresentAdjustment where
+instance SerializeAdjustment LockUnlockPresentAdjustment where
 	serializeAdjustment UnlockPresentAdjustment = "unlockpresent"
 	serializeAdjustment LockPresentAdjustment = "lockpresent"
 	deserializeAdjustment "unlockpresent" = Just UnlockPresentAdjustment

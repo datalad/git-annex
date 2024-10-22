@@ -425,7 +425,7 @@ serveLockContent
 	-> Maybe Auth
 	-> Handler LockResult
 serveLockContent st su apiver (B64Key k) cu bypass sec auth = do
-	conn <- getP2PConnection apiver st cu su bypass sec auth WriteAction id
+	conn <- getP2PConnection apiver st cu su bypass sec auth LockAction id
 	let lock = do
 		lockresv <- newEmptyTMVarIO
 		unlockv <- newEmptyTMVarIO
@@ -465,7 +465,7 @@ serveKeepLocked
 	-> S.SourceT IO UnlockRequest
 	-> Handler LockResult
 serveKeepLocked st _su _apiver lckid _cu _bypass sec auth _ _ unlockrequeststream = do
-	checkAuthActionClass st sec auth WriteAction $ \_ -> do
+	checkAuthActionClass st sec auth LockAction $ \_ -> do
 		liftIO $ keepingLocked lckid st
 		_ <- liftIO $ S.unSourceT unlockrequeststream go
 		return (LockResult False Nothing)

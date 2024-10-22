@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2024-10-18T15:50:06Z"
+ content="""
+@matrss would there be a way for forgejo-aneksajo to draw this distinction
+between anonymous and authenticated urls in its user interface?
+"""]]

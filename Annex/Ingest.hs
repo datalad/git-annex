@@ -359,8 +359,8 @@ addUnlocked matcher mi contentpresent =
 	go (LinkAdjustment UnFixAdjustment) = False
 	go (PresenceAdjustment _ (Just la)) = go (LinkAdjustment la)
 	go (PresenceAdjustment _ Nothing) = False
-	go (LinkPresentAdjustment UnlockPresentAdjustment) = contentpresent
-	go (LinkPresentAdjustment LockPresentAdjustment) = False
+	go (LockUnlockPresentAdjustment UnlockPresentAdjustment) = contentpresent
+	go (LockUnlockPresentAdjustment LockPresentAdjustment) = False
 
 {- Adds a file to the work tree for the key, and stages it in the index.
  - The content of the key may be provided in a temp file, which will be

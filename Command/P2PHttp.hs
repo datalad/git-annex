@@ -40,6 +40,7 @@ data Options = Options
 	, authEnvHttpOption :: Bool
 	, unauthReadOnlyOption :: Bool
 	, unauthAppendOnlyOption :: Bool
+	, unauthNoLockingOption :: Bool
 	, wideOpenOption :: Bool
 	, proxyConnectionsOption :: Maybe Integer
 	, clusterJobsOption :: Maybe Int
@@ -82,6 +83,10 @@ optParser _ = Options
 	<*> switch
 		( long "unauth-appendonly"
 		<> help "allow unauthenticated users to read and append to the repository"
+		)
+	<*> switch
+		( long "unauth-nolocking"
+		<> help "prevent unauthenticated users from locking content in the repository"
 		)
 	<*> switch
 		( long "wideopen"
@@ -128,15 +133,25 @@ seek o = getAnnexWorkerPool $ \workerpool ->
 
 mkGetServerMode :: M.Map Auth P2P.ServerMode -> Options -> GetServerMode
 mkGetServerMode _ o _ Nothing
-	| wideOpenOption o =
-		ServerMode P2P.ServeReadWrite False
-	| unauthAppendOnlyOption o =
-		ServerMode P2P.ServeAppendOnly canauth
-	| unauthReadOnlyOption o =
-		ServerMode P2P.ServeReadOnly canauth
+	| wideOpenOption o = ServerMode
+		{ serverMode = P2P.ServeReadWrite
+		, unauthenticatedLockingAllowed = unauthlock
+		, authenticationAllowed = False 
+		}
+	| unauthAppendOnlyOption o = ServerMode 
+		{ serverMode = P2P.ServeAppendOnly
+		, unauthenticatedLockingAllowed = unauthlock
+		, authenticationAllowed = canauth
+		}
+	| unauthReadOnlyOption o = ServerMode
+		{ serverMode = P2P.ServeReadOnly
+		, unauthenticatedLockingAllowed = unauthlock
+		, authenticationAllowed = canauth
+		}
 	| otherwise = CannotServeRequests
   where
 	canauth = authEnvOption o || authEnvHttpOption o
+	unauthlock = not (unauthNoLockingOption o)
 mkGetServerMode authenv o issecure (Just auth) =
 	case (issecure, authEnvOption o, authEnvHttpOption o) of
 		(Secure, True, _) -> checkauth
@@ -144,7 +159,11 @@ mkGetServerMode authenv o issecure (Just auth) =
 		_ -> noauth
   where
 	checkauth = case M.lookup auth authenv of
-		Just servermode -> ServerMode servermode False
+		Just servermode -> ServerMode 
+			{ serverMode = servermode
+			, authenticationAllowed = False
+			, unauthenticatedLockingAllowed = False
+			}
 		Nothing -> noauth
 	noauth = mkGetServerMode authenv noautho issecure Nothing
 	noautho = o { authEnvOption = False, authEnvHttpOption = False }

@@ -57,6 +57,7 @@ type GetServerMode = IsSecure -> Maybe Auth -> ServerMode
 data ServerMode
 	= ServerMode
 		{ serverMode :: P2P.ServerMode
+		, unauthenticatedLockingAllowed :: Bool
 		, authenticationAllowed :: Bool
 		}
 	| CannotServeRequests
@@ -68,7 +69,7 @@ mkP2PHttpServerState acquireconn annexworkerpool getservermode = P2PHttpServerSt
 	<*> pure getservermode
 	<*> newTMVarIO mempty
 
-data ActionClass = ReadAction | WriteAction | RemoveAction
+data ActionClass = ReadAction | WriteAction | RemoveAction | LockAction
 	deriving (Eq)
 
 withP2PConnection
@@ -152,6 +153,8 @@ checkAuthActionClass st sec auth actionclass go =
 	case (sm, actionclass) of
 		(ServerMode { serverMode = P2P.ServeReadWrite }, _) ->
 			go P2P.ServeReadWrite
+		(ServerMode { unauthenticatedLockingAllowed = True }, LockAction) ->
+			go P2P.ServeReadOnly
 		(ServerMode { serverMode = P2P.ServeAppendOnly }, RemoveAction) -> 
 			throwError $ forbiddenWithoutAuth sm
 		(ServerMode { serverMode = P2P.ServeAppendOnly }, _) ->

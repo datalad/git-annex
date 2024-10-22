@@ -1,0 +1,75 @@
+I'm trying to set up git-annex on my mac (running macOS Sonoma 14.7). I want it to sync a directory to a linux server so that the linux server always has a full copy of the directory.
+
+The linux server runs Arch Linux. All I did there was installing the git-annex package from the official package repository. (sshd, rsync etc. were already installed)
+
+On the mac I used `brew install git-annex` to install and `brew services start git-annex` to start the service, then issued `git annex webapp` to start the web app for configuration. In the web app I followed the setup wizard to create a local repo and added the linux server as a remote (basically what's shown in the 10 minute assistant intro screencast but I chose group "backup" instead of "transfer" for the remote).
+
+When I now copy files into the repository, they get auto-added to the repository – but not auto-transferred to the remote. For that to happen I have to restart the service (`brew services restart git-annex`) or do a `git annex push` / `git annex sync --content`.
+
+After copying a file to the repo:
+
+```sh
+~/annex $ git annex list
+here
+|linux-server
+||web
+|||bittorrent
+||||
+X___ file.ext
+```
+
+After restarting etc.:
+
+```sh
+~/annex $ git annex list
+here
+|linux-server
+||web
+|||bittorrent
+||||
+XX__ file.ext
+```
+
+Is there a way to have added files automatically transfer to the remote?
+
+I also noticed that the web app hangs for 30s every 4-5 clicks. Something seems to be wrong with my setup and configuration. What can it be?
+
+Thanks, this seems to be a really great a versatile tool!
+
+---
+
+Update:
+
+Looks like the git-annex service doesn't really run:
+
+```sh
+$ brew services
+Name      Status  User     File
+git-annex stopped username ~/Library/LaunchAgents/homebrew.mxcl.git-annex.plist
+```
+
+Trying to start it yields:
+
+```sh
+$ brew services start git-annex
+Bootstrap failed: 5: Input/output error
+Try re-running the command as root for richer errors.
+Error: Failure while executing; `/bin/launchctl bootstrap gui/501 /Users/username/Library/LaunchAgents/homebrew.mxcl.git-annex.plist` exited with 5.
+```
+
+Restarting does not show any errors
+
+```sh
+$ brew services restart git-annex
+Stopping `git-annex`... (might take a while)
+==> Successfully stopped `git-annex` (label: homebrew.mxcl.git-annex)
+==> Successfully started `git-annex` (label: homebrew.mxcl.git-annex)
+```
+
+yet it makes no difference:
+
+```sh
+$ brew services
+Name      Status  User     File
+git-annex stopped username ~/Library/LaunchAgents/homebrew.mxcl.git-annex.plist
+```
