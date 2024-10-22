@@ -725,3 +725,17 @@ so just dumping the file into the body won't work.
 Seems unneccessary to support since javascript should be able to access
 the file that the user has selected to upload, and PUT its content to the
 presigned url.
+
+In the P2P protocol, PUT can proceed and at the end the client can indicate
+the content changed while it was being sent by sending INVALID. This is
+necessary to support unlocked files. Extending the P2P protocol to support
+indirect upload to an url needs to somehow also handle this case. One way
+that would work is to never upload unlocked files to a presigned url.
+Instead send the content of those via the P2P protocol the usual way. Only
+send locked files to the url. But a file can also get unlocked and then
+modified while it's being sent, so can git-annex, as a client, ever send
+any files to a presigned url? Maybe this feature would only ever be useful
+in cases like OpenNeuro's, where something other than git-annex is
+communicating with the git-annex proxy. Alternatively, allow the wrong
+content to be sent to the url, but then indicate that with INVALID. A later
+reupload would overwrite the bad content.
