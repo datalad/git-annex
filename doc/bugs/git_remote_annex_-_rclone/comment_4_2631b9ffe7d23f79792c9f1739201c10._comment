@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/59541f50d845e5f81aff06e88a38b9de"
+ subject="comment 4"
+ date="2024-10-22T14:44:10Z"
+ content="""
+I just tried it out, something like this works without any further rclone configuration: `git annex initremote icg1220-remote-dir type=rclone encryption=none rcloneremotename=':sftp,host=icg1220' rcloneprefix=remote-dir`. It just prints some log messages from rclone that it can't save config settings for this on the fly backend, but those seem to be purely informational.
+"""]]
