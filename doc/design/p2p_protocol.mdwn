@@ -154,7 +154,7 @@ the client sends:
 The server responds to the message in the same way as to REMOVE.
 
 If the server receives the message at a time after the specified timestamp,
-the remove must fail.This is used to avoid removing content after a point
+the remove must fail. This is used to avoid removing content after a point
 in time where it is no longer locked in other repostitories.
 
 ## Getting a timestamp
