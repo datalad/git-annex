@@ -25,4 +25,4 @@ and the repository exists.
 
 [[!meta title="xmpp syncing sometimes fails"]]
 
-[[!tag confirmed]]
+> git-annex no longer supports xmpp, so [[done]] --[[Joey]] 
