@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2024-10-22T17:39:17Z"
+ content="""
+git-annex builds with stack have used tls-2.0.x since August. I think many
+other builds are still using older tls from before this change, eg Debian
+is still on tls-1.8.0.
+
+So it's possible that more outdated servers will be causing problems as
+things continue to upgrade. It seems worth leaving this bug open for now.
+
+Also it seems pretty clear that TLS 1.2 without EMS is insecure, but I
+don't know if the insecurity is of a kind that is likely to affect
+git-annex users. Bearing in mind that git-annex can be used to upload
+sensitive information to HTTP servers, caution is warrented.
+"""]]
