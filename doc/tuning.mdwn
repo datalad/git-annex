@@ -1,4 +1,4 @@
-git-annex now has experimental support for tuning a repository for
+git-annex now has support for tuning a repository for
 different work loads. 
 
 For example, a repository with a very large number of files in it may work
@@ -24,8 +24,6 @@ tuned differently (or one tuned and the other one not). git-annex will
 prevent merging their git-annex branches together, but it cannot prevent
 `git merge remote/master` merging two branches, and the result will be ugly
 at best (`git annex fix` can fix up the mess somewhat).
-
-Again, tuned repositories are an experimental feature; use with caution!
 
 The following tuning parameters are available:
 
