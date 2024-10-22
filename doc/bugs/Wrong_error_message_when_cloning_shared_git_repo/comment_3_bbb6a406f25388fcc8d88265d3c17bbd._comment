@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2024-10-22T17:15:11Z"
+ content="""
+Here is what I get while cloning:
+
+	joey@darkstar:/tmp>git clone localhost:/tmp/manrepo xx
+	Cloning into 'xx'...
+	fatal: detected dubious ownership in repository at '/tmp/manrepo/.git'
+	To add an exception for this directory, call:
+	
+		git config --global --add safe.directory /tmp/manrepo/.git
+	fatal: Could not read from remote repository.
+	
+	Please make sure you have the correct access rights
+	and the repository exists.
+
+This is with git 2.45.2, and since current git prevents cloning a repository in
+this situation, git-annex doesn't need to do anything.
+
+I also tested what happens if the repository ownership allows cloning, but
+after clonging and before git-annex init, the repository owner changes. In 
+that case, with current git-annex, `git-annex-shell configlist` is able to
+get the uuid from the remote repository despite the ownership snafu. Which is
+ok.
+"""]]
