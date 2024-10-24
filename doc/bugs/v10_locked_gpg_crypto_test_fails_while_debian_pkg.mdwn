@@ -1,0 +1,34 @@
+### Please describe the problem.
+
+I was trying to build a fresh debian package locally of 10.20240927+git105-gcf7e6835ca and tests failed with
+
+```
+Tests
+  Repo Tests v10 locked
+    Init Tests
+      init:                          OK (0.25s)
+      add:                           OK (0.58s)
+    gpg crypto:                      FAIL (2.32s)
+      ./Test/Framework.hs:86:
+      move --from encrypted remote failed with unexpected exit code (transcript follows)
+      move foo (from foo...)
+
+        .git/annex/tmp/SHA256E-s20--e394a389d787383843decc5d3d99b6d184ffa5fddeec23b911f9ee7fc8b9ea77: openBinaryFile: permission denied (Permission denied)
+
+
+        .git/annex/tmp/SHA256E-s20--e394a389d787383843decc5d3d99b6d184ffa5fddeec23b911f9ee7fc8b9ea77: openBinaryFile: permission denied (Permission denied)
+failed  
+      move: 1 failed
+
+      Use -p '/gpg crypto/' to rerun this test only.
+    conflict resolution symlink bit: OK (2.68s)
+    unused:                          OK (1.72s)
+    lock:                            OK (1.27s)
+    log:                             OK (0.22s)
+
+1 out of 7 tests failed (9.05s)
+
+```
+
+
+I tried to rerun build within that env -- the same
