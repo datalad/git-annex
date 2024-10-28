@@ -778,12 +778,12 @@ reupload would overwrite the bad content.
 > 
 > The P2P protocol could be extended by letting ALREADY-STORED be
 > sent by the client instead of DATA:
-> 
->   PUT associatedfile key
->   PUT-FROM 0
->   ALREADY-STORED
->   SUCCESS
->
+ 
+    PUT associatedfile key
+    PUT-FROM 0
+    ALREADY-STORED
+    SUCCESS
+
 > That lets the server send ALREADY-HAVE instead of PUT-FROM, preventing
 > the client from uploading content that is already present. And it can
 > send SUCCESS-PLUS at the end as well, or FAILURE if the checkpresent
