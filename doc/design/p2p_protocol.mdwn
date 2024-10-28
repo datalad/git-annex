@@ -56,7 +56,7 @@ any authentication.
 
 The client sends the highest protocol version it supports:
 
-	VERSION 3
+	VERSION 4
 
 The server responds with the highest protocol version it supports
 that is less than or equal to the version the client sent:
@@ -190,7 +190,8 @@ ALREADY-HAVE-PLUS. The subsequent list of UUIDs are additional
 UUIDs where the content is stored, in addition to the UUID where
 the client was going to send it.
 
-Otherwise, it responds with:
+When the server wants the client to send the content to it, 
+it replies with:
 
 	PUT-FROM Offset
 
@@ -200,7 +201,7 @@ the client to start. This allows resuming transfers.
 The client then sends a DATA message with content of the file from
 the offset to the end of file.
 
-In protocol version 1 and above, after the data, the client sends an
+In protocol version 1 and above, after the DATA, the client sends an
 additional message, to indicate if the content of the file has changed
 while it was being sent.
 
@@ -212,6 +213,18 @@ it replies with SUCCESS. Otherwise, FAILURE.
 
 In protocol version 2 and above, the server can optionally reply with
 SUCCESS-PLUS and a list of UUIDs where the content was stored.
+
+In protocol version 4 and above, rather than sending a DATA message,
+the client can send the content to the repository in some other way
+than using the protocol. To indicate that it has sent the content
+like that, the client sends:
+
+    DATA-PRESENT
+
+The server responds to DATA-PRESENT by checking if the content is
+present in the repository. If so it proceeds the same as if the client
+had used DATA to send the data and then sent VALID. Eg, it responds with
+SUCCESS (or FAILURE if it cannot verify that the data is present).
 
 ## Getting content from the server
 

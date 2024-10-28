@@ -49,7 +49,7 @@ over HTTPS.
 
 Requests are versioned. The versions correspond to
 P2P protocol versions. The version is part of the request path,
-eg "v3"
+eg "v4"
 
 If the server does not support a particular version, the
 request will fail with a 404, and the client should fall
@@ -99,7 +99,7 @@ with 404 Not Found.
 Note that the common parameters bypass and clientuuid, while
 accepted, have no effect. Both are optional for this request.
 
-### GET /git-annex/$uuid/v3/key/$key
+### GET /git-annex/$uuid/v4/key/$key
 
 Get the content of a key from the repository with the specified uuid.
 
@@ -144,20 +144,24 @@ an unlocked annexed file, which got modified while it was being sent.
 When the key is not present on the server, it will respond
 with 404 Not Found.
 
+### GET /git-annex/$uuid/v3/key/$key
+
+Identical to v4.
+
 ### GET /git-annex/$uuid/v2/key/$key
 
-Identical to v3.
+Identical to v4.
 
 ### GET /git-annex/$uuid/v1/key/$key
 
-Identical to v3.
+Identical to v4.
 
 ### GET /git-annex/$uuid/v0/key/$key
 
-Same as v3, except the X-git-annex-data-length header is not used.
+Same as v4, except the X-git-annex-data-length header is not used.
 Additional checking client-side will be required to validate the data.
 
-### POST /git-annex/$uuid/v3/checkpresent
+### POST /git-annex/$uuid/v4/checkpresent
 
 Checks if a key is currently present on the server.
 
@@ -173,19 +177,23 @@ The body of the request is empty.
 The server responds with a JSON object with a "present" field that is true
 if the key is present, or false if it is not present.
 
+### POST /git-annex/$uuid/v3/checkpresent
+
+Identical to v4.
+
 ### POST /git-annex/$uuid/v2/checkpresent
 
-Identical to v3.
+Identical to v4.
 
 ### POST /git-annex/$uuid/v1/checkpresent
 
-Identical to v3.
+Identical to v4.
 
 ### POST /git-annex/$uuid/v0/checkpresent
 
-Identical to v3.
+Identical to v4.
 
-### POST /git-annex/$uuid/v3/lockcontent
+### POST /git-annex/$uuid/v4/lockcontent
 
 Locks the content of a key on the server, preventing it from being removed.
 
@@ -203,19 +211,23 @@ The key will remain locked for 10 minutes. But, usually `keeplocked`
 is used to control the lifetime of the lock, using the "lockid"
 parameter from the server's reply. (See below.)
 
+### POST /git-annex/$uuid/v3/lockcontent
+
+Identical to v4.
+
 ### POST /git-annex/$uuid/v2/lockcontent
 
-Identical to v3.
+Identical to v4.
 
 ### POST /git-annex/$uuid/v1/lockcontent
 
-Identical to v3.
+Identical to v4.
 
 ### POST /git-annex/$uuid/v0/lockcontent
 
-Identical to v3.
+Identical to v4.
 
-### POST /git-annex/$uuid/v3/keeplocked
+### POST /git-annex/$uuid/v4/keeplocked
 
 Controls the lifetime of a lock on a key that was earlier obtained
 with `lockcontent`.
@@ -252,21 +264,25 @@ locked for 10 minutes from the time it was first locked.
 Note that the common parameters bypass and clientuuid, while
 accepted, have no effect.
 
+### POST /git-annex/$uuid/v3/keeplocked
+
+Identical to v4.
+
 ### POST /git-annex/$uuid/v2/keeplocked
 
-Identical to v3.
+Identical to v4.
 
 ### POST /git-annex/$uuid/v1/keeplocked
 
-Identical to v3.
+Identical to v4.
 
 ### POST /git-annex/$uuid/v0/keeplocked
 
-Identical to v3.
+Identical to v4.
 
-### POST /git-annex/$uuid/v3/remove
+### POST /git-annex/$uuid/v4/remove
 
-Remove a key's content from the server.
+Remove a key's content from the repository.
 
 Example:
 
@@ -284,21 +300,25 @@ or false if the key was not able to be removed.
 The JSON object can have an additional field "plusuuids" that is a list of
 UUIDs of other repositories that the content was removed from.
 
+### POST /git-annex/$uuid/v3/remove
+
+Identical to v4.
+
 ### POST /git-annex/$uuid/v2/remove
 
-Identical to v3.
+Identical to v4.
 
 ### POST /git-annex/$uuid/v1/remove
 
-Same as v3, except the JSON will not include "plusuuids".
+Same as v4, except the JSON will not include "plusuuids".
 
 ### POST /git-annex/$uuid/v0/remove
 
 Identical to v1.
 
-### POST /git-annex/$uuid/v3/remove-before
+### POST /git-annex/$uuid/v4/remove-before
 
-Remove a key's content from the server, but only before a specified time.
+Remove a key's content from the repository, but only before a specified time.
 
 Example:
 
@@ -314,7 +334,11 @@ removal will fail and the server will respond with: `{"removed": false}`
 This is used to avoid removing content after a point in 
 time where it is no longer locked in other repostitories.
 
-### POST /git-annex/$uuid/v3/gettimestamp
+### POST /git-annex/$uuid/v3/remove-before
+
+Identical to v4.
+
+### POST /git-annex/$uuid/v4/gettimestamp
 
 Gets the current timestamp from the server.
 
@@ -331,9 +355,13 @@ current value of its monotonic clock, as a number of seconds.
 Important: If multiple servers are serving this API for the same
 repository, they MUST all use the same monotonic clock.
 
-### POST /git-annex/$uuid/v3/put
+### POST /git-annex/$uuid/v3/gettimestamp
 
-Store content on the server.
+Identical to v4.
+
+### POST /git-annex/$uuid/v4/put
+
+Store content in the repository.
 
 Example:
 
@@ -358,11 +386,18 @@ There are are also these optional parameters:
   Number of bytes that have been omitted from the beginning of the file. 
   Usually this will be determined by making a `putoffset` request.
 
+* `data-present`
+
+  When set to 1, this indicates that the data has been sent to the repository
+  in some other way. The body of the request will be empty. The server will
+  verify that the data is present in the repository and will proceed the
+  same as if the data was sent in the request.
+
 The `Content-Type` header should be `application/octet-stream`.
 
 The `X-git-annex-data-length` must be included. It indicates the number
-of bytes of content that are expected to be sent.
-Note that there is no need to send a Content-Length header.
+of bytes of content that are expected to be sent in the body of the
+request. Note that there is no need to send a Content-Length header.
 
 If the length of the body is different than what the the
 X-git-annex-data-length header indicated, then the data is invalid and
@@ -371,9 +406,15 @@ an unlocked annexed file, which got modified while it was being sent.
 
 The server responds with a JSON object with a field "stored"
 that is true if it received the data and stored the content.
+(Or when `data-out-of-band` is used, if it has verified that the key is
+present in the repository.)
 
 The JSON object can have an additional field "plusuuids" that is a list of
 UUIDs of other repositories that the content was stored to.
+
+### POST /git-annex/$uuid/v3/put
+
+Identical to v4 except the `data-out-of-band` parameter cannot be used.
 
 ### POST /git-annex/$uuid/v2/put
 
@@ -387,7 +428,7 @@ Same as v3, except the JSON will not include "plusuuids".
 
 Same as v1, except additional checking is done to validate the data.
 
-### POST /git-annex/$uuid/v3/putoffset
+### POST /git-annex/$uuid/v4/putoffset
 
 Asks the server what `offset` can be used in a `put` of a key.
 
@@ -419,13 +460,17 @@ part way through a `PUT`, a synthetic empty `DATA` followed by `INVALID`
 will be used to get the P2P protocol back into a state where it will accept
 any request.]
 
+### POST /git-annex/$uuid/v3/putoffset
+
+Identical to v4.
+
 ### POST /git-annex/$uuid/v2/putoffset
 
-Identical to v3.
+Identical to v4.
 
 ### POST /git-annex/$uuid/v1/putoffset
 
-Same as v3, except the JSON will not include "plusuuids".
+Same as v4, except the JSON will not include "plusuuids".
 
 ## parts of P2P protocol that are not supported over HTTP
 
