@@ -21,12 +21,12 @@ Planned schedule of work:
 * July: p2p protocol over http
 * August, part 1: git-annex proxy support for exporttree
 * August, part 2: balanced preferred content
-* October: proving behavior of balanced preferred content with proxies
-* September: streaming through proxy to special remotes (especially S3)
+* September: proving behavior of balanced preferred content with proxies
+* October: streaming through proxy to special remotes (especially S3)
 
 [[!tag projects/openneuro]]
 
-## remaining things to do
+## remaining things to do in October
 
 * Streaming uploads to special remotes via the proxy. Possibly; if a
   workable design can be developed. It seems difficult without changing the
@@ -44,22 +44,7 @@ Planned schedule of work:
   It should be possible to only write a single temp file.
   (With streaming this wouldn't be an issue.)
 
-## completed items for October's work on streaming through proxy to special remotes
-
-* Stream downloads through proxy for all special remotes that indicate
-  they download in order.
-* Added ORDERED message to external special remote protocol.
-
-## completed items for September's work on proving behavior of preferred content
-
-* Static analysis to detect "not present", "not balanced", and similar
-  unstable preferred content expressions and avoid problems with them.
-* Implemented `git-annex sim` command.
-* Simulated a variety of repository networks, and random preferred content
-  expressions, checking that a stable state is always reached.
-* Fix bug that prevented anything being stored in an empty
-  repository whose preferred content expression uses sizebalanced.
-  (Identified via `git-annex sim`)
+* Possibly some of the deferred items listed in following sections:
 
 ## items deferred until later for balanced preferred content and maxsize tracking
 
@@ -77,38 +62,6 @@ Planned schedule of work:
   live updates, but sometimes there will be a great many recent changes,
   so it might be worth doing this optimisation. Persistent is not capable
   of this, would need dependency added on esquelito.
-
-## completed items for August's work on balanced preferred content
-
-* Balanced preferred content basic implementation, including --rebalance
-  option.
-* Implemented [[track_free_space_in_repos_via_git-annex_branch]]
-* Implemented tracking of live changes to repository sizes.
-* `git-annex maxsize`
-* annex.fullybalancedthreshhold
-
-## completed items for August's work on git-annex proxy support for exporttre
-
-* Special remotes configured with exporttree=yes annexobjects=yes
-  can store objects in .git/annex/objects, as well as an exported tree.
-
-* Support proxying to special remotes configured with
-  exporttree=yes annexobjects=yes.
-
-* post-retrieve: When proxying is enabled for an exporttree=yes
-  special remote and the configured remote.name.annex-tracking-branch
-  is received, the tree is exported to the special remote.
-
-* When getting from a P2P HTTP remote, prompt for credentials when
-  required, instead of failing.
-
-* Prevent `updateproxy` and `updatecluster` from adding
-  an exporttree=yes special remote that does not have
-  annexobjects=yes, to avoid foot shooting.
-
-* Implement `git-annex export treeish --to=foo --from=bar`, which
-  gets from bar as needed to send to foo. Make post-retrieve use
-  `--to=r --from=r` to handle the multiple files case.
 
 ## items deferred until later for p2p protocol over http
 
@@ -128,24 +81,6 @@ Planned schedule of work:
 
 * `git-annex p2phttp` could support systemd socket activation. This would
   allow making a systemd unit that listens on port 80.
-
-## completed items for July's work on p2p protocol over http
-
-* HTTP P2P protocol design [[design/p2p_protocol_over_http]].
-
-* addressed [[doc/todo/P2P_locking_connection_drop_safety]]
-
-* implemented server and client for HTTP P2P protocol
-
-* added git-annex p2phttp command to serve HTTP P2P protocol
-
-* Make git-annex p2phttp support https.
-
-* Allow using annex+http urls in remote.name.annexUrl
-
-* Make http server support proxying.
-
-* Make http server support serving a cluster.
 
 ## items deferred until later for [[design/passthrough_proxy]]
 
@@ -191,6 +126,74 @@ Planned schedule of work:
 
 * Support using a proxy when its url is a P2P address.
   (Eg tor-annex remotes.)
+
+
+## completed items for October's work on streaming through proxy to special remotes
+
+* Stream downloads through proxy for all special remotes that indicate
+  they download in order.
+* Added ORDERED message to external special remote protocol.
+
+## completed items for September's work on proving behavior of preferred content
+
+* Static analysis to detect "not present", "not balanced", and similar
+  unstable preferred content expressions and avoid problems with them.
+* Implemented `git-annex sim` command.
+* Simulated a variety of repository networks, and random preferred content
+  expressions, checking that a stable state is always reached.
+* Fix bug that prevented anything being stored in an empty
+  repository whose preferred content expression uses sizebalanced.
+  (Identified via `git-annex sim`)
+
+## completed items for August's work on balanced preferred content
+
+* Balanced preferred content basic implementation, including --rebalance
+  option.
+* Implemented [[track_free_space_in_repos_via_git-annex_branch]]
+* Implemented tracking of live changes to repository sizes.
+* `git-annex maxsize`
+* annex.fullybalancedthreshhold
+
+## completed items for August's work on git-annex proxy support for exporttre
+
+* Special remotes configured with exporttree=yes annexobjects=yes
+  can store objects in .git/annex/objects, as well as an exported tree.
+
+* Support proxying to special remotes configured with
+  exporttree=yes annexobjects=yes.
+
+* post-retrieve: When proxying is enabled for an exporttree=yes
+  special remote and the configured remote.name.annex-tracking-branch
+  is received, the tree is exported to the special remote.
+
+* When getting from a P2P HTTP remote, prompt for credentials when
+  required, instead of failing.
+
+* Prevent `updateproxy` and `updatecluster` from adding
+  an exporttree=yes special remote that does not have
+  annexobjects=yes, to avoid foot shooting.
+
+* Implement `git-annex export treeish --to=foo --from=bar`, which
+  gets from bar as needed to send to foo. Make post-retrieve use
+  `--to=r --from=r` to handle the multiple files case.
+
+## completed items for July's work on p2p protocol over http
+
+* HTTP P2P protocol design [[design/p2p_protocol_over_http]].
+
+* addressed [[doc/todo/P2P_locking_connection_drop_safety]]
+
+* implemented server and client for HTTP P2P protocol
+
+* added git-annex p2phttp command to serve HTTP P2P protocol
+
+* Make git-annex p2phttp support https.
+
+* Allow using annex+http urls in remote.name.annexUrl
+
+* Make http server support proxying.
+
+* Make http server support serving a cluster.
 
 ## completed items for June's work on [[design/passthrough_proxy]]:
 
