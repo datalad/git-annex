@@ -685,6 +685,9 @@ When a client wants to upload an object, the proxy could indicate that the
 upload should not be sent to it, but instead be PUT to a HTTP url that it
 provides to the client.
 
+(This would presumably only be used with unencrypted and unchunked special
+remotes.)
+
 An example use case involves
 [presigned S3 urls](https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-presigned-url.html).
 When the proxy is to a S3 bucket, having the client upload
@@ -739,3 +742,49 @@ in cases like OpenNeuro's, where something other than git-annex is
 communicating with the git-annex proxy. Alternatively, allow the wrong
 content to be sent to the url, but then indicate that with INVALID. A later
 reupload would overwrite the bad content.
+
+> Something like this can already be accomplished another way: Don't change
+> the protocol at all, have the client generate the presigned url itself
+> (or request it from something other than git-annex), upload the object,
+> and update the git-annex branch to indicate it's stored in the S3
+> special remote.
+> 
+> That needs the client to be aware of what filename to use in the S3
+> bucket (either a git-annex key or the exported filename depending on the
+> special remote configuration). And it has to know how to update the
+> git-annex location log. And for exporttree remotes, the export log.
+> So effectively, the client needs to either be git-annex or implement a
+> decent amount of its internals, or git-annex would need some additional
+> plumbing commands for the client to use. (If the client is javascript
+> running in the browser, it would be difficult for it to run git-annex
+> though.)
+> 
+> Perhaps there is something in the middle between these two extremes.
+> Extend the P2P protocol to let the client indicate it has 
+> uploaded a key to the remote. The proxy then updates the git-annex branch
+> to reflect that the upload happened. (Maybe it uses checkpresent to
+> verify it first.)
+> 
+> This leaves it up to the client to understand what filename to
+> use to store a key in the S3 bucket (or wherever). For an exporttree=yes
+> remote, it's simply the file being added, and for other remotes, 
+> `git-annex examinekey` can be used. Perhaps the protocol could indicate
+> the filename for the client to use. But generally what filename or whatever
+> to use for a key in a special remote is something only the special
+> remote's implementation knows about, there is not an interface to get it.
+> In practice, there are a few common patterns and anyway this would only
+> be used with some particular special remote, like S3, that the client
+> understands how to write to.
+> 
+> The P2P protocol could be extended by letting ALREADY-STORED be
+> sent by the client instead of DATA:
+> 
+>   PUT associatedfile key
+>   PUT-FROM 0
+>   ALREADY-STORED
+>   SUCCESS
+>
+> That lets the server send ALREADY-HAVE instead of PUT-FROM, preventing
+> the client from uploading content that is already present. And it can
+> send SUCCESS-PLUS at the end as well, or FAILURE if the checkpresent
+> verification fails.
