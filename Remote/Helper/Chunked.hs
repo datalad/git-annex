@@ -328,7 +328,9 @@ retrieveChunks retriever u vc chunkconfig encryptor basek dest basep enc encc
 		iv <- startVerifyKeyContentIncrementally vc basek
 		case enc of
 			Just _ -> do
-				retriever (encryptor basek) basep (toRawFilePath dest) Nothing $
+				let enck = encryptor basek
+				objloc <- fromRepo $ gitAnnexTmpObjectLocation enck
+				retriever (encryptor basek) basep objloc Nothing $
 					retrieved iv Nothing basep
 				return (Right iv)
 			-- Not chunked and not encrypted, so ask the

@@ -10,4 +10,6 @@ The file is mode 444, which is a permission git-annex sets. Then git-annex
 opens it for write. Oops..
 
 Bisected to [[!commit 835283b86240ef4b68c44f4332ac1b644e08e49f]].
+
+Fixed.
 """]]
