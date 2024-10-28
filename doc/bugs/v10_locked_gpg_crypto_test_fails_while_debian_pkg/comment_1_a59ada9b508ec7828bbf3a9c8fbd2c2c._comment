@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-10-28T15:29:56Z"
+ content="""
+Reproducible here. Also this does break getting files from encrypted
+special remotes, not just the test suite.
+
+The file is mode 444, which is a permission git-annex sets. Then git-annex
+opens it for write. Oops..
+"""]]
