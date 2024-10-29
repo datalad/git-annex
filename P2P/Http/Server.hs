@@ -26,6 +26,7 @@ import P2P.Http
 import P2P.Http.Types
 import P2P.Http.State
 import P2P.Protocol hiding (Offset, Bypass, auth)
+import qualified P2P.Protocol
 import P2P.IO
 import P2P.Annex
 import Annex.WorkerPool
@@ -69,10 +70,10 @@ serveP2pHttp st
 	:<|> serveGetTimestamp st
 	:<|> serveGetTimestamp st
 	:<|> servePut st id
-	:<|> servePut st id
-	:<|> servePut st id
-	:<|> servePut st dePlus
-	:<|> servePut st dePlus
+	:<|> servePut' st id
+	:<|> servePut' st id
+	:<|> servePut' st dePlus
+	:<|> servePut' st dePlus
 	:<|> servePutOffset st id
 	:<|> servePutOffset st id
 	:<|> servePutOffset st id
@@ -307,6 +308,7 @@ servePut
 	-> (PutResultPlus -> t)
 	-> B64UUID ServerSide
 	-> v
+	-> Maybe Bool
 	-> DataLength
 	-> B64Key
 	-> B64UUID ClientSide
@@ -317,7 +319,15 @@ servePut
 	-> IsSecure
 	-> Maybe Auth
 	-> Handler t
-servePut st resultmangle su apiver (DataLength len) (B64Key k) cu bypass baf moffset stream sec auth = do
+servePut st resultmangle su apiver (Just True) _ k cu bypass baf _ _ sec auth = do
+	res <- withP2PConnection' apiver st cu su bypass sec auth WriteAction
+		(\cst -> cst { connectionWaitVar = False }) (liftIO . protoaction)
+	servePutResult resultmangle res
+  where
+	protoaction conn = servePutAction st conn k baf $ \_offset -> do
+		net $ sendMessage DATA_PRESENT
+		checkSuccessPlus
+servePut st resultmangle su apiver _datapresent (DataLength len) k cu bypass baf moffset stream sec auth = do
 	validityv <- liftIO newEmptyTMVarIO
 	let validitycheck = local $ runValidityCheck $
 		liftIO $ atomically $ readTMVar validityv
@@ -327,40 +337,26 @@ servePut st resultmangle su apiver (DataLength len) (B64Key k) cu bypass baf mof
 		(\cst -> cst { connectionWaitVar = False }) $ \conn -> do
 			liftIO $ void $ async $ checktooshort conn tooshortv
 			liftIO (protoaction conn content validitycheck)
-	case res of
-		Right (Right (Just plusuuids)) -> return $ resultmangle $
-			PutResultPlus True (map B64UUID plusuuids)
-		Right (Right Nothing) -> return $ resultmangle $
-			PutResultPlus False []
-		Right (Left protofail) -> throwError $
-			err500 { errBody = encodeBL (describeProtoFailure protofail) }
-		Left err -> throwError $
-			err500 { errBody = encodeBL (show err) }
+	servePutResult resultmangle res
   where
-	protoaction conn content validitycheck = inAnnexWorker st $
-		enteringStage (TransferStage Download) $
-			runFullProto (clientRunState conn) (clientP2PConnection conn) $
-				protoaction' content validitycheck
-	
-	protoaction' content validitycheck = put' k af $ \offset' ->
-		let offsetdelta = offset' - offset
-		in case compare offset' offset of
-			EQ -> sendContent' nullMeterUpdate (Len len)
-				content validitycheck
-			GT -> sendContent' nullMeterUpdate
-				(Len (len - fromIntegral offsetdelta))
-				(L.drop (fromIntegral offsetdelta) content)
-				validitycheck
-			LT -> sendContent' nullMeterUpdate
-				(Len len)
-				content
-				(validitycheck >>= \_ -> return Invalid)
+	protoaction conn content validitycheck = 
+		servePutAction st conn k baf $ \offset' ->
+			let offsetdelta = offset' - offset
+			in case compare offset' offset of
+				EQ -> sendContent' nullMeterUpdate (Len len)
+					content validitycheck
+				GT -> sendContent' nullMeterUpdate
+					(Len (len - fromIntegral offsetdelta))
+					(L.drop (fromIntegral offsetdelta) content)
+					validitycheck
+				LT -> sendContent' nullMeterUpdate
+					(Len len)
+					content
+					(validitycheck >>= \_ -> return Invalid)
 	
 	offset = case moffset of
 		Just (Offset o) -> o
 		Nothing -> 0
-
-	af = b64FilePathToAssociatedFile baf
 
 	-- Streams the ByteString from the client. Avoids returning a longer
 	-- than expected ByteString by truncating to the expected length. 
@@ -398,6 +394,49 @@ servePut st resultmangle su apiver (DataLength len) (B64Key k) cu bypass baf mof
 	checktooshort conn tooshortv = do
 		liftIO $ whenM (atomically $ takeTMVar tooshortv) $
 			closeP2PConnection conn
+
+servePutAction
+	:: P2PHttpServerState
+	-> P2PConnectionPair
+	-> B64Key
+	-> Maybe B64FilePath
+	-> (P2P.Protocol.Offset -> Proto (Maybe [UUID]))
+	-> IO (Either SomeException (Either ProtoFailure (Maybe [UUID])))
+servePutAction st conn (B64Key k) baf a = inAnnexWorker st $
+	enteringStage (TransferStage Download) $
+		runFullProto (clientRunState conn) (clientP2PConnection conn) $
+			put' k af a
+  where
+	af = b64FilePathToAssociatedFile baf
+
+servePutResult :: (PutResultPlus -> t) -> Either SomeException (Either ProtoFailure (Maybe [UUID])) -> Handler t
+servePutResult resultmangle res = case res of
+	Right (Right (Just plusuuids)) -> return $ resultmangle $
+		PutResultPlus True (map B64UUID plusuuids)
+	Right (Right Nothing) -> return $ resultmangle $
+		PutResultPlus False []
+	Right (Left protofail) -> throwError $
+		err500 { errBody = encodeBL (describeProtoFailure protofail) }
+	Left err -> throwError $
+		err500 { errBody = encodeBL (show err) }
+
+servePut'
+	:: APIVersion v
+	=> P2PHttpServerState
+	-> (PutResultPlus -> t)
+	-> B64UUID ServerSide
+	-> v
+	-> DataLength
+	-> B64Key
+	-> B64UUID ClientSide
+	-> [B64UUID Bypass]
+	-> Maybe B64FilePath
+	-> Maybe Offset
+	-> S.SourceT IO B.ByteString
+	-> IsSecure
+	-> Maybe Auth
+	-> Handler t
+servePut' st resultmangle su v = servePut st resultmangle su v Nothing
 
 servePutOffset
 	:: APIVersion v

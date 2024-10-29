@@ -329,27 +329,32 @@ clientPut
 	-> FileSize
 	-> Annex Bool
 	-- ^ Called after sending the file to check if it's valid.
+	-> Bool
+	-- ^ Set data-present parameter and do not actually send data
+	-- (v4+ only)
 	-> ClientAction PutResultPlus
 #ifdef WITH_SERVANT
-clientPut meterupdate k moffset af contentfile contentfilesize validitycheck clientenv (ProtocolVersion ver) su cu bypass auth = do
-	checkv <- liftIO newEmptyTMVarIO
-	checkresultv <- liftIO newEmptyTMVarIO
-	let checker = do
-		liftIO $ atomically $ takeTMVar checkv
-		validitycheck >>= liftIO . atomically . putTMVar checkresultv
-	checkerthread <- liftIO . async =<< forkState checker
-	v <- liftIO $ withBinaryFile contentfile ReadMode $ \h -> do
-		when (offset /= 0) $
-			hSeek h AbsoluteSeek offset
-		withClientM (cli (stream h checkv checkresultv)) clientenv return
-	case v of
-		Left err -> do
-			void $ liftIO $ atomically $ tryPutTMVar checkv ()
-			join $ liftIO (wait checkerthread)
-			return (Left err)
-		Right res -> do
-			join $ liftIO (wait checkerthread)
-			return (Right res)
+clientPut meterupdate k moffset af contentfile contentfilesize validitycheck datapresent clientenv (ProtocolVersion ver) su cu bypass auth
+	| datapresent = liftIO $ withClientM (cli mempty) clientenv return
+	| otherwise = do
+		checkv <- liftIO newEmptyTMVarIO
+		checkresultv <- liftIO newEmptyTMVarIO
+		let checker = do
+			liftIO $ atomically $ takeTMVar checkv
+			validitycheck >>= liftIO . atomically . putTMVar checkresultv
+		checkerthread <- liftIO . async =<< forkState checker
+		v <- liftIO $ withBinaryFile contentfile ReadMode $ \h -> do
+			when (offset /= 0) $
+				hSeek h AbsoluteSeek offset
+			withClientM (cli (stream h checkv checkresultv)) clientenv return
+		case v of
+			Left err -> do
+				void $ liftIO $ atomically $ tryPutTMVar checkv ()
+				join $ liftIO (wait checkerthread)
+				return (Left err)
+			Right res -> do
+				join $ liftIO (wait checkerthread)
+				return (Right res)
   where
 	stream h checkv checkresultv = S.SourceT $ \a -> do
 		bl <- hGetContentsMetered h meterupdate
@@ -401,7 +406,7 @@ clientPut meterupdate k moffset af contentfile contentfilesize validitycheck cli
 	bk = B64Key k
 
 	cli src = case ver of
-		4 -> v4 su V4 len bk cu bypass baf moffset src auth
+		4 -> v4 su V4 (if datapresent then Just True else Nothing) len bk cu bypass baf moffset src auth
 		3 -> v3 su V3 len bk cu bypass baf moffset src auth
 		2 -> v2 su V2 len bk cu bypass baf moffset src auth
 		1 -> plus <$> v1 su V1 len bk cu bypass baf moffset src auth

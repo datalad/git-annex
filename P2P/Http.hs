@@ -44,7 +44,9 @@ type P2PHttpAPI
 	:<|> "git-annex" :> SU :> PV3 :> "remove-before" :> RemoveBeforeAPI
 	:<|> "git-annex" :> SU :> PV4 :> "gettimestamp" :> GetTimestampAPI
 	:<|> "git-annex" :> SU :> PV3 :> "gettimestamp" :> GetTimestampAPI
-	:<|> "git-annex" :> SU :> PV4 :> "put" :> PutAPI PutResultPlus
+	:<|> "git-annex" :> SU :> PV4 :> "put" 
+		:> QueryParam "data-present" Bool
+		:> PutAPI PutResultPlus
 	:<|> "git-annex" :> SU :> PV3 :> "put" :> PutAPI PutResultPlus
 	:<|> "git-annex" :> SU :> PV2 :> "put" :> PutAPI PutResultPlus
 	:<|> "git-annex" :> SU :> PV1 :> "put" :> PutAPI PutResult

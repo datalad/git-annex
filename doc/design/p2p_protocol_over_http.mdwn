@@ -388,10 +388,10 @@ There are are also these optional parameters:
 
 * `data-present`
 
-  When set to 1, this indicates that the data has been sent to the repository
-  in some other way. The body of the request will be empty. The server will
-  verify that the data is present in the repository and will proceed the
-  same as if the data was sent in the request.
+  When set to "true", this indicates that the data has been sent to the
+  repository in some other way. The body of the request will be empty.
+  The server will verify that the data is present in the repository and
+  will proceed the same as if the data was sent in the request.
 
 The `Content-Type` header should be `application/octet-stream`.
 

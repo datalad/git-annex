@@ -687,7 +687,7 @@ copyToRemote' repo r st@(State connpool duc _ _ _) key af o meterupdate
 				metered (Just meterupdate) key bwlimit $ \_ p -> do
 					let p' = offsetMeterUpdate p (BytesProcessed n)
 					res <- p2pHttpClient r giveup $
-						clientPut p' key (Just offset) af object sz check'
+						clientPut p' key (Just offset) af object sz check' False
 					case res of
 						PutResultPlus False fanoutuuids -> do
 							storefanout fanoutuuids
