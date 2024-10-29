@@ -32,6 +32,7 @@ import Data.Char
 import Control.DeepSeq
 import GHC.Generics (Generic)
 
+data V4 = V4 deriving (Show)
 data V3 = V3 deriving (Show)
 data V2 = V2 deriving (Show)
 data V1 = V1 deriving (Show)
@@ -40,6 +41,7 @@ data V0 = V0 deriving (Show)
 class APIVersion v where
 	protocolVersion :: v -> P2P.ProtocolVersion
 
+instance APIVersion V4 where protocolVersion _ = P2P.ProtocolVersion 4
 instance APIVersion V3 where protocolVersion _ = P2P.ProtocolVersion 3
 instance APIVersion V2 where protocolVersion _ = P2P.ProtocolVersion 2
 instance APIVersion V1 where protocolVersion _ = P2P.ProtocolVersion 1
@@ -194,11 +196,13 @@ instance ToHttpApiData KeepAlive where
 instance FromHttpApiData KeepAlive where
 	parseUrlPiece = Right . KeepAlive
 
+instance ToHttpApiData V4 where toUrlPiece _ = "v4"
 instance ToHttpApiData V3 where toUrlPiece _ = "v3"
 instance ToHttpApiData V2 where toUrlPiece _ = "v2"
 instance ToHttpApiData V1 where toUrlPiece _ = "v1"
 instance ToHttpApiData V0 where toUrlPiece _ = "v0"
 
+instance FromHttpApiData V4 where parseUrlPiece = parseAPIVersion V4 "v4"
 instance FromHttpApiData V3 where parseUrlPiece = parseAPIVersion V3 "v3"
 instance FromHttpApiData V2 where parseUrlPiece = parseAPIVersion V2 "v2"
 instance FromHttpApiData V1 where parseUrlPiece = parseAPIVersion V1 "v1"

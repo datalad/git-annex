@@ -187,13 +187,14 @@ clientGet k af consumer startsz clientenv (ProtocolVersion ver) su cu bypass aut
 				if dl == len then Valid else Invalid
   where
 	cli =case ver of
+		4 -> v4 su V4
 		3 -> v3 su V3
 		2 -> v2 su V2
 		1 -> v1 su V1
 		0 -> v0 su V0
 		_ -> error "unsupported protocol version"
 	
-	v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
+	v4 :<|> v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
 
 	gather = unsafeInterleaveIO . gather'
 	gather' S.Stop = return LI.Empty
@@ -215,14 +216,15 @@ clientCheckPresent key clientenv (ProtocolVersion ver) su cu bypass auth =
 		Right (CheckPresentResult res) -> return (Right res)
   where
 	cli = case ver of
+		4 -> flip v4 V4
 		3 -> flip v3 V3
 		2 -> flip v2 V2
 		1 -> flip v1 V1
 		0 -> flip v0 V0
 		_ -> error "unsupported protocol version"
 	
-	_ :<|> _ :<|> _ :<|> _ :<|>
-		v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
+	_ :<|> _ :<|> _ :<|> _ :<|> _ :<|>
+		v4 :<|> v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
 #else
 clientCheckPresent _ = ()
 #endif
@@ -264,15 +266,16 @@ clientRemove k clientenv (ProtocolVersion ver) su cu bypass auth =
 	bk = B64Key k
 
 	cli = case ver of
+		4 -> v4 su V4 bk cu bypass auth
 		3 -> v3 su V3 bk cu bypass auth
 		2 -> v2 su V2 bk cu bypass auth
 		1 -> plus <$> v1 su V1 bk cu bypass auth
 		0 -> plus <$> v0 su V0 bk cu bypass auth
 		_ -> error "unsupported protocol version"
 	
-	_ :<|> _ :<|> _ :<|> _ :<|>
-		_ :<|> _ :<|> _ :<|> _ :<|>
-		v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
+	_ :<|> _ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|> _ :<|> _ :<|> _ :<|> _ :<|>
+		v4 :<|> v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
 #else
 clientRemove _ = ()
 #endif
@@ -286,13 +289,14 @@ clientRemoveBefore k ts clientenv (ProtocolVersion ver) su cu bypass auth =
 	liftIO $ withClientM (cli su (B64Key k) cu bypass ts auth) clientenv return
   where
 	cli = case ver of
+		4 -> flip v4 V4
 		3 -> flip v3 V3
 		_ -> error "unsupported protocol version"
 	
-	_ :<|> _ :<|> _ :<|> _ :<|>
-		_ :<|> _ :<|> _ :<|> _ :<|>
-		_ :<|> _ :<|> _ :<|> _ :<|>
-		v3 :<|> _ = client p2pHttpAPI
+	_ :<|> _ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|> _ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|>_ :<|> _ :<|> _ :<|> _ :<|>
+		v4 :<|> v3 :<|> _ = client p2pHttpAPI
 #else
 clientRemoveBefore _ _ = ()
 #endif
@@ -303,14 +307,15 @@ clientGetTimestamp clientenv (ProtocolVersion ver) su cu bypass auth =
 	liftIO $ withClientM (cli su cu bypass auth) clientenv return
   where
 	cli = case ver of
+		4 -> flip v4 V4
 		3 -> flip v3 V3
 		_ -> error "unsupported protocol version"
 	
-	_ :<|> _ :<|> _ :<|> _ :<|>
-		_ :<|> _ :<|> _ :<|> _ :<|>
-		_ :<|> _ :<|> _ :<|> _ :<|>
-		_ :<|>
-		v3 :<|> _ = client p2pHttpAPI
+	_ :<|> _ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|> _ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|> _ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|> _ :<|>
+		v4 :<|> v3 :<|> _ = client p2pHttpAPI
 #else
 clientGetTimestamp = ()
 #endif
@@ -396,18 +401,19 @@ clientPut meterupdate k moffset af contentfile contentfilesize validitycheck cli
 	bk = B64Key k
 
 	cli src = case ver of
+		4 -> v4 su V4 len bk cu bypass baf moffset src auth
 		3 -> v3 su V3 len bk cu bypass baf moffset src auth
 		2 -> v2 su V2 len bk cu bypass baf moffset src auth
 		1 -> plus <$> v1 su V1 len bk cu bypass baf moffset src auth
 		0 -> plus <$> v0 su V0 len bk cu bypass baf moffset src auth
 		_ -> error "unsupported protocol version"
 
-	_ :<|> _ :<|> _ :<|> _ :<|>
-		_ :<|> _ :<|> _ :<|> _ :<|>
-		_ :<|> _ :<|> _ :<|> _ :<|>
-		_ :<|>
-		_ :<|>
-		v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
+	_ :<|> _ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|> _ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|> _ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|> _ :<|>
+		_ :<|> _ :<|>
+		v4 :<|> v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
 #else
 clientPut _ _ _ _ _ _ _ = ()
 #endif
@@ -423,18 +429,19 @@ clientPutOffset k clientenv (ProtocolVersion ver) su cu bypass auth
 	bk = B64Key k
 
 	cli = case ver of
+		4 -> v4 su V4 bk cu bypass auth
 		3 -> v3 su V3 bk cu bypass auth
 		2 -> v2 su V2 bk cu bypass auth
 		1 -> plus <$> v1 su V1 bk cu bypass auth
 		_ -> error "unsupported protocol version"
 	
-	_ :<|> _ :<|> _ :<|> _ :<|>
-		_ :<|> _ :<|> _ :<|> _ :<|>
-		_ :<|> _ :<|> _ :<|> _ :<|>
-		_ :<|>
-		_ :<|>
-		_ :<|> _ :<|> _ :<|> _ :<|>
-		v3 :<|> v2 :<|> v1 :<|> _ = client p2pHttpAPI
+	_ :<|> _ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|> _ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|> _ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|> _ :<|>
+		_ :<|> _ :<|>
+		_ :<|> _ :<|> _ :<|> _ :<|> _ :<|>
+		v4 :<|> v3 :<|> v2 :<|> v1 :<|> _ = client p2pHttpAPI
 #else
 clientPutOffset _ = ()
 #endif
@@ -447,20 +454,21 @@ clientLockContent k clientenv (ProtocolVersion ver) su cu bypass auth =
 	liftIO $ withClientM (cli (B64Key k) cu bypass auth) clientenv return
   where
 	cli = case ver of
+		4 -> v4 su V4
 		3 -> v3 su V3
 		2 -> v2 su V2
 		1 -> v1 su V1
 		0 -> v0 su V0
 		_ -> error "unsupported protocol version"
 	
-	_ :<|> _ :<|> _ :<|> _ :<|>
+	_ :<|> _ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|> _ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|> _ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|> _ :<|>
+		_ :<|> _ :<|>
+		_ :<|> _ :<|> _ :<|> _ :<|> _ :<|>
 		_ :<|> _ :<|> _ :<|> _ :<|>
-		_ :<|> _ :<|> _ :<|> _ :<|>
-		_ :<|>
-		_ :<|>
-		_ :<|> _ :<|> _ :<|> _ :<|>
-		_ :<|> _ :<|> _ :<|>
-		v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
+		v4 :<|> v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
 #else
 clientLockContent _ = ()
 #endif
@@ -518,21 +526,22 @@ clientKeepLocked lckid remoteuuid unablelock callback clientenv (ProtocolVersion
 					else S.Yield (UnlockRequest True) S.Stop
 	
 	cli = case ver of
+		4 -> v4 su V4
 		3 -> v3 su V3
 		2 -> v2 su V2
 		1 -> v1 su V1
 		0 -> v0 su V0
 		_ -> error "unsupported protocol version"
 	
-	_ :<|> _ :<|> _ :<|> _ :<|>
+	_ :<|> _ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|> _ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|> _ :<|> _ :<|> _ :<|> _ :<|>
+		_ :<|> _ :<|>
+		_ :<|> _ :<|>
+		_ :<|> _ :<|> _ :<|> _ :<|> _ :<|>
 		_ :<|> _ :<|> _ :<|> _ :<|>
-		_ :<|> _ :<|> _ :<|> _ :<|>
-		_ :<|>
-		_ :<|>
-		_ :<|> _ :<|> _ :<|> _ :<|>
-		_ :<|> _ :<|> _ :<|>
-		_ :<|> _ :<|> _ :<|> _ :<|>
-		v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
+		_ :<|> _ :<|> _ :<|> _ :<|> _ :<|>
+		v4 :<|> v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
 #else
 clientKeepLocked _ _ _ _ = ()
 #endif

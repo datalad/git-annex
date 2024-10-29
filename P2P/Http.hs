@@ -25,34 +25,44 @@ import Servant
 import qualified Data.ByteString as B
 
 type P2PHttpAPI
-	=    "git-annex" :> SU :> PV3 :> "key" :> GetAPI
+	=    "git-annex" :> SU :> PV4 :> "key" :> GetAPI
+	:<|> "git-annex" :> SU :> PV3 :> "key" :> GetAPI
 	:<|> "git-annex" :> SU :> PV2 :> "key" :> GetAPI
 	:<|> "git-annex" :> SU :> PV1 :> "key" :> GetAPI
 	:<|> "git-annex" :> SU :> PV0 :> "key" :> GetAPI
+	:<|> "git-annex" :> SU :> PV4 :> "checkpresent" :> CheckPresentAPI
 	:<|> "git-annex" :> SU :> PV3 :> "checkpresent" :> CheckPresentAPI
 	:<|> "git-annex" :> SU :> PV2 :> "checkpresent" :> CheckPresentAPI
 	:<|> "git-annex" :> SU :> PV1 :> "checkpresent" :> CheckPresentAPI
 	:<|> "git-annex" :> SU :> PV0 :> "checkpresent" :> CheckPresentAPI
+	:<|> "git-annex" :> SU :> PV4 :> "remove" :> RemoveAPI RemoveResultPlus
 	:<|> "git-annex" :> SU :> PV3 :> "remove" :> RemoveAPI RemoveResultPlus
 	:<|> "git-annex" :> SU :> PV2 :> "remove" :> RemoveAPI RemoveResultPlus
 	:<|> "git-annex" :> SU :> PV1 :> "remove" :> RemoveAPI RemoveResult
 	:<|> "git-annex" :> SU :> PV0 :> "remove" :> RemoveAPI RemoveResult
+	:<|> "git-annex" :> SU :> PV4 :> "remove-before" :> RemoveBeforeAPI
 	:<|> "git-annex" :> SU :> PV3 :> "remove-before" :> RemoveBeforeAPI
+	:<|> "git-annex" :> SU :> PV4 :> "gettimestamp" :> GetTimestampAPI
 	:<|> "git-annex" :> SU :> PV3 :> "gettimestamp" :> GetTimestampAPI
+	:<|> "git-annex" :> SU :> PV4 :> "put" :> PutAPI PutResultPlus
 	:<|> "git-annex" :> SU :> PV3 :> "put" :> PutAPI PutResultPlus
 	:<|> "git-annex" :> SU :> PV2 :> "put" :> PutAPI PutResultPlus
 	:<|> "git-annex" :> SU :> PV1 :> "put" :> PutAPI PutResult
 	:<|> "git-annex" :> SU :> PV0 :> "put" :> PutAPI PutResult
+	:<|> "git-annex" :> SU :> PV4 :> "putoffset"
+		:> PutOffsetAPI PutOffsetResultPlus
 	:<|> "git-annex" :> SU :> PV3 :> "putoffset"
 		:> PutOffsetAPI PutOffsetResultPlus
 	:<|> "git-annex" :> SU :> PV2 :> "putoffset"
 		:> PutOffsetAPI PutOffsetResultPlus
 	:<|> "git-annex" :> SU :> PV1 :> "putoffset"
 		:> PutOffsetAPI PutOffsetResult
+	:<|> "git-annex" :> SU :> PV4 :> "lockcontent" :> LockContentAPI
 	:<|> "git-annex" :> SU :> PV3 :> "lockcontent" :> LockContentAPI
 	:<|> "git-annex" :> SU :> PV2 :> "lockcontent" :> LockContentAPI
 	:<|> "git-annex" :> SU :> PV1 :> "lockcontent" :> LockContentAPI
 	:<|> "git-annex" :> SU :> PV0 :> "lockcontent" :> LockContentAPI
+	:<|> "git-annex" :> SU :> PV4 :> "keeplocked" :> KeepLockedAPI
 	:<|> "git-annex" :> SU :> PV3 :> "keeplocked" :> KeepLockedAPI
 	:<|> "git-annex" :> SU :> PV2 :> "keeplocked" :> KeepLockedAPI
 	:<|> "git-annex" :> SU :> PV1 :> "keeplocked" :> KeepLockedAPI
@@ -177,6 +187,7 @@ type LockIDParam = QueryParam' '[Required] "lockid" LockID
 
 type AuthHeader = Header "Authorization" Auth
 
+type PV4 = Capture "v4" V4
 type PV3 = Capture "v3" V3
 type PV2 = Capture "v2" V2
 type PV1 = Capture "v1" V1

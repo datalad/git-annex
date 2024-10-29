@@ -53,20 +53,27 @@ serveP2pHttp st
 	:<|> serveGet st
 	:<|> serveGet st
 	:<|> serveGet st
+	:<|> serveGet st
 	:<|> serveCheckPresent st
 	:<|> serveCheckPresent st
 	:<|> serveCheckPresent st
 	:<|> serveCheckPresent st
+	:<|> serveCheckPresent st
+	:<|> serveRemove st id
 	:<|> serveRemove st id
 	:<|> serveRemove st id
 	:<|> serveRemove st dePlus
 	:<|> serveRemove st dePlus
 	:<|> serveRemoveBefore st
+	:<|> serveRemoveBefore st
+	:<|> serveGetTimestamp st
 	:<|> serveGetTimestamp st
 	:<|> servePut st id
 	:<|> servePut st id
+	:<|> servePut st id
 	:<|> servePut st dePlus
 	:<|> servePut st dePlus
+	:<|> servePutOffset st id
 	:<|> servePutOffset st id
 	:<|> servePutOffset st id
 	:<|> servePutOffset st dePlus
@@ -74,6 +81,8 @@ serveP2pHttp st
 	:<|> serveLockContent st
 	:<|> serveLockContent st
 	:<|> serveLockContent st
+	:<|> serveLockContent st
+	:<|> serveKeepLocked st
 	:<|> serveKeepLocked st
 	:<|> serveKeepLocked st
 	:<|> serveKeepLocked st
@@ -125,10 +134,11 @@ serveGet st su apiver (B64Key k) cu bypass baf startat sec auth = do
 			return $ \v -> do
 				liftIO $ atomically $ putTMVar validityv v
 				return True
+		let noothermessages = const Nothing
 		enteringStage (TransferStage Upload) $
 			runFullProto (clientRunState conn) (clientP2PConnection conn) $
 				void $ receiveContent Nothing nullMeterUpdate
-					sizer storer getreq
+					sizer storer noothermessages getreq
 	void $ liftIO $ forkIO $ waitfinal endv finalv conn annexworker
 	(Len len, bs) <- liftIO $ atomically $ takeTMVar bsv
 	bv <- liftIO $ newMVar (filter (not . B.null) (L.toChunks bs))
