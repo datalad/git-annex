@@ -61,12 +61,13 @@ defaultProtocolVersion :: ProtocolVersion
 defaultProtocolVersion = ProtocolVersion 0
 
 maxProtocolVersion :: ProtocolVersion
-maxProtocolVersion = ProtocolVersion 3
+maxProtocolVersion = ProtocolVersion 4
 
 -- In order from newest to oldest.
 allProtocolVersions :: [ProtocolVersion]
 allProtocolVersions =
-	[ ProtocolVersion 3
+	[ ProtocolVersion 4
+	, ProtocolVersion 3
 	, ProtocolVersion 2
 	, ProtocolVersion 1
 	, ProtocolVersion 0
@@ -113,6 +114,7 @@ data Message
 	| FAILURE_PLUS [UUID]
 	| BYPASS Bypass
 	| DATA Len -- followed by bytes of data
+	| DATA_PRESENT
 	| VALIDITY Validity
 	| TIMESTAMP MonotonicTimestamp
 	| ERROR String
@@ -144,6 +146,7 @@ instance Proto.Sendable Message where
 	formatMessage (FAILURE_PLUS uuids) = ("FAILURE-PLUS":map Proto.serialize uuids)
 	formatMessage (BYPASS (Bypass uuids)) = ("BYPASS":map Proto.serialize (S.toList uuids))
 	formatMessage (DATA len) = ["DATA", Proto.serialize len]
+	formatMessage DATA_PRESENT = ["DATA-PRESENT"]
 	formatMessage (VALIDITY Valid) = ["VALID"]
 	formatMessage (VALIDITY Invalid) = ["INVALID"]
 	formatMessage (TIMESTAMP ts) = ["TIMESTAMP", Proto.serialize ts]
@@ -175,6 +178,7 @@ instance Proto.Receivable Message where
 	parseCommand "FAILURE-PLUS" = Proto.parseList FAILURE_PLUS
 	parseCommand "BYPASS" = Proto.parseList (BYPASS . Bypass . S.fromList)
 	parseCommand "DATA" = Proto.parse1 DATA
+	parseCommand "DATA-PRESENT" = Proto.parse0 DATA_PRESENT
 	parseCommand "VALID" = Proto.parse0 (VALIDITY Valid)
 	parseCommand "INVALID" = Proto.parse0 (VALIDITY Invalid)
 	parseCommand "TIMESTAMP" = Proto.parse1 TIMESTAMP
@@ -477,11 +481,12 @@ removeBeforeRemoteEndTime remoteendtime key = do
 
 get :: FilePath -> Key -> Maybe IncrementalVerifier -> AssociatedFile -> Meter -> MeterUpdate -> Proto (Bool, Verification)
 get dest key iv af m p = 
-	receiveContent (Just m) p sizer storer $ \offset ->
+	receiveContent (Just m) p sizer storer noothermessages $ \offset ->
 		GET offset (ProtoAssociatedFile af) key
   where
 	sizer = fileSize dest
 	storer = storeContentTo dest iv
+	noothermessages = const Nothing
 
 put :: Key -> AssociatedFile -> MeterUpdate -> Proto (Maybe [UUID])
 put key af p = put' key af $ \offset ->
@@ -664,7 +669,16 @@ serverHandler servermode myuuid = handler
 			else do
 				let sizer = tmpContentSize key
 				let storer = storeContent key af
-				v <- receiveContent Nothing nullMeterUpdate sizer storer PUT_FROM
+				ver <- net getProtocolVersion
+				let handleothermessages
+					| ver >= ProtocolVersion 4 = \case
+						DATA_PRESENT -> Just $
+							checkContentPresent key
+						_ -> Nothing
+					| otherwise = const Nothing
+				v <- receiveContent Nothing nullMeterUpdate 
+					sizer storer handleothermessages 
+					PUT_FROM
 				when (observeBool v) $
 					local $ setPresent key myuuid
 		return ServerContinue
@@ -743,9 +757,10 @@ receiveContent
 	-> MeterUpdate
 	-> Local Len
 	-> (Offset -> Len -> Proto L.ByteString -> Proto (Maybe Validity) -> Local t)
+	-> (Message -> Maybe (Local t))
 	-> (Offset -> Message)
 	-> Proto t
-receiveContent mm p sizer storer mkmsg = do
+receiveContent mm p sizer storer handleothermessages mkmsg = do
 	Len n <- local sizer
 	let p' = offsetMeterUpdate p (toBytesProcessed n)
 	let offset = Offset n
@@ -764,16 +779,23 @@ receiveContent mm p sizer storer mkmsg = do
 						net $ sendMessage (ERROR "expected VALID or INVALID")
 						return Nothing
 				else return Nothing
-			v <- local $ storer offset len
+			sendresultof $ storer offset len
 				(net (receiveBytes len p'))
 				validitycheck
-			sendSuccess (observeBool v)
-			return v
 		Just (ERROR _err) ->
 			return observeFailure
-		_ -> do
-			net $ sendMessage (ERROR "expected DATA")
-			return observeFailure
+		Just msg -> 
+			maybe unsupportedmessage sendresultof
+				(handleothermessages msg)
+		Nothing -> unsupportedmessage
+  where
+	unsupportedmessage = do
+		net $ sendMessage (ERROR "expected DATA")
+		return observeFailure
+	sendresultof a = do
+		v <- local a
+		sendSuccess (observeBool v)
+		return v
 
 checkSuccess :: Proto Bool
 checkSuccess = either (const False) id <$> checkSuccess'
