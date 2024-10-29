@@ -1,0 +1,8 @@
+When I add a file manually with `git annex add` it works like expected: the file is replaced by a symlink pointing to a file in .git/objects.
+But with assistant or watch, I end up with a copy in my working tree.
+
+
+Is this by design?
+
+I use version 10.20240831-gb3dc65615318ffed194dfb85e631482d4515a180
+I tried it on a linux box with btrfs and on WSL2 with ext4.
