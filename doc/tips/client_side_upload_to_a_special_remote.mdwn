@@ -1,0 +1,67 @@
+Suppose you are gathering files from users on the web and want to ingest
+that data into a git-annex repository, with a special remote that is eg, a
+S3 bucket.
+
+You could have the web browser upload to your server, and run git-annex
+there, to add it to the git repository, and move it on to the S3 bucket.
+That is innefficient though, the file goes into the server and back out,
+and needs to be spooled to the server's disk as well.
+
+This page shows a more efficient way to do it, where the web browser
+uploads directly to S3, and a git-annex repository is updated accordingly.
+There is not (currently) a way to run git-annex in a web browser.
+So you will need to write some custom code to do this. But with the
+method described here, you won't need to re-implement all of git-annex in
+the web browser.
+
+Uploading from the browser to S3 is left an an exercise to the reader.
+All that matters really is, what filename to use in the S3 bucket? It's
+simplest to make the S3 special remote an exporttree=yes special remote,
+and then you can upload whatever filenames you want to it, rather than
+needing to use the same filenames git-annex uses for storing keys in a S3
+bucket.
+
+Once the browser uploads the file to S3, you need to add a git-annex
+symlink or pointer file to the git repository. This can be done in the
+browser, using [js-git](https://github.com/creationix/js-git). Generating a
+git-annex key is not hard, just hash the file content before/while
+uploading it, and see [[internals/key_format]]. Write that to a pointer
+file, or make a symlink to the appropriate directory under
+.git/annex/objects (a bit harder). Commit it to git and push to your
+server using js-git.
+
+Now git-annex knows about the file. But it doesn't yet know it's been
+uploaded to the S3 special remote. To do this, you will need have your
+server set up to run git-annex. Set up the S3 special
+remote there. And make git-annex on the server a
+[proxy|git-annex-updateproxy]] for the S3 special remote:
+
+    git-annex initremote s3 type=S3 exporttree=yes encryption=none bucket=mybucket
+    git config remote.s3.annex-proxy true
+    git-annex updateproxy
+
+For the web browser to be able to easily talk with git-annex on the server, 
+you can run [[git-annex p2phttp|git-annex-p2phttp]]. 
+The web browser will be speaking the [[doc/design/P2P_protocol_over_HTTP]].
+
+Make sure you have git-annex 10.20241031 or newer installed. That version
+extended the [[design/p2p_protocol]] with a `DATA-PRESENT` feature, which
+is just what you need.
+
+All the web browser needs to do is `POST /git-annex/$uuid/v4/put`
+with `data-present=true` included in the URL parameters, along with the
+key of the file that was added to the git repository.
+Replace `$uuid` with the UUID of the S3 special remote.
+You can look that up with eg `git config remote.s3.annex-uuid`.
+
+When the git-annex HTTP server receives that request, since it is
+configured to be able to proxy for the S3 special remote, it will act the
+same as if the content of the file had been sent in the request. But thanks
+to `data-present=true`, it knows the data is already in the S3 special
+remote. So it updates the git-annex branch to reflect that the file is
+stored there.
+
+Now if someone else clones the git repository, they can `git-annex get` the
+file, and it will be downloaded from the S3 bucket, if that bucket is
+configured to let them read it. Your server never needs to deal with the
+content of the file.
