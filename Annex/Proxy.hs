@@ -179,34 +179,54 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv oclosedv mexportdb = go
 		withTmpDirIn (fromRawFilePath othertmpdir) "proxy" $ \tmpdir ->
 			a (toRawFilePath tmpdir P.</> keyFile k)
 			
-	-- Verify the content received from the client, to avoid bad content
-	-- being stored in the special remote.
 	proxyput af k = do
 		liftIO $ sendmessage $ PUT_FROM (Offset 0)
-		withproxytmpfile k $ \tmpfile -> do
-			let store = tryNonAsync (storeput k af (decodeBS tmpfile)) >>= \case
-				Right () -> liftIO $ sendmessage SUCCESS
-				Left err -> liftIO $ propagateerror err
-			liftIO receivemessage >>= \case
-				Just (DATA (Len len)) -> do
-					iv <- startVerifyKeyContentIncrementally Remote.AlwaysVerify k
-					h <- liftIO $ openFile (fromRawFilePath tmpfile) WriteMode
-					gotall <- liftIO $ receivetofile iv h len
-					liftIO $ hClose h
-					verified <- if gotall
-						then fst <$> finishVerifyKeyContentIncrementally' True iv
-						else pure False
-					if protoversion > ProtocolVersion 1
-						then liftIO receivemessage >>= \case
-							Just (VALIDITY Valid)
-								| verified -> store
-								| otherwise -> liftIO $ sendmessage FAILURE
-							Just (VALIDITY Invalid) ->
+		liftIO receivemessage >>= \case
+			Just (DATA (Len len)) -> withproxytmpfile k $ \tmpfile -> do
+				-- Verify the content received from
+				-- the client, to avoid bad content
+				-- being stored in the special remote.
+				iv <- startVerifyKeyContentIncrementally Remote.AlwaysVerify k
+				h <- liftIO $ openFile (fromRawFilePath tmpfile) WriteMode
+				let nuketmp = liftIO $ removeWhenExistsWith removeFile (fromRawFilePath tmpfile)
+				gotall <- liftIO $ receivetofile iv h len
+				liftIO $ hClose h
+				verified <- if gotall
+					then fst <$> finishVerifyKeyContentIncrementally' True iv
+					else pure False
+				let store = tryNonAsync (storeput k af (decodeBS tmpfile)) >>= \case
+					Right () -> liftIO $ sendmessage SUCCESS
+					Left err -> liftIO $ propagateerror err
+				if protoversion > ProtocolVersion 1
+					then liftIO receivemessage >>= \case
+						Just (VALIDITY Valid)
+							| verified -> store >> nuketmp
+							| otherwise -> do
+								nuketmp
 								liftIO $ sendmessage FAILURE
-							_ -> giveup "protocol error"
-						else store
-				_ -> giveup "protocol error"
-			liftIO $ removeWhenExistsWith removeFile (fromRawFilePath tmpfile)
+						Just (VALIDITY Invalid) -> do
+							nuketmp
+							liftIO $ sendmessage FAILURE
+						_ -> do
+							nuketmp
+							giveup "protocol error"
+					else store >> nuketmp
+			Just DATA_PRESENT -> tryNonAsync (verifydatapresent k) >>= \case
+				Right True -> liftIO $ sendmessage SUCCESS
+				Right False -> liftIO $ sendmessage FAILURE
+				Left err -> liftIO $ propagateerror err
+			_ -> giveup "protocol error"
+
+	verifydatapresent k = case mexportdb of
+		Just exportdb -> liftIO (Export.getExportTree exportdb k) >>= \case
+			[] -> verifykey
+			-- XXX TODO check that one of the export locs is populated,
+			-- or for an annexobjects=yes special remote, the
+			-- annexobject file could be populated.
+			locs -> return True
+		Nothing -> verifykey
+	  where
+		verifykey = Remote.checkPresent r k
 
 	storeput k af tmpfile = case mexportdb of
 		Just exportdb -> liftIO (Export.getExportTree exportdb k) >>= \case
