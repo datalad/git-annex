@@ -16,6 +16,13 @@ git-annex (10.20240928) UNRELEASED; urgency=medium
     remotes, leading to protocol error messages involving "GITMANIFEST".
   * adjust: Allow any order of options when combining --hide-missing with
     options like --unlock.
+  * Support P2P protocol version 4. This allows DATA-PRESENT to be sent
+    after PUT (and in the HTTP P2P protocol, v4/put has a data-present
+    parameter). When used with a proxy to a special remote like a S3
+    bucket, this allows a custom client to upload content to S3 itself,
+    and then use the P2P protocol to inform the proxy that the content has
+    been stored there, which will result in the same git-annex branch state
+    updates as sending DATA via the proxy.
 
  -- Joey Hess <id@joeyh.name>  Thu, 17 Oct 2024 11:02:17 -0400
 
