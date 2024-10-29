@@ -302,6 +302,7 @@ proxyRequest proxydone proxyparams requestcomplete requestmessage protoerrhandle
 		FAILURE -> protoerr
 		FAILURE_PLUS _ -> protoerr
 		DATA _ -> protoerr
+		DATA_PRESENT -> protoerr
 		VALIDITY _ -> protoerr
 		UNLOCKCONTENT -> protoerr
 		-- If the client errors out, give up.
@@ -486,7 +487,7 @@ proxyRequest proxydone proxyparams requestcomplete requestmessage protoerrhandle
 					getresponse client resp $ 
 						withDATA
 							(relayPUT remoteside k)
-							(const protoerr)
+							(handlePut_DATA_PRESENT remoteside k)
 				_ -> protoerr
 	handlePUT [] _ _ = 
 		protoerrhandler requestcomplete $
@@ -563,8 +564,8 @@ proxyRequest proxydone proxyparams requestcomplete requestmessage protoerrhandle
 					let minoffset = minimum (map snd l')
 					getresponse client (PUT_FROM (Offset minoffset)) $
 						withDATA (relayPUTMulti minoffset l' k)
-							(const protoerr)
-	
+							(handlePutMulti_DATA_PRESENT l' k)
+
 	relayPUTMulti minoffset remotes k (Len datalen) _ = do
 		-- Tell each remote how much data to expect, depending
 		-- on the remote's offset.
@@ -664,6 +665,9 @@ proxyRequest proxydone proxyparams requestcomplete requestmessage protoerrhandle
 					Just (Just resp) ->
 						relayPUTRecord k r resp
 					_ -> return Nothing
+			relayDATAFinishMulti' storeduuids
+
+	relayDATAFinishMulti' storeduuids =
 			protoerrhandler requestcomplete $
 				client $ net $ sendMessage $
 					case concat (catMaybes storeduuids) of
@@ -671,6 +675,23 @@ proxyRequest proxydone proxyparams requestcomplete requestmessage protoerrhandle
 						us
 							| proxyClientProtocolVersion proxyparams < ProtocolVersion 2 -> SUCCESS
 							| otherwise -> SUCCESS_PLUS us
+	
+	handlePutMulti_DATA_PRESENT remotes k DATA_PRESENT = do
+		storeduuids <- forMC (proxyConcurrencyConfig proxyparams) remotes $ \(remoteside, _) -> do
+			resp <- runRemoteSideOrSkipFailed remoteside $ do
+				net $ sendMessage DATA_PRESENT
+				net receiveMessage
+			case resp of
+				Just (Just resp') -> relayPUTRecord k remoteside resp'
+				_ -> return Nothing
+		relayDATAFinishMulti' storeduuids
+	handlePutMulti_DATA_PRESENT _ _ _ = protoerr
+
+	handlePut_DATA_PRESENT remoteside k DATA_PRESENT =
+		getresponse (runRemoteSide remoteside) DATA_PRESENT $ \resp ->
+			protoerrhandler (const (relayPUTRecord k remoteside) >> requestcomplete) $
+				client $ net $ sendMessage resp
+	handlePut_DATA_PRESENT _ _ _ = protoerr
 
 	-- The associated file received from the P2P protocol
 	-- is relative to the top of the git repository. But this process
