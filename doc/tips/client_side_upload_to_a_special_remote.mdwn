@@ -24,7 +24,7 @@ bucket.
 Along with the S3 bucket, you will need a server set up, which is where
 git-annex will run in a git repository. Set up the S3 special remote there.
 And make git-annex on the server a
-[proxy|git-annex-updateproxy]] for the S3 special remote:
+[[proxy|git-annex-updateproxy]] for the S3 special remote:
 
     git-annex initremote s3 type=S3 exporttree=yes encryption=none bucket=mybucket
     git config remote.s3.annex-proxy true
