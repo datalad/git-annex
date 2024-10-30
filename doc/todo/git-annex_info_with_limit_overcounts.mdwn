@@ -1,0 +1,7 @@
+`git-annex info` in the limitedcalc path in cachedAllRepoData
+double-counts redundant information from the journal due to using
+overLocationLogs. In the other path it does not (any more; it used to but
+live repo sizes fixed that), and this should be fixed for consistency
+and correctness.
+
+(This is a deferred item from the [[todo/git-annex_proxies]] megatodo.) --[[Joey]]

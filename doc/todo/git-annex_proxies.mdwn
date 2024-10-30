@@ -1,4 +1,4 @@
-This is a summary todo covering several subprojects, which would extend
+This is a summary todo covering several subprojects, which extend
 git-annex to be able to use proxies which sit in front of a cluster of
 repositories.
 
@@ -12,7 +12,7 @@ repositories.
 
 [[!toc ]]
 
-## planned schedule
+## plan
 
 Joey has received funding to work on this.
 Planned schedule of work:
@@ -24,94 +24,27 @@ Planned schedule of work:
 * September: proving behavior of balanced preferred content with proxies
 * October: streaming through proxy to special remotes (especially S3)
 
+> This project is now complete! [[done]] --[[Joey]]
+
 [[!tag projects/openneuro]]
 
-## remaining things to do in October
+## some todos that spun off from this project and didn't get implemented during it:
 
-* Possibly some of the deferred items listed in following sections:
+For balanced preferred content and maxsize tracking:
 
-## items deferred until later for balanced preferred content and maxsize tracking
+* [[todo/assistant_does_not_use_LiveUpdate]]
+* [[todo/git-annex_info_with_limit_overcounts]]
 
-* The assistant is using NoLiveUpdate, but it should be posssible to plumb
-  a LiveUpdate through it from preferred content checking to location log
-  updating.
+For p2p protocol over http:
 
-* `git-annex info` in the limitedcalc path in cachedAllRepoData
-  double-counts redundant information from the journal due to using
-  overLocationLogs. In the other path it does not (any more; it used to),
-  and this should be fixed for consistency and correctness.
+* [[p2phttp_serve_multiple_repositories]]
+* [[git-remote-annex_support_for_p2phttp]]
 
-* getLiveRepoSizes has a filterM getRecentChange over the live updates. 
-  This could be optimised to a single sql join. There are usually not many
-  live updates, but sometimes there will be a great many recent changes,
-  so it might be worth doing this optimisation. Persistent is not capable
-  of this, would need dependency added on esquelito.
+For proxying:
 
-## items deferred until later for p2p protocol over http
-
-* Support proxying to git remotes that use annex+http urls. This needs a
-  translation from P2P protocol to servant-client to P2P protocol.
-
-* Should be possible to use a git-remote-annex annex::$uuid url as
-  remote.foo.url with remote.foo.annexUrl using annex+http, and so 
-  not need a separate web server to serve the git repository. Doesn't work
-  currently because git-remote-annex urls only support special remotes.
-  It would need a new form of git-remote-annex url, eg:
-  annex::$uuid?annex+http://example.com/git-annex/
-
-* `git-annex p2phttp` could support systemd socket activation. This would
-  allow making a systemd unit that listens on port 80.
-
-## items deferred until later for [[design/passthrough_proxy]]
-
-* Check annex.diskreserve when proxying for special remotes
-  to avoid the proxy's disk filling up with the temporary object file
-  cached there.
-
-* Resuming an interrupted download from proxied special remote makes the proxy
-  re-download the whole content. It could instead keep some of the 
-  object files around when the client does not send SUCCESS. This would
-  use more disk, but could minimize to eg, the last 2 or so.
-  The design doc has some more thoughts about this.
-
-* Getting a key from a cluster currently picks from amoung
-  the lowest cost remotes at random. This could be smarter,
-  eg prefer to avoid using remotes that are doing other transfers at the
-  same time.
-
-* The cost of a proxied node that is accessed via an intermediate gateway
-  is currently the same as a node accessed via the cluster gateway.
-  To fix this, there needs to be some way to tell how many hops through
-  gateways it takes to get to a node. Currently the only way is to
-  guess based on number of dashes in the node name, which is not satisfying.
-
-  Even counting hops is not very satisfying, one cluster gateway could
-  be much more expensive to traverse than another one.
-
-  If seriously tackling this, it might be worth making enough information
-  available to use spanning tree protocol for routing inside clusters.
-
-* Speed: A proxy to a local git repository spawns git-annex-shell 
-  to communicate with it. It would be more efficient to operate
-  directly on the Remote. Especially when transferring content to/from it.
-  But: When a cluster has several nodes that are local git repositories,
-  and is sending data to all of them, this would need an alternate
-  interface than `storeKey`, which supports streaming, of chunks
-  of a ByteString.
-
-* Use `sendfile()` to avoid data copying overhead when
-  `receiveBytes` is being fed right into `sendBytes`.
-  Library to use:
-  <https://hackage.haskell.org/package/hsyscall-0.4/docs/System-Syscall.html>
-
-* Support using a proxy when its url is a P2P address.
-  (Eg tor-annex remotes.)
-
-* When an upload to a cluster is distributed to multiple special remotes,
-  a temporary file is written for each one, which may even happen in
-  parallel. This is a lot of extra work and may use excess disk space.
-  It should be possible to only write a single temp file.
-  (With streaming this wouldn't be an issue.)
+* [[proxying_for_p2phttp_and_tor-annex_remotes]]
+* [[faster_proxying]]
+* [[smarter_use_of_disk_when_proxying]]
 
 ## completed items for October's work on streaming through proxy to special remotes
 

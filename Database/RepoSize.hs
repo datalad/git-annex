@@ -400,6 +400,11 @@ liveRepoOffsets (RepoSizeHandle (Just h) _) wantedsizechange = H.queryDb h $ do
 				map (\(k, v) -> (k, [v])) $
 					fromMaybe [] $
 						M.lookup u livechanges
+		-- This could be optimised to a single SQL join, rather
+		-- than querying once for each live change. That would make
+		-- it less expensive when there are a lot happening at the
+		-- same time. Persistent is not capable of that join,
+		-- it would need a dependency on esquelito.
 		livechanges' <- combinelikelivechanges <$> 
 			filterM (nonredundantlivechange livechangesbykey u)
 				(fromMaybe [] $ M.lookup u livechanges)
