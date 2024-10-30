@@ -1,0 +1,21 @@
+git-annex p2phttp should be able to serve multiple git repositories, eg all
+the ones in a directory.
+
+* Add a --directory option.
+* When a request is received for a uuid that is not one it already knows
+  about, it can rescan the directories to find new repositories that have
+  been added.
+* Removing a repository that it is serving should be ok, git-annex doesn't
+  mkdir recursively down to the git repository level. So any running
+  threads that are serving the removed repository will not recreate it,
+  and will fail out.
+* Removing a repository and then re-creating it with a different UUID
+  though would be problimatic and probably the documentation would need to
+  say to not do that, restart git-annex p2phttp after deletion in that
+  case.
+
+I asked matrss if this would be useful for forgejo-aneksajo and he said
+"Serving more than one repository per p2phttp instance would probably be
+very useful, although I think I can work with the limitation [of only 1]."
+
+[[!tag projects/INM7]]
