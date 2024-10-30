@@ -249,11 +249,11 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv oclosedv mexportdb = go
 
 	receivetofile iv h n = liftIO receivebytestring >>= \case
 		Just b -> do
+			n' <- storetofile iv h n (L.toChunks b)
 			liftIO $ atomically $ 
 				putTMVar owaitv ()
 					`orElse`
 				readTMVar oclosedv
-			n' <- storetofile iv h n (L.toChunks b)
 			-- Normally all the data is sent in a single
 			-- lazy bytestring. However, when the special
 			-- remote is a node in a cluster, a PUT is

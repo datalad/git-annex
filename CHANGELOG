@@ -23,6 +23,7 @@ git-annex (10.20241031) UNRELEASED; urgency=medium
     and then use the P2P protocol to inform the proxy that the content has
     been stored there, which will result in the same git-annex branch state
     updates as sending DATA via the proxy.
+  * Fix hang when receiving a large file into a proxied special remote.
 
  -- Joey Hess <id@joeyh.name>  Thu, 17 Oct 2024 11:02:17 -0400
 
