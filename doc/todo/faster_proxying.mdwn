@@ -1,0 +1,35 @@
+Not that proxying is super slow, but it does involve bouncing content
+through the proxy, and could be made faster. Some ideas:
+
+* A proxy to a local git repository spawns git-annex-shell 
+  to communicate with it. It would be more efficient to operate
+  directly on the Remote. Especially when transferring content to/from it.
+  But: When a cluster has several nodes that are local git repositories,
+  and is sending data to all of them, this would need an alternate
+  interface than `storeKey`, which supports streaming, of chunks
+  of a ByteString.
+
+* Use `sendfile()` to avoid data copying overhead when
+  `receiveBytes` is being fed right into `sendBytes`.
+  Library to use:
+  <https://hackage.haskell.org/package/hsyscall-0.4/docs/System-Syscall.html>
+
+* Getting a key from a cluster currently picks from amoung
+  the lowest cost nodes at random. This could be smarter,
+  eg prefer to avoid using nodes that are doing other transfers at the
+  same time.
+
+* The cost of a proxied node that is accessed via an intermediate gateway
+  is currently the same as a node accessed via the cluster gateway. So in
+  such a situation, git-annex may make a suboptimal choice of path.
+  To fix this, there needs to be some way to tell how many hops through
+  gateways it takes to get to a node. Currently the only way is to
+  guess based on number of dashes in the node name, which is not satisfying.
+
+  Even counting hops is not very satisfying, one cluster gateway could
+  be much more expensive to traverse than another one.
+
+  If seriously tackling this, it might be worth making enough information
+  available to use spanning tree protocol for routing inside clusters.
+
+(This is a deferred item from the [[todo/git-annex_proxies]] megatodo.) --[[Joey]]

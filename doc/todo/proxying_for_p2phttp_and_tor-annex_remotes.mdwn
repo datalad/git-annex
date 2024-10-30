@@ -1,0 +1,13 @@
+git-annex can proxy for remotes that are accessed locally or over
+ssh, as well as special remotes. But, it cannot proxy for remotes that
+themselves have a annex+http annexUrl.
+
+This would need a translation from P2P protocol to servant client.
+Should not be very hard to implement if someone needs it for some reason.
+
+Also, git-annex could support proxying to remotes whose url is a P2P
+address. Eg, tor-annex remotes. This only needs a way to 
+generate a RemoteSide for them.
+
+(This is a deferred item from the [[todo/git-annex_proxies]] megatodo.) --[[Joey]]
+

@@ -1,0 +1,26 @@
+When proxying for a special remote, downloads can stream in from it and out
+the proxy, but that does happen via a temporary file, which grows to the
+full size of the file being downloaded. And uploads to a special get buffered to a 
+temporary file.
+
+It would be nice to do full streaming without temp files, but also it's a
+hard change to make.
+
+Some improvements that could be made without making such a big change:
+
+* When an upload to a cluster is distributed to multiple special remotes,
+  a temporary file is written for each one, which may even happen in
+  parallel. This is a lot of extra work and may use excess disk space.
+  It should be possible to only write a single temp file.
+
+* Check annex.diskreserve when proxying for special remotes
+  to avoid the proxy's disk filling up with the temporary object file
+  cached there.
+
+* Resuming an interrupted download from proxied special remote makes the proxy
+  re-download the whole content. It could instead keep some of the
+  object files around when the client does not send SUCCESS. This would
+  use more disk, but could minimize to eg, the last 2 or so.
+  The [[design/passthrough_proxy]] design doc has some more thoughts about this.
+
+(This is a deferred item from the [[todo/git-annex_proxies]] megatodo.) --[[Joey]]

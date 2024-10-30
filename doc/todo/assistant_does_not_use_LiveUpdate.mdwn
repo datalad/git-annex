@@ -1,0 +1,8 @@
+The assistant is using NoLiveUpdate, but it should be posssible to plumb
+a LiveUpdate through it from preferred content checking to location log
+updating.
+
+The benefit would be when using balanced preferred content expressions,
+the assistant would get live updates about repo sizes.
+
+(This is a deferred item from the [[todo/git-annex_proxies]] megatodo.) --[[Joey]]

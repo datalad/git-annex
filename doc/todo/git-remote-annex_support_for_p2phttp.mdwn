@@ -1,0 +1,12 @@
+Should be possible to use a git-remote-annex annex::$uuid url as
+remote.foo.url with remote.foo.annexUrl using annex+http, and so
+not need a separate web server to serve the git repository when using
+`git-annex p2phttp`.
+
+Doesn't work currently because git-remote-annex urls only support
+special remotes.
+
+It would need a new form of git-remote-annex url, eg:
+annex::$uuid?annex+http://example.com/git-annex/
+
+(This is a deferred item from the [[todo/git-annex_proxies]] megatodo.) --[[Joey]]
