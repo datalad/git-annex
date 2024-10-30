@@ -48,7 +48,7 @@ All that's left is to let git-annex know that the file has been uploaded to
 the S3 special remote. To accomplish this, the web browser will need to
 talk with git-annex on the server. The easy way to accomplish that
 is to run [[git-annex p2phttp|git-annex-p2phttp]]. 
-The web browser will be speaking the [[doc/design/P2P_protocol_over_HTTP]].
+The web browser will be speaking the [[design/P2P_protocol_over_HTTP]].
 
 Make sure you have git-annex 10.20241031 or newer installed. That version
 extended the [[design/p2p_protocol]] with a `DATA-PRESENT` feature, which
