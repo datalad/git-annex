@@ -688,8 +688,9 @@ proxyRequest proxydone proxyparams requestcomplete requestmessage protoerrhandle
 	handlePutMulti_DATA_PRESENT _ _ _ = protoerr
 
 	handlePut_DATA_PRESENT remoteside k DATA_PRESENT =
-		getresponse (runRemoteSide remoteside) DATA_PRESENT $ \resp ->
-			protoerrhandler (const (relayPUTRecord k remoteside) >> requestcomplete) $
+		getresponse (runRemoteSide remoteside) DATA_PRESENT $ \resp -> do
+			void $ relayPUTRecord k remoteside resp
+			protoerrhandler requestcomplete $
 				client $ net $ sendMessage resp
 	handlePut_DATA_PRESENT _ _ _ = protoerr
 
