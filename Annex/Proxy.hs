@@ -112,10 +112,7 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv oclosedv mexportdb = go
 	go :: Annex ()
 	go = liftIO receivemessage >>= \case
 		Just (CHECKPRESENT k) -> do
-			tryNonAsync (Remote.checkPresent r k) >>= \case
-				Right True -> liftIO $ sendmessage SUCCESS
-				Right False -> liftIO $ sendmessage FAILURE
-				Left err -> liftIO $ propagateerror err
+			checkpresent k
 			go
 		Just (LOCKCONTENT _) -> do
 			-- Special remotes do not support locking content.
@@ -211,22 +208,14 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv oclosedv mexportdb = go
 							nuketmp
 							giveup "protocol error"
 					else store >> nuketmp
-			Just DATA_PRESENT -> tryNonAsync (verifydatapresent k) >>= \case
-				Right True -> liftIO $ sendmessage SUCCESS
-				Right False -> liftIO $ sendmessage FAILURE
-				Left err -> liftIO $ propagateerror err
+			Just DATA_PRESENT -> checkpresent k
 			_ -> giveup "protocol error"
 
-	verifydatapresent k = case mexportdb of
-		Just exportdb -> liftIO (Export.getExportTree exportdb k) >>= \case
-			[] -> verifykey
-			-- XXX TODO check that one of the export locs is populated,
-			-- or for an annexobjects=yes special remote, the
-			-- annexobject file could be populated.
-			locs -> return True
-		Nothing -> verifykey
-	  where
-		verifykey = Remote.checkPresent r k
+	checkpresent k = 
+		tryNonAsync (Remote.checkPresent r k) >>= \case
+			Right True -> liftIO $ sendmessage SUCCESS
+			Right False -> liftIO $ sendmessage FAILURE
+			Left err -> liftIO $ propagateerror err
 
 	storeput k af tmpfile = case mexportdb of
 		Just exportdb -> liftIO (Export.getExportTree exportdb k) >>= \case

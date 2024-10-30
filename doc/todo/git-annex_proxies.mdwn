@@ -28,22 +28,6 @@ Planned schedule of work:
 
 ## remaining things to do in October
 
-* Streaming uploads to special remotes via the proxy. Possibly; if a
-  workable design can be developed. It seems difficult without changing the
-  external special remote protocol, unless a fifo is used. Make ORDERED
-  response in p2p protocol allow using a fifo?
-
-* Indirect uploads when proxying for special remote is an alternative that
-  would work for OpenNeuro's use case.
-
-* If not implementing upload streaming to proxied special remotes, 
-  this needs to be addressed:
-  When an upload to a cluster is distributed to multiple special remotes,
-  a temporary file is written for each one, which may even happen in
-  parallel. This is a lot of extra work and may use excess disk space.
-  It should be possible to only write a single temp file.
-  (With streaming this wouldn't be an issue.)
-
 * Possibly some of the deferred items listed in following sections:
 
 ## items deferred until later for balanced preferred content and maxsize tracking
@@ -122,6 +106,12 @@ Planned schedule of work:
 
 * Support using a proxy when its url is a P2P address.
   (Eg tor-annex remotes.)
+
+* When an upload to a cluster is distributed to multiple special remotes,
+  a temporary file is written for each one, which may even happen in
+  parallel. This is a lot of extra work and may use excess disk space.
+  It should be possible to only write a single temp file.
+  (With streaming this wouldn't be an issue.)
 
 ## completed items for October's work on streaming through proxy to special remotes
 
