@@ -1,4 +1,4 @@
-git-annex (10.20241031) UNRELEASED; urgency=medium
+git-annex (10.20241031) upstream; urgency=medium
 
   * Sped up proxied downloads from special remotes, by streaming.
   * Added GETORDERED request to external special remote protocol. 
@@ -25,7 +25,7 @@ git-annex (10.20241031) UNRELEASED; urgency=medium
     updates as sending DATA via the proxy.
   * Fix hang when receiving a large file into a proxied special remote.
 
- -- Joey Hess <id@joeyh.name>  Thu, 17 Oct 2024 11:02:17 -0400
+ -- Joey Hess <id@joeyh.name>  Thu, 31 Oct 2024 17:19:56 -0400
 
 git-annex (10.20240927) upstream; urgency=medium
 
