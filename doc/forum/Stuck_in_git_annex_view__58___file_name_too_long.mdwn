@@ -1,0 +1,42 @@
+Hi,
+
+I was experimenting with tags today, and seems like switching to a tag view broke my repository. Now, even `git status` gives me an error, output:
+
+```
+...vi.srt: File name too long
+nothing to commit, working tree clean
+On branch views/main(tag=_)
+```
+
+Before that I ran `git annex view tag=*`.
+
+What I'm thinking is that before switching to a tag view file name/path was fine, but during switching seems like git annex transformed the file name which exceeds the max file path.
+
+For ZFS those limits are:
+
+```
+getconf NAME_MAX /pool-name
+255
+getconf PATH_MAX /pool-name
+4096
+```
+
+Steps to repro:
+1. create a file in a directory with a long path
+1. create a tag
+2. switch to a tag
+
+for example, here is one of the errors:
+
+```
+size﹕huge/02_getting-a-handle-on-vectors_%knowledge-storages%courses%authorities%coursera%linear-algebra-machine-learning%01_introduction-to-linear-algebra-and-to-mathematics-for-machine-learning%02_the-relationship-between-machine-learning-linear-algebra-and-vectors-and%.pl.srt: File name too long
+```
+
+I've tried the following commands, but due to this error nothing changes:
+
+1. `git annex vpop` < says "git-annex: Not in a view."
+2. `git checkout main` < does nothing, stays "On branch views/main(tag=_)"
+3. `git restore .` < does nothing, stays "On branch views/main(tag=_)"
+
+
+Is there anything can be done to at least go back to the main branch and clear the error?
