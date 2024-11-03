@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="psxvoid"
+ avatar="http://cdn.libravatar.org/avatar/fde068fbdeabeea31e3be7aa9c55d84b"
+ subject="using fuse and nextcloud"
+ date="2024-11-03T13:44:57Z"
+ content="""
+Hi,
+
+One option is to use `bindfs --resolve-symlinks` FUSE to resolve simlinks, and then share the \"un-symlinked\" directory to whatever service you want, including NFS.
+
+Personally, I'm using  `bindfs --resolve-symlinks` with `nextcloud` instance - works great.
+"""]]
