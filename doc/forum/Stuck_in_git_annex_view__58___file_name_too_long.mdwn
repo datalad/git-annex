@@ -21,7 +21,8 @@ getconf PATH_MAX /pool-name
 4096
 ```
 
-Steps to repro:
+Steps to reproduce:
+
 1. create a file in a directory with a long path
 1. create a tag
 2. switch to a tag
