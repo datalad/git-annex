@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 5"
+ date="2024-11-03T14:48:03Z"
+ content="""
+FWIW, I keep running into this. Re
+
+> But: If this change were made, it would risk breaking existing working setups, that happen to have a push url that points to a different repository.
+
+`pushurl` could take precedence, as overwrite the `pushInsteadOf` mapped value (did not check what git's behavior in presence of both pushurl and pushInsteadOf).
+"""]]
