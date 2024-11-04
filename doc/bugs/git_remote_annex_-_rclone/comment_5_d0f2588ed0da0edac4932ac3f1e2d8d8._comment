@@ -1,0 +1,56 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/59541f50d845e5f81aff06e88a38b9de"
+ subject="comment 5"
+ date="2024-11-04T14:52:55Z"
+ content="""
+With the latest git-annex-standalone I am now getting a different error: initially pushing to an rclone special remote seems to work, but cloning and other operations like `git remote show {remote}` fail:
+
+```
+$ git annex initremote icg1220-remote-dir type=rclone encryption=none rcloneremotename=':sftp,host=icg1220'
+initremote icg1220-remote-dir 2024/11/04 15:48:19 NOTICE: Can't save config \"shell_type\" for on the fly backend \":sftp\"
+ok
+(recording state in git...)
+$ git annex enableremote icg1220-remote-dir --with-url
+enableremote icg1220-remote-dir 2024/11/04 15:48:27 NOTICE: Can't save config \"shell_type\" for on the fly backend \":sftp\"
+ok
+(recording state in git...)
+$ git annex push
+copy qwer.txt 2024/11/04 15:48:32 NOTICE: Can't save config \"shell_type\" for on the fly backend \":sftp\"
+(to icg1220-remote-dir...) 
+2024/11/04 15:48:33 NOTICE: Can't save config \"md5sum_command\" for on the fly backend \":sftp\"
+2024/11/04 15:48:33 NOTICE: Can't save config \"sha1sum_command\" for on the fly backend \":sftp\"
+ok
+(recording state in git...)
+push icg1220-remote-dir 
+Full remote url: annex::85e65a54-6bff-49a7-9e62-db59d8912ceb?encryption=none&type=rclone
+2024/11/04 15:48:35 NOTICE: Can't save config \"shell_type\" for on the fly backend \":sftp\"
+2024/11/04 15:48:35 NOTICE: Can't save config \"md5sum_command\" for on the fly backend \":sftp\"
+2024/11/04 15:48:35 NOTICE: Can't save config \"sha1sum_command\" for on the fly backend \":sftp\"
+To annex::
+ * [new branch]      main -> synced/main
+ * [new branch]      git-annex -> synced/git-annex
+Full remote url: annex::85e65a54-6bff-49a7-9e62-db59d8912ceb?encryption=none&type=rclone
+2024/11/04 15:48:39 NOTICE: Can't save config \"shell_type\" for on the fly backend \":sftp\"
+git-annex: /tmp: createDirectoryFrom: not located in .git: user error
+ok
+$ git remote show icg1220-remote-dir
+Full remote url: annex::85e65a54-6bff-49a7-9e62-db59d8912ceb?encryption=none&type=rclone
+2024/11/04 15:48:54 NOTICE: Can't save config \"shell_type\" for on the fly backend \":sftp\"
+git-annex: /tmp: createDirectoryFrom: not located in .git: user error
+[ble: exit 128]
+```
+
+This is what's created on the remote:
+
+```
+$ ls -la git-annex-rclone/
+insgesamt 24
+drwxr-xr-x  2 icg149 icg1 4096 Nov  4 15:48 .
+drwx------ 81 icg149 icg1 4096 Nov  4 15:48 ..
+-rw-r--r--  1 icg149 icg1 3079 Nov  4 15:48 GITBUNDLE-s3079--85e65a54-6bff-49a7-9e62-db59d8912ceb-d34f9bc87f73892ce9cb135ebe0d0c9c98e01b8b7845f6ef15a6dae4bf45a8dc
+-rw-r--r--  1 icg149 icg1  119 Nov  4 15:48 GITMANIFEST--85e65a54-6bff-49a7-9e62-db59d8912ceb
+-rw-r--r--  1 icg149 icg1  119 Nov  4 15:48 GITMANIFEST--85e65a54-6bff-49a7-9e62-db59d8912ceb.bak
+-rw-r--r--  1 icg149 icg1    5 Nov  4 15:47 MD5E-s5--2b00042f7481c7b056c4b410d28f33cf.txt
+```
+"""]]
