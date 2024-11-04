@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="psxvoid"
+ avatar="http://cdn.libravatar.org/avatar/fde068fbdeabeea31e3be7aa9c55d84b"
+ subject="possible fix"
+ date="2024-11-04T13:54:23Z"
+ content="""
+Hi,
+
+Seem like I've managed to fix it by openning `.git/HEAD` file with VIM, and then changing:
+
+```
+ref: refs/heads/views/main(tag=_)
+```
+
+to this:
+
+```
+ref: refs/heads/main
+```
+
+Saved the file, then ran `git stash --all`. Which returned the repo to the original state.
+
+Also before `git stash --all`, I ran `git restore .` `git annex fsck`, and `git add -A` but those didn't change anything.
+
+"""]]
