@@ -1,0 +1,63 @@
+### Please describe the problem.
+
+I had a pure git repo, and then too large file was committed, I `git reset HEAD^` went through `datalad create -c text2git -f .` to give default configuration with `* annex.largefiles=((mimeencoding=binary)and(largerthan=0))` and tried to `git annex add` that large text file -- but annex kept adding to git.  I simplified `largefiles` further -- keeps adding to git:
+
+
+```
+yoh@typhon:~/proj/dandi/s5cmd-dandi$ git check-attr annex.largefiles .duct/logs/2024.10.30T14.59.27-418623_stdout
+.duct/logs/2024.10.30T14.59.27-418623_stdout: annex.largefiles: largerthan=100kb
+
+yoh@typhon:~/proj/dandi/s5cmd-dandi$ git annex add .duct/logs/2024.10.30T14.59.27-418623_stdout
+add .duct/logs/2024.10.30T14.59.27-418623_stdout (non-large file; adding content to git repository) ^C
+
+yoh@typhon:~/proj/dandi/s5cmd-dandi$ git status
+On branch master
+Your branch is ahead of 'origin/master' by 9 commits.
+  (use "git push" to publish your local commits)
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        .duct/logs/2024.10.30T14.59.27-418623_info.json
+        .duct/logs/2024.10.30T14.59.27-418623_stderr
+        .duct/logs/2024.10.30T14.59.27-418623_stdout
+        .duct/logs/2024.10.30T14.59.27-418623_usage.json
+        .duct/logs/2024.11.04T12.31.25-2144989_info.json
+        .duct/logs/2024.11.04T12.31.25-2144989_stderr
+        .duct/logs/2024.11.04T12.31.25-2144989_stdout
+        .duct/logs/2024.11.04T12.31.25-2144989_usage.json
+
+nothing added to commit but untracked files present (use "git add" to track)
+yoh@typhon:~/proj/dandi/s5cmd-dandi$ du -k .duct/logs/2024.10.30T14.59.27-418623_stdout
+53615856        .duct/logs/2024.10.30T14.59.27-418623_stdout
+
+```
+
+even if I remove any explicit rule, and try to annex -- goes to git ...
+
+```
+yoh@typhon:~/proj/dandi/s5cmd-dandi$ git annex add .duct/logs/2024.10.30T14.59.27-418623_stdout
+add .duct/logs/2024.10.30T14.59.27-418623_stdout (non-large file; adding content to git repository) ^C
+
+yoh@typhon:~/proj/dandi/s5cmd-dandi$ git check-attr annex.largefiles .duct/logs/2024.10.30T14.59.27-418623_stdout
+.duct/logs/2024.10.30T14.59.27-418623_stdout: annex.largefiles: unspecified
+```
+
+here is debug output
+
+```
+yoh@typhon:~/proj/dandi/s5cmd-dandi$ git annex add --debug .duct/logs/2024.10.30T14.59.27-418623_stdout
+[2024-11-04 12:51:00.940826688] (Utility.Process) process [2203424] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","git-annex"]
+[2024-11-04 12:51:00.945662132] (Utility.Process) process [2203424] done ExitSuccess
+[2024-11-04 12:51:00.946114536] (Utility.Process) process [2203425] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","--hash","refs/heads/git-annex"]
+[2024-11-04 12:51:00.950113577] (Utility.Process) process [2203425] done ExitSuccess
+[2024-11-04 12:51:00.951187839] (Utility.Process) process [2203426] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch"]
+[2024-11-04 12:51:00.95355332] (Utility.Process) process [2203427] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","symbolic-ref","-q","HEAD"]
+[2024-11-04 12:51:00.957754692] (Utility.Process) process [2203427] done ExitFailure 1
+[2024-11-04 12:51:00.958076235] (Utility.Process) process [2203428] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","ls-files","-z","--others","--exclude-standard","--",".duct/logs/2024.10.30T14.59.27-418623_stdout"]
+add .duct/logs/2024.10.30T14.59.27-418623_stdout (non-large file; adding content to git repository) [2024-11-04 12:51:00.960616592] (Utility.Process) process [2203429] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","hash-object","-w","--no-filters","--stdin-paths"]
+^C
+```
+
+How to remedy?
+
+dandi project
