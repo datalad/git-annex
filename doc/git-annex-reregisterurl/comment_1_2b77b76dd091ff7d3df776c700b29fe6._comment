@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="cannot &quot;unregister&quot; fully"
+ date="2024-11-05T20:59:15Z"
+ content="""
+> Note that, like git-annex unregisterurl, using this option unregisters an url from a special remote, but it does not mark the content as not present in that special remote.
+
+But then how to mark \"not present\" in that remote?  After `git-annex-reregisterurl` I still have `[datalad]` remote listed although url now, correctly, associated with `web`. I have tried  `drop` but that didn't work
+
+```shell
+❯ git annex drop --from datalad images/neurodesk/neurodesk-afni--21.2.00.simg
+drop images/neurodesk/neurodesk-afni--21.2.00.simg (from datalad...) (locking smaug...) 
+  Removal of content from urls is not possible
+failed
+drop: 1 failed
+```
+
+Could there may be option `--fully` or `--mark-not-present` option to make it 1 invocation operation?
+"""]]
