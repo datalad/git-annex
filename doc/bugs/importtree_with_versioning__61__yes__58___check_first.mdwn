@@ -1,0 +1,31 @@
+### Please describe the problem.
+
+I wanted to use this remote to "crawl" S3 bucket in `importtree=yes` mode. Bucket (dandiarchive) supports versioning, so it would be great to enable versioning here as well so URLs would use versionId.  But unfortunately adding `versioning=yes` makes `git-annex` to try to establish versioning on the bucket (even if it is already enabled).
+
+command to try with (should work for anyone since public bucket):
+
+```
+git annex --debug initremote s3-dandiarchive bucket=dandiarchive type=S3 encryption=none importtree=yes publicurl=https://dandiarchive.s3.amazonaws.com/ fileprefix=dandisets/000027/ signature=anonymous versioning=yes
+```
+
+to see that annex (I use 10.20240927) would try to enable versioning:
+```
+(enabling bucket versioning...) [2024-11-07 16:30:37.830416324] (Remote.S3) String to sign: "PUT\n\n\nThu, 07 Nov 2024 21:30:37 GMT\n/dandiarchive/?versioning"
+[2024-11-07 16:30:37.830449238] (Remote.S3) Host: "dandiarchive.s3.amazonaws.com"
+[2024-11-07 16:30:37.830459034] (Remote.S3) Path: "/"
+[2024-11-07 16:30:37.830470676] (Remote.S3) Query string: "versioning"
+[2024-11-07 16:30:37.830480666] (Remote.S3) Header: [("Date","Thu, 07 Nov 2024 21:30:37 GMT")]
+[2024-11-07 16:30:37.830498329] (Remote.S3) Body: "<?xml version=\"1.0\" encoding=\"UTF-8\"?><VersioningConfiguration xmlns=\"http://s3.amazonaws.com/doc/2006-03-01/\"><Status>Enabled</Status></VersioningConfiguration>"
+[2024-11-07 16:30:37.879924822] (Remote.S3) Response status: Status {statusCode = 403, statusMessage = "Forbidden"}
+```
+
+It seems to be easy to check if versioning enabled:
+
+```
+❯ curl -s "https://dandiarchive.s3.amazonaws.com/?versioning"
+<?xml version="1.0" encoding="UTF-8"?>
+<VersioningConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Status>Enabled</Status></VersioningConfiguration>
+```
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]
