@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="marc+bugs@bd1c733f9e5bee7c2279a9c649e80fac0e540c14"
- nickname="marc+bugs"
- avatar="http://cdn.libravatar.org/avatar/ed6686640356357f32b5cc7f4ace9471"
- subject="Examples"
- date="2024-11-07T14:13:27Z"
- content="""
-Shouldn't the urls of the remotes `lfs` and `lfs-http` in the examples on this page be reversed?
-"""]]
