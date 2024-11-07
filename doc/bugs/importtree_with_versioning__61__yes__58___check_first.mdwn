@@ -9,6 +9,7 @@ git annex --debug initremote s3-dandiarchive bucket=dandiarchive type=S3 encrypt
 ```
 
 to see that annex (I use 10.20240927) would try to enable versioning:
+
 ```
 (enabling bucket versioning...) [2024-11-07 16:30:37.830416324] (Remote.S3) String to sign: "PUT\n\n\nThu, 07 Nov 2024 21:30:37 GMT\n/dandiarchive/?versioning"
 [2024-11-07 16:30:37.830449238] (Remote.S3) Host: "dandiarchive.s3.amazonaws.com"
