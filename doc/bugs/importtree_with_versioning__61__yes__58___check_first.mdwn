@@ -1,6 +1,6 @@
 ### Please describe the problem.
 
-I wanted to use this remote to "crawl" S3 bucket in `importtree=yes` mode. Bucket (dandiarchive) supports versioning, so it would be great to enable versioning here as well so URLs would use versionId.  But unfortunately adding `versioning=yes` makes `git-annex` to try to establish versioning on the bucket (even if it is already enabled).
+I wanted to use S3 special remote to "crawl" S3 bucket in `importtree=yes` mode. Bucket (dandiarchive) supports versioning, so it would be great to enable versioning here as well so URLs would use versionId.  But unfortunately adding `versioning=yes` makes `git-annex` to try to establish versioning on the bucket (even if it is already enabled).
 
 command to try with (should work for anyone since public bucket):
 
