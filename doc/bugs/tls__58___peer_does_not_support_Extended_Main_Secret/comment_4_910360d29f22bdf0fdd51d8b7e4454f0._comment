@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="AlexPraga"
+ avatar="http://cdn.libravatar.org/avatar/7c4e10fd352b81279b405f9f5337cdb7"
+ subject="Follow-up"
+ date="2024-11-07T21:46:32Z"
+ content="""
+Hi,
+I've been bit by this bug and cannot depend on the website to update its TLS. Is there a way for git-annex to \"ignore\" such a restriction (apart from using an older version) ?
+Thanks,
+"""]]
