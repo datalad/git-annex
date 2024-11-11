@@ -48,6 +48,7 @@ import Annex.Init
 import Annex.UUID
 import Annex.Content
 import Annex.Perms
+import Annex.Tmp
 import Annex.SpecialRemote.Config
 import Remote.List
 import Remote.List.Util
@@ -719,13 +720,14 @@ downloadManifest rmt = get mkmain >>= maybe (get mkbak) (pure . Just)
 	-- directory. The content of manifests is not stable, and so
 	-- it needs to re-download it fresh every time, and the object
 	-- file should not be stored locally.
-	gettotmp dl = withTmpFile "GITMANIFEST" $ \tmp tmph -> do
-		liftIO $ hClose tmph
-		_ <- dl tmp
-		b <- liftIO (B.readFile tmp)
-		case parseManifest b of
-			Right m -> Just <$> verifyManifest rmt m
-			Left err -> giveup err
+	gettotmp dl = withOtherTmp $ \othertmp ->
+		withTmpFileIn (fromRawFilePath othertmp) "GITMANIFEST" $ \tmp tmph -> do
+			liftIO $ hClose tmph
+			_ <- dl tmp
+			b <- liftIO (B.readFile tmp)
+			case parseManifest b of
+				Right m -> Just <$> verifyManifest rmt m
+				Left err -> giveup err
 
 	getexport _ [] = return Nothing
 	getexport mk (loc:locs) =

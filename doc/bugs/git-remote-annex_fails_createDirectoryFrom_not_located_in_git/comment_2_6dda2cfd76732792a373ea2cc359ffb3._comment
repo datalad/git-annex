@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2024-11-11T16:39:48Z"
+ content="""
+Fixed by changing it to download to a path under .git
+
+Also, this directory special remote case makes a good test case so I will
+add it to the test suite, which will be the first git-remote-annex in the
+test suite.
+"""]]
