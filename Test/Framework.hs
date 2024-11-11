@@ -140,12 +140,12 @@ annexeval a = do
 		a `finally` Annex.Action.stopCoProcesses
 
 innewrepo :: IO () -> IO ()
-innewrepo a = withgitrepo $ \r -> indir r a
+innewrepo a = withgitrepo $ \r -> intopdir r a
 
 inmainrepo :: IO a -> IO a
 inmainrepo a = do
 	d <- mainrepodir
-	indir d a
+	intopdir d a
 
 with_ssh_origin :: (Assertion -> Assertion) -> (Assertion -> Assertion)
 with_ssh_origin cloner a = cloner $ do
@@ -160,7 +160,7 @@ with_ssh_origin cloner a = cloner $ do
 	config = "remote.origin.url"
 
 intmpclonerepo :: Assertion -> Assertion
-intmpclonerepo a = withtmpclonerepo $ \r -> indir r a
+intmpclonerepo a = withtmpclonerepo $ \r -> intopdir r a
 
 checkRepo :: Types.Annex a -> FilePath -> IO a
 checkRepo getval d = do
@@ -170,11 +170,11 @@ checkRepo getval d = do
 
 intmpbareclonerepo :: Assertion -> Assertion
 intmpbareclonerepo a = withtmpclonerepo' (newCloneRepoConfig { bareClone = True } ) $
-	\r -> indir r a
+	\r -> intopdir r a
 
 intmpsharedclonerepo :: Assertion -> Assertion
 intmpsharedclonerepo a = withtmpclonerepo' (newCloneRepoConfig { sharedClone = True } ) $
-	\r -> indir r a
+	\r -> intopdir r a
 
 withtmpclonerepo :: (FilePath -> Assertion) -> Assertion
 withtmpclonerepo = withtmpclonerepo' newCloneRepoConfig
@@ -200,14 +200,19 @@ withgitrepo a = do
 	maindir <- mainrepodir
 	bracket (setuprepo maindir) return a
 
-indir :: FilePath -> IO a -> IO a
-indir dir a = do
+intopdir :: FilePath -> IO a -> IO a
+intopdir dir a = do
+	topdir <- Utility.Env.getEnvDefault "TOPDIR" (error "TOPDIR not set")
+	inpath (topdir ++ "/" ++ dir) a
+
+inpath :: FilePath -> IO a -> IO a
+inpath path a = do
 	currdir <- getCurrentDirectory
 	-- Assertion failures throw non-IO errors; catch
 	-- any type of error and change back to currdir before
 	-- rethrowing.
 	r <- bracket_
-		(changeToTopDir dir)
+		(setCurrentDirectory path)
 		(setCurrentDirectory currdir)
 		(tryNonAsync a)
 	case r of
@@ -215,7 +220,7 @@ indir dir a = do
 		Left e -> throwM e
 
 adjustedbranchsupported :: FilePath -> IO Bool
-adjustedbranchsupported repo = indir repo $ Annex.AdjustedBranch.isGitVersionSupported
+adjustedbranchsupported repo = intopdir repo $ Annex.AdjustedBranch.isGitVersionSupported
 
 setuprepo :: FilePath -> IO FilePath
 setuprepo dir = do
@@ -248,7 +253,7 @@ clonerepo old new cfg = do
 		]
 	git "clone" cloneparams "git clone"
 	configrepo new
-	indir new $ do
+	intopdir new $ do
 		ver <- annexVersion <$> getTestMode
 		git_annex "init" 
 			[ "-q"
@@ -257,12 +262,12 @@ clonerepo old new cfg = do
 			]
 			"git annex init"
 	unless (bareClone cfg) $
-		indir new $
+		intopdir new $
 			setupTestMode
 	return new
 
 configrepo :: FilePath -> IO ()
-configrepo dir = indir dir $ do
+configrepo dir = intopdir dir $ do
 	-- ensure git is set up to let commits happen
 	git "config" ["user.name", "Test User"]
 		"git config"
@@ -556,11 +561,6 @@ setupTestMode = do
 		git "commit" ["--allow-empty", "-m", "empty"] "git commit failed"
 		git_annex "adjust" ["--unlock"] "git annex adjust failed"
 
-changeToTopDir :: FilePath -> IO ()
-changeToTopDir t = do
-	topdir <- Utility.Env.getEnvDefault "TOPDIR" (error "TOPDIR not set")
-	setCurrentDirectory $ topdir ++ "/" ++ t
-
 tmpdir :: String
 tmpdir = ".t"
 
@@ -687,7 +687,7 @@ origBranch = maybe "foo"
 
 {- Set up repos as remotes of each other. -}
 pair :: FilePath -> FilePath -> Assertion
-pair r1 r2 = forM_ [r1, r2] $ \r -> indir r $ do
+pair r1 r2 = forM_ [r1, r2] $ \r -> intopdir r $ do
 	when (r /= r1) $
 		git "remote" ["add", "r1", "../" ++ r1] "remote add"
 	when (r /= r2) $
