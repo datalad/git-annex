@@ -77,11 +77,11 @@ createDirectoryUnder' topdirs dir0 mkdir = do
 			| null dirs ->
 				liftIO $ unlessM (doesDirectoryExist (fromRawFilePath topdir)) $
 					ioError $ customerror doesNotExistErrorType $
-						"createDirectoryFrom: " ++ fromRawFilePath topdir ++ " does not exist"
+						"createDirectoryUnder: " ++ fromRawFilePath topdir ++ " does not exist"
 			| otherwise -> createdirs $
 					map (topdir P.</>) (reverse (scanl1 (P.</>) dirs))
 		_ -> liftIO $ ioError $ customerror userErrorType
-			("createDirectoryFrom: not located in " ++ unwords (map fromRawFilePath topdirs))
+			("createDirectoryUnder: not located in " ++ unwords (map fromRawFilePath topdirs))
   where
 	customerror t s = mkIOError t s Nothing (Just (fromRawFilePath dir0))
 
