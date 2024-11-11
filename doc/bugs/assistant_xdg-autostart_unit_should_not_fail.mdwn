@@ -1,0 +1,23 @@
+### Please describe the problem.
+
+My distro was configured to install all of my environment's packages' autostart files into the global environment unbeknownst to me which became evident after I finally started getting graphical session startup right. Git annex ships one of these files for the assistant (which I don't use) that does `git-annex assistant --autostart`.
+
+When looking at `systemctl --user status`, I found my system to be in a "degraded" state because the `app-git\x2dannex@autostart.service` unit starts and fails every time I log into a `graphical-session.target`:
+
+```
+Nov 11 00:23:51 THESEUS systemd[1912]: Starting Git Annex Assistant...
+Nov 11 00:23:51 THESEUS systemd[1912]: Started Git Annex Assistant.
+Nov 11 00:23:51 THESEUS git-annex[373988]: git-annex: Nothing listed in /Users/atemu/.config/git-annex/autostart
+Nov 11 00:23:51 THESEUS systemd[1912]: app-git\x2dannex@autostart.service: Main process exited, code=exited, status=1/FAILURE
+Nov 11 00:23:51 THESEUS systemd[1912]: app-git\x2dannex@autostart.service: Failed with result 'exit-code'.
+```
+
+This is surprising given that I don't use this feature. It shouldn't be a failure because it's expected for the unit to not do anything when not explicitly configured to do so (as evidenced by the config file not being present).
+
+git-annex assistant's xdg-autostart file should be set up in a way such that not finding the autostart file is not considered a failure and does not make the resulting systemd unit fail.
+
+(I've since deactivated xdg-autostart because I don't intend to use it but this should be fixed regardless.)
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Hands down the best way to manage your files :)
