@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2024-11-11T17:56:35Z"
+ content="""
+This can certainly happen if files in the repository are in a directory 
+path that, when converted to a filename, is too long.
+
+I tried reproducing it, and was basically able to get into the same state
+as you. The reason both "git-annex vpop" and "git checkout master" fail
+is that since the long files were staged in git, but unable to be written,
+git considers them to be deleted. And so it refuses to do a checkout,
+with "Your local changes to the following files would
+be overwritten by checkout"
+
+I was able to resolve it by deleting the directory that contained those
+too long files. Which was empty anyway. That made git treat those files
+as deleted, and allowed "git checkout master" to work, as well as
+"git-annex vpop".
+
+The reason "git-annex vpop" failed for you with "Not in a view" is that was
+actually the second time you ran it, and the first time, despite the git
+checkout failing, it had proceeded to update git-annex's state to say it had
+popped out of the view. I've fixed that bug.
+
+As to whether git-annex should try to detect this and avoid entering such a
+view, I dunno..
+"""]]
