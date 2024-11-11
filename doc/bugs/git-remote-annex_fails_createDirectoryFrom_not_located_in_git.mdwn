@@ -1,0 +1,10 @@
+Likely a reversion, but I have not checked.
+
+    joey@darkstar:~/bench>git clone 'annex::4cdb3781-ee3c-4830-b937-a2ec2015aebc?encryption=none&type=directory&directory=/home/joey/bench/d' xx
+    Cloning into 'xx'...
+    git-annex: /home/joey/tmp: createDirectoryFrom: not located in xx/.git: user error
+
+Not limited to directory special remote, also happens with rclone.
+--[[Joey]]
+
+[[!tag projects/INM7]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2024-11-11T16:02:21Z"
+ content="""
+That problem is not limited to rclone. I opened a bug
+[[git-remote-annex_fails_createDirectoryFrom_not_located_in_git]]
+"""]]
