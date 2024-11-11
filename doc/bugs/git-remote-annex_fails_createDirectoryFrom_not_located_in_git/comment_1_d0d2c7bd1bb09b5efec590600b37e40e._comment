@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-11-11T16:20:37Z"
+ content="""
+Bisected the reversion to [[!commit 835283b86240ef4b68c44f4332ac1b644e08e49f]].
+
+A createAnnexDirectory call gets added to fileRetriever in that commit,
+and that uses createDirectoryUnder. In the case of git-remote-annex,
+the destination file is not under the .git directory, and so it fails.
+Before this commit, it was retrieved to under the .git directory
+and then renamed into place, and that rename didn't care if the destination
+was not under .git.
+"""]]
