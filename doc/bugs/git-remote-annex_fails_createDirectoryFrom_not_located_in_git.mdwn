@@ -8,3 +8,5 @@ Not limited to directory special remote, also happens with rclone.
 --[[Joey]]
 
 [[!tag projects/INM7]]
+
+> [[fixed|done]] and test suite updated --[[Joey]]
