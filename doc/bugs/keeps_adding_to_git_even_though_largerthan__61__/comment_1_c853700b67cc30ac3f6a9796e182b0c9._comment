@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-11-11T18:22:11Z"
+ content="""
+I don't see how that could happen unless you still had an annex.largefiles
+config somewhere. But --force-large would surely bypass
+all configs and make it be added as a large file.
+
+The places you could have annex.largefiles set that you didn't show are in
+git config, and in git-annex config. My guess is it was in git config,
+since that place to set it does override any gitattributes settings.
+"""]]
