@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: cannot &quot;unregister&quot; fully"""
+ date="2024-11-11T18:18:38Z"
+ content="""
+You can use `git-annex setpresentkey` to tell git-annex that content is not
+present in your special remote.
+
+Usually whether or not an url is currently registered with a special remote
+does not affect whether content is actually stored in it, which is why
+these are 2 different things. Except for the web special remote, which is a
+special case. I guess yours special remote also may be a special case, but
+git-annex doesn't know about it, and so why not use setpresentkey to handle
+the special case, rather than further complicating reregisterurl with it?
+"""]]
