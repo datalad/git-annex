@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-11-11T20:11:37Z"
+ content="""
+Unfortunately <https://hackage.haskell.org/package/aws> does not implement
+the versioning check, so it will need to be added there. And it tends to take
+some time for new versions of the build dependency to reach everywhere.
+
+<https://github.com/aristidb/aws/issues/290>
+
+I do think that is the only safe way to go though. I considered making
+git-annex assume that a bucket where versioning cannot be set is read-only.
+If git-annex is really never going to write to a bucket, it's safe to
+assume versioning is enabled. But, unfortunately, ACLs can sometimes
+prevent changing configs like versioning, but still allow other write
+operations. Also, a S3 remote might be initialized without permission to
+write to an existing bucket, but later S3 creds be used that do allow
+writing.
+"""]]
