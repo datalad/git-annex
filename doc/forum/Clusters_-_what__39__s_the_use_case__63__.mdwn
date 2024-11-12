@@ -1,0 +1,11 @@
+Are there any discussions of the use case for clusters other than the [tips link](https://git-annex.branchable.com/tips/clusters/)?
+
+I thought I understood the use case:
+
+> a collection of git-annex repositories which are combined to form a single logical repository
+
+So, one (or more) front-end and N-backends all behaving as a single repository.
+
+But then I saw multiple copies on a cluster count as multiple copies. This breaks my understanding of "one copy in a repository" logic.
+
+Are there any other discussions of when to use/create a cluster?
