@@ -1,0 +1,72 @@
+### Please describe the problem.
+
+I have been running
+
+`git annex --debug import --from s3-dandiarchive master` 
+
+from an S3 bucket which is versioned but I did not enable versioning for this "import" case (due to [git-annex unable to sense versioning read-only](https://git-annex.branchable.com/bugs/importtree_with_versioning__61__yes__58___check_first/)) and expected it to "quickly" import tree (with about 7k files) from S3.  Note that some of the keys have **many** older revisions for one reason or another.
+
+But currently that process, started hours ago yesterday IIRC, is
+
+```
+    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND                                                                                                     
+3912831 dandi     20   0 1024.1g  51.7g  16000 S 100.0  82.4     19,48 git-annex
+```
+
+CPU heavy and very slow (now, started faster flipping through pages) on actually "importing" while listing a page every 30 seconds or so
+
+```
+[2024-11-12 14:59:23.587433059] (Remote.S3) Header: [("Date","Tue, 12 Nov 2024 19:59:23 GMT")]
+
+[2024-11-12 14:59:58.073945529] (Remote.S3) Response status: Status {statusCode = 200, statusMessage = "OK"}
+[2024-11-12 14:59:58.074057102] (Remote.S3) Response header 'x-amz-id-2': 'sxDUdIkuRLs3jjjTyIbFaI+cQqLCGpTXZNFcvykT2+F6OcqVRM2IMn6P1YquVrdH3fXmV9nRnTDs9EtOtctV05GptcIaBaF2'
+[2024-11-12 14:59:58.07410232] (Remote.S3) Response header 'x-amz-request-id': 'Y35X1Z41GMF9PHY8'
+[2024-11-12 14:59:58.074135941] (Remote.S3) Response header 'Date': 'Tue, 12 Nov 2024 19:59:24 GMT'
+[2024-11-12 14:59:58.074167094] (Remote.S3) Response header 'x-amz-bucket-region': 'us-east-2'
+[2024-11-12 14:59:58.074197609] (Remote.S3) Response header 'Content-Type': 'application/xml'
+[2024-11-12 14:59:58.074228873] (Remote.S3) Response header 'Transfer-Encoding': 'chunked'
+[2024-11-12 14:59:58.074259342] (Remote.S3) Response header 'Server': 'AmazonS3'
+[2024-11-12 14:59:58.171273277] (Remote.S3) String to sign: "GET\n\n\nTue, 12 Nov 2024 19:59:58 GMT\n/dandiarchive/"
+[2024-11-12 14:59:58.171355688] (Remote.S3) Host: "dandiarchive.s3.amazonaws.com"
+[2024-11-12 14:59:58.17139206] (Remote.S3) Path: "/"
+[2024-11-12 14:59:58.17142278] (Remote.S3) Query string: "prefix=dandisets%2F"
+[2024-11-12 14:59:58.171463294] (Remote.S3) Header: [("Date","Tue, 12 Nov 2024 19:59:58 GMT")]
+
+```
+
+and not sure how many pages it got so far.  
+
+I suspect (can't tell from above) that it is using API to list all versions of keys, not just current version, even though I have not asked for versioned support. 
+
+Note: bucket is too heavy (about 300 million keys IIRC) to list all of it for all the versions.  I do not have information ready on how many versions of keys in the `dandisets/` prefix - could be some hundreds of thousands, but I would still expect/hope it to complete by now.  Nothing seems to be done on filesystem or to git store yet (du says it is 280k total size) -- git-annex is just being fed information from S3.
+
+### What steps will reproduce the problem?
+
+- add s3 importtree special remote matching
+
+```
+bucket=dandiarchive datacenter=US encryption=none fileprefix=dandisets/ host=s3.amazonaws.com importtree=yes name=s3-dandiarchive port=80 publicurl=https://dandiarchive.s3.amazonaws.com/ signature=anonymous storageclass=STANDARD type=S3 timestamp=1731015643s
+```
+
+- run `annex import` from it
+
+
+### What version of git-annex are you using? On what operating system?
+
+invocation of `static-git-annex-10.20241031` (build by kyleam https://git.kyleam.com/static-annex/ ... but I think I tried a different one before):
+
+```shell
+(dandisets-2) dandi@drogon:/mnt/backup/dandi/dandiset-manifests$ /home/dandi/git-annexes/static-git-annex-10.20241031/bin/git-annex version
+git-annex version: 10.20241031
+build flags: Pairing DBus DesktopNotify TorrentParser MagicMime Servant Benchmark Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.24.2 bloomfilter-2.0.1.2 crypton-1.0.1 DAV-1.3.4 feed-1.3.2.1 ghc-9.8.3 http-client-0.7.17 persistent-sqlite-2.13.3.0 torrent-10000.1.3 uuid-1.3.16
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL GITBUNDLE GITMANIFEST VURL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg rclone hook external
+operating system: linux x86_64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
+local repository version: 10
+```
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]
