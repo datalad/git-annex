@@ -1341,11 +1341,24 @@ enableBucketVersioning ss info _ _ _ = do
   where
 	enableversioning b = do
 #if MIN_VERSION_aws(0,21,1)
-		showAction "enabling bucket versioning"
+		showAction "checking bucket versioning"
 		hdl <- mkS3HandleVar c gc u
+		let setversioning = S3.putBucketVersioning b S3.VersioningEnabled
 		withS3HandleOrFail u hdl $ \h ->
-			void $ liftIO $ runResourceT $ sendS3Handle h $
-				S3.putBucketVersioning b S3.VersioningEnabled
+#if MIN_VERSION_aws(0,24,3)
+			liftIO $ runResourceT $
+				tryS3 (sendS3Handle h setversioning) >>= \case
+					Right _ -> return ()
+					Left err -> do
+						res <- sendS3Handle h $
+							S3.getBucketVersioning b
+						case S3.gbvVersioning res of
+							Just S3.VersioningEnabled -> return ()
+							_ -> giveup $ "This bucket does not have versioning enabled, and enabling it failed: "
+								++ T.unpack (S3.s3ErrorMessage err)
+#else
+			void $ liftIO $ runResourceT $ sendS3Handle h go
+#endif
 #else
 		showLongNote $ unlines
 			[ "This version of git-annex cannot auto-enable S3 bucket versioning."
