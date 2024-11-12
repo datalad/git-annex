@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2024-11-12T17:35:50Z"
+ content="""
+Wait though... We have signature=anonymous. So git-annex does in fact know
+that this special remote is read-only. git-annex will never try to write to
+it (even if the bucket somehow allowed anonymous writes) as long as it's
+configured with signature=anonymous.
+
+So, it could just avoid trying to set versioning when signature=anonymous,
+and assume the bucket has versioning enabled.
+
+Hmm, in lockContentS3, when versioning is enabled, it calls
+checkVersioning, which checks if a S3 version ID has been recorded for the
+file. What if the bucket did not actually have versioning enabled? Then an
+import from it would not record a S3 version ID. That would make this, and
+other places like checkKey that expect versioned buckets to have S3 version
+IDs fail in unexpected ways.
+
+So, I guess I'm inclined to not go down this read-only path, and instead wait for
+aws to get updated and use that.
+"""]]

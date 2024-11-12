@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2024-11-12T17:35:16Z"
+ content="""
+Made a pull request to aws <https://github.com/aristidb/aws/pull/292>
+
+(As sometimes S3 maintainer of aws, I'll probably accept it if nobody
+objects to it.)
+"""]]
