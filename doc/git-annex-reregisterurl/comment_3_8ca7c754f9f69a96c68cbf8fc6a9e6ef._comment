@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 3"
+ date="2024-11-11T22:18:37Z"
+ content="""
+Thank you Joey!
+
+> Except for the web special remote, which is a special case. I guess yours special remote also may be a special case, ...
+
+or in the other words, \"not that special\" after all.  I see it just a common enough pattern for use of this new `reregisterurl` that in my case it would be easier to just add an option instead of chaining manually `reregisterurl`, figure out what key one way or another, call `setpresentkey` with `0`.  After all it is for a user to announce one way or another.
+
+Anyways, I am ok for now, hopefully would not forget next time I use it to chase with that extra invocation.
+"""]]
