@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2024-11-12T18:32:53Z"
+ content="""
+The `checkbucketversioning` branch has this implemented, to be merged once
+aws is released supporting it.
+"""]]
