@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 1"
+ date="2024-11-13T18:08:59Z"
+ content="""
+At the end (after over a day of torturing that poor bucket, whenever it took just few minutes for `s3cmd sync` to get everything including content) it crashed with
+
+```
+[2024-11-12 22:58:00.366878941] (Remote.S3) Response status: Status {statusCode = 200, statusMessage = \"OK\"}
+[2024-11-12 22:58:00.373456754] (Remote.S3) Response header 'x-amz-id-2': 'DGXJztoRJRuHQrcOqs3FtnEUJomRz+53jawFoKoRbKQATcvAppqJcfcAVfR1d8cu7uepkEDvSXo='
+[2024-11-12 22:58:00.384304583] (Remote.S3) Response header 'x-amz-request-id': 'W1PSPV7ZSBKJ7HTT'
+[2024-11-12 22:58:00.38437407] (Remote.S3) Response header 'Date': 'Wed, 13 Nov 2024 03:50:18 GMT'
+[2024-11-12 22:58:00.384436037] (Remote.S3) Response header 'x-amz-bucket-region': 'us-east-2'
+[2024-11-12 22:58:00.384486611] (Remote.S3) Response header 'Content-Type': 'application/xml'
+[2024-11-12 22:58:00.384533794] (Remote.S3) Response header 'Transfer-Encoding': 'chunked'
+[2024-11-12 22:58:00.384581117] (Remote.S3) Response header 'Server': 'AmazonS3'
+
+git-annex: Unable to list contents of s3-dandiarchive: Network.Socket.recvBuf: resource vanished (Connection reset by peer)
+failed
+[2024-11-12 22:58:00.565431711] (Utility.Process) process [3912839] done ExitSuccess
+import: 1 failed
+
+```
+
+attesting that it is doing something unnecessary -- either listing full bucket (unlikely) or listing all versions of keys under the prefix (e.g. using [ListObjectVersions](https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectVersions.html) instead of [ListObjectsV2](https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html)).  
+
+It would have been useful if logs included the API call involved here.
+"""]]
