@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-11-13T18:15:22Z"
+ content="""
+I think that the most important use case for a cluster is 
+that it lets you make a single upload of a file and let the cluster decide
+which nodes to store it on.
+Rather than needing to upload several times to different repositories.
+
+Being able to `git-annex drop foo --from cluster` and remove it from whichever
+nodes the cluster happens to be storing it on is also a convenient use case.
+
+Another use case is letting the cluster operator provide access to some
+resource that you can't directly access. (Although that is really a property
+of proxies more generally.) Eg, a cluster node could be a S3 bucket that
+only the cluster operator has credentials to access.
+
+So it's an abstraction, but it's intentionally a leaky one; you can still
+access specific nodes of a cluster individually via the cluster gateway. Eg
+you can use "cluster-node1" as a remote. But also, with physical access,
+you could pull that node1 drive out of the cluster, make it a regular
+remote, and git-annex will know what files are on it. And when you put it
+back in the cluster, it will know what changes you made to it. And when you
+consider that situation, I think it makes sense why the contents of each
+node are tracked individually:, which is why node counts as its own copy.
+
+It's also possible that git-annex will eventually not be limited to
+"1 repository is 1 copy" more generally.
+[[todo/repositories_that_count_as_more_than_one_copy]] is pondering
+that, and has some other cases than clusters where it may make sense,
+to some people, to have a repository be treated as more than 1 copy.
+"""]]
