@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2024-11-13T16:30:55Z"
+ content="""
+Oh, this is a dotfile. It is behaving as documented for dotfiles. 
+(Modulo the issue discussed in [[add__58___inconsistently_treats_files_in_dotdirs_as_dotfiles]])
+You will need to set annex.dotfiles.
+"""]]
