@@ -62,4 +62,4 @@ How to remedy?
 
 dandi project
 
-> Not a bug, [[done]] --[[Joey]]
+> [[fixed|done]] --[[Joey]]

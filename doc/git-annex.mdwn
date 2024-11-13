@@ -1009,8 +1009,8 @@ repository, using [[git-annex-config]]. See its man page for a list.)
 
 * `annex.addsmallfiles`
 
-  Controls whether small files (not matching annex.largefiles)
-  should be checked into git by `git annex add`. Defaults to true;
+  Controls whether small files (files not matching annex.largefiles, or
+  dotfiles) should be checked into git by `git annex add`. Defaults to true;
   set to false to instead make small files be skipped.
 
 * `annex.addunlocked`

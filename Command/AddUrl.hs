@@ -519,7 +519,7 @@ addWorkTree _ addunlockedmatcher u url file key mtmp = case mtmp of
 				-- than the work tree file.
 				liftIO $ moveFile file tmp
 				go
-			else Command.Add.addSmall (DryRun False) file s
+			else Command.Add.addSmall False (DryRun False) file s
 				>>= maybe noop void
   where
 	go = do

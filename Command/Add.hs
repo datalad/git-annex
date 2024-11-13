@@ -95,18 +95,20 @@ seek' o = do
 	annexdotfiles <- getGitConfigVal annexDotFiles 
 	let gofile includingsmall (si, file) = case largeFilesOverride o of
 		Nothing -> do
-			topfile <- getTopFilePath <$> inRepo (toTopFilePath file)
-			ifM (pure (annexdotfiles || not (dotfile topfile))
-				<&&> (checkFileMatcher NoLiveUpdate largematcher file 
-				<||> Annex.getRead Annex.force))
-				( start dr si file addunlockedmatcher
-				, if includingsmall
+			isdotfile <- if annexdotfiles
+				then pure False
+				else dotfile . getTopFilePath
+					<$> inRepo (toTopFilePath file)
+			islarge <- checkFileMatcher NoLiveUpdate largematcher file
+				<||> Annex.getRead Annex.force
+			if (not isdotfile && islarge)
+				then start dr si file addunlockedmatcher
+				else if includingsmall
 					then ifM (annexAddSmallFiles <$> Annex.getGitConfig)
-						( startSmall dr si file
+						( startSmall isdotfile dr si file
 						, stop
 						)
 					else stop
-				)
 		Just True -> start dr si file addunlockedmatcher
 		Just False -> startSmallOverridden dr si file
 	case batchOption o of
@@ -138,17 +140,18 @@ seek' o = do
 	dr = dryRunOption o
 
 {- Pass file off to git-add. -}
-startSmall :: DryRun -> SeekInput -> RawFilePath -> CommandStart
-startSmall dr si file =
+startSmall :: Bool -> DryRun -> SeekInput -> RawFilePath -> CommandStart
+startSmall isdotfile dr si file =
 	liftIO (catchMaybeIO $ R.getSymbolicLinkStatus file) >>= \case
 		Just s -> 
 			starting "add" (ActionItemTreeFile file) si $
-				addSmall dr file s
+				addSmall isdotfile dr file s
 		Nothing -> stop
 
-addSmall :: DryRun -> RawFilePath -> FileStatus -> CommandPerform
-addSmall dr file s = do
-	showNote "non-large file; adding content to git repository"
+addSmall :: Bool -> DryRun -> RawFilePath -> FileStatus -> CommandPerform
+addSmall isdotfile dr file s = do
+	showNote $ (if isdotfile then "dotfile" else "non-large file")
+		<> "; adding content to git repository"
 	skipWhenDryRun dr $ next $ addFile Small file s
 
 startSmallOverridden :: DryRun -> SeekInput -> RawFilePath -> CommandStart
