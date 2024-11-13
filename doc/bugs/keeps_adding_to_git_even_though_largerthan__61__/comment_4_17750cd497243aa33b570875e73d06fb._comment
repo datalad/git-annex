@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2024-11-13T18:02:52Z"
+ content="""
+I think the bug here is that git-annex doesn't make clear it's treating
+that as a dotfile. 
+
+The docs were unclear to some, as mentioned in that other bug report,
+and I've clarified them.
+
+But also, I made `git-annex add` display "dotfile; adding content to git
+repository"
+"""]]
