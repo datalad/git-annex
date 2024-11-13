@@ -1357,7 +1357,7 @@ enableBucketVersioning ss info _ _ _ = do
 							_ -> giveup $ "This bucket does not have versioning enabled, and enabling it failed: "
 								++ T.unpack (S3.s3ErrorMessage err)
 #else
-			void $ liftIO $ runResourceT $ sendS3Handle h go
+			void $ liftIO $ runResourceT $ sendS3Handle h setversioning
 #endif
 #else
 		showLongNote $ unlines
