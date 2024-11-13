@@ -133,7 +133,8 @@ Most of these options are accepted by all git-annex commands.
 
 * `--user-agent=value`
 
-  Overrides the User-Agent to use when downloading files from the web.
+  Overrides the User-Agent to use when downloading files from the web,
+  or otherwise accessing web services.
 
 * `--notify-finish`
 

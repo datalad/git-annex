@@ -1,3 +1,5 @@
 ### Please describe the problem.
 
 git-annex does not appear to send a User-Agent when used with an S3 remote.
+
+> [[fixed|done]] --[[Joey]]
