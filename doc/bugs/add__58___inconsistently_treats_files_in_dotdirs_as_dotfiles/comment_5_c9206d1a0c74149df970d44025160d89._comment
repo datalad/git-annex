@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2024-11-13T17:04:59Z"
+ content="""
+> Why can't git-annex just handle the .git folder differently and for all others just annex or not as set in the largefile rules?
+
+Because creating a .gitignore followed by `git-annex add` would then blow the
+user's foot off. And this would be a very common foot-shooting opportunity,
+and .gitignore is only the perhaps most common trigger for it.
+
+Files in dot directories are generally less common, outside of course of
+.git and $HOME. Which is the only reason I'm willing to consider changing
+the dotfiles handling to not include those.
+
+But, .config/ seems to me to perfectly match what dotfiles *are*, which is
+files that are configuration that are named with a name starting with a
+dot in order to keep them from cluttering up `ls`. Just because in your use
+case you don't want to check those into git as dotfiles does not seem like
+a good argument for git-annex to not treat them as dotfiles by default.
+"""]]

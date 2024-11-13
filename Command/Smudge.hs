@@ -239,12 +239,14 @@ shouldAnnex file indexmeta moldkey = do
 		, checkunchanged checkwasannexed
 		)
   where
-	checkmatcher d
-		| dotfile file = ifM (getGitConfigVal annexDotFiles)
-			( go
-			, d
-			)
-		| otherwise = go
+	checkmatcher d = do
+		topfile <- getTopFilePath <$> inRepo (toTopFilePath file)
+		if dotfile topfile
+			then ifM (getGitConfigVal annexDotFiles)
+				( go
+				, d
+				)
+			else go
 	  where
 		go = do
 			matcher <- largeFilesMatcher

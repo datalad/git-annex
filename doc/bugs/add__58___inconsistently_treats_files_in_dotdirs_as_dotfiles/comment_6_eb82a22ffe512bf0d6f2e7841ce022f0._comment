@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2024-11-13T17:14:47Z"
+ content="""
+Revisiting this, it seems best to fix the inconsistent behavior by 
+having git-annex get the path to the file relative to the top of the git
+repository, and check if there's a dot directory in the path.
+"""]]

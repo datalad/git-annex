@@ -45,6 +45,7 @@ import qualified Git.Branch
 import Utility.Tuple
 import Utility.Metered
 import qualified Utility.RawFilePath as R
+import Git.FilePath
 
 import Data.Time.Clock
 import qualified Data.Set as S
@@ -319,15 +320,19 @@ handleAdds lockdowndir havelsof largefilematcher annexdotfiles delayadd cs = ret
 					(LinkChange (Just key))
 	
 	checksmall change
-		| not annexdotfiles && dotfile f =
-			return (Right change)
-		| otherwise =
-			ifM (liftAnnex $ checkFileMatcher NoLiveUpdate largefilematcher f)
-				( return (Left change)
-				, return (Right change)
-				)
+		| not annexdotfiles = do
+			topfile <- liftAnnex $ 
+				getTopFilePath <$> inRepo (toTopFilePath f)
+			if dotfile topfile
+				then return (Right change)
+				else checkmatcher
+		| otherwise = checkmatcher
 	  where
 		f = toRawFilePath (changeFile change)
+		checkmatcher = ifM (liftAnnex $ checkFileMatcher NoLiveUpdate largefilematcher f)
+			( return (Left change)
+			, return (Right change)
+			)
 
 	addsmall [] = noop
 	addsmall toadd = liftAnnex $ void $ tryIO $

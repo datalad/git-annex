@@ -3,6 +3,8 @@ git-annex (10.20241032) UNRELEASED; urgency=medium
   * git-remote-annex: Fix a reversion introduced in version 10.20241031
     that broke cloning from a special remote.
   * vpop: Only update state after successful checkout.
+  * add: Consistently treat files in a dotdir as dotfiles, even
+    when ran inside that dotdir.
 
  -- Joey Hess <id@joeyh.name>  Mon, 11 Nov 2024 12:26:00 -0400
 

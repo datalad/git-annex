@@ -101,3 +101,7 @@ go-to solution for “want something versioned, but can't store the
 contents themselves (too big, too sensitive, etc.)?”. Furthermore, git-annex
 documentation in general is excellent. But that is also why I'm stumped that
 the manual is so silent on this point.
+
+> [[fixed|done]] by resolving inconsistent behavior. Also improved
+> documentation to be clear that dot directories are treated same as
+> dotfiles.

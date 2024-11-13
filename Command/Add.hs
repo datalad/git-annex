@@ -94,17 +94,19 @@ seek' o = do
 	addunlockedmatcher <- addUnlockedMatcher
 	annexdotfiles <- getGitConfigVal annexDotFiles 
 	let gofile includingsmall (si, file) = case largeFilesOverride o of
-		Nothing -> ifM (pure (annexdotfiles || not (dotfile file))
-			<&&> (checkFileMatcher NoLiveUpdate largematcher file 
-			<||> Annex.getRead Annex.force))
-			( start dr si file addunlockedmatcher
-			, if includingsmall
-				then ifM (annexAddSmallFiles <$> Annex.getGitConfig)
-					( startSmall dr si file
-					, stop
-					)
-				else stop
-			)
+		Nothing -> do
+			topfile <- getTopFilePath <$> inRepo (toTopFilePath file)
+			ifM (pure (annexdotfiles || not (dotfile topfile))
+				<&&> (checkFileMatcher NoLiveUpdate largematcher file 
+				<||> Annex.getRead Annex.force))
+				( start dr si file addunlockedmatcher
+				, if includingsmall
+					then ifM (annexAddSmallFiles <$> Annex.getGitConfig)
+						( startSmall dr si file
+						, stop
+						)
+					else stop
+				)
 		Just True -> start dr si file addunlockedmatcher
 		Just False -> startSmallOverridden dr si file
 	case batchOption o of
