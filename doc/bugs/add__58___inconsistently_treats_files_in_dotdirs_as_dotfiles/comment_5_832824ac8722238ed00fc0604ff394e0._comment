@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 5"
+ date="2024-11-13T17:57:58Z"
+ content="""
+@lell, would you be so kind to point to me to \"formalization\" you use for your containers/configuration layout?
+\"I like containers too\", and in neuro* domain we are formalizing layout of data etc on the filesystem in [BIDS standard](https://bids.neuroimaging.io/).
+Moreover we are trying to formalize at the level of the \"entire project\", see e.g. [this issue with examples](https://github.com/bids-standard/bids-specification/pull/1861#issuecomment-2183701293).
+I would be interested to learn what/how you do it.
+Feel welcome to reach out directly to e.g. `debian AT oneukrainian.com`.
+Cheers,
+"""]]
