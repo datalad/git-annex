@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 4"
+ date="2024-11-13T18:11:58Z"
+ content="""
+Thank you! FWIW confirming that doing `git annex config --set annex.dotfiles true` made subsequent `git annex add` add that file under git-annex.  Filed a [FAQ documentation for con/duct](https://github.com/con/duct/pull/225) in hope to take longer this time to forget about this setting ;-)
+"""]]
