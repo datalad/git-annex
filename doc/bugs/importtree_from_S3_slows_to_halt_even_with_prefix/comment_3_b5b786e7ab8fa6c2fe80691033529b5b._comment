@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2024-11-14T18:50:37Z"
+ content="""
+This is the initremote for it:
+
+	git-annex initremote dandiarchive type=S3 encryption=none fileprefix=dandisets/ bucket=dandiarchive publicurl=https://dandiarchive.s3.amazonaws.com/ signature=anonymous host=s3.amazonaws.com datacenter=US importtree=yes
+
+It started at 1 API call per second, but it slowed down as memory rapidly
+went up. 3 gb in a few minutes, so I think there is definitely a memory
+leak involved.
+"""]]

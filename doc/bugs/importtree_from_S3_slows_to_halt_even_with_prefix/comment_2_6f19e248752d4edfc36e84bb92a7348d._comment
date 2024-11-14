@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2024-11-14T18:23:54Z"
+ content="""
+No, it does not request versions from S3 when versioning is not enabled.
+
+This feels fairly similar to
+[[git-annex-import_stalls_and_uses_all_ram_available]].
+But I don't think it's really the same, that one used versioning, and relied
+on preferred content to filter the wanted files. 
+
+Is the size of the whole bucket under the fileprefix, in your case, large
+enough that storing a list of all the files (without the versions) could
+logically take as much memory as you're seeing? At one point you said it
+was 7k files, but later hundreds of thousands, so I'm confused about how
+big it is.
+
+Is this bucket supposed to be public? I am having difficulty finding an
+initremote command that works.
+
+It also seems quite possible, looking at the code, that it's keeping all
+the responses from S3 in memory until it gets done with listing all the
+files, which would further increase memory use.
+I don't see any `O(N^2)` operations though.
+"""]]

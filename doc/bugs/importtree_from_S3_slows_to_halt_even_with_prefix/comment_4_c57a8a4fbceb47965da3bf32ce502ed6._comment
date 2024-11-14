@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2024-11-14T19:05:48Z"
+ content="""
+I suspect one way the CLI tool is faster, aside from not leaking memory,
+is that there is a max-key max-keys parameter that git-annex is not using.
+Less pagination would speed it up.
+"""]]

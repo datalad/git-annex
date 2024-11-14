@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2024-11-14T19:21:33Z"
+ content="""
+Apparently gbrNextMarker is Nothing despite the response being truncted. So
+git-annex is looping forever, getting the same first page each time, and
+storing it all in a list.
+
+I think this is a bug in the aws library, or I'm using it wrong.
+It looks for a NextMarker in the response XML, but accoccording to
+<https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjects.html>
+
+> This element is returned only if you have the delimiter request parameter
+> specified. If the response does not include the NextMarker element and it is
+> truncated, you can use the value of the last Key element in the response as the
+> marker parameter in the subsequent request to get the next set of object keys.
+"""]]
