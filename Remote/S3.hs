@@ -589,14 +589,23 @@ listImportableContentsS3 hv r info c =
 			continuelistunversioned h [] rsp
 
 	continuelistunversioned h l rsp
-		| S3.gbrIsTruncated rsp = do
-			rsp' <- sendS3Handle h $
-				(S3.getBucket (bucket info))
-					{ S3.gbMarker = S3.gbrNextMarker rsp
-					, S3.gbPrefix = fileprefix
-					}
-			continuelistunversioned h (rsp:l) rsp'
-		| otherwise = return $
+		| S3.gbrIsTruncated rsp =
+			let marker = 
+				S3.gbrNextMarker rsp
+					<|>
+				(S3.objectKey <$> lastMaybe (S3.gbrContents rsp))
+			in case marker of
+				Just _ -> do
+					rsp' <- sendS3Handle h $
+						(S3.getBucket (bucket info))
+							{ S3.gbMarker = marker
+							, S3.gbPrefix = fileprefix
+							}
+					continuelistunversioned h (rsp:l) rsp'
+				Nothing -> nomore
+		| otherwise = nomore
+	  where
+		nomore = return $
 			mkImportableContentsUnversioned info (reverse (rsp:l))
 	
 	continuelistversioned h l rsp
