@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2024-11-13T19:52:28Z"
+ content="""
+Drat, no followup. I seem to remember hearing about a S3 implementation
+that either needed any User-Agent header (currently, git-annex does not
+send one to S3), or perhaps a specific User-Agent. But I don't remember
+details.
+
+Anyway, I have implemented a patch to the aws library that can be used for
+this.
+"""]]

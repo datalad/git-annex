@@ -7,6 +7,10 @@ git-annex (10.20241032) UNRELEASED; urgency=medium
     when ran inside that dotdir.
   * add: When adding a dotfile as a non-large file, mention that it's a
     dotfile.
+  * S3: Support versioning=yes with a readonly bucket.
+    (Needs aws-0.24.3)
+  * S3: Send git-annex or other configured User-Agent.
+    (Needs aws-0.24.3)
 
  -- Joey Hess <id@joeyh.name>  Mon, 11 Nov 2024 12:26:00 -0400
 

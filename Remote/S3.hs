@@ -63,8 +63,8 @@ import Utility.Metered
 import Utility.DataUnits
 import Annex.Content
 import qualified Annex.Url as Url
-import Utility.Url (extractFromResourceT)
-import Annex.Url (getUrlOptions, withUrlOptions, UrlOptions(..))
+import Utility.Url (extractFromResourceT, UserAgent)
+import Annex.Url (getUserAgent, getUrlOptions, withUrlOptions, UrlOptions(..))
 import Utility.Env
 import Annex.Verify
 
@@ -885,10 +885,11 @@ mkS3HandleVar c gc u = liftIO $ newTVarIO $ Left $
 				Just creds -> go =<< liftIO (genCredentials creds)
 				Nothing -> return (Left S3HandleNeedCreds)
   where
-	s3cfg = s3Configuration c
 	go awscreds = do
-		let awscfg = AWS.Configuration AWS.Timestamp awscreds debugMapper Nothing
 		ou <- getUrlOptions
+		ua <- getUserAgent
+		let awscfg = AWS.Configuration AWS.Timestamp awscreds debugMapper Nothing
+		let s3cfg = s3Configuration (Just ua) c
 		return $ Right $ S3Handle (httpManager ou) awscfg s3cfg
 
 withS3Handle :: S3HandleVar -> (Either S3HandleProblem S3Handle -> Annex a) -> Annex a
@@ -907,13 +908,20 @@ withS3HandleOrFail u hv a = withS3Handle hv $ \case
 needS3Creds :: UUID -> String
 needS3Creds u = missingCredPairFor "S3" (AWS.creds u)
 
-s3Configuration :: ParsedRemoteConfig -> S3.S3Configuration AWS.NormalQuery
-s3Configuration c = cfg
+s3Configuration :: Maybe UserAgent -> ParsedRemoteConfig -> S3.S3Configuration AWS.NormalQuery
+#if MIN_VERSION_aws(0,24,3)
+s3Configuration ua c = cfg
+#else
+s3Configuration _ua c = cfg
+#endif
 	{ S3.s3Port = port
 	, S3.s3RequestStyle = case getRemoteConfigValue requeststyleField c of
 		Just "path" -> S3.PathStyle
 		Just s -> giveup $ "bad S3 requeststyle value: " ++ s
 		Nothing -> S3.s3RequestStyle cfg
+#if MIN_VERSION_aws(0,24,3)
+	, S3.s3UserAgent = T.pack <$> ua
+#endif
 	}
   where
 	h = fromJust $ getRemoteConfigValue hostField c
@@ -1157,7 +1165,7 @@ s3Info c info = catMaybes
 	, Just ("versioning", if versioning info then "yes" else "no")
 	]
   where
-	s3c = s3Configuration c
+	s3c = s3Configuration Nothing c
 	showstorageclass (S3.OtherStorageClass t) = T.unpack t
 	showstorageclass sc = show sc
 
@@ -1341,11 +1349,24 @@ enableBucketVersioning ss info _ _ _ = do
   where
 	enableversioning b = do
 #if MIN_VERSION_aws(0,21,1)
-		showAction "enabling bucket versioning"
+		showAction "checking bucket versioning"
 		hdl <- mkS3HandleVar c gc u
+		let setversioning = S3.putBucketVersioning b S3.VersioningEnabled
 		withS3HandleOrFail u hdl $ \h ->
-			void $ liftIO $ runResourceT $ sendS3Handle h $
-				S3.putBucketVersioning b S3.VersioningEnabled
+#if MIN_VERSION_aws(0,24,3)
+			liftIO $ runResourceT $
+				tryS3 (sendS3Handle h setversioning) >>= \case
+					Right _ -> return ()
+					Left err -> do
+						res <- sendS3Handle h $
+							S3.getBucketVersioning b
+						case S3.gbvVersioning res of
+							Just S3.VersioningEnabled -> return ()
+							_ -> giveup $ "This bucket does not have versioning enabled, and enabling it failed: "
+								++ T.unpack (S3.s3ErrorMessage err)
+#else
+			void $ liftIO $ runResourceT $ sendS3Handle h setversioning
+#endif
 #else
 		showLongNote $ unlines
 			[ "This version of git-annex cannot auto-enable S3 bucket versioning."

@@ -16,3 +16,4 @@ packages:
 resolver: nightly-2024-07-29
 extra-deps:
 - filepath-bytestring-1.4.100.3.2
+- aws-0.24.3
