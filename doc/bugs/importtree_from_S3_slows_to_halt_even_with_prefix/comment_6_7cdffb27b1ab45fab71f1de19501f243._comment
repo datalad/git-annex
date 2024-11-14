@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2024-11-14T20:14:29Z"
+ content="""
+Fixed in [[!commit 4b87669ae229c89eadb4ff88eba927e105c003c4]]. Now it runs
+in seconds.
+
+Note that this bug does not seem to affect S3 remotes that have versioning
+enabled.
+"""]]
