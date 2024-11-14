@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2024-11-14T17:57:56Z"
+ content="""
+Multiple names for the same uuid is easy to explain, if they ran `git-annex
+renameremote`. Anyway, git-annex will use whichever of those configs for that 
+uuid has the latest timestamp. So not really a problem. And when the
+remote.log gets compacted (as happened when you did "that dance"), the old
+log entries get removed.
+
+Multiple uuids for the same name is also pretty easy to explain:
+initremote can be run twice with the same name in different clones,
+and so you then have two remotes upon merging. `git-annex enableremote`
+does deal with this situation, failing with "Multiple remotes have that
+name. Either use git-annex renameremote to rename them, or specify the uuid
+of the remote." 
+
+Here you didn't use enableremote though, but it autoenabled. Since both
+remotes have autoenable set, I think what happened was whichever got
+autoenabled second overwrote the git config of the one that got autoenabled
+first. Here's how that looks:
+
+	git-annex init
+	init  (Auto enabling special remote foo...)
+	(Auto enabling special remote foo...)
+	ok
+
+Maybe autoenable could somehow handle that case better, but all I can think
+of is a warning.
+"""]]
