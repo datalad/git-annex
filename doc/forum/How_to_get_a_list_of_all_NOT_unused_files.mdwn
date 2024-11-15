@@ -15,6 +15,6 @@ However, git annex exits without copying any files, my repo is still empty after
 
 I also tried git annex findkeys --not --unused, but it says invalid option --unused :-(
 
-In my example I have multiple repositories that all have part of the files I want, so I cannot just make a repo that has all versions of all files and then `drop --unused`. That also would take too much storage.
+In real life I have multiple repositories that all have part of the files I want, so I cannot just make a repo that has all versions of all files and then `drop --unused`. That also would take too much storage.
 
 How can I do this?
