@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2024-11-15T17:16:51Z"
+ content="""
+Trying the same command but with versioning=yes, I have verified that
+
+* it does not have the same loop forever behavior
+* it does use a lot of memory quite quickly
+
+Going back to the unversioned command, I was able to reduce the memory use
+by 20% by processing each result, rather than building up a list of results
+and processing at the end. It will be harder to do that in the versioning
+case, but I expect it will improve it at least that much, and probably
+more, since it will be able to GC all the delete markers.
+"""]]

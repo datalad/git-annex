@@ -601,15 +601,29 @@ listImportableContentsS3 hv r info c =
 							{ S3.gbMarker = marker
 							, S3.gbPrefix = fileprefix
 							}
-					continuelistunversioned h (rsp:l) rsp'
+					l' <- extractFromResourceT $
+						extractunversioned rsp
+					continuelistunversioned h (l':l) rsp'
 				Nothing -> nomore
 		| otherwise = nomore
 	  where
 		nomore = return $
-			mkImportableContentsUnversioned info (reverse (rsp:l))
+			mkImportableContentsUnversioned
+				(reverse (extractunversioned rsp:l))
 	
+	extractunversioned = mapMaybe extractunversioned' . S3.gbrContents
+	extractunversioned' oi = do
+                  loc <- bucketImportLocation info $
+                          T.unpack $ S3.objectKey oi
+                  let sz  = S3.objectSize oi
+                  let cid = mkS3UnversionedContentIdentifier $ S3.objectETag oi
+                  return (loc, (cid, sz))
+
 	continuelistversioned h l rsp
 		| S3.gbovrIsTruncated rsp = do
+			let showme x = case x of
+				S3.DeleteMarker {} -> "delete"
+				v -> S3.oviKey v
 			rsp' <- sendS3Handle h $
 				(S3.getBucketObjectVersions (bucket info))
 					{ S3.gbovKeyMarker = S3.gbovrNextKeyMarker rsp
@@ -620,18 +634,11 @@ listImportableContentsS3 hv r info c =
 		| otherwise = return $
 			mkImportableContentsVersioned info (reverse (rsp:l))
 
-mkImportableContentsUnversioned :: S3Info -> [S3.GetBucketResponse] -> ImportableContents (ContentIdentifier, ByteSize)
-mkImportableContentsUnversioned info l = ImportableContents 
-	{ importableContents = concatMap (mapMaybe extract . S3.gbrContents) l
+mkImportableContentsUnversioned :: [[(ImportLocation, (ContentIdentifier, ByteSize))]] -> ImportableContents (ContentIdentifier, ByteSize)
+mkImportableContentsUnversioned l = ImportableContents 
+	{ importableContents = concat l
 	, importableHistory = []
 	}
-  where
-	extract oi = do
-		loc <- bucketImportLocation info $
-			T.unpack $ S3.objectKey oi
-		let sz  = S3.objectSize oi
-		let cid = mkS3UnversionedContentIdentifier $ S3.objectETag oi
-		return (loc, (cid, sz))
 
 mkImportableContentsVersioned :: S3Info -> [S3.GetBucketObjectVersionsResponse] -> ImportableContents (ContentIdentifier, ByteSize)
 mkImportableContentsVersioned info = build . groupfiles
