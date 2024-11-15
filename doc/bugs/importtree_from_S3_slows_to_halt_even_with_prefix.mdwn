@@ -70,3 +70,6 @@ local repository version: 10
 
 [[!meta author=yoh]]
 [[!tag projects/dandi]]
+
+> Calling this [[done]] although memory use improvements still seem
+> possible.. --[[Joey]]
