@@ -4,10 +4,12 @@ I tried to clone a present repository to an new folder and move there only files
 
 But git annex does nothing:
 
+```
 git clone my-repo  repo-archive
 cd repo-archive
 git annex init
 git annex copy --to=here --not --unused
+```
 
 However, git annex exits without copying any files, my repo is still empty afterwards.
 
