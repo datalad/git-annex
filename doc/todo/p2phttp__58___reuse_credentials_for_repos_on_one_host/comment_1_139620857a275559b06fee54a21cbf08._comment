@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/59541f50d845e5f81aff06e88a38b9de"
+ subject="comment 1"
+ date="2024-11-15T08:54:07Z"
+ content="""
+Just an addendum: in forgejo-aneksajo I've effectively implemented the third option by having one git-annex-p2phttp endpoint for all repositories, peaking at the request to get the repository UUID, starting the p2phttp server for that repository, and then forwarding the request. So, having to enter the credentials for every new repository is no longer a concern there, and <https://git-annex.branchable.com/todo/p2phttp_serve_multiple_repositories/> would address this for standalone p2phttp.
+
+What might still be nice though is trying to reuse the credentials of standard git operations for p2phttp. In the case of forgejo-aneksajo, git push/pull and annex-p2phttp operations use the same username/password or username/access-token combination for authentication, but git-annex will prompt for them twice due to the different URLs. This might be a bit hacky, but I think this would just work if git-annex allowed plain http(s):// URLs in addition to annex+http(s):// in the annexurl configuration, as the request to git credential would then match that of plain git operations.
+"""]]
