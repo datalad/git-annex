@@ -20,4 +20,7 @@ oddly didn't save any memory.
 
 Memory profiling might let this be improved further, but needing 1 gb of
 memory to import a million changes to files doesn't seem too bad.
+
+Update: Did some memory profiling, nothing stuck out as badly wrong.
+Lists and tuples are using as much memory as anything.
 """]]
