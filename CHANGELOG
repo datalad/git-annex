@@ -13,6 +13,8 @@ git-annex (10.20241032) UNRELEASED; urgency=medium
     (Needs aws-0.24.3)
   * S3: Fix infinite loop and memory blowup when importing from an
     unversioned S3 bucket that is large enough to need pagination.
+  * S3: Use significantly less memory when importing from a
+    versioned S3 bucket.
 
  -- Joey Hess <id@joeyh.name>  Mon, 11 Nov 2024 12:26:00 -0400
 
