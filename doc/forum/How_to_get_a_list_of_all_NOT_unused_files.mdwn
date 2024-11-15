@@ -1,0 +1,16 @@
+I have a research project where I want to save some but not all versions. Those that should be saved are tagged. I want to create a repository (and archive it) that contains only those files. It is, so to say, the inverse of --unused.
+
+I tried to clone a present repository to an new folder and move there only files that are referenced by some ref (branch or tag). 
+
+But git annex does nothing:
+
+git clone my-repo  repo-archive
+cd repo-archive
+git annex init
+git annex copy --to=here --not --unused
+
+However, git annex exits without copying any files, my repo is still empty afterwards.
+
+I also tried git annex findkeys --not --unused, but it says invalid option --unused :-(
+
+How can I do this?
