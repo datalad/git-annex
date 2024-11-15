@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2024-11-15T19:29:52Z"
+ content="""
+FWIW, I've made some improvements that should make it need around 80% less
+memory in this case. Which might be enough to let it import.
+
+Still don't have filtering on preferred contents on the fly though.
+"""]]

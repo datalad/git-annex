@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2024-11-15T17:48:08Z"
+ content="""
+Did same memory optimisation for the versioned case, and the results are
+striking! Running the command until it had made 45 API requests, it was
+using 592788 kb of memory. Now it uses only 110968 kb.
+
+Of that, about 78900 kb are used at startup, so it grew 29836 kb.
+At that point, it has gathered 23537 changes. So about 1 kb is used per
+change. That seems a bit more memory than really should be needed,
+each change takes about 75 bytes of data, eg:
+
+	"y3RixvrmLvr1oWJ7meEa4vWK6B.C.aad",3340,"dandisets/000003/draft/dandiset.jsonld",2021-09-28 02:12:39 UTC
+
+I did try some further memory optimisation, making it avoid storing the
+same filename repeatedly in memory when gathering versioned changes. Which
+oddly didn't save any memory.
+
+Memory profiling might let this be improved further, but needing 1 gb of
+memory to import a million changes to files doesn't seem too bad.
+"""]]
