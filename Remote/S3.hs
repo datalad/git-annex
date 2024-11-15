@@ -582,7 +582,7 @@ listImportableContentsS3 hv r info c =
 		| versioning info = do
 			rsp <- sendS3Handle h $ 
 				S3.getBucketObjectVersions (bucket info)
-			continuelistversioned 0 h [] rsp
+			continuelistversioned Nothing h [] rsp
 		| otherwise = do
 			rsp <- sendS3Handle h $ 
 				(S3.getBucket (bucket info))
@@ -608,11 +608,13 @@ listImportableContentsS3 hv r info c =
 				Nothing -> nomore
 		| otherwise = nomore
 	  where
-		nomore = return $
-			mkImportableContentsUnversioned
-				(reverse (extractunversioned rsp:l))
+		nomore = do
+			l' <- extractFromResourceT $
+				extractunversioned rsp
+			return $ mkImportableContentsUnversioned
+				(reverse (l':l))
 
-	continuelistversioned n h l rsp
+	continuelistversioned reuse h l rsp
 		| S3.gbovrIsTruncated rsp = do
 			rsp' <- sendS3Handle h $
 				(S3.getBucketObjectVersions (bucket info))
@@ -620,12 +622,14 @@ listImportableContentsS3 hv r info c =
 					, S3.gbovVersionIdMarker = S3.gbovrNextVersionIdMarker rsp
 					, S3.gbovPrefix = fileprefix
 					}
-			l' <- extractFromResourceT $
-				extractversioned rsp
-			continuelistversioned (length l' + n) h (l':l) rsp'
-		| otherwise = return $
-			mkImportableContentsVersioned
-				(reverse (extractversioned rsp:l))
+			(l', reuse') <- extractFromResourceT $
+				extractversioned reuse rsp
+			continuelistversioned reuse' h (l':l) rsp'
+		| otherwise = do
+			(l', _) <- extractFromResourceT $
+				extractversioned reuse rsp
+			return $ mkImportableContentsVersioned
+				(reverse (l':l))
 
 	extractunversioned = mapMaybe extractunversioned' . S3.gbrContents
 	extractunversioned' oi = do
@@ -635,14 +639,24 @@ listImportableContentsS3 hv r info c =
                   let cid = mkS3UnversionedContentIdentifier $ S3.objectETag oi
                   return (loc, (cid, sz))
 	
-	extractversioned = mapMaybe extractversioned' . S3.gbovrContents
-  	extractversioned' ovi@(S3.ObjectVersion {}) = do
+	extractversioned reuse = extractversioned' reuse . S3.gbovrContents
+	extractversioned' reuse [] = ([], reuse)
+	extractversioned' reuse (x:xs) = case extractversioned'' reuse x of
+		Just (v, reuse') -> 
+			let (l, reuse'') = extractversioned' reuse' xs
+			in (v:l, reuse'')
+		Nothing -> extractversioned' reuse xs
+	extractversioned'' reuse ovi@(S3.ObjectVersion {}) = do
 		loc <- bucketImportLocation info $
 			T.unpack $ S3.oviKey ovi
+		-- Avoid storing the same filename in memory repeatedly.
+		let loc' = case reuse of
+			Just reuseloc | reuseloc == loc -> reuseloc
+			_ -> loc
 		let sz  = S3.oviSize ovi
 		let cid = mkS3VersionedContentIdentifier' ovi
-		return ((loc, (cid, sz)), S3.oviLastModified ovi)
-	extractversioned' (S3.DeleteMarker {}) = Nothing
+		return (((loc', (cid, sz)), S3.oviLastModified ovi), Just loc')
+	extractversioned'' _ (S3.DeleteMarker {}) = Nothing
 
 mkImportableContentsUnversioned :: [[(ImportLocation, (ContentIdentifier, ByteSize))]] -> ImportableContents (ContentIdentifier, ByteSize)
 mkImportableContentsUnversioned l = ImportableContents 
