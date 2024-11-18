@@ -1,0 +1,76 @@
+### Please describe the problem.
+
+eg from [this recent run](https://github.com/datalad/git-annex/actions/runs/11875458683/job/33092822672)
+
+```
+Tests
+  Repo Tests v10 adjusted unlocked branch
+    Init Tests
+      init:                                       OK (0.43s)
+      add:                                        OK (0.83s)
+    sop crypto:                                   OK
+    upgrade:                                      OK (0.52s)
+    conflict resolution (uncommitted local file): OK (4.99s)
+    adjusted branch merge regression:             OK (1.09s)
+    describe:                                     OK (0.62s)
+    fsck (local untrusted):                       OK (1.60s)
+    lock --force:                                 OK (2.29s)
+    drop (untrusted remote):                      OK (1.69s)
+    view:                                         OK (0.91s)
+    git-remote-annex:                             FAIL (3.01s)
+      ./Test/Framework.hs:86:
+      git clone from special remote failed with unexpected exit code (transcript follows)
+      Cloning into 'clonedir'...
+        Detected a filesystem without fifo support.
+        Disabling ssh connection caching.
+        Detected a crippled filesystem.
+        Entering an adjusted branch where files are unlocked as this filesystem does not support locked files.
+      Switched to branch 'adjusted/master(unlocked)'
+      error: Untracked working tree file 'bar.c' would be overwritten by merge.
+      fatal: unable to checkout working tree
+      warning: Clone succeeded, but checkout failed.
+      You can inspect what was checked out with 'git status'
+      and retry with 'git restore --source=HEAD :/'
+      
+      
+      Use -p '/git-remote-annex/' to rerun this test only.
+
+1 out of 12 tests failed (17.99s)
+```
+
+overall -- seems started to fail about a week ago
+
+```
+ 167   T Nov 17 GitHub Actions   datalad/git-annex daily summary: 20 PASSED, 10 FAILED, 1 ABSENT                                                                                    
+ 238   T Nov 16 GitHub Actions   datalad/git-annex daily summary: 20 PASSED, 10 FAILED, 1 ABSENT                                                                                    
+ 348   T Nov 15 GitHub Actions   datalad/git-annex daily summary: 23 PASSED, 7 FAILED, 1 ABSENT                                                                                     
+ 890   T Nov 14 GitHub Actions   datalad/git-annex daily summary: 23 PASSED, 7 FAILED, 1 ABSENT                                                                                     
+1676   T Nov 13 GitHub Actions   datalad/git-annex daily summary: 22 PASSED, 8 FAILED, 1 ABSENT                                                                                     
+2032   T Nov 12 GitHub Actions   datalad/git-annex daily summary: 23 PASSED, 7 FAILED, 1 ABSENT                                                                                     
+2561   T Nov 11 GitHub Actions   datalad/git-annex daily summary: 30 PASSED, 1 ABSENT 
+```
+
+although there in first failing was a bit different on OSX
+
+```
+  Repo Tests v10 locked
+    Init Tests
+      init:                                       OK (0.43s)
+      add:                                        OK (1.17s)
+    sop crypto:                                   OK
+    upgrade:                                      OK (0.62s)
+    conflict resolution (uncommitted local file): OK (5.93s)
+    adjusted branch merge regression:             OK (7.74s)
+    describe:                                     OK (0.92s)
+    fsck (local untrusted):                       OK (1.87s)
+    lock --force:                                 OK (1.64s)
+    drop (untrusted remote):                      OK (1.38s)
+    view:                                         OK (1.48s)
+    git-remote-annex:                             FAIL (2.95s)
+      ./Test/Framework.hs:86:
+      git clone from special remote failed with unexpected exit code (transcript follows)
+      Cloning into 'clonedir'...
+      git-annex: No git repository found in this remote.
+      
+      Use -p '/git-remote-annex/' to rerun this test only.
+```
