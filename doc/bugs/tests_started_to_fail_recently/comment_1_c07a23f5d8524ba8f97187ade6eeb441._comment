@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-11-19T16:18:31Z"
+ content="""
+This is a new test.
+
+Looks like it's found a legitimate bug in git-remote-annex. When the
+filesystem is crippled, the git-annex init checks out an adjusted branch,
+which here happens in the middle of git's own checkout and so legitimately
+confuses git.
+
+I can reproduce this on a FAT filesystem, cloning from eg a directory
+special remote. Fixed this.
+
+(The OSX failure is something else.)
+"""]]

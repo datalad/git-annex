@@ -15,6 +15,8 @@ git-annex (10.20241032) UNRELEASED; urgency=medium
     unversioned S3 bucket that is large enough to need pagination.
   * S3: Use significantly less memory when importing from a
     versioned S3 bucket.
+  * git-remote-annex: Fix cloning from a special remote on a crippled
+    filesystem.
 
  -- Joey Hess <id@joeyh.name>  Mon, 11 Nov 2024 12:26:00 -0400
 

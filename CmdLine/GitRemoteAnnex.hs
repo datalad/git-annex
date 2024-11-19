@@ -1129,7 +1129,7 @@ specialRemoteFromUrl sab a = withTmpDir "journal" $ \tmpdir -> do
 -- If the git-annex branch did not exist when this command started,
 -- it was created empty by this command, and this command has avoided
 -- making any other commits to it, writing any temporary annex branch
--- changes to thre alternateJournal, which can now be discarded. 
+-- changes to the alternateJournal, which can now be discarded. 
 -- 
 -- If nothing else has written to the branch while this command was running,
 -- the branch will be deleted. That allows for the git-annex branch that is
@@ -1152,6 +1152,11 @@ specialRemoteFromUrl sab a = withTmpDir "journal" $ \tmpdir -> do
 -- does not contain any hooks. Since initialization installs
 -- hooks, have to work around that by not initializing, and 
 -- delete the git bundle objects.
+--
+-- Similarly, when on a crippled filesystem, doing initialization would
+-- involve checking out an adjusted branch. But git clone wants to do its
+-- own checkout. So no initialization is done then, and the git bundle
+-- objects are deleted.
 cleanupInitialization :: StartAnnexBranch -> FilePath -> Annex ()
 cleanupInitialization sab alternatejournaldir = void $ tryNonAsync $ do
 	liftIO $ mapM_ removeFile =<< dirContents alternatejournaldir
@@ -1173,7 +1178,7 @@ cleanupInitialization sab alternatejournaldir = void $ tryNonAsync $ do
 					Nothing -> return ()
 					Just _ -> void $ tryNonAsync $
 						inRepo $ Git.Branch.delete Annex.Branch.fullname
-	ifM (Annex.Branch.hasSibling <&&> nonbuggygitversion)
+	ifM (Annex.Branch.hasSibling <&&> nonbuggygitversion <&&> notcrippledfilesystem)
 		( do
 			autoInitialize' (pure True) startupAnnex remoteList
 			differences <- allDifferences <$> recordedDifferences
@@ -1189,6 +1194,8 @@ cleanupInitialization sab alternatejournaldir = void $ tryNonAsync $ do
                 	GitBundleKey -> lockContentForRemoval k noop removeAnnex
 			_ -> noop
 		void $ liftIO $ tryIO $ removeDirectory (decodeBS annexobjectdir)
+
+	notcrippledfilesystem = not <$> probeCrippledFileSystem
 
 	nonbuggygitversion = liftIO $
 		flip notElem buggygitversions <$> Git.Version.installed
