@@ -282,7 +282,8 @@ repoTests note numparts = map mk $ sep
 	[ testCase "add dup" test_add_dup
 	, testCase "add extras" test_add_extras
 	, testCase "add moved link" test_add_moved
-	, testCase "git-remote-annex" test_git_remote_annex
+	, testCase "git-remote-annex" (test_git_remote_annex False)
+	, testCase "git-remote-annex exporttree" (test_git_remote_annex True)
 	, testCase "readonly remote" test_readonly_remote
 	, testCase "ignore deleted files" test_ignore_deleted_files
 	, testCase "metadata" test_metadata
@@ -422,12 +423,14 @@ test_add_extras = intmpclonerepo $ do
 	annexed_present wormannexedfile
 	checkbackend wormannexedfile backendWORM
 
-test_git_remote_annex :: Assertion
-test_git_remote_annex = do
-	testspecialremote [] $ 
-		git_annex "copy" ["--to=foo"] "copy"
-	testspecialremote ["importtree=yes", "exporttree=yes"] $
-		git_annex "export" ["master", "--to=foo"] "export"
+test_git_remote_annex :: Bool -> Assertion
+test_git_remote_annex exporttree
+	| exporttree = 
+		testspecialremote ["importtree=yes", "exporttree=yes"] $
+			git_annex "export" ["master", "--to=foo"] "export"
+	| otherwise = 
+		testspecialremote [] $ 
+			git_annex "copy" ["--to=foo"] "copy"
   where
 	testspecialremote cfg populate = intmpclonerepo $ do
 		let cfg' = ["type=directory", "encryption=none", "directory=dir"] ++ cfg

@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2024-11-19T16:48:25Z"
+ content="""
+Re the OSX failure, it seems that somehow the manifest key is not being
+found when the test is run on OSX. I don't know why. There is nothing in
+this code that should be OSX-specific.
+
+Unfortunately I do have access to any OSX system to try to investigate
+this. The "datalads-mac" I used to use does not seem to exist anymore.
+
+Of course, this test could be skipped on OSX.
+
+Does occur to me this could somehow be exposing a deeper problem on OSX
+with exporttree special remotes. I have split the failing test in two, so
+we'll see if both fail, or only the exporttree one.
+"""]]
