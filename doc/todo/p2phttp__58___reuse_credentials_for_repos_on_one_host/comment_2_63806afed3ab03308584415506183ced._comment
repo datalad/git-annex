@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2024-11-19T17:19:38Z"
+ content="""
+Unfortunately, remote.foo.annexUrl is not limited to use for p2phttp. It
+existed before that and could be legitimately set to a http url when
+p2phttp is not being used.
+
+I agree it would be good to try to reuse the credentials of the git url for
+p2phttp. That could be done by just querying git credential for the git url
+credentials, and trying to use them for the p2phttp url. If they don't work,
+use git credential to prompt for the p2phttp url credentials as it does now.
+
+If the user had credential.helper configured, they would probably already
+have the git credentials cached, and if not, this would cache them for
+later use, so no harm done asking for them. But if credential.helper was
+not configured, there would be an extra and wholly unncessary password
+prompt. 
+
+So, I think it makes sense to only do this when credential.helper is
+configured. And when the hostname is the same in both the git url
+and the p2phttp url.
+"""]]

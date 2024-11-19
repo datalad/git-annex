@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2024-11-19T17:37:01Z"
+ content="""
+credential.useHttpPath is the relevant git config for this git-credential
+behavior.
+
+I think it would be reasonable for git-annex to check if that is false, and
+if so, remove the path from the `git credential` request for an annex+http
+url.
+
+But I agree, it would be better, in the vast majority of cases, to have a 
+single url endpoint that serves multiple repositories.
+
+And for that matter, if someone is running git-annex p2phttp to serve 2
+different repositories right now, they are probably making the two listen
+on different ports and so removing the path wouldn't help. They would have
+to be interposing another web server that mapped those ports to paths, like
+you have done with forgejo-aneksajo, for the path mangling to help.
+
+So implementing [[todo/p2phttp_serve_multiple_repositories]]
+seems better than adding such path mangling.
+"""]]
