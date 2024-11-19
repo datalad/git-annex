@@ -425,12 +425,17 @@ test_add_extras = intmpclonerepo $ do
 
 test_git_remote_annex :: Bool -> Assertion
 test_git_remote_annex exporttree
+#ifndef mingw32_HOST_OS
 	| exporttree = 
 		testspecialremote ["importtree=yes", "exporttree=yes"] $
 			git_annex "export" ["master", "--to=foo"] "export"
 	| otherwise = 
 		testspecialremote [] $ 
 			git_annex "copy" ["--to=foo"] "copy"
+#else
+	-- git-remote-annex is not currently installed on Windows
+	return ()
+#endif
   where
 	testspecialremote cfg populate = intmpclonerepo $ do
 		let cfg' = ["type=directory", "encryption=none", "directory=dir"] ++ cfg
