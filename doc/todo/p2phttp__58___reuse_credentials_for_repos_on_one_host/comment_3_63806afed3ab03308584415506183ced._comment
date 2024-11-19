@@ -1,6 +1,6 @@
 [[!comment format=mdwn
  username="joey"
- subject="""comment 2"""
+ subject="""comment 3"""
  date="2024-11-19T17:19:38Z"
  content="""
 Unfortunately, remote.foo.annexUrl is not limited to use for p2phttp. It
@@ -21,4 +21,20 @@ prompt.
 So, I think it makes sense to only do this when credential.helper is
 configured. And when the hostname is the same in both the git url
 and the p2phttp url.
+
+Hmm, I can imagine a situation where this behavior could be considered a
+security hole. Suppose A and B both have accounts on the same host. A is in
+charge of serving the git repositories. B is in charge of serving git-annex
+p2phttp. This would make git-annex prompt for a password to
+one of user A's git repositories, and send the password to user B. So B
+would be able to crack into the git repos. 
+
+That is pretty farfetched. But it begs the question: If the git
+repository and p2phttp are on the same host, why would they *ever* need 2
+distinct passwords? If git-annex simply doesn't support that A/B split,
+then that security hole can't happen.
+
+So, git-annex could simply, when the git url and p2phttp url have the same
+hostname, request the git credentials for the git url, rather than for the
+p2phttp url.
 """]]
