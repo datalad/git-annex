@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2024-11-19T17:04:13Z"
+ content="""
+Aha, this test on ubuntu is failing the same way as the OSX test:
+
+<https://github.com/datalad/git-annex/actions/runs/11905453897/job/33176247387>
+
+It seems that "custom-config1" only involves a annex.stalldetection
+setting, if I am reading the workflow file right. I was not able to
+reproduce the failure with that config set though.
+"""]]
