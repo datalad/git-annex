@@ -20,6 +20,12 @@ as usual, and `remote.name.annexUrl` set to an annex+http url such as
 "annex+http://example.com/git-annex/". The annex+http url is
 served by this server, and uses port 9417 by default.
 
+Note that, when `remote.name.url` and `remote.name.annexUrl`
+contain the same hostname, they are assumed by git-annex to
+support the same users and passwords. So, git-annex will use
+the password for the `remote.name.url` to log into the 
+`remote.name.annexUrl`.
+
 As well as serving the git-annex HTTP API, this server provides a
 convenient way to download the content of any key, by using the path
 "/git-annex/$uuid/$key". For example:

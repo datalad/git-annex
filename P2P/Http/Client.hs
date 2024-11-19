@@ -37,6 +37,7 @@ import Annex.Concurrent
 import Utility.Url (BasicAuth(..))
 import Utility.HumanTime
 import Utility.STM
+import qualified Git
 import qualified Git.Credential as Git
 
 import Servant hiding (BasicAuthData(..))
@@ -83,8 +84,19 @@ p2pHttpClientVersions
 	-> (String -> Annex a)
 	-> ClientAction a
 	-> Annex (Maybe a)
+p2pHttpClientVersions allowedversion rmt fallback clientaction = do
+	rmtrepo <- getRepo rmt
+	p2pHttpClientVersions' allowedversion rmt rmtrepo fallback clientaction
+
+p2pHttpClientVersions'
+	:: (ProtocolVersion -> Bool)
+	-> Remote
+	-> Git.Repo
+	-> (String -> Annex a)
+	-> ClientAction a
+	-> Annex (Maybe a)
 #ifdef WITH_SERVANT
-p2pHttpClientVersions allowedversion rmt fallback clientaction =
+p2pHttpClientVersions' allowedversion rmt rmtrepo fallback clientaction =
 	case p2pHttpBaseUrl <$> remoteAnnexP2PHttpUrl (gitconfig rmt) of
 		Nothing -> error "internal"
 		Just baseurl -> do
@@ -139,9 +151,13 @@ p2pHttpClientVersions allowedversion rmt fallback clientaction =
 			++ " " ++
 		decodeBS (statusMessage (responseStatusCode resp))
 
-	credentialbaseurl = case p2pHttpUrlString <$> remoteAnnexP2PHttpUrl (gitconfig rmt) of
+	credentialbaseurl = case remoteAnnexP2PHttpUrl (gitconfig rmt) of
+		Just p2phttpurl 
+			| isP2PHttpSameHost p2phttpurl rmtrepo ->
+				Git.repoLocation rmtrepo
+			| otherwise ->
+				p2pHttpUrlString p2phttpurl
 		Nothing -> error "internal"
-		Just url -> url
 
 	credauth cred = do
 		ba <- Git.credentialBasicAuth cred
@@ -159,7 +175,7 @@ p2pHttpClientVersions allowedversion rmt fallback clientaction =
 					M.insert (Git.CredentialBaseURL credentialbaseurl) cred cc
 		Nothing -> noop
 #else
-p2pHttpClientVersions _ _ fallback () = Just <$> fallback
+p2pHttpClientVersions _ _ _ fallback () = Just <$> fallback
 	"This remote uses an annex+http url, but this version of git-annex is not built with support for that."
 #endif
 

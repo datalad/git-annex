@@ -15,6 +15,9 @@ import Network.URI
 import System.FilePath.Posix as P
 import Servant.Client (BaseUrl(..), Scheme(..))
 import Text.Read
+import Data.Char
+import qualified Git
+import qualified Git.Url
 #endif
 
 defaultP2PHttpProtocolPort :: Int
@@ -78,4 +81,16 @@ unavailableP2PHttpUrl :: P2PHttpUrl -> P2PHttpUrl
 unavailableP2PHttpUrl p = p
 #ifdef WITH_SERVANT
 	{ p2pHttpBaseUrl = (p2pHttpBaseUrl p) { baseUrlHost = "!dne!" } }
+#endif
+
+#ifdef WITH_SERVANT
+-- When a p2phttp url is on the same host as a git repo, which also uses
+-- http, the same username+password is assumed to be used for both.
+isP2PHttpSameHost :: P2PHttpUrl -> Git.Repo -> Bool
+isP2PHttpSameHost u repo
+	| not (Git.repoIsHttp repo) = False
+	| otherwise = 
+		Just (map toLower $ baseUrlHost (p2pHttpBaseUrl u)) 
+			==
+		(map toLower <$> (Git.Url.host repo))
 #endif

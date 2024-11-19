@@ -17,6 +17,10 @@ git-annex (10.20241032) UNRELEASED; urgency=medium
     versioned S3 bucket.
   * git-remote-annex: Fix cloning from a special remote on a crippled
     filesystem.
+  * When remote.name.annexUrl is an annex+http(s) url, that
+    uses the same hostname as remote.name.url, which is itself a http(s)
+    url, they are assumed to share a username and password. This avoids
+    unnecessary duplicate password prompts.
 
  -- Joey Hess <id@joeyh.name>  Mon, 11 Nov 2024 12:26:00 -0400
 

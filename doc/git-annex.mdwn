@@ -1569,6 +1569,13 @@ Remotes are configured using these settings in `.git/config`.
   git operations. This allows using [[git-annex-p2phttp]] to serve a
   git-annex repository over http.
 
+  When this and the `remote.<name>.url` contain the same hostname,
+  and this is an annex+http(s) url, and that is also a http(s) url,
+  git-annex assumes that the same username and password can be used
+  for both urls. When password cacheing is configured, this allows
+  you to only be prompted once for a password when using both git and
+  git-annex. See gitcredentials(7) for how to set up password caching.
+
 * `remote.<name>.annex-uuid`
 
   git-annex caches UUIDs of remote repositories here.
