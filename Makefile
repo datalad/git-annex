@@ -110,7 +110,7 @@ install-completions: build
 	./git-annex --fish-completion-script git-annex 2>/dev/null \
 		> $(DESTDIR)$(PREFIX)/$(SHAREDIR)/fish/vendor_completions.d/git-annex.fish
 
-test: git-annex git-annex-shell
+test: git-annex git-annex-shell git-remote-annex
 	./git-annex test
 
 retest: git-annex
