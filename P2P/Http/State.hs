@@ -75,7 +75,7 @@ data ActionClass = ReadAction | WriteAction | RemoveAction | LockAction
 withP2PConnection
 	:: APIVersion v
 	=> v
-	-> P2PHttpServerState
+	-> M.Map UUID P2PHttpServerState
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
@@ -83,10 +83,10 @@ withP2PConnection
 	-> Maybe Auth
 	-> ActionClass
 	-> (ConnectionParams -> ConnectionParams)
-	-> (P2PConnectionPair -> Handler (Either ProtoFailure a))
+	-> ((P2PConnectionPair, P2PHttpServerState) -> Handler (Either ProtoFailure a))
 	-> Handler a
-withP2PConnection apiver st cu su bypass sec auth actionclass fconnparams connaction =
-	withP2PConnection' apiver st cu su bypass sec auth actionclass fconnparams connaction'
+withP2PConnection apiver mst cu su bypass sec auth actionclass fconnparams connaction =
+	withP2PConnection' apiver mst cu su bypass sec auth actionclass fconnparams connaction'
   where
 	connaction' conn = connaction conn >>= \case
 		Right r -> return r
@@ -96,7 +96,7 @@ withP2PConnection apiver st cu su bypass sec auth actionclass fconnparams connac
 withP2PConnection'
 	:: APIVersion v
 	=> v
-	-> P2PHttpServerState
+	-> M.Map UUID P2PHttpServerState
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
@@ -104,17 +104,17 @@ withP2PConnection'
 	-> Maybe Auth
 	-> ActionClass
 	-> (ConnectionParams -> ConnectionParams)
-	-> (P2PConnectionPair -> Handler a)
+	-> ((P2PConnectionPair, P2PHttpServerState) -> Handler a)
 	-> Handler a
-withP2PConnection' apiver st cu su bypass sec auth actionclass fconnparams connaction = do
-	conn <- getP2PConnection apiver st cu su bypass sec auth actionclass fconnparams
-	connaction conn
+withP2PConnection' apiver mst cu su bypass sec auth actionclass fconnparams connaction = do
+	(conn, st) <- getP2PConnection apiver mst cu su bypass sec auth actionclass fconnparams
+	connaction (conn, st)
 		`finally` liftIO (releaseP2PConnection conn)
 
 getP2PConnection
 	:: APIVersion v
 	=> v
-	-> P2PHttpServerState
+	-> M.Map UUID P2PHttpServerState
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
@@ -122,16 +122,16 @@ getP2PConnection
 	-> Maybe Auth
 	-> ActionClass
 	-> (ConnectionParams -> ConnectionParams)
-	-> Handler P2PConnectionPair
-getP2PConnection apiver st cu su bypass sec auth actionclass fconnparams =
-	checkAuthActionClass st sec auth actionclass go
+	-> Handler (P2PConnectionPair, P2PHttpServerState)
+getP2PConnection apiver mst cu su bypass sec auth actionclass fconnparams =
+	checkAuthActionClass mst su sec auth actionclass go
   where
-	go servermode = liftIO (acquireP2PConnection st cp) >>= \case
+	go st servermode = liftIO (acquireP2PConnection st cp) >>= \case
 		Left (ConnectionFailed err) -> 
 			throwError err502 { errBody = encodeBL err }
 		Left TooManyConnections ->
 			throwError err503
-		Right v -> return v
+		Right v -> return (v, st)
 	  where
 		cp = fconnparams $ ConnectionParams
 			{ connectionProtocolVersion = protocolVersion apiver
@@ -143,29 +143,34 @@ getP2PConnection apiver st cu su bypass sec auth actionclass fconnparams =
 			}
 
 checkAuthActionClass
-	:: P2PHttpServerState
+	:: M.Map UUID P2PHttpServerState
+	-> B64UUID ServerSide
 	-> IsSecure
 	-> Maybe Auth
 	-> ActionClass
-	-> (P2P.ServerMode -> Handler a)
+	-> (P2PHttpServerState -> P2P.ServerMode -> Handler a)
 	-> Handler a
-checkAuthActionClass st sec auth actionclass go =
-	case (sm, actionclass) of
+checkAuthActionClass mst su sec auth actionclass go =
+	case M.lookup (fromB64UUID su) mst of
+		Just st -> select st
+		Nothing -> throwError err404
+  where
+	select st = case (sm, actionclass) of
 		(ServerMode { serverMode = P2P.ServeReadWrite }, _) ->
-			go P2P.ServeReadWrite
+			go st P2P.ServeReadWrite
 		(ServerMode { unauthenticatedLockingAllowed = True }, LockAction) ->
-			go P2P.ServeReadOnly
+			go st P2P.ServeReadOnly
 		(ServerMode { serverMode = P2P.ServeAppendOnly }, RemoveAction) -> 
 			throwError $ forbiddenWithoutAuth sm
 		(ServerMode { serverMode = P2P.ServeAppendOnly }, _) ->
-			go P2P.ServeAppendOnly
+			go st P2P.ServeAppendOnly
 		(ServerMode { serverMode = P2P.ServeReadOnly }, ReadAction) ->
-			go P2P.ServeReadOnly
+			go st P2P.ServeReadOnly
 		(ServerMode { serverMode = P2P.ServeReadOnly }, _) -> 
 			throwError $ forbiddenWithoutAuth sm
 		(CannotServeRequests, _) -> throwError basicAuthRequired
-  where
-	sm = getServerMode st sec auth
+	  where
+		sm = getServerMode st sec auth
 
 forbiddenAction :: ServerError
 forbiddenAction = err403
