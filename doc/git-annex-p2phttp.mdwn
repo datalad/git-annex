@@ -12,8 +12,12 @@ This is a HTTP server for the git-annex API.
 It is the git-annex equivilant of git-http-backend(1), for serving
 a repository over HTTP with write access for authenticated users.
 
-This does not serve the git repository over HTTP, only the git-annex
-API.
+This does not serve a git repository over HTTP, only the git-annex
+API. 
+
+By default, this serves the git-annex API for the git-annex repository
+in the current working directory. It can also serve more than one
+repository, see the `--directory` parameter.
 
 Typically a remote will have `remote.name.url` set to a http url
 as usual, and `remote.name.annexUrl` set to an annex+http url such as
@@ -35,10 +39,25 @@ convenient way to download the content of any key, by using the path
 
 # OPTIONS
 
+* `--directory=path`
+
+  Serve each git-annex repository found in a directory. This does not
+  recurse into subdirectories. 
+
+  This option can be provided more than once to serve serveral directories
+  full of git-annex repositories.
+
+  New git-annex repositories can be added to the directory, and will be
+  noticed and served immediately. There is no need to restart the server.
+
+  When a git-annex repository is removed from the directory, the server
+  will stop serving it as well. This may not be immediate, as some files
+  in the deleted repository may still be open.
+
 * `--jobs=N` `-JN`
 
   This or annex.jobs must be set to configure the number of worker
-  threads that serve connections to the webserver.
+  threads, per repository served, that serve connections to the webserver.
   
   Since the webserver itself also uses one of these threads, 
   this needs to be set to 2 or more.
@@ -47,15 +66,15 @@ convenient way to download the content of any key, by using the path
 
 * `--proxyconnections=N`
 
-  When this command is run in a repository that is configured to act as a
-  proxy for some of its remotes, this is the maximum number of idle
-  connections to keep open to proxied remotes.
+  When serving a repository that is configured to act as a proxy for some
+  of its remotes, this is the maximum number of idle connections to keep
+  open to proxied remotes.
 
   The default is 1.
 
 * `--clusterjobs=N`
 
-  When this command is run in a repository that is a gateway for a cluster,
+  When serving a repository that is a gateway for a cluster,
   this is the number of concurrent jobs to use to access nodes of the
   cluster, per connection to the webserver.
 
