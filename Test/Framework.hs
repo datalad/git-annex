@@ -73,7 +73,11 @@ import qualified Command.Uninit
 -- In debug mode, the output is allowed to pass through.
 -- So the output does not get checked in debug mode.
 testProcess :: String -> [String] -> Maybe [(String, String)] -> (Bool -> Bool) -> (String -> Bool) -> String -> Assertion
-testProcess command params environ expectedret expectedtranscript faildesc = do
+testProcess command params environ expectedret expectedtranscript faildesc =
+	void $ testProcess' command params environ expectedret expectedtranscript faildesc
+
+testProcess' :: String -> [String] -> Maybe [(String, String)] -> (Bool -> Bool) -> (String -> Bool) -> String -> IO String
+testProcess' command params environ expectedret expectedtranscript faildesc = do
 	let p = (proc command params) { env = environ }
 	debug <- testDebug . testOptions <$> getTestMode
 	if debug
@@ -81,10 +85,12 @@ testProcess command params environ expectedret expectedtranscript faildesc = do
 			ret <- withCreateProcess p $ \_ _ _ pid ->
 				waitForProcess pid
 			(expectedret (ret == ExitSuccess)) @? (faildesc ++ " failed with unexpected exit code")
+			return ""
 		else do
 			(transcript, ret) <- Utility.Process.Transcript.processTranscript' p Nothing
 			(expectedret ret) @? (faildesc ++ " failed with unexpected exit code (transcript follows)\n" ++ transcript)
 			(expectedtranscript transcript) @? (faildesc ++ " failed with unexpected output (transcript follows)\n" ++ transcript)
+			return transcript
 
 -- Run git. (Do not use to run git-annex as the one being tested
 -- may not be in path.)

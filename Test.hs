@@ -446,10 +446,12 @@ test_git_remote_annex exporttree
 			git_annex "get" [] "get failed"
 			() <- populate
 			git "config" ["remote.foo.url", "annex::"] "git config"
-			git "push" ["foo", "master"] "git push"
-			git "push" ["foo", "git-annex"] "git push"
+			-- git push does not always propagate nonzero exit
+			-- status from git-remote-annex, so remember the
+			-- transcript and display it if clone fails
+			pushtranscript <- testProcess' "git" ["push", "foo", "master", "git-annex"] Nothing (== True) (const True) "git push"
 			git "clone" ["annex::"++diruuid++"?"++intercalate "&" cfg', "clonedir"]
-				"git clone from special remote"
+				("git clone from special remote (after git push with output: " ++ pushtranscript ++ ")")
 			inpath "clonedir" $
 				git_annex "get" [annexedfile] "get from origin special remote"
 	diruuid="89ddefa4-a04c-11ef-87b5-e880882a4f98"

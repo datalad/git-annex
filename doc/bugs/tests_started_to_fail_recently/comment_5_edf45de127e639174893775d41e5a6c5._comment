@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2024-11-20T17:42:57Z"
+ content="""
+My arm64-ancient build failed today in the same way as the OSX build is failing,
+so I should be able to debug it there.
+
+	builder@sparrow:~/x/a$ git push d git-annex
+	Full remote url: annex::f88d4965-fc4f-4dd0-aac2-eaf19c9bcfa5?encryption=none&type=directory
+	fatal: Refusing to create empty bundle.
+	Push failed (user error (git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","bundle","create","--quiet","/tmp/GITBUNDLE1049637-0","--stdin"] exited 128))
+	warning: helper reported unexpected status of push
+	Everything up-to-date
+	builder@sparrow:~/x/a$ echo $?
+	0
+
+Huh ok, so git-remote-annex is failing to push, which is why clone
+later fails. And for whatever reason git doesn't propigate the error, which
+is why this is not visible in the transcript.
+
+That build uses git 2.30.2. That git bundle --stdin was broken and
+didn't read refs from stdin at all. Also it had other bugs. I think it's
+best not to try to support git-remote-annex with that version of git at
+all, given those bugs.
+
+That probably won't help with the OSX failure, which is with a very new git
+version. So I also made the test
+suite capture the git push output even when it exits successfully, so it
+can display it when the git pull fails. That should show what the problem
+is there.
+"""]]
