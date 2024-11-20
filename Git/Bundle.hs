@@ -12,9 +12,15 @@ module Git.Bundle where
 import Common
 import Git
 import Git.Command
+import qualified Git.Version
 
 import Data.Char (ord)
 import qualified Data.ByteString.Char8 as S8
+
+-- Older versions of git had a git bundle command that sometimes omitted
+-- refs, and that did not properly support --stdin.
+versionSupported :: IO Bool
+versionSupported = not <$> Git.Version.older "2.31"
 
 listHeads :: FilePath -> Repo -> IO [(Sha, Ref)]
 listHeads bundle repo = map gen . S8.lines <$>

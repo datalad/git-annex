@@ -37,6 +37,7 @@ import qualified Git.Types
 import qualified Git.Ref
 import qualified Git.LsTree
 import qualified Git.FilePath
+import qualified Git.Bundle
 import qualified Annex.Locations
 #ifndef mingw32_HOST_OS
 import qualified Types.GitConfig
@@ -427,29 +428,30 @@ test_git_remote_annex :: Bool -> Assertion
 test_git_remote_annex exporttree
 #ifndef mingw32_HOST_OS
 	| exporttree = 
-		testspecialremote ["importtree=yes", "exporttree=yes"] $
+		runtest ["importtree=yes", "exporttree=yes"] $
 			git_annex "export" ["master", "--to=foo"] "export"
 	| otherwise = 
-		testspecialremote [] $ 
+		runtest [] $ 
 			git_annex "copy" ["--to=foo"] "copy"
 #else
 	-- git-remote-annex is not currently installed on Windows
 	return ()
 #endif
   where
-	testspecialremote cfg populate = intmpclonerepo $ do
-		let cfg' = ["type=directory", "encryption=none", "directory=dir"] ++ cfg
-		createDirectory "dir"
-		git_annex "initremote" ("foo":("uuid=" ++ diruuid):cfg') "initremote"
-		git_annex "get" [] "get failed"
-		() <- populate
-		git "config" ["remote.foo.url", "annex::"] "git config"
-		git "push" ["foo", "master"] "git push"
-		git "push" ["foo", "git-annex"] "git push"
-		git "clone" ["annex::"++diruuid++"?"++intercalate "&" cfg', "clonedir"]
-			"git clone from special remote"
-		inpath "clonedir" $
-			git_annex "get" [annexedfile] "get from origin special remote"
+	runtest cfg populate = whenM Git.Bundle.versionSupported $ 
+		intmpclonerepo $ do
+			let cfg' = ["type=directory", "encryption=none", "directory=dir"] ++ cfg
+			createDirectory "dir"
+			git_annex "initremote" ("foo":("uuid=" ++ diruuid):cfg') "initremote"
+			git_annex "get" [] "get failed"
+			() <- populate
+			git "config" ["remote.foo.url", "annex::"] "git config"
+			git "push" ["foo", "master"] "git push"
+			git "push" ["foo", "git-annex"] "git push"
+			git "clone" ["annex::"++diruuid++"?"++intercalate "&" cfg', "clonedir"]
+				"git clone from special remote"
+			inpath "clonedir" $
+				git_annex "get" [annexedfile] "get from origin special remote"
 	diruuid="89ddefa4-a04c-11ef-87b5-e880882a4f98"
 
 test_add_moved :: Assertion

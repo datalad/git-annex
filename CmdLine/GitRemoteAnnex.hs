@@ -70,6 +70,8 @@ import qualified Data.Set as S
 
 run :: [String] -> IO ()
 run (remotename:url:[]) = do
+	unlessM Git.Bundle.versionSupported $
+		giveup "git-remote-annex needs a newer version of git"
 	repo <- getRepo
 	state <- Annex.new repo
 	Annex.eval state $
