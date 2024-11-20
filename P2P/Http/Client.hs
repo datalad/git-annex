@@ -24,8 +24,8 @@ import P2P.Protocol hiding (Offset, Bypass, auth, FileSize)
 import Utility.Metered
 import Utility.FileSize
 import Types.NumCopies
-
 import Annex.Common
+import qualified Git
 #ifdef WITH_SERVANT
 import qualified Annex
 import Annex.UUID
@@ -37,7 +37,6 @@ import Annex.Concurrent
 import Utility.Url (BasicAuth(..))
 import Utility.HumanTime
 import Utility.STM
-import qualified Git
 import qualified Git.Credential as Git
 
 import Servant hiding (BasicAuthData(..))
@@ -175,7 +174,7 @@ p2pHttpClientVersions' allowedversion rmt rmtrepo fallback clientaction =
 					M.insert (Git.CredentialBaseURL credentialbaseurl) cred cc
 		Nothing -> noop
 #else
-p2pHttpClientVersions _ _ _ fallback () = Just <$> fallback
+p2pHttpClientVersions' _ _ _ fallback () = Just <$> fallback
 	"This remote uses an annex+http url, but this version of git-annex is not built with support for that."
 #endif
 
