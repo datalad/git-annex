@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 4"
+ date="2024-11-20T00:22:44Z"
+ content="""
+- re mac: try `joey@datalads-imac2` from `smaug`
+- a few times we used https://github.com/mxschmitt/action-tmate to interactively debug on github CI... want us to bolt it on?
+"""]]
