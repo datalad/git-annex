@@ -16,7 +16,6 @@ import P2P.Http.Server
 import P2P.Http.Url
 import qualified P2P.Protocol as P2P
 import Utility.Env
-import Annex.UUID
 
 import Servant
 import qualified Network.Wai.Handler.Warp as Warp
@@ -103,19 +102,17 @@ optParser _ = Options
 		))
 
 seek :: Options -> CommandSeek
-seek o = do
-	u <- getUUID
-	getAnnexWorkerPool $ \workerpool ->
-		withP2PConnections workerpool
-			(fromMaybe 1 $ proxyConnectionsOption o)
-			(fromMaybe 1 $ clusterJobsOption o)
-			(go u workerpool)
+seek o = getAnnexWorkerPool $ \workerpool ->
+	withP2PConnections workerpool
+		(fromMaybe 1 $ proxyConnectionsOption o)
+		(fromMaybe 1 $ clusterJobsOption o)
+		(go workerpool)
   where
-	go u workerpool acquireconn = liftIO $ do
+	go workerpool servinguuids acquireconn = liftIO $ do
 		authenv <- getAuthEnv
 		st <- mkP2PHttpServerState acquireconn workerpool $
 			mkGetServerMode authenv o
-		let mst = M.singleton u st
+		let mst = M.fromList $ zip servinguuids (repeat st)
 		let settings = Warp.setPort port $ Warp.setHost host $
 			Warp.defaultSettings
 		case (certFileOption o, privateKeyFileOption o) of

@@ -213,7 +213,7 @@ withP2PConnections
 	:: AnnexWorkerPool
 	-> ProxyConnectionPoolSize
 	-> ClusterConcurrency
-	-> (AcquireP2PConnection -> Annex a)
+	-> ([UUID] -> AcquireP2PConnection -> Annex a)
 	-> Annex a
 withP2PConnections workerpool proxyconnectionpoolsize clusterconcurrency a = do
 	enableInteractiveBranchAccess
@@ -228,7 +228,8 @@ withP2PConnections workerpool proxyconnectionpoolsize clusterconcurrency a = do
 	let endit = do
 		liftIO $ atomically $ putTMVar endv ()
 		liftIO $ wait asyncservicer
-	a (acquireconn reqv) `finally` endit
+	let servinguuids = myuuid : map proxyRemoteUUID (maybe [] S.toList myproxies)
+	a servinguuids (acquireconn reqv) `finally` endit
   where
 	acquireconn reqv connparams = do
 		respvar <- newEmptyTMVarIO
