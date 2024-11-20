@@ -425,18 +425,14 @@ test_add_extras = intmpclonerepo $ do
 	checkbackend wormannexedfile backendWORM
 
 test_git_remote_annex :: Bool -> Assertion
-test_git_remote_annex exporttree
 #ifndef mingw32_HOST_OS
+test_git_remote_annex exporttree
 	| exporttree = 
 		runtest ["importtree=yes", "exporttree=yes"] $
 			git_annex "export" ["master", "--to=foo"] "export"
 	| otherwise = 
 		runtest [] $ 
 			git_annex "copy" ["--to=foo"] "copy"
-#else
-	-- git-remote-annex is not currently installed on Windows
-	return ()
-#endif
   where
 	runtest cfg populate = whenM Git.Bundle.versionSupported $ 
 		intmpclonerepo $ do
@@ -455,6 +451,11 @@ test_git_remote_annex exporttree
 			inpath "clonedir" $
 				git_annex "get" [annexedfile] "get from origin special remote"
 	diruuid="89ddefa4-a04c-11ef-87b5-e880882a4f98"
+#else
+test_git_remote_annex exporttree =
+	-- git-remote-annex is not currently installed on Windows
+	return ()
+#endif
 
 test_add_moved :: Assertion
 test_add_moved = intmpclonerepo $ do
