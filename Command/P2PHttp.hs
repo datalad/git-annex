@@ -110,9 +110,12 @@ seek o = getAnnexWorkerPool $ \workerpool ->
   where
 	go workerpool servinguuids acquireconn = liftIO $ do
 		authenv <- getAuthEnv
-		st <- mkP2PHttpServerState acquireconn workerpool $
+		st <- mkPerRepoServerState acquireconn workerpool $
 			mkGetServerMode authenv o
-		let mst = M.fromList $ zip servinguuids (repeat st)
+		let mst = P2PHttpServerState 
+			{ servedRepos = M.fromList $
+				zip servinguuids (repeat st)
+			}
 		let settings = Warp.setPort port $ Warp.setHost host $
 			Warp.defaultSettings
 		case (certFileOption o, privateKeyFileOption o) of

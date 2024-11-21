@@ -44,6 +44,10 @@ import Control.Concurrent.Async
 import Data.Time.Clock.POSIX
 
 data P2PHttpServerState = P2PHttpServerState
+	{ servedRepos :: M.Map UUID PerRepoServerState
+	}
+
+data PerRepoServerState = PerRepoServerState
 	{ acquireP2PConnection :: AcquireP2PConnection
 	, annexWorkerPool :: AnnexWorkerPool
 	, getServerMode :: GetServerMode
@@ -62,8 +66,8 @@ data ServerMode
 		}
 	| CannotServeRequests
 
-mkP2PHttpServerState :: AcquireP2PConnection -> AnnexWorkerPool -> GetServerMode -> IO P2PHttpServerState
-mkP2PHttpServerState acquireconn annexworkerpool getservermode = P2PHttpServerState
+mkPerRepoServerState :: AcquireP2PConnection -> AnnexWorkerPool -> GetServerMode -> IO PerRepoServerState
+mkPerRepoServerState acquireconn annexworkerpool getservermode = PerRepoServerState
 	<$> pure acquireconn
 	<*> pure annexworkerpool
 	<*> pure getservermode
@@ -75,7 +79,7 @@ data ActionClass = ReadAction | WriteAction | RemoveAction | LockAction
 withP2PConnection
 	:: APIVersion v
 	=> v
-	-> M.Map UUID P2PHttpServerState
+	-> P2PHttpServerState
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
@@ -83,7 +87,7 @@ withP2PConnection
 	-> Maybe Auth
 	-> ActionClass
 	-> (ConnectionParams -> ConnectionParams)
-	-> ((P2PConnectionPair, P2PHttpServerState) -> Handler (Either ProtoFailure a))
+	-> ((P2PConnectionPair, PerRepoServerState) -> Handler (Either ProtoFailure a))
 	-> Handler a
 withP2PConnection apiver mst cu su bypass sec auth actionclass fconnparams connaction =
 	withP2PConnection' apiver mst cu su bypass sec auth actionclass fconnparams connaction'
@@ -96,7 +100,7 @@ withP2PConnection apiver mst cu su bypass sec auth actionclass fconnparams conna
 withP2PConnection'
 	:: APIVersion v
 	=> v
-	-> M.Map UUID P2PHttpServerState
+	-> P2PHttpServerState
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
@@ -104,7 +108,7 @@ withP2PConnection'
 	-> Maybe Auth
 	-> ActionClass
 	-> (ConnectionParams -> ConnectionParams)
-	-> ((P2PConnectionPair, P2PHttpServerState) -> Handler a)
+	-> ((P2PConnectionPair, PerRepoServerState) -> Handler a)
 	-> Handler a
 withP2PConnection' apiver mst cu su bypass sec auth actionclass fconnparams connaction = do
 	(conn, st) <- getP2PConnection apiver mst cu su bypass sec auth actionclass fconnparams
@@ -114,7 +118,7 @@ withP2PConnection' apiver mst cu su bypass sec auth actionclass fconnparams conn
 getP2PConnection
 	:: APIVersion v
 	=> v
-	-> M.Map UUID P2PHttpServerState
+	-> P2PHttpServerState
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
@@ -122,7 +126,7 @@ getP2PConnection
 	-> Maybe Auth
 	-> ActionClass
 	-> (ConnectionParams -> ConnectionParams)
-	-> Handler (P2PConnectionPair, P2PHttpServerState)
+	-> Handler (P2PConnectionPair, PerRepoServerState)
 getP2PConnection apiver mst cu su bypass sec auth actionclass fconnparams =
 	checkAuthActionClass mst su sec auth actionclass go
   where
@@ -143,15 +147,15 @@ getP2PConnection apiver mst cu su bypass sec auth actionclass fconnparams =
 			}
 
 checkAuthActionClass
-	:: M.Map UUID P2PHttpServerState
+	:: P2PHttpServerState
 	-> B64UUID ServerSide
 	-> IsSecure
 	-> Maybe Auth
 	-> ActionClass
-	-> (P2PHttpServerState -> P2P.ServerMode -> Handler a)
+	-> (PerRepoServerState -> P2P.ServerMode -> Handler a)
 	-> Handler a
 checkAuthActionClass mst su sec auth actionclass go =
-	case M.lookup (fromB64UUID su) mst of
+	case M.lookup (fromB64UUID su) (servedRepos mst) of
 		Just st -> select st
 		Nothing -> throwError err404
   where
@@ -493,13 +497,13 @@ mkLocker lock unlock = do
 			wait locktid
 			return Nothing
 
-storeLock :: LockID -> Locker -> P2PHttpServerState -> IO ()
+storeLock :: LockID -> Locker -> PerRepoServerState -> IO ()
 storeLock lckid locker st = atomically $ do
 	m <- takeTMVar (openLocks st)
 	let !m' = M.insert lckid locker m
 	putTMVar (openLocks st) m'
 
-keepingLocked :: LockID -> P2PHttpServerState -> IO ()
+keepingLocked :: LockID -> PerRepoServerState -> IO ()
 keepingLocked lckid st = do
 	m <- atomically $ readTMVar (openLocks st)
 	case M.lookup lckid m of
@@ -508,7 +512,7 @@ keepingLocked lckid st = do
 			atomically $ void $ 
 				tryPutTMVar (lockerTimeoutDisable locker) ()
 
-dropLock :: LockID -> P2PHttpServerState -> IO ()
+dropLock :: LockID -> PerRepoServerState -> IO ()
 dropLock lckid st = do
 	v <- atomically $ do
 		m <- takeTMVar (openLocks st)
@@ -532,7 +536,7 @@ getAnnexWorkerPool a = startConcurrency transferStages $
 		Nothing -> giveup "Use -Jn or set annex.jobs to configure the number of worker threads."
 		Just wp -> a wp
 
-inAnnexWorker :: P2PHttpServerState -> Annex a -> IO (Either SomeException a)
+inAnnexWorker :: PerRepoServerState -> Annex a -> IO (Either SomeException a)
 inAnnexWorker st = inAnnexWorker' (annexWorkerPool st)
 
 inAnnexWorker' :: AnnexWorkerPool -> Annex a -> IO (Either SomeException a)
