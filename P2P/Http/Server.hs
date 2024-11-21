@@ -45,10 +45,10 @@ import Control.Concurrent
 import System.IO.Unsafe
 import Data.Either
 
-p2pHttpApp :: P2PHttpServerState -> Application
+p2pHttpApp :: TMVar P2PHttpServerState -> Application
 p2pHttpApp = serve p2pHttpAPI . serveP2pHttp
 
-serveP2pHttp :: P2PHttpServerState -> Server P2PHttpAPI
+serveP2pHttp :: TMVar P2PHttpServerState -> Server P2PHttpAPI
 serveP2pHttp st
 	=    serveGet st
 	:<|> serveGet st
@@ -91,7 +91,7 @@ serveP2pHttp st
 	:<|> serveGetGeneric st
 
 serveGetGeneric
-	:: P2PHttpServerState
+	:: TMVar P2PHttpServerState
 	-> B64UUID ServerSide
 	-> B64Key
 	-> Maybe (B64UUID ClientSide)
@@ -109,7 +109,7 @@ serveGetGeneric st su@(B64UUID u) k mcu bypass =
 
 serveGet
 	:: APIVersion v
-	=> P2PHttpServerState
+	=> TMVar P2PHttpServerState
 	-> B64UUID ServerSide
 	-> v
 	-> B64Key
@@ -120,8 +120,8 @@ serveGet
 	-> IsSecure
 	-> Maybe Auth
 	-> Handler (Headers '[DataLengthHeader] (S.SourceT IO B.ByteString))
-serveGet st su apiver (B64Key k) cu bypass baf startat sec auth = do
-	conn <- getP2PConnection apiver st cu su bypass sec auth ReadAction id
+serveGet mst su apiver (B64Key k) cu bypass baf startat sec auth = do
+	(conn, st) <- getP2PConnection apiver mst cu su bypass sec auth ReadAction id
 	bsv <- liftIO newEmptyTMVarIO
 	endv <- liftIO newEmptyTMVarIO
 	validityv <- liftIO newEmptyTMVarIO
@@ -222,7 +222,7 @@ serveGet st su apiver (B64Key k) cu bypass baf startat sec auth = do
 
 serveCheckPresent
 	:: APIVersion v
-	=> P2PHttpServerState
+	=> TMVar P2PHttpServerState
 	-> B64UUID ServerSide
 	-> v
 	-> B64Key
@@ -233,14 +233,14 @@ serveCheckPresent
 	-> Handler CheckPresentResult
 serveCheckPresent st su apiver (B64Key k) cu bypass sec auth = do
 	res <- withP2PConnection apiver st cu su bypass sec auth ReadAction id
-		$ \conn -> liftIO $ proxyClientNetProto conn $ checkPresent k
+		$ \(conn, _) -> liftIO $ proxyClientNetProto conn $ checkPresent k
 	case res of
 		Right b -> return (CheckPresentResult b)
 		Left err -> throwError $ err500 { errBody = encodeBL err }
 
 serveRemove
 	:: APIVersion v
-	=> P2PHttpServerState
+	=> TMVar P2PHttpServerState
 	-> (RemoveResultPlus -> t)
 	-> B64UUID ServerSide
 	-> v
@@ -252,7 +252,7 @@ serveRemove
 	-> Handler t
 serveRemove st resultmangle su apiver (B64Key k) cu bypass sec auth = do
 	res <- withP2PConnection apiver st cu su bypass sec auth RemoveAction id
-		$ \conn ->
+		$ \(conn, _) ->
 			liftIO $ proxyClientNetProto conn $ remove Nothing k
 	case res of
 		(Right b, plusuuids) -> return $ resultmangle $ 
@@ -262,7 +262,7 @@ serveRemove st resultmangle su apiver (B64Key k) cu bypass sec auth = do
 
 serveRemoveBefore
 	:: APIVersion v
-	=> P2PHttpServerState
+	=> TMVar P2PHttpServerState
 	-> B64UUID ServerSide
 	-> v
 	-> B64Key
@@ -274,7 +274,7 @@ serveRemoveBefore
 	-> Handler RemoveResultPlus
 serveRemoveBefore st su apiver (B64Key k) cu bypass (Timestamp ts) sec auth = do
 	res <- withP2PConnection apiver st cu su bypass sec auth RemoveAction id
-		$ \conn ->
+		$ \(conn, _) ->
 			liftIO $ proxyClientNetProto conn $
 				removeBeforeRemoteEndTime ts k
 	case res of
@@ -285,7 +285,7 @@ serveRemoveBefore st su apiver (B64Key k) cu bypass (Timestamp ts) sec auth = do
 
 serveGetTimestamp
 	:: APIVersion v
-	=> P2PHttpServerState
+	=> TMVar P2PHttpServerState
 	-> B64UUID ServerSide
 	-> v
 	-> B64UUID ClientSide
@@ -295,7 +295,7 @@ serveGetTimestamp
 	-> Handler GetTimestampResult
 serveGetTimestamp st su apiver cu bypass sec auth = do
 	res <- withP2PConnection apiver st cu su bypass sec auth ReadAction id
-		$ \conn ->
+		$ \(conn, _) ->
 			liftIO $ proxyClientNetProto conn getTimestamp
 	case res of
 		Right ts -> return $ GetTimestampResult (Timestamp ts)
@@ -304,7 +304,7 @@ serveGetTimestamp st su apiver cu bypass sec auth = do
 
 servePut
 	:: APIVersion v
-	=> P2PHttpServerState
+	=> TMVar P2PHttpServerState
 	-> (PutResultPlus -> t)
 	-> B64UUID ServerSide
 	-> v
@@ -319,28 +319,28 @@ servePut
 	-> IsSecure
 	-> Maybe Auth
 	-> Handler t
-servePut st resultmangle su apiver (Just True) _ k cu bypass baf _ _ sec auth = do
-	res <- withP2PConnection' apiver st cu su bypass sec auth WriteAction
+servePut mst resultmangle su apiver (Just True) _ k cu bypass baf _ _ sec auth = do
+	res <- withP2PConnection' apiver mst cu su bypass sec auth WriteAction
 		(\cst -> cst { connectionWaitVar = False }) (liftIO . protoaction)
 	servePutResult resultmangle res
   where
-	protoaction conn = servePutAction st conn k baf $ \_offset -> do
+	protoaction conn = servePutAction conn k baf $ \_offset -> do
 		net $ sendMessage DATA_PRESENT
 		checkSuccessPlus
-servePut st resultmangle su apiver _datapresent (DataLength len) k cu bypass baf moffset stream sec auth = do
+servePut mst resultmangle su apiver _datapresent (DataLength len) k cu bypass baf moffset stream sec auth = do
 	validityv <- liftIO newEmptyTMVarIO
 	let validitycheck = local $ runValidityCheck $
 		liftIO $ atomically $ readTMVar validityv
 	tooshortv <- liftIO newEmptyTMVarIO
 	content <- liftIO $ S.unSourceT stream (gather validityv tooshortv)
-	res <- withP2PConnection' apiver st cu su bypass sec auth WriteAction
-		(\cst -> cst { connectionWaitVar = False }) $ \conn -> do
+	res <- withP2PConnection' apiver mst cu su bypass sec auth WriteAction
+		(\cst -> cst { connectionWaitVar = False }) $ \(conn, st) -> do
 			liftIO $ void $ async $ checktooshort conn tooshortv
-			liftIO (protoaction conn content validitycheck)
+			liftIO (protoaction conn st content validitycheck)
 	servePutResult resultmangle res
   where
-	protoaction conn content validitycheck = 
-		servePutAction st conn k baf $ \offset' ->
+	protoaction conn st content validitycheck = 
+		servePutAction (conn, st) k baf $ \offset' ->
 			let offsetdelta = offset' - offset
 			in case compare offset' offset of
 				EQ -> sendContent' nullMeterUpdate (Len len)
@@ -396,13 +396,12 @@ servePut st resultmangle su apiver _datapresent (DataLength len) k cu bypass baf
 			closeP2PConnection conn
 
 servePutAction
-	:: P2PHttpServerState
-	-> P2PConnectionPair
+	:: (P2PConnectionPair, PerRepoServerState)
 	-> B64Key
 	-> Maybe B64FilePath
 	-> (P2P.Protocol.Offset -> Proto (Maybe [UUID]))
 	-> IO (Either SomeException (Either ProtoFailure (Maybe [UUID])))
-servePutAction st conn (B64Key k) baf a = inAnnexWorker st $
+servePutAction (conn, st) (B64Key k) baf a = inAnnexWorker st $
 	enteringStage (TransferStage Download) $
 		runFullProto (clientRunState conn) (clientP2PConnection conn) $
 			put' k af a
@@ -422,7 +421,7 @@ servePutResult resultmangle res = case res of
 
 servePut'
 	:: APIVersion v
-	=> P2PHttpServerState
+	=> TMVar P2PHttpServerState
 	-> (PutResultPlus -> t)
 	-> B64UUID ServerSide
 	-> v
@@ -440,7 +439,7 @@ servePut' st resultmangle su v = servePut st resultmangle su v Nothing
 
 servePutOffset
 	:: APIVersion v
-	=> P2PHttpServerState
+	=> TMVar P2PHttpServerState
 	-> (PutOffsetResultPlus -> t)
 	-> B64UUID ServerSide
 	-> v
@@ -452,7 +451,7 @@ servePutOffset
 	-> Handler t
 servePutOffset st resultmangle su apiver (B64Key k) cu bypass sec auth = do
 	res <- withP2PConnection apiver st cu su bypass sec auth WriteAction
-		(\cst -> cst { connectionWaitVar = False }) $ \conn ->
+		(\cst -> cst { connectionWaitVar = False }) $ \(conn, _) ->
 			liftIO $ proxyClientNetProto conn $ getPutOffset k af
 	case res of
 		Right offset -> return $ resultmangle $
@@ -464,7 +463,7 @@ servePutOffset st resultmangle su apiver (B64Key k) cu bypass sec auth = do
 
 serveLockContent
 	:: APIVersion v
-	=> P2PHttpServerState
+	=> TMVar P2PHttpServerState
 	-> B64UUID ServerSide
 	-> v
 	-> B64Key
@@ -473,8 +472,8 @@ serveLockContent
 	-> IsSecure
 	-> Maybe Auth
 	-> Handler LockResult
-serveLockContent st su apiver (B64Key k) cu bypass sec auth = do
-	conn <- getP2PConnection apiver st cu su bypass sec auth LockAction id
+serveLockContent mst su apiver (B64Key k) cu bypass sec auth = do
+	(conn, st) <- getP2PConnection apiver mst cu su bypass sec auth LockAction id
 	let lock = do
 		lockresv <- newEmptyTMVarIO
 		unlockv <- newEmptyTMVarIO
@@ -501,7 +500,7 @@ serveLockContent st su apiver (B64Key k) cu bypass sec auth = do
 
 serveKeepLocked
 	:: APIVersion v
-	=> P2PHttpServerState
+	=> TMVar P2PHttpServerState
 	-> B64UUID ServerSide
 	-> v
 	-> LockID
@@ -513,15 +512,15 @@ serveKeepLocked
 	-> Maybe KeepAlive
 	-> S.SourceT IO UnlockRequest
 	-> Handler LockResult
-serveKeepLocked st _su _apiver lckid _cu _bypass sec auth _ _ unlockrequeststream = do
-	checkAuthActionClass st sec auth LockAction $ \_ -> do
+serveKeepLocked mst su _apiver lckid _cu _bypass sec auth _ _ unlockrequeststream = do
+	checkAuthActionClass mst su sec auth LockAction $ \st _ -> do
 		liftIO $ keepingLocked lckid st
-		_ <- liftIO $ S.unSourceT unlockrequeststream go
+		_ <- liftIO $ S.unSourceT unlockrequeststream (go st)
 		return (LockResult False Nothing)
   where
-	go S.Stop = dropLock lckid st
-	go (S.Error _err) = dropLock lckid st
-	go (S.Skip s)    = go s
-	go (S.Effect ms) = ms >>= go
-	go (S.Yield (UnlockRequest False) s) = go s
-	go (S.Yield (UnlockRequest True) _) = dropLock lckid st
+	go st S.Stop = dropLock lckid st
+	go st (S.Error _err) = dropLock lckid st
+	go st (S.Skip s)    = go st s
+	go st (S.Effect ms) = ms >>= go st
+	go st (S.Yield (UnlockRequest False) s) = go st s
+	go st (S.Yield (UnlockRequest True) _) = dropLock lckid st

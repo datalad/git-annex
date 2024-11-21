@@ -26,6 +26,8 @@ import Types.NumCopies
 import Types.WorkerPool
 import Annex.WorkerPool
 import Annex.BranchState
+import Annex.Concurrent
+import Types.Concurrency
 import Types.Cluster
 import CmdLine.Action (startConcurrency)
 import Utility.ThreadScheduler
@@ -42,8 +44,37 @@ import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 import Control.Concurrent.Async
 import Data.Time.Clock.POSIX
+import qualified Data.Semigroup as Sem
+import Prelude
 
 data P2PHttpServerState = P2PHttpServerState
+	{ servedRepos :: M.Map UUID PerRepoServerState
+	, serverShutdownCleanup :: IO ()
+	, updateRepos :: UpdateRepos
+	}
+
+type UpdateRepos = P2PHttpServerState -> IO P2PHttpServerState
+
+instance Monoid P2PHttpServerState where
+	mempty = P2PHttpServerState
+		{ servedRepos = mempty
+		, serverShutdownCleanup = noop
+		, updateRepos = const mempty
+		}
+
+instance Sem.Semigroup P2PHttpServerState where
+	a <> b = P2PHttpServerState
+		{ servedRepos = servedRepos a <> servedRepos b
+		, serverShutdownCleanup = do
+			serverShutdownCleanup a
+			serverShutdownCleanup b
+		, updateRepos = \st -> do
+			a' <- updateRepos a st
+			b' <- updateRepos b st
+			return (a' <> b')
+		}
+
+data PerRepoServerState = PerRepoServerState
 	{ acquireP2PConnection :: AcquireP2PConnection
 	, annexWorkerPool :: AnnexWorkerPool
 	, getServerMode :: GetServerMode
@@ -62,8 +93,8 @@ data ServerMode
 		}
 	| CannotServeRequests
 
-mkP2PHttpServerState :: AcquireP2PConnection -> AnnexWorkerPool -> GetServerMode -> IO P2PHttpServerState
-mkP2PHttpServerState acquireconn annexworkerpool getservermode = P2PHttpServerState
+mkPerRepoServerState :: AcquireP2PConnection -> AnnexWorkerPool -> GetServerMode -> IO PerRepoServerState
+mkPerRepoServerState acquireconn annexworkerpool getservermode = PerRepoServerState
 	<$> pure acquireconn
 	<*> pure annexworkerpool
 	<*> pure getservermode
@@ -75,7 +106,7 @@ data ActionClass = ReadAction | WriteAction | RemoveAction | LockAction
 withP2PConnection
 	:: APIVersion v
 	=> v
-	-> P2PHttpServerState
+	-> TMVar P2PHttpServerState
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
@@ -83,10 +114,10 @@ withP2PConnection
 	-> Maybe Auth
 	-> ActionClass
 	-> (ConnectionParams -> ConnectionParams)
-	-> (P2PConnectionPair -> Handler (Either ProtoFailure a))
+	-> ((P2PConnectionPair, PerRepoServerState) -> Handler (Either ProtoFailure a))
 	-> Handler a
-withP2PConnection apiver st cu su bypass sec auth actionclass fconnparams connaction =
-	withP2PConnection' apiver st cu su bypass sec auth actionclass fconnparams connaction'
+withP2PConnection apiver mst cu su bypass sec auth actionclass fconnparams connaction =
+	withP2PConnection' apiver mst cu su bypass sec auth actionclass fconnparams connaction'
   where
 	connaction' conn = connaction conn >>= \case
 		Right r -> return r
@@ -96,7 +127,7 @@ withP2PConnection apiver st cu su bypass sec auth actionclass fconnparams connac
 withP2PConnection'
 	:: APIVersion v
 	=> v
-	-> P2PHttpServerState
+	-> TMVar P2PHttpServerState
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
@@ -104,17 +135,17 @@ withP2PConnection'
 	-> Maybe Auth
 	-> ActionClass
 	-> (ConnectionParams -> ConnectionParams)
-	-> (P2PConnectionPair -> Handler a)
+	-> ((P2PConnectionPair, PerRepoServerState) -> Handler a)
 	-> Handler a
-withP2PConnection' apiver st cu su bypass sec auth actionclass fconnparams connaction = do
-	conn <- getP2PConnection apiver st cu su bypass sec auth actionclass fconnparams
-	connaction conn
+withP2PConnection' apiver mst cu su bypass sec auth actionclass fconnparams connaction = do
+	(conn, st) <- getP2PConnection apiver mst cu su bypass sec auth actionclass fconnparams
+	connaction (conn, st)
 		`finally` liftIO (releaseP2PConnection conn)
 
 getP2PConnection
 	:: APIVersion v
 	=> v
-	-> P2PHttpServerState
+	-> TMVar P2PHttpServerState
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
@@ -122,16 +153,16 @@ getP2PConnection
 	-> Maybe Auth
 	-> ActionClass
 	-> (ConnectionParams -> ConnectionParams)
-	-> Handler P2PConnectionPair
-getP2PConnection apiver st cu su bypass sec auth actionclass fconnparams =
-	checkAuthActionClass st sec auth actionclass go
+	-> Handler (P2PConnectionPair, PerRepoServerState)
+getP2PConnection apiver mst cu su bypass sec auth actionclass fconnparams =
+	checkAuthActionClass mst su sec auth actionclass go
   where
-	go servermode = liftIO (acquireP2PConnection st cp) >>= \case
+	go st servermode = liftIO (acquireP2PConnection st cp) >>= \case
 		Left (ConnectionFailed err) -> 
 			throwError err502 { errBody = encodeBL err }
 		Left TooManyConnections ->
 			throwError err503
-		Right v -> return v
+		Right v -> return (v, st)
 	  where
 		cp = fconnparams $ ConnectionParams
 			{ connectionProtocolVersion = protocolVersion apiver
@@ -142,30 +173,51 @@ getP2PConnection apiver st cu su bypass sec auth actionclass fconnparams =
 			, connectionWaitVar = True
 			}
 
+getPerRepoServerState :: TMVar P2PHttpServerState -> B64UUID ServerSide -> IO (Maybe PerRepoServerState)
+getPerRepoServerState mstv su = do
+	mst <- atomically $ readTMVar mstv
+	case lookupst mst of
+		Just st -> return (Just st)
+		Nothing -> do
+			mst' <- atomically $ takeTMVar mstv
+			mst'' <- updateRepos mst' mst'
+			debug "P2P.Http" $
+				"Rescanned for repositories, now serving UUIDs: "
+					++ show (M.keys (servedRepos mst''))
+			atomically $ putTMVar mstv mst''
+			return $ lookupst mst''
+  where
+	lookupst mst = M.lookup (fromB64UUID su) (servedRepos mst)
+
 checkAuthActionClass
-	:: P2PHttpServerState
+	:: TMVar P2PHttpServerState
+	-> B64UUID ServerSide
 	-> IsSecure
 	-> Maybe Auth
 	-> ActionClass
-	-> (P2P.ServerMode -> Handler a)
+	-> (PerRepoServerState -> P2P.ServerMode -> Handler a)
 	-> Handler a
-checkAuthActionClass st sec auth actionclass go =
-	case (sm, actionclass) of
+checkAuthActionClass mstv su sec auth actionclass go =
+	liftIO (getPerRepoServerState mstv su) >>= \case
+		Just st -> select st
+		Nothing -> throwError err404
+  where
+	select st = case (sm, actionclass) of
 		(ServerMode { serverMode = P2P.ServeReadWrite }, _) ->
-			go P2P.ServeReadWrite
+			go st P2P.ServeReadWrite
 		(ServerMode { unauthenticatedLockingAllowed = True }, LockAction) ->
-			go P2P.ServeReadOnly
+			go st P2P.ServeReadOnly
 		(ServerMode { serverMode = P2P.ServeAppendOnly }, RemoveAction) -> 
 			throwError $ forbiddenWithoutAuth sm
 		(ServerMode { serverMode = P2P.ServeAppendOnly }, _) ->
-			go P2P.ServeAppendOnly
+			go st P2P.ServeAppendOnly
 		(ServerMode { serverMode = P2P.ServeReadOnly }, ReadAction) ->
-			go P2P.ServeReadOnly
+			go st P2P.ServeReadOnly
 		(ServerMode { serverMode = P2P.ServeReadOnly }, _) -> 
 			throwError $ forbiddenWithoutAuth sm
 		(CannotServeRequests, _) -> throwError basicAuthRequired
-  where
-	sm = getServerMode st sec auth
+	  where
+		sm = getServerMode st sec auth
 
 forbiddenAction :: ServerError
 forbiddenAction = err403
@@ -204,13 +256,14 @@ type AcquireP2PConnection
 	= ConnectionParams
 	-> IO (Either ConnectionProblem P2PConnectionPair)
 
-withP2PConnections
-	:: AnnexWorkerPool
+mkP2PHttpServerState
+	:: GetServerMode
+	-> UpdateRepos
 	-> ProxyConnectionPoolSize
 	-> ClusterConcurrency
-	-> (AcquireP2PConnection -> Annex a)
-	-> Annex a
-withP2PConnections workerpool proxyconnectionpoolsize clusterconcurrency a = do
+	-> AnnexWorkerPool
+	-> Annex P2PHttpServerState
+mkP2PHttpServerState getservermode updaterepos proxyconnectionpoolsize clusterconcurrency workerpool = do
 	enableInteractiveBranchAccess
 	myuuid <- getUUID
 	myproxies <- M.lookup myuuid <$> getProxies
@@ -223,7 +276,13 @@ withP2PConnections workerpool proxyconnectionpoolsize clusterconcurrency a = do
 	let endit = do
 		liftIO $ atomically $ putTMVar endv ()
 		liftIO $ wait asyncservicer
-	a (acquireconn reqv) `finally` endit
+	let servinguuids = myuuid : map proxyRemoteUUID (maybe [] S.toList myproxies)
+	st <- liftIO $ mkPerRepoServerState (acquireconn reqv) workerpool getservermode
+	return $ P2PHttpServerState
+		{ servedRepos = M.fromList $ zip servinguuids (repeat st)
+		, serverShutdownCleanup = endit
+		, updateRepos = updaterepos
+		}
   where
 	acquireconn reqv connparams = do
 		respvar <- newEmptyTMVarIO
@@ -487,13 +546,13 @@ mkLocker lock unlock = do
 			wait locktid
 			return Nothing
 
-storeLock :: LockID -> Locker -> P2PHttpServerState -> IO ()
+storeLock :: LockID -> Locker -> PerRepoServerState -> IO ()
 storeLock lckid locker st = atomically $ do
 	m <- takeTMVar (openLocks st)
 	let !m' = M.insert lckid locker m
 	putTMVar (openLocks st) m'
 
-keepingLocked :: LockID -> P2PHttpServerState -> IO ()
+keepingLocked :: LockID -> PerRepoServerState -> IO ()
 keepingLocked lckid st = do
 	m <- atomically $ readTMVar (openLocks st)
 	case M.lookup lckid m of
@@ -502,7 +561,7 @@ keepingLocked lckid st = do
 			atomically $ void $ 
 				tryPutTMVar (lockerTimeoutDisable locker) ()
 
-dropLock :: LockID -> P2PHttpServerState -> IO ()
+dropLock :: LockID -> PerRepoServerState -> IO ()
 dropLock lckid st = do
 	v <- atomically $ do
 		m <- takeTMVar (openLocks st)
@@ -520,13 +579,15 @@ dropLock lckid st = do
 		Nothing -> return ()
 		Just locker -> wait (lockerThread locker)
 
-getAnnexWorkerPool :: (AnnexWorkerPool -> Annex a) -> Annex a
-getAnnexWorkerPool a = startConcurrency transferStages $
-	Annex.getState Annex.workers >>= \case
-		Nothing -> giveup "Use -Jn or set annex.jobs to configure the number of worker threads."
-		Just wp -> a wp
+withAnnexWorkerPool :: (Maybe Concurrency) -> (AnnexWorkerPool -> Annex a) -> Annex a
+withAnnexWorkerPool mc a = do
+	maybe noop (setConcurrency . ConcurrencyCmdLine) mc
+	startConcurrency transferStages $
+		Annex.getState Annex.workers >>= \case
+			Nothing -> giveup "Use -Jn or set annex.jobs to configure the number of worker threads."
+			Just wp -> a wp
 
-inAnnexWorker :: P2PHttpServerState -> Annex a -> IO (Either SomeException a)
+inAnnexWorker :: PerRepoServerState -> Annex a -> IO (Either SomeException a)
 inAnnexWorker st = inAnnexWorker' (annexWorkerPool st)
 
 inAnnexWorker' :: AnnexWorkerPool -> Annex a -> IO (Either SomeException a)

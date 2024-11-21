@@ -511,14 +511,18 @@ jsonProgressOption =
 -- action in `allowConcurrentOutput`.
 jobsOption :: [AnnexOption]
 jobsOption = 
-	[ annexOption (setAnnexState . setConcurrency . ConcurrencyCmdLine) $ 
-		option (maybeReader parseConcurrency)
-			( long "jobs" <> short 'J' 
-			<> metavar (paramNumber `paramOr` "cpus")
-			<> help "enable concurrent jobs"
-			<> hidden
-			)
+	[ annexOption (setAnnexState . setConcurrency . ConcurrencyCmdLine)
+		jobsOptionParser
 	]
+
+jobsOptionParser :: Parser Concurrency
+jobsOptionParser = 
+	option (maybeReader parseConcurrency)
+		( long "jobs" <> short 'J' 
+		<> metavar (paramNumber `paramOr` "cpus")
+		<> help "enable concurrent jobs"
+		<> hidden
+		)
 
 timeLimitOption :: [AnnexOption]
 timeLimitOption = 
