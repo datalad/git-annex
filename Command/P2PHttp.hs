@@ -135,7 +135,11 @@ startIO o
 		repos <- findRepos o
 		sts <- forM repos $ \r -> do
 			strd <- Annex.new r
-			Annex.eval strd $ mkServerState o authenv
+			Annex.eval strd $
+				ifM ((/=) NoUUID <$> getUUID)
+					( mkServerState o authenv
+					, return mempty
+					)
 		runServer o (mconcat sts)
 
 runServer :: Options -> P2PHttpServerState -> IO ()
