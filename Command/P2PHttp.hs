@@ -11,7 +11,7 @@
 
 module Command.P2PHttp where
 
-import Command
+import Command hiding (jobsOption)
 import P2P.Http.Server
 import P2P.Http.Url
 import qualified P2P.Protocol as P2P
@@ -20,6 +20,7 @@ import Annex.UUID
 import qualified Git
 import qualified Git.Construct
 import qualified Annex
+import Types.Concurrency
 
 import Servant
 import qualified Network.Wai.Handler.Warp as Warp
@@ -29,12 +30,11 @@ import qualified Data.Map as M
 import Data.String
 
 cmd :: Command
-cmd = withAnnexOptions [jobsOption] $
-	noMessages $ dontCheck repoExists $ 
-		noRepo (startIO <$$> optParser) $
-			command "p2phttp" SectionPlumbing
-				"communicate in P2P protocol over http"
-				paramNothing (startAnnex <$$> optParser)
+cmd = noMessages $ dontCheck repoExists $ 
+	noRepo (startIO <$$> optParser) $
+		command "p2phttp" SectionPlumbing
+			"communicate in P2P protocol over http"
+			paramNothing (startAnnex <$$> optParser)
 
 data Options = Options
 	{ portOption :: Maybe PortNumber
@@ -49,6 +49,7 @@ data Options = Options
 	, unauthNoLockingOption :: Bool
 	, wideOpenOption :: Bool
 	, proxyConnectionsOption :: Maybe Integer
+	, jobsOption :: Maybe Concurrency
 	, clusterJobsOption :: Maybe Int
 	, directoryOption :: [FilePath]
 	}
@@ -103,6 +104,7 @@ optParser _ = Options
 		( long "proxyconnections" <> metavar paramNumber
 		<> help "maximum number of idle connections when proxying"
 		))
+	<*> optional jobsOptionParser
 	<*> optional (option auto
 		( long "clusterjobs" <> metavar paramNumber
 		<> help "number of concurrent node accesses per connection"
@@ -124,8 +126,6 @@ startAnnex o
 		)
 	| otherwise = liftIO $ startIO o
 
--- TODO --jobs option only available to startAnnex, not here, need
--- to parse it into Options for this command.
 startIO :: Options -> IO ()
 startIO o
 	| null (directoryOption o) = 
@@ -162,7 +162,7 @@ runServer o mst = go `finally` serverShutdownCleanup mst
 
 mkServerState :: Options -> M.Map Auth P2P.ServerMode -> Annex P2PHttpServerState
 mkServerState o authenv = 
-	getAnnexWorkerPool $
+	withAnnexWorkerPool (jobsOption o) $
 		mkP2PHttpServerState
 			(mkGetServerMode authenv o)
 			(fromMaybe 1 $ proxyConnectionsOption o)

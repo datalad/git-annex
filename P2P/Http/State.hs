@@ -26,6 +26,8 @@ import Types.NumCopies
 import Types.WorkerPool
 import Annex.WorkerPool
 import Annex.BranchState
+import Annex.Concurrent
+import Types.Concurrency
 import Types.Cluster
 import CmdLine.Action (startConcurrency)
 import Utility.ThreadScheduler
@@ -551,11 +553,13 @@ dropLock lckid st = do
 		Nothing -> return ()
 		Just locker -> wait (lockerThread locker)
 
-getAnnexWorkerPool :: (AnnexWorkerPool -> Annex a) -> Annex a
-getAnnexWorkerPool a = startConcurrency transferStages $
-	Annex.getState Annex.workers >>= \case
-		Nothing -> giveup "Use -Jn or set annex.jobs to configure the number of worker threads."
-		Just wp -> a wp
+withAnnexWorkerPool :: (Maybe Concurrency) -> (AnnexWorkerPool -> Annex a) -> Annex a
+withAnnexWorkerPool mc a = do
+	maybe noop (setConcurrency . ConcurrencyCmdLine) mc
+	startConcurrency transferStages $
+		Annex.getState Annex.workers >>= \case
+			Nothing -> giveup "Use -Jn or set annex.jobs to configure the number of worker threads."
+			Just wp -> a wp
 
 inAnnexWorker :: PerRepoServerState -> Annex a -> IO (Either SomeException a)
 inAnnexWorker st = inAnnexWorker' (annexWorkerPool st)
