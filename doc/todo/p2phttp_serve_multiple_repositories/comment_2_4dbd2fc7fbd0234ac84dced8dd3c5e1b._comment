@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2024-11-21T19:16:20Z"
+ content="""
+This is now implemented, use p2phttp --directory to serve all repositories
+in that directory.
+
+There is one known problem, which I'm leaving this todo open for. When a
+repository is moved out of the directory, the server should stop serving
+it. And it does, eg both git-annex get and git-annex drop will fail, since
+the server is not able to access the directory any longer. But, a second
+git-annex drop actually hangs at the "locking origin" stage. 
+(When run with -J2.. with more jobs it takes more than 2) 
+
+It seems that the server is leaking annex workers in this case. Probably
+it fails to recover from a crash.
+
+Luckily, it only affects serving the uuid of the removed repository, other
+repositories in the directory will continue to be served without problems
+when this happens.
+"""]]
