@@ -24,13 +24,13 @@ import P2P.Protocol hiding (Offset, Bypass, auth, FileSize)
 import Utility.Metered
 import Utility.FileSize
 import Types.NumCopies
+import Types.Remote
 import Annex.Common
 import qualified Git
 #ifdef WITH_SERVANT
 import qualified Annex
 import Annex.UUID
 import Annex.Url
-import Types.Remote
 import P2P.Http
 import P2P.Http.Url
 import Annex.Concurrent
