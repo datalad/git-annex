@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2024-11-21T19:36:58Z"
+ content="""
+And here's why it's failing still on OSX and that 1 ubuntu "custom-config1" run:
+
+	git clone from special remote (after git push with output: Full remote url: annex::89ddefa4-a04c-11ef-87b5-e880882a4f98?encryption=none&type=directory
+	git-annex: remote url not configured
+	Push failed (Failed to upload GITBUNDLE-s3832--89ddefa4-a04c-11ef-87b5-e880882a4f98-b73a51289d659d73054ee531b45825da3061213d32d47aeb998f4abeb591a88d)
+	warning: helper reported unexpected status of push
+	warning: helper reported unexpected status of push
+  	Everything up-to-date
+
+Fascinating. It seems that git-remote-annex has been run twice. The first time
+seemed to do something successfully, since it reported the "Full remote url".
+Probably that first run is git using it to see what refs are on the remote. 
+
+The second time, git ran git-remote-annex with only 1 argument, rather than the
+expected 2. Why would git do that? And only in these few situations?
+
+According to gitremote-helpers:
+
+       Additionally, when a configured remote has remote.<name>.vcs set to <transport>, Git explicitly invokes git remote-<transport>
+       with <name> as the first argument. If set, the second argument is remote.<name>.url; otherwise, the second argument is omitted.
+
+But that does not apply. The docs don't seem to give any other reason why
+the second argument would be omitted. Although the docs do say it's optional.
+
+I've improved git-remote-annex output in this situation, so it will show
+wha the first parameter is. That might help understand out what git is trying to
+do here.
+"""]]

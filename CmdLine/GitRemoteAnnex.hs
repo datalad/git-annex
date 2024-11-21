@@ -85,7 +85,7 @@ run (remotename:url:[]) = do
 		case parseSpecialRemoteNameUrl remotename u of
 			Right src -> checkallowed src >>= run' u
 			Left e -> giveup e
-run (_remotename:[]) = giveup "remote url not configured"
+run (remotename:[]) = giveup $ "remote url not configured for " ++ remotename
 run _ = giveup "expected remote name and url parameters"
 
 run' :: String -> SpecialRemoteConfig -> Annex ()
