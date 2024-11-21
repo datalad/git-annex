@@ -45,10 +45,10 @@ import Control.Concurrent
 import System.IO.Unsafe
 import Data.Either
 
-p2pHttpApp :: P2PHttpServerState -> Application
+p2pHttpApp :: TMVar P2PHttpServerState -> Application
 p2pHttpApp = serve p2pHttpAPI . serveP2pHttp
 
-serveP2pHttp :: P2PHttpServerState -> Server P2PHttpAPI
+serveP2pHttp :: TMVar P2PHttpServerState -> Server P2PHttpAPI
 serveP2pHttp st
 	=    serveGet st
 	:<|> serveGet st
@@ -91,7 +91,7 @@ serveP2pHttp st
 	:<|> serveGetGeneric st
 
 serveGetGeneric
-	:: P2PHttpServerState
+	:: TMVar P2PHttpServerState
 	-> B64UUID ServerSide
 	-> B64Key
 	-> Maybe (B64UUID ClientSide)
@@ -109,7 +109,7 @@ serveGetGeneric st su@(B64UUID u) k mcu bypass =
 
 serveGet
 	:: APIVersion v
-	=> P2PHttpServerState
+	=> TMVar P2PHttpServerState
 	-> B64UUID ServerSide
 	-> v
 	-> B64Key
@@ -222,7 +222,7 @@ serveGet mst su apiver (B64Key k) cu bypass baf startat sec auth = do
 
 serveCheckPresent
 	:: APIVersion v
-	=> P2PHttpServerState
+	=> TMVar P2PHttpServerState
 	-> B64UUID ServerSide
 	-> v
 	-> B64Key
@@ -240,7 +240,7 @@ serveCheckPresent st su apiver (B64Key k) cu bypass sec auth = do
 
 serveRemove
 	:: APIVersion v
-	=> P2PHttpServerState
+	=> TMVar P2PHttpServerState
 	-> (RemoveResultPlus -> t)
 	-> B64UUID ServerSide
 	-> v
@@ -262,7 +262,7 @@ serveRemove st resultmangle su apiver (B64Key k) cu bypass sec auth = do
 
 serveRemoveBefore
 	:: APIVersion v
-	=> P2PHttpServerState
+	=> TMVar P2PHttpServerState
 	-> B64UUID ServerSide
 	-> v
 	-> B64Key
@@ -285,7 +285,7 @@ serveRemoveBefore st su apiver (B64Key k) cu bypass (Timestamp ts) sec auth = do
 
 serveGetTimestamp
 	:: APIVersion v
-	=> P2PHttpServerState
+	=> TMVar P2PHttpServerState
 	-> B64UUID ServerSide
 	-> v
 	-> B64UUID ClientSide
@@ -304,7 +304,7 @@ serveGetTimestamp st su apiver cu bypass sec auth = do
 
 servePut
 	:: APIVersion v
-	=> P2PHttpServerState
+	=> TMVar P2PHttpServerState
 	-> (PutResultPlus -> t)
 	-> B64UUID ServerSide
 	-> v
@@ -421,7 +421,7 @@ servePutResult resultmangle res = case res of
 
 servePut'
 	:: APIVersion v
-	=> P2PHttpServerState
+	=> TMVar P2PHttpServerState
 	-> (PutResultPlus -> t)
 	-> B64UUID ServerSide
 	-> v
@@ -439,7 +439,7 @@ servePut' st resultmangle su v = servePut st resultmangle su v Nothing
 
 servePutOffset
 	:: APIVersion v
-	=> P2PHttpServerState
+	=> TMVar P2PHttpServerState
 	-> (PutOffsetResultPlus -> t)
 	-> B64UUID ServerSide
 	-> v
@@ -463,7 +463,7 @@ servePutOffset st resultmangle su apiver (B64Key k) cu bypass sec auth = do
 
 serveLockContent
 	:: APIVersion v
-	=> P2PHttpServerState
+	=> TMVar P2PHttpServerState
 	-> B64UUID ServerSide
 	-> v
 	-> B64Key
@@ -500,7 +500,7 @@ serveLockContent mst su apiver (B64Key k) cu bypass sec auth = do
 
 serveKeepLocked
 	:: APIVersion v
-	=> P2PHttpServerState
+	=> TMVar P2PHttpServerState
 	-> B64UUID ServerSide
 	-> v
 	-> LockID

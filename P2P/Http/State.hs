@@ -50,12 +50,16 @@ import Prelude
 data P2PHttpServerState = P2PHttpServerState
 	{ servedRepos :: M.Map UUID PerRepoServerState
 	, serverShutdownCleanup :: IO ()
+	, updateRepos :: UpdateRepos
 	}
+
+type UpdateRepos = P2PHttpServerState -> IO P2PHttpServerState
 
 instance Monoid P2PHttpServerState where
 	mempty = P2PHttpServerState
 		{ servedRepos = mempty
 		, serverShutdownCleanup = noop
+		, updateRepos = const mempty
 		}
 
 instance Sem.Semigroup P2PHttpServerState where
@@ -64,6 +68,10 @@ instance Sem.Semigroup P2PHttpServerState where
 		, serverShutdownCleanup = do
 			serverShutdownCleanup a
 			serverShutdownCleanup b
+		, updateRepos = \st -> do
+			a' <- updateRepos a st
+			b' <- updateRepos b st
+			return (a' <> b')
 		}
 
 data PerRepoServerState = PerRepoServerState
@@ -98,7 +106,7 @@ data ActionClass = ReadAction | WriteAction | RemoveAction | LockAction
 withP2PConnection
 	:: APIVersion v
 	=> v
-	-> P2PHttpServerState
+	-> TMVar P2PHttpServerState
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
@@ -119,7 +127,7 @@ withP2PConnection apiver mst cu su bypass sec auth actionclass fconnparams conna
 withP2PConnection'
 	:: APIVersion v
 	=> v
-	-> P2PHttpServerState
+	-> TMVar P2PHttpServerState
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
@@ -137,7 +145,7 @@ withP2PConnection' apiver mst cu su bypass sec auth actionclass fconnparams conn
 getP2PConnection
 	:: APIVersion v
 	=> v
-	-> P2PHttpServerState
+	-> TMVar P2PHttpServerState
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
 	-> [B64UUID Bypass]
@@ -165,16 +173,32 @@ getP2PConnection apiver mst cu su bypass sec auth actionclass fconnparams =
 			, connectionWaitVar = True
 			}
 
+getPerRepoServerState :: TMVar P2PHttpServerState -> B64UUID ServerSide -> IO (Maybe PerRepoServerState)
+getPerRepoServerState mstv su = do
+	mst <- atomically $ readTMVar mstv
+	case lookupst mst of
+		Just st -> return (Just st)
+		Nothing -> do
+			mst' <- atomically $ takeTMVar mstv
+			mst'' <- updateRepos mst' mst'
+			debug "P2P.Http" $
+				"Rescanned for repositories, now serving UUIDs: "
+					++ show (M.keys (servedRepos mst''))
+			atomically $ putTMVar mstv mst''
+			return $ lookupst mst''
+  where
+	lookupst mst = M.lookup (fromB64UUID su) (servedRepos mst)
+
 checkAuthActionClass
-	:: P2PHttpServerState
+	:: TMVar P2PHttpServerState
 	-> B64UUID ServerSide
 	-> IsSecure
 	-> Maybe Auth
 	-> ActionClass
 	-> (PerRepoServerState -> P2P.ServerMode -> Handler a)
 	-> Handler a
-checkAuthActionClass mst su sec auth actionclass go =
-	case M.lookup (fromB64UUID su) (servedRepos mst) of
+checkAuthActionClass mstv su sec auth actionclass go =
+	liftIO (getPerRepoServerState mstv su) >>= \case
 		Just st -> select st
 		Nothing -> throwError err404
   where
@@ -234,11 +258,12 @@ type AcquireP2PConnection
 
 mkP2PHttpServerState
 	:: GetServerMode
+	-> UpdateRepos
 	-> ProxyConnectionPoolSize
 	-> ClusterConcurrency
 	-> AnnexWorkerPool
 	-> Annex P2PHttpServerState
-mkP2PHttpServerState getservermode proxyconnectionpoolsize clusterconcurrency workerpool = do
+mkP2PHttpServerState getservermode updaterepos proxyconnectionpoolsize clusterconcurrency workerpool = do
 	enableInteractiveBranchAccess
 	myuuid <- getUUID
 	myproxies <- M.lookup myuuid <$> getProxies
@@ -256,6 +281,7 @@ mkP2PHttpServerState getservermode proxyconnectionpoolsize clusterconcurrency wo
 	return $ P2PHttpServerState
 		{ servedRepos = M.fromList $ zip servinguuids (repeat st)
 		, serverShutdownCleanup = endit
+		, updateRepos = updaterepos
 		}
   where
 	acquireconn reqv connparams = do

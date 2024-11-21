@@ -21,7 +21,7 @@ git-annex (10.20241032) UNRELEASED; urgency=medium
     uses the same hostname as remote.name.url, which is itself a http(s)
     url, they are assumed to share a username and password. This avoids
     unnecessary duplicate password prompts.
-  * p2phttp: Added --directory option which serves all git-annex
+  * p2phttp: Added --directory option which serves multiple git-annex
     repositories located inside a directory.
 
  -- Joey Hess <id@joeyh.name>  Mon, 11 Nov 2024 12:26:00 -0400
