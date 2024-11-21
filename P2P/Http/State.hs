@@ -42,10 +42,27 @@ import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 import Control.Concurrent.Async
 import Data.Time.Clock.POSIX
+import qualified Data.Semigroup as Sem
+import Prelude
 
 data P2PHttpServerState = P2PHttpServerState
 	{ servedRepos :: M.Map UUID PerRepoServerState
+	, serverShutdownCleanup :: IO ()
 	}
+
+instance Monoid P2PHttpServerState where
+	mempty = P2PHttpServerState
+		{ servedRepos = mempty
+		, serverShutdownCleanup = noop
+		}
+
+instance Sem.Semigroup P2PHttpServerState where
+	a <> b = P2PHttpServerState
+		{ servedRepos = servedRepos a <> servedRepos b
+		, serverShutdownCleanup = do
+			serverShutdownCleanup a
+			serverShutdownCleanup b
+		}
 
 data PerRepoServerState = PerRepoServerState
 	{ acquireP2PConnection :: AcquireP2PConnection
@@ -213,13 +230,13 @@ type AcquireP2PConnection
 	= ConnectionParams
 	-> IO (Either ConnectionProblem P2PConnectionPair)
 
-withP2PConnections
-	:: AnnexWorkerPool
+mkP2PHttpServerState
+	:: GetServerMode
 	-> ProxyConnectionPoolSize
 	-> ClusterConcurrency
-	-> ([UUID] -> AcquireP2PConnection -> Annex a)
-	-> Annex a
-withP2PConnections workerpool proxyconnectionpoolsize clusterconcurrency a = do
+	-> AnnexWorkerPool
+	-> Annex P2PHttpServerState
+mkP2PHttpServerState getservermode proxyconnectionpoolsize clusterconcurrency workerpool = do
 	enableInteractiveBranchAccess
 	myuuid <- getUUID
 	myproxies <- M.lookup myuuid <$> getProxies
@@ -233,7 +250,11 @@ withP2PConnections workerpool proxyconnectionpoolsize clusterconcurrency a = do
 		liftIO $ atomically $ putTMVar endv ()
 		liftIO $ wait asyncservicer
 	let servinguuids = myuuid : map proxyRemoteUUID (maybe [] S.toList myproxies)
-	a servinguuids (acquireconn reqv) `finally` endit
+	st <- liftIO $ mkPerRepoServerState (acquireconn reqv) workerpool getservermode
+	return $ P2PHttpServerState
+		{ servedRepos = M.fromList $ zip servinguuids (repeat st)
+		, serverShutdownCleanup = endit
+		}
   where
 	acquireconn reqv connparams = do
 		respvar <- newEmptyTMVarIO

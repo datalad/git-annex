@@ -41,10 +41,10 @@ convenient way to download the content of any key, by using the path
 
 * `--directory=path`
 
-  Serve each git-annex repository found in a directory. This does not
-  recurse into subdirectories. 
+  Serve each git-annex repository found in immediate 
+  subdirectories of a directory.
 
-  This option can be provided more than once to serve serveral directories
+  This option can be provided more than once to serve several directories
   full of git-annex repositories.
 
   New git-annex repositories can be added to the directory, and will be
