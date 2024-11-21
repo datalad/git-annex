@@ -435,7 +435,7 @@ clientPut meterupdate k moffset af contentfile contentfilesize validitycheck dat
 		_ :<|> _ :<|>
 		v4 :<|> v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
 #else
-clientPut _ _ _ _ _ _ _ = ()
+clientPut _ _ _ _ _ _ _ _ = ()
 #endif
 
 clientPutOffset
