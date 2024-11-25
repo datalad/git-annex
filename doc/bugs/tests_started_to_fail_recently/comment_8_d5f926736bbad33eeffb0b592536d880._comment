@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2024-11-25T15:31:59Z"
+ content="""
+And the specific reason these test cases are failing is because they have
+annex.stalldetection set, which needs to run the transferrer.
+"""]]
