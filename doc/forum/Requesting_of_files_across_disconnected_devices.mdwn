@@ -6,7 +6,7 @@ This 'git-annex-requests' file would require a minimum of the file-shasum and re
 
 Additionally, a 'git-annex-routing' file could optionally be added that includes netlist details describing routing chains where certain 'static' devices may be able to easily push to each other so that other git-annex clients can make more informed decisions on where to push a file.
 
-[[!img git_annex_request.png align="right" size="" alt="Network diagram"]]
+[[!img git_annex_request.png align="right" size="" alt="Network diagram"]]  
 [[!img git_annex_request_routing.png align="right" size="" alt="Network diagram showing file routing"]]
 
 Alternate links for images:
