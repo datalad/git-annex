@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2024-11-25T15:14:20Z"
+ content="""
+	git-annex: remote url not configured for transferrer
+
+Apparently git is running "git-remote-annex transferrer".
+
+This must be due to git-remote-annex be running "$0 transferrer" instead
+of "git-annex transferrer"!
+
+In the usual case, when git-remote-annex is a symlink to git-annex,
+getExecutablePath returns "git-annex". But, if git-remote-annex is a
+hardlink or copy, that returns "git-remote-annex" instead.
+
+And in the linux standalone tarball and OSX app, it does not use
+getExecutablePath, but getProgName so "git-remote-annex" also there.
+"""]]
