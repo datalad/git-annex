@@ -10,7 +10,9 @@
 import System.Environment (getArgs, getProgName)
 import System.FilePath
 import Network.Socket (withSocketsDo)
+import qualified Data.Map as M
 
+import CmdLine.Multicall
 import qualified CmdLine.GitAnnex
 import qualified CmdLine.GitAnnexShell
 import qualified CmdLine.GitRemoteAnnex
@@ -34,11 +36,15 @@ main = sanitizeTopLevelExceptionMessages $ withSocketsDo $ do
 #endif
 	run ps =<< getProgName
   where
-	run ps n = case takeFileName n of
-		"git-annex-shell" -> CmdLine.GitAnnexShell.run ps
-		"git-remote-annex" -> CmdLine.GitRemoteAnnex.run ps
-		"git-remote-tor-annex" -> CmdLine.GitRemoteTorAnnex.run ps
-		_  -> CmdLine.GitAnnex.run Test.optParser Test.runner Benchmark.mkGenerator ps
+	run ps n = case M.lookup (takeFileName n) otherMulticallCommands of
+		Just GitAnnexShell -> CmdLine.GitAnnexShell.run ps
+		Just GitRemoteAnnex -> CmdLine.GitRemoteAnnex.run ps
+		Just GitRemoteTorAnnex -> CmdLine.GitRemoteTorAnnex.run ps
+		Nothing -> CmdLine.GitAnnex.run
+			Test.optParser
+			Test.runner
+			Benchmark.mkGenerator
+			ps
 
 #ifdef mingw32_HOST_OS
 {- On Windows, if HOME is not set, probe it and set it.

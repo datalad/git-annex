@@ -633,9 +633,10 @@ Executable git-annex
     CmdLine.GitAnnexShell.Checks
     CmdLine.GitAnnexShell.Fields
     CmdLine.AnnexSetter
-    CmdLine.Option
+    CmdLine.Multicall
     CmdLine.GitRemoteAnnex
     CmdLine.GitRemoteTorAnnex
+    CmdLine.Option
     CmdLine.Seek
     CmdLine.Usage
     Command

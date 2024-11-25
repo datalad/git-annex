@@ -75,4 +75,6 @@ although there in first failing was a bit different on OSX
       Use -p '/git-remote-annex/' to rerun this test only.
 ```
 
-[[!meta title="git-remote-annex clone from special remote fails on OSX"]]
+[[!meta title="git-remote-annex clone from special remote fails"]]
+
+> [[fixed|done]] --[[Joey]]

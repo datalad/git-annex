@@ -23,6 +23,8 @@ git-annex (10.20241032) UNRELEASED; urgency=medium
     unnecessary duplicate password prompts.
   * git-remote-annex: Require git version 2.31 or newer, since old
     ones had a buggy git bundle command.
+  * git-remote-annex: Fix buggy behavior when annex.stalldetection is
+    configured.
   * p2phttp: Added --directory option which serves multiple git-annex
     repositories located inside a directory.
 

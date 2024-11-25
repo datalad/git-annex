@@ -1,6 +1,6 @@
 {- git-annex program path
  -
- - Copyright 2013-2022 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -18,9 +18,11 @@ import Annex.Common
 import Config.Files
 import Utility.Env
 import Annex.PidLock
+import CmdLine.Multicall
 import qualified Annex
 
 import System.Environment (getExecutablePath, getArgs, getProgName)
+import qualified Data.Map as M
 
 {- A fully qualified path to the currently running git-annex program.
  - 
@@ -33,23 +35,35 @@ import System.Environment (getExecutablePath, getArgs, getProgName)
  - getExecutablePath. It sets GIT_ANNEX_DIR to the location of the
  - standalone build directory, and there are wrapper scripts for git-annex
  - and git-annex-shell in that directory.
+ -
+ - When the currently running program is not git-annex, but is instead eg
+ - git-annex-shell or git-remote-annex, this finds a git-annex program
+ - instead.
  -}
 programPath :: IO FilePath
 programPath = go =<< getEnv "GIT_ANNEX_DIR"
   where
 	go (Just dir) = do
-		name <- getProgName
+		name <- reqgitannex <$> getProgName
 		return (dir </> name)
 	go Nothing = do
-		exe <- getExecutablePath
+		name <- getProgName
+		exe <- if isgitannex name
+			then getExecutablePath
+			else pure "git-annex"
 		p <- if isAbsolute exe
 			then return exe
 			else fromMaybe exe <$> readProgramFile
 		maybe cannotFindProgram return =<< searchPath p
 
+	reqgitannex name
+		| isgitannex name = name
+		| otherwise = "git-annex"
+	isgitannex = flip M.notMember otherMulticallCommands
+
 {- Returns the path for git-annex that is recorded in the programFile. -}
 readProgramFile :: IO (Maybe FilePath)
-readProgramFile = do
+readProgramFile = catchDefaultIO Nothing $ do
 	programfile <- programFile
 	headMaybe . lines <$> readFile programfile
 
