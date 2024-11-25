@@ -10,5 +10,5 @@ Additionally, a 'git-annex-routing' file could optionally be added that includes
 [[!img git_annex_request_routing.png align="right" size="" alt="Network diagram showing file routing"]]
 
 Alternate links for images:
-Example diagram with mixed network connections: https://imgur.com/gallery/network-diagram-with-mixed-inbound-outbound-connections-3q76OzI
+Example diagram with mixed network connections: https://imgur.com/gallery/network-diagram-with-mixed-inbound-outbound-connections-3q76OzI  
 Example diagram with network request across mixed network connections: https://imgur.com/gallery/network-diagram-file-request-across-mixed-inbound-outbound-connections-hev94Kj
