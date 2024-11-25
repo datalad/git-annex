@@ -1,0 +1,13 @@
+`git-annex find --not --unused` is currently the same as `git-annex find
+--unused` because `--unused` is not a file matching option. This is a bit
+confusing. 
+
+And it would be useful to have a way to find all keys
+that are not amoung the unused keys.
+
+Given the implementation of `--not` is tied to file matching options,
+it might be best to add a new option like `--used` or `--not-unused`.
+
+It would also perhaps be good to detect when matching options are used that
+don't make sense, and error out on commands like `git-annex find --not`
+or `git-annex find -and -(`
