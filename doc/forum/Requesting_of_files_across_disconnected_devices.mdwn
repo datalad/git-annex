@@ -1,0 +1,18 @@
+Has anyone done something where devices may not have a direct connection to other git-annex devices, but where they can push out a request for a file? Basically, something that allows them to post file requests that other devices then pickup and relay to a shared endpoint that can be populated with the requested file? I'm currently thinking of a situation where a cloud node might be 'expensive' and purges itself once some other devices contain the file; but at a later point in time a mobile device (without the file or a direct connection to devices containing the file) may connect to the cloud node and request the file.
+
+## Possible behavior
+The requestor could populate a 'git-annex-requests' file at the root of the repository with contents similar to the following:  
+```text
+file-shasum, requester-id, (optional endpoint1), (optional endpoint2),...
+```
+
+This 'git-annex-requests' file would require a minimum of the file-shasum and requester id, with the endpoints helping other devices (containing the desired file) to know where to best push the file (other than guessing/all available remotes). So, for the attached diagram, where the mobile laptop attached to the cellphone wants a file from the remote-office nas/server, a flow would look like: laptop updates request file -> syncs file to phone -> syncs file to homelab server -> allows home office computer to sync file -> syncs file to home-office nas/server; the home-office computer gets the file from the nas and pushes it to the homelab server -> the mobile phone downloads the file from the homelab server -> the mobile laptop gets the file from the phone and removes the request from the requests file (which then triggers the reverse propagation of the acknowledgement/removal of the request and allows the devices to proceed with any garbage cleanup).
+
+Additionally, a 'git-annex-routing' file could optionally be added that includes netlist details describing routing chains where certain 'static' devices may be able to easily push to each other so that other git-annex clients can make more informed decisions on where to push a file.
+
+[[!img git_annex_request.png align="right" size="" alt="Network diagram"]]  
+[[!img git_annex_request_routing.png align="right" size="" alt="Network diagram showing file routing"]]  
+
+## Alternate links for images  
+Example diagram with mixed network connections: [[https://imgur.com/gallery/network-diagram-with-mixed-inbound-outbound-connections-3q76OzI]]  
+Example diagram with network request across mixed network connections: [[https://imgur.com/gallery/network-diagram-file-request-across-mixed-inbound-outbound-connections-hev94Kj]]  

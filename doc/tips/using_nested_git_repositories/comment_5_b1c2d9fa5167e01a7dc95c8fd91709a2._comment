@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="aaron"
+ avatar="http://cdn.libravatar.org/avatar/8a07e2f7af4bbf1bfcb48bbc53e00747"
+ subject="Overriding git folder"
+ date="2024-11-25T02:55:25Z"
+ content="""
+It seems to be that git has gotten smarter and now actively prevents you from adding a `.git` folder (I did this many years ago when before I learned about submodules); I'd like to do something like the following:
+```bash
+git init --separate-git-dir=.gitannex .
+git --git-dir=.gitannex annex init
+git clone some_repo # A repo I'm pulling from GitHub/wherever and don't want a submodule of as it's not my personal project
+git --git-dir=.gitannex add some_repo
+```
+
+Essentially, I can override that `.git` folder name, but it still checks for other `.git` folders; is there a way to remove this check?
+"""]]

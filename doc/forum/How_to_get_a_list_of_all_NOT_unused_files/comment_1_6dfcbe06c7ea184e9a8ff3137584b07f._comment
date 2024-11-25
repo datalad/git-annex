@@ -1,0 +1,50 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="re: How to get a list of all NOT unused files"
+ date="2024-11-25T02:23:25Z"
+ content="""
+> How to get a list of all NOT unused files
+
+There may be a simpler way, but one idea:
+
+ * list all unused keys
+ * list all present keys
+ * filter out the unused keys from the present keys
+
+So something like this:
+
+```
+$ git annex findkeys | sort >present-keys
+$ git annex unused --json | jq -r '.\"unused-list\" | to_entries | map(.value) | .[]' | sort >unused-keys
+$ comm -2 -3 present-keys unused-keys
+```
+
+> Those that should be saved are tagged
+
+If you wanted to focus just on keys referenced from tags, you could
+generate a list of those keys with
+
+```
+$ git rev-list --objects --no-object-names --no-walk --tags | \
+  git annex lookupkey --ref --batch | grep -v '^$'
+```
+
+---
+
+After generating a list of keys with either of those approaches, you
+could copy them to your new repo with
+
+```
+git annex copy --to=NEW-REMOTE --batch-keys ...
+```
+
+For example, the full pipeline for the second approach could be
+
+```
+$ git rev-list --objects --no-object-names --no-walk --tags | \
+  git annex lookupkey --ref --batch | grep -v '^$' | \
+  git annex copy --to=NEW-REMOTE --batch-keys
+```
+
+"""]]
