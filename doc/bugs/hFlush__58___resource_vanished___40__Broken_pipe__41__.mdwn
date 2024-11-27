@@ -1,0 +1,75 @@
+### Please describe the problem.
+
+`git annex add` fails if it encounters a file whose name ends with a carriage return.
+
+This can happen with any directory that has a custom icon in MacOS - the directory includes an empty file named `Icon\r`.
+
+First git-annex shows a fatal error, "No such file or directory". Then for any subsequent files being added, it fails with "git-annex: fd:18: hFlush: resource vanished (Broken pipe)".
+
+The problem only occurs if `config.largefiles` is set.
+
+### What steps will reproduce the problem?
+
+[[!format sh """
+# Step 1.
+# Create a directory with an empty icon file.
+# To type the carriage return (^M), press Ctrl-V and then Return.
+mkdir example/
+touch example/Icon^M
+
+# Step 2.
+# Create some test files in the directory.
+# This should be a mixture of small files and large files.
+echo hello > example/test1
+head -c5000 < /dev/urandom > example/test2
+
+# Step 3.
+# Set `annex.largefiles` to anything less than the size of the large file above.
+git annex config --set annex.largefiles largerthan=4kb
+
+# Step 4.
+# Add the directory to the git annex.
+git annex add example/
+"""]]
+
+### What version of git-annex are you using? On what operating system?
+
+- git-annex version 10.20241031
+- git version 2.47.1
+- bash version 5.2.37
+- MacOS version 15.1.1 (Sequoia)
+
+### Please provide any additional information below.
+
+This happens when I run `git annex add example/`:
+
+```
+add "example/Icon\r" (non-large file; adding content to git repository) fatal: could not open '/path/to/repo/example/Icon' for reading: No such file or directory
+fatal: could not open '/path/to/repo/example/Icon' for reading: No such file or directory
+fatal: could not open '/path/to/repo/example/Icon' for reading: No such file or directory
+fatal: could not open '/path/to/repo/example/Icon' for reading: No such file or directory
+fatal: could not open '/path/to/repo/example/Icon' for reading: No such file or directory
+fatal: could not open '/path/to/repo/example/Icon' for reading: No such file or directory
+fatal: could not open '/path/to/repo/example/Icon' for reading: No such file or directory
+fatal: could not open '/path/to/repo/example/Icon' for reading: No such file or directory
+fatal: could not open '/path/to/repo/example/Icon' for reading: No such file or directory
+fatal: could not open '/path/to/repo/example/Icon' for reading: No such file or directory
+fatal: could not open '/path/to/repo/example/Icon' for reading: No such file or directory
+
+git-annex: fd:19: Data.ByteString.hGetLine: end of file
+failed
+add example/test1 (non-large file; adding content to git repository)
+git-annex: fd:18: hFlush: resource vanished (Broken pipe)
+failed
+add example/test2
+
+git-annex: fd:18: hFlush: resource vanished (Broken pipe)
+failed
+git-annex: fd:18: hClose: resource vanished (Broken pipe)
+```
+
+It succeeds at moving the large `test2` file into `.git/annex/objects` and symlinking it, but `git status` doesn't show any changes.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes! :) It's helped me manage an unruly mess of files, backups, and backups of backups.
