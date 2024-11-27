@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="psxvoid"
+ avatar="http://cdn.libravatar.org/avatar/fde068fbdeabeea31e3be7aa9c55d84b"
+ subject="thanks and the followup"
+ date="2024-11-27T09:08:32Z"
+ content="""
+Thanks for posting your reasoning and for the fix, Joey!
+
+> As to whether git-annex should try to detect this and avoid entering such a view, I dunno..
+
+It's not that critical when you know how to fix it. Though, it was definitely putting a good amount of stress on me. I was starting to think that I have to re-create this particular \"meta\" repository, and at that moment I didn't have enough time/energy to do it. And even if re-creating it wouldn't be as difficult as I was imagining it back than, I decided to fix it, because if it would have happen in a non-meta repository, and I would having some non-synced changes, it could be very unpleasant. And I could imaging that it might happen to anyone.
+
+Also, as a side note, I was thinking about creating a FUSE FS which could specifically handle such cases for metadata, e.g. by introducing a \"virtual folder\" in the root, e.g. `long-paths` (don't like the naming, probably it needs more thinking). Such FUSE FS could potentially work along with the git-annex views, preserve the existing folder structure, but only showing files with specific tags/metadata.
+
+"""]]
