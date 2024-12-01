@@ -1,0 +1,28 @@
+Is there a way/configuration setting to avoid directory permission problem in the following scenario:
+
+```bash
+git init repo
+cd repo/
+git-annex init
+echo test > testfile
+git-annex add testfile 
+cd ..
+rm -rf repo/
+```
+
+This results in the following error:
+
+```
+rm: cannot remove 'repo/.git/annex/objects/w8/pv/SHA256E-s5--f2ca1bb6c7e907d06dafe4687e579fce76b37e4e93b7605022da52e6ccc26fd2/SHA256E-s5--f2ca1bb6c7e907d06dafe4687e579fce76b37e4e93b7605022da52e6ccc26fd2': Permission denied
+```
+
+The same problem is when the repository is moved to a different filesystem (mount point).
+
+This fixes the problem:
+
+```
+find repo -type d -exec chmod 755 {} +
+rm -rf repo/
+```
+
+But my question is: can git-annex do this automatically?
