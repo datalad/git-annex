@@ -410,10 +410,10 @@ jobs:
           git config --global user.email "test@github.land"
           git config --global user.name "GitHub Almighty"
 
-      - name: Set up Python 3.8
+      - name: Set up Python 3.9
         uses: actions/setup-python@v5
         with:
-          python-version: 3.8
+          python-version: 3.9
 
       - name: Install ${{ matrix.version }} Datalad
         run: |

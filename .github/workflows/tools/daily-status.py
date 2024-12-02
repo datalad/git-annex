@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-__python_requires__ = ">= 3.8"
+__python_requires__ = ">= 3.9"
 __requires__ = [
     "ghreq ~= 0.2",
     "ghtoken ~= 0.1",
