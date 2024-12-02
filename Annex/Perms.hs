@@ -278,7 +278,7 @@ thawPerms a hook = ifM crippledFileSystem
 {- Blocks writing to the directory an annexed file is in, to prevent the
  - file accidentally being deleted. However, if core.sharedRepository
  - is set, this is not done, since the group must be allowed to delete the
- - file without eing able to thaw the directory.
+ - file without being able to thaw the directory.
  -}
 freezeContentDir :: RawFilePath -> Annex ()
 freezeContentDir file = do
