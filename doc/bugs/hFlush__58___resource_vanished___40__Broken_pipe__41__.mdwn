@@ -73,3 +73,5 @@ It succeeds at moving the large `test2` file into `.git/annex/objects` and symli
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes! :) It's helped me manage an unruly mess of files, backups, and backups of backups.
+
+> [[fixed|done]] --[[Joey]]

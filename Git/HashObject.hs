@@ -48,13 +48,17 @@ hashFile hdl@(HashObjectHandle h _ _) file = do
 	-- So, make the filename absolute, which will work now
 	-- and also if git's behavior later changes.
 	file' <- absPath file
-	if newline `S.elem` file'
+	if newline `S.elem` file' || carriagereturn `S.elem` file
 		then hashFile' hdl file
 		else CoProcess.query h (send file') receive
   where
 	send file' to = S8.hPutStrLn to file'
 	receive from = getSha "hash-object" $ S8.hGetLine from
 	newline = fromIntegral (ord '\n')
+	-- git strips carriage return from the end of a line, out of some
+	-- misplaced desire to support windows, so also use the newline
+	-- fallback for those.
+	carriagereturn = fromIntegral (ord '\r')
 
 {- Runs git hash-object once per call, rather than using a running
  - one, so is slower. But, is able to handle newlines in the filepath,

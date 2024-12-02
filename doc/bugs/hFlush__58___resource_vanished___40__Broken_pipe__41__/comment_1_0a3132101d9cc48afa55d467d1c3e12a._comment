@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-12-02T16:41:07Z"
+ content="""
+Reproduced on linux. This is pretty surprising since `\r` is not a
+particularly special character.
+
+Adding any file not matching largefiles with '\r` in its name will trigger
+it, the rest is not needed.
+
+`git hash-object --stdin-paths` is what is failing.
+
+	printf '/home/joey/tmp/tr/example/Icon3\r\n' | git hash-object --stdin-paths
+	fatal: could not open '/home/joey/tmp/tr/example/Icon3' for reading: No such file or directory
+
+So, this is a misbehavior in git, which prevents passing a filename ending
+in '\r' into --stdin-paths here. Probably git is removing DOS style CRLF
+when it should not. I have reported this (and several related bugs) to the
+git mailing list so it might get fixed.
+
+`git cat-file --batch` also has this behavior, and git-annex already works
+around it by treating "\r" the same as "\n" and avoiding using the batch
+interface for it. (It could use -z, which avoids the problem, but older
+git's don't support that option.)
+
+I've made git-annex treat "\r" as special for git hash-object as well.
+"""]]
