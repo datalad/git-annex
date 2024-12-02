@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="david@1439a1cab13195a56248b6a8fd98a62028bcba8a"
+ nickname="david"
+ avatar="http://cdn.libravatar.org/avatar/22c2d800db6a7699139df604a67cb221"
+ subject="Maybe explanation"
+ date="2024-12-02T20:25:34Z"
+ content="""
+I case anyone else is struggling with this 9 years later, I noticed I got this message by running \"git annex sync\" with the branch \"git-annex\" checked out.
+
+"""]]
