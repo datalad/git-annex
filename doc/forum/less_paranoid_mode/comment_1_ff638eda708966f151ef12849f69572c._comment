@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-12-02T18:00:31Z"
+ content="""
+This happens to avoid it:
+
+`git config core.sharedRepository group`
+
+I do think that preventing accidental deletion, of what
+may be the only copy of the file, has probably saved some peoples' data
+though.
+"""]]
