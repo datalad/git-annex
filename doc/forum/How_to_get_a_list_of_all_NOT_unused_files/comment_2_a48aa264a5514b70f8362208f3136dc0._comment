@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2024-11-25T16:19:42Z"
+ content="""
+The reason `git-annex copy --not --unused` behaves that way is that
+--unused is not a file matching option. --not, meanwhile, inverts the next
+file matching option. So here it does nothing. So that command is the same
+as `git-annex copy --unused`!
+
+Obviously, that's a bit of an excuse, but it's what's going on. I do think
+that having `--not --unused` work would be a useful thing. Opened a todo
+[[todo/support_--not_--unused]].
+"""]]
