@@ -5,7 +5,7 @@ import click
 from ghreq import Client, make_user_agent
 from ghtoken import get_ghtoken
 
-__python_requires__ = ">= 3.8"
+__python_requires__ = ">= 3.9"
 __requires__ = ["click ~= 8.0", "ghreq ~= 0.2", "ghtoken ~= 0.1"]
 
 REPO = "datalad/git-annex"

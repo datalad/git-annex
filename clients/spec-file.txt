@@ -1,5 +1,5 @@
 git >=2.32
-python >=3.8
+python >=3.9
 conda-forge::click >=8.0
 conda-forge::click-loglevel >=0.2
 conda-forge::pydantic >=2.0,<3
