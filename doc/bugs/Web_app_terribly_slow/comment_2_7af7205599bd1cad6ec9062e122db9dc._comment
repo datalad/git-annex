@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="iirekm"
+ avatar="http://cdn.libravatar.org/avatar/c00a453db590bda7a0120281d0a12f62"
+ subject="comment 2"
+ date="2024-12-03T15:43:25Z"
+ content="""
+Just tested more:
+- Brave - slow
+- Chrome - slow
+- Firefox - works like a dream
+
+It seems it's something wrong with Chromium-family browser support. There are no JavaScript and network errors in developer console.
+I also tried to start git annex webapp with --vebose and --debug flags - nothing there as well.
+"""]]
