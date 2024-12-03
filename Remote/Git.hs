@@ -98,8 +98,9 @@ locationField = Accepted "location"
 
 list :: Bool -> Annex [Git.Repo]
 list autoinit = do
-	c <- fromRepo Git.config
-	rs <- mapM (tweakurl c) =<< Annex.getGitRemotes
+	cfg <- fromRepo Git.config
+	fullcfg <- fromRepo Git.fullconfig
+	rs <- mapM (tweakurl cfg fullcfg) =<< Annex.getGitRemotes
 	rs' <- mapM (configRead autoinit) (filter (not . isGitRemoteAnnex) rs)
 	proxies <- doQuietAction getProxies
 	if proxies == mempty
@@ -108,17 +109,20 @@ list autoinit = do
 			proxied <- listProxied proxies rs'
 			return (proxied++rs')
   where
-	tweakurl c r = do
+	tweakurl cfg fullcfg r = do
 		let n = fromJust $ Git.remoteName r
-		case getAnnexUrl r c of
-			Just url | not (isP2PHttpProtocolUrl url) -> 
+		case getAnnexUrl r cfg fullcfg of
+			Just url | not (isP2PHttpProtocolUrl url) ->
 				inRepo $ \g -> Git.Construct.remoteNamed n $
 					Git.Construct.fromRemoteLocation url
 						False g
 			_ -> return r
 
-getAnnexUrl :: Git.Repo -> M.Map Git.ConfigKey Git.ConfigValue -> Maybe String
-getAnnexUrl r c = Git.fromConfigValue <$> M.lookup (annexUrlConfigKey r) c
+getAnnexUrl :: Git.Repo -> Git.RepoConfig -> Git.RepoFullConfig -> Maybe String
+getAnnexUrl r cfg fullcfg = 
+	(Git.fromConfigValue <$> M.lookup (annexUrlConfigKey r) cfg)
+		<|>
+	annexInsteadOfUrl fullcfg (Git.repoLocation r)
 
 annexUrlConfigKey :: Git.Repo -> Git.ConfigKey
 annexUrlConfigKey r = remoteConfig r "annexurl"

@@ -89,7 +89,7 @@ remoteLocationIsSshUrl _ = False
 parseRemoteLocation :: String -> Bool -> Repo -> RemoteLocation
 parseRemoteLocation s knownurl repo = go
   where
- 	s' = calcloc s
+ 	s' = fromMaybe s $ insteadOfUrl s ".insteadof" $ fullconfig repo
 	go
 #ifdef mingw32_HOST_OS
 		| dosstyle s' = RemotePath (dospath s')
@@ -98,28 +98,6 @@ parseRemoteLocation s knownurl repo = go
 		| urlstyle s' = RemoteUrl s'
 		| knownurl && s' == s = RemoteUrl s'
 		| otherwise = RemotePath s'
-	-- insteadof config can rewrite remote location
-	calcloc l
-		| null insteadofs = l
-		| otherwise = replacement ++ drop (S.length bestvalue) l
-	  where
-		replacement = decodeBS $ S.drop (S.length prefix) $
-			S.take (S.length bestkey - S.length suffix) bestkey
-		(bestkey, bestvalue) = 
-			case maximumBy longestvalue insteadofs of
-				(ConfigKey k, ConfigValue v) -> (k, v)
-				(ConfigKey k, NoConfigValue) -> (k, mempty)
-		longestvalue (_, a) (_, b) = compare b a
-		insteadofs = filterconfig $ \case
-			(ConfigKey k, ConfigValue v) -> 
-				prefix `S.isPrefixOf` k &&
-				suffix `S.isSuffixOf` k &&
-				v `S.isPrefixOf` encodeBS l
-			(_, NoConfigValue) -> False
-		filterconfig f = filter f $
-			concatMap splitconfigs $ M.toList $ fullconfig repo
-		splitconfigs (k, vs) = map (\v -> (k, v)) (NE.toList vs)
-		(prefix, suffix) = ("url." , ".insteadof")
 	-- git supports URIs that contain unescaped characters such as
 	-- spaces. So to test if it's a (git) URI, escape those.
 	urlstyle v = isURI (escapeURIString isUnescapedInURI v)
@@ -147,3 +125,26 @@ parseRemoteLocation s knownurl repo = go
 	dosstyle = hasDrive
 	dospath = fromRawFilePath . fromInternalGitPath . toRawFilePath
 #endif
+
+insteadOfUrl :: String -> S.ByteString -> RepoFullConfig -> Maybe String
+insteadOfUrl u configsuffix fullcfg
+	| null insteadofs = Nothing
+	| otherwise = Just $ replacement ++ drop (S.length bestvalue) u
+  where
+	replacement = decodeBS $ S.drop (S.length configprefix) $
+		S.take (S.length bestkey - S.length configsuffix) bestkey
+	(bestkey, bestvalue) = 
+		case maximumBy longestvalue insteadofs of
+			(ConfigKey k, ConfigValue v) -> (k, v)
+			(ConfigKey k, NoConfigValue) -> (k, mempty)
+	longestvalue (_, a) (_, b) = compare b a
+	insteadofs = filterconfig $ \case
+		(ConfigKey k, ConfigValue v) -> 
+			configprefix `S.isPrefixOf` k &&
+			configsuffix `S.isSuffixOf` k &&
+			v `S.isPrefixOf` encodeBS u
+		(_, NoConfigValue) -> False
+	filterconfig f = filter f $
+		concatMap splitconfigs $ M.toList fullcfg
+	splitconfigs (k, vs) = map (\v -> (k, v)) (NE.toList vs)
+	configprefix = "url."

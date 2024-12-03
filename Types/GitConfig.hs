@@ -27,6 +27,7 @@ module Types.GitConfig (
 	proxyInheritedFields,
 	MkRemoteConfigKey,
 	mkRemoteConfigKey,
+	annexInsteadOfUrl,
 ) where
 
 import Common
@@ -35,7 +36,7 @@ import qualified Git.Config
 import qualified Git.Construct
 import Git.Types
 import Git.ConfigTypes
-import Git.Remote (isRemoteKey, isLegalName, remoteKeyToRemoteName)
+import Git.Remote (isRemoteKey, isLegalName, remoteKeyToRemoteName, insteadOfUrl)
 import Git.Branch (CommitMode(..))
 import Git.Quote (QuotePath(..))
 import Utility.DataUnits
@@ -497,16 +498,14 @@ extractRemoteGitConfig r remotename = do
 		, remoteAnnexClusterGateway = fromMaybe [] $
 			(mapMaybe (mkClusterUUID . toUUID) . words)
 				<$> getmaybe ClusterGatewayField
-		, remoteUrl = case Git.Config.getMaybe (mkRemoteConfigKey remotename (remoteGitConfigKey UrlField)) r of
-			Just (ConfigValue b)
-				| B.null b -> Nothing
-				| otherwise -> Just (decodeBS b)
-			_ -> Nothing
+		, remoteUrl = getremoteurl
 		, remoteAnnexP2PHttpUrl =
 			case Git.Config.getMaybe (mkRemoteConfigKey remotename (remoteGitConfigKey AnnexUrlField)) r of
 				Just (ConfigValue b) ->
 					parseP2PHttpUrl (decodeBS b)
-				_ -> Nothing
+				_ -> parseP2PHttpUrl
+					=<< annexInsteadOfUrl (fullconfig r)
+					=<< getremoteurl
 		, remoteAnnexShell = getmaybe ShellField
 		, remoteAnnexSshOptions = getoptions SshOptionsField
 		, remoteAnnexRsyncOptions = getoptions RsyncOptionsField
@@ -544,6 +543,11 @@ extractRemoteGitConfig r remotename = do
 		in Git.Config.getMaybe (mkRemoteConfigKey remotename k) r
 			<|> Git.Config.getMaybe (mkAnnexConfigKey k) r
 	getoptions k = fromMaybe [] $ words <$> getmaybe k
+	getremoteurl = case Git.Config.getMaybe (mkRemoteConfigKey remotename (remoteGitConfigKey UrlField)) r of
+		Just (ConfigValue b)
+			| B.null b -> Nothing
+			| otherwise -> Just (decodeBS b)
+		_ -> Nothing
 
 data RemoteGitConfigField
 	= CostField
@@ -742,3 +746,6 @@ remoteAnnexConfigEnd key = "annex-" <> key
 remoteConfig :: RemoteNameable r => r -> B.ByteString -> ConfigKey
 remoteConfig r key = ConfigKey $
 	"remote." <> encodeBS (getRemoteName r) <> "." <> key
+
+annexInsteadOfUrl :: RepoFullConfig -> String -> Maybe String
+annexInsteadOfUrl fullcfg loc = insteadOfUrl loc ".annexinsteadof" fullcfg

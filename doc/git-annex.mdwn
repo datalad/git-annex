@@ -1572,9 +1572,24 @@ Remotes are configured using these settings in `.git/config`.
   When this and the `remote.<name>.url` contain the same hostname,
   and this is an annex+http(s) url, and that is also a http(s) url,
   git-annex assumes that the same username and password can be used
-  for both urls. When password cacheing is configured, this allows
+  for both urls. When password caching is configured, this allows
   you to only be prompted once for a password when using both git and
   git-annex. See gitcredentials(7) for how to set up password caching.
+
+* `url.<base>.annexInsteadOf`
+
+  This works similarly to git's `url.<base>.pushInsteadOf`, rewriting
+  a remote url that starts with the value of this config to instead
+  start with `<base>`.
+
+  The rewritten url is used by git-annex for accessing the remote,
+  and works the same as `remote.<name>.annexUrl`, including supporting
+  annex+http urls.
+
+  Note that git-annex also supports git's `url.<base>.insteadOf`
+  configuration. When both are set, the remote's url is first rewritten
+  by insteadOf, and that rewritten url can then be further
+  rewritten using annexInsteadOf.
 
 * `remote.<name>.annex-uuid`
 

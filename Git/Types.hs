@@ -41,9 +41,9 @@ data RepoLocation
 
 data Repo = Repo
 	{ location :: RepoLocation
-	, config :: M.Map ConfigKey ConfigValue
+	, config :: RepoConfig
 	-- a given git config key can actually have multiple values
-	, fullconfig :: M.Map ConfigKey (NE.NonEmpty ConfigValue)
+	, fullconfig :: RepoFullConfig
 	-- remoteName holds the name used for this repo in some other
 	-- repo's list of remotes, when this repo is such a remote
 	, remoteName :: Maybe RemoteName
@@ -60,6 +60,10 @@ data Repo = Repo
 	-- when using this repository.
 	, repoPathSpecifiedExplicitly :: Bool
 	} deriving (Show, Eq, Ord)
+	
+type RepoConfig = M.Map ConfigKey ConfigValue
+
+type RepoFullConfig = M.Map ConfigKey (NE.NonEmpty ConfigValue)
 
 newtype ConfigKey = ConfigKey S.ByteString
 	deriving (Ord, Eq)

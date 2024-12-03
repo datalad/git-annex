@@ -1,5 +1,9 @@
 git-annex (10.20241203) UNRELEASED; urgency=medium
 
+  * Added config `url.<base>.annexInsteadOf` corresponding to git's
+    `url.<base>.pushInsteadOf`, to configure the urls to use for accessing
+    the git-annex repositories on a server without needing to configure
+    remote.name.annexUrl in each repository.
   * Work around git hash-object --stdin-paths's odd stripping of carriage
     return from the end of the line (some windows infection), avoiding
     crashing when the repo contains a filename ending in a carriage return.

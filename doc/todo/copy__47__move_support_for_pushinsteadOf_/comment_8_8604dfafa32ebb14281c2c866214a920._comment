@@ -10,11 +10,14 @@ The same way `remote.<name>.annexUrl` corresponds to
 `remote.<name>.pushUrl`.
 
 You would need to set 2 configs, but the separation is clear.
-And you could do it once in your global git config for whatever
+And you could set it once in your global git config for whatever
 servers you commonly use.
 
 Another benefit to is that the new `git-annex p2phttp` server
 needs annexUrl to be configured to a different url than the git url
 when using it. annexInsteadOf would let that be configured a
 single time for all urls on a given git server.
+
+Update: Implemented that. Let me know if you think it solves your problem
+well enough.
 """]]
