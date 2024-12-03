@@ -1,0 +1,4 @@
+Git Annex web app (started from KDE menu) is so slow that it's unusable, after any click, response time is some 30 seconds. It's so slow even on newly-created empty repository. Killing all git-annex processes doesn't help.
+
+Version: 10.20241031-1~ndall+1
+OS: KUbuntu 24.04
