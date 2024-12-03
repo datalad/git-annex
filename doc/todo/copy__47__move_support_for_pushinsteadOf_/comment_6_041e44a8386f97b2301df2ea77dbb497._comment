@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2024-12-03T15:48:52Z"
+ content="""
+git-annex does not currently use pushurl, and making it start to use it
+would be the same kind of potentially breaking change as making it start to
+use pushinsteadof.
+
+I get where you're coming from but just because a lot of people use
+pushinstead of that way does not mean that other people don't use it to
+redirect pushes to an entirely different clone of the repository.
+
+[Here](https://github.com/git/git/commit/697f652818f211aa48e3c007f25d6177647980c1)
+Junio calls using pushurl that way a "common mistake", so I guess he is
+seeing people do that. He does have a good point that with such a
+configuration refs/remotes/origin won't (usually) reflect the state of both
+repos.
+"""]]

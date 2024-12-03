@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2024-12-03T16:06:15Z"
+ content="""
+If git-annex used pushInsteadOf for sending content to a remote, should it
+also use it for dropping content from the remote? Dropping is quite far
+from pushing. Does it make sense to expect the user to generalize "push" to
+"arbitrary write access" when it comes to git-annex's interpretation of
+configuration settings that were designed for git?
+
+Granted, `git-annex push` can drop content from the remote when preferred
+content is configured to.
+"""]]
