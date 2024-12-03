@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2024-12-03T18:41:08Z"
+ content="""
+Tried in chromium, also seeing it block sometimes, though not always, on
+page loads.
+
+This seems rather similar to this old bug involving the same software:
+<https://github.com/yesodweb/wai/issues/146>
+But not I think quite the same, because that was caused by
+a long delay between clicks, and this happens when clicking immediately.
+
+The browser's network console shows a few ms for all resources to load,
+except the page itself which for some reason takes a log time.
+
+tcpdump shows that chromium does not send a request for that page until
+many seconds after the click. The response to the request is immediate.
+
+Before that point there is only some SYN/ACK traffic. Which looked a bit
+weird maybe.
+"""]]

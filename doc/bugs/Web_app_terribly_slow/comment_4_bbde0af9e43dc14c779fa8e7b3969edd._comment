@@ -1,0 +1,38 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2024-12-03T20:13:35Z"
+ content="""
+Looking at the network inspector, it seems more likely a given click stalls
+when there are multiple long polling requests ongoing at the same time
+(which show as "pending").
+
+So on a hunch, I disabled javascript in chromium. No more hangs.
+
+I suppose maybe chromium has a small pool of connections to the web server,
+and if all of those get blocked up doing long polling, and if it doesn't
+cancel those when navigating away from the page that made the long polling
+request, it could block?
+
+But why wouldn't it cancel them? The requests were made by the page it's
+navigating away from. Maybe it cancels them only once it's loaded the new
+page.
+
+I do think that's it though. When I open 2 tabs both to the webapp, 
+a request in one tab can be stalled, and pressing escape in the other tab,
+when it cancels the long polling requests, will unstall it.
+
+Amazingly, chromium is limited to 6 concurrent connections per server, with
+no way to configure it! And the front page of the webapp opens several
+long polling connections.
+
+In firefox, by comparison, the network inspector shows the long polling
+connections apparently disappear when navigating to a new page. But, there
+is a similar problem, when opening 2 tabs to the webapp, one can stall,
+due to the long polling connections open by the other tab.
+
+So, I think the solution to this will either need to involve some change
+to the long polling javascript, if there is some way to make chromium
+cancel the request when navigating away... Or it would need to replace the
+long polling with something else entirely.
+"""]]
