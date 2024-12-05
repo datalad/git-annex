@@ -74,13 +74,16 @@ jobs:
       - name: Set up system
         run: brew install libmagic pkg-config
 
-    {% elif ostype == "windows" %}
+    {% endif %}
+    {% if ostype == "windows" or ostype == "macos" %}
       - name: Setup Haskell
         uses: haskell/actions/setup@v2
         with:
           enable-stack: true
           stack-no-global: true
 
+    {% endif %}
+    {% if ostype == "windows" %}
       - name: Handle long filenames
         run: git config --system core.longpaths true
 

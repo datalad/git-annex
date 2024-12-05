@@ -47,6 +47,12 @@ jobs:
       - name: Set up system
         run: brew install libmagic pkg-config
 
+      - name: Setup Haskell
+        uses: haskell/actions/setup@v2
+        with:
+          enable-stack: true
+          stack-no-global: true
+
       - name: Determine git-annex ref to build
         run: |
           . .github/workflows/tools/set-build-commit
