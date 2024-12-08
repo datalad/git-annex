@@ -3,7 +3,7 @@ Being able to connect repositories peer to peer is nice, but only having tor as 
 What I am thinking would be nice to have for this is:
 
 1. Something like `git annex enable-p2p-socket`, which would configure the repository such that `git annex remotedaemon` listens on a unix socket somewhere under .git/annex for incoming p2p connections, which would be authenticated using the pairing process from `git annex p2p` just like when using the tor transport.
-2. A git remote `p2p-annex::<path-to-socket-file>`, which would connect to the unix socket and speak the p2p protocol with it.
+2. A git remote helper `p2p-annex::<path-to-socket-file>`, which would connect to the unix socket and speak the p2p protocol with it.
 
 With these two things in place it would be possible to use any transport to connect the socket files on two systems, including yggstack, fowl, or just netcat or socat (though unencrypted communication would be a bad idea).
 
