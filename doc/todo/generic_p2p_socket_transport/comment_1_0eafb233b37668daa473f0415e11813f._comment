@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/59541f50d845e5f81aff06e88a38b9de"
+ subject="comment 1"
+ date="2024-12-08T17:27:59Z"
+ content="""
+I suppose this wouldn't have to communicate over unix sockets either, it could also use stdin/stdout like `git annex shell p2pstdio`, but without skipping authentication, instead using the `git annex p2p` pairing process. Something like socat could then be used to connect those stdin/stdout's to a unix socket, tcp port, or whatever else.
+"""]]
