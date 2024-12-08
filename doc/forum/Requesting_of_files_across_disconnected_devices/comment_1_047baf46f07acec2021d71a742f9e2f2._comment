@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="vince@56a3a35e623d01b9236e911a9caff71eb367399b"
+ nickname="vince"
+ avatar="http://cdn.libravatar.org/avatar/e4b490f63f17c7b29f234f65b9b42699"
+ subject="we use something like that.. "
+ date="2024-12-08T20:34:35Z"
+ content="""
+we created Baobáxia, with a python layer on top of g-a that implement something like that:
+
+https://git-annex.branchable.com/design/requests_routing/
+
+
+"""]]
