@@ -1,0 +1,14 @@
+Being able to connect repositories peer to peer is nice, but only having tor as an option is quite limiting, especially considering that tor isn't that suitable for large file transfers. It would be nice if git-annex could be taught to use other transports as well (what I have in mind is [yggstack](https://github.com/yggdrasil-network/yggstack) or [fowl](https://github.com/meejah/fowl) (for fowl I had already opened a todo in the past: <https://git-annex.branchable.com/todo/Peer_to_peer_connection_purely_over_magic-wormhole/>), but there are probably others that could be used as well).
+
+What I am thinking would be nice to have for this is:
+
+1. Something like `git annex enable-p2p-socket`, which would configure the repository such that `git annex remotedaemon` listens on a unix socket somewhere under .git/annex for incoming p2p connections, which would be authenticated using the pairing process from `git annex p2p` just like when using the tor transport.
+2. A git remote `p2p-annex::<path-to-socket-file>`, which would connect to the unix socket and speak the p2p protocol with it.
+
+With these two things in place it would be possible to use any transport to connect the socket files on two systems, including yggstack, fowl, or just netcat or socat (though unencrypted communication would be a bad idea).
+
+My understanding is that the current tor p2p support is essentially a special case of the above, using a socket file in /var/lib/tor-annex and requiring a hidden service configuration in torrc on the server-side, while being limited to onion addresses on the client-side. In that sense this would just be a generalization and I think most of the code to support this is already there, and just needs to be wired differently.
+
+This should also make it possible to build e.g. a `git annex enable-yggstack` and `yggstack-annex::<pubkey>.pk.ygg` remote in terms of enable-p2p-socket and `p2p-annex::`, even outside of git-annex itself.
+
+What do you think?
