@@ -1,0 +1,8 @@
+Ayo.. hi there.. Love git-annex!
+
+We are using git-annex as a backend for an asynchronous network.. we have multiple repositories in the same machines/nodes and we'd like to use the same uuid to identify these nodes.
+
+Each time we clone an existing g-a repository it creates a new uuid. Right now we have to reinit with the existing uuid and set the newly created uuid as dead.
+
+Is it possible to prevent this stillborn?
+
