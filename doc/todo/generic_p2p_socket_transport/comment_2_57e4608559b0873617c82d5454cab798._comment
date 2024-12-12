@@ -1,0 +1,45 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2024-12-12T17:01:42Z"
+ content="""
+This was all designed to be generalizable to some degree, but has so far
+really only been used for tor.
+
+Making it generic may be a good idea. Or it may be that there are really
+too many complications around how different p2p networks and addresses work
+and how authentication is done, that would complicate a generic command,
+but that can be transparently handled when implementing support for a
+specific p2p transport, as was done for tor.
+
+Working from the client end, the git remote has an url, which needs to be
+identified as a p2p address to use a p2p transport to talk to it. Currently
+that is an url starting with "tor-annex:". Like you suggest,
+the generic one could be "p2p-annex::<path-to-socket-file>". Or it could be
+"p2p-annex::foo+<bar>" which causes git-annex to run a command like
+`git-annex-p2p-foo <bar>` and talk to its stdin and stdout.
+
+That's for outgoing connections. For incoming connections, 
+for tor, the remotedaemon looks to see if the socket file exists and
+if so it accepts connections from it. (That tor socket is not used for
+outgoing connections.) It would be easy to generalize this
+to additional socket filenames. Eg, a remote with uuid U could use
+`.git/annex/p2p/U` as its socket file.
+
+BTW, that git-annex-p2p-foo command is different from the git remote
+helper you suggest, which corresponds to git-remote-tor-annex. But, 
+git-remote-tor-annex would easily generalize to a
+git-remote-p2p-annex git remote helper, if there was a generic
+p2p-annex url type and a way to connect to it.
+
+If the P2P protocol's AUTH is provided with an AuthToken, there would need
+to be an interface to record the one to use for a given p2p connection.
+`git-annex p2p` handles setting up AuthTokens, but its approach may or may
+not make sense for a given p2p protocol. It does look like, if there's a
+generic way implemented to connect to a given p2p-annex url, `git-annex
+p2p` would mostly work. But there would need to be a way to generate an
+address using such an url, like `git-annex enable-tor` does.
+
+Seems pretty close to a workable design to me, but I don't know how well it
+will match up with these various kinds of P2P networks.
+""]]
