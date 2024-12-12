@@ -1,5 +1,5 @@
 I create a preferred content expression for a host by running `git annex wanted . <some expression>` for a test. Now I want to clear this completely. However, if I manually delete the `preferred-content.log`, every time I do a sync it pops back up.
 
-How can I just delete this completely so it stays deleted? One of the reasons I want to clear this is since `git annex sync` behavior is changing to start doing `sync --content` by default.
+How can I just delete this completely so it stays deleted? One of the reasons I want to clear this is since `git annex sync` behavior is changing to start doing `sync --content` by default. I know that having it as standard should be effectively the same, but there's gotta be a way to completely undo it.
 
 
