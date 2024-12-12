@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-12-12T18:27:08Z"
+ content="""
+The automatic union merging done to the git-annex branch does not allow
+deleting files from it without heroic measures.
+Anyway, the current content of the config file remains stored in the git
+history even if it gets deleted.
+
+Just set it to "anything". That, not "standard" is the actual default.
+"""]]
