@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Doable8234"
+ avatar="http://cdn.libravatar.org/avatar/b0d5fea745f92c3b8cc8ecc3dafa6278"
+ subject="comment 2"
+ date="2024-12-13T02:04:39Z"
+ content="""
+I tried setting it to `anything`, I still get the warning `git-annex sync will change default behavior in the future to send content to repositories that have preferred content configured. If you do not want this to send any content, use --no-content (or -g) to prepare for that change.`. My guess is that this means that git annex will start trying to sync content in the future (and see that there's nothing to do). I'd prefer having it not try to sync content at all. (I do know that setting annex.synccontent to true does exactly that)
+
+One thing is that I'm a git afficionado, and I DID go through some heroic measures and I'm VERY surprised that this is still happening and can't understand it. I even tried squashing all the commits in the git-annex branch into one, and git-annex STILL somehow managed to bring the preferred-content.log back.
+
+I can share a script to show what I did if that helps. I'm mostly just looking to understand how this is possible since I just can't figure it out.
+"""]]
