@@ -1,0 +1,83 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/59541f50d845e5f81aff06e88a38b9de"
+ subject="comment 3"
+ date="2024-12-13T22:02:14Z"
+ content="""
+Your comment seems to be wrongly formatted. It was shown correctly in the notification mail, but doesn't show up here.
+
+---
+
+Just to document what I have tried out, for completeness: with what is already in place it is possible to connect two repositories over yggstack, it is just very awkward.
+
+On one system you can do:
+
+- `sudo mkdir /etc/tor && sudo touch /etc/tor/torrc` (without actually having tor installed)
+- `sudo git annex enable-tor $(id -u)`
+- `yggstack -genconf > yggstack.conf`
+- `echo tor-annex::<pubkey>.pk.ygg:12345` (take the pubkey out of yggstack.conf)
+- `socat TCP-LISTEN:12345,fork,reuseaddr UNIX-CONNECT:/var/lib/tor-annex/<uid>_<repo-uuid>/s`
+- `yggstack -useconffile yggstack.conf -remote-tcp 12345:127.0.0.1:12345`
+- `git annex p2p --gen-addresses`
+
+On the other system do:
+
+- `yggstack -autoconf -socks 127.0.0.1:9050`
+- `git annex p2p --link` and paste in the generated address when asked (it should have the form `tor-annex::<pubkey>.pk.ygg:12345:<auth-token>`)
+
+On the server side this simply exposes the p2p socket generated for tor through a different means, and on the client side this works because yggstack can be used similarly enough to tor (doing name resolution through the socks proxy at port 9050 and then connecting the supplied port).
+
+---
+
+I really like your proposal of a `p2p-annex::foo+<whatever>` remote; together with a way to tell remotedaemon to start a process exposing the socket it would make for an easily extendable mechanism. Imagine this:
+
+Client side:
+
+- `p2p-annex::foo+<addr>` would start `git-annex-p2p-foo <addr>` and talk to its stdin/stdout.
+
+Server side:
+
+- A configuration option `annex.start-p2psocket=true` would instruct remotedaemon to listen on .git/annex/p2psocket (I think a hardcoded location is fine, as there only really needs to be one such socket even with multiple networks, and somewhere under .git/annex is a good location to associate it with the repository and will always be writable by the user).
+- A configuration option `annex.expose-p2p-via=foo` that could be supplied zero, one, or multiple times, and each of these configurations would instruct remotedaemon to start the external program git-annex-p2ptransport-foo after the p2p socket is ready (this configuration could also just point to a command to execute, but I thought it might be nice to stay with the theme of commonly prefixed programs).
+
+With these things in place a third-party package git-annex-p2p-yggstack could provide a simple set of shell scripts to implement transport over yggstack:
+
+For the server side there would be a `git-annex-p2ptransport-yggstack` along these lines (modulo proper process cleanup of course):
+
+```
+socat TCP-LISTEN:12345,fork,reuseaddr UNIX-CONNECT:.git/annex/p2psocket &
+yggstack -useconffile .git/annex/p2ptransport/yggstack/yggstack.conf -remote-tcp 12345:127.0.0.1:12345
+```
+
+and a `git-annex-p2ptransport-enable-yggstack` like this:
+
+```
+git config --local annex.start-p2psocket true
+git config --local --add annex.expose-p2p-via yggstack
+if [ ! -f .git/annex/p2ptransport/yggstack/yggstack.conf ]; then
+    yggstack -genconf > .git/annex/p2ptransport/yggstack/yggstack.conf
+fi
+echo \"p2p-annex::yggstack+<pubkey-from-yggstack.conf>.pk.ygg:12345\" >> .git/annex/creds/p2paddrs
+```
+
+For the client-side it would provide `git-annex-p2p-yggstack` along these lines:
+
+```
+yggstack -autoconf -socks 127.0.0.1:1080
+nc -X 5 -x 127.0.0.1:1080 <pubkey>.pk.ygg 12345
+```
+
+With that package installed one could then do `git annex p2ptransport enable-yggstack` followed by `git annex p2p --gen-addresses`. A `git annex remotedaemon` would now start everything on the server-side, and the client-side could connect using `git annex p2p --link` with the address from `--gen-addresses`.
+
+---
+
+I think this would be sufficiently flexible for most kinds of p2p transport one could come up with. E.g. a transport over fowl or even plain magic-wormhole (though the transit relay wouldn't appreciate it) could use `p2p-annex::fowl+<code>` where the code is a pre-generated token instead of the usual passphrases used by magic-wormhole. The server side would be a script that repeatedly waits for connections to that code, the client side just connects to it.
+
+Even for more traditional p2p setups (tinc, wireguard, yggdrasil, etc.) where the transport is pre-set up at the system level this would just work if there was a helper for `p2p-annex::tcpip+<hostname>:<port>` (effectively just netcat again).
+
+---
+
+Configuration, program, and subcommand names etc. are of course open to bike-shedding. Some of the hardcoded ports above should be dynamically chosen, or completely avoided if the transport can do so (yggstack and fowl can't expose unix sockets directly yet, so the digression through the loopback device is needed for now).
+
+What do you think?
+"""]]
