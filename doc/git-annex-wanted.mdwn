@@ -13,10 +13,15 @@ to be held in the repository. See [[git-annex-preferred-content]](1)
 
 For example:
 
-	git annex wanted . "include=*.mp3 or include=*.ogg"
+	git annex wanted here "include=*.mp3 or include=*.ogg"
 
 Without an expression, displays the current preferred content setting
 of the repository.
+
+To return a repository to the original default behavior, use an empty
+value for the expression, eg:
+
+    git-annex wanted here ""
 
 # OPTIONS
 

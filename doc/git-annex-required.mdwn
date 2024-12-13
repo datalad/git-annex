@@ -11,10 +11,6 @@ git annex required `repository [expression]`
 When run with an expression, configures the content that is required
 to be held in the repository.
 
-For example:
-
-	git annex required . "include=*.mp3 or include=*.ogg"
-
 Without an expression, displays the current required content setting
 of the repository.
 
@@ -25,6 +21,15 @@ need to be removed with `git annex drop --force`.
 
 Also, `git-annex fsck` will warn about required contents that are not
 present.
+
+For example:
+
+	git annex required here "include=*.mp3 or include=*.ogg"
+
+To return a repository to the original default behavior, use an empty
+value for the expression, eg:
+
+    git-annex required here ""
 
 # OPTIONS
 
