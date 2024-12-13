@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2024-12-13T16:52:18Z"
+ content="""
+Ah, you're right that this future change in `git-annex sync` behavior is
+one way that "anything" is different from not configured.
+
+It turns out that you can just use `git-annex wanted here ""` to get back
+the same behavior as the preferred content being unset. I had forgotten
+about that, and it was not really documented anywhere, which I've
+corrected.
+
+Running `git-annex sync` without --content with preferred content set to ""
+currently warns about the transition, but that warning is false. I'm fixing
+it to not warn in this case.
+
+As to the heroic measures, .git/annex/index gets merged into whatever is in
+the git-annex branch, so you need to delete that file as well as rewriting
+the branch. And you need to do this in every single repository that has
+received the unwanted change. And since it also auto-merges git-annex
+branches from remotes, you probably will want to temporarily remove the
+remote tracking branches from git's ref list.
+"""]]

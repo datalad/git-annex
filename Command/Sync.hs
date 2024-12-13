@@ -85,6 +85,7 @@ import Utility.Bloom
 import Utility.OptParse
 import Utility.Process.Transcript
 import Utility.Tuple
+import Utility.Matcher
 
 import Control.Concurrent.MVar
 import qualified Data.Map as M
@@ -1130,7 +1131,7 @@ warnSyncContentTransition o remotes
 		_ -> do
 			m <- preferredContentMap
 			hereu <- getUUID
-			when (any (`M.member` m) (hereu:map Remote.uuid remotes)) $
+			when (any (preferredcontentconfigured m) (hereu:map Remote.uuid remotes)) $
 				showwarning
   where
 	showwarning = earlyWarning $
@@ -1140,6 +1141,8 @@ warnSyncContentTransition o remotes
 		<> " send any content, use --no-content (or -g)"
 		<> " to prepare for that change."
 		<> " (Or you can configure annex.synccontent)"
+	preferredcontentconfigured m u = 
+		maybe False (not . isEmpty . fst) (M.lookup u m)
 
 notOnlyAnnex :: SyncOptions -> Annex Bool
 notOnlyAnnex o = not <$> onlyAnnex o

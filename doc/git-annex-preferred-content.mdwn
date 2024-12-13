@@ -30,6 +30,9 @@ a file matches, the repository wants to store its content. If it doesn't,
 the repository wants to drop its content (if there are enough copies
 elsewhere to allow removing it).
 
+An empty preferred content expression is treated the same as preferred
+content not being configured.
+
 # EXPRESSIONS
 
 * `include=glob` / `exclude=glob`
