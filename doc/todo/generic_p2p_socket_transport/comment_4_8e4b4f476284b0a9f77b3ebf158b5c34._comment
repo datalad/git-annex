@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/cd1c0b3be1af288012e49197918395f0"
+ subject="comment 4"
+ date="2024-12-15T18:13:00Z"
+ content="""
+One more thought: the proposed `p2p-annex::foo+<addr>` remote makes one assumption that I don't think holds for all thinkable p2p transports. That assumption is that there is a public address for the server-side that can be trusted to be the expected other side.
+
+For tor and yggstack this does hold: the public address (onion address of the hidden service for tor and the IPv6 derived from the public key of the yggstack peer (potentially resolved from a .pk.ygg DNS entry like above), respectively) ensures that the server side is who they are expected to be. There is no way for a third-party to pretend that they were the server-side, even if they knew the git remote string, because they would need to have the servers private key to do so.
+
+This is not the case for fowl: with fowl one would essentially do `fowl <psk> ...` on both sides to create a tunnel between server and client. If the PSK were fully contained in the remote string then a third-party getting hold of that string could pretend to be the server (when the server side is currently not waiting for a connection itself) and steal the auth token from the client. So under the assumption that the remote string is not a secret this would be a problem.
+
+But this problem can be overcome: with fowl both sides could simply derive the psk from the p2p auth token to establish the connection, essentially like so: `fowl <number derived from auth token>-<auth token> ...`. The git remote string would only need to contain the information to use fowl and some unique identifier for the remote then, so that the right auth token can be taken from .git/annex/creds.
+
+Likewise, for other p2p transports that don't have stable and secure public addresses, necessary information exchange could also happen over magic-wormhole using the auth tokens, or the auth tokens could be used as PSKs between both sides if that's what the transport needs. This would e.g. apply for a hypothetical transport over webrtc data channels, where some kind of \"SDP\" has to be exchanged between both sides to establish a connection.
+
+---
+
+All that to say: I think `p2p-annex::foo+` would indeed be general enough for many conceivable means of transport, if a re-use of the auth tokens in the above fashion would be acceptable. And I can't think of anything against it, yet.
+"""]]
