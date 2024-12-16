@@ -1,0 +1,76 @@
+### Please describe the problem.
+
+Following the installation instructions for android (termux), I get an error while sourcing git-annex-install:
+
+```
+Running on Android.. Tuning for optimal behavior.
+sed: can't read /data/data/com.termux/files/home/git-annex.linux/git-remote-annex: No such file or directory
+```
+
+I can confirm that git-remote-annex is indeed missing in that directory.
+
+### What steps will reproduce the problem?
+
+```
+pkg install wget
+wget https://git-annex.branchable.com/install/Android/git-annex-install
+source git-annex-install
+```
+
+### What version of git-annex are you using? On what operating system?
+
+None yet x) and on a freshly updated termux.
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+~ $ wget https://git-annex.branchable.com/install/Android/git-annex-install
+source git-annex-install
+--2024-12-16 23:01:13--  https://git-annex.branchable.com/install/Android/git-annex-install
+Resolving git-annex.branchable.com (git-annex.branchable.com)... 2600:3c03::f03c:91ff:fedf:c0e5, 66.228.46.55
+Connecting to git-annex.branchable.com (git-annex.branchable.com)|2600:3c03::f03c:91ff:fedf:c0e5|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 1470 (1.4K)
+Saving to: ‘git-annex-install’
+
+git-annex-ins 100%   1.44K  --.-KB/s    in 0s
+
+2024-12-16 23:01:14 (194 MB/s) - ‘git-annex-install’ saved [1470/1470]
+
+Installing dependencies with termux pkg manager...
+Checking availability of current mirror:
+[*] https://ftp.fau.de/termux/termux-main: ok
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+git is already the newest version (2.47.1).
+wget is already the newest version (1.25.0).
+tar is already the newest version (1.35).
+coreutils is already the newest version (9.5-3).
+proot is already the newest version (5.1.107-65).
+0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+Downloading git-annex...
+--2024-12-16 23:01:14--  https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-arm64-ancient.tar.gz
+Resolving downloads.kitenet.net (downloads.kitenet.net)... 2600:3c03::f03c:91ff:fe73:b0d2, 66.228.36.95
+Connecting to downloads.kitenet.net (downloads.kitenet.net)|2600:3c03::f03c:91ff:fe73:b0d2|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 57553624 (55M) [application/x-gzip]
+Saving to: ‘STDOUT’
+
+-             100%  54.89M  8.16MB/s    in 11s
+
+2024-12-16 23:01:25 (5.18 MB/s) - written to stdout [57553624/57553624]
+
+Running on Android.. Tuning for optimal behavior.
+sed: can't read /data/data/com.termux/files/home/git-annex.linux/git-remote-annex: No such file or directory
+
+[Process completed (code 2) - press Enter]
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
