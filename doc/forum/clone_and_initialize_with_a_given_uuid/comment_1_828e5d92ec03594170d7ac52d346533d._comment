@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/cd1c0b3be1af288012e49197918395f0"
+ subject="comment 1"
+ date="2024-12-16T22:19:34Z"
+ content="""
+It _looks_ like you can just set annex.uuid before the first `git annex init` to achieve this:
+
+```
+git init / git clone
+git config annex.uuid 00000000-0000-0000-0000-000000000003
+git annex init
+```
+
+But I would say that doing so is ill-advised. You can set a description for each repository and give the remotes descriptive names instead. If you use shared UUIDs you will run into an issue if it ever happens that two of those repositories become connected.
+"""]]
