@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Doable8234"
+ avatar="http://cdn.libravatar.org/avatar/b0d5fea745f92c3b8cc8ecc3dafa6278"
+ subject="comment 2"
+ date="2024-12-16T08:20:43Z"
+ content="""
+I've thought about this exact use case, though I never actually used it yet. One simple way to do this could be by using git annex preferred content settings. In the nodes that push out content, all you need to do is set up a cron job for `git annex sync --content`. Now you can make it push content wherever you want by adjusting the preferred content settings.
+"""]]

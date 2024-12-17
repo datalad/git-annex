@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Doable8234"
+ avatar="http://cdn.libravatar.org/avatar/b0d5fea745f92c3b8cc8ecc3dafa6278"
+ subject="comment 1"
+ date="2024-12-16T08:24:31Z"
+ content="""
+I've absolutely no idea about the relative difficulty of implementing these, but it sounds to me like your second part `It would also perhaps be good to detect when matching options are used that don't make sense, and error out on commands like git-annex find --not or git-annex find -and -(` might actually be more important than the first!
+"""]]

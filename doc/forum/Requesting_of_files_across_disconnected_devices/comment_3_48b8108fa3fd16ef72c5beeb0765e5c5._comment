@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/cd1c0b3be1af288012e49197918395f0"
+ subject="comment 3"
+ date="2024-12-16T22:48:16Z"
+ content="""
+There is a standard group called \"transfer\" which is meant for this kind of thing: <https://git-annex.branchable.com/preferred_content/standard_groups/>. This is especially applicable if there is a static preferred content expression that can be written for each repository (i.e. no ad-hoc gets, just something more structured).
+
+To make it more dynamic you could include a match on a metadata tag in a repositories preferred content expression. Requesting a file would then be setting the tag on it (well, and a bunch of syncing in all repositories). 
+"""]]

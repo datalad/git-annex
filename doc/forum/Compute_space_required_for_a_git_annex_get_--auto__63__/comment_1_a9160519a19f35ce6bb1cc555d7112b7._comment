@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/cd1c0b3be1af288012e49197918395f0"
+ subject="comment 1"
+ date="2024-12-15T23:39:33Z"
+ content="""
+Something like this should get you the answer: `git annex info --fast . --not --in here --and --want-get` (adapted from the example here: <https://git-annex.branchable.com/git-annex-info/>).
+"""]]
