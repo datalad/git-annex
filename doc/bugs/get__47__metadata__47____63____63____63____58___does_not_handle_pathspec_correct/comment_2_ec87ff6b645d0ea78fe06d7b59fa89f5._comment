@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2024-12-18T23:45:32Z"
+ content="""
+You can accomplish the same thing as that pathspec with
+`--include=*.nii.gz` and it works on all git-annex commands and
+is a much richer language than git's pathspecs that can do a lot more
+besides.
+
+So, I think it would be redundant to support git's pathspecs, and am going
+to close this bug.
+"""]]
