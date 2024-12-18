@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2024-12-18T23:40:52Z"
+ content="""
+Aha, --include and --exclude options work with --branch. So:
+
+	git annex get --branch e6888f70ed97099f83a77d5bcf3372a9a75a2b5e^ --include=*/*.nii.gz'
+
+No need for git's pagespecs when we have [[git-annex-matching-options]]!
+"""]]

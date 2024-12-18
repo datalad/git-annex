@@ -6,3 +6,5 @@ yoh@typhon:/mnt/DATA/data/yoh/1076_spacetop$ git annex get --branch e6888f70ed97
 git-annex: Can only specify one of file names, --all, --branch, --unused, --failed, --key, or --incomplete
 
 ```
+
+> [[closing|done]] --[[Joey]] 
