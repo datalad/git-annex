@@ -1,0 +1,53 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-12-18T17:11:33Z"
+ content="""
+The "did not match any file(s) known to git" message is output by git, not
+git-annex.
+
+I tracked down why git-annex uses --literal-pathspecs. In 
+[[!commit f35d0bf4b2d7ada897b66620ff94d4068badd90b]], a particular
+problem mentioned is that `git-annex add *.jpeg`, in a case where there
+are no such files, would add `foo/bar.jpeg` due to git ls-files default
+behavior:
+
+	joey@darkstar:~/tmp/a1>git ls-files --others *.jpeg
+	subdir/bar.jpeg
+
+Which was very surprising and did not seem desirable for `git-annex add`.
+(Let alone for a command like `git-annex drop --force`!)
+
+Although `git add` does in fact behave that way, which surprised me:
+
+	joey@darkstar:~/tmp/a1>touch subdir/foo.txt
+	joey@darkstar:~/tmp/a1>git add '*.txt'
+	joey@darkstar:~/tmp/a1>git status
+	On branch master
+	Changes to be committed:
+	  (use "git restore --staged <file>..." to unstage)
+		new file:   subdir/foo.txt
+
+`git add` is documented to behave that way, as are some other commands
+like `git rm` (!). But git-annex is not, its commands are documented to
+operate on filenames or paths. So I don't think this is really a bug.
+
+As to providing a way to enable non-literal pathspecs, since git
+has `GIT_GLOB_PATHSPECS` and `GIT_ICASE_PATHSPECS`, checking for those
+and removing --literal-pathspecs would be one way. But then it risks
+unexpected behavior if the git-annex version is too old. So a command-line
+option seems maybe better.
+
+But, I do consider it an implementation detail that git-annex uses 
+`git ls-files` for some commands. Who knows, there may eventually be a
+reason to change that. Making this configurable would lock in use of
+ls-files. 
+
+There are also situations where git-annex does not use ls-files, which
+would all need to be covered in the documentation when implementing this.
+The one that comes to mind is `--batch` which doesn't recurse
+trees at all.
+
+Of course, `git ls-files <pathspec> | git-annex foo --batch` is a way you
+can operate on a pathspec without any changes.
+"""]]
