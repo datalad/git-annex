@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2024-12-19T15:31:59Z"
+ content="""
+Note that for --no-content imports, it will not be possible for mimetype=
+and mimeencoding= expressions to match.
+
+So if addunlocked is set to such an expression, it will not match and will
+add the file locked. Does not seem like a blocker.
+"""]]

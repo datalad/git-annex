@@ -107,9 +107,10 @@ buildImportCommit
 	:: Remote
 	-> ImportTreeConfig
 	-> ImportCommitConfig
+	-> AddUnlockedMatcher
 	-> Imported
 	-> Annex (Maybe Ref)
-buildImportCommit remote importtreeconfig importcommitconfig imported =
+buildImportCommit remote importtreeconfig importcommitconfig addunlockedmatcher imported =
 	case importCommitTracking importcommitconfig of
 		Nothing -> go Nothing
 		Just trackingcommit -> inRepo (Git.Ref.tree trackingcommit) >>= \case
@@ -117,7 +118,7 @@ buildImportCommit remote importtreeconfig importcommitconfig imported =
 			Just _ -> go (Just trackingcommit)
   where
 	go trackingcommit = do
-		(importedtree, updatestate) <- recordImportTree remote importtreeconfig imported
+		(importedtree, updatestate) <- recordImportTree remote importtreeconfig (Just addunlockedmatcher) imported
 		buildImportCommit' remote importcommitconfig trackingcommit importedtree >>= \case
 			Just finalcommit -> do
 				updatestate
@@ -132,10 +133,11 @@ buildImportCommit remote importtreeconfig importcommitconfig imported =
 recordImportTree
 	:: Remote
 	-> ImportTreeConfig
+	-> Maybe AddUnlockedMatcher
 	-> Imported
 	-> Annex (History Sha, Annex ())
-recordImportTree remote importtreeconfig imported = do
-	importedtree@(History finaltree _) <- buildImportTrees basetree subdir imported
+recordImportTree remote importtreeconfig addunlockedmatcher imported = do
+	importedtree@(History finaltree _) <- buildImportTrees basetree subdir addunlockedmatcher imported
 	return (importedtree, updatestate finaltree)
   where
 	basetree = case importtreeconfig of
@@ -177,7 +179,7 @@ recordImportTree remote importtreeconfig imported = do
 			}
 		return oldexport
 
-	-- downloadImport takes care of updating the location log
+	-- importKeys takes care of updating the location log
 	-- for the local repo when keys are downloaded, and also updates
 	-- the location log for the remote for keys that are present in it.
 	-- That leaves updating the location log for the remote for keys
@@ -283,11 +285,12 @@ buildImportCommit' remote importcommitconfig mtrackingcommit imported@(History t
 buildImportTrees
 	:: Ref
 	-> Maybe TopFilePath
+	-> Maybe AddUnlockedMatcher
 	-> Imported
 	-> Annex (History Sha)
-buildImportTrees basetree msubdir (ImportedFull imported) = 
-	buildImportTreesGeneric convertImportTree basetree msubdir imported
-buildImportTrees basetree msubdir (ImportedDiff (LastImportedTree oldtree) imported) = do
+buildImportTrees basetree msubdir addunlockedmatcher (ImportedFull imported) = 
+	buildImportTreesGeneric (convertImportTree addunlockedmatcher) basetree msubdir imported
+buildImportTrees basetree msubdir addunlockedmatcher (ImportedDiff (LastImportedTree oldtree) imported) = do
 	importtree <- if null (importableContents imported)
 		then pure oldtree
 		else applydiff
@@ -312,7 +315,7 @@ buildImportTrees basetree msubdir (ImportedDiff (LastImportedTree oldtree) impor
 			oldtree
 	
 	mktreeitem (loc, DiffChanged v) = 
-		Just <$> mkImportTreeItem msubdir loc v
+		Just <$> mkImportTreeItem addunlockedmatcher msubdir loc v
 	mktreeitem (_, DiffRemoved) = 
 		pure Nothing
 
@@ -320,17 +323,26 @@ buildImportTrees basetree msubdir (ImportedDiff (LastImportedTree oldtree) impor
 		
 	isremoved (_, v) = v == DiffRemoved
 
-convertImportTree :: Maybe TopFilePath -> [(ImportLocation, Either Sha Key)] -> Annex Tree
-convertImportTree msubdir ls = 
-	treeItemsToTree <$> mapM (uncurry $ mkImportTreeItem msubdir) ls
+convertImportTree :: Maybe AddUnlockedMatcher -> Maybe TopFilePath -> [(ImportLocation, Either Sha Key)] -> Annex Tree
+convertImportTree maddunlockedmatcher msubdir ls = 
+	treeItemsToTree <$> mapM (uncurry $ mkImportTreeItem maddunlockedmatcher msubdir) ls
 
-mkImportTreeItem :: Maybe TopFilePath -> ImportLocation -> Either Sha Key -> Annex TreeItem
-mkImportTreeItem msubdir loc v = case v of
-	Right k -> do
-		relf <- fromRepo $ fromTopFilePath topf
-		symlink <- calcRepo $ gitAnnexLink relf k
-		linksha <- hashSymlink symlink
-		return $ TreeItem treepath (fromTreeItemType TreeSymlink) linksha
+mkImportTreeItem :: Maybe AddUnlockedMatcher -> Maybe TopFilePath -> ImportLocation -> Either Sha Key -> Annex TreeItem
+mkImportTreeItem maddunlockedmatcher msubdir loc v = case v of
+	Right k -> case maddunlockedmatcher of
+		Nothing -> mklink k
+		Just addunlockedmatcher -> do
+			objfile <- calcRepo (gitAnnexLocation k)
+			let mi = MatchingFile FileInfo
+				{ contentFile = objfile
+				, matchFile = getTopFilePath topf
+				, matchKey = Just k
+				}
+			ifM (checkAddUnlockedMatcher NoLiveUpdate addunlockedmatcher mi)
+				( mkpointer k
+				, mklink k
+				)
+				
 	Left sha -> 
 		return $ TreeItem treepath (fromTreeItemType TreeFile) sha
   where
@@ -338,6 +350,13 @@ mkImportTreeItem msubdir loc v = case v of
 	treepath = asTopFilePath lf
 	topf = asTopFilePath $
 		maybe lf (\sd -> getTopFilePath sd P.</> lf) msubdir
+	mklink k = do
+		relf <- fromRepo $ fromTopFilePath topf
+		symlink <- calcRepo $ gitAnnexLink relf k
+		linksha <- hashSymlink symlink
+		return $ TreeItem treepath (fromTreeItemType TreeSymlink) linksha
+	mkpointer k = TreeItem treepath (fromTreeItemType TreeFile)
+		<$> hashPointerFile k
 
 {- Builds a history of git trees using ContentIdentifiers.
  -
@@ -604,8 +623,8 @@ getLastImportedTree remote = do
  - generates Keys without downloading.
  -
  - Generates either a Key or a git Sha, depending on annex.largefiles.
- - But when importcontent is False, it cannot match on annex.largefiles
- - (or generate a git Sha), so always generates Keys.
+ - But when importcontent is False, it cannot generate a git Sha, 
+ - so always generates Keys.
  -
  - Supports concurrency when enabled.
  -

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-12-18T19:24:38Z"
+ content="""
+Turns out that while `git-annex import` from a directory does support
+addunlocked, this was forgotten about when implementing the newer special
+remote tree import.
+
+I agree that this should be supported.
+"""]]

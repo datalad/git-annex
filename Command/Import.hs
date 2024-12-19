@@ -147,8 +147,10 @@ seek o@(RemoteImportOptions {}) = startConcurrency commandStages $ do
 		(pure Nothing)
 		(Just <$$> inRepo . toTopFilePath . toRawFilePath)
 		(importToSubDir o)
+	addunlockedmatcher <- addUnlockedMatcher
 	seekRemote r (importToBranch o) subdir (importContent o) 
 		(checkGitIgnoreOption o)
+		addunlockedmatcher
 		(messageOption o)
 
 startLocal :: ImportOptions -> AddUnlockedMatcher -> GetFileMatcher -> DuplicateMode -> (RawFilePath, RawFilePath) -> CommandStart
@@ -322,8 +324,8 @@ verifyExisting key destfile (yes, no) = do
 	verifyEnoughCopiesToDrop [] key Nothing Nothing needcopies mincopies [] preverified tocheck
 		(const yes) no
 
-seekRemote :: Remote -> Branch -> Maybe TopFilePath -> Bool -> CheckGitIgnore -> [String] -> CommandSeek
-seekRemote remote branch msubdir importcontent ci importmessages = do
+seekRemote :: Remote -> Branch -> Maybe TopFilePath -> Bool -> CheckGitIgnore -> AddUnlockedMatcher -> [String] -> CommandSeek
+seekRemote remote branch msubdir importcontent ci addunlockedmatcher importmessages = do
 	importtreeconfig <- case msubdir of
 		Nothing -> return ImportTree
 		Just subdir ->
@@ -337,7 +339,7 @@ seekRemote remote branch msubdir importcontent ci importmessages = do
 	trackingcommit <- fromtrackingbranch Git.Ref.sha
 	cmode <- annexCommitMode <$> Annex.getGitConfig
 	let importcommitconfig = ImportCommitConfig trackingcommit cmode importmessages'
-	let commitimport = commitRemote remote branch tb trackingcommit importtreeconfig importcommitconfig
+	let commitimport = commitRemote remote branch tb trackingcommit importtreeconfig importcommitconfig addunlockedmatcher
 
 	importabletvar <- liftIO $ newTVarIO Nothing
 	void $ includeCommandAction (listContents remote importtreeconfig ci importabletvar)
@@ -383,10 +385,10 @@ listContents' remote importtreeconfig ci a =
 			, err
 			]
 
-commitRemote :: Remote -> Branch -> RemoteTrackingBranch -> Maybe Sha -> ImportTreeConfig -> ImportCommitConfig -> Imported -> CommandStart
-commitRemote remote branch tb trackingcommit importtreeconfig importcommitconfig imported =
+commitRemote :: Remote -> Branch -> RemoteTrackingBranch -> Maybe Sha -> ImportTreeConfig -> ImportCommitConfig -> AddUnlockedMatcher -> Imported -> CommandStart
+commitRemote remote branch tb trackingcommit importtreeconfig importcommitconfig addunlockedmatcher imported =
 	starting "update" ai si $ do
-		importcommit <- buildImportCommit remote importtreeconfig importcommitconfig imported
+		importcommit <- buildImportCommit remote importtreeconfig importcommitconfig addunlockedmatcher imported
 		next $ updateremotetrackingbranch importcommit
   where
 	ai = ActionItemOther (Just $ UnquotedString $ fromRef $ fromRemoteTrackingBranch tb)

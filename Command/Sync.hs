@@ -53,6 +53,7 @@ import Annex.Path
 import Annex.Wanted
 import Annex.Content
 import Annex.WorkTree
+import Annex.FileMatcher
 import Command.Get (getKey')
 import qualified Command.Move
 import qualified Command.Export
@@ -77,7 +78,6 @@ import Annex.CurrentBranch
 import Annex.Import
 import Annex.CheckIgnore
 import Annex.PidLock
-import Types.FileMatcher
 import Types.GitConfig
 import Types.Availability
 import qualified Database.Export as Export
@@ -580,7 +580,8 @@ importRemote importcontent o remote currbranch
 			let (branch, subdir) = splitRemoteAnnexTrackingBranchSubdir b
 			if canImportKeys remote importcontent
 				then do
-					Command.Import.seekRemote remote branch subdir importcontent (CheckGitIgnore True) []
+					addunlockedmatcher <- addUnlockedMatcher
+					Command.Import.seekRemote remote branch subdir importcontent (CheckGitIgnore True) addunlockedmatcher []
 					-- Importing generates a branch
 					-- that is not initially connected
 					-- to the current branch, so allow
@@ -607,7 +608,7 @@ pullThirdPartyPopulated o remote
   where
 	go (Just importable) = importChanges remote ImportTree False True importable >>= \case
 		ImportFinished imported -> do
-			(_t, updatestate) <- recordImportTree remote ImportTree imported
+			(_t, updatestate) <- recordImportTree remote ImportTree Nothing imported
 			next $ do
 				updatestate
 				return True

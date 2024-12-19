@@ -48,6 +48,10 @@ The following terms can be used:
 
   The MIME types are the same that are displayed by running `file --mime-type`
 
+  This only matches when the content of the file is present in the local
+  repository. Usually that is the case, but eg, when importing from a
+  special remote with --no-content, the content is usually not present.
+
   This is only available to use when git-annex was built with the
   MagicMime build flag.
 
@@ -59,6 +63,10 @@ The following terms can be used:
   files.
 
   The MIME encodings are the same that are displayed by running `file --mime-encoding`
+
+  This only matches when the content of the file is present in the local
+  repository. Usually that is the case, but eg, when importing from a
+  special remote with --no-content, the content is usually not present.
 
   This is only available to use when git-annex was built with the
   MagicMime build flag.
