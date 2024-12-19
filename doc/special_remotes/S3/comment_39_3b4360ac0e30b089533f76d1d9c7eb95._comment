@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Basile.Pinsard"
+ avatar="http://cdn.libravatar.org/avatar/87e1f73acf277ad0337b90fc0253c62e"
+ subject="Sync git-annex metadata subset with S3 metadata."
+ date="2024-12-18T19:34:59Z"
+ content="""
+How feasible would it be to be able to configure the remote so that a git-annex metadata get pushed to the S3 with the objects.
+Something like `sync-meta=mymetafield` that would set `x-amz-meta-mymetafield=` to the value of `git-annex metadata -g mymetafield --key theobjectkey`, whenever the data is pushed to the S3. 
+Thanks! 
+"""]]

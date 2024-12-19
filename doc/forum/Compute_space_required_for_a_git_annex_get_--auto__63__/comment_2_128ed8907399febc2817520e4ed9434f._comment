@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="eugen"
+ avatar="http://cdn.libravatar.org/avatar/7e7e5700d7017735fd00c2dfcd3f91e4"
+ subject="thank you!"
+ date="2024-12-18T18:01:03Z"
+ content="""
+I've just got the chance to test it and yes, that command works. I didn't know about the `--want-get` flag ( git-annex-matching-options(1) ). Also the `--fast` flag for the `git annex info` would make me run that command more often now :).
+Thanks!
+"""]]
