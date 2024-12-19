@@ -1,0 +1,50 @@
+[[!comment format=mdwn
+ username="psxvoid"
+ avatar="http://cdn.libravatar.org/avatar/fde068fbdeabeea31e3be7aa9c55d84b"
+ subject="unset directory is cool feature, but not always work"
+ date="2024-12-19T17:49:52Z"
+ content="""
+Hi,
+
+First of all thanks a lot for implementing this feature!
+
+I was trying to combine tag-filter with a path-filter, though it doesn't do what I was expecting.
+
+## Case 1: When I filter by a directory + vadd tag then it kind of works
+
+```shell
+git annex view 'dir-a/dir-b/dir-c/?=*'
+git annex vadd tag?=*
+```
+
+Notice: `_` (unset dir) is showing after running `git annex view 'dir-a/dir-b/dir-c/?=*'` command.
+But I'm getting \"path too long\" on `10.20241031` in vadd.
+
+## Case 2: When I do it like this (no paths too long errors)
+
+```shell
+git annex view tag?=* 'dir-a/dir-b/dir-c/?=*'
+```
+
+It produces something like this:
+
+```
+/tag-a/
+      dir-c-child-1
+      dir-c-child-2
+/tag-b/
+     dir-c-child-1
+     dir-c-child-2
+```
+
+It does filter directories as expected except `_` (unset directory) is missing from the root and subdirectories.
+
+## Case 3: it behaves 1:1 as case 2 (no paths too long errors)
+
+```shell
+git annex view 'dir-a/dir-b/dir-c/=*'
+git annex view tag?=*
+```
+
+The last case should illustrate why I need this - I want to have a list of files limited by path `dir-a/dir-b/dir-c/` (which also preserve subdirectories in `dir_c`, which I also need), and then I want to group directories by tag INCLUDING \"unset tag dir\" in order to then assign tags to subfolders of `dir_c` (for those that aren't already have tags). But despite I specified `tag?=*` (notice the question mark), the \"unset dir\" does not appear.
+"""]]
