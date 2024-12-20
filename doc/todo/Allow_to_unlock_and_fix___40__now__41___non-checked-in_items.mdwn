@@ -17,6 +17,3 @@ Yes, there is git annex diffdriver but it is a barrier to write a script for it.
 It would be a quality-of-life improvement if `git annex unlock` and `git annex fix` would do their job regardless whether the file is checked in to git or not. After all, the many git annex commands are hard to memorize in addition to the many git commands there already are, and this would make their usage more orthogonal to other commands  and thus easier to understand.
 
 
-
-# Add local directors
-git annex 
