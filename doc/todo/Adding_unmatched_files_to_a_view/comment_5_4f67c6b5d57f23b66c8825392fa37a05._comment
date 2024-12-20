@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="psxvoid"
+ avatar="http://cdn.libravatar.org/avatar/fde068fbdeabeea31e3be7aa9c55d84b"
+ subject="update: unset directory is cool feature, but not always work"
+ date="2024-12-20T06:52:56Z"
+ content="""
+After fixing long paths and running:
+
+```shell
+git annex view ?tag tag=tag-a tag=tag-b 'dir-a/dir-b/dir-c/=*'
+```
+
+it does exactly what I need, and produces:
+
+```
+/
+ _/
+  dir-c-children-c
+ tag-a/
+       dir-c-children-a
+ tag-b/
+       dir-c-children-b
+```
+
+Haven't tried to use it with `tag=*` but for now it's even better as I'm mostly interested in `tag-a` and `tag-b`.
+"""]]
