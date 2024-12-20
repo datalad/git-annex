@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="psxvoid"
+ avatar="http://cdn.libravatar.org/avatar/fde068fbdeabeea31e3be7aa9c55d84b"
+ subject="update 3: strange union behavior"
+ date="2024-12-20T07:12:59Z"
+ content="""
+After closer inspection of the view described in the previous comment, seems like the content of `_` is NOT pure union of \"all except tag-a and tag-b\".
+
+I was hoping that the content of \"unset dir\" will be `_ = dir-c-children - (tag-a ∪ dir-c-children)∪(tag-b ∪ dir-c-children)`.
+Or simply `_ = (dir-c-children ∪ !(tag-a ∪ tag-b)`.
+
+But what I'm observing is that `_` contains some dir-c-children that are also part of `tag-b` but not `tag-c` (`_ = dir-c-children ∪ !(tag-a)`).
+"""]]
