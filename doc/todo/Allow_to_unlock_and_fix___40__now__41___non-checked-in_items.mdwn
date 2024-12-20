@@ -1,0 +1,22 @@
+git annex requires files to be checked in to git before allowing the "unlock" and "fix" operation.
+
+This makes things needlessly complicated in non-orthodox usage situations.
+
+Example 1: The inadvertently added files. 
+
+I add my directory to git annex, only to see some files that I do not want to add. In my case, it was the VSCode Remote Host Extension, which is not relevant for the reproducibility of my analysis. I Ctrl-C the adding process, and by `git rm -r --cached` undo the adding process, and commit. Then I add the directory to .gitignore.
+
+Yes, I know, I should have unlocked the added files first, but I forgot. Now I cannot do it anymore, because "git annex unlock IGNORED_FOLDER" says "pathspec "..." did not match any files known to git". But the solution is so simple, just copy the annex'ed content back to the original location. No information needs to be transmitted to git. I have do do it using a custom `find IGNORED_FOLDER -type l -execdir '....'` command. It would be awesome if git annex would just be graceful that (especially new) users can make such kind of mistakes and just unlock the ignored files. 
+
+Example 2: Moving annex'ed files
+
+I want to compare two versions of a file. Maybe they have complicated history, so one of the files was in another folder. I restore the file from an earlier commit using `git checkout -- commit:file`. I move the old analysis to the new location temporarily to be able to diff them without typing all the folder names etc. Now I need to update the symlink target of the old, temporarily-checked-out file but `git annex fix` does not do it because it is not checked into git. I had this use-case in an analysis where I wanted to compare two result outputs, but the folder structure has changed in the meantime.
+
+Yes, there is git annex diffdriver but it is a barrier to write a script for it. It pays off but sometimes you need a simple solution to start and you need to focus on your problem at hand instead of on git annex details. I consider it would be easy for git annex fix to fix up the symlink target without any knowledge from git. Just update the number of (`../`s) in the symlink so that it matches again the position of the `.git` directory. 
+
+It would be a quality-of-life improvement if `git annex unlock` and `git annex fix` would do their job regardless whether the file is checked in to git or not. After all, the many git annex commands are hard to memorize in addition to the many git commands there already are, and this would make their usage more orthogonal to other commands  and thus easier to understand.
+
+
+
+# Add local directors
+git annex 
