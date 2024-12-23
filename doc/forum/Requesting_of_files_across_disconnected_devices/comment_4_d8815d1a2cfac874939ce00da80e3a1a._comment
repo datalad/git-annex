@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="aaron"
+ avatar="http://cdn.libravatar.org/avatar/8a07e2f7af4bbf1bfcb48bbc53e00747"
+ subject="comment 4"
+ date="2024-12-23T16:11:29Z"
+ content="""
+I think this would be more like an extension/evolution of the 'transfer' group, as the 'transfer' group removes content when there are more than 'x' number of copies in the 'client' group (or whatever other group its configured to check). You did get me thinking though, this might be able to be done by having the requester increase 'x' by one such that the 'transfer' groups pick the file up again so that the client can download it (and maybe then reduce the number? not sure on that). The cron job is a good point; probably have the always on devices run it periodically to ensure the network learns of new requests and slowly distributes out the data.
+"""]]
