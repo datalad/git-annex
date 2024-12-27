@@ -1,0 +1,3 @@
+As we use git annex, each key gets a bunch of files created in the git annex branch, typically named `aaa/bbb/<hash>.xyz`
+
+When I delete files with this particular key, sometimes I'd like to prune these completely. I understand enough of git annex internals to do this myself with shell commands, but curious if this is something others(particularly Joey) have given any thought (or scripts) to.
