@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="psxvoid"
+ avatar="http://cdn.libravatar.org/avatar/fde068fbdeabeea31e3be7aa9c55d84b"
+ subject="Workaround for WSL2 on Windows"
+ date="2024-12-31T05:49:31Z"
+ content="""
+Seems like a huge repository (mine is around 500GB) is barely feasible for git-annex on crippled filesystems. The workaround I'm currently using - is creating `.vhdx` virtual drives on Windows, attaching them to WSL2 and formatting as ZFS. Then I use it from WSL2. I've also made them available to Windows through FUSE `bindfs --resolve-symlinks` + samba share. This setup works almost all the time, except some programs (on Windows side) can't scan some directories with lots of files on samba due to timeouts. Though, it works perfectly inside the WSL2.
+
+There are other downsides as well:
+
+- files can't be accessed on a system without WSL2
+- `.vhdx` sometimes grows in size, and it's not always easy to shrink it back
+
+What is probably feasibly on `ExFAT` especially on Linux - is using [nlinkfs](https://github.com/rene/nlinkfs) which can simulate symlinks on crippled file systems. In theory it might even be possible to build it for Windows and use with Dokan. But I haven't tried it.
+"""]]
