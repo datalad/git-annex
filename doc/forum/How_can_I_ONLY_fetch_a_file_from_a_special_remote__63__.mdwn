@@ -1,0 +1,3 @@
+What I mean is that I just want to effectively fetch the file contents from the special remote but without actually persisting them to the git annex repo.
+
+My usecase is that I have a git annex repo in a cloud server with limited space backed by something like a huge S3 bucket. I now want to fuse mount this repo and access it's contents as needed while using git annex to manage files. I could ask git annex where the files are and then invoke that myself, but at that point I might as well manage it myself.
