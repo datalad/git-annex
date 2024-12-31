@@ -1,0 +1,34 @@
+[[!comment format=mdwn
+ username="psxvoid"
+ avatar="http://cdn.libravatar.org/avatar/fde068fbdeabeea31e3be7aa9c55d84b"
+ subject="Update: rename in separate commits"
+ date="2024-12-31T12:36:02Z"
+ content="""
+Managed to find a semi-satisfactory approach to solve this rename problem:
+
+1. rename files with `git mv`
+2. commit with `--no-verify` (e.g. `git commit --no-verify`)
+
+Now, renamed symlinks should be broken, because we skip `git annex` hooks with `--no-verify`.
+
+To fix it for the last commit, run:
+
+```shell
+git show --name-status --oneline HEAD | grep R100 | cut -f3 | xargs -L 1 git annex fsck --fast -q
+```
+
+And then do a commit again with whatever message you like (mine is `git commit -m \"Fix git-annex symlinks\"`).
+
+There are a couple of inconveniences here:
+
+1. There are more commands to run instead of just `git commit`
+2. In the git log now additional \"plumming\" commits
+
+Hoverer, #2 is pretty easy to solve by running:
+
+```shell
+git log --invert-grep --grep=\"Fix git[- ]annex symlinks\" -i
+```
+
+Though, not sure yet how to deal with #1 - probably there is a way to automate it.
+"""]]
