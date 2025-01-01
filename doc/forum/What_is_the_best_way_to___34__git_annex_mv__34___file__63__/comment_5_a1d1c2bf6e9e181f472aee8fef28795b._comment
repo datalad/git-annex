@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="psxvoid"
+ avatar="http://cdn.libravatar.org/avatar/fde068fbdeabeea31e3be7aa9c55d84b"
+ subject="ViFM Plugin Which Partially Solves The Issue"
+ date="2024-12-31T06:16:08Z"
+ content="""
+I wrote a proof of concept [plugin](https://github.com/psxvoid/vifm-git-mv) for [ViFM](https://github.com/vifm/vifm) which allows to move files around and replace `mv` command for such moves with `git mv`. It partially solves the issue - git detects such moves as renames. But because git annex makes \"fixup\" for symbolic links in pre-commit hook, then git detects file change as well. A workaround to this might be separating those operations into two commits - one with rename and another one with symlink fixup. However, I wish it were possible to do this in a cleaner way.
+"""]]
