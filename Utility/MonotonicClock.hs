@@ -10,11 +10,7 @@
 
 module Utility.MonotonicClock where
 
-#if MIN_VERSION_clock(0,3,0)
 import qualified System.Clock as Clock
-#else
-import qualified System.Posix.Clock as Clock
-#endif
 #ifdef linux_HOST_OS
 import Utility.Exception
 #endif

@@ -7,7 +7,6 @@ dependencies and is self-contained.
 
 * x86-64: [download tarball](https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-amd64.tar.gz)
 * x86-32: [download tarball](https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-i386.tar.gz)
-* x86-32, for ancient kernels: [download tarball](https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-i386-ancient.tar.gz)
 * arm: [download tarball](https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-armel.tar.gz)
 * arm64: [download tarball](https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-arm64.tar.gz)
 * arm64, for ancient kernels: [download tarball](https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-arm64-ancient.tar.gz)
@@ -27,11 +26,6 @@ linux systems.
 * [[tips/Synology_NAS_and_git_annex]]
 * [[forum_thread|forum/new_linux_arm_tarball_build]]
 
-The x86-32 build for ancient kernels is for use with Linux kernel
-versions such as 2.6.32. It will work on both 32 and 64 bit systems.
-This build does not support some of git-annex's newer features,
-notably [[smart_http|tips/smart_http_server]].
-
 The arm64 build for ancient kernels is for Linux kernels such as 4.19,
 which is still in use on Android phones.
 
@@ -41,7 +35,6 @@ An hourly autobuild is also available, hosted by [[Joey]]:
 
 * x86-64: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/amd64/git-annex-standalone-amd64.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/amd64/))
 * x86-32: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/i386/git-annex-standalone-i386.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/i386/))
-* x86-32, for ancient kernels: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/i386-ancient/git-annex-standalone-i386-ancient.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/i386-ancient/))
 * arm64: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/arm64/git-annex-standalone-arm64.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/arm64/))
 * arm64, for ancient kernels: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/arm64-ancient/git-annex-standalone-arm64-ancient.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/arm64-ancient/))
 

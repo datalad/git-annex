@@ -25,7 +25,7 @@ case $(uname -m) in
 		arch=amd64
 		;;
 	x86_32)
-		arch=i386-ancient
+		arch=i386
 		;;
 	*) 
 		echo "unknown architecture $(uname -m), cannot install" >&2

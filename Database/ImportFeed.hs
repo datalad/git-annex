@@ -6,17 +6,14 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE QuasiQuotes, TypeFamilies, TypeOperators, TemplateHaskell #-}
 {-# LANGUAGE OverloadedStrings, GADTs, FlexibleContexts, EmptyDataDecls #-}
 {-# LANGUAGE MultiParamTypeClasses, GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE DataKinds, FlexibleInstances #-}
 {-# LANGUAGE UndecidableInstances #-}
-#if MIN_VERSION_persistent_template(2,8,0)
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE StandaloneDeriving #-}
-#endif
 
 module Database.ImportFeed (
 	ImportFeedDbHandle,

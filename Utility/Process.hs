@@ -219,21 +219,7 @@ waitForProcess h = do
 	return r
 
 cleanupProcess :: (Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle) -> IO () 
-#if MIN_VERSION_process(1,6,4)
 cleanupProcess = Utility.Process.Shim.cleanupProcess
-#else
-cleanupProcess (mb_stdin, mb_stdout, mb_stderr, pid) = do
-	-- Unlike the real cleanupProcess, this does not wait
-	-- for the process to finish in the background, so if
-	-- the process ignores SIGTERM, this can block until the process
-	-- gets around the exiting.
-	terminateProcess pid
-	let void _ = return ()
-	maybe (return ()) (void . tryNonAsync . hClose) mb_stdin
-	maybe (return ()) hClose mb_stdout
-	maybe (return ()) hClose mb_stderr
-	void $ waitForProcess pid
-#endif
 
 {- | Like hGetLine, reads a line from the Handle. Returns Nothing if end of
  - file is reached, or the handle is closed, or if the process has exited

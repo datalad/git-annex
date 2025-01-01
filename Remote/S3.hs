@@ -366,12 +366,8 @@ storeHelper info h magic f object p = liftIO $ case partSize info of
 		resp <- sendS3Handle h req
 		vid <- mkS3VersionID object
 			<$> extractFromResourceT (S3.porVersionId resp)
-#if MIN_VERSION_aws(0,22,0)
 		etag <- extractFromResourceT (Just (S3.porETag resp))
 		return (etag, vid)
-#else
-		return (Nothing, vid)
-#endif
 	multipartupload fsz partsz = runResourceT $ do
 		contenttype <- liftIO getcontenttype
 		let startreq = (S3.postInitiateMultipartUpload (bucket info) object)
@@ -751,11 +747,7 @@ rewritePreconditionException a = catchJust (Url.matchStatusCodeException want) a
 storeExportWithContentIdentifierS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> Maybe Magic -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex ContentIdentifier
 storeExportWithContentIdentifierS3 hv r rs info magic src k loc _overwritablecids p
 	| versioning info = go
-#if MIN_VERSION_aws(0,22,0)
 	| otherwise = go
-#else
-	| otherwise = giveup "git-annex is built with too old a version of the aws library to support this operation"
-#endif
   where
 	go = storeExportS3' hv r rs info magic src k loc p >>= \case
 		(_, Just vid) -> return $
@@ -1370,11 +1362,7 @@ getS3VersionIDPublicUrls mk info rs k =
 -- setting versioning in a bucket that git-annex has already exported
 -- files to risks losing the content of those un-versioned files.
 enableBucketVersioning :: SetupStage -> S3Info -> ParsedRemoteConfig -> RemoteGitConfig -> UUID -> Annex ()
-#if MIN_VERSION_aws(0,21,1)
 enableBucketVersioning ss info c gc u = do
-#else
-enableBucketVersioning ss info _ _ _ = do
-#endif
 	case ss of
 		Init -> when (versioning info) $
 			enableversioning (bucket info)
@@ -1382,7 +1370,6 @@ enableBucketVersioning ss info _ _ _ = do
 		AutoEnable oldc -> checkunchanged oldc
   where
 	enableversioning b = do
-#if MIN_VERSION_aws(0,21,1)
 		showAction "checking bucket versioning"
 		hdl <- mkS3HandleVar c gc u
 		let setversioning = S3.putBucketVersioning b S3.VersioningEnabled
@@ -1400,15 +1387,6 @@ enableBucketVersioning ss info _ _ _ = do
 								++ T.unpack (S3.s3ErrorMessage err)
 #else
 			void $ liftIO $ runResourceT $ sendS3Handle h setversioning
-#endif
-#else
-		showLongNote $ unlines
-			[ "This version of git-annex cannot auto-enable S3 bucket versioning."
-			, "You need to manually enable versioning in the S3 console"
-			, "for the bucket \"" ++ T.unpack b ++ "\""
-			, "https://docs.aws.amazon.com/AmazonS3/latest/user-guide/enable-versioning.html"
-			, "It's important you enable versioning before storing anything in the bucket!"
-			]
 #endif
 
 	checkunchanged oldc = do

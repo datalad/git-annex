@@ -5,8 +5,6 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Utility.Tor (
 	OnionPort,
 	OnionAddress(..),
@@ -51,12 +49,8 @@ connectHiddenService (OnionAddress address) port = do
 	return s
   where
 	torsocksport = 9050
-#if MIN_VERSION_socks(0,6,0)
 	torsockconf = defaultSocksConf $ SockAddrInet torsocksport $
 		tupleToHostAddress (127,0,0,1)
-#else
-	torsockconf = defaultSocksConf "127.0.0.1" torsocksport
-#endif
 	socksdomain = SocksAddrDomainName (BU8.fromString address)
 	socksaddr = SocksAddress socksdomain (fromIntegral port)
 

@@ -12,7 +12,6 @@
  -}
 
 {-# LANGUAGE BangPatterns #-}
-{-# LANGUAGE CPP #-}
 
 module Utility.TList (
 	TList,
@@ -45,11 +44,7 @@ newTList = newEmptyTMVar
 headTList :: TList a -> STM a
 headTList tlist = do
 	dl <- takeTMVar tlist
-#if MIN_VERSION_dlist(1,0,0)
 	let !dl' = D.fromList $ D.tail dl
-#else
-	let !dl' = D.tail dl
-#endif
 	unless (emptyDList dl') $
 		putTMVar tlist dl'
 	return (D.head dl)

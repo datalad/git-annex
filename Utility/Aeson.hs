@@ -7,7 +7,7 @@
  - License: BSD-2-clause
  -}
 
-{-# LANGUAGE FlexibleInstances, TypeSynonymInstances, CPP #-}
+{-# LANGUAGE FlexibleInstances, TypeSynonymInstances #-}
 
 module Utility.Aeson (
 	module X,
@@ -21,9 +21,7 @@ module Utility.Aeson (
 import Data.Aeson as X (decode, eitherDecode, parseJSON, FromJSON, Object, object, Value(..), (.=), (.:), (.:?))
 import Data.Aeson hiding (encode)
 import qualified Data.Aeson
-#if MIN_VERSION_aeson(2,0,0)
 import qualified Data.Aeson.Key as AK
-#endif
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified Data.ByteString.Lazy as L
@@ -73,13 +71,8 @@ packString s = case T.decodeUtf8' (encodeBS s) of
 	Right t -> t
 	Left _ -> T.pack s
 
-#if MIN_VERSION_aeson(2,0,0)
 textKey :: T.Text -> AK.Key
 textKey = AK.fromText
-#else
-textKey :: T.Text -> T.Text
-textKey = id
-#endif
 
 -- | The same as packString . decodeBS, but more efficient in the usual
 -- case.

@@ -12,10 +12,8 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE DataKinds, FlexibleInstances #-}
 {-# LANGUAGE UndecidableInstances #-}
-#if MIN_VERSION_persistent_template(2,8,0)
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE StandaloneDeriving #-}
-#endif
 
 module Database.ContentIdentifier (
 	ContentIdentifierHandle,

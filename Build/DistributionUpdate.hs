@@ -39,7 +39,7 @@ signingKey = "89C809CB"
 -- it in the repository.
 autobuilds :: [(URLString, FilePath)]
 autobuilds = 
-	(map linuxarch ["i386", "amd64", "armel", "arm64", "i386-ancient", "arm64-ancient"]) ++
+	(map linuxarch ["i386", "amd64", "armel", "arm64", "arm64-ancient"]) ++
 	[ (autobuild "x86_64-apple-catalina/git-annex.dmg", "git-annex/OSX/current/10.15_Catalina/git-annex.dmg")
 	, (autobuild "windows/git-annex-installer.exe", "git-annex/windows/current/git-annex-installer.exe")
 	]

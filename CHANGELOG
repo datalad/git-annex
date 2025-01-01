@@ -13,6 +13,12 @@ git-annex (10.20241203) UNRELEASED; urgency=medium
     transition when preferred content is set to "".
   * Honor annex.addunlocked configuration when importing a tree from a
     special remote.
+  * Removed the i386ancient standalone tarball build for linux, which
+    was increasingly unable to support new git-annex features.
+  * Removed support for building with ghc older than 9.0.2,
+    and with older versions of haskell libraries than are in current Debian
+    stable.
+  * stack.yaml: Update to lts-23.2.
 
  -- Joey Hess <id@joeyh.name>  Mon, 02 Dec 2024 13:41:31 -0400
 

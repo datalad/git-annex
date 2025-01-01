@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE OverloadedStrings, GADTs, CPP #-}
+{-# LANGUAGE OverloadedStrings, GADTs #-}
 
 module Messages.JSON (
 	JSONBuilder,
@@ -35,11 +35,7 @@ import Control.Applicative
 import qualified Data.Map as M
 import qualified Data.Vector as V
 import qualified Data.ByteString.Lazy as L
-#if MIN_VERSION_aeson(2,0,0)
 import qualified Data.Aeson.KeyMap as HM
-#else
-import qualified Data.HashMap.Strict as HM
-#endif
 import System.IO
 import System.IO.Unsafe (unsafePerformIO)
 import Control.Concurrent

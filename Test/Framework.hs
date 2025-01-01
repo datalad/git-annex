@@ -5,8 +5,6 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Test.Framework where
 
 import Test.Tasty
@@ -858,13 +856,7 @@ initTestsName :: String
 initTestsName = "Init Tests"
 
 tastyParser :: [TestTree] -> ([String], Parser Test.Tasty.Options.OptionSet)
-#if MIN_VERSION_tasty(1,3,0)
-tastyParser ts = go
-#else
-tastyParser ts = ([], go)
-#endif
-  where
- 	go = suiteOptionParser ingredients (topLevelTestGroup ts)
+tastyParser ts = suiteOptionParser ingredients (topLevelTestGroup ts)
 
 ingredients :: [Ingredient]
 ingredients =
