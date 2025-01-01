@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 1"""
- date="2022-10-26T18:53:40Z"
- content="""
-Using this command instead should work:
-
-	sudo /home/gyurmo/.local/git-annex.linux/git-annex enable-tor 1000
-"""]]

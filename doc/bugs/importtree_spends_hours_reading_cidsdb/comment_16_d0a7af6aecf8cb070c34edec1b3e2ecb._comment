@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 16"""
- date="2023-06-06T18:43:50Z"
- content="""
-I did try making the permissions of a file not allow it to be read, and so
-reproduced the "Failed to import some files from source." That didn't
-change the sync time appreciably (with or without content syncing).
-"""]]

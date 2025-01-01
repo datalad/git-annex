@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="Chris"
- avatar="http://cdn.libravatar.org/avatar/02b67b7ebace8cb6433504ba9a17d4a4"
- subject="comment 2"
- date="2018-10-20T08:09:40Z"
- content="""
-Hm, IMHO such a “dry-run” flag would be most beneficial for better understanding the preferred/required content settings and try their effect while working on finding the right expression. Therefore, the “drop”, “get” and “sync --content” commands would benefit from such a flag, especially in combination with flags such as “--auto”. Maybe it's just me, but I am not able to utilize the “find” command in a way that it respects preferred content and numcopies and further settings in the same way as the three commands above would do, and testing preferred content expressions is therefore a blind flight.
-"""]]

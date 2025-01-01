@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 6"""
- date="2023-03-31T16:55:49Z"
- content="""
-What if I made git-annex send "EXTENSIONS PROTOCOLVERSION2"? Then
-you could reply to EXPORTSUPPORTED with EXPORTSUPPORTED-FAILURE
-when used by a buggy git-annex.
-"""]]

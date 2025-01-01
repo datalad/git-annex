@@ -1,257 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 1"""
- date="2023-05-30T17:53:48Z"
- content="""
-Hm. I have tried to reproduce this with a git-annex instrumented to log
-each time it accesses the cidsdb. 
-
-I have not tried with the full 150k files, only with 10000, but have no
-reason to think it wouldn't have the same cidsbd access pattern with more
-files.
-
-What I found is, there was no access to the cidsdb after it finished the
-"import source" part of the sync.
-
-But, if I then run git-annex sync a second time, it behaves much more
-like you describe. It does not display "import source" for any files,
-because no files have changed. And it hits the cidsdb twice per file.
-Once is the necessary call to getContentIdentifierKeys, which is how it
-determines it's seen a file before and doesn't need to import it a second
-time. 
-
-The other hit is recordContentIdentifier, which happens for
-each recorded cid, due to updateFromLog. That seems unnecessary, because
-the previous sync already recorded all the cids.
-
-So I think a 2x speedup should be possible to repeated syncs when most of
-the files have not changed, but either I am missing something to reproduce
-your problem, or half the overhead is due to git-annex determining when it's
-already imported files before, which is unavoidable.
-
-Importing trees from special remotes is simply not going to be able to
-scale to huge numbers of files. Using a git repository is always gonna be
-able to perform better. (But of course hits its own scalability limits
-eventually.) This is a more general mechanism, and so many of
-the approaches git uses to speed up are not available.
-
-Here's the script I used.
-
-	#!/bin/sh
-	NFILES=$1
-	mkdir bench
-	cd bench
-	mkdir d
-	perl -e 'for(1..'$NFILES') { open(OUT,">", "d/f$_"); print OUT $_; close OUT }'
-	git init r
-	cd r
-	git config annex.thin true
-	git annex init 'local hub'
-	git annex wanted . "include=* and exclude=testdata/*"
-	touch mtree
-	git annex add mtree
-	git annex sync
-	git annex adjust --unlock-present
-	git annex initremote source type=directory directory=../d importtree=yes encryption=none
-	git annex enableremote source directory=../d
-	git config remote.source.annex-readonly true
-	git config remote.source.annex-tracking-branch master:testdata
-	git config annex.securehashesonly true
-	git config annex.genmetadata true
-	git config annex.diskreserve 100M
-	git annex sync
-	echo sync complete
-
-Here's the output when run with just 10 files, which shows that cidsdb
-access stops after it finishes "import source":
-
-	May 30 13:56:57 Initialized empty Git repository in /home/joey/tmp/bench/r/.git/
-	May 30 13:56:57 init local hub ok
-	May 30 13:56:57 (recording state in git...)
-	May 30 13:56:57 wanted . ok
-	May 30 13:56:57 (recording state in git...)
-	May 30 13:56:57 add mtree 
-	May 30 13:56:57 ok
-	May 30 13:56:57 (recording state in git...)
-	May 30 13:56:57 commit  
-	May 30 13:56:57 [master (root-commit) 5ae9d8a] git-annex in local hub
-	May 30 13:56:57  1 file changed, 1 insertion(+)
-	May 30 13:56:57  create mode 120000 mtree
-	May 30 13:56:57 ok
-	May 30 13:56:57 adjust  
-	May 30 13:56:57 Switched to branch 'adjusted/master(unlockpresent)'
-	May 30 13:56:57 ok
-	May 30 13:56:58 initremote source ok
-	May 30 13:56:58 (recording state in git...)
-	May 30 13:56:58 enableremote source ok
-	May 30 13:56:58 (recording state in git...)
-	May 30 13:56:58 commit  
-	May 30 13:56:58 On branch adjusted/master(unlockpresent)
-	May 30 13:56:58 nothing to commit, working tree clean
-	May 30 13:56:58 ok
-	May 30 13:56:58 list source ok
-	May 30 13:56:58 "getAnnexBranchTree"
-	May 30 13:56:58 "updateFromLog"
-	May 30 13:56:58 "recordAnnexBranchTree"
-	May 30 13:56:58 ("getContentIdentifierKeys",ContentIdentifier "13243577 1 1685469417 098840021")
-	May 30 13:56:58 import source f1 
-	May 30 13:56:58 100%  1 B               2 KiB/s 0s("recordContentIdentifier",MkKey {keyData = Key {keyName = "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b", keyVariety = SHA2Key (HashSize 256) (HasExt True), keySize = Just 1, keyMtime = Nothing, keyChunkSize = Nothing, keyChunkNum = Nothing}, keySerialization = "SHA256E-s1--6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"})
-	May 30 13:56:58                                   ok
-	May 30 13:56:58 ("getContentIdentifierKeys",ContentIdentifier "13285646 1 1685469417 098840021")
-	May 30 13:56:58 import source f8 
-	May 30 13:56:58 100%  1 B               2 KiB/s 0s("recordContentIdentifier",MkKey {keyData = Key {keyName = "2c624232cdd221771294dfbb310aca000a0df6ac8b66b696d90ef06fdefb64a3", keyVariety = SHA2Key (HashSize 256) (HasExt True), keySize = Just 1, keyMtime = Nothing, keyChunkSize = Nothing, keyChunkNum = Nothing}, keySerialization = "SHA256E-s1--2c624232cdd221771294dfbb310aca000a0df6ac8b66b696d90ef06fdefb64a3"})
-	May 30 13:56:58                                   ok
-	May 30 13:56:58 ("getContentIdentifierKeys",ContentIdentifier "13285641 1 1685469417 098840021")
-	May 30 13:56:58 import source f4 
-	May 30 13:56:58 100%  1 B               3 KiB/s 0s("recordContentIdentifier",MkKey {keyData = Key {keyName = "4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a", keyVariety = SHA2Key (HashSize 256) (HasExt True), keySize = Just 1, keyMtime = Nothing, keyChunkSize = Nothing, keyChunkNum = Nothing}, keySerialization = "SHA256E-s1--4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a"})
-	May 30 13:56:58                                   ok
-	May 30 13:56:58 ("getContentIdentifierKeys",ContentIdentifier "13285642 1 1685469417 098840021")
-	May 30 13:56:58 import source f5 
-	May 30 13:56:58 100%  1 B               3 KiB/s 0s("recordContentIdentifier",MkKey {keyData = Key {keyName = "ef2d127de37b942baad06145e54b0c619a1f22327b2ebbcfbec78f5564afe39d", keyVariety = SHA2Key (HashSize 256) (HasExt True), keySize = Just 1, keyMtime = Nothing, keyChunkSize = Nothing, keyChunkNum = Nothing}, keySerialization = "SHA256E-s1--ef2d127de37b942baad06145e54b0c619a1f22327b2ebbcfbec78f5564afe39d"})
-	May 30 13:56:58                                   ok
-	May 30 13:56:58 ("getContentIdentifierKeys",ContentIdentifier "13285648 2 1685469417 098840021")
-	May 30 13:56:58 import source f10 
-	May 30 13:56:58 100%  2 B               6 KiB/s 0s("recordContentIdentifier",MkKey {keyData = Key {keyName = "4a44dc15364204a80fe80e9039455cc1608281820fe2b24f1e5233ade6af1dd5", keyVariety = SHA2Key (HashSize 256) (HasExt True), keySize = Just 2, keyMtime = Nothing, keyChunkSize = Nothing, keyChunkNum = Nothing}, keySerialization = "SHA256E-s2--4a44dc15364204a80fe80e9039455cc1608281820fe2b24f1e5233ade6af1dd5"})
-	May 30 13:56:58                                   ok
-	May 30 13:56:58 ("getContentIdentifierKeys",ContentIdentifier "13285647 1 1685469417 098840021")
-	May 30 13:56:58 import source f9 
-	May 30 13:56:58 100%  1 B               4 KiB/s 0s("recordContentIdentifier",MkKey {keyData = Key {keyName = "19581e27de7ced00ff1ce50b2047e7a567c76b1cbaebabe5ef03f7c3017bb5b7", keyVariety = SHA2Key (HashSize 256) (HasExt True), keySize = Just 1, keyMtime = Nothing, keyChunkSize = Nothing, keyChunkNum = Nothing}, keySerialization = "SHA256E-s1--19581e27de7ced00ff1ce50b2047e7a567c76b1cbaebabe5ef03f7c3017bb5b7"})
-	May 30 13:56:58                                   ok
-	May 30 13:56:58 ("getContentIdentifierKeys",ContentIdentifier "13285640 1 1685469417 098840021")
-	May 30 13:56:58 import source f3 
-	May 30 13:56:58 100%  1 B               5 KiB/s 0s("recordContentIdentifier",MkKey {keyData = Key {keyName = "4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce", keyVariety = SHA2Key (HashSize 256) (HasExt True), keySize = Just 1, keyMtime = Nothing, keyChunkSize = Nothing, keyChunkNum = Nothing}, keySerialization = "SHA256E-s1--4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce"})
-	May 30 13:56:58                                   ok
-	May 30 13:56:58 ("getContentIdentifierKeys",ContentIdentifier "13285643 1 1685469417 098840021")
-	May 30 13:56:58 import source f6 
-	May 30 13:56:58 100%  1 B               4 KiB/s 0s("recordContentIdentifier",MkKey {keyData = Key {keyName = "e7f6c011776e8db7cd330b54174fd76f7d0216b612387a5ffcfb81e6f0919683", keyVariety = SHA2Key (HashSize 256) (HasExt True), keySize = Just 1, keyMtime = Nothing, keyChunkSize = Nothing, keyChunkNum = Nothing}, keySerialization = "SHA256E-s1--e7f6c011776e8db7cd330b54174fd76f7d0216b612387a5ffcfb81e6f0919683"})
-	May 30 13:56:58                                   ok
-	May 30 13:56:58 ("getContentIdentifierKeys",ContentIdentifier "13285644 1 1685469417 098840021")
-	May 30 13:56:58 import source f7 
-	May 30 13:56:58 100%  1 B               4 KiB/s 0s("recordContentIdentifier",MkKey {keyData = Key {keyName = "7902699be42c8a8e46fbbb4501726517e86b22c56a189f7625a6da49081b2451", keyVariety = SHA2Key (HashSize 256) (HasExt True), keySize = Just 1, keyMtime = Nothing, keyChunkSize = Nothing, keyChunkNum = Nothing}, keySerialization = "SHA256E-s1--7902699be42c8a8e46fbbb4501726517e86b22c56a189f7625a6da49081b2451"})
-	May 30 13:56:58                                   ok
-	May 30 13:56:58 ("getContentIdentifierKeys",ContentIdentifier "13285639 1 1685469417 098840021")
-	May 30 13:56:58 import source f2 
-	May 30 13:56:58 100%  1 B               3 KiB/s 0s("recordContentIdentifier",MkKey {keyData = Key {keyName = "d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35", keyVariety = SHA2Key (HashSize 256) (HasExt True), keySize = Just 1, keyMtime = Nothing, keyChunkSize = Nothing, keyChunkNum = Nothing}, keySerialization = "SHA256E-s1--d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35"})
-	May 30 13:56:58                                   ok
-	May 30 13:56:58 update refs/remotes/source/master ok
-	May 30 13:56:58 (Merging into master...) 
-	May 30 13:56:58 Merge made by the 'ort' strategy.
-	May 30 13:56:58  testdata/f1  | 1 +
-	May 30 13:56:58  testdata/f10 | 1 +
-	May 30 13:56:58  testdata/f2  | 1 +
-	May 30 13:56:58  testdata/f3  | 1 +
-	May 30 13:56:58  testdata/f4  | 1 +
-	May 30 13:56:58  testdata/f5  | 1 +
-	May 30 13:56:58  testdata/f6  | 1 +
-	May 30 13:56:58  testdata/f7  | 1 +
-	May 30 13:56:58  testdata/f8  | 1 +
-	May 30 13:56:58  testdata/f9  | 1 +
-	May 30 13:56:58  10 files changed, 10 insertions(+)
-	May 30 13:56:58  create mode 120000 testdata/f1
-	May 30 13:56:58  create mode 120000 testdata/f10
-	May 30 13:56:58  create mode 120000 testdata/f2
-	May 30 13:56:58  create mode 120000 testdata/f3
-	May 30 13:56:58  create mode 120000 testdata/f4
-	May 30 13:56:58  create mode 120000 testdata/f5
-	May 30 13:56:58  create mode 120000 testdata/f6
-	May 30 13:56:58  create mode 120000 testdata/f7
-	May 30 13:56:58  create mode 120000 testdata/f8
-	May 30 13:56:58  create mode 120000 testdata/f9
-	May 30 13:56:58 (Merging into adjusted branch...) 
-	May 30 13:56:58 Updating ce828a9..f420a76
-	May 30 13:56:58 Fast-forward
-	May 30 13:56:58  testdata/f1  | 1 +
-	May 30 13:56:58  testdata/f10 | 1 +
-	May 30 13:56:58  testdata/f2  | 1 +
-	May 30 13:56:58  testdata/f3  | 1 +
-	May 30 13:56:58  testdata/f4  | 1 +
-	May 30 13:56:58  testdata/f5  | 1 +
-	May 30 13:56:58  testdata/f6  | 1 +
-	May 30 13:56:58  testdata/f7  | 1 +
-	May 30 13:56:58  testdata/f8  | 1 +
-	May 30 13:56:58  testdata/f9  | 1 +
-	May 30 13:56:58  10 files changed, 10 insertions(+)
-	May 30 13:56:58  create mode 120000 testdata/f1
-	May 30 13:56:58  create mode 120000 testdata/f10
-	May 30 13:56:58  create mode 120000 testdata/f2
-	May 30 13:56:58  create mode 120000 testdata/f3
-	May 30 13:56:58  create mode 120000 testdata/f4
-	May 30 13:56:58  create mode 120000 testdata/f5
-	May 30 13:56:58  create mode 120000 testdata/f6
-	May 30 13:56:58  create mode 120000 testdata/f7
-	May 30 13:56:58  create mode 120000 testdata/f8
-	May 30 13:56:58  create mode 120000 testdata/f9
-	May 30 13:56:59 (recording state in git...)
-
-Here's the patch I used for git-annex to instrument it:
-
-	diff --git a/Database/ContentIdentifier.hs b/Database/ContentIdentifier.hs
-	index e304dca58f..0d0dcdcdf1 100644
-	--- a/Database/ContentIdentifier.hs
-	+++ b/Database/ContentIdentifier.hs
-	@@ -109,11 +109,14 @@ flushDbQueue (ContentIdentifierHandle h) = H.flushDbQueue h
-	 
-	 -- Be sure to also update the git-annex branch when using this.
-	 recordContentIdentifier :: ContentIdentifierHandle -> RemoteStateHandle -> ContentIdentifier -> Key -> IO ()
-	-recordContentIdentifier h (RemoteStateHandle u) cid k = queueDb h $ do
-	-	void $ insertUniqueFast $ ContentIdentifiers u cid k
-	+recordContentIdentifier h (RemoteStateHandle u) cid k = do
-	+	liftIO $ hPutStrLn stderr $ show ("recordContentIdentifier", k)
-	+	queueDb h $ do
-	+		void $ insertUniqueFast $ ContentIdentifiers u cid k
-	 
-	 getContentIdentifiers :: ContentIdentifierHandle -> RemoteStateHandle -> Key -> IO [ContentIdentifier]
-	-getContentIdentifiers (ContentIdentifierHandle h) (RemoteStateHandle u) k = 
-	+getContentIdentifiers (ContentIdentifierHandle h) (RemoteStateHandle u) k = do
-	+	liftIO $ hPutStrLn stderr $ show ("getContentIdentifiers", k)
-	 	H.queryDbQueue h $ do
-	 		l <- selectList
-	 			[ ContentIdentifiersKey ==. k
-	@@ -122,7 +125,8 @@ getContentIdentifiers (ContentIdentifierHandle h) (RemoteStateHandle u) k =
-	 		return $ map (contentIdentifiersCid . entityVal) l
-	 
-	 getContentIdentifierKeys :: ContentIdentifierHandle -> RemoteStateHandle -> ContentIdentifier -> IO [Key]
-	-getContentIdentifierKeys (ContentIdentifierHandle h) (RemoteStateHandle u) cid = 
-	+getContentIdentifierKeys (ContentIdentifierHandle h) (RemoteStateHandle u) cid = do
-	+	liftIO $ hPutStrLn stderr $ show ("getContentIdentifierKeys", cid)
-	 	H.queryDbQueue h $ do
-	 		l <- selectList
-	 			[ ContentIdentifiersCid ==. cid
-	@@ -131,16 +135,20 @@ getContentIdentifierKeys (ContentIdentifierHandle h) (RemoteStateHandle u) cid =
-	 		return $ map (contentIdentifiersKey . entityVal) l
-	 
-	 recordAnnexBranchTree :: ContentIdentifierHandle -> Sha -> IO ()
-	-recordAnnexBranchTree h s = queueDb h $ do
-	-        deleteWhere ([] :: [Filter AnnexBranch])
-	-        void $ insertUniqueFast $ AnnexBranch $ toSSha s
-	+recordAnnexBranchTree h s = do
-	+	liftIO $ hPutStrLn stderr $ show ("recordAnnexBranchTree")
-	+	queueDb h $ do
-	+		deleteWhere ([] :: [Filter AnnexBranch])
-	+		void $ insertUniqueFast $ AnnexBranch $ toSSha s
-	 
-	 getAnnexBranchTree :: ContentIdentifierHandle -> IO Sha
-	-getAnnexBranchTree (ContentIdentifierHandle h) = H.queryDbQueue h $ do
-	-        l <- selectList ([] :: [Filter AnnexBranch]) []
-	-        case l of
-	-                (s:[]) -> return $ fromSSha $ annexBranchTree $ entityVal s
-	-                _ -> return emptyTree
-	+getAnnexBranchTree (ContentIdentifierHandle h) = do
-	+	liftIO $ hPutStrLn stderr $ show ("getAnnexBranchTree")
-	+	H.queryDbQueue h $ do
-	+		l <- selectList ([] :: [Filter AnnexBranch]) []
-	+		case l of
-	+			(s:[]) -> return $ fromSSha $ annexBranchTree $ entityVal s
-	+			_ -> return emptyTree
-	 
-	 {- Check if the git-annex branch has been updated and the database needs
-	  - to be updated with any new content identifiers in it. -}
-	@@ -155,6 +163,7 @@ needsUpdateFromLog db = do
-	 {- The database should be locked for write when calling this. -}
-	 updateFromLog :: ContentIdentifierHandle -> (Sha, Sha) -> Annex ()
-	 updateFromLog db (oldtree, currtree) = do
-	+	liftIO $ hPutStrLn stderr $ show ("updateFromLog")
-	 	(l, cleanup) <- inRepo $
-	 		DiffTree.diffTreeRecursive oldtree currtree
-	 	mapM_ go l
-"""]]

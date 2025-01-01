@@ -1,3 +1,0 @@
-Would it be possible for `git annex info` to also show dead remotes (behind an option is fine), to make it easy to find what dead remotes there are? I needed to check what I had done for a service that was going away (AARNET Cloudstor, which used webdav), and was confused as to why it wasn't appearing anywhere.
-
-> Implemented `git-annex info --dead-repositories` [[done]] --[[Joey]]

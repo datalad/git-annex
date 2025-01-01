@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="nobodyinperson"
- avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
- subject="Thanks for git annex satisfy, numcopies question"
- date="2023-06-30T05:37:06Z"
- content="""
-Marvellous! I was wondering, if `git annex sync` doesn't satisfy numcopies, what does? Is numcopies just for drop/move? `sync`/`satisfy` won't override the preferred content to satisfy numcopies, right? Then my mental model ”git annex ensures there's always at least `numcopies` copies of your files” wasn't really true. It just ”won't by itself reduce the amount of copies of a file below numcopies/mincopies”, right? If that's true, would a command or option to sync/satisfy make sense that enforces numcopies and potentionally overrides the preferred content? 
-"""]]

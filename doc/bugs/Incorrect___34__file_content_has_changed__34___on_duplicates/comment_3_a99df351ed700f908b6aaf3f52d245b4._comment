@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 3"""
- date="2022-09-16T17:43:38Z"
- content="""
-I've made the directory special remote treat content identifiers
-that differ only in one having the inode set to 0. Which will avoid it
-failing in the situation I showed.
-"""]]

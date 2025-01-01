@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="nobodyinperson"
- avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
- subject="comment 2"
- date="2023-08-22T17:57:45Z"
- content="""
-Or better: make `git annex unused` accept the common matching options. Then `git annex unused --include=myfile.txt` can be used for the same effect.
-"""]]

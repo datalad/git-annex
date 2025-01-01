@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 3"""
- date="2023-06-21T18:44:09Z"
- content="""
-The test suite doesn't output that any more, so I'm going to assume this is
-fixed.
-"""]]

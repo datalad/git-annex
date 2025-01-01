@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="cnjr2"
- avatar="http://cdn.libravatar.org/avatar/f7e9654cc967c8815947b19829bfd746"
- subject="found related bug"
- date="2022-11-29T16:51:44Z"
- content="""
-I have searched around some more and found a related bug report. As per [your comment](https://git-annex.branchable.com/bugs/Wrong_backend_extension_in_files_with_multiple_dots/#comment-1e0885e62a9c22baae6300d2312c5163) what constitutes a file extension is determined by heuristics. So I guess my question would become: Would it be a bad idea to have long (and ugly) file extensions (i.e. `.numbers`) be recognized as as extensions? What would be situations where that would go wrong?
-"""]]

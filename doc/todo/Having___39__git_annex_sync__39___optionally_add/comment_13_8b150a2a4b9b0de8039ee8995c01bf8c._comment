@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="nobodyinperson"
- avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
- subject="comment 13"
- date="2023-05-20T06:03:30Z"
- content="""
-Sounds good! Maybe also a `-m` short form of `--message` for less typing. Consistent with sync and datalad save.
-
-"""]]

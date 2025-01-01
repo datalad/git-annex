@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 1"""
- date="2018-08-03T18:18:34Z"
- content="""
-Why are you trying to do this? Is there a normal git-annex use case that
-involves that happening?
-"""]]

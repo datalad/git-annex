@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="Ilya_Shlyakhter"
- avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
- subject="comment 2"
- date="2019-05-07T00:59:31Z"
- content="""
-Thanks for the BLAKE2SP224 pointer; it does solve (1).  I'm still looking for the best way to solve (2): registering large remote files with git-annex, without downloading them.  `addurl --fast` does that, but creates a non-checksum key.  If I can get an MD5 without downloading, I can use `setpresentkey`.  But often I only have the MD5 for the fixed-size chunks of the file, not for the whole.  Adding a backend variant computable from MD5s of the chunks would solve the problem.  Maybe, there are other solutions?
-"""]]

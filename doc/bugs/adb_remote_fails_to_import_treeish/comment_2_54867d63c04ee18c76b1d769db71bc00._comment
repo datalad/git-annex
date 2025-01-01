@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="jenkin.schibel@286264d9ceb79998aecff0d5d1a4ffe34f8b8421"
- nickname="jenkin.schibel"
- avatar="http://cdn.libravatar.org/avatar/692d82fb5c42fc86d97cc44ae0fb61ca"
- subject="phone version"
- date="2022-07-12T18:37:16Z"
- content="""
-to answer your question about what kind of phone i have, i have a 2018 motorola MotoE5.  So if what you say is true about the phone possibly being too old, this phone does fit that criteria.  I think it would be beneficial to add a configuration option for the adb remote to support older android phones.
-"""]]

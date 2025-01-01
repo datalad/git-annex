@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="Lukey"
- avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
- subject="comment 1"
- date="2021-11-08T19:38:35Z"
- content="""
-Describing what `git-annex` does is pretty hard. So when I talk about it, I usually say what you can do with it: manage, sync, backup and archive your data, offline and online, with everything checksummed.
-"""]]

@@ -1,9 +1,0 @@
-Running an SSH server on a phone is quite some setup and could perhaps even be considered insecure.
-
-KDE-connect provides a an easy to set up method of creating a transport tunnel between phone and computer. Many users might actually have it set up already.
-
-Apparently, it can even be used to connect multiple desktops with another but I haven't tested that. This could be an alternative (or perhaps even replacement?) to git-annex' current pairing mechanism.
-
-KDE-connect offers remote command execution and file sharing, so it should be possible to use it for git-annex' purposes.
-
-> [[rejected|done]] --[[Joey]]

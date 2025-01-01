@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 2"""
- date="2022-09-26T17:24:23Z"
- content="""
-Note that when git-annex uses sudo to gain root, git does not behave that
-way. But it can also use su or other methods.
-"""]]

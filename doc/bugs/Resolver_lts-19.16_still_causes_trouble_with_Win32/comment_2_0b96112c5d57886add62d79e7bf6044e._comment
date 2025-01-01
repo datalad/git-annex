@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="jkniiv"
- avatar="http://cdn.libravatar.org/avatar/05fd8b33af7183342153e8013aa3713d"
- subject="comment 2"
- date="2022-07-31T18:00:59Z"
- content="""
-@Ilya: Yes, the change took place in commit [[!commit b5dc04099efd8b1bd2dbfa09a288518eabf8ceec]] which was some 24 hours after
-release 10.20220724. :)
-"""]]

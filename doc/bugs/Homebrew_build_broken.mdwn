@@ -1,3 +1,0 @@
-[The PR to upgrade git-annex in Homebrew to 10.20230126](https://github.com/Homebrew/homebrew-core/pull/121594) is currently stalled because of a build failure.  The error message seems to imply the problem is due to a faulty `.cabal` file, which would mean it's a problem with the git-annex source itself.
-
-> [[fixed|done]] in homebrew --[[Joey]]

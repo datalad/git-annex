@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="nobodyinperson"
- avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
- subject="adding all files or only in current directory?"
- date="2023-05-03T14:23:04Z"
- content="""
-`git annex add` only adds files in the current directory and below and has no flag to do a `git add -A` equivalent. For the purpose of making `git annex sync` also adding all files (e.g. with `git annex sync --add` or with prior `git annex config --set annex.syncadd true`), such an `git annex add --all|-A` option would be handy (which would also be used by `git annex sync --add`). It would also make `git annex add` more consistent with `git add`.
-"""]]

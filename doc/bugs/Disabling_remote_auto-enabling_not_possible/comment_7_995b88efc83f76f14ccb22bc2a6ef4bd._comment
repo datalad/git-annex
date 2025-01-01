@@ -1,7 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 7"""
- date="2023-04-18T19:29:28Z"
- content="""
-Implemented `git-annex configremote`
-"""]]

@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 5"""
- date="2023-03-28T16:10:43Z"
- content="""
-annex.bwlimit is the limit for each transfer, it doesn't take into account
-how many transfers might be running whether by --jobs or multiple git-annex
-processes.
-"""]]

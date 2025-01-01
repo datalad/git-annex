@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="Atemu"
- avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
- subject="comment 9"
- date="2021-05-22T17:31:01Z"
- content="""
-This also happens on Linux, so I'd rather use `strace` itself but I think it'd be extremely hard to spot anything useful in that and probably is not worth the performance cost.
-"""]]

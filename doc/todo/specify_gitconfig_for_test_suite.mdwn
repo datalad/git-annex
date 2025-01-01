@@ -1,8 +1,0 @@
-`git-annex test` prevents ~/.gitconfig or /etc/gitconfig from being read.
-The `-c` option also doesn't propagate into the test suite. 
-
-It would sometimes be useful to test git-annex with a given git config set.
-Although some might break the test suite, others might expose actual bugs
-in git-annex. --[[Joey]]
-
-> Added "--test-git-config" option, [[done]] --[[Joey]]

@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 3"""
- date="2023-02-08T16:23:36Z"
- content="""
-Have you confirmed the problem no longer happens when not stracing as well?
-If it were say, some shell alias causing a problem, using strace would
-bypass it..
-"""]]

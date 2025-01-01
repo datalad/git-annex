@@ -1,3 +1,0 @@
-Add an armel build like the i386ancient build.
-
-> [[wontfix|done]] --[[Joey]]

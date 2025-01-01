@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 3"""
- date="2022-01-25T16:39:05Z"
- content="""
-I think this is out of scope for git-annex. It's not its place to change
-what files git allows to be version controlled.
-"""]]

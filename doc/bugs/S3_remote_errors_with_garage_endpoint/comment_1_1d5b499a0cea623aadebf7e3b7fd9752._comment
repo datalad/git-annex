@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="jpds"
- avatar="http://cdn.libravatar.org/avatar/24d746ec6a7726b162c12ecceb3ee267"
- subject="comment 1"
- date="2023-01-18T22:57:58Z"
- content="""
-Error on Garage's side is triggered here: https://git.deuxfleurs.fr/Deuxfleurs/garage/src/commit/fcc5033466e58e3beec05ee7748d33522b6b32b0/src/api/signature/payload.rs#L297
-"""]]

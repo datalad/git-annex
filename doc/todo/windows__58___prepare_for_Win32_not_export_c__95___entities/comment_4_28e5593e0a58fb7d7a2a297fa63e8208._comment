@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 4"""
- date="2022-08-02T14:43:47Z"
- content="""
-The necessary change will be in win32 2.13.3.1, which should be released
-in due course. And I've made a (so far untested) change to git-annex to
-support that version.
-"""]]

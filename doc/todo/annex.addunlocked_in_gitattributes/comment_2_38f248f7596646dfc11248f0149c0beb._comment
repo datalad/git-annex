@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="yarikoptic"
- avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
- subject="comment 2"
- date="2022-02-18T21:56:19Z"
- content="""
-I guess it is the fact that this particular config variable is also supported by `git annex config` so could be set persistently (across clones) this way.
-"""]]

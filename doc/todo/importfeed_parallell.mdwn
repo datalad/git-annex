@@ -1,5 +1,0 @@
-Make git-annex importfeed support -J. Ideally, when run with multiple feed
-utls, it would check them in parallel, and also parallelize download of new
-items found in the feeds. --[[Joey]]
-
-> [[done]] --[[Joey]]

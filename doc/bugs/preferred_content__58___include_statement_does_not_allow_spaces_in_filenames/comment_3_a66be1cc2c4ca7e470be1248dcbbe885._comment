@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="aurtzy"
- avatar="http://cdn.libravatar.org/avatar/7d44f9b718a534ada04551ee8c72e07f"
- subject="comment 3"
- date="2023-05-14T02:52:38Z"
- content="""
-Encountered this issue the other day, and just wanted to mention a more explicit alternative: it looks like matchexpression file globs support POSIX character classes, so one could also use \"\\[[:blank:]]\" which matches a space or tab.
-"""]]

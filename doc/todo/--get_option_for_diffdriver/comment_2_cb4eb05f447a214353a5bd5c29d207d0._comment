@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="nobodyinperson"
- avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
- subject="comment 2"
- date="2023-08-09T05:31:26Z"
- content="""
-How about handling them as if they were manually fetched with `git annex get`? The next run of `satisfy`, `sync`, etc. will then take care of dropping.
-"""]]

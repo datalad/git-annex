@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="lykos@d125a37d89b1cfac20829f12911656c40cb70018"
- nickname="lykos"
- avatar="http://cdn.libravatar.org/avatar/085df7b04d3408ba23c19f9c49be9ea2"
- subject="comment 2"
- date="2019-01-21T11:57:07Z"
- content="""
-Import tree won't help here. Actually I've got the same problem on one of my machines. I'm currently using a script that imports a bunch of files and moves them to the remote, then imports some more files and so on. It's quite cumbersome, to be honest. So yes, I'd appreciate `git annex import --to <remote>` as well. (Same with `git annex move --from remote-a --to remote-b` actually.)
-"""]]

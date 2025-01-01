@@ -1,5 +1,0 @@
-It would be nice to be able to upload and download git history with special remotes.  This could be a move towards full special remote syncing.
-
-> I feel this is out of scope. git has its own interface to let a program
-> be registered as performing a transport, to store a git repository
-> anywhere. [[wontfix|done]] --[[Joey]]

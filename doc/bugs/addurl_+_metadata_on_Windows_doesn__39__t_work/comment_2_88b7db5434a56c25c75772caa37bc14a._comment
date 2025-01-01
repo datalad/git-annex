@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 2"""
- date="2022-10-26T18:13:42Z"
- content="""
-I've made --batch handling of unstaged locked files consistent with the
-handling of unstaged unlocked files.
-"""]]

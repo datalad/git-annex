@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="nobodyinperson"
- avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
- subject="git annex drop --unused --jobs=cpus works"
- date="2023-07-15T05:53:43Z"
- content="""
-If you want to drop all unused files, `git annex unused;git annex drop --unused --jobs=cpus` works.
-"""]]

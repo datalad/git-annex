@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="Lukey"
- avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
- subject="comment 8"
- date="2021-05-22T17:19:19Z"
- content="""
-You could run the equivalent of `strace` for mac os and make it log every syscall of git-annex assistant and it's children. This would show which `git` action corrupts the repo and how.
-"""]]

@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="interfect@b151490178830f44348aa57b77ad58c7d18e8fe7"
- nickname="interfect"
- avatar="http://cdn.libravatar.org/avatar/3ba541a3204f4ea4b274049a152489c5"
- subject="comment 4"
- date="2017-06-09T01:48:15Z"
- content="""
-I'm actually seeing a lot of files (mostly smaller ones, for some reason) failing to fsck because GPG decryption failed. I can't tell at the moment whether they got corrupted in the transfer, or corrupted in the initial upload somehow. I'm pretty sure the problem here isn't with git annex itself, or more people would have noticed, but I'm definitely going to be fscking my cloud remotes more frequently.
-"""]]

@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="tom.prince@6bf26c878bf6103667f28d70cf49d4fb74d33df7"
- nickname="tom.prince"
- avatar="http://cdn.libravatar.org/avatar/e81edff3af564b86f4c9d780a8023299"
- subject="comment 2"
- date="2017-07-21T18:22:28Z"
- content="""
-As far as I can tell, from looking at the code, the pre-commit hook only looks at files in the index. Thus, if unannexing an uncommited file removed it from the index, the pre-commit will do the right thing. This would be nice to have, at least for the case where the files have never been committed.
-"""]]

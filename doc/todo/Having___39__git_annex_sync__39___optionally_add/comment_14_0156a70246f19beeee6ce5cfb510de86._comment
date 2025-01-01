@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 14"""
- date="2023-05-23T15:46:27Z"
- content="""
-Oh, this new command and sync always supported -m. I've added it to the man
-page. 
-"""]]

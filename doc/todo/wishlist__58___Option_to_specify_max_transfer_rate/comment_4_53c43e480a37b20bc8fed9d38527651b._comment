@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="gerzoyayde@85d55f6dec266753698f42d1c8e06917ef6674a3"
- nickname="gerzoyayde"
- avatar="http://cdn.libravatar.org/avatar/0866019bf4d6741b2f4a2c288356513f"
- subject="annex.bwlimit and jobs"
- date="2023-03-28T00:00:43Z"
- content="""
-Does annex.bwlimit limit across multiple jobs? E.g. I have a annex.bwlimit of \"30MiB\" and run a copy with --jobs 3, will the maximum possible bandwidth be 30MB/s or 90MB/s?
-"""]]

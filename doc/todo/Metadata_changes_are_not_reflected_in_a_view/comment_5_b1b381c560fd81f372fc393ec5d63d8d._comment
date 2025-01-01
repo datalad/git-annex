@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="nobodyinperson"
- avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
- subject="`git annex sync` when in view"
- date="2023-02-08T20:17:12Z"
- content="""
-Right, git refusing to merge unrelated histories is something I also bumped into while developing `thunar-plugins`. There I worked around it by having the *Synchronize* menu item do `git add -A;git commit -m ...;git annex sync --only-annex`, which works fine.
-"""]]

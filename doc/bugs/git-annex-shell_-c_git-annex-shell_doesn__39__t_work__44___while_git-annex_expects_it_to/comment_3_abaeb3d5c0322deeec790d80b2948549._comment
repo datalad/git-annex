@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="https://openid-provider.appspot.com/iakornfeld"
- nickname="iakornfeld"
- avatar="http://cdn.libravatar.org/avatar/c0369f5727cad81d1ecf6c2e657b42a1b756284aad0229351f9027a2cfcb2037"
- subject="Yes"
- date="2018-08-07T14:07:56Z"
- content="""
-git-annex does this when checking remotes for git-annex support.
-"""]]

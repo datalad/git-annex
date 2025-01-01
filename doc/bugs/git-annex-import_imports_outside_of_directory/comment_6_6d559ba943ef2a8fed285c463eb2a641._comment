@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 6"""
- date="2022-08-19T17:20:24Z"
- content="""
-Ok, I've changed `git-annex import` to skip symbolic links inside the
-directory being imported. The directory being imported can still itself be
-a symlink and that will be followed.
-"""]]

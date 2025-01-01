@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 10"""
- date="2023-04-26T16:42:24Z"
- content="""
-I decided to rename it "message-id" since it could go on warning or other
-messages too conceivably.
-"""]]

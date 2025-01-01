@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 2"""
- date="2023-08-16T20:01:21Z"
- content="""
-Made sync skip many kinds of remotes that use a directory when the
-directory does not exist.
-"""]]

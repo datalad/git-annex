@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 2"""
- date="2022-03-07T16:01:56Z"
- content="""
-A blank line means that the file's content is already
-present, or it is not an annexed file. This is documented under --batch in
-the man page of git-annex get.
-"""]]

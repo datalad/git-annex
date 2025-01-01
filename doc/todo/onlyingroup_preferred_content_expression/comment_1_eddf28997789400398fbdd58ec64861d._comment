@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="nobodyinperson"
- avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
- subject="onlyingroup also useful for offline backup drives"
- date="2023-07-31T04:40:42Z"
- content="""
-Such an `onlyingroup` group would also be useful to match (and ignore from standard sync operations) files that are only available on hard-to-reach `offline-backup` repos, say offline backup drives or those in a safe. Normal repos can want `include=* and not onlyingroup=offline-backup` and then won't bother with unreachable files. This is an alternative to the `archive/` directory, which might be undesired or impractical to use (original file location is 'lost' when moving files into the archive).
-"""]]

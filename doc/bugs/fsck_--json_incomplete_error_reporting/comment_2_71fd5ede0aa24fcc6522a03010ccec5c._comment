@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 2"""
- date="2022-12-26T17:27:54Z"
- content="""
-Use the --json-error-messages option to move that into the json. It is
-documented on the man page.
-"""]]

@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 3"""
- date="2022-02-21T19:40:50Z"
- content="""
-Yes, annex.addunlocked with a matching expression was
-implemented in 2019 and accomplishes the same thing
-as this would have, without the problems of using git attributes.
-"""]]

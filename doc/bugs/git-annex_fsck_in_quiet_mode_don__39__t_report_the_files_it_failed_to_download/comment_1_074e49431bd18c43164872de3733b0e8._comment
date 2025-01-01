@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="Rémi"
- avatar="http://cdn.libravatar.org/avatar/0f25950c04685d6c7ccb22215268d6a7"
- subject="comment 1"
- date="2017-08-21T14:17:14Z"
- content="""
-Running 'git annex fsck --more --from remote' allowed me to try again and find which file had the problem. 
-"""]]

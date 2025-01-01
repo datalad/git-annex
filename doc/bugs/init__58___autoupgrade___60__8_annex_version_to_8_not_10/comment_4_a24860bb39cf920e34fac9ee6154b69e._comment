@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 4"""
- date="2022-01-25T18:02:16Z"
- content="""
-v8 will remain supported for at least 1 year, probably a bit longer than
-that. And it will still be default in the next release, and probably next
-several releases on top of that.
-"""]]

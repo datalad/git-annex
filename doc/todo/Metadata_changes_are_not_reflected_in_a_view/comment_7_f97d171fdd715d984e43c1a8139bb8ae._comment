@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="nobodyinperson"
- avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
- subject="👍 This made it easier for the Thunar plugin!"
- date="2023-02-14T09:35:32Z"
- content="""
-[`thunar-plugins`](https://gitlab.com/nobodyinperson/thunar-plugins) now detect git annex' support for this (checking if `view` appears in `git annex help sync`, which it didn't before) and does `git annex sync` instead of the `git add -A;git commit;git annex sync --only-annex` workaround in that case. Very nice, joey!
-"""]]

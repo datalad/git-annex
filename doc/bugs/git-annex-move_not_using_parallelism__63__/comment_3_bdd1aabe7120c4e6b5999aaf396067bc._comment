@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="andrew"
- avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
- subject="comment 3"
- date="2018-11-12T03:17:47Z"
- content="""
-I would try adding `--debug`, so `git-annex move -J48 --all --to ilya-s3 --debug` that should give you some insight into the number of simultaneous connections. Seems to be moving concurrently for me, I tried on an s3 remote and a googledrive remote, I saw multiple interleaved uploads in the debug logs as well as multiple simultaneous `git … cat-file` in my processes.
-"""]]

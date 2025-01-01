@@ -1,7 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 5"""
- date="2022-07-13T21:11:07Z"
- content="""
-Indeed, I put in a special case for empty files and solved this!
-"""]]

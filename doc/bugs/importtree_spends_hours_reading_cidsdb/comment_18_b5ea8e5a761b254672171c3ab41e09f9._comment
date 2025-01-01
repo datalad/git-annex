@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""Re: comment 17"""
- date="2023-06-08T20:56:25Z"
- content="""
-I've fixed that, now `git-annex sync` avoids updating the adjusted branch
-when there have been no changes to available content.
-"""]]

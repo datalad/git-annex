@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="yarikoptic"
- avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
- subject="comment 9"
- date="2023-04-26T16:38:26Z"
- content="""
-quick/small one -- given that there is `\"error-messages\"`, would it may be make sense to name new one `\"error-id\"` and not `\"errorid\"` for consistency?
-"""]]

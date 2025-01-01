@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 1"""
- date="2022-02-07T17:49:37Z"
- content="""
-Reversion introduced in [[!commit 2eadb6cd68073a905e8ff32cc8093a43d0b05c81]].
-Parsing of the transitions log silently failed, so all propagation of
-transitions was broken. 
-"""]]

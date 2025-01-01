@@ -1,7 +1,0 @@
-Need to update to allow building with aeson 2.0.
-
-I have a patch in my mailbox from sternenseemann that
-mostly gets there, but it needs some revision to fix a problem I spotted.
---[[Joey]]
-
-[[done]]

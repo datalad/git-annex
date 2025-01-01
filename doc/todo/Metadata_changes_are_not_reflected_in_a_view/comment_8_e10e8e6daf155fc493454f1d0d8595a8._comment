@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 8"""
- date="2023-02-14T16:17:05Z"
- content="""
-I'd recommend not relying on the `git-annex help sync` to detect this,
-since man pages may not be available. Look for '?=' in 
-`git-annex view --help`
-"""]]

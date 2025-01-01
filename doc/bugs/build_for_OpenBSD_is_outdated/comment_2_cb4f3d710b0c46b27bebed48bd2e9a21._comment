@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="gnezdo"
- avatar="http://cdn.libravatar.org/avatar/4176f99bc203b65ebe09a539a3b9c6bb"
- subject="Fixed"
- date="2022-04-23T21:42:42Z"
- content="""
-This has been [fixed in -current on Apr 13](https://github.com/openbsd/ports/commit/a9f826b37e077cd0004f4ef4e7e0ddaa18ffdc4a).
-"""]]

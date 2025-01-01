@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 1"""
- date="2023-10-21T16:26:06Z"
- content="""
-I don't see a bug here. If the file is not present there and was not
-expected to be present there, and there are enough copies in other places,
-then fsck has nothing to complain about.
-"""]]

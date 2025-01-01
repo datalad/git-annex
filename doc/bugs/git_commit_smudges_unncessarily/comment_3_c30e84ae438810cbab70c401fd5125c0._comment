@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="asakurareiko@f3d908c71c009580228b264f63f21c7274df7476"
- nickname="asakurareiko"
- avatar="http://cdn.libravatar.org/avatar/a865743e357add9d15081840179ce082"
- subject="comment 3"
- date="2022-09-24T19:43:47Z"
- content="""
-This seems to be fixed now, maybe due to the changes made related to [[todo/git_status_smudges_unncessarily_after_unlock]].
-"""]]

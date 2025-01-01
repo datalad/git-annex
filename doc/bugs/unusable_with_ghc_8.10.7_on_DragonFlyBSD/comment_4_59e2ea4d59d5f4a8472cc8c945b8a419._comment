@@ -1,7 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 4"""
- date="2021-12-31T19:00:10Z"
- content="""
-Upstream bug report: <https://github.com/haskell/process/issues/223>
-"""]]

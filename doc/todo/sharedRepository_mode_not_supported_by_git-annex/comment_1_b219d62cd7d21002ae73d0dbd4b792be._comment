@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="yarikoptic"
- avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
- subject="comment 1"
- date="2023-04-26T14:34:31Z"
- content="""
-Hi Joey, We just [now (re)discovered for ourselves in DataLad](https://github.com/psychoinformatics-de/knowledge-base/issues/15) that octal modes are not supported by git-annex **at all**.  We wonder if you are planing to add support for them, or should we may be just start [warning users](https://github.com/datalad/datalad/pull/7375) if there is an unsupported configuration of shared setup is encountered.
-"""]]

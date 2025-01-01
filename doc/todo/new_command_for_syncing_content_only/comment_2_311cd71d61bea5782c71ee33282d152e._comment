@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="nobodyinperson"
- avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
- subject="How about `git annex transfer`?"
- date="2023-06-29T05:25:50Z"
- content="""
-Throwing `git annex transfer` into the ring for an alias for `git annex sync --content --no-commit --no-push --no-pull`.
-"""]]

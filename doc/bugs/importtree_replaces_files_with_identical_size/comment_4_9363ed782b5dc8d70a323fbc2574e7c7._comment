@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 4"""
- date="2022-03-21T19:59:42Z"
- content="""
-Makes sense, cp is just the kind of program that can write 2 files at very
-close to the same time, and when small enough, get the same mtime.
-"""]]

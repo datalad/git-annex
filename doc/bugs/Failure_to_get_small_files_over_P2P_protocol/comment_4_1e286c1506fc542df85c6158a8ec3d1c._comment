@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="tim@5431dd39464df207b7d46d3cf1bc74c82123ac68"
- nickname="tim"
- avatar="http://cdn.libravatar.org/avatar/967c2815f001d24b5f9f33300c03ba6f"
- subject="well, yes"
- date="2022-01-04T11:28:33Z"
- content="""
-Well, yes, it does, if you start discarding disks after you've done a git annex pull on a temp usb repo and then again to the new server... Hence, my own stupidity.
-"""]]

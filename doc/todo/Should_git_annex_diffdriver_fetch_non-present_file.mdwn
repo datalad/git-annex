@@ -1,9 +1,0 @@
-I noticed that `git annex diffdriver` doesn't make sure that files it tries to diff are actually present. Would it make sense that `git annex diffdriver ...` runs `git annex get` to ensure files are present? 🤔 A `git diff` could then result in a lot of traffic if the user configured the `diffdriver`. But I'd say that users who took their time to configure would be are aware of this or even expect that to happen - after all they want to see the differences to a past version.
-
-A manual workaround is to handle the `get`ting in a custom supplied diffing program.
-
-Context:
-
-- [recently added `git annex diffdriver --text`](https://git-annex.branchable.com/todo/Improving_diffdriver_--text/)
-
-> Duplicate of [[--get_option_for_diffdriver]], so closing [[done]]. --[[Joey]]

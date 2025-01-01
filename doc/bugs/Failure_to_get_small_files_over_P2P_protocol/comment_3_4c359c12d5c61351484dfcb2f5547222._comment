@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 3"""
- date="2022-01-03T17:25:03Z"
- content="""
-Err, unless you have `annex.thin` set, once you `git-annex add` a file,
-it should not be possible for it be overwritten in a way that loses the
-annexed copy of it.
-"""]]
