@@ -20,7 +20,7 @@ git-annex (10.20250102) upstream; urgency=medium
     stable.
   * stack.yaml: Update to lts-23.2.
 
- -- Joey Hess <id@joeyh.name>  Wed, 01 Jan 2025 14:22:59 -0400
+ -- Joey Hess <id@joeyh.name>  Thu, 02 Jan 2025 12:31:58 -0400
 
 git-annex (10.20241202) upstream; urgency=medium
 
