@@ -1,0 +1,20 @@
+git-annex 10.20250102 released with [[!toggle text="these changes"]]
+[[!toggleable text="""  * Added config `url.&lt;base&gt;.annexInsteadOf` corresponding to git's
+    `url.&lt;base&gt;.pushInsteadOf`, to configure the urls to use for accessing
+    the git-annex repositories on a server without needing to configure
+    remote.name.annexUrl in each repository.
+  * Work around git hash-object --stdin-paths's odd stripping of carriage
+    return from the end of the line (some windows infection), avoiding
+    crashing when the repo contains a filename ending in a carriage return.
+  * Document that settting preferred content to "" is the same as the
+    default unset behavior.
+  * sync: Avoid misleading warning about future preferred content
+    transition when preferred content is set to "".
+  * Honor annex.addunlocked configuration when importing a tree from a
+    special remote.
+  * Removed the i386ancient standalone tarball build for linux, which
+    was increasingly unable to support new git-annex features.
+  * Removed support for building with ghc older than 9.0.2,
+    and with older versions of haskell libraries than are in current Debian
+    stable.
+  * stack.yaml: Update to lts-23.2."""]]
