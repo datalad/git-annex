@@ -255,9 +255,9 @@ coreBare = "core.bare"
 
 {- Runs a command to get the configuration of a repo,
  - and returns a repo populated with the configuration, as well as the raw
- - output and the standard error of the command. -}
-fromPipe :: Repo -> String -> [CommandParam] -> ConfigStyle -> IO (Either SomeException (Repo, S.ByteString, String))
-fromPipe r cmd params st = tryNonAsync $ withCreateProcess p go
+ - output and the exit status and standard error of the command. -}
+fromPipe :: Repo -> String -> [CommandParam] -> ConfigStyle -> IO (Repo, S.ByteString, ExitCode, String)
+fromPipe r cmd params st = withCreateProcess p go
   where
 	p = (proc cmd $ toCommand params)
 		{ std_out = CreatePipe
@@ -267,9 +267,13 @@ fromPipe r cmd params st = tryNonAsync $ withCreateProcess p go
 		withAsync (getstderr pid herr []) $ \errreader -> do
 			val <- S.hGetContents hout
 			err <- wait errreader
-			forceSuccessProcess p pid
-			r' <- store val st r
-			return (r', val, err)
+			exitcode <- waitForProcess pid
+			case exitcode of
+				ExitSuccess -> do
+					r' <- store val st r
+					return (r', val, exitcode, err)
+				ExitFailure _ ->
+					return (r, val, exitcode, err)
 	go _ _ _ _ = error "internal"
 
 	getstderr pid herr c = hGetLineUntilExitOrEOF pid herr >>= \case
@@ -278,7 +282,7 @@ fromPipe r cmd params st = tryNonAsync $ withCreateProcess p go
 
 {- Reads git config from a specified file and returns the repo populated
  - with the configuration. -}
-fromFile :: Repo -> FilePath -> IO (Either SomeException (Repo, S.ByteString, String))
+fromFile :: Repo -> FilePath -> IO (Repo, S.ByteString, ExitCode, String)
 fromFile r f = fromPipe r "git"
 	[ Param "config"
 	, Param "--file"

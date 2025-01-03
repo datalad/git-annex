@@ -22,7 +22,6 @@ import qualified Data.Map as M
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
 import qualified System.FilePath.ByteString as P
-import Control.Exception
 import Data.Default
 
 import Annex.Common
@@ -59,7 +58,6 @@ import Utility.Tmp
 import Logs.Remote
 import Utility.Gpg
 import Utility.SshHost
-import Utility.Tuple
 import Utility.Directory.Create
 import Messages.Progress
 import Types.ProposedAccepted
@@ -508,16 +506,25 @@ getGCryptId :: Bool -> Git.Repo -> RemoteGitConfig -> Annex (Maybe Git.GCrypt.GC
 getGCryptId fast r gc
 	| Git.repoIsLocal r || Git.repoIsLocalUnknown r = extract <$>
 		liftIO (catchMaybeIO $ Git.Config.read r)
-	| not fast = extract . liftM fst3 <$> getM (eitherToMaybe <$>)
-		[ Ssh.onRemote NoConsumeStdin r (\f p -> liftIO (Git.Config.fromPipe r f p Git.Config.ConfigList), return (Left $ giveup "configlist failed")) "configlist" [] []
-		, getConfigViaRsync r gc
+	| not fast = extract <$> getM id
+		[ Ssh.onRemote NoConsumeStdin r (configpipe, return Nothing) "configlist" [] []
+		, getconfig $ getConfigViaRsync r gc
 		]
 	| otherwise = return (Nothing, r)
   where
 	extract Nothing = (Nothing, r)
 	extract (Just r') = (fromConfigValue <$> Git.Config.getMaybe coreGCryptId r', r')
 
-getConfigViaRsync :: Git.Repo -> RemoteGitConfig -> Annex (Either SomeException (Git.Repo, S.ByteString, String))
+	configpipe f p = getconfig $ liftIO $ 
+		Git.Config.fromPipe r f p Git.Config.ConfigList
+
+	getconfig a = do
+		(r', _, exitcode, _) <- a
+		if exitcode == ExitSuccess
+			then return (Just r')
+			else return Nothing
+
+getConfigViaRsync :: Git.Repo -> RemoteGitConfig -> Annex (Git.Repo, S.ByteString, ExitCode, String)
 getConfigViaRsync r gc = do
 	let (rsynctransport, rsyncurl, _) = rsyncTransport r gc
 	opts <- rsynctransport

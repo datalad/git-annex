@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-01-03T17:33:05Z"
+ content="""
+I don't know why ssh is failing to connect via the socket file like that.
+Generally when a socket file like this exists, there is a background ssh
+process that is servicing connections to it. It may be there was some
+problem with that process.
+
+git-annex interprets ssh failing as the ssh server not having git-annex
+installed, even though in this case it's some other problem. I have made
+some changes that improve this, so in this situation it should not set
+annex-ignore again, but will instead complain that it cannot connect to the
+server.
+"""]]

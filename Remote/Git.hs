@@ -278,14 +278,25 @@ tryGitConfigRead autoinit r hasuuid
 	| Git.repoIsSsh r = storeUpdatedRemote $ do
 		v <- Ssh.onRemote NoConsumeStdin r
 			( pipedconfig Git.Config.ConfigList autoinit (Git.repoDescribe r)
-			, return (Left "configlist failed")
+			, error "internal"
 			)
 			"configlist" [] configlistfields
 		case v of
 			Right r'
 				| haveconfig r' -> return r'
-				| otherwise -> configlist_failed
-			Left _ -> configlist_failed
+				| otherwise -> do
+					configlist_failed
+					return r
+			Left exitcode -> do
+				-- ssh exits 255 when there was an error
+				-- connecting to the remote server.
+				if exitcode /= ExitFailure 255 
+					then do
+						configlist_failed
+						return r
+					else do
+						warning $ UnquotedString $ "Unable to connect to repository " ++ Git.repoDescribe r ++ " to get its annex.uuid configuration."
+						return r
 	| Git.repoIsHttp r = storeUpdatedRemote geturlconfig
 	| Git.GCrypt.isEncrypted r = handlegcrypt =<< getConfigMaybe (remoteAnnexConfig r "uuid")
 	| Git.repoIsUrl r = do
@@ -298,31 +309,35 @@ tryGitConfigRead autoinit r hasuuid
 	haveconfig = not . M.null . Git.config
 
 	pipedconfig st mustincludeuuuid configloc cmd params = do
-		v <- liftIO $ Git.Config.fromPipe r cmd params st
-		case v of
-			Right (r', val, _err) -> do
+		(r', val, exitcode, _err) <- liftIO $ 
+			Git.Config.fromPipe r cmd params st
+		if exitcode == ExitSuccess
+			then do
 				unless (isUUIDConfigured r' || val == mempty || not mustincludeuuuid) $ do
 					warning $ UnquotedString $ "Failed to get annex.uuid configuration of repository " ++ Git.repoDescribe r
 					warning $ UnquotedString $ "Instead, got: " ++ show val
 					warning "This is unexpected; please check the network transport!"
 				return $ Right r'
-			Left l -> do
+			else do
 				warning $ UnquotedString $ "Unable to parse git config from " ++ configloc
-				return $ Left (show l)
+				return $ Left exitcode
 
 	geturlconfig = Url.withUrlOptionsPromptingCreds $ \uo -> do
 		let url = Git.repoLocation r ++ "/config"
 		v <- withTmpFile "git-annex.tmp" $ \tmpfile h -> do
 			liftIO $ hClose h
 			Url.download' nullMeterUpdate Nothing url tmpfile uo >>= \case
-				Right () -> pipedconfig Git.Config.ConfigNullList
-					False url "git"
-					[ Param "config"
-					, Param "--null"
-					, Param "--list"
-					, Param "--file"
-					, File tmpfile
-					]
+				Right () ->
+					pipedconfig Git.Config.ConfigNullList
+						False url "git"
+						[ Param "config"
+						, Param "--null"
+						, Param "--list"
+						, Param "--file"
+						, File tmpfile
+						] >>= return . \case
+							Right r' -> Right r'
+							Left exitcode -> Left $ "git config exited " ++ show exitcode
 				Left err -> return (Left err)
 		case v of
 			Right r' -> do
@@ -342,15 +357,7 @@ tryGitConfigRead autoinit r hasuuid
 				warning $ UnquotedString $ url ++ " " ++ err
 				return r
 
-	{- Is this remote just not available, or does
-	 - it not have git-annex-shell?
-	 - Find out by trying to fetch from the remote. -}
-	configlist_failed = case Git.remoteName r of
-		Nothing -> return r
-		Just n -> do
-			whenM (inRepo $ Git.Command.runBool [Param "fetch", Param "--quiet", Param n]) $ do
-				set_ignore "does not have git-annex installed" True
-			return r
+	configlist_failed = set_ignore "does not have git-annex installed" True
 	
 	set_ignore msg longmessage = do
 		case Git.remoteName r of
