@@ -1,3 +1,5 @@
+[[!meta title="VURL equivilant keys not populated when addurl is used with special remotes other than web"]]
+
 ### Please describe the problem.
 
 With an external special remote that handles a custom URL scheme, I receive a "Verification of content failed" on the first `git annex get` of a file (i.e. when git-annex cannot know a checksum for the file, yet).

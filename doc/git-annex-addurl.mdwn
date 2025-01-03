@@ -50,12 +50,14 @@ be used to get better filenames.
   verified with a checksum when it is transferred between git-annex
   repositories, as well as by things like `git-annex fsck`.
 
-  When used with --relaxed, content from the web will always be accepted,
-  even if it has changed, and the checksum recorded for later verification.
+  When used with --relaxed, content from the web special remote will
+  always be accepted, even if it has changed, and the checksum recorded
+  for later verification.
 
   When used with --fast, the checksum is recorded the first time the
-  content is downloaded from the web. Once a checksum has been recorded,
-  subsequent downloads from the web must have the same checksum.
+  content is downloaded from the web special remote. Once a checksum has
+  been recorded, subsequent downloads from the web special remote 
+  must have the same checksum.
 
   When addurl was used without this option before, the file it added 
   can be converted to be verifiable by migrating it to the VURL backend.

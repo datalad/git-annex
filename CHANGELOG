@@ -3,6 +3,8 @@ git-annex (10.20250103) UNRELEASED; urgency=medium
   * Improve handing of ssh connection problems during 
     remote annex.uuid discovery.
   * log: Support --key, as well as --branch and --unused.
+  * Avoid verification error when addurl --verifiable is used
+    with an url claimed by a special remote other than the web.
 
  -- Joey Hess <id@joeyh.name>  Fri, 03 Jan 2025 14:30:38 -0400
 

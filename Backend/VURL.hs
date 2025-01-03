@@ -31,8 +31,12 @@ backendVURL = Backend
 			-- Normally there will always be an key
 			-- recorded when a VURL's content is available,
 			-- because downloading the content from the web in
-			-- the first place records one.
-			[] -> return False
+			-- the first place records one. But, when the
+			-- content is downloaded from some other special
+			-- remote that claims an url, that might not be the
+			-- case. So, default to True when no key is
+			-- recorded.
+			[] -> return True
 			eks -> do
 				let check ek = getbackend ek >>= \case
 					Nothing -> pure False
