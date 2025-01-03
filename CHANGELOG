@@ -2,6 +2,7 @@ git-annex (10.20250103) UNRELEASED; urgency=medium
 
   * Improve handing of ssh connection problems during 
     remote annex.uuid discovery.
+  * log: Support --key, as well as --branch and --unused.
 
  -- Joey Hess <id@joeyh.name>  Fri, 03 Jan 2025 14:30:38 -0400
 

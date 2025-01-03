@@ -46,7 +46,7 @@ cmd = withAnnexOptions [jsonOptions, annexedMatchingOptions] $
 
 data LogOptions = LogOptions
 	{ logFiles :: CmdParams
-	, allOption :: Bool
+	, keyOptions :: Maybe KeyOptions
 	, sizesOfOption :: Maybe (DeferredParse UUID)
 	, sizesOption :: Bool
 	, totalSizesOption :: Bool
@@ -62,11 +62,7 @@ data LogOptions = LogOptions
 optParser :: CmdParamsDesc -> Parser LogOptions
 optParser desc = LogOptions
 	<$> cmdParams desc
-	<*> switch
-		( long "all"
-		<> short 'A'
-		<> help "display location log changes to all files"
-		)
+	<*> optional parseKeyOptions
 	<*> optional ((parseUUIDOption <$> strOption
 		( long "sizesof"
 		<> metavar (paramRemote `paramOr` paramDesc `paramOr` paramUUID)
@@ -138,22 +134,24 @@ seek o = ifM (null <$> Annex.Branch.getUnmergedRefs)
 		zone <- liftIO getCurrentTimeZone
 		outputter <- mkOutputter m zone o <$> jsonOutputEnabled
 		let seeker = AnnexedFileSeeker
-			{ startAction = const $ start o outputter
+			{ startAction = const $ \si file key ->
+				start o outputter (si, key, mkActionItem (file, key))
 			, checkContentPresent = Nothing
 			-- the way this uses the location log would not be
 			-- helped by precaching the current value
 			, usesLocationLog = False
 			}
-		case (logFiles o, allOption o) of
-			(fs, False) -> withFilesInGitAnnex ww seeker
+		case (logFiles o, keyOptions o) of
+			([], Just WantAllKeys) -> 
+				commandAction (startAll o outputter)
+			(fs, ko) -> withKeyOptions ko False
+				seeker (commandAction . start o outputter)
+				(withFilesInGitAnnex ww seeker)
 				=<< workTreeItems ww fs
-			([], True) -> commandAction (startAll o outputter)
-			(_, True) -> giveup "Cannot specify both files and --all"
 
-start :: LogOptions -> (ActionItem -> SeekInput -> Outputter) -> SeekInput -> RawFilePath -> Key -> CommandStart
-start o outputter si file key = do
+start :: LogOptions -> (ActionItem -> SeekInput -> Outputter) -> (SeekInput, Key, ActionItem) -> CommandStart
+start o outputter (si, key, ai) = do
 	(changes, cleanup) <- getKeyLog key (passthruOptions o)
-	let ai = mkActionItem (file, key)
 	showLogIncremental (outputter ai si) changes
 	void $ liftIO cleanup
 	stop

@@ -38,6 +38,18 @@ false, information may not have been committed to the branch yet.
   In this mode, the names of files are not available and keys are displayed
   instead.
 
+* `--key=keyname`
+
+  Displays the location log for the specified key.
+
+* `--branch=ref`
+
+  Displays the location log for the files in the specified branch or treeish.
+
+* `--unused`
+
+  Displays the location log for files found by last run of git-annex unused.
+
 * `--sizesof=repository`
 
   Displays a history of the total size of the annexed files in a repository
