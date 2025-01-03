@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2025-01-03T18:54:10Z"
+ content="""
+Re git-annex auto recovering, I was talking about that when I wrote:
+
+> To avoid this, the first `git-annex get` would need to notice that the
+> content it got looks like a pointer file. And it would need to communicate
+> that through the `git update-index` somehow to `git-annex filter-process`. Then
+> when that saw the same pointer file, it could output the original key, and
+> this situation would be avoided. Also bear in mind that the
+> `git update-index` can be interrupted and get restarted later and
+> it would still need to remember that it was dealing with this case then.
+> This seems... doable, but it will not be easy.
+
+That seems like a huge can of worms to open. Especially at this late date.
+
+As for manually recovering, you were able to see
+that `Videos/2024/08/2024.08.30-11.31.56.000--2024.08.30-11.48.03.377.mkv`
+is a file with the problem. The content of the file is an annex pointer
+file, and the key that points to is the content you want that file to have.
+So then a simple recovery script is:
+
+	#!/bin/sh
+	key=$(cat "$1" | sed 's!^annex/objects/!!')
+	git rm "$1"
+	git commit -m checkpoint
+	echo "annex/objects/$key" > "$1"
+	git add "$1"
+	git commit -m "restored file"
+
+The other way to recover, which works for me in the test case I posted
+in comment 5, is to just run `git-annex get` twice on the file. Then
+run `git commit` on the file.
+"""]]
