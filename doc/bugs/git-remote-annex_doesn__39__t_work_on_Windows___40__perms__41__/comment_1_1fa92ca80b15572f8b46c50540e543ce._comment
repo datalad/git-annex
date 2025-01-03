@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-01-03T16:20:37Z"
+ content="""
+AFAIK, git-remote-annex is not installed on windows. I assume you set up
+the link to git-annex yourself.
+
+This is a puzzling problem to me. I don't know anything about windows
+readonly attributes. But I don't think git-annex would ever set them.
+
+Indeed, it never freezes content on windows at all. That can be seen
+in the debug output you posted, where it does say it's "thawing content",
+but never "freezing content".
+
+If you had somehow configured a freeze hook that set the readonly
+attribute, it would run it on windows. I suppose you would have thought to
+mention if that was the case though.
+
+Also rather puzzling is that this is a temp object file, and not a
+.git/annex/objects/ file. So the failure is apparently happening in the
+middle of downloading the GITBUNDLE object, before it gets moved to that
+location. But the same code is run at that point as by any download of any
+git-annex object.
+"""]]
