@@ -1,0 +1,40 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2025-01-03T17:09:35Z"
+ content="""
+The reason `git-annex unused` does not show these files as unused is that
+it looks at non-staged files as well as staged files. There is a good
+reason for it to do that, consider:
+
+	git-annex add foo
+	mv foo bar
+	git-annex unused
+
+If that said that the object used by bar was unused, the user might drop
+that object, and then they would be surprised and unhappy when bar turned
+into a broken link. So the object is in fact still used even though only
+by an unstaged file.
+
+On the other hand, `git-annex unannex` only operates on files that are
+staged in git. 
+
+It would be possible for it to also operate on annexed
+symlinks that are not staged.
+
+But it seems to me there are other ways to get into that situation
+where it's not clear that the user would want `git-annex unannex` to do
+anything. Consider:
+
+	git-annex add foo
+	cp -a foo bar
+	git-annex unannex bar
+
+That unannex does nothing. If it instead replaced the symlink with
+a copy of the file, and the file was large, the user might be surprised
+to have a lot more disk space being used than they did before.
+
+It seems easy enough to recover an interruped `git-annex add` by
+either running `git add` on the symlinks, or re-running the `git-annex add`
+which will add the symlinks and pick up where it was interrupted.
+"""]]
