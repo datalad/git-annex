@@ -1,0 +1,43 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-01-03T16:33:46Z"
+ content="""
+It seems to me that "git-annex merge git-annex" is explicity asking
+git-annex to merge the git-annex branch into whatever branch you have
+checked out, the same as "git merge git-annex" is. Adding a special case to
+prevent this footgun would not prevent the "git merge git-annex" footgun.
+(Also I don't like adding DWIM special cases to git-annex.)
+
+git has --allow-unrelated-histories exactly to prevent this
+particular kind of mistake. I see you used it, but I don't understand why
+you thought that would make sense to use it. Best I can come up with is
+that you know two git-annex branches started independently will have
+unrelated histories. Of course, git-annex deals with that itself when
+merging such branches.
+
+I have slightly improved the git-annex-merge man page to hopefully make
+more clear what it does when you ask it to merge a specific branch.
+
+---
+
+As to why "git-annex merge" does not show it is merging the datalad-public
+remote's git-annex branch, there is a simple explanation: 
+That branch has already been merged.
+
+We can see this is the case in you `git-annex info`, which is able to list
+the UUID of that remote. That UUID comes from that branch. So git-annex has
+merged it already.
+
+It's also easy to show that git-annex merge has no difficulty with merging the
+git-annex branch in the situation where a remote has only a git-annex branch
+and no other branches. Eg:
+
+	> git init y; git init x; cd x; git-annex init; cd ../y; 
+	> git remote add x localhost:tmp/x
+	> git fetch x
+	> git-annex merge
+	merge git-annex (merging x/git-annex into git-annex...)
+
+So, this seems to have been operator error as far as I can see.
+"""]]

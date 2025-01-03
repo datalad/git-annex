@@ -12,10 +12,10 @@ When run without any parameters, this performs the same merging (and merge
 conflict resolution) that is done by the `git-annex pull` and `git-annex sync`
 commands, but without uploading or downloading any data.
 
-When a branch to merge is specified, this merges it, using the same merge
-conflict resolution as the `git-annex pull` command. This is especially useful on
-an adjusted branch, because it applies the same adjustment to the
-branch before merging it.
+When a branch to merge is specified, this merges it into the current branch,
+using the same merge conflict resolution as the `git-annex pull` command.
+This is especially useful on an adjusted branch, because it applies the same
+adjustment to the branch before merging it.
 
 When annex.resolvemerge is set to false, merge conflict resolution
 will not be done.
