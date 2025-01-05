@@ -1,0 +1,60 @@
+reposting since initial post seems has failed with odd https://www.oneukrainian.com/tmp/annex-blew-1.png .
+
+After spending some time in troubleshooting the situation that `git-annex` for some reason claims that `origin` remote does not support git-annex, I have ran into [11 year old discussion](https://git-annex.branchable.com/forum/ssh__95__exchange__95__identification__58___read__58___Connection_reset_by_peer/#comment-1776b4d3b175c77cdb44fc8656e3352c) which boils down to
+
+> It would be a good idea to `git config annex.sshcaching` false in repositories stored on encfs.
+
+As AFAIK encfs is generally working ok (seems to test ok with bleeding edge [ref](https://github.com/datalad/git-annex/issues/216)), and overall if there is something wrong, it better be fixed and not "avoided", I think that git-annex should either inform user about necessity to not do internal caching within the same repository (e.g. to have it configured to be shared somewhere under ~/.cache/` instead or a like) if file system does not support the ssh caching, or even somehow automagically handle the case, but it should not mislead in its reporting stating that remote does not support git-annex whenever it does.
+
+With this minimalistic reproducer where origin on a regular filesystem and a clone is under `encfs`, we receive a misleading error:
+
+<details>
+<summary>reproducer</summary> 
+
+```
+#!/bin/bash                                                                                                                                                                         
+export PS4='> '                                                                                                                                                                     
+set -x                                                                                                                                                                              
+set -eu                                                                                                                                                                             
+                                                                                                                                                                                    
+cd "$(mktemp -d ${TMPDIR:-/tmp}/dl-XXXXXXX)"                                                                                                                                        
+
+topd=$PWD
+mkdir -p denc{r,}; encfs --standard --extpass="echo 123" $PWD/denc{r,}
+
+cleanup () {
+    # to possible kill/troubleshoot
+    if ! fusermount -u $topd; then
+        lsof $topd/denc
+        echo "ERROR: failed to unmount"
+        exit 1
+    fi
+}
+trap cleanup SIGINT SIGHUP SIGABRT EXIT
+
+
+mkdir d
+(cd d; git init; git annex init; echo 1 > 1.dat; git annex add 1.dat; git commit -m 1 1.dat)
+
+echo "cloning locally and ssh works ok, testing"
+git clone localhost:$topd/d d-clone
+git -C d-clone annex wanted origin
+
+echo "but would not be happy under encfs with misleading error:"
+cd denc
+git clone localhost:$topd/d d-clone
+git -C d-clone annex wanted origin
+
+```
+</details>
+
+
+```
+> git -C d-clone annex wanted origin
+  Unable to parse git config from origin
+  Remote origin does not have git-annex installed; setting annex-ignore
+  This could be a problem with the git-annex installation on the remote. Please make sure that git-annex-shell is available in PATH when you ssh into the remote. Once you have fixed the git-annex installation, run: git annex enableremote origin
+git-annex: cannot determine uuid for origin (perhaps you need to run "git annex sync"?)
+```
+
+which is simply due to the fact that git-annex does not only unable to parse, it is unable to connect.  But if so, IMHO ideally it should avoid claiming anything about git annex installation there.
