@@ -458,6 +458,11 @@ jobs:
             sudo exportfs -a
             sudo mount -t nfs localhost:/tmp/nfsmount_ /tmp/nfsmount
           fi
+          if echo "${{ matrix.flavor }}" | grep -q "encfs" ; then
+            mkdir /tmp/encfsmount_ /tmp/encfsmount
+            sudo apt-get install -y encfs
+            encfs --standard --extpass="echo 123" /tmp/encfsmount_ /tmp/encfsmount
+          fi
 
           case "${{ matrix.flavor }}" in
             # For git-annex it causes only few temporary directories to be on the crippled FS,
@@ -477,7 +482,7 @@ jobs:
             nfs-home)
               export HOME=/tmp/nfsmount
               ;;
-            normal|custom-config1)
+            normal|custom-config1|encfs-repo)
               ;;
             *)
               echo "Unknown flavor ${{ matrix.flavor }}"
@@ -501,8 +506,18 @@ jobs:
               ;;
           esac
 
-          cd $HOME
+          case "${{ matrix.flavor }}" in
+            # Perform testing only (leaving TMP or HOME) aside in --repo flavors
+            # and generally under $HOME
+            encfs-repo) cd /tmp/encfsmount;;
+            *) cd $HOME;;
+          esac
+
           export | grep -e crippledfs || :
+
+          # Report basic info about current path given that we might cd away
+          stat $PWD
+          df . || :
 
           timeout 3600 git annex test "${test_opts[@]:-}"
 
