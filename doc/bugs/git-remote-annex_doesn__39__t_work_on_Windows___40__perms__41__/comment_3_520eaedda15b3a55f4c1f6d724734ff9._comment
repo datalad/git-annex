@@ -1,0 +1,78 @@
+[[!comment format=mdwn
+ username="jkniiv"
+ avatar="http://cdn.libravatar.org/avatar/05fd8b33af7183342153e8013aa3713d"
+ subject="comment 3"
+ date="2025-01-06T08:54:05Z"
+ content="""
+> AFAIK, git-remote-annex is not installed on windows. I assume you set up the link to git-annex yourself.
+
+That's right. Knowing that some of the functionality of git-remote-annex was already present I made
+a symlink in a directory in my `$env:PATH` with `cmd /c mklink git-remote-annex ..\path-to\git-annex.exe`
+(I have developer mode active in Windows settings) and that made git-remote-annex available to me/git-annex.
+
+> This is a puzzling problem to me. I don't know anything about windows readonly attributes. But I don't think git-annex would ever set them.
+>
+>Indeed, it never freezes content on windows at all. That can be seen in the debug output you posted, where it does say it's \"thawing content\", but never \"freezing content\".
+
+That is puzzling. Could the thawing do the wrong/opposite thing in some cases? Also, remember
+that anything that does `chmod u-w` by way of Git Bash's own shell (sh.exe/bash.exe), e.g. via `sh -c 'chmod u-w file'`, will effect
+a Windows readonly attribute on that file (thanks to MSYS2 behind the scenes):
+
+```
+e:\git-annex-tests\test-git-remote-annex\annex-c [adjusted/master(unlocked)]> touch ddd
+e:\git-annex-tests\test-git-remote-annex\annex-c [adjusted/master(unlocked) +1 ~0 -0 !]> ls
+
+    Directory: e:\git-annex-tests\test-git-remote-annex\annex-c
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a---            1.6.2024    23:28              5 a-1
+-a---            1.6.2024    23:28              5 b-2
+-a---            1.6.2024    23:28              7 c-3
+-a---            6.1.2025    10:31              0 ddd
+
+e:\git-annex-tests\test-git-remote-annex\annex-c [adjusted/master(unlocked) +1 ~0 -0 !]> sh -c 'chmod u-w ddd'
+e:\git-annex-tests\test-git-remote-annex\annex-c [adjusted/master(unlocked) +1 ~0 -0 !]> ls
+
+    Directory: e:\git-annex-tests\test-git-remote-annex\annex-c
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a---            1.6.2024    23:28              5 a-1
+-a---            1.6.2024    23:28              5 b-2
+-a---            1.6.2024    23:28              7 c-3
+-ar--            6.1.2025    10:31              0 ddd
+
+e:\git-annex-tests\test-git-remote-annex\annex-c [adjusted/master(unlocked) +1 ~0 -0 !]> rm ddd
+Remove-Item: You do not have sufficient access rights to perform this operation or the item is hidden, system, or read only.
+e:\git-annex-tests\test-git-remote-annex\annex-c [adjusted/master(unlocked) +1 ~0 -0 !]> sh -c 'type chmod'
+chmod is /usr/bin/chmod
+e:\git-annex-tests\test-git-remote-annex\annex-c [adjusted/master(unlocked) +1 ~0 -0 !]> sh -c 'type mount'
+mount is /usr/bin/mount
+e:\git-annex-tests\test-git-remote-annex\annex-c [adjusted/master(unlocked) +1 ~0 -0 !]> sh -c mount
+C:/scoop/apps/git/2.47.1 on / type ntfs (binary,noacl,auto)
+C:/scoop/apps/git/2.47.1/usr/bin on /bin type ntfs (binary,noacl,auto)
+C:/Users/jkniiv/AppData/Local/Temp on /tmp type ntfs (binary,noacl,posix=0,usertemp)
+C: on /c type ntfs (binary,noacl,posix=0,user,noumount,auto)
+D: on /d type ntfs (binary,noacl,posix=0,user,noumount,auto)
+E: on /e type ntfs (binary,noacl,posix=0,user,noumount,auto)
+
+```
+
+But I guess git-annex isn't calling out to external `chmod` in these cases.
+
+>
+>If you had somehow configured a freeze hook that set the readonly attribute, it would run it on windows. I suppose you would have thought to mention if that was the case though.
+
+Nope. No freeze/thaw hooks set. I'm not that brave nor cognizant of how to script them in a fool proof manner. :)
+
+
+```
+e:\git-annex-tests\test-git-remote-annex\annex-c [adjusted/master(unlocked)]> git config get annex.freezecontent-command
+e:\git-annex-tests\test-git-remote-annex\annex-c [adjusted/master(unlocked)]> git config get annex.thawcontent-command
+```
+
+>
+>Also rather puzzling is that this is a temp object file, and not a .git/annex/objects/ file. So the failure is apparently happening in the middle of downloading the GITBUNDLE object, before it gets moved to that location. But the same code is run at that point as by any download of any git-annex object.
+
+"""]]
