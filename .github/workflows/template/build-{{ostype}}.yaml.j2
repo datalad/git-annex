@@ -458,7 +458,7 @@ jobs:
             sudo exportfs -a
             sudo mount -t nfs localhost:/tmp/nfsmount_ /tmp/nfsmount
           fi
-          if echo "${{ matrix.flavor }}" | grep -q "encfs" ; then
+          if [[ "${{ matrix.flavor }}" == *encfs* ]] ; then
             mkdir /tmp/encfsmount_ /tmp/encfsmount
             sudo apt-get install -y encfs
             encfs --standard --extpass="echo 123" /tmp/encfsmount_ /tmp/encfsmount
