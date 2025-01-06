@@ -1,0 +1,45 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2025-01-03T20:59:36Z"
+ content="""
+Thinking about consequences of generalizing this from the web
+special remote to all special remotes that claim urls some more, I came up
+with this scenario:
+
+A special remote claims some urls. But it can also store arbitrary 
+keys that are sent to it by git-annex.
+
+At first, `git-annex addurl --verifiable --relaxed` is used to download one
+of the urls that the special remote claims.
+
+Later, that key gets copied back to the special remote.
+
+Then the special remote *corrupts* the content that was stored on it.
+
+Then, `git-annex get` is used to download the corrupted 
+content from the special remote. Let's say that the special remote, in this
+case, sends the object file that was stored in it, rather than looking up
+the url and retrieving that.
+
+This special remote doesn't do checksum verification itself, so
+retreiveKeyFile succeeds despite the corruption, and returns UnVerified. 
+
+Then git-annex verifies the content. And it fails verification.
+But, since `--relaxed` was used when the VURL was generated, it has no
+size. Which means any content from the special remote should be accepted.
+Even though it's corrupted!
+
+The web special remote doesn't have this problem because it doesn't store
+arbitrary git-annex objects. My conclusion is that a special remote that
+does support storing arbitrary objects in it, and also supports claimUrl,
+cannot work properly with `--relaxed` for VURLs. They could support
+`--fast` still, but this is making me wonder if learning equivilant key
+checksums for VURLs really should be generalized beyond the web special
+remote. 
+
+Maybe special remotes where that does make sense should do
+the same kind of thing that the web special remote does. Then we would be
+looking at an extension to the external special remote protocol, or some
+utility command to use to register the content of a VURL key.
+"""]]
