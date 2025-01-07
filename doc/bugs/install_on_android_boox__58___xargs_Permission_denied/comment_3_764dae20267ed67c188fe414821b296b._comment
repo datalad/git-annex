@@ -1,0 +1,65 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="odd system"
+ date="2025-01-07T21:06:35Z"
+ content="""
+```
+~ $ find git-annex.linux/ -iname xargs -ls
+    13206      4 drwx------   2 u0_a102  u0_a102      3488 Jul  2  2024 git-annex.linux/shimmed/xargs
+    13207     68 -rwx------   1 u0_a102  u0_a102     67856 Jul  2  2024 git-annex.linux/shimmed/xargs/xargs
+    14834      0 lrwxrwxrwx   1 u0_a102  u0_a102        34 Jul  2  2024 git-annex.linux/exe/xargs -> ../lib/ld-linux-aarch64
+.so.1
+    14339      4 -rwx------   1 u0_a102  u0_a102       128 Jul  2  2024 git-annex.linux/bin/xargs
+~ $ echo 123 | git-annex.linux/bin/xargs echo
+git-annex.linux/bin/xargs: 2: exec: /exe/xargs: Permission denied
+~ $ file git-annex.linux/lib/ld-linux-aarch64.so.1
+git-annex.linux/lib/ld-linux-aarch64.so.1: ELF shared object, 64-bit LSB arm64, BuildID=c955aebf7720fc28ce7443a0599cde62b194
+e7b7, stripped
+~ $ ls -ld git-annex.linux/lib/ld-linux-aarch64.so.1
+-rwx------ 1 u0_a102 u0_a102 145328 Apr 30  2024 git-annex.linux/lib/ld-linux-aarch64.so.1
+~ $ git-annex.linux/lib/ld-linux-aarch64.so.1
+Could not find a PHDR: broken executable?
+Aborted
+
+~ $ ldd git-annex.linux/lib/ld-linux-aarch64.so.1
+git-annex.linux/lib/ld-linux-aarch64.so.1[1]: syntax error: unexpected '('
+~ $ file git-annex.linux/lib/ld-linux-aarch64.so.1
+git-annex.linux/lib/ld-linux-aarch64.so.1: ELF shared object, 64-bit LSB arm64, BuildID=c955aebf7720fc28ce7443a0599cde62b194
+e7b7, stripped
+```
+
+so architecture is right but something \"not-good-enough\" for Android in it?
+
+interestingly that `ldd` fiasco since seems to be that the 
+
+```
+/bin $ nl -ba `which ldd`
+     1  #!/system/bin/sh
+     2
+     3  # Rather than have ldd and ldd64, this script does the right thing depending
+     4  # on the argument.
+     5
+     6  function error() {
+     7    echo \"$1\"
+     8    exit 1
+     9  }
+```
+
+and that `system/sh` does not support this syntax! (removal of `function ` seems to not help ..)  but that seems to be how many copies of such file distributed [around](https://github.com/search?q=%22rather+than+have+ldd+and+ldd64%22&type=code) .  `ldd` starts to work if I remove com.termux's `/bin/` from PATH and start system's `sh`...
+
+But overall that system feels really odd:
+
+```
+~ $ ls -ld /
+drwxr-xr-x 29 root root 4096 Dec 31  2008 /
+~ $ ls -l /
+ls: cannot open directory '/': Permission denied
+~ $ /wrongpath
+bash: /wrongpath: Permission denied
+```
+
+so - even through permissions there, `ls` cannot list it with Permissions denied. The same error if just using non-existing path. But it is more appropriate if I am in the system shell, not termux's bash.
+
+full transcript of my meanderings around the boox system is [here](http://www.oneukrainian.com/tmp/boox-transcript-20250107-1.txt).
+"""]]
