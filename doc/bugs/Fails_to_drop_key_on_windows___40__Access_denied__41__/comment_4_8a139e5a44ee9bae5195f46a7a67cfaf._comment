@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2025-01-07T20:33:22Z"
+ content="""
+I see that the directory special remote, on windows, adds back the write
+permission on files before removing them. That was done way back in
+[[!commit 38022f4f493588505896635703c34afa6c2e2406]].
+
+I've applied the same fix now to the annex objects side, so this should be
+fixed.
+"""]]

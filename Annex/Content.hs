@@ -512,6 +512,12 @@ withTmp key action = do
 moveAnnex :: Key -> AssociatedFile -> RawFilePath -> Annex Bool
 moveAnnex key af src = ifM (checkSecureHashes' key)
 	( do
+#ifdef mingw32_HOST_OS
+		{- Windows prevents deletion of files that are not
+		 - writable, and the file could have such a mode.
+		 - So avoid problems with deleting the file, now or later. -}
+		void $ liftIO $ tryIO $ allowWrite src
+#endif
 		withObjectLoc key storeobject
 		return True
 	, return False
@@ -733,7 +739,11 @@ cleanObjectLoc key cleaner = do
 	 -}
 	whenM hasThawHook $
 		void $ tryIO $ thawContent file
-		
+#ifdef mingw32_HOST_OS
+	{- Windows prevents deletion of files that are not writable. -}
+	void $ liftIO $ tryIO $ allowWrite file
+#endif
+
 	cleaner
 	cleanObjectDirs file
 

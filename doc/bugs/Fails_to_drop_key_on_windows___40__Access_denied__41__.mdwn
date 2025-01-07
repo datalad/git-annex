@@ -131,3 +131,5 @@ This observation comes from an effort to implement a git-remote-helper that uses
 
 [[!tag projects/datalad]]
 [[!tag projects/INM7]]
+
+> I think this is [[fixed|done]] now.. --[[Joey]]

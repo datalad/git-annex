@@ -9,6 +9,8 @@ git-annex (10.20250103) UNRELEASED; urgency=medium
   * Allow enableremote of an existing webdav special remote that has
     read-only access.
   * git-remote-annex: Use enableremote rather than initremote.
+  * Windows: Fix permission denied error when dropping files that
+    have the readonly attribute set.
 
  -- Joey Hess <id@joeyh.name>  Fri, 03 Jan 2025 14:30:38 -0400
 
