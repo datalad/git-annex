@@ -130,3 +130,4 @@ And here is the diff between the two sequences  (failure(-) vs success(+)
 This observation comes from an effort to implement a git-remote-helper that uses git-annex to enable fetch/push to and from any location that can be reached by any special remote. The fact that git-annex can be used to build things like this is just crazy cool! Thx much!
 
 [[!tag projects/datalad]]
+[[!tag projects/INM7]]

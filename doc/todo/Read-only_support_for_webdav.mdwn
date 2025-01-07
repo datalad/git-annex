@@ -5,3 +5,5 @@ A use case not possible with that approach is *authenticated* read-only access. 
 Weighing the two approaches (read-only `webdav` vs authenticated `httpalso`), it appears that only the read-only `webdav` is compatible with [git-remote-annex](https://git-annex.branchable.com/git-remote-annex/), because a user would need to declare *one* special remote (configuration) to use for cloning.
 
 It would be great to have authenticated, read-only access to webdav shares. Thanks in advance for considering!
+
+[[!tag projects/INM7]]

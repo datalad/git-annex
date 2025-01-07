@@ -496,3 +496,5 @@ backups, where it gives structure to my image-based backup routines, so you coul
 say I'm a believer. :)
 
 [[!meta author=jkniiv]]
+
+[[!tag projects/INM7]]
