@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2025-01-07T19:48:29Z"
+ content="""
+Seems to be the same problem as
+<https://git-annex.branchable.com/bugs/Fails_to_drop_key_on_windows___40__Access_denied__41__/>
+which also involves directory special remote, but does not involve
+git-remote-annex.
+
+A comment there tried what I suggested here, and indeed removing the
+ReadOnly attribute from the file in the directory special remote avoids the
+problem.
+"""]]

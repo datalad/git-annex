@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2025-01-07T19:46:35Z"
+ content="""
+This seems to be the same bug as
+<https://git-annex.branchable.com/bugs/git-remote-annex_doesn__39__t_work_on_Windows___40__perms__41__/#comment-129fb966abab410a08d919cf1dc09625>
+and over there we have some progress happening.
+"""]]
