@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2025-01-07T21:23:26Z"
+ content="""
+FWIW
+- no assistant running
+- reproduces still with 10.20250102+git5-ge8e36a90c1-1~ndall+1
+- reproduces on a full copy. I will send email with a URL (not sure if there are any secrets there, so do not want to send publicly)
+"""]]
