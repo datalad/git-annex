@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2025-01-07T20:12:31Z"
+ content="""
+Well, it then seem to me that \"web\" special remote is not that special and it would be useful to extend its *special case* to be supported by other special remotes exhibiting similar behavior of being useless if no URLs are registered for a key.
+
+BTW, isn't it not just `web` but also `bittorrent` (do not have any URL handy to check ATM) since I expect it also to be a special remote needing to know a URL?
+
+Anyways, sorry for the noise, but as it happens with *special cases* and aging brains, I keep forgetting some of them.  Hopefully I will make a better mental note about this one ;-)
+"""]]
