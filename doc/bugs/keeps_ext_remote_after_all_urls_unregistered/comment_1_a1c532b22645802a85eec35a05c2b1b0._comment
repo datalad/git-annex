@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-01-07T18:41:20Z"
+ content="""
+Removing the last url from the web special remote makes it treat
+content as no longer present in that remote. That is a documented special
+case.
+
+For all other special remotes, git-anenx does not have any reason
+to expect that removing a record of an url will mean that the special
+remote will not be able to still retrieve content that was stored on it.
+
+reregisterurl is no different than unregisterurl in this respect. Both document
+this special case. You've filed multiple bugs about rmurl having the same
+behavior in the past, IIRC. And IIRC those all got closed, so I guess I'll
+close this one too.
+"""]]

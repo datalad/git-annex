@@ -26,3 +26,5 @@ I think that git-annex should have completely dissociated that remote from the k
 
 [[!meta author=yoh]]
 [[!tag projects/dandi]]
+
+> Behaving as documented. [[done]] --[[Joey]]
