@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2025-01-07T17:17:14Z"
+ content="""
+AFAICS it only does it on a 401. I cannot find a code path where
+rejectUrlCredential is called with any other HTTP status.
+
+Are you still seeing this problem?
+"""]]
