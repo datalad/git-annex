@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2025-01-07T18:21:38Z"
+ content="""
+> Maybe this was improved after this forum post happened?
+
+No. All remotes that currently support import+export have protections in
+place to make that guarantee that exporting will not overwrite. My comment
+concerned the ability to implement exactly those protections.
+"""]]
