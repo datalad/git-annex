@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: comment 4"""
+ date="2025-01-07T18:29:44Z"
+ content="""
+> If the PSK were fully contained in the remote string then a third-party getting hold of that string could pretend to be the server 
+
+I agree this would be a problem, but how would a third-party get ahold of
+the string though? Remote urls don't usually get stored in the git
+repository, perhaps you were thinking of some other way.
+"""]]
