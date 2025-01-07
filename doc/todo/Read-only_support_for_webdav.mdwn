@@ -7,3 +7,5 @@ Weighing the two approaches (read-only `webdav` vs authenticated `httpalso`), it
 It would be great to have authenticated, read-only access to webdav shares. Thanks in advance for considering!
 
 [[!tag projects/INM7]]
+
+> [[done]] --[[Joey]]
