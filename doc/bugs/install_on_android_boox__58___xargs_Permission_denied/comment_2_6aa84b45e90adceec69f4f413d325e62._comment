@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2025-01-07T17:57:37Z"
+ content="""
+My guess would be that, since xargs is the first bundled binary from the
+git-annex tarball that gets run, that the binary is either the wrong
+architecture, or that something about the Android system prevents it from
+running ELF binaries from termux's home directory.
+"""]]
