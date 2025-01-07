@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2025-01-07T20:40:02Z"
+ content="""
+It would need some way for a special remote to indicate to git-annex that
+it is in this unusual class of remotes where not having an url is the same as
+content no longer being present in it.
+
+Implementing that would just make some more remotes have a special case,
+which seems even harder to remember. I'd rather remove the special case,
+but of course that will break existing workflows.
+
+And it is unusual. Consider a S3 remote. It can have an url recorded for a
+object stored in it, but forgetting the url doesn't mean that the S3 bucket
+no longer contains the file. If git-annex behaved this way for S3, it would
+be broken in a way that could be expensive to the user.
+
+(The special case is not currently implemented for bittorrent special
+remote. But it also doesn't record urls in a user-visible way actually.)
+"""]]
