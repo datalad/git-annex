@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 4"
+ date="2025-01-07T22:01:20Z"
+ content="""
+**yes**: remote would need to *indicate to git-annex* that \"feature\". ATM git-annex already does that via `EXTENSIONS` to announce what it can do, and it seems that 
+
+> The special remote can respond to that with its own EXTENSIONS message
+
+so it could have announced 
+
+
+```
+EXTENSIONS ABSENTIFNOURL
+```
+
+or alike.
+
+**yes** -- it is \"unusual\" as not every special remote would be \"URL-only\" remote. But there is AFAIK a growing number of custom remotes which are like that at least in `datalad` land: `datalad`, `datalad-archives`, [`datalad-uncurl`](https://docs.datalad.org/projects/next/en/latest/generated/datalad_next.annexremotes.uncurl.html) and likely others. Typically they are \"read-only\" remotes, and URL is used as the identifier for custom \"downloader\" support.
+
+It is interesting that bittorrent remote doesn't make them visible... never used, but wondered how my life would have been if I wanted to manage collection of torrent urls per each key...
+"""]]
