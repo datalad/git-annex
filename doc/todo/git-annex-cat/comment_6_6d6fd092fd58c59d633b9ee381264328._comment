@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="Doable8234"
+ avatar="http://cdn.libravatar.org/avatar/b0d5fea745f92c3b8cc8ecc3dafa6278"
+ subject="comment 6"
+ date="2025-01-07T02:11:33Z"
+ content="""
+Joey, I recently came across this same usecase. There are some intermediate files I store using git annex safely in the cloud and I want to fetch it. 
+
+Doing a `git annex get` and a drop seems like the wrong solution. Why am I unnecessarily adding risk when I know I don't care about whether the file currently exists in my repo? I then have to think about various cases like if I already had the file in my repo or not and be very careful. I can't just do a `git annex get; cat; git annex drop`.
+
+I could use a pull-only-clone of my git annex repo, but that comes with many issues and usage hassles like reconfiguring everything. On top of this, I'd sometimes need to do a `git annex drop --force` in my clones since they may not have access to everything that the main repo does which is even more scary.
+
+Your concerns [here](http://git-annex.branchable.com/todo/git-annex-cat/#comment-8ca717fcdeadb1c2413da1f82d3659c6) make sense to me. However, streaming vs downloading is just an optimization. I'm HAPPY to pay the performance cost which is much better than the safety cost I'm currently facing with my hacky solutions to this problem. All we need (from my meager understanding of git annex internals) is to have the `git annex cat` command download the contents on to a temporary file (in the literal `/tmp` directory) instead of the `annex/objects` directory, and then `cat` that at the end. That's pretty much all I (we?) am asking for. 
+
+I do know that you like to do things perfectly and I'm sure there'll be lots of issues with the proposal here that you can see that the rest of us cannot. But that's true of solutions too. Really really hoping you can figure out a solution for this. I'm happy to try and help with the code changes too if that helps. I have never used haskell before but very happy to take that challenge if we can settle on a design.
+"""]]
