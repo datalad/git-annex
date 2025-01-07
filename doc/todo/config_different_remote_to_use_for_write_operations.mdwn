@@ -1,0 +1,21 @@
+Sometimes the same repository can be accessed via two remotes. One remote
+might be readonly, but fast (or not needing a password) while the other one
+supports writing. The idea is to have a config setting that makes git-annex
+use the latter remote for write operations when the user tells it to
+operate on the former remote.
+
+This is somewhat similar to `remote.<name>.annexUrl`, but that is for
+different urls that access the same type of remote, eg http and ssh access
+to a git repository.
+
+This would also support --sameas remotes where a data store can be
+accessed via two different types of special remotes.
+
+The config could be something like `remote.<name>.annexWrite`.
+
+Implementation would need to somehow handle cases where a command can both
+read and write. Eg, `git-annex sync --content foo` with
+remote.foo.annexWrite=bar should use foo for reads, but bar for writes.
+So the implementation can't just replace the remote at parameter parse
+time. Instead, it seems it would need to modify the Remote object for foo,
+making write actions call to the Remote object for bar.

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2025-01-07T16:57:04Z"
+ content="""
+Note that I've opened a related todo, 
+[[config_different_remote_to_use_for_write_operations]]
+which might be a better approach to the `pushInsteadOf`
+type of thing.
+"""]]

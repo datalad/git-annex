@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-01-07T16:28:03Z"
+ content="""
+Interesting idea. Even without --sameas, it's possible to have 2 remotes
+that connect to the same repository in different ways, with one being
+readonly and the other supporting write as well. So I don't think this is
+really specific to --sameas.
+
+git-annex also has limited knowledge about whether a given special remote
+is readonly or not. That would make any kind of automated fallback unlikely
+to work well.
+
+I think there would need to be some config option to enable this.
+Otherwise, the user might be surprised if git-annex used a remote that they
+didn't want it to use for whatever reason.
+
+I've opened a todo, [[todo/config_different_remote_to_use_for_write_operations]].
+"""]]
