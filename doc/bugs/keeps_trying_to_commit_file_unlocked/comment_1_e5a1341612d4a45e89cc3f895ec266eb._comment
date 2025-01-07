@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-01-07T17:51:20Z"
+ content="""
+All I'm seeing here is a file that was locked and has gotten unlocked
+somehow.
+
+The new and old versions of the file in `git diff` are the same key, 
+so this is not the same as the "inception" bug.
+
+Was the assistant running in this repository? 
+
+If you're using the assistant, it's certainly possible that something
+that it observed happening on disk prompted it to restage the file.
+And the assistant always stages files unlocked.
+"""]]
