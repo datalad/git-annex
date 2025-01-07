@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 1"
+ date="2025-01-07T16:09:31Z"
+ content="""
+I even wonder if there could be some easy way to setup overall hook for `git-annex` invocation within a repo (hence within `.git/` of a repo) to e.g. safe-guard invocations of git-annex and prevent use within container environments (we often run into various problems).  So smells to me like developing some kind of `.git/annex/hooks/` support analog to `.git/hooks`.  Then whatever global `annex init` hook would setup for a repo within its `.git/annex/hooks` would be in effect for subsequent `annex` invocations within containers or natively.
+
+Other desired use-cases could be to prevent invocation of git-annex with known critical for that deployment defects/absent features (e.g. absent support of freeze/thaw scripts or some other recent feature).
+"""]]

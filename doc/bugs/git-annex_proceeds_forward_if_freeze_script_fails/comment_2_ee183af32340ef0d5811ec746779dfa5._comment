@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2025-01-07T01:06:57Z"
+ content="""
+2nd demonstration on [add_config_var_preventing_adjusted_branch_mode/#comment-...](https://git-annex.branchable.com/projects/datalad/bugs-done/add_config_var_preventing_adjusted_branch_mode/#comment-d1335f67352cc698862464515363f061) demonstrates another scenario with undesired effect of failing to freeze/thaw -- git-annex just switches to adjusted branches mode.  In that case there is likely no harm yet done to unwind and it would have better errored out altogether.
+"""]]
