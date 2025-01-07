@@ -43,3 +43,4 @@ ConfigMonitor crashed: S3 bucket not configured
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 I've successfully used git-annex (on and off) since you ran the kickstarter to develop the assistant :) I really like the project.
 
+[[!meta title="assistant: ConfigMonitor crashed: S3 bucket not configured"]]
