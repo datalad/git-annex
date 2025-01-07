@@ -586,14 +586,15 @@ withSpecialRemote cfg@(SpecialRemoteConfig {}) sab a = case specialRemoteName cf
 	Nothing -> specialRemoteFromUrl sab inittempremote
   where
 	-- Initialize a new special remote with the provided configuration
-	-- and name.
+	-- and name. This actually does a Remote.Enable, because the
+	-- special remote has already been initialized somewhere before.
 	initremote remotename = do
 		let c = M.insert SpecialRemote.nameField (Proposed remotename) $
 			M.delete (Accepted "config-uuid") $
 			specialRemoteConfig cfg
 		t <- either giveup return (SpecialRemote.findType c)
 		dummycfg <- liftIO dummyRemoteGitConfig
-		(c', u) <- Remote.setup t Remote.Init (Just (specialRemoteUUID cfg)) 
+		(c', u) <- Remote.setup t (Remote.Enable c) (Just (specialRemoteUUID cfg)) 
 			Nothing c dummycfg
 			`onException` cleanupremote remotename
 		Logs.Remote.configSet u c'

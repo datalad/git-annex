@@ -1,10 +1,9 @@
 [[!comment format=mdwn
  username="joey"
- subject="""comment 24"""
- date="2023-06-20T17:25:27Z"
+ subject="""Re: read-only webdav access"""
+ date="2025-01-07T18:51:26Z"
  content="""
-httpalso now supports chunking. So I think there's no need to add readonly
-support to webdav, probably. But if you disagree, I do think it would be
-possible to add. Just probably not useful.. after all webdav minus writing
-is little different than http. If you disagree, open a [[todo]].
+Update: Since I posted this comment, enableremote of an existing webdav
+special remote has been made to work even if you cannot write to it. So
+there is no need to use httpalso and no need for a readonly=true.
 """]]

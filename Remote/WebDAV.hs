@@ -137,7 +137,9 @@ webdavSetup ss mu mcreds c gc = do
 	(c', encsetup) <- encryptionSetup c gc
 	pc <- either giveup return . parseRemoteConfig c' =<< configParser remote c'
 	creds <- maybe (getCreds pc gc u) (return . Just) mcreds
-	testDav url creds
+	case ss of
+		Init -> testDav url creds
+		_ -> noop
 	gitConfigSpecialRemote u c' [("webdav", "true")]
 	c'' <- setRemoteCredPair ss encsetup pc gc (davCreds u) creds
 	return (c'', u)

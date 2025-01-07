@@ -6,6 +6,9 @@ git-annex (10.20250103) UNRELEASED; urgency=medium
   * Avoid verification error when addurl --verifiable is used
     with an url claimed by a special remote other than the web.
   * Fix installation on Android.
+  * Allow enableremote of an existing webdav special remote that has
+    read-only access.
+  * git-remote-annex: Use enableremote rather than initremote.
 
  -- Joey Hess <id@joeyh.name>  Fri, 03 Jan 2025 14:30:38 -0400
 

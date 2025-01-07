@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-01-07T18:51:26Z"
+ content="""
+I'm not sure I'd trust an old comment of mine to reflect whether httpalso
+supports http authentication. From what I can see, without trying it, it
+will use git-credential to prompt for password when receiving a 401
+response, the same as all other parts of git-annex that download urls
+do nowadays.
+
+Re git-remote-annex, I see your point though. Since it does set up the
+remote when cloning, and webdav remote setup calls involves creating and
+deleting a test file, the user needs write access currently. (Whether that
+test file is worth it doing at all, I'm on the fence about. It seemed like
+a good idea way back when.)
+
+I think that, rather than needing readonly=true, enableremote of a webdav
+special remote should just assume it exists and not test write access to
+it. Then it will work with readonly access. I've implemented that.
+
+And I've made git-remote-annex on git clone do an enableremote, rather than
+an initremote. That should make it work with a readonly webdav special
+remote.
+"""]]
