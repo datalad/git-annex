@@ -28,3 +28,6 @@ I have tried downloading the `.tar.gz` file and extracting it manually. Inside I
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Works great on all of my Fedora, Ubuntu, and Rocky machines!
+
+> Thanks for reporting, I have now fixed the bug in runshell. [[done]]
+> --[[Joey]]

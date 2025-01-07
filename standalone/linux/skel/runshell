@@ -206,7 +206,7 @@ case "$os" in
 			# The bundled git does not work well on sdcard, so delete
 			# it and use termux's git which works better.
 			cd "$base"
-			find . | grep git | grep -v git-annex | grep -v git-remote-tor-annex | grep -v git-remote-gcrypt | xargs rm -rf
+			find . | grep git | grep -v git-annex | grep -v git-remote-annex | grep -v git-remote-tor-annex | grep -v git-remote-gcrypt | xargs rm -rf
 			# Use termux's uname, which knows it's on android,
 			# not the bundled one.
 			rm -f bin/uname
