@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2025-01-07T17:29:57Z"
+ content="""
+Only way I can see thawing removing write perms if is you have
+core.sharedrepository configured to a particular umask value.
+
+But it certainly is possible that some other part of git-annex removes
+write perms.
+
+And in particular the directory special remote does, when content is stored
+in it. And you're using that.
+
+So, new theory: The GITBUNDLE object is stored on the directory special
+remote. When it later gets pulled from it, the file has readonly attribute
+set.
+
+Can you check if the directory special remote contains files with the
+readonly attribute set, and see if clearing that attribute prevents the
+problem from happening?
+"""]]
