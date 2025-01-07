@@ -1,0 +1,129 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 5"
+ date="2025-01-07T01:03:24Z"
+ content="""
+well, `git-annex` is calling `init` upon initial `get` if it was not `init`ed before.
+In our use case I think user cloned repository and then invoked `git annex get` within a container environment which did either not have access to original ~/.gitconfig or just to those thaw/freeze scripts. Result is the same as git-annex does not care if configured to be executed scripts fail to execute and plows forward switching to adjusted branches mode instead of errorring out.
+
+<details>
+<summary>execution where `~/.gitconfig` is not bound at all - switches since there is no global configuration for thaw/freeze. Having some global variable preventing switching to adjusted mode also would have been of no help </summary> 
+
+```
+[d31548v@discovery-01 tmp]$ git config annex.thawcontent-command
+/dartfs/rc/lab/D/DBIC/DBIC/archive/bin-annex/thaw-content %path
+[d31548v@discovery-01 tmp]$ singularity exec -B $PWD -c  --cleanenv  /dartfs/rc/lab/D/DBIC/DBIC/archive/containers/images/nipy/nipy-heudiconv--1.3.2.sing git config annex.thawcontent-command
+[d31548v@discovery-01 tmp]$ ls
+acl-with-separate-fd-aces  facl  hello.txt  now  testdir  yohdir
+[d31548v@discovery-01 tmp]$ git clone https://github.com/dandisets/000027
+Cloning into '000027'...
+remote: Enumerating objects: 198, done.
+remote: Counting objects: 100% (198/198), done.
+remote: Compressing objects: 100% (121/121), done.
+remote: Total 198 (delta 79), reused 171 (delta 52), pack-reused 0 (from 0)
+Receiving objects: 100% (198/198), 24.36 KiB | 1.06 MiB/s, done.
+Resolving deltas: 100% (79/79), done.
+[d31548v@discovery-01 tmp]$ singularity exec -B $PWD -c  --cleanenv  /dartfs/rc/lab/D/DBIC/DBIC/archive/containers/images/nipy/nipy-heudiconv--1.3.2.sing git -C $PWD/000027 annex get sub-RAT123/sub-RAT123.nwb
+
+  Filesystem does not allow removing write bit from files.
+
+  Detected a crippled filesystem.
+
+  Disabling core.symlinks.
+
+  Entering an adjusted branch where files are unlocked as this filesystem does not support locked files.
+
+Switched to branch 'adjusted/draft(unlocked)'
+hint: The '.git/hooks/post-checkout' hook was ignored because it's not set as executable.
+hint: You can disable this warning with `git config advice.ignoredHook false`.
+
+  Remote origin not usable by git-annex; setting annex-ignore
+
+  https://github.com/dandisets/000027/config download failed: Not Found
+get sub-RAT123/sub-RAT123.nwb (from web...) 
+ok                                
+(recording state in git...)
+
+```
+</details>
+
+<details>
+<summary>and execution where I do bind ~/.gitconfig but then scripts themselves are not available.  Here if git-annex just failed -- used might have had a better chance to understand the issue and would have not ended up in adjusted branches mode</summary> 
+
+```shell
+
+Cloning into '000027'...
+remote: Enumerating objects: 198, done.
+remote: Counting objects: 100% (198/198), done.
+remote: Compressing objects: 100% (121/121), done.
+remote: Total 198 (delta 79), reused 171 (delta 52), pack-reused 0 (from 0)
+Receiving objects: 100% (198/198), 24.36 KiB | 891.00 KiB/s, done.
+Resolving deltas: 100% (79/79), done.
+[d31548v@discovery-01 tmp]$ singularity exec -B $PWD -B $HOME/.gitconfig -c  --cleanenv  /dartfs/rc/lab/D/DBIC/DBIC/archive/containers/images/nipy/nipy-heudiconv--1.3.2.sing git -C $PWD/000027 annex get sub-RAT123/sub-RAT123.nwb
+/usr/lib/git-annex.linux/shimmed/sh/sh: 1: /dartfs/rc/lab/D/DBIC/DBIC/archive/bin-annex/freeze-content: not found
+/usr/lib/git-annex.linux/shimmed/sh/sh: 1: /dartfs/rc/lab/D/DBIC/DBIC/archive/bin-annex/thaw-content: not found
+
+  Filesystem allows writing to files whose write bit is not set.
+
+  Detected a crippled filesystem.
+
+  Disabling core.symlinks.
+
+  Entering an adjusted branch where files are unlocked as this filesystem does not support locked files.
+
+Switched to branch 'adjusted/draft(unlocked)'
+hint: The '.git/hooks/post-checkout' hook was ignored because it's not set as executable.
+hint: You can disable this warning with `git config advice.ignoredHook false`.
+
+  Remote origin not usable by git-annex; setting annex-ignore
+
+  https://github.com/dandisets/000027/config download failed: Not Found
+get sub-RAT123/sub-RAT123.nwb (from web...) 
+/usr/lib/git-annex.linux/shimmed/sh/sh: 1: /dartfs/rc/lab/D/DBIC/DBIC/archive/bin-annex/thaw-content: not found
+/usr/lib/git-annex.linux/shimmed/sh/sh: 1: /dartfs/rc/lab/D/DBIC/DBIC/archive/bin-annex/freeze-content: not found
+/usr/lib/git-annex.linux/shimmed/sh/sh: 1: /dartfs/rc/lab/D/DBIC/DBIC/archive/bin-annex/thaw-content: not found
+/usr/lib/git-annex.linux/shimmed/sh/sh: 1: /dartfs/rc/lab/D/DBIC/DBIC/archive/bin-annex/freeze-content: not found
+ok
+(recording state in git...)
+
+```
+</details>
+
+
+So, indeed -- likely having a config variable would have been of lesser value than if git-annex just errorred out as soon as configured scripts failed to execute since they are not available.
+
+*Might be worth a separate issue*:  another \"bad\" thing happens is when `git annex init` is ran with freeze/thaw available, so it does not switch to `adjusted` branch mode, but user later invokes `annex get` without scripts being configured -- files silently become unprotected and writeable.
+
+<details>
+<summary>demonstration</summary> 
+
+```shell
+[d31548v@discovery-01 tmp]$ git clone https://github.com/dandisets/000027
+Cloning into '000027'...
+gremote: Enumerating objects: 198, done.
+remote: Counting objects: 100% (198/198), done.
+remote: Compressing objects: 100% (121/121), done.
+remote: Total 198 (delta 79), reused 171 (delta 52), pack-reused 0 (from 0)
+Receiving objects: 100% (198/198), 24.36 KiB | 831.00 KiB/s, done.
+Resolving deltas: 100% (79/79), done.
+t -[d31548v@discovery-01 tmp]$ git -C 000027 annex init
+init  
+  Remote origin not usable by git-annex; setting annex-ignore
+
+  https://github.com/dandisets/000027/config download failed: Not Found
+ok
+(recording state in git...)
+[d31548v@discovery-01 tmp]$ singularity exec -B $PWD -c  --cleanenv  /dartfs/rc/lab/D/DBIC/DBIC/archive/containers/images/nipy/nipy-heudiconv--1.3.2.sing git -C $PWD/000027 annex get sub-RAT123/sub-RAT123.nwb
+get sub-RAT123/sub-RAT123.nwb (from web...) 
+ok                                
+(recording state in git...)
+[d31548v@discovery-01 tmp]$ ls -lL 000027/sub-RAT123/sub-RAT123.nwb
+-rw-rw----+ 1 d31548v rc-DBIC 18792 Jan  6 19:54 000027/sub-RAT123/sub-RAT123.nwb
+[d31548v@discovery-01 tmp]$ echo 123 >> 000027/sub-RAT123/sub-RAT123.nwb
+
+```
+</details>
+
+Hence overall suggesting that there should be some repository `.git/config` setting which would be set \"permanently\" upon `git annex init` to reliably enforce consistent use of the same thaw/freeze logic -- either it be built-in, or via specific tandem of freeze/thaw scripts (potentially related issue [on relative paths for configs](https://git-annex.branchable.com/todo/specify_freeze__47__thaw_scripts_relative_to_topdir/?updated)).
+"""]]
