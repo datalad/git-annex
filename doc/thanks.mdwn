@@ -34,7 +34,7 @@ contributed good bug reports and great ideas.
 ## financial support, 2024-2025
 
 <img alt="OpenNeuro logo" src="https://raw.githubusercontent.com/OpenNeuroOrg/openneuro/1c1e0d3b2a2032729727702eb65b1b563eadce1d/packages/openneuro-components/src/assets/on-dark.svg" width=100>&nbsp;&nbsp;
-<img alt="Standford wordmark" src="https://poldracklab.org/images/stanford-line2-8.png" width=200>&nbsp;&bbsp;
+<img alt="Standford wordmark" src="https://poldracklab.org/images/stanford-line2-8.png" width=200>&nbsp;&nbsp;
 <img alt="Jülich Forschungszentrum logo" src="https://www.fz-juelich.de/static/media/Logo.2ceb35fc.svg" width=200>&nbsp;&nbsp;
 
 git-annex development is supported in large part by:
