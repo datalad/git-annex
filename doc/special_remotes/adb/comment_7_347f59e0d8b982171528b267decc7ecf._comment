@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="octvs@17a99a7aaeb0c0e0a2375e14807b138740ba34e9"
+ nickname="octvs"
+ avatar="http://cdn.libravatar.org/avatar/e31212348b6392eb67daddf78fadfb1b"
+ subject="failing with `Operation not petmitted`"
+ date="2025-01-08T08:25:04Z"
+ content="""
+I recently faced with a fail 
+
+```
+...
+export pixel podcasts/<redacted>.mp3 
+adb: error: failed to copy '../../.git/annex/objects/17/vK/SHA256E-s57638506--06c92a06db07fa511271e5426c9447cb0fab551d7ba2b9c9d26d3c7e3f975b5c.mp3/SHA256E-s57638506--06c92a06db07fa511271e5426c9447cb0fab551d7ba2b9c9d26d3c7e3f975b5c.mp3' to '/storage/emulated/0/home/media/podcasts/not-related/<redacted>.mp3': remote couldn't create file: Operation not permitted
+../../.git/annex/objects/17/vK/SHA256E-s57638506--06c92a06db07...1 file pushed, 0 skipped. 37.0 MB/s (57638506 bytes in 1.487s
+
+  adb failed to store file
+failed
+(recording state in git...)
+export: 2 failed
+```
+
+Everything is done as usual on the phone, barring two all other files are
+succesfully sent. Any clues what might be the cause?
+
+"""]]
