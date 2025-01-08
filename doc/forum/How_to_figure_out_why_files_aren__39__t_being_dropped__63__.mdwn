@@ -1,0 +1,31 @@
+I've got a repo on my laptop to which I copied some files in order to store it in the cold storage. All repos of the cold storage are in the same group and wanted/required expressions are set up such that the group wants exactly one copy.
+
+This has been working fine but now after I copied the keys, I'm in the situation where running `git annex sync --content --all` in the repo on the laptop doesn't drop the keys that now have a copy in the cold storage group.
+
+numcopies=3 and there are 4 trusted copies (including the laptop), so that should work.
+
+The laptop repo wants `groupwanted or not copies=cold:1`.
+
+groupwanted expressions:
+
+```
+groupwanted hot = ((not copies=hot:1) or (not copies=cold:1) or (not copies=cold:1 and unused)) or ((not copies=lukewarm:1) or (approxlackingcopies=1))
+groupwanted client = (approxlackingcopies=1)
+groupwanted cold = (not copies=cold:1) or (not copies=cold:1 and unused)
+groupwanted lukewarm = (not copies=cold:1) or (not copies=lukewarm:1) or (approxlackingcopies=1)
+```
+
+(I need to clean these up, I know.)
+
+There's one copy in client (laptop), hot, cold, and lukewarm and all of them are either reachable or trusted.
+
+I could drop stuff manually of course but the next sync would try to get them again, so that's no good.
+
+How can I figure out *why* a certain repo wants a certain key? I currently don't even know whether it's numcopies somehow or the wanted expression and then also which expression causes it.
+
+One way I just thought of for the latter part would be to evaluate the individual expressions for some key to see whether they match. I've done that in my head of course and came to the conclusion that it shouldn't be wanted but I'd like the logic inside git-annex to tell me what actually happens. I effectively need a way to debug wanted expressions.  
+Is there a way to evaluate an arbitrary wanted expression to a boolean given a key?
+
+```
+git-annex version: 10.20240927
+```
