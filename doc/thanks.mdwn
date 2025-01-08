@@ -31,17 +31,19 @@ tips, user support, etc. Two names that come to mind are Anarcat and
 CandyAngel. John Lawrence made the logo. And many others have
 contributed good bug reports and great ideas.
 
-## financial support, 2024
+## financial support, 2024-2025
 
 <img alt="OpenNeuro logo" src="https://raw.githubusercontent.com/OpenNeuroOrg/openneuro/1c1e0d3b2a2032729727702eb65b1b563eadce1d/packages/openneuro-components/src/assets/on-dark.svg" width=100>
 <img alt="Standford wordmark" src="https://poldracklab.org/images/stanford-line2-8.png" width=200>
-
+<img alt="Jülich Forschungszentrum logo" src="https://www.fz-juelich.de/static/media/Logo.2ceb35fc.svg" width=200>
 
 git-annex development is supported in large part by:
 
 * [OpenNeuro](https://openneuro.org/), funded by a
   [BRAIN Initiative NIH grant](//reporter.nih.gov/project-details/10881961)
   awarded to The Poldrack Lab at Stanford University.
+* Institute of Neuroscience and Medicine (Brain and Behavior; INM-7)
+  at [Forschungszentrum Jülich](https://www.fz-juelich.de/en/inm/inm-7).
 * [DANDI](https://www.dandiarchive.org/), funded by
   [a NIH grant](https://projectreporter.nih.gov/project_info_description.cfm?aid=9981835)
   awarded to MIT, Dartmouth College, and Kitware.
