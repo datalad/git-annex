@@ -1,0 +1,19 @@
+Trying to add a Backblaze b2 special remote using rclone. 
+
+Have tested the remote using rclone so I know it is set up properly and connecting. 
+
+Running 
+
+    git annex initremote remotename type=rclone encryption=none rcloneremotename=remotename
+
+to initiate the remote in git-annex. 
+
+
+It fails with: 
+
+    initremote remotename
+    git-annex: this rclone remote does not support empty directories
+    failed
+    initremote: 1 failed
+
+Can not figure out what that means, searching does not help. What have I missed?
