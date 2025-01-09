@@ -1,0 +1,41 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2025-01-09T14:46:37Z"
+ content="""
+Ok, thanks for the test case. I can reproduce it with that.
+
+The file is actually unlocked already in the first commit of it to git,
+as can be seen in its file permissions:
+
+	joey@darkstar:~/tmp/open-brain-consent>git ls-tree -r f50cc382241662613b86073a2c001398e30c120f|grep samples/UK_gla_3T_fMRI_consent_form_v3.0.docx
+	100644 blob 3215574fde295d53dc0032ec65e826236a2f2758	samples/UK_gla_3T_fMRI_consent_form_v3.0.docx
+
+Somewhat weirdly, while that file is not a symlink, it has the *form* of a
+git-annex symlink target rather than an unlocked pointer file:
+
+	joey@darkstar:~/tmp/open-brain-consent>cat samples/UK_gla_3T_fMRI_consent_form_v3.0.docx; echo
+	../.git/annex/objects/5M/wv/MD5E-s591826--1ca9251906259623f73a3aba47ef6369.0.docx/MD5E-s591826--1ca9251906259623f73a3aba47ef6369.0.docx
+
+That unusual content of a pointer file is still something git-annex
+can handle, because it happens to use the same code path to parse a link
+target and a pointer file.
+
+This explains why the file gets a modification staged:
+The file's annexed content is present, so the smudge clean filter and
+restage happens. In this case, the smudge clean filter emits
+a usual annex link, which is different than the file's previous content.
+Which is why it ends up with a modification staged.
+
+What you should probably do is just commit the change that git-annex staged,
+converting it to a usual unlocked file. Or lock the file is you want it locked.
+Once it's in a usual state, this will stop being a problem.
+
+Perhaps git-annex could probably avoid staging a modification in this case.
+Although there are several code paths where a pointer file can be written
+and/or staged, and all of them would have to take care to handle this case,
+which I think would mean extra work and slow it down for everyone.
+
+And, I don't know how the file got into this state in the first place, 
+perhaps some other bug or weird behavior?
+"""]]
