@@ -1,0 +1,34 @@
+[[!comment format=mdwn
+ username="jkniiv"
+ avatar="http://cdn.libravatar.org/avatar/05fd8b33af7183342153e8013aa3713d"
+ subject="same problem on a VPS"
+ date="2025-01-09T21:14:06Z"
+ content="""
+This doesn't seem to be merely a problem with my home internet but I also get the same error
+on a VPS hosted by Hetzner (Helsinki data center):
+
+```
+jkniiv@jibun-ubuntu-2gb-hel1-1:~$ git clone git://git-annex.branchable.com/ git-annex-clone-TEST
+Cloning into 'git-annex-clone-TEST'...
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+```
+
+Yet:
+
+```
+jkniiv@jibun-ubuntu-2gb-hel1-1:~$ git clone git://git.joeyh.name/git-annex git-annex-clone-TEST
+Cloning into 'git-annex-clone-TEST'...
+remote: Enumerating objects: 281839, done.
+remote: Counting objects: 100% (18490/18490), done.
+remote: Compressing objects: 100% (6909/6909), done.
+remote: Total 281839 (delta 12887), reused 16462 (delta 11469), pack-reused 263349 (from 1)
+Receiving objects: 100% (281839/281839), 59.49 MiB | 20.45 MiB/s, done.
+Resolving deltas: 100% (201606/201606), done.
+```
+
+So what is going on?
+
+"""]]
