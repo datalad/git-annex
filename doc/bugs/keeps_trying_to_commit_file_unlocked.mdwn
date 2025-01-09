@@ -90,3 +90,5 @@ Not sure if relates to the following issue under current investigation (but not 
 
 [[!meta author=yoh]]
 [[!tag projects/repronim]]
+
+[[!meta title="pointer file in the form of annex symlink target gets restaged modified"]]
