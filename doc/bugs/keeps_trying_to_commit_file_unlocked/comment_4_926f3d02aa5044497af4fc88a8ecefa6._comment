@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2025-01-09T15:58:54Z"
+ content="""
+Getting a file into this state can be done like this:
+
+	echo bar > foo
+	git-annex add
+	echo '.git/annex/objects/g7/9v/SHA256E-s4--7d865e959b2466918c9863afca942d0fb89d7c9ac0c99bafc3749504ded97730/SHA256E-s4--7d865e959b2466918c9863afca942d0fb89d7c9ac0c99bafc3749504ded97730' > foo
+	git add foo
+	git commit -m foo
+	git reset --hard
+	git status
+	git diff
+
+How the symlink bit might have gotten lost in real life, I don't know
+though.
+"""]]
