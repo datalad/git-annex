@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2025-01-09T17:38:25Z"
+ content="""
+Seems like a reasonable idea to have a hook that runs before `git-annex
+init` does any of its probing or configuration.
+
+As for generalizing to a hook that is run before each git-annex command,
+putting it in .git/hooks seems like it could cause a fair bit of extra work
+probing if the hook(s) exist, especially in cases where git-annex runs git
+which might run git-annex again repeatedly.
+
+There could be a generalized hook config, eg `git config annex.pre-hook
+my-hook` could make `git-annex init` run `my-hook git-annex init`
+and same for other git-annex commands.
+
+It sounds like you would want a failure of such a hook to prevent the
+git-annex command from running. Is that right?
+
+Worth bearing in mind that if such a hook output to stdout, or read from
+stdin, or for that matter was interactive on /dev/tty, it could badly
+mess up things that use git-annex as plumbing. Including git, in the case
+of the smudge filter.
+
+(Should this todo be tagged repronim btw?)
+"""]]

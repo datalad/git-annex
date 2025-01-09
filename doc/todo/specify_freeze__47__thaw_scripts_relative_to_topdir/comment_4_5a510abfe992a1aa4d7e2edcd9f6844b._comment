@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2025-01-09T17:57:05Z"
+ content="""
+I can see how it would be simpler for you to just be able to have those
+hooks in .git/hooks/ along with the rest of the repository.
+
+I don't think that a special casing of "./" is a good idea, that would be
+pretty confusing and for all I know some user might really want git-annex
+to run a hook in the current directory of their git repository.
+
+I am meh on "%dotgit", for one thing in a bare repository it's not `.git`.
+
+What if git-annex just added the git hooks directory to the end of PATH
+when running configured `annex.*-command`s? Then you could: `git config
+annex.thawcontent-command annex-thawcontent` and put your script in
+.git/hooks/annex-thawcontent
+
+This nicely avoids git-annex doing any extra work in general to check if
+.git/hooks/ exist.
+
+The reason I think it would need to be at the end of PATH rather than the
+front is that there are some git hooks with names like "update" and "applypatch" 
+that I can imagine might have the same names as a user's own programs
+in their PATH. For example, if `annex.commitmessage-command=foo` and the
+script foo runs "update", the user would be surprised if that ran the git
+hook rather than their `~/bin/update`.
+
+On the other hand, when configuring a `annex.*-command`, it does not seem
+likely that the user would set it to "update" or any of the other names
+of git hooks. Especially if they didn't have an "update" in PATH.
+So using the git hook directory for this, rather than some
+other special directory under .git seems ok.
+"""]]
