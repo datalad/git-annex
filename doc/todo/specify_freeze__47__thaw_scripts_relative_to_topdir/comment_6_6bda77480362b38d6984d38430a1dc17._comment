@@ -1,0 +1,34 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2025-01-10T16:13:44Z"
+ content="""
+After sleeping on it, I concur that PATH changes feel unwise.
+
+Also, it turns out that git-annex already actually caches existing hooks,
+so adding new hook scripts to .git/hooks/ even for things that run
+frequently is not a performance problem.
+
+So, my plan is to add .git/hooks that are run in preference to some 
+`annex.*-command` git configs. Eg, .git/hooks/freezecontent-annex
+corresponds to annex.freezecontent-command.
+
+The "-annex" prefix matches the current pre-commit-annex and post-update-annex
+hooks. Also considering adding git configs corresponding to the existing
+hooks. I doubt that there would be much use case for configuring
+annex.pre-commit-command rather than the pre-commit-annex hook, since the
+hook is there only to let users who would usually install a pre-commit hook
+to install their hook script without getting in the way of the pre-commit
+hook that git-annex writes. But, it seems worth having the git config just
+for consistency.
+
+There are some things like annex.youtube-dl-command and
+annex.http-headers-command that are configuring commands for git-annex to
+run, and are not really hooks per se.
+
+And it does not make sense to have hook scripts that a specific to a given
+remote corresponding to configs like `remote.name.annex-cost-command`.
+Instead it might make sense to have a `.git/hooks/remote-cost-annex` that
+is passed the name of the remote, but that bridge can be crossed if we
+come to it.
+"""]]
