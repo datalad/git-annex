@@ -43,3 +43,8 @@ Approximate round trip times in milli-seconds:
 Sure. It's always rockin'!
 
 [[!meta author=jkniiv]]
+
+> This was git's safe.directory changes which uncessarily broke git-daemon
+> for no added security (something I've told the git devs about but they
+> have not fixed),
+> now worked around in the server config. [[fixed|done]]
