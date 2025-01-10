@@ -1154,16 +1154,19 @@ repository, using [[git-annex-config]]. See its man page for a list.)
 
   This command is run and its output is used as the commit message to the
   git-annex branch.
+  
+  Alternatively, a hook script can be installed in 
+  `.git/hooks/commitmessage-annex`
 
 * `annex.post-update-command`
 
   This command is run after git-annex updates the git-annex branch.
 
-  Alternatively, a hook script can be installed in 
-  `.git/hooks/post-update-annex`
-
   When publishing a git-annex repository by http, this can be used to run
   `git update-server-info`
+
+  Alternatively, a hook script can be installed in 
+  `.git/hooks/post-update-annex`
 
 * `annex.pre-commit-command`
 
@@ -1422,21 +1425,28 @@ repository, using [[git-annex-config]]. See its man page for a list.)
   erased.
 
   For example, to use the wipe command, set it to `wipe -f %file`.
+  
+  Alternatively to setting the git config, a hook script can be installed
+  in `.git/hooks/secure-erase-annex`
 
 * `annex.freezecontent-command`, `annex.thawcontent-command`
 
   Usually the write permission bits are unset to protect annexed objects
-  from being modified or deleted. The freezecontent-command is run after
+  from being modified or deleted. Freezecontent is run after
   git-annex has removed (or attempted to remove) the write bit, and can
   be used to prevent writing in some other way.
-  The thawcontent-command should undo its effect, and is run before
+  Tawcontent should undo its effect, and is run before
   git-annex restores the write bit.
 
   In the command line, %path is replaced with the file or directory to
   operate on.
 
   (When annex.crippledfilesystem is set, git-annex will not try to
-  remove/restore the write bit, but it will still run these hooks.)
+  remove/restore the write bit, but it will still run freezecontent and
+  thawcontent.)
+
+  Alternatively to setting the git config, hook scripts can be installed
+  in `.git/hooks/freezecontent-annex` and `.git/hooks/thawcontent-annex`.
 
 * `annex.tune.objecthash1`, `annex.tune.objecthashlower`, `annex.tune.branchhash1`
 
@@ -2065,6 +2075,9 @@ Remotes are configured using these settings in `.git/config`.
 
   If set, the command is run and each line of its output is used as a HTTP
   header. This overrides annex.http-headers.
+  
+  Alternatively, a hook script can be installed in 
+  `.git/hooks/http-headers-annex`
 
 * `annex.security.allowed-url-schemes`
 

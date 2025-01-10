@@ -35,6 +35,7 @@ import Annex.Common
 import qualified Annex
 import qualified Utility.Url as U
 import qualified Utility.Url.Parse as U
+import Annex.Hook
 import Utility.Hash (IncrementalVerifier)
 import Utility.IPAddress
 import Network.HTTP.Client.Restricted
@@ -75,9 +76,11 @@ getUrlOptions = Annex.getState Annex.urloptions >>= \case
 			<*> pure (Just (\u -> "Configuration of annex.security.allowed-url-schemes does not allow accessing " ++ show u))
 			<*> pure U.noBasicAuth
 	
-	headers = annexHttpHeadersCommand <$> Annex.getGitConfig >>= \case
-		Just cmd -> lines <$> liftIO (readProcess "sh" ["-c", cmd])
-		Nothing -> annexHttpHeaders <$> Annex.getGitConfig
+	headers =
+		outputOfAnnexHook httpHeadersAnnexHook annexHttpHeadersCommand
+			>>= \case
+				Just output -> pure (lines output)
+				Nothing -> annexHttpHeaders <$> Annex.getGitConfig
 	
 	checkallowedaddr = words . annexAllowedIPAddresses <$> Annex.getGitConfig >>= \case
 		["all"] -> do

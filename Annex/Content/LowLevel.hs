@@ -10,6 +10,7 @@
 module Annex.Content.LowLevel where
 
 import Annex.Common
+import Annex.Hook
 import Logs.Transfer
 import qualified Annex
 import Utility.DiskFree
@@ -25,11 +26,8 @@ import System.PosixCompat.Files (linkCount)
  - File may or may not be deleted at the end; caller is responsible for
  - making sure it's deleted. -}
 secureErase :: RawFilePath -> Annex ()
-secureErase file = maybe noop go =<< annexSecureEraseCommand <$> Annex.getGitConfig
-  where
-	go basecmd = void $ liftIO $
-		boolSystem "sh" [Param "-c", Param $ gencmd basecmd]
-	gencmd = massReplace [ ("%file", shellEscape (fromRawFilePath file)) ]
+secureErase = void . runAnnexPathHook "%file"
+	secureEraseAnnexHook annexSecureEraseCommand
 
 data LinkedOrCopied = Linked | Copied
 

@@ -4,7 +4,7 @@
  - git-annex not change, otherwise removing old hooks using an old
  - version of the script would fail.
  -
- - Copyright 2013-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -48,6 +48,21 @@ preCommitAnnexHook = Git.Hook "pre-commit-annex" "" []
 postUpdateAnnexHook :: Git.Hook
 postUpdateAnnexHook = Git.Hook "post-update-annex" "" []
 
+freezeContentAnnexHook :: Git.Hook
+freezeContentAnnexHook = Git.Hook "freezecontent-annex" "" []
+
+thawContentAnnexHook :: Git.Hook
+thawContentAnnexHook = Git.Hook "thawcontent-annex" "" []
+
+secureEraseAnnexHook :: Git.Hook
+secureEraseAnnexHook = Git.Hook "secure-erase-annex" "" []
+
+commitMessageAnnexHook :: Git.Hook
+commitMessageAnnexHook = Git.Hook "commitmessage-annex" "" []
+
+httpHeadersAnnexHook :: Git.Hook
+httpHeadersAnnexHook = Git.Hook "http-headers-annex" "" []
+
 mkHookScript :: String -> String
 mkHookScript s = unlines
 	[ shebang
@@ -69,23 +84,26 @@ hookWarning h msg = do
 	warning $ UnquotedString $
 		Git.hookName h ++ " hook (" ++ Git.hookFile h r ++ ") " ++ msg
 
-{- Runs a hook. To avoid checking if the hook exists every time,
- - the existing hooks are cached. -}
-runAnnexHook :: Git.Hook -> (GitConfig -> Maybe String) -> Annex ()
-runAnnexHook hook commandcfg = do
+{- To avoid checking if the hook exists every time, the existing hooks
+ - are cached. -}
+doesAnnexHookExist :: Git.Hook -> Annex Bool
+doesAnnexHookExist hook = do
 	m <- Annex.getState Annex.existinghooks
 	case M.lookup hook m of
-		Just True -> runhook
-		Just False -> runcommandcfg
+		Just exists -> return exists
 		Nothing -> do
 			exists <- inRepo $ Git.hookExists hook
 			Annex.changeState $ \s -> s
 				{ Annex.existinghooks = M.insert hook exists m }
-			if exists
-				then runhook
-				else runcommandcfg
+			return exists
+
+runAnnexHook :: Git.Hook -> (GitConfig -> Maybe String) -> Annex ()
+runAnnexHook hook commandcfg = ifM (doesAnnexHookExist hook)
+	( runhook
+	, runcommandcfg
+	)
   where
-	runhook = unlessM (inRepo $ Git.runHook hook) $ do
+	runhook = unlessM (inRepo $ Git.runHook boolSystem hook []) $ do
 		h <- fromRepo $ Git.hookFile hook
 		commandfailed h
 	runcommandcfg = commandcfg <$> Annex.getGitConfig >>= \case
@@ -94,3 +112,29 @@ runAnnexHook hook commandcfg = do
 				commandfailed command
 		Nothing -> noop
 	commandfailed c = warning $ UnquotedString $ c ++ " failed"
+
+runAnnexPathHook :: String -> Git.Hook -> (GitConfig -> Maybe String) -> RawFilePath -> Annex Bool
+runAnnexPathHook pathtoken hook commandcfg p = ifM (doesAnnexHookExist hook)
+	( runhook
+	, runcommandcfg
+	)
+  where
+	runhook = inRepo $ Git.runHook boolSystem hook [ File (fromRawFilePath p) ]
+	runcommandcfg = commandcfg <$> Annex.getGitConfig >>= \case
+		Just basecmd -> liftIO $
+			boolSystem "sh" [Param "-c", Param $ gencmd basecmd]
+		Nothing -> return True
+	gencmd = massReplace [ (pathtoken, shellEscape (fromRawFilePath p)) ]
+
+outputOfAnnexHook :: Git.Hook -> (GitConfig -> Maybe String) -> Annex (Maybe String)
+outputOfAnnexHook hook commandcfg = ifM (doesAnnexHookExist hook)
+	( runhook
+	, runcommandcfg
+	)
+  where
+	runhook = inRepo (Git.runHook runhook' hook [])
+	runhook' c ps = Just <$> readProcess c (toCommand ps)
+	runcommandcfg = commandcfg <$> Annex.getGitConfig >>= \case
+		Just command -> liftIO $ 
+			Just <$> readProcess "sh" ["-c", command]
+		Nothing -> return Nothing

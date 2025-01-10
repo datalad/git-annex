@@ -33,6 +33,7 @@ module Annex.Perms (
 ) where
 
 import Annex.Common
+import Annex.Hook
 import Utility.FileMode
 import Git
 import Git.ConfigTypes
@@ -340,24 +341,24 @@ modifyContentDirWhenExists f a = do
 	either throwM return v
 
 hasFreezeHook :: Annex Bool
-hasFreezeHook = isJust . annexFreezeContentCommand <$> Annex.getGitConfig
+hasFreezeHook = 
+	(isJust . annexFreezeContentCommand <$> Annex.getGitConfig)
+		<||>
+	(doesAnnexHookExist freezeContentAnnexHook)
 
 hasThawHook :: Annex Bool
-hasThawHook = isJust . annexThawContentCommand <$> Annex.getGitConfig
+hasThawHook =
+	(isJust . annexThawContentCommand <$> Annex.getGitConfig)
+		<||>
+	(doesAnnexHookExist thawContentAnnexHook)
 
 freezeHook :: RawFilePath -> Annex ()
-freezeHook p = maybe noop go =<< annexFreezeContentCommand <$> Annex.getGitConfig
-  where
-	go basecmd = void $ liftIO $
-		boolSystem "sh" [Param "-c", Param $ gencmd basecmd]
-	gencmd = massReplace [ ("%path", shellEscape (fromRawFilePath p)) ]
+freezeHook = void . runAnnexPathHook "%path"
+	freezeContentAnnexHook annexFreezeContentCommand
 
 thawHook :: RawFilePath -> Annex ()
-thawHook p = maybe noop go =<< annexThawContentCommand <$> Annex.getGitConfig
-  where
-	go basecmd = void $ liftIO $
-		boolSystem "sh" [Param "-c", Param $ gencmd basecmd]
-	gencmd = massReplace [ ("%path", shellEscape (fromRawFilePath p)) ]
+thawHook = void . runAnnexPathHook "%path"
+	thawContentAnnexHook annexThawContentCommand
 
 {- Calculate mode to use for a directory from the mode to use for a file.
  -

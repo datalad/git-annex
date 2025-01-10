@@ -521,12 +521,10 @@ createMessage :: Annex String
 createMessage = fromMaybe "branch created" <$> getCommitMessage
 
 getCommitMessage :: Annex (Maybe String)
-getCommitMessage = do
-	config <- Annex.getGitConfig
-	case annexCommitMessageCommand config of
-		Nothing -> return (annexCommitMessage config)
-		Just cmd -> catchDefaultIO (annexCommitMessage config) $
-			Just <$> liftIO (readProcess "sh" ["-c", cmd])
+getCommitMessage = 
+	outputOfAnnexHook commitMessageAnnexHook annexCommitMessageCommand
+		<|>
+	(annexCommitMessage <$> Annex.getGitConfig)
 
 {- Stages the journal, and commits staged changes to the branch. -}
 commit :: String -> Annex ()

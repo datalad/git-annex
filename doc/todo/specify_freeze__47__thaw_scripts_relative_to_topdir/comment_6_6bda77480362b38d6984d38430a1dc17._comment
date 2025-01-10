@@ -23,12 +23,11 @@ hook that git-annex writes. But, it seems worth having the git config just
 for consistency.
 
 There are some things like annex.youtube-dl-command and
-annex.http-headers-command that are configuring commands for git-annex to
+annex.shared-sop-command that are configuring commands for git-annex to
 run, and are not really hooks per se.
 
 And it does not make sense to have hook scripts that a specific to a given
 remote corresponding to configs like `remote.name.annex-cost-command`.
-Instead it might make sense to have a `.git/hooks/remote-cost-annex` that
-is passed the name of the remote, but that bridge can be crossed if we
-come to it.
+Instead there could be a single `.git/hooks/remote-cost-annex` that
+is passed the name of the remote.
 """]]

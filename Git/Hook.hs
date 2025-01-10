@@ -108,8 +108,8 @@ hookExists h r = do
 		doesFileExist f
 #endif
 
-runHook :: Hook -> Repo -> IO Bool
-runHook h r = do
+runHook :: (FilePath -> [CommandParam] -> IO a) -> Hook -> [CommandParam] -> Repo -> IO a
+runHook runner h ps r = do
 	let f = hookFile h r
-	(c, ps) <- findShellCommand f
-	boolSystem c ps
+	(c, cps) <- findShellCommand f
+	runner c (cps ++ ps)

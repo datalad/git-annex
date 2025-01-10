@@ -11,9 +11,17 @@ git-annex (10.20250103) UNRELEASED; urgency=medium
   * git-remote-annex: Use enableremote rather than initremote.
   * Windows: Fix permission denied error when dropping files that
     have the readonly attribute set.
+  * Added freezecontent-annex and thawcontent-annex hooks that 
+    correspond to the git configs annex.freezecontent and
+    annex.thawcontent.
+  * Added secure-erase-annex hook that corresponds to the git config
+    annex.secure-erase-command.
+  * Added commitmessage-annex hook that corresponds to the git config
+    annex.commitmessage-command.
+  * Added http-headers-annex hook that corresponds to the git config
+    annex.http-headers-command.
   * Added git configs annex.post-update-command and annex.pre-commit-command
-    that correspond to the git-annex hook scripts post-update-annex and 
-    pre-commit-annex.
+    that correspond to the post-update-annex and pre-commit-annex hooks.
 
  -- Joey Hess <id@joeyh.name>  Fri, 03 Jan 2025 14:30:38 -0400
 
