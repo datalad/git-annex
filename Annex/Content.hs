@@ -106,9 +106,7 @@ import Utility.CopyFile
 import Utility.Metered
 import Utility.HumanTime
 import Utility.TimeStamp
-#ifndef mingw32_HOST_OS
 import Utility.FileMode
-#endif
 import qualified Utility.RawFilePath as R
 
 import qualified System.FilePath.ByteString as P
