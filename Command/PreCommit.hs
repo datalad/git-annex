@@ -44,7 +44,7 @@ seek ps = do
 	-- files in the worktree won't be populated, so populate them here
 	Command.Smudge.updateSmudged (Restage False)
 	
-	runAnnexHook preCommitAnnexHook
+	runAnnexHook preCommitAnnexHook annexPreCommitCommand
 
 	-- committing changes to a view updates metadata
 	currentView >>= \case

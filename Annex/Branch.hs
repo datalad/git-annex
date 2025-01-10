@@ -257,7 +257,7 @@ updateTo' pairs = do
 			mergeIndex jl refs
 		let commitrefs = nub $ fullname:refs
 		ifM (handleTransitions jl localtransitions commitrefs)
-			( runAnnexHook postUpdateAnnexHook
+			( runAnnexHook postUpdateAnnexHook annexPostUpdateCommand
 			, do
 				ff <- if dirty
 					then return False
@@ -724,7 +724,7 @@ setIndexSha :: Git.Sha -> Annex ()
 setIndexSha ref = do
 	f <- fromRepo gitAnnexIndexStatus
 	writeLogFile f $ fromRef ref ++ "\n"
-	runAnnexHook postUpdateAnnexHook
+	runAnnexHook postUpdateAnnexHook annexPostUpdateCommand
 
 {- Stages the journal into the index, and runs an action that
  - commits the index to the branch. Note that the action is run

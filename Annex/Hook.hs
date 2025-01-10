@@ -71,18 +71,26 @@ hookWarning h msg = do
 
 {- Runs a hook. To avoid checking if the hook exists every time,
  - the existing hooks are cached. -}
-runAnnexHook :: Git.Hook -> Annex ()
-runAnnexHook hook = do
+runAnnexHook :: Git.Hook -> (GitConfig -> Maybe String) -> Annex ()
+runAnnexHook hook commandcfg = do
 	m <- Annex.getState Annex.existinghooks
 	case M.lookup hook m of
-		Just True -> run
-		Just False -> noop
+		Just True -> runhook
+		Just False -> runcommandcfg
 		Nothing -> do
 			exists <- inRepo $ Git.hookExists hook
 			Annex.changeState $ \s -> s
 				{ Annex.existinghooks = M.insert hook exists m }
-			when exists run
+			if exists
+				then runhook
+				else runcommandcfg
   where
-	run = unlessM (inRepo $ Git.runHook hook) $ do
+	runhook = unlessM (inRepo $ Git.runHook hook) $ do
 		h <- fromRepo $ Git.hookFile hook
-		warning $ UnquotedString $ h ++ " failed"
+		commandfailed h
+	runcommandcfg = commandcfg <$> Annex.getGitConfig >>= \case
+		Just command ->
+			unlessM (liftIO $ boolSystem "sh" [Param "-c", Param command]) $
+				commandfailed command
+		Nothing -> noop
+	commandfailed c = warning $ UnquotedString $ c ++ " failed"

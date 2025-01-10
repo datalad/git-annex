@@ -97,6 +97,8 @@ data GitConfig = GitConfig
 	, annexAlwaysCompact :: Bool
 	, annexCommitMessage :: Maybe String
 	, annexCommitMessageCommand :: Maybe String
+	, annexPreCommitCommand :: Maybe String
+	, annexPostUpdateCommand :: Maybe String
 	, annexMergeAnnexBranches :: Bool
 	, annexDelayAdd :: Maybe Int
 	, annexHttpHeaders :: [String]
@@ -190,6 +192,8 @@ extractGitConfig configsource r = GitConfig
 	, annexAlwaysCompact = getbool (annexConfig "alwayscompact") True
 	, annexCommitMessage = getmaybe (annexConfig "commitmessage")
 	, annexCommitMessageCommand = getmaybe (annexConfig "commitmessage-command")
+	, annexPreCommitCommand = getmaybe (annexConfig "pre-commit-command")
+	, annexPostUpdateCommand = getmaybe (annexConfig "post-update-command")
 	, annexMergeAnnexBranches = getbool (annexConfig "merge-annex-branches") True
 	, annexDelayAdd = getmayberead (annexConfig "delayadd")
 	, annexHttpHeaders = getlist (annexConfig "http-headers")
