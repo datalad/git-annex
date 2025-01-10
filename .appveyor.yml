@@ -121,6 +121,7 @@ test_script:
   - cmd: C:\Users\appveyor\AppData\Roaming\local\bin\git-annex.exe test
   - sh: ln -s $(stack path --local-bin)/git-annex git-annex
   - sh: ln -s $(stack path --local-bin)/git-annex git-annex-shell
+  - sh: ln -s $(stack path --local-bin)/git-annex git-remote-annex
   - sh: PATH=`pwd`:$PATH; export PATH; git-annex test
 
 #after_test:
