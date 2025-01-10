@@ -3,3 +3,6 @@ The idea is stemmed from discussions/problems with using freeze/thaw hooks, and 
 - test e.g. if custom freeze/thaw are needed (before even git annex decides to switch to adjusted branches mode) and setup that repo accordingly for git-annex to proceed without flipping out into adjusted branch mode
 - may be improved/custom pidlock detection (on one of my servers I remember needing to just hardcode in ~/.gitconfig to use pidlock although that was relevant only for some paths).
 - similarly do some other testing which could allow or disallow some git-annex decision such as e.g. use of adjusted unlocked branch
+
+[[!meta author=yoh]]
+[[!tag projects/openneuro]]

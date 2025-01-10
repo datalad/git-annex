@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="on the init hook"
+ date="2025-01-10T17:33:14Z"
+ content="""
+> There could be a generalized hook config, eg `git config annex.pre-hook my-hook` could make `git-annex init run my-hook git-annex init` and same for other git-annex commands.
+
+I feel that having such a generic gateway hook would be
+
+- not aligned to how `.git/hooks` operate (separate scripts for different operations)
+- make it harder to provide CLI options handling given that different command hooks might have different options (via env var or not)
+- add increasing performance hit with increasing number of commands potentially calling such a generic hook
+
+If someone wanted such one, they could create a \"symlink\" driven generic hook which would have resolved its action upon `$0` name as some tools etc do.
+
+I really feel that having `annex.pre-{command}-hook` set of configurations would be cleaner.
+
+> It sounds like you would want a failure of such a hook to prevent the git-annex command from running. Is that right?
+
+I think so... and I think that's how git hooks perform? (less git-annex is special the better)
+"""]]
