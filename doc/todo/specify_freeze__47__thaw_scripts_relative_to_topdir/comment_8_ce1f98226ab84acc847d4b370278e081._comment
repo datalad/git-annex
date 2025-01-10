@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 8"
+ date="2025-01-10T20:27:48Z"
+ content="""
+Coolio! So my ACLs use-case should need/entail
+
+- Setup [`annex.pre-init-hook`](https://git-annex.branchable.com/todo/Support___40__globally_configured__41_____34__annex_init__34___hooks/#comment-17018d2e1d9f26df13aa54c6f3969406) globally to point to the script which would check if ACL is used on a specific folder where `git annex init` is ran.  If it is ran, it would then either
+  - Under `.git/hooks` either place or remove (if not required) `freezecontent-annex`, `thawcontent-annex` which would take a single path (file or a directory) which would need to be frozen or thawed.
+
+Is that correct/complete picture or am I missing anything I would need to do for my use case?
+"""]]
