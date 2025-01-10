@@ -1,6 +1,6 @@
 ### Please describe the problem.
 
-The main repository `git://git-annex.branchable.com/` seems to be offline at the moment.
+The main repository `git://git-annex.branchable.com/` seems to be out of reach at the moment.
 The mirror `git://git.joeyh.name/git-annex` seems to work.
 
 ### What steps will reproduce the problem?
