@@ -22,6 +22,4 @@ Worth bearing in mind that if such a hook output to stdout, or read from
 stdin, or for that matter was interactive on /dev/tty, it could badly
 mess up things that use git-annex as plumbing. Including git, in the case
 of the smudge filter.
-
-(Should this todo be tagged repronim btw?)
 """]]

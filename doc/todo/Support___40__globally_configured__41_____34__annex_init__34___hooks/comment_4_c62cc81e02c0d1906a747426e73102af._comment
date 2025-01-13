@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2025-01-13T17:20:28Z"
+ content="""
+Yes, a single pre-hook that gets run by every command would not be great
+for performance. Especially when git is eg sometimes running `git-annex
+smudge` repeatedly.
+
+You earlier spoke of "overall hook for git-annex invocation within a
+repo". Did you just mean a hook that runs before initialization, and not
+a hook that runs before every git-annex command?
+
+I feel more comfortable with adding a pre-init hook than pre-everything
+hooks. For one thing, it makes sense for that hook to prevent
+initialization if there is a reason to want to avoid that. It makes a lot
+less sense for a `pre-smudge` hook to prevent that bit of git-annex
+plumbing from working, which can have very different effects depending on
+what git is doing, or for a `pre-find` hook to output something to
+stdout.
+"""]]
