@@ -1,0 +1,57 @@
+`git-annex sync --content` can sometimes do unncessary transfers
+when syncing with multiple remotes at the same time. Here is an example:
+
+	git-annex sync --content r2 r3
+	...
+	copy foo (to r2...)
+	ok
+	copy foo (to r3...)
+	ok
+	drop foo (from r2...) ok
+
+    git-annex wanted r3
+    anything
+    git-annex wanted r2
+    not copies=foo:1
+    git-annex group r3
+    foo
+
+At the time sync decides to copy to the first repository, it legitimately
+wants the content. But once the content is also copied to the second
+repository, the first no longer wants it.
+
+Perhaps this could be improved by sync simulating that the second copy
+has already happened, and seeing if the first repository still wants the
+content then.
+
+But, bear in mind that the second repository may not be accessible
+currently. And indeed it may currently be located somewhere such that content
+can only reach it via the first repository. So if it decides to send to the
+second repository but not then to the first, it should still send to the
+first repository if it is unable to send to the second.
+
+So essentially, this would reorder the list of repositories to work on from
+"r2 r3" to "r3 r2".
+
+But, it's also possible to have this situation:
+
+    git-annex wanted r3
+    not copies=foo:1
+    git-annex wanted r2
+    not copies=foo:1
+    git-annex group r3
+    foo
+    git-annex group r2
+    foo
+
+In that situation, `git-annex sync --content r2 r3` will currently send
+content to r2 when it's accessible. Then r3 doesn't get a copy, and the
+copy remains on r2. If the list of repositories were reordered, that would
+change which repository ends up with the file. Which would be surprising
+since that configuration and order of repositories passed to sync
+is clear in its desired effect.
+
+With the config above, there would be no need to reorder the list of
+repositories since it does not avoid excess work. Are there
+configs where reordering would avoid excess work, but would also change
+desired behavior (for the same file)? --[[Joey]]
