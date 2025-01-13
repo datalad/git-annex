@@ -3,5 +3,8 @@
  subject="""Re: comment 8"""
  date="2025-01-13T17:12:40Z"
  content="""
-Seems right.
+That seems like it would work. I suppose you could instead always install
+the freeze/thaw hooks, and just make them do nothing when ACL is not used.
+If probing for that is expensive or better to only do once for some other
+reason, having the pre-init set up the hooks would make sense.
 """]]

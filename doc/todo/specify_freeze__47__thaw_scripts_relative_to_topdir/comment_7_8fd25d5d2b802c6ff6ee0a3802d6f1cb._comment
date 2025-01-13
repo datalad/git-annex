@@ -9,4 +9,10 @@ secure-erase-annex, commitmessage-annex, http-headers-annex
 That leaves only `remote.name.annex-cost-command` and similar git configs
 that don't have hooks. And a few like annex.youtube-dl-command that are not
 really equivilant to hooks.
+
+I think I will wait on adding hooks for remote git configs, I'd rather talk
+with someone who has a use case for that than make up something for
+completeness. Am not currently liking the idea of including a remote name
+in the hook for those, but perhaps someone would have a use case that
+argues otherwise.
 """]]
