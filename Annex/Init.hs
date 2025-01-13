@@ -1,6 +1,6 @@
 {- git-annex repository initialization
  -
- - Copyright 2011-2024 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -74,17 +74,29 @@ data InitializeAllowed = InitializeAllowed
 
 checkInitializeAllowed :: (InitializeAllowed -> Annex a) -> Annex a
 checkInitializeAllowed a = guardSafeToUseRepo $ noAnnexFileContent' >>= \case
-	Nothing -> do
-		checkSqliteWorks
-		a InitializeAllowed
+	Nothing -> runAnnexHook' preInitAnnexHook annexPreInitCommand >>= \case
+		Nothing -> do
+			checkSqliteWorks
+			a InitializeAllowed
+		Just failedcommanddesc -> do
+			initpreventedby failedcommanddesc
+			notinitialized
 	Just noannexmsg -> do
-		warning "Initialization prevented by .noannex file (remove the file to override)"
+		initpreventedby ".noannex file (remove the file to override)"
 		unless (null noannexmsg) $
 			warning (UnquotedString noannexmsg)
-		giveup "Not initialized."
+		notinitialized
+  where
+	initpreventedby r = warning $ UnquotedString $
+		"Initialization prevented by " ++ r
+	notinitialized = giveup "Not initialized."
 
 initializeAllowed :: Annex Bool
-initializeAllowed = isNothing <$> noAnnexFileContent'
+initializeAllowed = noAnnexFileContent' >>= \case
+	Nothing -> runAnnexHook' preInitAnnexHook annexPreInitCommand >>= \case
+		Nothing -> return True
+		Just _ -> return False
+	Just _ -> return False
 
 noAnnexFileContent' :: Annex (Maybe String)
 noAnnexFileContent' = inRepo $
@@ -268,7 +280,7 @@ autoInitialize' check startupannex remotelist =
 	getInitializedVersion >>= maybe needsinit checkUpgrade
   where
 	needsinit =
-		whenM (initializeAllowed <&&> check) $ do
+		whenM (check <&&> initializeAllowed) $ do
 			initialize startupannex Nothing Nothing
 			autoEnableSpecialRemotes remotelist
 

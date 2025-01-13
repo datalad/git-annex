@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2025-01-13T18:17:42Z"
+ content="""
+Implemented .git/hooks/pre-init-annex 
+(and alternatively git config annex.pre-init-command)
+
+Note that this is also run before automatic initialization.
+"""]]

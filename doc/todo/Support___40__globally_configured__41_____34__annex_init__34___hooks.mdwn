@@ -6,3 +6,5 @@ The idea is stemmed from discussions/problems with using freeze/thaw hooks, and 
 
 [[!meta author=yoh]]
 [[!tag projects/openneuro]]
+
+> [[done]] --[[Joey]]

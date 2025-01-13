@@ -48,6 +48,9 @@ preCommitAnnexHook = Git.Hook "pre-commit-annex" "" []
 postUpdateAnnexHook :: Git.Hook
 postUpdateAnnexHook = Git.Hook "post-update-annex" "" []
 
+preInitAnnexHook :: Git.Hook
+preInitAnnexHook = Git.Hook "pre-init-annex" "" []
+
 freezeContentAnnexHook :: Git.Hook
 freezeContentAnnexHook = Git.Hook "freezecontent-annex" "" []
 
@@ -98,20 +101,33 @@ doesAnnexHookExist hook = do
 			return exists
 
 runAnnexHook :: Git.Hook -> (GitConfig -> Maybe String) -> Annex ()
-runAnnexHook hook commandcfg = ifM (doesAnnexHookExist hook)
+runAnnexHook hook commandcfg = runAnnexHook' hook commandcfg >>= \case
+	Nothing -> noop
+	Just failedcommanddesc -> 
+		warning $ UnquotedString $ failedcommanddesc ++ " failed"
+
+-- Returns Nothing if the hook or GitConfig command succeeded, or a
+-- description of what failed.
+runAnnexHook' :: Git.Hook -> (GitConfig -> Maybe String) -> Annex (Maybe String)
+runAnnexHook' hook commandcfg = ifM (doesAnnexHookExist hook)
 	( runhook
 	, runcommandcfg
 	)
   where
-	runhook = unlessM (inRepo $ Git.runHook boolSystem hook []) $ do
-		h <- fromRepo $ Git.hookFile hook
-		commandfailed h
+	runhook = ifM (inRepo $ Git.runHook boolSystem hook [])
+		( return Nothing
+		, do
+			h <- fromRepo (Git.hookFile hook)
+			commandfailed h
+		)
 	runcommandcfg = commandcfg <$> Annex.getGitConfig >>= \case
+		Nothing -> return Nothing
 		Just command ->
-			unlessM (liftIO $ boolSystem "sh" [Param "-c", Param command]) $
-				commandfailed command
-		Nothing -> noop
-	commandfailed c = warning $ UnquotedString $ c ++ " failed"
+			ifM (liftIO $ boolSystem "sh" [Param "-c", Param command])
+				( return Nothing
+				, commandfailed $ "git configured command '" ++  command ++ "'"
+				)
+	commandfailed c = return $ Just c
 
 runAnnexPathHook :: String -> Git.Hook -> (GitConfig -> Maybe String) -> RawFilePath -> Annex Bool
 runAnnexPathHook pathtoken hook commandcfg p = ifM (doesAnnexHookExist hook)
@@ -121,9 +137,9 @@ runAnnexPathHook pathtoken hook commandcfg p = ifM (doesAnnexHookExist hook)
   where
 	runhook = inRepo $ Git.runHook boolSystem hook [ File (fromRawFilePath p) ]
 	runcommandcfg = commandcfg <$> Annex.getGitConfig >>= \case
+		Nothing -> return True
 		Just basecmd -> liftIO $
 			boolSystem "sh" [Param "-c", Param $ gencmd basecmd]
-		Nothing -> return True
 	gencmd = massReplace [ (pathtoken, shellEscape (fromRawFilePath p)) ]
 
 outputOfAnnexHook :: Git.Hook -> (GitConfig -> Maybe String) -> Annex (Maybe String)
@@ -135,6 +151,6 @@ outputOfAnnexHook hook commandcfg = ifM (doesAnnexHookExist hook)
 	runhook = inRepo (Git.runHook runhook' hook [])
 	runhook' c ps = Just <$> readProcess c (toCommand ps)
 	runcommandcfg = commandcfg <$> Annex.getGitConfig >>= \case
+		Nothing -> return Nothing
 		Just command -> liftIO $ 
 			Just <$> readProcess "sh" ["-c", command]
-		Nothing -> return Nothing

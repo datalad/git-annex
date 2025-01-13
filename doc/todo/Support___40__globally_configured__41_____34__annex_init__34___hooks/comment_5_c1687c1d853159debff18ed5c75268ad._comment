@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2025-01-13T17:33:02Z"
+ content="""
+Note that the `.noannex` file that prevents init has some overlap with
+a pre-init hook that exits nonzero. I guess the .noannex file has the
+benefit of working in every clone of a repository without additional
+configuration.
+"""]]

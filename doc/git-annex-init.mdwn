@@ -27,7 +27,11 @@ already initialized git-annex repository.
 A top-level `.noannex` file will prevent git-annex init from being used
 in a repository. This is useful for repositories that have a policy
 reason not to use git-annex. The content of the file will be displayed
-to the user who tries to run git-annex init.
+to the user who tries to run git-annex init. 
+
+The annex.pre-init-command git configuration or pre-init-annex hook
+is run before initialization and can exit nonzero as well to prevent
+initialization, as well as doing other setup.
 
 # EXAMPLES
 

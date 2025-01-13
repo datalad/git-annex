@@ -1176,6 +1176,16 @@ repository, using [[git-annex-config]]. See its man page for a list.)
   Alternatively, a hook script can be installed in
   `.git/hooks/pre-commit-annex`
 
+* `annex.pre-init-command`
+
+  This command is run before the repository is initialized, either by
+  `git-annex init`, or automatic initialization. It can configure
+  the repository in any way needed. If it exits nonzero, the repository
+  initialization will fail.
+  
+  Alternatively, a hook script can be installed in
+  `.git/hooks/pre-init-annex`
+
 * `annex.alwayscompact`
 
   By default, git-annex compacts data it records in the git-annex branch.

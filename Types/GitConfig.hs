@@ -97,6 +97,7 @@ data GitConfig = GitConfig
 	, annexAlwaysCompact :: Bool
 	, annexCommitMessage :: Maybe String
 	, annexCommitMessageCommand :: Maybe String
+	, annexPreInitCommand :: Maybe String
 	, annexPreCommitCommand :: Maybe String
 	, annexPostUpdateCommand :: Maybe String
 	, annexMergeAnnexBranches :: Bool
@@ -192,6 +193,7 @@ extractGitConfig configsource r = GitConfig
 	, annexAlwaysCompact = getbool (annexConfig "alwayscompact") True
 	, annexCommitMessage = getmaybe (annexConfig "commitmessage")
 	, annexCommitMessageCommand = getmaybe (annexConfig "commitmessage-command")
+	, annexPreInitCommand = getmaybe (annexConfig "pre-init-command")
 	, annexPreCommitCommand = getmaybe (annexConfig "pre-commit-command")
 	, annexPostUpdateCommand = getmaybe (annexConfig "post-update-command")
 	, annexMergeAnnexBranches = getbool (annexConfig "merge-annex-branches") True
