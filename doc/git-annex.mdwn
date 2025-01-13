@@ -1427,7 +1427,8 @@ repository, using [[git-annex-config]]. See its man page for a list.)
   For example, to use the wipe command, set it to `wipe -f %file`.
   
   Alternatively to setting the git config, a hook script can be installed
-  in `.git/hooks/secure-erase-annex`
+  in `.git/hooks/secure-erase-annex`. The hook is passed the file to be
+  erased as its only parameter.
 
 * `annex.freezecontent-command`, `annex.thawcontent-command`
 
@@ -1447,6 +1448,8 @@ repository, using [[git-annex-config]]. See its man page for a list.)
 
   Alternatively to setting the git config, hook scripts can be installed
   in `.git/hooks/freezecontent-annex` and `.git/hooks/thawcontent-annex`.
+  The hook is passed the file or directory to operate on as its only
+  parameter.
 
 * `annex.tune.objecthash1`, `annex.tune.objecthashlower`, `annex.tune.branchhash1`
 
