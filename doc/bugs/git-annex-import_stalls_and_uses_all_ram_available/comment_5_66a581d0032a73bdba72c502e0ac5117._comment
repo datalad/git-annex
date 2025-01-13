@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="lemondata"
+ avatar="http://cdn.libravatar.org/avatar/481bf8163b175e5d0bdbef7d8c7fb3f4"
+ subject="comment 5"
+ date="2025-01-13T17:43:25Z"
+ content="""
+I appreciate you following up.  The improvements you made do seem to allow the import to run for longer before resulting in the same error. Unfortunately, the source location has only gained a lot more files since the original issue.  
+
+Given that is only going to continue, I am thinking I will not be able to import in this way on a location like this without being able to filter what contents to include prior to, or on the fly with the import.
+
+I don't know how feasible that actually would be to implement from your work on `importtreefilter`, so in the meantime I am going to try and think of some alternatives to my workflow to make this work.
+"""]]
