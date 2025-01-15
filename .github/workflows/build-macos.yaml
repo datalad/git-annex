@@ -45,7 +45,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up system
-        run: brew install libmagic pkg-config
+        run: brew install libmagic pkg-config rsync
 
       - name: Setup Haskell
         uses: haskell/actions/setup@v2
