@@ -1,4 +1,4 @@
-git-annex (10.20250103) UNRELEASED; urgency=medium
+git-annex (10.20250115) upstream; urgency=medium
 
   * Improve handing of ssh connection problems during 
     remote annex.uuid discovery.
@@ -26,7 +26,7 @@ git-annex (10.20250103) UNRELEASED; urgency=medium
     that is run before git-annex repository initialization.
   * Linux standalone builds bundled rsync updated to fix security holes.
 
- -- Joey Hess <id@joeyh.name>  Fri, 03 Jan 2025 14:30:38 -0400
+ -- Joey Hess <id@joeyh.name>  Wed, 15 Jan 2025 11:39:12 -0400
 
 git-annex (10.20250102) upstream; urgency=medium
 
