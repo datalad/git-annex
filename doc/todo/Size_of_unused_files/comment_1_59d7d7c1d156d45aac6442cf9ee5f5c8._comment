@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-01-15T23:11:33Z"
+ content="""
+I found myself wanting this today, wondering if a `git-annex move --unused`
+would fit into the destination.
+
+I think it would make sense to add it to `git-annex unused`. Making
+`git-annex info` output vary depending on when and how unused was run last
+I don't like.
+"""]]
