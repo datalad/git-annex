@@ -72,7 +72,7 @@ jobs:
 
     {% elif ostype == "macos" %}
       - name: Set up system
-        run: brew install libmagic pkg-config
+        run: brew install libmagic pkg-config rsync
 
     {% endif %}
     {% if ostype == "windows" or ostype == "macos" %}
