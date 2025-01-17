@@ -1,0 +1,63 @@
+Yesterday upon setting up an `hybrid` encrypted rsync backend (with `git-remote-annex`) support, I stumbled around this bug. The annex remote would corrupt itself and no amount of `git annex repair` would fix it, unfortunately.
+
+```
+$ git annex push
+push <remote> 
+Full remote url: annex::<remote-uuid>?encryption=hybrid&rsyncurl=<url>&type=rsync
+gpg: zlib inflate problem: invalid block type
+  user error (gpg ["--quiet","--trust-model","always","--batch","--passphrase-fd","13","--decrypt"] exited 2)
+git-annex: Failed to download GITBUNDLE-s<id>--<remote-uuid>-77e0ff1580b971da4e39b15ba22439d66e3c5729adea2d7df8643438ef900c49
+Full remote url: annex::<remote-uuid>?encryption=hybrid&rsyncurl=<url>&type=rsync
+gpg: zlib inflate problem: invalid block type
+  user error (gpg ["--quiet","--trust-model","always","--batch","--passphrase-fd","13","--decrypt"] exited 2)
+git-annex: Failed to download GITBUNDLE-s<id>--<remote-uuid>-77e0ff1580b971da4e39b15ba22439d66e3c5729adea2d7df8643438ef900c49
+
+  Pushing to <remote> failed.
+failed
+push: 1 failed
+```
+
+I then started to investigate the temporary files in `.git/annex/tmp` and found the aforementionned **GITBUNDLE**, as well as it's encrypted counterpart.
+
+```
+$ tree .git/annex/tmp/
+.git/annex/tmp/
+├── GITBUNDLE-s<id>--<remote-uuid>-77e0ff1580b971da4e39b15ba22439d66e3c5729adea2d7df8643438ef900c49
+└── GPGHMACSHA1--f2d78638494030b34841f7a30ffb2800816ef839
+```
+
+I wanted to confirm that the file was corrupted for real, so obtained the cipher for my hyrid repository like so:
+
+```
+$ cipher=$(git show git-annex:remote.log | grep 'name=<remote>' | grep -oP 'cipher\=.*? ' | sed 's/cipher=//')
+```
+
+And confirmed the encrypted file was indeed corrupted by decrypting it manually:
+
+```
+$ echo $cipher | base64 -d | gpg -d | tail -c +257 | gpg --batch --passphrase-fd 0 --decrypt .git/annex/tmp/GPGHMACSHA1--f2d78638494030b34841f7a30ffb2800816ef839 > /dev/null
+gpg: encrypted with rsa2048 key, ID <gpg-id>, created 1970-01-01
+      "... <...>"
+gpg: encrypted with cv25519 key, ID <gpg-id>, created 1970-01-01
+      "... <...>"
+gpg: AES256.CFB encrypted data
+gpg: encrypted with 1 passphrase
+gpg: zlib inflate problem: invalid block type
+```
+
+I then searched in the annex's directory for the uncorrupted **GITBUNDLE** to find out that it indeed existed:
+
+```
+$ find . -type f -name "GITBUNDLE-s<id>--<remote-uuid>-77e0ff1580b971da4e39b15ba22439d66e3c5729adea2d7df8643438ef900c49"
+./.git/annex/objects/Vg/Mm/GITBUNDLE-s<id>--<remote-uuid>-77e0ff1580b971da4e39b15ba22439d66e3c5729adea2d7df8643438ef900c49/GITBUNDLE-s<id>--<remote-uuid>-77e0ff1580b971da4e39b15ba22439d66e3c5729adea2d7df8643438ef900c49
+```
+
+Now that I have a way to get the symmetric cipher and the source file, as well as it's encrypted filename, I can re-encrypt it:
+
+```
+$ echo $cipher | base64 -d | gpg -d | tail -c +257 | gpg --batch --passphrase-fd 0 --output /tmp/GPGHMACSHA1--f2d78638494030b34841f7a30ffb2800816ef839 --symmetric ./.git/annex/objects/Vg/Mm/GITBUNDLE-s<id>--<remote-uuid>-77e0ff1580b971da4e39b15ba22439d66e3c5729adea2d7df8643438ef900c49/GITBUNDLE-s<id>--<remote-uuid>-77e0ff1580b971da4e39b15ba22439d66e3c5729adea2d7df8643438ef900c49
+```
+
+And then upload it to replace the corruped one on the remote.
+
+I then confirmed it was fixed by issuing a `git annex sync --content`.
