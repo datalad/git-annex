@@ -5,10 +5,12 @@ I wanted to unlock all those files from that branch on a machine, so I tried to 
 Sadly, the command do not seems to finish, ever.
 
 Executing the command with debug from a clone(to avoid interacting with the broken index from the first), it seems to deadlock after executing between 10000 and 20000 "thawing" processes when executing the filter-process logic over the files in the worktree.
-The problems seems to be reproducible with any repository with a lot of files in the worktree as far as I can tell, independant of file size.
+The problem seems to be reproducible with any repository with a lot of files in the worktree as far as I can tell, independant of file size.
 
-The infinite loop make higher-level commands like git annex sync also deadlock when checkout-ing the unlocked branch for any reason.
+The deadlock described makes higher-level commands like git annex sync also block indefinitely when checkout-ing the unlocked branch for any reason.
 Also, because the filtering is not completely applied, the index is pretty scrambled, its easier to clone the repo and move the annex than fix it, for me at least.
+
+I call the behavior "deadlock" due to the absence of outpout and low cpu usage on the process when in that state. This seems to indicate some kind of multiprocessing deadlock to me.
 
 ### What steps will reproduce the problem?
 
