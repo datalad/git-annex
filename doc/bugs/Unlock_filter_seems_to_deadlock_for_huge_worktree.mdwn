@@ -1,0 +1,77 @@
+### Please describe the problem.
+
+I have a pretty big repository with around 300 000 files in the workdir of a branch.
+I wanted to unlock all those files from that branch on a machine, so I tried to use git-annex-adjust --unlock. 
+Sadly, the command do not seems to finish, ever.
+
+Executing the command with debug from a clone(to avoid interacting with the broken index from the first), it seems to deadlock after executing between 10000 and 20000 "thawing" processes when executing the filter-process logic over the files in the worktree.
+The problems seems to be reproducible with any repository with a lot of files in the worktree as far as I can tell, independant of file size.
+
+The infinite loop make higher-level commands like git annex sync also deadlock when checkout-ing the unlocked branch for any reason.
+Also, because the filtering is not completely applied, the index is pretty scrambled, its easier to clone the repo and move the annex than fix it, for me at least.
+
+### What steps will reproduce the problem?
+
+Here is a minimum set of bash commands that generate the deadlock on my end:
+(https://github.com/klieret/RandomFileTree for the randomfiletree python command used)
+
+    mkdir test_data
+    # Create about 280 000 empty and random files(Can still happens with non-empty files)
+    randomfiletree test_data -d 30 -f 250 -r 3	
+    cd test_data
+    git init
+    git annex init
+    git commit -m "empty commit" --allow-empty
+    git annex add
+    git commit -m "add all empty files"
+
+    # This will get stuck after around ~10000-20000 processes from Utility.Process in the debug log while the git annex thaws files into unlocked files
+    # The deadlock seems to happens after outputing the start of a new thawing, ctrl-c seems to be the only end state for this
+    git adjust --unlock --debug
+
+
+### What version of git-annex are you using? On what operating system?
+
+Happens on both:
+Archlinux [normal package]
+    
+    git-annex version: 10.20240831-g9d29b99ac4074884d33fd25ef81baed5a11d0244
+    build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Servant Benchmark Feeds Testsuite S3 WebDAV
+    dependency versions: aws-0.24.2 bloomfilter-2.0.1.2 crypton-1.0.0 DAV-1.3.4 feed-1.3.2.1 ghc-9.8.2 http-client-0.7.17 persistent-sqlite-2.13.3.0 torrent-10000.1.3                     uuid-1.3.16 yesod-1.6.2.1
+    key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL GITBUNDLE GITMANIFEST VURL X*
+    remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg rclone hook external
+    operating system: linux x86_64
+    supported repository versions: 8 9 10
+    upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
+    local repository version: 10
+
+and
+
+Debian Bookworm [Compiled via "building from source on Debian"]
+    
+    git-annex version: 10.20250102-gaba8ee1ca1d571cada979ef47becb2a75379d63b
+    build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Benchmark Feeds Testsuite S3 WebDAV
+    dependency versions: aws-0.22.1 bloomfilter-2.0.1.0 cryptonite-0.29 DAV-1.3.4 feed-1.3.2.1 ghc-9.0.2 http-client-0.7.13.1 persistent-sqlite-2.13.1.0 
+    torrent-10000.1.1 uuid-1.3.15 yesod-1.6.2.1
+    key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL GITBUNDLE GITMANIFEST VURL X*
+    remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg rclone hook external
+    operating system: linux x86_64
+    supported repository versions: 8 9 10
+    upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
+    local repository version: 10
+
+### Please provide any additional information below.
+
+Excerpt of the last lines from the huge debug log:
+
+    a blocking[2025-01-16 23:30:27.913022014] (Utility.Process) process [493397] done ExitSuccess
+    [2025-01-16 23:30:27.91309169] (Annex.Perms) thawing content .git/annex/othertmp/BKQKGR.0/BKQKGR
+
+Given the huge debug log produced, it may be easier to reproduce the bug to have it than copying it here. If wanted, I can generated one as required.
+
+Repeatedly calling this(and ctrl-c it when it inevitably get stuck) seems to eventually unlock the files, but its not really a valid solution in my case.
+git annex smudge --update --debug
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+I really like git-annex, it allowed me to deduplicate the files in the big repository described above without much issues except for this bug.
+
