@@ -70,6 +70,7 @@ Excerpt of the last lines from the huge debug log:
 Given the huge debug log produced, it may be easier to reproduce the bug to have it than copying it here. If wanted, I can generate one as required.
 
 Repeatedly calling this(and ctrl-c it when it inevitably get stuck) seems to eventually unlock the files, but its not really a valid solution in my case.
+
     git annex smudge --update --debug
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
