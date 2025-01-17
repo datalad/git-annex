@@ -10,7 +10,7 @@ The problem seems to be reproducible with any repository with a lot of files in 
 The deadlock described makes higher-level commands like git annex sync also block indefinitely when checkout-ing the unlocked branch for any reason.
 Also, because the filtering is not completely applied, the index is pretty scrambled, its easier to clone the repo and move the annex than fix it, for me at least.
 
-I call the behavior "deadlock" due to the absence of outpout and low cpu usage on the process when in that state. This seems to indicate some kind of multiprocessing deadlock to me.
+I call the behavior "deadlock" due to the absence of debug log output and low cpu usage on the process when in that state. This seems to indicate some kind of multiprocessing deadlock to me.
 
 ### What steps will reproduce the problem?
 
