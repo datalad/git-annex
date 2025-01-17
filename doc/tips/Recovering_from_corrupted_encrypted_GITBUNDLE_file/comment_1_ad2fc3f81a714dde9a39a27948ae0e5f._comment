@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="hello@da0030bba070302e85904b4d73db61fb4af7bced"
+ nickname="hello"
+ subject="Feature idea"
+ date="2025-01-17T11:14:55Z"
+ content="""
+This could be detected and handled directly by `git annex repair` or the `git annex assistant` daemon.  
+I unfortunately have no Haskell knowledge and the barrier to entry seems to big for me to contribute right now.
+"""]]
