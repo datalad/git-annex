@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="hello@da0030bba070302e85904b4d73db61fb4af7bced"
+ nickname="hello"
+ subject="Still happening, managed to get a reproduction (maybe ?)"
+ date="2025-01-16T18:17:51Z"
+ content="""
+Hi, I have stumbled upon this specific bug today too.
+
+I use `git-annex`: `10.20240927-3` (latest on Manjaro) with `git-remote-gcrypt`: `1.5-1` (latest at the time) and I now have the same issue.
+
+    $ git push <remote> master 
+    gcrypt: Decrypting manifest
+    gpg: Signature made jeu. 16 janv. 2025 18:56:55 CET
+    gpg:                using EDDSA key ***
+    gpg: Good signature from \"*** <***>\" [ultimate]
+    gcrypt: Due to a longstanding bug, this push implicitly has --force.
+    gcrypt: Consider explicitly passing --force, and setting
+    gcrypt: gcrypt's require-explicit-force-push git config key.
+    gcrypt: Repacking remote <remote>, ...
+    gcrypt: Packfile *** does not match digest!
+    fatal: early EOF
+    error: failed to push some refs to 'gcrypt::ssh://librarian@<ip>:<port>/~/library.git'
+
+I tried to reproduce the issue and it seems that it is easy to force this to happen if
+- you have a `git annex assistant` running in the annex  
+- copy a large directory (I used a `.flac` music album, 2.1Gi) to the annex so that it is uploaded to the `gcrypt` remote automatically  
+- issue a `git annex sync --content` while the assistant is trying to upload the content to the remote  
+
+
+"""]]
