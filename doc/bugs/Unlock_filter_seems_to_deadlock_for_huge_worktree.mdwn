@@ -27,7 +27,7 @@ Here is a minimum set of bash commands that generate the deadlock on my end:
 
     # This will get stuck after around ~10000-20000 processes from Utility.Process in the debug log while the git annex thaws files into unlocked files
     # The deadlock seems to happens after outputing the start of a new thawing, ctrl-c seems to be the only end state for this
-    git adjust --unlock --debug
+    git annex adjust --unlock --debug
 
 
 ### What version of git-annex are you using? On what operating system?
