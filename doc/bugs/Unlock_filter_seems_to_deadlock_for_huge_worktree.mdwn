@@ -64,13 +64,13 @@ Debian Bookworm [Compiled via "building from source on Debian"]
 
 Excerpt of the last lines from the huge debug log:
 
-    a blocking[2025-01-16 23:30:27.913022014] (Utility.Process) process [493397] done ExitSuccess
+    [2025-01-16 23:30:27.913022014] (Utility.Process) process [493397] done ExitSuccess
     [2025-01-16 23:30:27.91309169] (Annex.Perms) thawing content .git/annex/othertmp/BKQKGR.0/BKQKGR
 
-Given the huge debug log produced, it may be easier to reproduce the bug to have it than copying it here. If wanted, I can generated one as required.
+Given the huge debug log produced, it may be easier to reproduce the bug to have it than copying it here. If wanted, I can generate one as required.
 
 Repeatedly calling this(and ctrl-c it when it inevitably get stuck) seems to eventually unlock the files, but its not really a valid solution in my case.
-git annex smudge --update --debug
+    git annex smudge --update --debug
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 I really like git-annex, it allowed me to deduplicate the files in the big repository described above without much issues except for this bug.
