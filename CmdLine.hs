@@ -92,7 +92,7 @@ dispatch' subcommandname args fuzzy cmds allargs allcmds fields getgitrepo progn
 				handleresult (parseCmd progname progdesc correctedargs allcmds getparser)
 			res -> handleresult res
 	  where
-		autocorrect = Git.AutoCorrect.prepare (fromJust subcommandname) cmdname (NE.fromList cmds)
+		autocorrect = Git.AutoCorrect.prepare "git-annex" (fromJust subcommandname) cmdname (NE.fromList cmds)
 		name
 			| fuzzy = case cmds of
 				(c:_) -> Just (cmdname c)
