@@ -120,15 +120,21 @@ seekExport r tree mtbcommitsha srcrs = do
 -- branch.
 getExportCommit :: Remote -> Git.Ref -> Annex (Maybe (RemoteTrackingBranch, Sha))
 getExportCommit r treeish
-	| '/' `notElem` fromRef baseref = do
-		let tb = mkRemoteTrackingBranch r baseref
-		commitsha <- inRepo $ Git.Ref.sha $ Git.Ref.underBase refsheads baseref
-		return (fmap (tb, ) commitsha)
-	| otherwise = return Nothing
+	| '/' `notElem` fromRef baseref = go
+	| otherwise = ifM isremoteref
+		( return Nothing
+		, go
+		)
   where
 	baseref = Ref $ S8.takeWhile (/= ':') $ fromRef' $ 
 		Git.Ref.removeBase refsheads treeish
 	refsheads = "refs/heads"
+	isremoteref = inRepo $ Git.Ref.exists $
+		Git.Ref.underBase "refs/remotes" baseref
+	go = do
+		let tb = mkRemoteTrackingBranch r baseref
+		commitsha <- inRepo $ Git.Ref.sha $ Git.Ref.underBase refsheads baseref
+		return (fmap (tb, ) commitsha)
 
 -- | Changes what's exported to the remote. Does not upload any new
 -- files, but does delete and rename files already exported to the remote.

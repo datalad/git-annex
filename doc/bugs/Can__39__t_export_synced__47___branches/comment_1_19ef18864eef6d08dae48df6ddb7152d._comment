@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-01-20T15:13:05Z"
+ content="""
+The difficulty here is that it needs to come up with the name of a
+corresponding remote tracking branch to update. It could use 
+"myexport/synced/main" for that. But, setting `annex-tracking-branch` to
+a remote ref like "origin/main" is not supported, and it would not be good
+if it allowed it and used a tracking branch with a name like
+"myexport/origin/main".
+
+And well, we know that "synced/main" is not a remote ref, but "$foo/main"
+generally may or may not be one.
+
+So, I think to support this, it would have only allow using "$foo/main"
+when the ref "refs/remotes/$foo/main" does not exist. I've implemented
+that.
+"""]]
