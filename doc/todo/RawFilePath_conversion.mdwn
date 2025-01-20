@@ -9,14 +9,20 @@ But this conversion is not yet complete. This is a todo to keep track of the
 status.
 
 * The Abstract FilePath proposal (AFPP) has been implemented, and so a number of
-  libraries like unix and directory now have versions that operate on
+  libraries like directory now have versions that operate on
   OSPath. That could be used in git-annex eg for things like
   getDirectoryContents, when built against those versions.
-  (But OSPath uses ShortByteString, while RawFilePath is ByteString, so
-  conversion still entails a copy.)
+* unix has modules that operate on RawFilePath but no OSPath versions yet.
+  See https://github.com/haskell/unix/issues/240
+  (OSPath uses ShortByteString, while RawFilePath is ByteString, so
+  conversion can entail a copy.)
+* filepath-1.4.100 implements support for OSPath. It is bundled with
+  ghc-9.6.1 and above. Will need to switch from filepath-bytestring to
+  this, and to avoid a lot of ifdefs, probably only after git-annex no
+  longers supports building with older ghc versions.
 * withFile remains to be converted, and is used in several important code
   paths, including Annex.Journal and Annex.Link. 
-  There is a RawFilePath version in file-io library, but that is
+  There is a OSPath version in file-io library, but that is
   not currently a git-annex dependency. (withFile is in base, and base is
   unlikely to convert to AFPP soon)
 
