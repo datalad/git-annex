@@ -35,6 +35,7 @@ import qualified Utility.RawFilePath as R
 
 import Network.URI
 import qualified System.FilePath.ByteString as P
+import qualified Data.ByteString as S
 
 #ifdef WITH_TORRENTPARSER
 import Data.Torrent
@@ -208,9 +209,7 @@ downloadTorrentFile u = do
 					let metadir = othertmp P.</> "torrentmeta" P.</> kf
 					createAnnexDirectory metadir
 					showOutput
-					ok <- downloadMagnetLink u
-						(fromRawFilePath metadir)
-						(fromRawFilePath torrent)
+					ok <- downloadMagnetLink u metadir torrent
 					liftIO $ removeDirectoryRecursive
 						(fromRawFilePath metadir)
 					return ok
@@ -225,14 +224,14 @@ downloadTorrentFile u = do
 						return ok
 		)
 
-downloadMagnetLink :: URLString -> FilePath -> FilePath -> Annex Bool
+downloadMagnetLink :: URLString -> RawFilePath -> RawFilePath -> Annex Bool
 downloadMagnetLink u metadir dest = ifM download
 	( liftIO $ do
-		ts <- filter (".torrent" `isSuffixOf`)
+		ts <- filter (".torrent" `S.isSuffixOf`)
 			<$> dirContents metadir
 		case ts of
 			(t:[]) -> do
-				moveFile (toRawFilePath t) (toRawFilePath dest)
+				moveFile t dest
 				return True
 			_ -> return False
 	, return False
@@ -245,7 +244,7 @@ downloadMagnetLink u metadir dest = ifM download
 		, Param "--seed-time=0"
 		, Param "--summary-interval=0"
 		, Param "-d"
-		, File metadir
+		, File (fromRawFilePath metadir)
 		]
 
 downloadTorrentContent :: Key -> URLString -> FilePath -> Int -> MeterUpdate -> Annex Bool

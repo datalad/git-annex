@@ -73,14 +73,14 @@ locationLogs = do
 	config <- Annex.getGitConfig
 	dir <- fromRepo gitStateDir
 	liftIO $ do
-		levela <- dirContents dir
+		levela <- dirContents (toRawFilePath dir)
 		levelb <- mapM tryDirContents levela
 		files <- mapM tryDirContents (concat levelb)
 		return $ mapMaybe (islogfile config) (concat files)
   where
 	tryDirContents d = catchDefaultIO [] $ dirContents d
-	islogfile config f = maybe Nothing (\k -> Just (k, f)) $
-			locationLogFileKey config (toRawFilePath f)
+	islogfile config f = maybe Nothing (\k -> Just (k, fromRawFilePath f)) $
+			locationLogFileKey config f
 
 inject :: FilePath -> FilePath -> Annex ()
 inject source dest = do

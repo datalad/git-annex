@@ -56,6 +56,7 @@ import Data.IORef
 import Data.Time.Clock.POSIX
 import System.PosixCompat.Files (isDirectory, isSymbolicLink, deviceID, fileID)
 import qualified System.FilePath.ByteString as P
+import qualified Data.ByteString as S
 
 data AnnexedFileSeeker = AnnexedFileSeeker
 	{ startAction :: Maybe KeySha -> SeekInput -> RawFilePath -> Key -> CommandStart
@@ -122,9 +123,8 @@ withPathContents a params = do
 	-- exist.
 	get p = ifM (isDirectory <$> R.getFileStatus p')
 		( map (\f -> 
-			let f' = toRawFilePath f
-			in (f', P.makeRelative (P.takeDirectory (P.dropTrailingPathSeparator p')) f'))
-			<$> dirContentsRecursiveSkipping (".git" `isSuffixOf`) False p
+			(f, P.makeRelative (P.takeDirectory (P.dropTrailingPathSeparator p')) f))
+			<$> dirContentsRecursiveSkipping (".git" `S.isSuffixOf`) False p'
 		, return [(p', P.takeFileName p')]
 		)
 	  where

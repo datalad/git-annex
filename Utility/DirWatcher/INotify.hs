@@ -59,7 +59,7 @@ watchDir i dir ignored scanevents hooks
 			void (addWatch i watchevents (toInternalFilePath dir) handler)
 				`catchIO` failedaddwatch
 			withLock lock $
-				mapM_ scan =<< filter (not . dirCruft) <$>
+				mapM_ scan =<< filter (not . dirCruft . toRawFilePath) <$>
 					getDirectoryContents dir
   where
 	recurse d = watchDir i d ignored scanevents hooks

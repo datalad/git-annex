@@ -41,6 +41,7 @@ import qualified Utility.Url as Url
 import qualified Annex.Url as Url hiding (download)
 import Utility.Tuple
 import qualified Utility.RawFilePath as R
+import qualified System.FilePath.ByteString as P
 
 import Data.Either
 import qualified Data.Map as M
@@ -212,8 +213,8 @@ upgradeToDistribution newdir cleanup distributionfile = do
 			makeorigsymlink olddir
 		return (newdir </> "git-annex", deleteold)
 	installby a dstdir srcdir =
-		mapM_ (\x -> a (toRawFilePath x) (toRawFilePath (dstdir </> takeFileName x)))
-			=<< dirContents srcdir
+		mapM_ (\x -> a x (toRawFilePath dstdir P.</> P.takeFileName x))
+			=<< dirContents (toRawFilePath srcdir)
 #endif
 	sanitycheck dir = 
 		unlessM (doesDirectoryExist dir) $
@@ -280,14 +281,14 @@ deleteFromManifest dir = do
 	fs <- map (dir </>) . lines <$> catchDefaultIO "" (readFile manifest)
 	mapM_ (removeWhenExistsWith R.removeLink . toRawFilePath) fs
 	removeWhenExistsWith R.removeLink (toRawFilePath manifest)
-	removeEmptyRecursive dir
+	removeEmptyRecursive (toRawFilePath dir)
   where
 	manifest = dir </> "git-annex.MANIFEST"
 
-removeEmptyRecursive :: FilePath -> IO ()
+removeEmptyRecursive :: RawFilePath -> IO ()
 removeEmptyRecursive dir = do
 	mapM_ removeEmptyRecursive =<< dirContents dir
-	void $ tryIO $ removeDirectory dir
+	void $ tryIO $ removeDirectory (fromRawFilePath dir)
 
 {- This is a file that the UpgradeWatcher can watch for modifications to
  - detect when git-annex has been upgraded.

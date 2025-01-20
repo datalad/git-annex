@@ -31,6 +31,7 @@ import qualified System.Posix as Posix
 
 import Utility.Directory
 import Utility.Exception
+import Utility.FileSystemEncoding
 
 #ifndef mingw32_HOST_OS
 data DirectoryHandle = DirectoryHandle IsOpen Posix.DirStream
@@ -115,5 +116,5 @@ isDirectoryEmpty d = bracket (openDirectory d) closeDirectory check
 		case v of
 			Nothing -> return True
 			Just f
-				| not (dirCruft f) -> return False
+				| not (dirCruft (toRawFilePath f)) -> return False
 				| otherwise -> check h

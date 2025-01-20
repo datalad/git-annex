@@ -83,24 +83,23 @@ explodePacks r = go =<< listPackFiles r
 		putStrLn "Unpacking all pack files."
 		forM_ packs $ \packfile -> do
 			-- Just in case permissions are messed up.
-			allowRead (toRawFilePath packfile)
+			allowRead packfile
 			-- May fail, if pack file is corrupt.
 			void $ tryIO $
 				pipeWrite [Param "unpack-objects", Param "-r"] r' $ \h ->
-				L.hPut h =<< L.readFile packfile
-		objs <- emptyWhenDoesNotExist (dirContentsRecursive tmpdir)
+				L.hPut h =<< L.readFile (fromRawFilePath packfile)
+		objs <- emptyWhenDoesNotExist (dirContentsRecursive (toRawFilePath tmpdir))
 		forM_ objs $ \objfile -> do
 			f <- relPathDirToFile
 				(toRawFilePath tmpdir)
-				(toRawFilePath objfile)
+				objfile
 			let dest = objectsDir r P.</> f
 			createDirectoryIfMissing True
 				(fromRawFilePath (parentDir dest))
-			moveFile (toRawFilePath objfile) dest
+			moveFile objfile dest
 		forM_ packs $ \packfile -> do
-			let f = toRawFilePath packfile
-			removeWhenExistsWith R.removeLink f
-			removeWhenExistsWith R.removeLink (packIdxFile f)
+			removeWhenExistsWith R.removeLink packfile
+			removeWhenExistsWith R.removeLink (packIdxFile packfile)
 		return True
 
 {- Try to retrieve a set of missing objects, from the remotes of a
@@ -248,13 +247,14 @@ badBranches missing r = filterM isbad =<< getAllRefs r
  - Relies on packed refs being exploded before it's called.
  -}
 getAllRefs :: Repo -> IO [Ref]
-getAllRefs r = getAllRefs' (fromRawFilePath (localGitDir r) </> "refs")
+getAllRefs r = getAllRefs' (localGitDir r P.</> "refs")
 
-getAllRefs' :: FilePath -> IO [Ref]
+getAllRefs' :: RawFilePath -> IO [Ref]
 getAllRefs' refdir = do
-	let topsegs = length (splitPath refdir) - 1
+	let topsegs = length (P.splitPath refdir) - 1
 	let toref = Ref . toInternalGitPath . encodeBS 
-		. joinPath . drop topsegs . splitPath
+		. joinPath . drop topsegs . splitPath 
+		. decodeBS
 	map toref <$> emptyWhenDoesNotExist (dirContentsRecursive refdir)
 
 explodePackedRefsFile :: Repo -> IO ()

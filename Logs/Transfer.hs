@@ -29,6 +29,7 @@ import Annex.Perms
 import Data.Time.Clock
 import Data.Time.Clock.POSIX
 import Control.Concurrent.STM
+import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as B8
 import qualified System.FilePath.ByteString as P
 
@@ -157,7 +158,7 @@ getTransfers' dirs wanted = do
 	infos <- mapM checkTransfer transfers
 	return $ mapMaybe running $ zip transfers infos
   where
-	findfiles = liftIO . mapM (emptyWhenDoesNotExist . dirContentsRecursive . fromRawFilePath)
+	findfiles = liftIO . mapM (emptyWhenDoesNotExist . dirContentsRecursive)
 		=<< mapM (fromRepo . transferDir) dirs
 	running (t, Just i) = Just (t, i)
 	running (_, Nothing) = Nothing
@@ -180,11 +181,11 @@ getFailedTransfers u = catMaybes <$> (liftIO . getpairs =<< concat <$> findfiles
   where
 	getpairs = mapM $ \f -> do
 		let mt = parseTransferFile f
-		mi <- readTransferInfoFile Nothing f
+		mi <- readTransferInfoFile Nothing (fromRawFilePath f)
 		return $ case (mt, mi) of
 			(Just t, Just i) -> Just (t, i)
 			_ -> Nothing
-	findfiles = liftIO . mapM (emptyWhenDoesNotExist . dirContentsRecursive . fromRawFilePath)
+	findfiles = liftIO . mapM (emptyWhenDoesNotExist . dirContentsRecursive)
 		=<< mapM (fromRepo . failedTransferDir u) [Download, Upload]
 
 clearFailedTransfers :: UUID -> Annex [(Transfer, TransferInfo)]
@@ -244,17 +245,17 @@ failedTransferFile (Transfer direction u kd) r =
 		P.</> keyFile (mkKey (const kd))
 
 {- Parses a transfer information filename to a Transfer. -}
-parseTransferFile :: FilePath -> Maybe Transfer
+parseTransferFile :: RawFilePath -> Maybe Transfer
 parseTransferFile file
-	| "lck." `isPrefixOf` takeFileName file = Nothing
+	| "lck." `B.isPrefixOf` P.takeFileName file = Nothing
 	| otherwise = case drop (length bits - 3) bits of
 		[direction, u, key] -> Transfer
 			<$> parseDirection direction
 			<*> pure (toUUID u)
-			<*> fmap (fromKey id) (fileKey (toRawFilePath key))
+			<*> fmap (fromKey id) (fileKey key)
 		_ -> Nothing
   where
-	bits = splitDirectories file
+	bits = P.splitDirectories file
 
 writeTransferInfoFile :: TransferInfo -> RawFilePath -> Annex ()
 writeTransferInfoFile info tfile = writeLogFile tfile $ writeTransferInfo info

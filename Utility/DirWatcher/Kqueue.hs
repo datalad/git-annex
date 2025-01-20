@@ -77,7 +77,7 @@ data DirInfo = DirInfo
 
 getDirInfo :: FilePath -> IO DirInfo
 getDirInfo dir = do
-	l <- filter (not . dirCruft) <$> getDirectoryContents dir
+	l <- filter (not . dirCruft . toRawFilePath) <$> getDirectoryContents dir
 	contents <- S.fromList . catMaybes <$> mapM getDirEnt l
 	return $ DirInfo dir contents
   where

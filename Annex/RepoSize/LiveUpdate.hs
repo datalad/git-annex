@@ -161,7 +161,7 @@ checkStaleSizeChanges h@(RepoSizeHandle (Just _) livev) = do
   where
 	go livedir lck pidlockfile now = do
 		void $ tryNonAsync $ do
-			lockfiles <- liftIO $ filter (not . dirCruft) 
+			lockfiles <- liftIO $ filter (not . dirCruft . toRawFilePath) 
 				<$> getDirectoryContents (fromRawFilePath livedir)
 			stale <- forM lockfiles $ \lockfile ->
 				if (lockfile /= pidlockfile)

@@ -80,7 +80,7 @@ consolidateUsrLib top libdirs = go [] libdirs
 			forM_ fs $ \f -> do
 				let src = inTop top (x </> f)
 				let dst = inTop top (d </> f)
-				unless (dirCruft f) $
+				unless (dirCruft (toRawFilePath f)) $
 					unlessM (doesDirectoryExist src) $
 						renameFile src dst
 			symlinkHwCapDirs top d

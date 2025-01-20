@@ -89,7 +89,7 @@ deleteCurrentRepository = dangerPage $ do
 				rs <- syncRemotes <$> getDaemonStatus
 				mapM_ (\r -> changeSyncable (Just r) False) rs
 
-			liftAnnex $ prepareRemoveAnnexDir dir
+			liftAnnex $ prepareRemoveAnnexDir (toRawFilePath dir)
 			liftIO $ removeDirectoryRecursive . fromRawFilePath
 				=<< absPath (toRawFilePath dir)
 			

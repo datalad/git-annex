@@ -39,6 +39,7 @@ import Utility.FileSystemEncoding
 import Utility.Env
 import Utility.Env.Set
 import Utility.Tmp
+import Utility.RawFilePath
 import qualified Utility.LockFile.Posix as Posix
 
 import System.IO
@@ -242,15 +243,14 @@ linkToLock (Just _) src dest = do
 -- with the SAME FILENAME exist.
 checkInsaneLustre :: RawFilePath -> IO Bool
 checkInsaneLustre dest = do
-	let dest' = fromRawFilePath dest
-	fs <- dirContents (takeDirectory dest')
-	case length (filter (== dest') fs) of
+	fs <- dirContents (P.takeDirectory dest)
+	case length (filter (== dest) fs) of
 		1 -> return False -- whew!
 		0 -> return True -- wtf?
 		_ -> do
 			-- Try to clean up the extra copy we made
 			-- that has the same name. Egads.
-			_ <- tryIO $ removeFile dest'
+			_ <- tryIO $ removeLink dest
 			return True
 
 -- | Waits as necessary to take a lock.

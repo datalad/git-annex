@@ -25,14 +25,14 @@ packDir r = objectsDir r P.</> "pack"
 packIdxFile :: RawFilePath -> RawFilePath
 packIdxFile = flip P.replaceExtension "idx"
 
-listPackFiles :: Repo -> IO [FilePath]
-listPackFiles r = filter (".pack" `isSuffixOf`) 
-	<$> catchDefaultIO [] (dirContents $ fromRawFilePath $ packDir r)
+listPackFiles :: Repo -> IO [RawFilePath]
+listPackFiles r = filter (".pack" `B.isSuffixOf`) 
+	<$> catchDefaultIO [] (dirContents $ packDir r)
 
 listLooseObjectShas :: Repo -> IO [Sha]
 listLooseObjectShas r = catchDefaultIO [] $
-	mapMaybe (extractSha . encodeBS . concat . reverse . take 2 . reverse . splitDirectories)
-		<$> emptyWhenDoesNotExist (dirContentsRecursiveSkipping (== "pack") True (fromRawFilePath (objectsDir r)))
+	mapMaybe (extractSha . encodeBS . concat . reverse . take 2 . reverse . splitDirectories . decodeBS)
+		<$> emptyWhenDoesNotExist (dirContentsRecursiveSkipping (== "pack") True (objectsDir r))
 
 looseObjectFile :: Repo -> Sha -> RawFilePath
 looseObjectFile r sha = objectsDir r P.</> prefix P.</> rest

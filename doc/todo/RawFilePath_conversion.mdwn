@@ -8,13 +8,6 @@ Some commands like `git-annex find` use RawFilePath end-to-end.
 But this conversion is not yet complete. This is a todo to keep track of the
 status.
 
-* The Abstract FilePath proposal (AFPP) has been implemented, and so a number of
-  libraries like directory now have versions that operate on
-  OSPath. That could be used in git-annex eg for things like
-  getDirectoryContents, when built against those versions.
-  (OSPath uses ShortByteString, while RawFilePath is ByteString, so
-  conversion still entails a copy, eg using 
-  `System.OsString.Internal.fromBytes`)
 * unix has modules that operate on RawFilePath but no OSPath versions yet.
   See https://github.com/haskell/unix/issues/240
 * filepath-1.4.100 implements support for OSPath. It is bundled with

@@ -57,6 +57,7 @@ import Utility.Tmp.Dir
 import Utility.Env
 import Utility.Metered
 import Utility.FileMode
+import qualified Utility.RawFilePath as R
 
 import Network.URI
 import Data.Either
@@ -65,7 +66,6 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.Map.Strict as M
 import qualified System.FilePath.ByteString as P
-import qualified Utility.RawFilePath as R
 import qualified Data.Set as S
 
 run :: [String] -> IO ()
@@ -1162,7 +1162,8 @@ specialRemoteFromUrl sab a = withTmpDir "journal" $ \tmpdir -> do
 -- objects are deleted.
 cleanupInitialization :: StartAnnexBranch -> FilePath -> Annex ()
 cleanupInitialization sab alternatejournaldir = void $ tryNonAsync $ do
-	liftIO $ mapM_ removeFile =<< dirContents alternatejournaldir
+	liftIO $ mapM_ R.removeLink
+		=<< dirContents (toRawFilePath alternatejournaldir)
 	case sab of
 		AnnexBranchExistedAlready _ -> noop
 		AnnexBranchCreatedEmpty r ->

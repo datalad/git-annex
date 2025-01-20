@@ -817,7 +817,7 @@ listKeys' keyloc want = do
 	s <- Annex.getState id
 	r <- Annex.getRead id
 	depth <- gitAnnexLocationDepth <$> Annex.getGitConfig
-	liftIO $ walk (s, r) depth (fromRawFilePath dir)
+	liftIO $ walk (s, r) depth dir
   where
 	walk s depth dir = do
 		contents <- catchDefaultIO [] (dirContents dir)
@@ -825,7 +825,7 @@ listKeys' keyloc want = do
 			then do
 				contents' <- filterM present contents
 				keys <- filterM (Annex.eval s . want) $
-					mapMaybe (fileKey . P.takeFileName . toRawFilePath) contents'
+					mapMaybe (fileKey . P.takeFileName) contents'
 				continue keys []
 			else do
 				let deeper = walk s (depth - 1)
@@ -843,8 +843,8 @@ listKeys' keyloc want = do
 	present _ | inanywhere = pure True
 	present d = presentInAnnex d
 
-	presentInAnnex = doesFileExist . contentfile
-	contentfile d = d </> takeFileName d
+	presentInAnnex = R.doesPathExist . contentfile
+	contentfile d = d P.</> P.takeFileName d
 
 {- Things to do to record changes to content when shutting down.
  -

@@ -339,14 +339,14 @@ removeDirectoryForCleanup = removePathForcibly
 
 cleanup :: FilePath -> IO ()
 cleanup dir = whenM (doesDirectoryExist dir) $ do
-	Command.Uninit.prepareRemoveAnnexDir' dir
+	Command.Uninit.prepareRemoveAnnexDir' (toRawFilePath dir)
 	-- This can fail if files in the directory are still open by a
 	-- subprocess.
 	void $ tryIO $ removeDirectoryForCleanup dir
 
 finalCleanup :: IO ()
 finalCleanup = whenM (doesDirectoryExist tmpdir) $ do
-	Command.Uninit.prepareRemoveAnnexDir' tmpdir
+	Command.Uninit.prepareRemoveAnnexDir' (toRawFilePath tmpdir)
 	catchIO (removeDirectoryForCleanup tmpdir) $ \e -> do
 		print e
 		putStrLn "sleeping 10 seconds and will retry directory cleanup"

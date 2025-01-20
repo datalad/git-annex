@@ -30,6 +30,7 @@ import Utility.Metered
 import Utility.Tmp
 import Messages.Progress
 import Logs.Transfer
+import qualified Utility.RawFilePath as R
 
 import Network.URI
 import Control.Concurrent.Async
@@ -101,9 +102,9 @@ youtubeDl' url workdir p uo
 		| isytdlp cmd = liftIO $ 
 			(nub . lines <$> readFile filelistfile)
 				`catchIO` (pure . const [])
-		| otherwise = workdirfiles
-	workdirfiles = liftIO $ filter (/= filelistfile) 
-		<$> (filterM (doesFileExist) =<< dirContents workdir)
+		| otherwise = map fromRawFilePath <$> workdirfiles
+	workdirfiles = liftIO $ filter (/= toRawFilePath filelistfile) 
+		<$> (filterM R.doesPathExist =<< dirContents (toRawFilePath workdir))
 	filelistfile = workdir </> filelistfilebase
 	filelistfilebase = "git-annex-file-list-file"
 	isytdlp cmd = cmd == "yt-dlp"
@@ -159,7 +160,7 @@ youtubeDlMaxSize workdir = ifM (Annex.getRead Annex.force)
 		Just have -> do
 			inprogress <- sizeOfDownloadsInProgress (const True)
 			partial <- liftIO $ sum 
-				<$> (mapM (getFileSize . toRawFilePath) =<< dirContents workdir)
+				<$> (mapM getFileSize =<< dirContents (toRawFilePath workdir))
 			reserve <- annexDiskReserve <$> Annex.getGitConfig
 			let maxsize = have - reserve - inprogress + partial
 			if maxsize > 0

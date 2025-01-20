@@ -753,7 +753,7 @@ stageJournal jl commitindex = withIndex $ withOtherTmp $ \tmpdir -> do
 		Nothing -> return ()
 		Just file -> do
 			let path = dir P.</> toRawFilePath file
-			unless (dirCruft file) $ whenM (isfile path) $ do
+			unless (dirCruft (toRawFilePath file)) $ whenM (isfile path) $ do
 				sha <- Git.HashObject.hashFile h path
 				hPutStrLn jlogh file
 				streamer $ Git.UpdateIndex.updateIndexLine

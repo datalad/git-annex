@@ -29,6 +29,7 @@ import Annex.GitOverlay
 import Utility.Tmp.Dir
 import Utility.CopyFile
 import Utility.Directory.Create
+import qualified Utility.RawFilePath as R
 
 import qualified Data.ByteString as S
 import qualified System.FilePath.ByteString as P
@@ -72,7 +73,6 @@ mergeToAdjustedBranch tomerge (origbranch, adj) mergeconfig canresolvemerge comm
 	 -}
 	changestomerge (Just updatedorig) = withOtherTmp $ \othertmpdir -> do
 		git_dir <- fromRepo Git.localGitDir
-		let git_dir' = fromRawFilePath git_dir
 		tmpwt <- fromRepo gitAnnexMergeDir
 		withTmpDirIn (fromRawFilePath othertmpdir) "git" $ \tmpgit -> withWorkTreeRelated tmpgit $
 			withemptydir git_dir tmpwt $ withWorkTree tmpwt $ do
@@ -82,16 +82,15 @@ mergeToAdjustedBranch tomerge (origbranch, adj) mergeconfig canresolvemerge comm
 				-- causes it not to look in GIT_DIR for refs.
 				refs <- liftIO $ emptyWhenDoesNotExist $ 
 					dirContentsRecursive $
-						git_dir' </> "refs"
-				let refs' = (git_dir' </> "packed-refs") : refs
+						git_dir P.</> "refs"
+				let refs' = (git_dir P.</> "packed-refs") : refs
 				liftIO $ forM_ refs' $ \src -> do
-					let src' = toRawFilePath src
-					whenM (doesFileExist src) $ do
-						dest <- relPathDirToFile git_dir src'
+					whenM (R.doesPathExist src) $ do
+						dest <- relPathDirToFile git_dir src
 						let dest' = toRawFilePath tmpgit P.</> dest
 						createDirectoryUnder [git_dir]
 							(P.takeDirectory dest')
-						void $ createLinkOrCopy src' dest'
+						void $ createLinkOrCopy src dest'
 				-- This reset makes git merge not care
 				-- that the work tree is empty; otherwise
 				-- it will think that all the files have

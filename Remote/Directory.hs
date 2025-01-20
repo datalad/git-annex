@@ -246,7 +246,7 @@ finalizeStoreGeneric d tmp dest = do
 	renameDirectory (fromRawFilePath tmp) dest'
 	-- may fail on some filesystems
 	void $ tryIO $ do
-		mapM_ (preventWrite . toRawFilePath) =<< dirContents dest'
+		mapM_ preventWrite =<< dirContents dest
 		preventWrite dest
   where
 	dest' = fromRawFilePath dest
@@ -389,8 +389,7 @@ removeExportLocation topdir loc =
 
 listImportableContentsM :: IgnoreInodes -> RawFilePath -> Annex (Maybe (ImportableContentsChunkable Annex (ContentIdentifier, ByteSize)))
 listImportableContentsM ii dir = liftIO $ do
-	l <- dirContentsRecursiveSkipping (const False) False (fromRawFilePath dir)
-	l' <- mapM (go . toRawFilePath) l
+	l' <- mapM go =<< dirContentsRecursiveSkipping (const False) False dir
 	return $ Just $ ImportableContentsComplete $
 		ImportableContents (catMaybes l') []
   where
