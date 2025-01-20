@@ -55,6 +55,8 @@ prepare cmdname input showmatch matches r =
 			| otherwise -> sleep n
 		Nothing -> case getcfg <$> r of
 			Just "prompt" -> prompt
+			Just "never" -> unknowncommand
+			Just "immediate" -> warn Nothing
 			_ -> list
   where
 	getcfg = fromConfigValue . Git.Config.get "help.autocorrect" "0"
@@ -89,3 +91,5 @@ prepare cmdname input showmatch matches r =
 		resp <- headMaybe . map toLower <$> getLine
 		when (resp /= Just 'y') $
 			exitWith (ExitFailure 1)
+	
+	unknowncommand = giveup $ "Unknown command '" ++ input ++ "'"

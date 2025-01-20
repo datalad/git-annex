@@ -1,6 +1,6 @@
 git-annex (10.20250116) UNRELEASED; urgency=medium
 
-  * Support help.autocorrect=prompt.
+  * Support help.autocorrect settings "prompt", "never", and "immediate".
 
  -- Joey Hess <id@joeyh.name>  Mon, 20 Jan 2025 10:24:51 -0400
 
