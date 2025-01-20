@@ -1,6 +1,6 @@
 {- directory traversal and manipulation
  -
- - Copyright 2011-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2025 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -9,10 +9,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
-module Utility.Directory (
-	module Utility.Directory,
-	module Utility.SystemDirectory
-) where
+module Utility.Directory where
 
 import Control.Monad
 import System.FilePath

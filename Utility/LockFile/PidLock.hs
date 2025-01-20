@@ -27,6 +27,7 @@ import Utility.PartialPrelude
 import Utility.Exception
 import Utility.Applicative
 import Utility.Directory
+import Utility.SystemDirectory
 import Utility.Monad
 import Utility.Path.AbsRel
 import Utility.FileMode
