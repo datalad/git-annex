@@ -1,0 +1,68 @@
+### Please describe the problem.
+
+It is not possible to export e.g. the `synced/main` branch to an exporttree=yes special remote.
+
+### What steps will reproduce the problem?
+
+see transcript below, but basically:
+
+
+[[!format sh """
+> git annex initremote myexport type=directory exporttree=yes encryption=none directory=/path/to/dir
+> git config remote.myexport.annex-tracking-branch synced/main
+> git annex push myexport
+# Not updating export to myexport because tracking branch name is not valid. (As configured by remote.myexport.annex-tracking-branch)
+"""]]
+
+
+### What version of git-annex are you using? On what operating system?
+
+10.20240927 on NixOS
+
+### Please provide any additional information below.
+
+[[!format sh """
+yann in 🌐 yann-desktop-nixos in …/code/git-annex-test/export-synced-branch 
+🐟 ❯ git init
+Leeres Git-Repository in /home/yann/code/git-annex-test/export-synced-branch/.git/ initialisiert
+yann in 🌐 yann-desktop-nixos in …/export-synced-branch on  main 
+🐟 ❯ git annex init
+init  ok
+(recording state in git...)
+yann in 🌐 yann-desktop-nixos in …/export-synced-branch on  main 
+🐟 ❯ touch bla
+yann in 🌐 yann-desktop-nixos in …/export-synced-branch on  main [?] 
+🐟 ❯ git annex assist -m "Add file"
+add bla ok
+(recording state in git...)
+commit  (recording state in git...)
+ok
+yann in 🌐 yann-desktop-nixos in …/export-synced-branch on  main took 2s644ms 
+🐟 ❯ git annex initremote myexport type=directory exporttree=yes encryption=none directory=../exported-synced-branch
+initremote myexport 
+git-annex: Directory does not exist: /home/yann/code/git-annex-test/exported-synced-branch
+failed
+initremote: 1 failed
+yann in 🌐 yann-desktop-nixos in …/export-synced-branch on  main 
+❌1 🐟 ❯ mkdir ../exported-synced-branch/
+yann in 🌐 yann-desktop-nixos in …/export-synced-branch on  main 
+🐟 ❯ git annex initremote myexport type=directory exporttree=yes encryption=none directory=../exported-synced-branch
+initremote myexport ok
+(recording state in git...)
+yann in 🌐 yann-desktop-nixos in …/export-synced-branch on  main 
+🐟 ❯ git config remote.myexport.annex-tracking-branch synced/main
+yann in 🌐 yann-desktop-nixos in …/export-synced-branch on  main 
+🐟 ❯ git annex push myexport
+
+  Not updating export to myexport because tracking branch name is not valid. (As configured by remote.myexport.annex-tracking-branch)
+yann in 🌐 yann-desktop-nixos in …/export-synced-branch on  main 
+🐟 ❮ git config remote.myexport.annex-tracking-branch main
+yann in 🌐 yann-desktop-nixos in …/export-synced-branch on  main 
+🐟 ❯ git annex push myexport
+export myexport bla ok
+(recording state in git...)
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+git-annex is amazing, thank you! 🤩
