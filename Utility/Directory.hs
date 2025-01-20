@@ -37,6 +37,11 @@ dirCruft "." = True
 dirCruft ".." = True
 dirCruft _ = False
 
+dirCruft' :: R.RawFilePath -> Bool
+dirCruft' "." = True
+dirCruft' ".." = True
+dirCruft' _ = False
+
 {- Lists the contents of a directory.
  - Unlike getDirectoryContents, paths are not relative to the directory. -}
 dirContents :: RawFilePath -> IO [RawFilePath]

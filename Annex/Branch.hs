@@ -752,12 +752,12 @@ stageJournal jl commitindex = withIndex $ withOtherTmp $ \tmpdir -> do
 	genstream dir h jh jlogh streamer = readDirectory jh >>= \case
 		Nothing -> return ()
 		Just file -> do
-			let path = dir P.</> toRawFilePath file
-			unless (dirCruft (toRawFilePath file)) $ whenM (isfile path) $ do
+			let path = dir P.</> file
+			unless (dirCruft file) $ whenM (isfile path) $ do
 				sha <- Git.HashObject.hashFile h path
-				hPutStrLn jlogh file
+				B.hPutStr jlogh (file <> "\n")
 				streamer $ Git.UpdateIndex.updateIndexLine
-					sha TreeFile (asTopFilePath $ fileJournal $ toRawFilePath file)
+					sha TreeFile (asTopFilePath $ fileJournal file)
 			genstream dir h jh jlogh streamer
 	isfile file = isRegularFile <$> R.getFileStatus file
 	-- Clean up the staged files, as listed in the temp log file.

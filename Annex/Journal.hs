@@ -243,17 +243,15 @@ withJournalHandle getjournaldir a = do
   where
 	-- avoid overhead of creating the journal directory when it already
 	-- exists
-	opendir d = liftIO (openDirectory (fromRawFilePath d))
+	opendir d = liftIO (openDirectory d)
 		`catchIO` (const (createAnnexDirectory d >> opendir d))
 
 {- Checks if there are changes in the journal. -}
 journalDirty :: (BranchState -> Git.Repo -> RawFilePath) -> Annex Bool
 journalDirty getjournaldir = do
 	st <- getState
-	d <- fromRawFilePath <$> fromRepo (getjournaldir st)
-	liftIO $ 
-		(not <$> isDirectoryEmpty d)
-			`catchIO` (const $ doesDirectoryExist d)
+	d <- fromRepo (getjournaldir st)
+	liftIO $ isDirectoryPopulated d
 
 {- Produces a filename to use in the journal for a file on the branch.
  - The filename does not include the journal directory.
