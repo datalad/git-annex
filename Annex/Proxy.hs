@@ -30,6 +30,7 @@ import Utility.Tmp.Dir
 import Utility.Metered
 import Git.Types
 import qualified Database.Export as Export
+import qualified Utility.FileIO as F
 #ifndef mingw32_HOST_OS
 import Utility.OpenFile
 #endif
@@ -184,7 +185,7 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv oclosedv mexportdb = go
 				-- the client, to avoid bad content
 				-- being stored in the special remote.
 				iv <- startVerifyKeyContentIncrementally Remote.AlwaysVerify k
-				h <- liftIO $ openFile (fromRawFilePath tmpfile) WriteMode
+				h <- liftIO $ F.openFile (toOsPath tmpfile) WriteMode
 				let nuketmp = liftIO $ removeWhenExistsWith removeFile (fromRawFilePath tmpfile)
 				gotall <- liftIO $ receivetofile iv h len
 				liftIO $ hClose h

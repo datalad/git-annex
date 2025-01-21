@@ -27,6 +27,7 @@ import Annex.BranchState
 import Types.BranchState
 import Utility.Directory.Stream
 import qualified Utility.RawFilePath as R
+import qualified Utility.FileIO as F
 
 import qualified Data.Set as S
 import qualified Data.ByteString.Lazy as L
@@ -92,7 +93,7 @@ setJournalFile _jl ru file content = withOtherTmp $ \tmp -> do
 	-- journal file is written atomically
 	let jfile = journalFile file
 	let tmpfile = tmp P.</> jfile
-	liftIO $ withFile (fromRawFilePath tmpfile) WriteMode $ \h ->
+	liftIO $ F.withFile (toOsPath tmpfile) WriteMode $ \h ->
 		writeJournalHandle h content
 	let dest = jd P.</> jfile
 	let mv = do
@@ -133,7 +134,7 @@ checkCanAppendJournalFile _jl ru file = do
  -}
 appendJournalFile :: Journalable content => JournalLocked -> AppendableJournalFile -> content -> Annex ()
 appendJournalFile _jl (AppendableJournalFile (jd, jfile)) content = do
-	let write = liftIO $ withFile (fromRawFilePath jfile) ReadWriteMode $ \h -> do
+	let write = liftIO $ F.withFile (toOsPath jfile) ReadWriteMode $ \h -> do
 		sz <- hFileSize h
 		when (sz /= 0) $ do
 			hSeek h SeekFromEnd (-1)

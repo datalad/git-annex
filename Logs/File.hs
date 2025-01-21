@@ -26,6 +26,7 @@ import Annex.Perms
 import Annex.LockFile
 import Annex.ReplaceFile
 import Utility.Tmp
+import qualified Utility.FileIO as F
 
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Char8 as S8
@@ -52,7 +53,7 @@ withLogHandle f a = do
   where
 	setup tmp = do
 		setAnnexFilePerm tmp
-		liftIO $ openFile (fromRawFilePath tmp) WriteMode
+		liftIO $ F.openFile (toOsPath tmp) WriteMode
 	cleanup h = liftIO $ hClose h
 
 -- | Appends a line to a log file, first locking it to prevent
@@ -61,11 +62,9 @@ appendLogFile :: RawFilePath -> RawFilePath -> L.ByteString -> Annex ()
 appendLogFile f lck c = 
 	createDirWhenNeeded f $
 		withExclusiveLock lck $ do
-			liftIO $ withFile f' AppendMode $
+			liftIO $ F.withFile (toOsPath f) AppendMode $
 				\h -> L8.hPutStrLn h c
-			setAnnexFilePerm (toRawFilePath f')
-  where
-	f' = fromRawFilePath f
+			setAnnexFilePerm f
 
 -- | Modifies a log file.
 --
@@ -93,14 +92,13 @@ modifyLogFile f lck modf = withExclusiveLock lck $ do
 checkLogFile :: RawFilePath -> RawFilePath -> (L.ByteString -> Bool) -> Annex Bool
 checkLogFile f lck matchf = withSharedLock lck $ bracket setup cleanup go
   where
-	setup = liftIO $ tryWhenExists $ openFile f' ReadMode
+	setup = liftIO $ tryWhenExists $ F.openFile (toOsPath f) ReadMode
 	cleanup Nothing = noop
 	cleanup (Just h) = liftIO $ hClose h
 	go Nothing = return False
 	go (Just h) = do
 		!r <- liftIO (any matchf . fileLines <$> L.hGetContents h)
 		return r
-	f' = fromRawFilePath f
 
 -- | Folds a function over lines of a log file to calculate a value.
 calcLogFile :: RawFilePath -> RawFilePath -> t -> (L.ByteString -> t -> t) -> Annex t
@@ -111,7 +109,7 @@ calcLogFile f lck start update =
 calcLogFileUnsafe :: RawFilePath -> t -> (L.ByteString -> t -> t) -> Annex t
 calcLogFileUnsafe f start update = bracket setup cleanup go
   where
-	setup = liftIO $ tryWhenExists $ openFile f' ReadMode
+	setup = liftIO $ tryWhenExists $ F.openFile (toOsPath f) ReadMode
 	cleanup Nothing = noop
 	cleanup (Just h) = liftIO $ hClose h
 	go Nothing = return start
@@ -120,7 +118,6 @@ calcLogFileUnsafe f start update = bracket setup cleanup go
 	go' v (l:ls) = do
 		let !v' = update l v
 		go' v' ls
-	f' = fromRawFilePath f
 
 -- | Streams lines from a log file, passing each line to the processor,
 -- and then empties the file at the end.
@@ -134,19 +131,19 @@ calcLogFileUnsafe f start update = bracket setup cleanup go
 -- 
 -- Locking is used to prevent writes to to the log file while this
 -- is running.
-streamLogFile :: FilePath -> RawFilePath -> Annex () -> (String -> Annex ()) -> Annex ()
+streamLogFile :: RawFilePath -> RawFilePath -> Annex () -> (String -> Annex ()) -> Annex ()
 streamLogFile f lck finalizer processor = 
 	withExclusiveLock lck $ do
 		streamLogFileUnsafe f finalizer processor
-		liftIO $ writeFile f ""
-		setAnnexFilePerm (toRawFilePath f)
+		liftIO $ F.writeFile' (toOsPath f) mempty
+		setAnnexFilePerm f
 
 -- Unsafe version that does not do locking, and does not empty the file
 -- at the end.
-streamLogFileUnsafe :: FilePath -> Annex () -> (String -> Annex ()) -> Annex ()
+streamLogFileUnsafe :: RawFilePath -> Annex () -> (String -> Annex ()) -> Annex ()
 streamLogFileUnsafe f finalizer processor = bracketOnError setup cleanup go
   where
-	setup = liftIO $ tryWhenExists $ openFile f ReadMode 
+	setup = liftIO $ tryWhenExists $ F.openFile (toOsPath f) ReadMode 
 	cleanup Nothing = noop
 	cleanup (Just h) = liftIO $ hClose h
 	go Nothing = finalizer

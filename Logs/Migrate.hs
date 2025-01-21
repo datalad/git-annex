@@ -79,7 +79,7 @@ logMigration old new = do
 -- | Commits a migration to the git-annex branch.
 commitMigration :: Annex ()
 commitMigration = do
-	logf <- fromRawFilePath <$> fromRepo gitAnnexMigrateLog
+	logf <- fromRepo gitAnnexMigrateLog
 	lckf <- fromRepo gitAnnexMigrateLock
 	nv <- liftIO $ newTVarIO (0 :: Integer)
 	g <- Annex.gitRepo

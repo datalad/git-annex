@@ -33,5 +33,6 @@ import Utility.FileSize as X
 import Utility.Network as X
 import Utility.Split as X
 import Utility.FileSystemEncoding as X
+import Utility.OsPath as X
 
 import Utility.PartialPrelude as X

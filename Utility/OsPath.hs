@@ -11,10 +11,9 @@
 
 module Utility.OsPath where
 
+import Utility.FileSystemEncoding
+
 #ifdef WITH_OSPATH
-
-import Utility.RawFilePath
-
 import System.OsPath
 import "os-string" System.OsString.Internal.Types
 import qualified Data.ByteString.Short as S
@@ -36,4 +35,15 @@ fromOsPath = S.fromShort . getWindowsString . getOsString
 fromOsPath = S.fromShort . getPosixString . getOsString
 #endif
 
-#endif /* WITH_OSPATH */
+#else
+{- When not building with WITH_OSPATH, use FilePath. This allows
+ - using functions from legacy FilePath libraries interchangeably with
+ - newer OsPath libraries.
+ - -}
+type OsPath = FilePath
+toOsPath :: RawFilePath -> OsPath
+toOsPath = fromRawFilePath
+
+fromOsPath :: OsPath -> RawFilePath
+fromOsPath = toRawFilePath
+#endif

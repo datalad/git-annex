@@ -45,6 +45,7 @@ import qualified Database.Fsck as FsckDb
 import Types.CleanupActions
 import Types.Key
 import qualified Utility.RawFilePath as R
+import qualified Utility.FileIO as F
 
 import Data.Time.Clock.POSIX
 import System.Posix.Types (EpochTime)
@@ -678,7 +679,7 @@ recordStartTime u = do
 	f <- fromRepo (gitAnnexFsckState u)
 	createAnnexDirectory $ parentDir f
 	liftIO $ removeWhenExistsWith R.removeLink f
-	liftIO $ withFile (fromRawFilePath f) WriteMode $ \h -> do
+	liftIO $ F.withFile (toOsPath f) WriteMode $ \h -> do
 #ifndef mingw32_HOST_OS
 		t <- modificationTime <$> R.getFileStatus f
 #else

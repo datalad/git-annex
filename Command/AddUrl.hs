@@ -353,7 +353,7 @@ downloadWeb addunlockedmatcher o url urlinfo file =
 	urlkey = addSizeUrlKey urlinfo $ Backend.URL.fromUrl url Nothing (verifiableOption o)
 	downloader f p = Url.withUrlOptions $ downloadUrl False urlkey p Nothing [url] f
 	go Nothing = return Nothing
-	go (Just (tmp, backend)) = ifM (useYoutubeDl o <&&> liftIO (isHtmlFile (fromRawFilePath tmp)))
+	go (Just (tmp, backend)) = ifM (useYoutubeDl o <&&> liftIO (isHtmlFile tmp))
 		( tryyoutubedl tmp backend
 		, normalfinish tmp backend
 		)

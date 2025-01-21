@@ -14,11 +14,10 @@ status.
   ghc-9.6.1 and above. Will need to switch from filepath-bytestring to
   this, and to avoid a lot of ifdefs, probably only after git-annex no
   longers supports building with older ghc versions.
-* withFile remains to be converted, and is used in several important code
-  paths, including Annex.Journal and Annex.Link. 
-  There is a OSPath version in file-io library, but that is
-  not currently a git-annex dependency. (withFile is in base, and base is
-  unlikely to convert to AFPP soon)
+* Utility.FileIO is used for most withFile and openFile, but not yet for
+  readFile, writeFile, and appendFile. Including versions of those from
+  bytestring.
+* readFileStrict should be replaced with Utility.FileIO.readFile'
 
 [[!tag confirmed]]
 

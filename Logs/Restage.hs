@@ -14,6 +14,7 @@ import Git.FilePath
 import Logs.File
 import Utility.InodeCache
 import Annex.LockFile
+import qualified Utility.FileIO as F
 
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
@@ -48,21 +49,20 @@ streamRestageLog :: Annex () -> (TopFilePath -> InodeCache -> Annex ()) -> Annex
 streamRestageLog finalizer processor = do
 	logf <- fromRepo gitAnnexRestageLog
 	oldf <- fromRepo gitAnnexRestageLogOld
-	let oldf' = fromRawFilePath oldf
 	lckf <- fromRepo gitAnnexRestageLock
 	
 	withExclusiveLock lckf $ liftIO $
 		whenM (R.doesPathExist logf) $
 			ifM (R.doesPathExist oldf)
 				( do
-					h <- openFile oldf' AppendMode
+					h <- F.openFile (toOsPath oldf) AppendMode
 					hPutStr h =<< readFile (fromRawFilePath logf)
 					hClose h
 					liftIO $ removeWhenExistsWith R.removeLink logf
 				, moveFile logf oldf
 				)
 
-	streamLogFileUnsafe oldf' finalizer $ \l -> 
+	streamLogFileUnsafe oldf finalizer $ \l -> 
 		case parseRestageLog l of
 			Just (f, ic) -> processor f ic
 			Nothing -> noop

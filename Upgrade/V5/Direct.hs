@@ -29,6 +29,7 @@ import Annex.Perms
 import Utility.InodeCache
 import Annex.InodeSentinal
 import qualified Utility.RawFilePath as R
+import qualified Utility.FileIO as F
 
 setIndirect :: Annex ()
 setIndirect = do
@@ -88,8 +89,8 @@ associatedFiles key = do
  - the top of the repo. -}
 associatedFilesRelative :: Key -> Annex [FilePath] 
 associatedFilesRelative key = do
-	mapping <- fromRawFilePath <$> calcRepo (gitAnnexMapping key)
-	liftIO $ catchDefaultIO [] $ withFile mapping ReadMode $ \h ->
+	mapping <- calcRepo (gitAnnexMapping key)
+	liftIO $ catchDefaultIO [] $ F.withFile (toOsPath mapping) ReadMode $ \h ->
 		-- Read strictly to ensure the file is closed promptly
 		lines <$> hGetContentsStrict h
 

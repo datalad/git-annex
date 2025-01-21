@@ -12,6 +12,11 @@
 
 module Utility.Directory where
 
+#ifdef WITH_OSPATH
+import System.Directory.OsPath
+#else
+import Utility.SystemDirectory
+#endif
 import Control.Monad
 import System.PosixCompat.Files (isDirectory, isSymbolicLink)
 import Control.Applicative
@@ -20,40 +25,24 @@ import qualified System.FilePath.ByteString as P
 import Data.Maybe
 import Prelude
 
+import Utility.OsPath
 import Utility.Exception
 import Utility.Monad
 import Utility.FileSystemEncoding
 import qualified Utility.RawFilePath as R
-
-#ifdef WITH_OSPATH
-import Utility.OsPath
-import qualified System.Directory.OsPath as OP
-#else
-import Utility.SystemDirectory
-#endif
 
 dirCruft :: R.RawFilePath -> Bool
 dirCruft "." = True
 dirCruft ".." = True
 dirCruft _ = False
 
-dirCruft' :: R.RawFilePath -> Bool
-dirCruft' "." = True
-dirCruft' ".." = True
-dirCruft' _ = False
-
 {- Lists the contents of a directory.
  - Unlike getDirectoryContents, paths are not relative to the directory. -}
 dirContents :: RawFilePath -> IO [RawFilePath]
-#ifdef WITH_OSPATH
-dirContents d = map (\p -> d P.</> fromOsPath p)
-	<$> OP.listDirectory (toOsPath d)
-#else
 dirContents d = 
-	map (\p -> d P.</> toRawFilePath p) 
-		. filter (not . dirCruft . toRawFilePath) 
-		<$> getDirectoryContents (fromRawFilePath d)
-#endif
+	map (\p -> d P.</> fromOsPath p) 
+		. filter (not . dirCruft . fromOsPath) 
+		<$> getDirectoryContents (toOsPath d)
 
 {- Gets files in a directory, and then its subdirectories, recursively,
  - and lazily.
@@ -102,11 +91,7 @@ dirContentsRecursiveSkipping skipdir followsubdirsymlinks topdir
 				(Just s) 
 					| isDirectory s -> recurse
 					| isSymbolicLink s && followsubdirsymlinks ->
-#ifdef WITH_OSPATH
-						ifM (OP.doesDirectoryExist (toOsPath entry))
-#else
-						ifM (doesDirectoryExist (fromRawFilePath entry))
-#endif
+						ifM (doesDirectoryExist (toOsPath entry))
 							( recurse
 							, skip
 							)
