@@ -17,6 +17,7 @@ import Utility.Shell
 import Utility.Tmp
 import Utility.Env
 import Utility.SshConfig
+import qualified Utility.FileIO as F
 
 #ifdef darwin_HOST_OS
 import Utility.OSX
@@ -82,7 +83,7 @@ ensureInstalled = ifM (isJust <$> getEnv "GIT_ANNEX_PACKAGE_INSTALL")
 		let runshell var = "exec " ++ base </> "runshell " ++ var
 		let rungitannexshell var = runshell $ "git-annex-shell -c \"" ++ var ++ "\""
 
-		installWrapper (sshdir </> "git-annex-shell") $ unlines
+		installWrapper (toRawFilePath (sshdir </> "git-annex-shell")) $ unlines
 			[ shebang
 			, "set -e"
 			, "if [ \"x$SSH_ORIGINAL_COMMAND\" != \"x\" ]; then"
@@ -91,7 +92,7 @@ ensureInstalled = ifM (isJust <$> getEnv "GIT_ANNEX_PACKAGE_INSTALL")
 			,   rungitannexshell "$@"
 			, "fi"
 			]
-		installWrapper (sshdir </> "git-annex-wrapper") $ unlines
+		installWrapper (toRawFilePath (sshdir </> "git-annex-wrapper")) $ unlines
 			[ shebang
 			, "set -e"
 			, runshell "\"$@\""
@@ -99,14 +100,13 @@ ensureInstalled = ifM (isJust <$> getEnv "GIT_ANNEX_PACKAGE_INSTALL")
 
 		installFileManagerHooks program
 
-installWrapper :: FilePath -> String -> IO ()
+installWrapper :: RawFilePath -> String -> IO ()
 installWrapper file content = do
-	curr <- catchDefaultIO "" $ readFileStrict file
+	curr <- catchDefaultIO "" $ readFileStrict (fromRawFilePath file)
 	when (curr /= content) $ do
-		createDirectoryIfMissing True (fromRawFilePath (parentDir (toRawFilePath file)))
-		viaTmp writeFile file content
-		modifyFileMode (toRawFilePath file) $ 
-			addModes [ownerExecuteMode]
+		createDirectoryIfMissing True (fromRawFilePath (parentDir file))
+		viaTmp F.writeFile' (toOsPath file) (encodeBS content)
+		modifyFileMode file $ addModes [ownerExecuteMode]
 
 installFileManagerHooks :: FilePath -> IO ()
 #ifdef linux_HOST_OS

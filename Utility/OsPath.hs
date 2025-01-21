@@ -9,7 +9,12 @@
 {-# LANGUAGE PackageImports #-}
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
-module Utility.OsPath where
+module Utility.OsPath (
+	OsPath,
+	OsString,
+	toOsPath,
+	fromOsPath,
+) where
 
 import Utility.FileSystemEncoding
 
@@ -39,8 +44,11 @@ fromOsPath = S.fromShort . getPosixString . getOsString
 {- When not building with WITH_OSPATH, use FilePath. This allows
  - using functions from legacy FilePath libraries interchangeably with
  - newer OsPath libraries.
- - -}
+ -}
 type OsPath = FilePath
+
+type OsString = String
+
 toOsPath :: RawFilePath -> OsPath
 toOsPath = fromRawFilePath
 

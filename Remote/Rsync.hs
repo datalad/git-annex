@@ -374,7 +374,7 @@ sendParams = ifM crippledFileSystem
 withRsyncScratchDir :: (FilePath -> Annex a) -> Annex a
 withRsyncScratchDir a = do
 	t <- fromRawFilePath <$> fromRepo gitAnnexTmpObjectDir
-	withTmpDirIn t "rsynctmp" a
+	withTmpDirIn t (toOsPath "rsynctmp") a
 
 rsyncRetrieve :: RsyncOpts -> [RsyncUrl] -> FilePath -> Maybe MeterUpdate -> Annex ()
 rsyncRetrieve o rsyncurls dest meterupdate = 

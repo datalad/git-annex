@@ -23,6 +23,8 @@ import System.Posix.Temp (mkdtemp)
 
 import Utility.Exception
 import Utility.Tmp (Template)
+import Utility.OsPath
+import Utility.FileSystemEncoding
 
 {- Runs an action with a tmp directory located within the system's tmp
  - directory (or within "." if there is none), then removes the tmp
@@ -33,7 +35,7 @@ withTmpDir template a = do
 #ifndef mingw32_HOST_OS
 	-- Use mkdtemp to create a temp directory securely in /tmp.
 	bracket
-		(liftIO $ mkdtemp $ topleveltmpdir </> template)
+		(liftIO $ mkdtemp $ topleveltmpdir </> fromRawFilePath (fromOsPath template))
 		removeTmpDir
 		a
 #else
@@ -47,7 +49,7 @@ withTmpDirIn tmpdir template = bracketIO create removeTmpDir
   where
 	create = do
 		createDirectoryIfMissing True tmpdir
-		makenewdir (tmpdir </> template) (0 :: Int)
+		makenewdir (tmpdir </> fromRawFilePath (fromOsPath template)) (0 :: Int)
 	makenewdir t n = do
 		let dir = t ++ "." ++ show n
 		catchIOErrorType AlreadyExists (const $ makenewdir t $ n + 1) $ do

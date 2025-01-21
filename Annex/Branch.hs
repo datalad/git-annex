@@ -741,7 +741,7 @@ stageJournal jl commitindex = withIndex $ withOtherTmp $ \tmpdir -> do
 	g <- gitRepo
 	st <- getState
 	let dir = gitAnnexJournalDir st g
-	(jlogf, jlogh) <- openjlog (fromRawFilePath tmpdir)
+	(jlogf, jlogh) <- openjlog tmpdir
 	withHashObjectHandle $ \h ->
 		withJournalHandle gitAnnexJournalDir $ \jh ->
 			Git.UpdateIndex.streamUpdateIndex g
@@ -769,8 +769,8 @@ stageJournal jl commitindex = withIndex $ withOtherTmp $ \tmpdir -> do
 		stagedfs <- lines <$> hGetContents jlogh
 		mapM_ (removeFile . (dir </>)) stagedfs
 		hClose jlogh
-		removeWhenExistsWith (R.removeLink) (toRawFilePath jlogf)
-	openjlog tmpdir = liftIO $ openTmpFileIn tmpdir "jlog"
+		removeWhenExistsWith (R.removeLink) (fromOsPath jlogf)
+	openjlog tmpdir = liftIO $ openTmpFileIn (toOsPath tmpdir) (toOsPath "jlog")
 
 getLocalTransitions :: Annex Transitions
 getLocalTransitions = 

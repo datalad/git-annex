@@ -31,7 +31,7 @@ import qualified System.FilePath.ByteString as P
 
 benchmarkDbs :: CriterionMode -> Integer -> Annex ()
 #ifdef WITH_BENCHMARK
-benchmarkDbs mode n = withTmpDirIn "." "benchmark" $ \tmpdir -> do
+benchmarkDbs mode n = withTmpDirIn "." (toOsPath "benchmark") $ \tmpdir -> do
 	db <- benchDb (toRawFilePath tmpdir) n
 	liftIO $ runMode mode
 		[ bgroup "keys database"

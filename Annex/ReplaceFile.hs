@@ -71,7 +71,7 @@ replaceFile' createdirectory file checkres action = withOtherTmp $ \othertmpdir 
 	-- it short.
 	let basetmp = "t"
 #endif
-	withTmpDirIn othertmpdir' basetmp $ \tmpdir -> do
+	withTmpDirIn othertmpdir' (toOsPath (toRawFilePath basetmp)) $ \tmpdir -> do
 		let tmpfile = toRawFilePath (tmpdir </> basetmp)
 		r <- action tmpfile
 		when (checkres r) $

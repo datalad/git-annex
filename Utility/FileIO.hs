@@ -22,6 +22,7 @@ module Utility.FileIO
 	writeFile',
 	appendFile,
 	appendFile',
+	openTempFile,
 ) where
 
 #ifdef WITH_OSPATH
@@ -81,6 +82,10 @@ appendFile' f b = do
 	f' <- toOsPath <$> convertToWindowsNativeNamespace (fromOsPath f)
 	O.appendFile' f' b
 
+openTempFile :: OsPath -> OsPath -> IO (OsPath, Handle)
+openTempFile p s = do
+	p' <- toOsPath <$> convertToWindowsNativeNamespace (fromOsPath p)
+	O.openTempFile p' s
 #endif
 
 #else
@@ -88,7 +93,8 @@ appendFile' f b = do
 -- instead. However, functions still use ByteString for the
 -- file content in that case, unlike the Strings used by the Prelude.
 import Utility.OsPath
-import System.IO (withFile, openFile, IO)
+import System.IO (withFile, openFile, openTempFile, IO)
+import qualified System.IO
 import Data.ByteString.Lazy (readFile, writeFile, appendFile)
 import qualified Data.ByteString as B
 

@@ -40,6 +40,7 @@ import Utility.Env
 import Utility.Env.Set
 import Utility.Tmp
 import Utility.RawFilePath
+import Utility.OsPath
 import qualified Utility.LockFile.Posix as Posix
 
 import System.IO
@@ -149,9 +150,10 @@ tryLock lockfile = do
 		_ -> return (Just ParentLocked)
   where
 	go abslockfile sidelock = do
-		let abslockfile' = fromRawFilePath abslockfile
-		(tmp, h) <- openTmpFileIn (takeDirectory abslockfile') "locktmp"
-		let tmp' = toRawFilePath tmp
+		(tmp, h) <- openTmpFileIn 
+			(toOsPath (P.takeDirectory abslockfile)) 
+			(toOsPath "locktmp")
+		let tmp' = fromOsPath tmp
 		setFileMode tmp' (combineModes readModes)
 		hPutStr h . show =<< mkPidLock
 		hClose h

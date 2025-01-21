@@ -27,6 +27,7 @@ import System.Posix.Types
 import System.Posix.IO
 #else
 import Utility.Tmp
+import Utility.OsPath
 #endif
 import Utility.Tmp.Dir
 import Author
@@ -112,7 +113,7 @@ decryptSymmetric sopcmd password emptydirectory feeder reader =
 {- Test a value round-trips through symmetric encryption and decryption. -}
 test_encrypt_decrypt_Symmetric :: SOPCmd -> SOPCmd -> Password -> Armoring -> B.ByteString -> IO Bool
 test_encrypt_decrypt_Symmetric a b password armoring v = catchBoolIO $
-	withTmpDir "test" $ \d -> do
+	withTmpDir (toOsPath "test") $ \d -> do
 		let ed = EmptyDirectory d
 		enc <- encryptSymmetric a password ed Nothing armoring
 			(`B.hPutStr` v) B.hGetContents
@@ -159,7 +160,7 @@ feedRead cmd subcmd params password emptydirectory feeder reader = do
 		go (Just emptydirectory) (passwordfd ++ params)
 #else
 	-- store the password in a temp file
-	withTmpFile "sop" $ \tmpfile h -> do
+	withTmpFile (toOsPath "sop") $ \tmpfile h -> do
 		liftIO $ B.hPutStr h password
 		liftIO $ hClose h
 		let passwordfile = [Param $ "--with-password="++tmpfile]

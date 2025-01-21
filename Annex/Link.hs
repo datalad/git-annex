@@ -246,7 +246,9 @@ restagePointerFiles r = unlessM (Annex.getState Annex.insmudgecleanfilter) $ do
 	when (numfiles > 0) $
 		bracket lockindex unlockindex go
   where
-	withtmpdir = withTmpDirIn (fromRawFilePath $ Git.localGitDir r) "annexindex"
+	withtmpdir = withTmpDirIn
+		(fromRawFilePath $ Git.localGitDir r)
+		(toOsPath "annexindex")
 
 	isunmodified tsd f orig = 
 		genInodeCache f tsd >>= return . \case

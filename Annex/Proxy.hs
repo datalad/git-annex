@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Annex.Proxy where
 
@@ -174,7 +175,7 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv oclosedv mexportdb = go
 	-- independently. Also, this key is not getting added into the
 	-- local annex objects.
 	withproxytmpfile k a = withOtherTmp $ \othertmpdir ->
-		withTmpDirIn (fromRawFilePath othertmpdir) "proxy" $ \tmpdir ->
+		withTmpDirIn (fromRawFilePath othertmpdir) (toOsPath "proxy") $ \tmpdir ->
 			a (toRawFilePath tmpdir P.</> keyFile k)
 			
 	proxyput af k = do

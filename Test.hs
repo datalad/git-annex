@@ -563,7 +563,7 @@ test_magic = intmpclonerepo $ do
 #endif
 
 test_import :: Assertion
-test_import = intmpclonerepo $ Utility.Tmp.Dir.withTmpDir "importtest" $ \importdir -> do
+test_import = intmpclonerepo $ Utility.Tmp.Dir.withTmpDir (toOsPath (toRawFilePath "importtest")) $ \importdir -> do
 	(toimport1, importf1, imported1) <- mktoimport importdir "import1"
 	git_annex "import" [toimport1] "import"
 	annexed_present_imported imported1
@@ -1894,7 +1894,7 @@ test_gpg_crypto = do
 	testscheme "pubkey"
   where
 	gpgcmd = Utility.Gpg.mkGpgCmd Nothing
-	testscheme scheme = Utility.Tmp.Dir.withTmpDir "gpgtmp" $ \gpgtmp -> do
+	testscheme scheme = Utility.Tmp.Dir.withTmpDir (toOsPath (toRawFilePath "gpgtmp")) $ \gpgtmp -> do
 		-- Use the system temp directory as gpg temp directory because 
 		-- it needs to be able to store the agent socket there,
 		-- which can be problematic when testing some filesystems.

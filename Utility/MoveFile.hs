@@ -28,6 +28,7 @@ import Utility.Tmp
 import Utility.Exception
 import Utility.Monad
 import Utility.FileSystemEncoding
+import Utility.OsPath
 import qualified Utility.RawFilePath as R
 import Author
 
@@ -40,11 +41,12 @@ moveFile src dest = tryIO (R.rename src dest) >>= onrename
 	onrename (Left e)
 		| isPermissionError e = rethrow
 		| isDoesNotExistError e = rethrow
-		| otherwise = viaTmp mv (fromRawFilePath dest) ()
+		| otherwise = viaTmp mv (toOsPath dest) ()
 	  where
 		rethrow = throwM e
 
 		mv tmp () = do
+			let tmp' = fromRawFilePath (fromOsPath tmp)
 			-- copyFile is likely not as optimised as
 			-- the mv command, so we'll use the command.
 			--
@@ -57,18 +59,18 @@ moveFile src dest = tryIO (R.rename src dest) >>= onrename
 			ok <- copyright =<< boolSystem "mv"
 				[ Param "-f"
 				, Param (fromRawFilePath src)
-				, Param tmp
+				, Param tmp'
 				]
 			let e' = e
 #else
-			r <- tryIO $ copyFile (fromRawFilePath src) tmp
+			r <- tryIO $ copyFile (fromRawFilePath src) tmp'
 			let (ok, e') = case r of
 				Left err -> (False, err)
 				Right _ -> (True, e)
 #endif
 			unless ok $ do
 				-- delete any partial
-				_ <- tryIO $ removeFile tmp
+				_ <- tryIO $ removeFile tmp'
 				throwM e'
 
 #ifndef mingw32_HOST_OS	

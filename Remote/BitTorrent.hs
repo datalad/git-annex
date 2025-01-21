@@ -214,13 +214,13 @@ downloadTorrentFile u = do
 						(fromRawFilePath metadir)
 					return ok
 				else withOtherTmp $ \othertmp -> do
-					withTmpFileIn (fromRawFilePath othertmp) "torrent" $ \f h -> do
+					withTmpFileIn (toOsPath othertmp) (toOsPath "torrent") $ \f h -> do
 						liftIO $ hClose h
-						resetAnnexFilePerm (toRawFilePath f)
+						resetAnnexFilePerm (fromOsPath f)
 						ok <- Url.withUrlOptions $ 
-							Url.download nullMeterUpdate Nothing u f
+							Url.download nullMeterUpdate Nothing u (fromRawFilePath (fromOsPath f))
 						when ok $
-							liftIO $ moveFile (toRawFilePath f) torrent
+							liftIO $ moveFile (fromOsPath f) torrent
 						return ok
 		)
 

@@ -324,9 +324,10 @@ tryGitConfigRead autoinit r hasuuid
 
 	geturlconfig = Url.withUrlOptionsPromptingCreds $ \uo -> do
 		let url = Git.repoLocation r ++ "/config"
-		v <- withTmpFile "git-annex.tmp" $ \tmpfile h -> do
+		v <- withTmpFile (toOsPath "git-annex.tmp") $ \tmpfile h -> do
 			liftIO $ hClose h
-			Url.download' nullMeterUpdate Nothing url tmpfile uo >>= \case
+			let tmpfile' = fromRawFilePath $ fromOsPath tmpfile
+			Url.download' nullMeterUpdate Nothing url tmpfile' uo >>= \case
 				Right () ->
 					pipedconfig Git.Config.ConfigNullList
 						False url "git"
@@ -334,7 +335,7 @@ tryGitConfigRead autoinit r hasuuid
 						, Param "--null"
 						, Param "--list"
 						, Param "--file"
-						, File tmpfile
+						, File tmpfile'
 						] >>= return . \case
 							Right r' -> Right r'
 							Left exitcode -> Left $ "git config exited " ++ show exitcode

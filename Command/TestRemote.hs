@@ -355,11 +355,11 @@ testExportTree runannex mkr mkk1 mkk2 =
 	storeexport ea k = do
 		loc <- fromRawFilePath <$> Annex.calcRepo (gitAnnexLocation k)
 		Remote.storeExport ea loc k testexportlocation nullMeterUpdate
-	retrieveexport ea k = withTmpFile "exported" $ \tmp h -> do
+	retrieveexport ea k = withTmpFile (toOsPath "exported") $ \tmp h -> do
 		liftIO $ hClose h
-		tryNonAsync (Remote.retrieveExport ea k testexportlocation tmp nullMeterUpdate) >>= \case
+		tryNonAsync (Remote.retrieveExport ea k testexportlocation (fromRawFilePath (fromOsPath tmp)) nullMeterUpdate) >>= \case
 			Left _ -> return False
-			Right v -> verifyKeyContentPostRetrieval RetrievalAllKeysSecure AlwaysVerify v k (toRawFilePath tmp)
+			Right v -> verifyKeyContentPostRetrieval RetrievalAllKeysSecure AlwaysVerify v k (fromOsPath tmp)
 	checkpresentexport ea k = Remote.checkPresentExport ea k testexportlocation
 	removeexport ea k = Remote.removeExport ea k testexportlocation
 	removeexportdirectory ea = case Remote.removeExportDirectory ea of
@@ -429,21 +429,21 @@ keySizes base fast = filter want
 		| otherwise = sz > 0
 
 randKey :: Int -> Annex Key
-randKey sz = withTmpFile "randkey" $ \f h -> do
+randKey sz = withTmpFile (toOsPath "randkey") $ \f h -> do
 	gen <- liftIO (newGenIO :: IO SystemRandom)
 	case genBytes sz gen of
 		Left e -> giveup $ "failed to generate random key: " ++ show e
 		Right (rand, _) -> liftIO $ B.hPut h rand
 	liftIO $ hClose h
 	let ks = KeySource
-		{ keyFilename = toRawFilePath f
-		, contentLocation = toRawFilePath f
+		{ keyFilename = fromOsPath f
+		, contentLocation = fromOsPath f
 		, inodeCache = Nothing
 		}
 	k <- case Types.Backend.genKey Backend.Hash.testKeyBackend of
 		Just a -> a ks nullMeterUpdate
 		Nothing -> giveup "failed to generate random key (backend problem)"
-	_ <- moveAnnex k (AssociatedFile Nothing) (toRawFilePath f)
+	_ <- moveAnnex k (AssociatedFile Nothing) (fromOsPath f)
 	return k
 
 getReadonlyKey :: Remote -> RawFilePath -> Annex Key

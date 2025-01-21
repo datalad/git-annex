@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Git.HashObject where
 
@@ -82,10 +83,10 @@ instance HashableBlob Builder where
 {- Injects a blob into git. Unfortunately, the current git-hash-object
  - interface does not allow batch hashing without using temp files. -}
 hashBlob :: HashableBlob b => HashObjectHandle -> b -> IO Sha
-hashBlob h b = withTmpFile "hash" $ \tmp tmph -> do
+hashBlob h b = withTmpFile (toOsPath "hash") $ \tmp tmph -> do
 	hashableBlobToHandle tmph b
 	hClose tmph
-	hashFile h (toRawFilePath tmp)
+	hashFile h (fromOsPath tmp)
 
 {- Injects some content into git, returning its Sha.
  - 

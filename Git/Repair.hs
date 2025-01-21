@@ -78,7 +78,7 @@ explodePacks :: Repo -> IO Bool
 explodePacks r = go =<< listPackFiles r
   where
 	go [] = return False
-	go packs = withTmpDir "packs" $ \tmpdir -> do
+	go packs = withTmpDir (toOsPath "packs") $ \tmpdir -> do
 		r' <- addGitEnv r "GIT_OBJECT_DIRECTORY" tmpdir
 		putStrLn "Unpacking all pack files."
 		forM_ packs $ \packfile -> do
@@ -112,7 +112,7 @@ explodePacks r = go =<< listPackFiles r
 retrieveMissingObjects :: FsckResults -> Maybe FilePath -> Repo -> IO FsckResults
 retrieveMissingObjects missing referencerepo r
 	| not (foundBroken missing) = return missing
-	| otherwise = withTmpDir "tmprepo" $ \tmpdir -> do
+	| otherwise = withTmpDir (toOsPath "tmprepo") $ \tmpdir -> do
 		unlessM (boolSystem "git" [Param "init", File tmpdir]) $
 			giveup $ "failed to create temp repository in " ++ tmpdir
 		tmpr <- Config.read =<< Construct.fromPath (toRawFilePath tmpdir)

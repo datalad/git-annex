@@ -338,10 +338,10 @@ storeExportM d cow src _k loc p = do
 	liftIO $ createDirectoryUnder [d] (P.takeDirectory dest)
 	-- Write via temp file so that checkPresentGeneric will not
 	-- see it until it's fully stored.
-	viaTmp go (fromRawFilePath dest) ()
+	viaTmp go (toOsPath dest) ()
   where
 	dest = exportPath d loc
-	go tmp () = void $ liftIO $ fileCopier cow src tmp p Nothing
+	go tmp () = void $ liftIO $ fileCopier cow src (fromRawFilePath (fromOsPath tmp)) p Nothing
 
 retrieveExportM :: RawFilePath -> CopyCoWTried -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Verification
 retrieveExportM d cow k loc dest p = 
@@ -541,11 +541,11 @@ retrieveExportWithContentIdentifierM ii dir cow loc cids dest gk p =
 
 storeExportWithContentIdentifierM :: IgnoreInodes -> RawFilePath -> CopyCoWTried -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex ContentIdentifier
 storeExportWithContentIdentifierM ii dir cow src _k loc overwritablecids p = do
-	liftIO $ createDirectoryUnder [dir] (toRawFilePath destdir)
-	withTmpFileIn destdir template $ \tmpf tmph -> do
+	liftIO $ createDirectoryUnder [dir] destdir
+	withTmpFileIn (toOsPath destdir) template $ \tmpf tmph -> do
+		let tmpf' = fromOsPath tmpf
 		liftIO $ hClose tmph
-		void $ liftIO $ fileCopier cow src tmpf p Nothing
-		let tmpf' = toRawFilePath tmpf
+		void $ liftIO $ fileCopier cow src (fromRawFilePath tmpf') p Nothing
 		resetAnnexFilePerm tmpf'
 		liftIO (R.getSymbolicLinkStatus tmpf') >>= liftIO . mkContentIdentifier ii tmpf' >>= \case
 			Nothing -> giveup "unable to generate content identifier"
@@ -557,8 +557,8 @@ storeExportWithContentIdentifierM ii dir cow src _k loc overwritablecids p = do
 				return newcid
   where
 	dest = exportPath dir loc
-	(destdir, base) = splitFileName (fromRawFilePath dest)
-	template = relatedTemplate (base ++ ".tmp")
+	(destdir, base) = P.splitFileName dest
+	template = relatedTemplate (base <> ".tmp")
 
 removeExportWithContentIdentifierM :: IgnoreInodes -> RawFilePath -> Key -> ExportLocation -> [ContentIdentifier] -> Annex ()
 removeExportWithContentIdentifierM ii dir k loc removeablecids =

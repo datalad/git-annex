@@ -189,7 +189,7 @@ upgradeToDistribution newdir cleanup distributionfile = do
 	 - into place. -}
 	unpack = liftIO $ do
 		olddir <- oldVersionLocation
-		withTmpDirIn (fromRawFilePath $ parentDir $ toRawFilePath newdir) "git-annex.upgrade" $ \tmpdir -> do
+		withTmpDirIn (fromRawFilePath $ parentDir $ toRawFilePath newdir) (toOsPath $ toRawFilePath "git-annex.upgrade") $ \tmpdir -> do
 			let tarball = tmpdir </> "tar"
 			-- Cannot rely on filename extension, and this also
 			-- avoids problems if tar doesn't support transparent
@@ -323,7 +323,7 @@ downloadDistributionInfo :: Assistant (Maybe GitAnnexDistribution)
 downloadDistributionInfo = do
 	uo <- liftAnnex Url.getUrlOptions
 	gpgcmd <- liftAnnex $ gpgCmd <$> Annex.getGitConfig
-	liftIO $ withTmpDir "git-annex.tmp" $ \tmpdir -> do
+	liftIO $ withTmpDir (toOsPath (toRawFilePath "git-annex.tmp")) $ \tmpdir -> do
 		let infof = tmpdir </> "info"
 		let sigf = infof ++ ".sig"
 		ifM (isRight <$> Url.download nullMeterUpdate Nothing distributionInfoUrl infof uo
@@ -361,7 +361,7 @@ upgradeSupported = False
 verifyDistributionSig :: GpgCmd -> FilePath -> IO Bool
 verifyDistributionSig gpgcmd sig = readProgramFile >>= \case
 	Just p | isAbsolute p ->
-		withUmask 0o0077 $ withTmpDir "git-annex-gpg.tmp" $ \gpgtmp -> do
+		withUmask 0o0077 $ withTmpDir (toOsPath (toRawFilePath "git-annex-gpg.tmp")) $ \gpgtmp -> do
 			let trustedkeys = takeDirectory p </> "trustedkeys.gpg"
 			boolGpgCmd gpgcmd
 				[ Param "--no-default-keyring"

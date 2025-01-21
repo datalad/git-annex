@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Test.Framework where
 
 import Test.Tasty
@@ -302,7 +304,7 @@ ensuredir d = do
  - happen concurrently with a test case running, and would be a problem
  - since setEnv is not thread safe. This is run before tasty. -}
 setTestEnv :: IO a -> IO a
-setTestEnv a = Utility.Tmp.Dir.withTmpDir "testhome" $ \tmphome -> do
+setTestEnv a = Utility.Tmp.Dir.withTmpDir (toOsPath "testhome") $ \tmphome -> do
 	tmphomeabs <- fromRawFilePath <$> absPath (toRawFilePath tmphome)
 	{- Prevent global git configs from affecting the test suite. -}
 	Utility.Env.Set.setEnv "HOME" tmphomeabs True

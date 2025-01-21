@@ -37,11 +37,11 @@ import qualified Data.ByteString.Lazy.Char8 as L8
 -- making the new file have whatever permissions the git repository is
 -- configured to use. Creates the parent directory when necessary.
 writeLogFile :: RawFilePath -> String -> Annex ()
-writeLogFile f c = createDirWhenNeeded f $ viaTmp writelog (fromRawFilePath f) c
+writeLogFile f c = createDirWhenNeeded f $ viaTmp writelog (toOsPath f) c
   where
 	writelog tmp c' = do
-		liftIO $ writeFile tmp c'
-		setAnnexFilePerm (toRawFilePath tmp)
+		liftIO $ writeFile (fromRawFilePath (fromOsPath tmp)) c'
+		setAnnexFilePerm (fromOsPath tmp)
 
 -- | Runs the action with a handle connected to a temp file.
 -- The temp file replaces the log file once the action succeeds.
@@ -77,16 +77,16 @@ appendLogFile f lck c =
 modifyLogFile :: RawFilePath -> RawFilePath -> ([L.ByteString] -> [L.ByteString]) -> Annex ()
 modifyLogFile f lck modf = withExclusiveLock lck $ do
 	ls <- liftIO $ fromMaybe []
-		<$> tryWhenExists (fileLines <$> L.readFile f')
+		<$> tryWhenExists (fileLines <$> F.readFile f')
 	let ls' = modf ls
 	when (ls' /= ls) $
 		createDirWhenNeeded f $
 			viaTmp writelog f' (L8.unlines ls')
   where
-	f' = fromRawFilePath f
+	f' = toOsPath f
 	writelog lf b = do
-		liftIO $ L.writeFile lf b
-		setAnnexFilePerm (toRawFilePath lf)
+		liftIO $ F.writeFile lf b
+		setAnnexFilePerm (fromOsPath lf)
 
 -- | Checks the content of a log file to see if any line matches.
 checkLogFile :: RawFilePath -> RawFilePath -> (L.ByteString -> Bool) -> Annex Bool

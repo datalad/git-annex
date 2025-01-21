@@ -198,7 +198,9 @@ fileKey1 file = readKey1 $
 	replace "&a" "&" $ replace "&s" "%" $ replace "%" "/" file
 
 writeLog1 :: FilePath -> [LogLine] -> IO ()
-writeLog1 file ls = viaTmp L.writeFile file (toLazyByteString $ buildLog ls)
+writeLog1 file ls = viaTmp (L.writeFile . fromRawFilePath . fromOsPath)
+	(toOsPath (toRawFilePath file))
+	(toLazyByteString $ buildLog ls)
 
 readLog1 :: FilePath -> IO [LogLine]
 readLog1 file = catchDefaultIO [] $

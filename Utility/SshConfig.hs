@@ -28,6 +28,7 @@ import Common
 import Utility.UserInfo
 import Utility.Tmp
 import Utility.FileMode
+import qualified Utility.FileIO as F
 
 import Data.Char
 import Data.Ord
@@ -140,12 +141,12 @@ changeUserSshConfig modifier = do
 			-- If it's a symlink, replace the file it
 			-- points to.
 			f <- catchDefaultIO configfile (canonicalizePath configfile)
-			viaTmp writeSshConfig f c'
+			viaTmp writeSshConfig (toOsPath (toRawFilePath f)) c'
 
-writeSshConfig :: FilePath -> String -> IO ()
+writeSshConfig :: OsPath -> String -> IO ()
 writeSshConfig f s = do
-	writeFile f s
-	setSshConfigMode (toRawFilePath f)
+	F.writeFile' f (encodeBS s)
+	setSshConfigMode (fromOsPath f)
 
 {- Ensure that the ssh config file lacks any group or other write bits, 
  - since ssh is paranoid about not working if other users can write

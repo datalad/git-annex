@@ -22,6 +22,7 @@ import qualified Remote
 import qualified Types.Remote as Remote
 import Config.DynamicConfig
 import Annex.SpecialRemote.Config
+import qualified Utility.FileIO as F
 
 import Control.Concurrent.STM
 import System.Posix.Types
@@ -121,9 +122,9 @@ startDaemonStatus = do
  - and parts of it are not relevant. -}
 writeDaemonStatusFile :: FilePath -> DaemonStatus -> IO ()
 writeDaemonStatusFile file status = 
-	viaTmp writeFile file =<< serialized <$> getPOSIXTime
+	viaTmp F.writeFile' (toOsPath (toRawFilePath file)) =<< serialized <$> getPOSIXTime
   where
-	serialized now = unlines
+	serialized now = encodeBS $ unlines
 		[ "lastRunning:" ++ show now
 		, "scanComplete:" ++ show (scanComplete status)
 		, "sanityCheckRunning:" ++ show (sanityCheckRunning status)

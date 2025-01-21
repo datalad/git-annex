@@ -135,12 +135,14 @@ attrLines =
 
 gitAttributesUnWrite :: Git.Repo -> IO ()
 gitAttributesUnWrite repo = do
-	let attributes = fromRawFilePath (Git.attributes repo)
-	whenM (doesFileExist attributes) $ do
-		c <- readFileStrict attributes
-		liftIO $ viaTmp writeFile attributes $ unlines $
-			filter (`notElem` attrLines) $ lines c
-		Git.Command.run [Param "add", File attributes] repo
+	let attributes = Git.attributes repo
+	let attributes' = fromRawFilePath attributes
+	whenM (doesFileExist attributes') $ do
+		c <- readFileStrict attributes'
+		liftIO $ viaTmp (writeFile . fromRawFilePath . fromOsPath)
+			(toOsPath attributes) 
+			(unlines $ filter (`notElem` attrLines) $ lines c)
+		Git.Command.run [Param "add", File attributes'] repo
 
 stateDir :: FilePath
 stateDir = addTrailingPathSeparator ".git-annex"

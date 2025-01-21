@@ -74,7 +74,7 @@ mergeToAdjustedBranch tomerge (origbranch, adj) mergeconfig canresolvemerge comm
 	changestomerge (Just updatedorig) = withOtherTmp $ \othertmpdir -> do
 		git_dir <- fromRepo Git.localGitDir
 		tmpwt <- fromRepo gitAnnexMergeDir
-		withTmpDirIn (fromRawFilePath othertmpdir) "git" $ \tmpgit -> withWorkTreeRelated tmpgit $
+		withTmpDirIn (fromRawFilePath othertmpdir) (toOsPath "git") $ \tmpgit -> withWorkTreeRelated tmpgit $
 			withemptydir git_dir tmpwt $ withWorkTree tmpwt $ do
 				liftIO $ writeFile (tmpgit </> "HEAD") (fromRef updatedorig)
 				-- Copy in refs and packed-refs, to work

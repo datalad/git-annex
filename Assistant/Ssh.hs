@@ -160,7 +160,7 @@ removeAuthorizedKeys gitannexshellonly dir pubkey = do
 	sshdir <- sshDir
 	let keyfile = sshdir </> "authorized_keys"
 	tryWhenExists (lines <$> readFileStrict keyfile) >>= \case
-		Just ls -> viaTmp writeSshConfig keyfile $
+		Just ls -> viaTmp writeSshConfig (toOsPath (toRawFilePath keyfile)) $
 			unlines $ filter (/= keyline) ls
 		Nothing -> noop
 
@@ -212,7 +212,7 @@ authorizedKeysLine gitannexshellonly dir pubkey
 
 {- Generates a ssh key pair. -}
 genSshKeyPair :: IO SshKeyPair
-genSshKeyPair = withTmpDir "git-annex-keygen" $ \dir -> do
+genSshKeyPair = withTmpDir (toOsPath (toRawFilePath "git-annex-keygen")) $ \dir -> do
 	ok <- boolSystem "ssh-keygen"
 		[ Param "-P", Param "" -- no password
 		, Param "-f", File $ dir </> "key"

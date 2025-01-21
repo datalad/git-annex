@@ -529,9 +529,10 @@ getConfigViaRsync r gc = do
 	let (rsynctransport, rsyncurl, _) = rsyncTransport r gc
 	opts <- rsynctransport
 	liftIO $ do
-		withTmpFile "tmpconfig" $ \tmpconfig _ -> do
+		withTmpFile (toOsPath "tmpconfig") $ \tmpconfig _ -> do
+			let tmpconfig' = fromRawFilePath $ fromOsPath tmpconfig
 			void $ rsync $ opts ++
 				[ Param $ rsyncurl ++ "/config"
-				, Param tmpconfig
+				, Param tmpconfig'
 				]
-			Git.Config.fromFile r tmpconfig
+			Git.Config.fromFile r tmpconfig'

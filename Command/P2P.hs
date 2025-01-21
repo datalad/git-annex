@@ -220,7 +220,7 @@ wormholePairing remotename ouraddrs ui = do
 	-- files. Permissions of received files may allow others
 	-- to read them. So, set up a temp directory that only
 	-- we can read.
-	withTmpDir "pair" $ \tmp -> do
+	withTmpDir (toOsPath "pair") $ \tmp -> do
 		liftIO $ void $ tryIO $ modifyFileMode (toRawFilePath tmp) $ 
 			removeModes otherGroupModes
 		let sendf = tmp </> "send"
