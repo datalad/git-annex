@@ -11,11 +11,12 @@ import Key
 import Types.UUID
 import Utility.Hash
 
-import Data.List
 import Data.Maybe
 import Data.Bits (shiftL)
 import qualified Data.Set as S
 import qualified Data.ByteArray as BA
+import Data.List
+import Prelude
 
 -- The Int is how many UUIDs to pick.
 type BalancedPicker = S.Set UUID -> Key -> Int -> [UUID]
