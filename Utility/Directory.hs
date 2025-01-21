@@ -25,8 +25,8 @@ import Utility.Monad
 import Utility.FileSystemEncoding
 import qualified Utility.RawFilePath as R
 
-#ifdef WITH_OSSTRING
-import Utility.OsString
+#ifdef WITH_OSPATH
+import Utility.OsPath
 import qualified System.Directory.OsPath as OP
 #else
 import Utility.SystemDirectory
@@ -45,9 +45,9 @@ dirCruft' _ = False
 {- Lists the contents of a directory.
  - Unlike getDirectoryContents, paths are not relative to the directory. -}
 dirContents :: RawFilePath -> IO [RawFilePath]
-#ifdef WITH_OSSTRING
-dirContents d = map (\p -> d P.</> fromOsString p)
-	<$> OP.listDirectory (toOsString d)
+#ifdef WITH_OSPATH
+dirContents d = map (\p -> d P.</> fromOsPath p)
+	<$> OP.listDirectory (toOsPath d)
 #else
 dirContents d = 
 	map (\p -> d P.</> toRawFilePath p) 
@@ -102,8 +102,8 @@ dirContentsRecursiveSkipping skipdir followsubdirsymlinks topdir
 				(Just s) 
 					| isDirectory s -> recurse
 					| isSymbolicLink s && followsubdirsymlinks ->
-#ifdef WITH_OSSTRING
-						ifM (OP.doesDirectoryExist (toOsString entry))
+#ifdef WITH_OSPATH
+						ifM (OP.doesDirectoryExist (toOsPath entry))
 #else
 						ifM (doesDirectoryExist (fromRawFilePath entry))
 #endif
