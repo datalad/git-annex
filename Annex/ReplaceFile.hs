@@ -57,7 +57,7 @@ replaceFile createdirectory file action = replaceFile' createdirectory file (con
 
 replaceFile' :: (RawFilePath -> Annex ()) -> RawFilePath -> (a -> Bool) -> (RawFilePath -> Annex a) -> Annex a
 replaceFile' createdirectory file checkres action = withOtherTmp $ \othertmpdir -> do
-	let basetmp = relatedTemplate' file
+	let basetmp = relatedTemplate' (P.takeFileName file)
 	withTmpDirIn (fromRawFilePath othertmpdir) (toOsPath basetmp) $ \tmpdir -> do
 		let tmpfile = toRawFilePath tmpdir P.</> basetmp
 		r <- action tmpfile
