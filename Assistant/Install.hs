@@ -17,7 +17,6 @@ import Utility.Shell
 import Utility.Tmp
 import Utility.Env
 import Utility.SshConfig
-import qualified Utility.FileIO as F
 
 #ifdef darwin_HOST_OS
 import Utility.OSX
@@ -105,7 +104,7 @@ installWrapper file content = do
 	curr <- catchDefaultIO "" $ readFileStrict (fromRawFilePath file)
 	when (curr /= content) $ do
 		createDirectoryIfMissing True (fromRawFilePath (parentDir file))
-		viaTmp F.writeFile' (toOsPath file) (encodeBS content)
+		viaTmp (writeFile . fromRawFilePath . fromOsPath) (toOsPath file) content
 		modifyFileMode file $ addModes [ownerExecuteMode]
 
 installFileManagerHooks :: FilePath -> IO ()
