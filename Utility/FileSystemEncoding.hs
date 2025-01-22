@@ -33,6 +33,8 @@ import qualified Data.ByteString.Lazy.UTF8 as L8
 import qualified GHC.Foreign as GHC
 import System.IO.Unsafe
 import Data.ByteString.Unsafe (unsafePackMallocCStringLen)
+import Data.Char
+import Data.List
 #endif
 
 {- Makes all subsequent Handles that are opened, as well as stdio Handles,
@@ -125,26 +127,40 @@ toRawFilePath = encodeFilePath
  - Avoids returning an invalid part of a unicode byte sequence, at the
  - cost of efficiency when running on a large FilePath.
  -}
-truncateFilePath :: Int -> FilePath -> FilePath
+truncateFilePath :: Int -> RawFilePath -> RawFilePath
 #ifndef mingw32_HOST_OS
-truncateFilePath n = go . reverse
+{- On unix, do not assume a unicode locale, but does assume ascii
+ - characters are a single byte. -}
+truncateFilePath n b = 
+	let blen = S.length b
+	in if blen <= n
+		then b
+		else go blen (reverse (fromRawFilePath b))
   where
-	go f =
-		let b = encodeBS f
-		in if S.length b <= n
-			then reverse f
-			else go (drop 1 f)
+	go blen f = case uncons f of
+		Just (c, f')
+			| isAscii c ->
+				let blen' = blen - 1
+				in if blen' <= n
+					then toRawFilePath (reverse f')
+					else go blen' f'
+			| otherwise ->
+				let blen' = S.length (toRawFilePath f')
+				in if blen' <= n 
+					then toRawFilePath (reverse f')
+					else go blen' f'
+		Nothing -> toRawFilePath (reverse f)
 #else
 {- On Windows, count the number of bytes used by each utf8 character. -}
-truncateFilePath n = reverse . go [] n . L8.fromString
+truncateFilePath n = toRawFilePath . reverse . go [] n
   where
 	go coll cnt bs
 		| cnt <= 0 = coll
-		| otherwise = case L8.decode bs of
-			Just (c, x) | c /= L8.replacement_char ->
+		| otherwise = case S8.decode bs of
+			Just (c, x) | c /= S8.replacement_char ->
 				let x' = fromIntegral x
 				in if cnt - x' < 0
 					then coll
-					else go (c:coll) (cnt - x') (L8.drop 1 bs)
+					else go (c:coll) (cnt - x') (S8.drop 1 bs)
 			_ -> coll
 #endif

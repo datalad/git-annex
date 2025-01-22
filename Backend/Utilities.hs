@@ -29,12 +29,12 @@ import Data.Word
 genKeyName :: String -> S.ShortByteString
 genKeyName s
 	-- Avoid making keys longer than the length of a SHA256 checksum.
-	| bytelen > sha256len = S.toShort $ encodeBS $
-		truncateFilePath (sha256len - md5len - 1) s' ++ "-" ++ 
-			show (md5 bl)
-	| otherwise = S.toShort $ encodeBS s'
+	| bytelen > sha256len = S.toShort $
+		truncateFilePath (sha256len - md5len - 1) s' 
+			<> "-" <> encodeBS (show (md5 bl))
+	| otherwise = S.toShort s'
   where
-	s' = preSanitizeKeyName s
+	s' = encodeBS $ preSanitizeKeyName s
 	bl = encodeBL s
 	bytelen = fromIntegral $ L.length bl
 

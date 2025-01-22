@@ -112,8 +112,8 @@ relatedTemplate f
 		{- Some filesystems like FAT have issues with filenames
 		 - ending in ".", so avoid truncating a filename to end
 		 - that way. -}
-		toOsPath $ B.dropWhileEnd (== dot) $ toRawFilePath $ 
-			truncateFilePath (len - templateAddedLength) (fromRawFilePath f)
+		toOsPath $ B.dropWhileEnd (== dot) $
+			truncateFilePath (len - templateAddedLength) f
 	| otherwise = toOsPath f
   where
 	len = B.length f
