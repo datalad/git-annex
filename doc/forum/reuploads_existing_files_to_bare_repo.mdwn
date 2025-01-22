@@ -1,0 +1,5 @@
+I created a bare repo on a small always on server and synced it with my desktop.
+
+Now, when I sync it with my laptop, annex on the laptop reuploads all files, which were already uploaded by the desktop. I see that because annex on the laptop fills the upstream even though the bare repo on the server does not take more harddisk space while this happens.
+
+Is this by design and why?
