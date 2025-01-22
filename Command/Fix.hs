@@ -72,7 +72,7 @@ start fixwhat si file key = do
 
 breakHardLink :: RawFilePath -> Key -> RawFilePath -> CommandPerform
 breakHardLink file key obj = do
-	replaceWorkTreeFile (fromRawFilePath file) $ \tmp -> do
+	replaceWorkTreeFile file $ \tmp -> do
 		mode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus file
 		unlessM (checkedCopyFile key obj tmp mode) $
 			giveup "unable to break hard link"
@@ -83,7 +83,7 @@ breakHardLink file key obj = do
 
 makeHardLink :: RawFilePath -> Key -> CommandPerform
 makeHardLink file key = do
-	replaceWorkTreeFile (fromRawFilePath file) $ \tmp -> do
+	replaceWorkTreeFile file $ \tmp -> do
 		mode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus file
 		linkFromAnnex' key tmp mode >>= \case
 			LinkAnnexFailed -> giveup "unable to make hard link"
@@ -97,7 +97,7 @@ fixSymlink file link = do
 	mtime <- liftIO $ catchMaybeIO $ Posix.modificationTimeHiRes
 		<$> R.getSymbolicLinkStatus file
 #endif
-	replaceWorkTreeFile (fromRawFilePath file) $ \tmpfile -> do
+	replaceWorkTreeFile file $ \tmpfile -> do
 		liftIO $ R.createSymbolicLink link tmpfile
 #if ! defined(mingw32_HOST_OS)
 		liftIO $ maybe noop (\t -> touch tmpfile t False) mtime

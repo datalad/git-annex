@@ -34,10 +34,9 @@ populatePointerFile :: Restage -> Key -> RawFilePath -> RawFilePath -> Annex (Ma
 populatePointerFile restage k obj f = go =<< liftIO (isPointerFile f)
   where
 	go (Just k') | k == k' = do
-		let f' = fromRawFilePath f
 		destmode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus f
 		liftIO $ removeWhenExistsWith R.removeLink f
-		(ic, populated) <- replaceWorkTreeFile f' $ \tmp -> do
+		(ic, populated) <- replaceWorkTreeFile f $ \tmp -> do
 			ok <- linkOrCopy k obj tmp destmode >>= \case
 				Just _ -> thawContent tmp >> return True
 				Nothing -> liftIO (writePointerFile tmp k destmode) >> return False
@@ -58,7 +57,7 @@ depopulatePointerFile key file = do
 	let mode = fmap fileMode st
 	secureErase file
 	liftIO $ removeWhenExistsWith R.removeLink file
-	ic <- replaceWorkTreeFile (fromRawFilePath file) $ \tmp -> do
+	ic <- replaceWorkTreeFile file $ \tmp -> do
 		liftIO $ writePointerFile tmp key mode
 #if ! defined(mingw32_HOST_OS)
 		-- Don't advance mtime; this avoids unnecessary re-smudging

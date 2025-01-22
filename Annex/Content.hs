@@ -581,7 +581,7 @@ linkToAnnex key src srcic = ifM (checkSecureHashes' key)
  -}
 linkFromAnnex :: Key -> RawFilePath -> Maybe FileMode -> Annex LinkAnnexResult
 linkFromAnnex key dest destmode =
-	replaceFile' (const noop) (fromRawFilePath dest) (== LinkAnnexOk) $ \tmp ->
+	replaceFile' (const noop) dest (== LinkAnnexOk) $ \tmp ->
 		linkFromAnnex' key tmp destmode
 
 {- This is only safe to use when dest is not a worktree file. -}
@@ -1076,7 +1076,7 @@ writeContentRetentionTimestamp key rt t = do
 	modifyContentDirWhenExists lckfile $ bracket (lock lckfile) unlock $ \_ ->
 		readContentRetentionTimestamp rt >>= \case
 			Just ts | ts >= t -> return ()
-			_ -> replaceFile (const noop) (fromRawFilePath rt) $ \tmp ->
+			_ -> replaceFile (const noop) rt $ \tmp ->
 				liftIO $ writeFile (fromRawFilePath tmp) $ show t
   where
 	lock = takeExclusiveLock

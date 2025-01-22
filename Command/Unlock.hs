@@ -51,7 +51,7 @@ start si file key = ifM (isJust <$> isAnnexLink file)
 perform :: RawFilePath -> Key -> CommandPerform
 perform dest key = do
 	destmode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus dest
-	destic <- replaceWorkTreeFile (fromRawFilePath dest) $ \tmp -> do
+	destic <- replaceWorkTreeFile dest $ \tmp -> do
 		ifM (inAnnex key)
 			( do
 				r <- linkFromAnnex' key tmp destmode

@@ -236,8 +236,9 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 		| otherwise = pure f
 
 	makesymlink key dest = do
-		l <- calcRepo $ gitAnnexLink (toRawFilePath dest) key
-		unless inoverlay $ replacewithsymlink dest l
+		let rdest = toRawFilePath dest
+		l <- calcRepo $ gitAnnexLink rdest key
+		unless inoverlay $ replacewithsymlink rdest l
 		dest' <- toRawFilePath <$> stagefile dest
 		stageSymlink dest' =<< hashSymlink l
 
@@ -265,7 +266,7 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 				
 		let replacefile isexecutable = case selectwant' (LsFiles.unmergedSha u) of
 			Nothing -> noop
-			Just sha -> replaceWorkTreeFile item $ \tmp -> do
+			Just sha -> replaceWorkTreeFile (toRawFilePath item) $ \tmp -> do
 				c <- catObject sha
 				liftIO $ L.writeFile (decodeBS tmp) c
 				when isexecutable $
@@ -280,7 +281,7 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 					Nothing -> noop
 					Just sha -> do
 						link <- catSymLinkTarget sha
-						replacewithsymlink item link
+						replacewithsymlink (toRawFilePath item) link
 			(Just TreeFile, Just TreeSymlink) -> replacefile False
 			(Just TreeExecutable, Just TreeSymlink) -> replacefile True
 			_ -> ifM (liftIO $ doesDirectoryExist item)

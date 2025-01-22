@@ -309,7 +309,7 @@ restoreFile file key e = do
 makeLink :: RawFilePath -> Key -> Maybe InodeCache -> Annex LinkTarget
 makeLink file key mcache = flip catchNonAsync (restoreFile file key) $ do
 	l <- calcRepo $ gitAnnexLink file key
-	replaceWorkTreeFile file' $ makeAnnexLink l
+	replaceWorkTreeFile file $ makeAnnexLink l
 
 	-- touch symlink to have same time as the original file,
 	-- as provided in the InodeCache
@@ -318,8 +318,6 @@ makeLink file key mcache = flip catchNonAsync (restoreFile file key) $ do
 		Nothing -> noop
 
 	return l
-  where
-	file' = fromRawFilePath file
 
 {- Creates the symlink to the annexed content, and stages it in git. -}
 addSymlink :: RawFilePath -> Key -> Maybe InodeCache -> Annex ()

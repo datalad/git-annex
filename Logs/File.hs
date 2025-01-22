@@ -48,7 +48,7 @@ writeLogFile f c = createDirWhenNeeded f $ viaTmp writelog (toOsPath f) c
 withLogHandle :: RawFilePath -> (Handle -> Annex a) -> Annex a
 withLogHandle f a = do
 	createAnnexDirectory (parentDir f)
-	replaceGitAnnexDirFile (fromRawFilePath f) $ \tmp ->
+	replaceGitAnnexDirFile f $ \tmp ->
 		bracket (setup tmp) cleanup a
   where
 	setup tmp = do
