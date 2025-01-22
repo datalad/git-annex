@@ -13,8 +13,9 @@ module Utility.Tmp (
 	viaTmp,
 	withTmpFile,
 	withTmpFileIn,
-	relatedTemplate,
 	openTmpFileIn,
+	relatedTemplate,
+	relatedTemplate',
 ) where
 
 import System.IO
@@ -107,14 +108,17 @@ withTmpFileIn tmpdir template a = bracket create remove use
  - This generates a template that is never too long.
  -}
 relatedTemplate :: RawFilePath -> Template
-relatedTemplate f
+relatedTemplate = toOsPath . relatedTemplate'
+
+relatedTemplate' :: RawFilePath -> RawFilePath
+relatedTemplate' f
 	| len > templateAddedLength = 
 		{- Some filesystems like FAT have issues with filenames
 		 - ending in ".", so avoid truncating a filename to end
 		 - that way. -}
-		toOsPath $ B.dropWhileEnd (== dot) $
+		B.dropWhileEnd (== dot) $
 			truncateFilePath (len - templateAddedLength) f
-	| otherwise = toOsPath f
+	| otherwise = f
   where
 	len = B.length f
 	dot = fromIntegral (ord '.')
