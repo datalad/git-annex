@@ -204,7 +204,7 @@ writeLog1 file ls = viaTmp F.writeFile
 
 readLog1 :: FilePath -> IO [LogLine]
 readLog1 file = catchDefaultIO [] $
-	parseLog . encodeBL <$> readFileStrict file
+	parseLog <$> F.readFile (toOsPath (toRawFilePath file))
 
 lookupKey1 :: FilePath -> Annex (Maybe (Key, Backend))
 lookupKey1 file = do

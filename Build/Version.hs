@@ -1,6 +1,6 @@
 {- Package version determination. -}
 
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE LambdaCase, OverloadedStrings #-}
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Build.Version where
@@ -14,7 +14,9 @@ import Prelude
 
 import Utility.Monad
 import Utility.Exception
-import Utility.Misc
+import Utility.OsPath
+import Utility.FileSystemEncoding
+import qualified Utility.FileIO as F
 
 type Version = String
 
@@ -56,11 +58,11 @@ getChangelogVersion = do
 	middle = drop 1 . init
 
 writeVersion :: Version -> IO ()
-writeVersion ver = catchMaybeIO (readFileStrict f) >>= \case
+writeVersion ver = catchMaybeIO (F.readFile' f) >>= \case
 	Just s | s == body -> return ()
-	_ -> writeFile f body
+	_ -> F.writeFile' f body
   where
-	body = unlines $ concat
+	body = encodeBS $ unlines $ concat
 		[ header
 		, ["packageversion :: String"]
 		, ["packageversion = \"" ++ ver ++ "\""]
@@ -71,4 +73,4 @@ writeVersion ver = catchMaybeIO (readFileStrict f) >>= \case
 		, ""
 		]
 	footer = []
-	f = "Build/Version"
+	f = toOsPath "Build/Version"
