@@ -21,6 +21,10 @@ status.
   readFile, writeFile, and appendFile on FilePaths.
   Note that the FilePath versions do newline translation on windows, 
   which has to be handled when converting to the Utility.FileIO ones.
+* System.Directory.OsPath is available with OsPath build flag, but
+  not yet used, and would eliminate a lot of fromRawFilePaths.
+  Make Utility.SystemDirectory import it when built with OsPath,
+  and the remaining 6 hours or work will explain itself..
 
 [[!tag confirmed]]
 

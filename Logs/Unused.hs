@@ -81,7 +81,7 @@ readUnusedLog prefix = do
 		, return M.empty
 		)
   where
-	parse line = case (readish sint, deserializeKey skey, parsePOSIXTime ts) of
+	parse line = case (readish sint, deserializeKey skey, parsePOSIXTime (encodeBS ts)) of
 		(Just int, Just key, mtimestamp) -> Just (key, (int, mtimestamp))
 		_ -> Nothing
 	  where

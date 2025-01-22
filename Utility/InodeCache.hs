@@ -185,7 +185,7 @@ readInodeCache s = case words s of
 	(inode:size:mtime:mtimedecimal:_) -> do
 		i <- readish inode
 		sz <- readish size
-		t <- parsePOSIXTime $ mtime ++ '.' : mtimedecimal
+		t <- parsePOSIXTime $ encodeBS $ mtime ++ '.' : mtimedecimal
 		return $ InodeCache $ InodeCachePrim i sz (MTimeHighRes t)
 	_ -> Nothing
 

@@ -320,7 +320,7 @@ readTransferInfo mpid s = TransferInfo
 	bits = splitc ' ' firstline
 	numbits = length bits
 	time = if numbits > 0
-		then Just <$> parsePOSIXTime =<< headMaybe bits
+		then Just <$> parsePOSIXTime . encodeBS =<< headMaybe bits
 		else pure Nothing -- not failure
 	bytes = if numbits > 1
 		then Just <$> readish =<< headMaybe (drop 1 bits)

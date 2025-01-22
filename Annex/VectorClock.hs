@@ -21,6 +21,7 @@ import qualified Annex
 import Utility.TimeStamp
 
 import Data.ByteString.Builder
+import qualified Data.ByteString as B
 import qualified Data.Attoparsec.ByteString.Lazy as A
 
 currentVectorClock :: Annex CandidateVectorClock
@@ -76,7 +77,7 @@ formatVectorClock (VectorClock t) = show t
 buildVectorClock :: VectorClock -> Builder
 buildVectorClock = string7 . formatVectorClock
 
-parseVectorClock :: String -> Maybe VectorClock
+parseVectorClock :: B.ByteString -> Maybe VectorClock
 parseVectorClock t = VectorClock <$> parsePOSIXTime t
 
 vectorClockParser :: A.Parser VectorClock

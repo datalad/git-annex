@@ -702,7 +702,7 @@ getStartTime u = do
 	liftIO $ catchDefaultIO Nothing $ do
 		timestamp <- modificationTime <$> R.getFileStatus f
 		let fromstatus = Just (realToFrac timestamp)
-		fromfile <- parsePOSIXTime <$> readFile (fromRawFilePath f)
+		fromfile <- parsePOSIXTime <$> F.readFile' (toOsPath f)
 		return $ if matchingtimestamp fromfile fromstatus
 			then Just timestamp
 			else Nothing

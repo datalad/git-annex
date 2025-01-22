@@ -39,7 +39,7 @@ readUpgradeLog = do
 		, return []
 		)
   where
-	parse line = case (readish sint, parsePOSIXTime ts) of
+	parse line = case (readish sint, parsePOSIXTime (encodeBS ts)) of
 		(Just v, Just t) -> Just (RepoVersion v, t)
 		_ -> Nothing
 	  where

@@ -80,5 +80,5 @@ parseAdjustLog l =
 			"1" -> Just True
 			"0" -> Just False
 			_ -> Nothing
-		t <- parsePOSIXTime ts
+		t <- parsePOSIXTime (encodeBS ts)
 		return (b, t)

@@ -108,6 +108,7 @@ import Utility.HumanTime
 import Utility.TimeStamp
 import Utility.FileMode
 import qualified Utility.RawFilePath as R
+import qualified Utility.FileIO as F
 
 import qualified System.FilePath.ByteString as P
 import System.PosixCompat.Files (isSymbolicLink, linkCount)
@@ -1086,7 +1087,7 @@ writeContentRetentionTimestamp key rt t = do
 readContentRetentionTimestamp :: RawFilePath -> Annex (Maybe POSIXTime)
 readContentRetentionTimestamp rt =
 	liftIO $ join <$> tryWhenExists 
-		(parsePOSIXTime <$> readFile (fromRawFilePath rt))
+		(parsePOSIXTime <$> F.readFile' (toOsPath rt))
 
 {- Checks if the retention timestamp is in the future, if so returns
  - Nothing.

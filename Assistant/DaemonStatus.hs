@@ -136,13 +136,13 @@ readDaemonStatusFile file = parse <$> newDaemonStatus <*> readFile file
   where
 	parse status = foldr parseline status . lines
 	parseline line status
-		| key == "lastRunning" = parseval parsePOSIXTime $ \v ->
+		| key == "lastRunning" = parseval (parsePOSIXTime . encodeBS) $ \v ->
 			status { lastRunning = Just v }
 		| key == "scanComplete" = parseval readish $ \v ->
 			status { scanComplete = v }
 		| key == "sanityCheckRunning" = parseval readish $ \v ->
 			status { sanityCheckRunning = v }
-		| key == "lastSanityCheck" = parseval parsePOSIXTime $ \v ->
+		| key == "lastSanityCheck" = parseval (parsePOSIXTime . encodeBS) $ \v ->
 			status { lastSanityCheck = Just v }
 		| otherwise = status -- unparsable line
 	  where
