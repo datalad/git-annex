@@ -17,6 +17,7 @@ import Utility.SshConfig
 import Git.Remote
 import Utility.SshHost
 import Utility.Process.Transcript
+import qualified Utility.FileIO as F
 
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -158,9 +159,9 @@ removeAuthorizedKeys :: Bool -> FilePath -> SshPubKey -> IO ()
 removeAuthorizedKeys gitannexshellonly dir pubkey = do
 	let keyline = authorizedKeysLine gitannexshellonly dir pubkey
 	sshdir <- sshDir
-	let keyfile = sshdir </> "authorized_keys"
-	tryWhenExists (lines <$> readFileStrict keyfile) >>= \case
-		Just ls -> viaTmp writeSshConfig (toOsPath (toRawFilePath keyfile)) $
+	let keyfile = toOsPath $ toRawFilePath $ sshdir </> "authorized_keys"
+	tryWhenExists (map decodeBS . fileLines' <$> F.readFile' keyfile) >>= \case
+		Just ls -> viaTmp writeSshConfig keyfile $
 			unlines $ filter (/= keyline) ls
 		Nothing -> noop
 

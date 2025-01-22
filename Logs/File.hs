@@ -28,8 +28,6 @@ import Annex.ReplaceFile
 import Utility.Tmp
 import qualified Utility.FileIO as F
 
-import qualified Data.ByteString as S
-import qualified Data.ByteString.Char8 as S8
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Lazy.Char8 as L8
 
@@ -158,32 +156,3 @@ createDirWhenNeeded f a = a `catchNonAsync` \_e -> do
 	-- done if writing the file fails.
 	createAnnexDirectory (parentDir f)
 	a
-
--- On windows, readFile does NewlineMode translation,
--- stripping CR before LF. When converting to ByteString,
--- use this to emulate that.
-fileLines :: L.ByteString -> [L.ByteString]
-#ifdef mingw32_HOST_OS
-fileLines = map stripCR . L8.lines
-  where
-	stripCR b = case L8.unsnoc b of
-		Nothing -> b
-		Just (b', e)
-			| e == '\r' -> b'
-			| otherwise -> b
-#else
-fileLines = L8.lines
-#endif
-
-fileLines' :: S.ByteString -> [S.ByteString]
-#ifdef mingw32_HOST_OS
-fileLines' = map stripCR . S8.lines
-  where
-	stripCR b = case S8.unsnoc b of
-		Nothing -> b
-		Just (b', e)
-			| e == '\r' -> b'
-			| otherwise -> b
-#else
-fileLines' = S8.lines
-#endif

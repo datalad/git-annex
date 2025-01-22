@@ -17,6 +17,7 @@ import Git.Types
 import Config
 import Utility.Directory.Create
 import Annex.Version
+import qualified Utility.FileIO as F
 
 import qualified System.FilePath.ByteString as P
 
@@ -65,9 +66,10 @@ stdattr =
 -- git-annex does not commit that.
 deconfigureSmudgeFilter :: Annex ()
 deconfigureSmudgeFilter = do
-	lf <- fromRawFilePath <$> Annex.fromRepo Git.attributesLocal
-	ls <- liftIO $ catchDefaultIO [] $ lines <$> readFileStrict lf
-	liftIO $ writeFile lf $ unlines $
+	lf <- Annex.fromRepo Git.attributesLocal
+	ls <- liftIO $ catchDefaultIO [] $ 
+		map decodeBS . fileLines' <$> F.readFile' (toOsPath lf)
+	liftIO $ writeFile (fromRawFilePath lf) $ unlines $
 		filter (\l -> l `notElem` stdattr && not (null l)) ls
 	unsetConfig (ConfigKey "filter.annex.smudge")
 	unsetConfig (ConfigKey "filter.annex.clean")

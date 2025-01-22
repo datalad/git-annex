@@ -5,6 +5,7 @@
  - License: BSD-2-clause
  -}
 
+{-# LANGUAGE CPP #-}
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Utility.Misc (
@@ -15,6 +16,8 @@ module Utility.Misc (
 	separateEnd',
 	firstLine,
 	firstLine',
+	fileLines,
+	fileLines',
 	segment,
 	segmentDelim,
 	massReplace,
@@ -32,6 +35,9 @@ import Data.List
 import System.Exit
 import Control.Applicative
 import qualified Data.ByteString as S
+import qualified Data.ByteString.Char8 as S8
+import qualified Data.ByteString.Lazy as L
+import qualified Data.ByteString.Lazy.Char8 as L8
 import Prelude
 
 {- A version of hgetContents that is not lazy. Ensures file is 
@@ -77,6 +83,35 @@ firstLine' :: S.ByteString -> S.ByteString
 firstLine' = S.takeWhile (/= nl)
   where
 	nl = fromIntegral (ord '\n')
+
+-- On windows, readFile does NewlineMode translation,
+-- stripping CR before LF. When converting to ByteString,
+-- use this to emulate that.
+fileLines :: L.ByteString -> [L.ByteString]
+#ifdef mingw32_HOST_OS
+fileLines = map stripCR . L8.lines
+  where
+	stripCR b = case L8.unsnoc b of
+		Nothing -> b
+		Just (b', e)
+			| e == '\r' -> b'
+			| otherwise -> b
+#else
+fileLines = L8.lines
+#endif
+
+fileLines' :: S.ByteString -> [S.ByteString]
+#ifdef mingw32_HOST_OS
+fileLines' = map stripCR . S8.lines
+  where
+	stripCR b = case S8.unsnoc b of
+		Nothing -> b
+		Just (b', e)
+			| e == '\r' -> b'
+			| otherwise -> b
+#else
+fileLines' = S8.lines
+#endif
 
 {- Splits a list into segments that are delimited by items matching
  - a predicate. (The delimiters are not included in the segments.)

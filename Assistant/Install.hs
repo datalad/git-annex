@@ -17,6 +17,7 @@ import Utility.Shell
 import Utility.Tmp
 import Utility.Env
 import Utility.SshConfig
+import qualified Utility.FileIO as F
 
 #ifdef darwin_HOST_OS
 import Utility.OSX
@@ -126,17 +127,18 @@ installFileManagerHooks program = unlessM osAndroid $ do
 		(kdeDesktopFile actions)
   where
 	genNautilusScript scriptdir action =
-		installscript (scriptdir </> scriptname action) $ unlines
+		installscript (toRawFilePath (scriptdir </> scriptname action)) $ unlines
 			[ shebang
 			, autoaddedcomment
 			, "exec " ++ program ++ " " ++ action ++ " --notify-start --notify-finish -- \"$@\""
 			]
 	scriptname action = "git-annex " ++ action
 	installscript f c = whenM (safetoinstallscript f) $ do
-		writeFile f c
-		modifyFileMode (toRawFilePath f) $ addModes [ownerExecuteMode]
+		writeFile (fromRawFilePath f) c
+		modifyFileMode f $ addModes [ownerExecuteMode]
 	safetoinstallscript f = catchDefaultIO True $
-		elem autoaddedcomment . lines <$> readFileStrict f
+		elem (encodeBS autoaddedcomment) . fileLines'
+			<$> F.readFile' (toOsPath f)
 	autoaddedcomment = "# " ++ autoaddedmsg ++ " (To disable, chmod 600 this file.)"
 	autoaddedmsg = "Automatically added by git-annex, do not edit."
 
