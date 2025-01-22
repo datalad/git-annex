@@ -1,6 +1,6 @@
 {- misc utility functions
  -
- - Copyright 2010-2011 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2025 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -18,6 +18,8 @@ module Utility.Misc (
 	firstLine',
 	fileLines,
 	fileLines',
+	linesFile,
+	linesFile',
 	segment,
 	segmentDelim,
 	massReplace,
@@ -111,6 +113,22 @@ fileLines' = map stripCR . S8.lines
 			| otherwise -> b
 #else
 fileLines' = S8.lines
+#endif
+
+-- One windows, writeFile does NewlineMode translation,
+-- adding CR before LF. When converting to ByteString, use this to emulate that.
+linesFile :: L.ByteString -> L.ByteString
+#ifndef mingw32_HOST_OS
+linesFile = id
+#else
+linesFile = L8.concat . concatMap (\x -> [x, L8.pack "\r\n"]) . fileLines
+#endif
+
+linesFile' :: S.ByteString -> S.ByteString
+#ifndef mingw32_HOST_OS
+linesFile' = id
+#else
+linesFile' = S8.concat . concatMap (\x -> [x, S8.pack "\r\n"]) . fileLines'
 #endif
 
 {- Splits a list into segments that are delimited by items matching

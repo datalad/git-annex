@@ -145,7 +145,7 @@ changeUserSshConfig modifier = do
 
 writeSshConfig :: OsPath -> String -> IO ()
 writeSshConfig f s = do
-	F.writeFile' f (encodeBS s)
+	F.writeFile' f (linesFile' (encodeBS s))
 	setSshConfigMode (fromOsPath f)
 
 {- Ensure that the ssh config file lacks any group or other write bits, 
