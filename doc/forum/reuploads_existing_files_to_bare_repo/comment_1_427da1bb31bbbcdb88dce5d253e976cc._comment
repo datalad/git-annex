@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-01-22T20:43:32Z"
+ content="""
+If the laptop has not pulled from the server since those files were sent to
+it, it does not know the server contains the files yet. So it will try to
+send them again. Normally this won't result in the same content being
+actually sent again, instead for each file it will check if the file is in
+the server yet, and when it sees it is, it won't send it again.
+
+My first guess is that just the network overhead of doing those checks is
+what "fills the upstream".
+
+It is possible that it's actually re-uploading files that the server
+already has, without checking it first, which will result in the server
+accepting the upload and then throwing it away, since it already has the content.
+This can happen eg, if the same file is being sent into a repository from
+two other repositories at the same time. But I don't know of any common
+situations where it happens. 
+
+So, if you're sure it's doing that, please provide details about what exact
+git-annex commands you're running that are causing it to do that.
+"""]]
