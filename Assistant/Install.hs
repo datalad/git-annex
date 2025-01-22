@@ -29,6 +29,7 @@ import Utility.Android
 #endif
 
 import System.PosixCompat.Files (ownerExecuteMode)
+import qualified Data.ByteString.Char8 as S8
 
 standaloneAppBase :: IO (Maybe FilePath)
 standaloneAppBase = getEnv "GIT_ANNEX_APP_BASE"
@@ -83,7 +84,7 @@ ensureInstalled = ifM (isJust <$> getEnv "GIT_ANNEX_PACKAGE_INSTALL")
 		let runshell var = "exec " ++ base </> "runshell " ++ var
 		let rungitannexshell var = runshell $ "git-annex-shell -c \"" ++ var ++ "\""
 
-		installWrapper (toRawFilePath (sshdir </> "git-annex-shell")) $ unlines
+		installWrapper (toRawFilePath (sshdir </> "git-annex-shell")) $
 			[ shebang
 			, "set -e"
 			, "if [ \"x$SSH_ORIGINAL_COMMAND\" != \"x\" ]; then"
@@ -92,7 +93,7 @@ ensureInstalled = ifM (isJust <$> getEnv "GIT_ANNEX_PACKAGE_INSTALL")
 			,   rungitannexshell "$@"
 			, "fi"
 			]
-		installWrapper (toRawFilePath (sshdir </> "git-annex-wrapper")) $ unlines
+		installWrapper (toRawFilePath (sshdir </> "git-annex-wrapper")) $
 			[ shebang
 			, "set -e"
 			, runshell "\"$@\""
@@ -100,12 +101,14 @@ ensureInstalled = ifM (isJust <$> getEnv "GIT_ANNEX_PACKAGE_INSTALL")
 
 		installFileManagerHooks program
 
-installWrapper :: RawFilePath -> String -> IO ()
+installWrapper :: RawFilePath -> [String] -> IO ()
 installWrapper file content = do
-	curr <- catchDefaultIO "" $ readFileStrict (fromRawFilePath file)
-	when (curr /= content) $ do
+	let content' = map encodeBS content
+	curr <- catchDefaultIO [] $ fileLines' <$> F.readFile' (toOsPath file)
+	when (curr /= content') $ do
 		createDirectoryIfMissing True (fromRawFilePath (parentDir file))
-		viaTmp (writeFile . fromRawFilePath . fromOsPath) (toOsPath file) content
+		viaTmp F.writeFile' (toOsPath file) $
+			linesFile' (S8.unlines content')
 		modifyFileMode file $ addModes [ownerExecuteMode]
 
 installFileManagerHooks :: FilePath -> IO ()

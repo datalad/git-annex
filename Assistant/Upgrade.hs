@@ -41,10 +41,11 @@ import qualified Utility.Url as Url
 import qualified Annex.Url as Url hiding (download)
 import Utility.Tuple
 import qualified Utility.RawFilePath as R
-import qualified System.FilePath.ByteString as P
+import qualified Utility.FileIO as F
 
 import Data.Either
 import qualified Data.Map as M
+import qualified System.FilePath.ByteString as P
 
 {- Upgrade without interaction in the webapp. -}
 unattendedUpgrade :: Assistant ()
@@ -329,7 +330,8 @@ downloadDistributionInfo = do
 		ifM (isRight <$> Url.download nullMeterUpdate Nothing distributionInfoUrl infof uo
 			<&&> (isRight <$> Url.download nullMeterUpdate Nothing distributionInfoSigUrl sigf uo)
 			<&&> verifyDistributionSig gpgcmd sigf)
-			( parseInfoFile <$> readFileStrict infof
+			( parseInfoFile . map decodeBS . fileLines' 
+				<$> F.readFile' (toOsPath (toRawFilePath infof))
 			, return Nothing
 			)
 

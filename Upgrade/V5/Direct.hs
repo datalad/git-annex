@@ -119,8 +119,8 @@ goodContent key file =
 recordedInodeCache :: Key -> Annex [InodeCache]
 recordedInodeCache key = withInodeCacheFile key $ \f ->
 	liftIO $ catchDefaultIO [] $
-		mapMaybe readInodeCache . lines
-			<$> readFileStrict (fromRawFilePath f)
+		mapMaybe (readInodeCache . decodeBS) . fileLines'
+			<$> F.readFile' (toOsPath f)
 
 {- Removes an inode cache. -}
 removeInodeCache :: Key -> Annex ()

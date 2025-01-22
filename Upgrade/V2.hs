@@ -20,6 +20,7 @@ import Annex.Content
 import Utility.Tmp
 import Logs
 import Messages.Progress
+import qualified Utility.FileIO as F
 
 olddir :: Git.Repo -> FilePath
 olddir g
@@ -138,10 +139,11 @@ gitAttributesUnWrite repo = do
 	let attributes = Git.attributes repo
 	let attributes' = fromRawFilePath attributes
 	whenM (doesFileExist attributes') $ do
-		c <- readFileStrict attributes'
+		c <- map decodeBS . fileLines'
+			<$> F.readFile' (toOsPath attributes)
 		liftIO $ viaTmp (writeFile . fromRawFilePath . fromOsPath)
 			(toOsPath attributes) 
-			(unlines $ filter (`notElem` attrLines) $ lines c)
+			(unlines $ filter (`notElem` attrLines) c)
 		Git.Command.run [Param "add", File attributes'] repo
 
 stateDir :: FilePath

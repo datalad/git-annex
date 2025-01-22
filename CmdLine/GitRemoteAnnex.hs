@@ -502,8 +502,10 @@ resolveSpecialRemoteWebUrl url
 				Url.download' nullMeterUpdate Nothing url tmp' uo >>= \case
 					Left err -> giveup $ url ++ " " ++ err
 					Right () -> liftIO $
-						(headMaybe . lines)
-							<$> readFileStrict tmp'
+						fmap decodeBS 
+							. headMaybe 
+							. fileLines'
+							<$> F.readFile' tmp
 	| otherwise = return Nothing
   where
 	lcurl = map toLower url

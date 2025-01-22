@@ -22,6 +22,7 @@ import Annex.LockPool
 import Utility.TimeStamp
 import Logs.File
 import qualified Utility.RawFilePath as R
+import qualified Utility.FileIO as F
 #ifndef mingw32_HOST_OS
 import Annex.Perms
 #endif
@@ -119,7 +120,7 @@ checkTransfer t = debugLocks $ do
 		(Just oldlck, _) -> getLockStatus oldlck
 	case v' of
 		StatusLockedBy pid -> liftIO $ catchDefaultIO Nothing $
-			readTransferInfoFile (Just pid) (fromRawFilePath tfile)
+			readTransferInfoFile (Just pid) tfile
 		_ -> do
 			mode <- annexFileMode
 			-- Ignore failure due to permissions, races, etc.
@@ -140,7 +141,7 @@ checkTransfer t = debugLocks $ do
 	v <- liftIO $ lockShared lck
 	liftIO $ case v of
 		Nothing -> catchDefaultIO Nothing $
-			readTransferInfoFile Nothing (fromRawFilePath tfile)
+			readTransferInfoFile Nothing tfile
 		Just lockhandle -> do
 			dropLock lockhandle
 			deletestale
@@ -181,7 +182,7 @@ getFailedTransfers u = catMaybes <$> (liftIO . getpairs =<< concat <$> findfiles
   where
 	getpairs = mapM $ \f -> do
 		let mt = parseTransferFile f
-		mi <- readTransferInfoFile Nothing (fromRawFilePath f)
+		mi <- readTransferInfoFile Nothing f
 		return $ case (mt, mi) of
 			(Just t, Just i) -> Just (t, i)
 			_ -> Nothing
@@ -285,9 +286,9 @@ writeTransferInfo info = unlines
 	  in maybe "" fromRawFilePath afile
 	]
 
-readTransferInfoFile :: Maybe PID -> FilePath -> IO (Maybe TransferInfo)
+readTransferInfoFile :: Maybe PID -> RawFilePath -> IO (Maybe TransferInfo)
 readTransferInfoFile mpid tfile = catchDefaultIO Nothing $
-	readTransferInfo mpid <$> readFileStrict tfile
+	readTransferInfo mpid . decodeBS <$> F.readFile' (toOsPath tfile)
 
 readTransferInfo :: Maybe PID -> String -> Maybe TransferInfo
 readTransferInfo mpid s = TransferInfo
@@ -304,8 +305,11 @@ readTransferInfo mpid s = TransferInfo
 	<*> pure False
   where
 #ifdef mingw32_HOST_OS
-	(firstline, otherlines) = separate (== '\n') s
-	(secondline, rest) = separate (== '\n') otherlines
+	(firstliner, otherlines) = separate (== '\n') s
+	(secondliner, rest) = separate (== '\n') otherlines
+	firstline = dropWhileEnd (== '\r') firstliner
+	secondline = dropWhileEnd (== '\r') secondliner
+	secondline = 
 	mpid' = readish secondline
 #else
 	(firstline, rest) = separate (== '\n') s

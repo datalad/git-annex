@@ -75,7 +75,7 @@ onAdd file = case parseTransferFile (toRawFilePath file) of
 onModify :: Handler
 onModify file = case parseTransferFile (toRawFilePath file) of
 	Nothing -> noop
-	Just t -> go t =<< liftIO (readTransferInfoFile Nothing file)
+	Just t -> go t =<< liftIO (readTransferInfoFile Nothing (toRawFilePath file))
   where
 	go _ Nothing = noop
 	go t (Just newinfo) = alterTransferInfo t $

@@ -19,6 +19,7 @@ import Utility.Directory.Create
 import Annex.Version
 import qualified Utility.FileIO as F
 
+import qualified Data.ByteString as S
 import qualified System.FilePath.ByteString as P
 
 configureSmudgeFilter :: Annex ()
@@ -45,11 +46,12 @@ configureSmudgeFilter = unlessM (fromRepo Git.repoIsLocalBare) $ do
 	lfs <- readattr lf
 	gfs <- readattr gf
 	gittop <- Git.localGitDir <$> gitRepo
-	liftIO $ unless ("filter=annex" `isInfixOf` (lfs ++ gfs)) $ do
+	liftIO $ unless ("filter=annex" `S.isInfixOf` (lfs <> gfs)) $ do
 		createDirectoryUnder [gittop] (P.takeDirectory lf)
-		writeFile (fromRawFilePath lf) (lfs ++ "\n" ++ unlines stdattr)
+		F.writeFile' (toOsPath lf) $
+			linesFile' (lfs <> encodeBS ("\n" ++ unlines stdattr))
   where
-	readattr = liftIO . catchDefaultIO "" . readFileStrict . fromRawFilePath
+	readattr = liftIO . catchDefaultIO mempty . F.readFile' . toOsPath
 
 configureSmudgeFilterProcess :: Annex ()
 configureSmudgeFilterProcess =

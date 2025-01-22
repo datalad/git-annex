@@ -34,6 +34,7 @@ import Data.Char
 import Data.Ord
 import Data.Either
 import System.PosixCompat.Files (groupWriteMode, otherWriteMode)
+import qualified Data.ByteString.Char8 as S8
 
 data SshConfig
 	= GlobalConfig SshSetting
@@ -135,7 +136,8 @@ changeUserSshConfig modifier = do
 	sshdir <- sshDir
 	let configfile = sshdir </> "config"
 	whenM (doesFileExist configfile) $ do
-		c <- readFileStrict configfile
+		c <- decodeBS . S8.unlines . fileLines'
+			<$> F.readFile' (toOsPath (toRawFilePath configfile))
 		let c' = modifier c
 		when (c /= c') $ do
 			-- If it's a symlink, replace the file it

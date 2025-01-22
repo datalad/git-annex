@@ -47,6 +47,7 @@ import qualified Utility.RawFilePath as R
 import qualified Utility.FileIO as F
 
 import qualified Data.Set as S
+import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import qualified System.FilePath.ByteString as P
 
@@ -263,7 +264,9 @@ explodePackedRefsFile r = do
 	let f = packedRefsFile r
 	let f' = toRawFilePath f
 	whenM (doesFileExist f) $ do
-		rs <- mapMaybe parsePacked . lines
+		rs <- mapMaybe parsePacked
+			. map decodeBS
+			. fileLines'
 			<$> catchDefaultIO "" (safeReadFile f')
 		forM_ rs makeref
 		removeWhenExistsWith R.removeLink f'
@@ -474,7 +477,7 @@ displayList items header
  -}
 preRepair :: Repo -> IO ()
 preRepair g = do
-	unlessM (validhead <$> catchDefaultIO "" (safeReadFile headfile)) $ do
+	unlessM (validhead <$> catchDefaultIO "" (decodeBS <$> safeReadFile headfile)) $ do
 		removeWhenExistsWith R.removeLink headfile
 		writeFile (fromRawFilePath headfile) "ref: refs/heads/master"
 	explodePackedRefsFile g
@@ -652,7 +655,7 @@ runRepair' removablebranch fsckresult forced referencerepo g = do
 successfulRepair :: (Bool, [Branch]) -> Bool
 successfulRepair = fst
 
-safeReadFile :: RawFilePath -> IO String
+safeReadFile :: RawFilePath -> IO B.ByteString
 safeReadFile f = do
 	allowRead f
-	readFileStrict (fromRawFilePath f)
+	F.readFile' (toOsPath f)

@@ -19,6 +19,7 @@ import Annex.Common
 import Utility.TimeStamp
 import Logs.File
 import Types.RepoVersion
+import qualified Utility.FileIO as F
 
 import Data.Time.Clock.POSIX
 
@@ -31,10 +32,10 @@ writeUpgradeLog v t = do
 
 readUpgradeLog :: Annex [(RepoVersion, POSIXTime)]
 readUpgradeLog = do
-	logfile <- fromRawFilePath <$> fromRepo gitAnnexUpgradeLog
-	ifM (liftIO $ doesFileExist logfile)
-		( mapMaybe parse . lines
-			<$> liftIO (readFileStrict logfile)
+	logfile <- fromRepo gitAnnexUpgradeLog
+	ifM (liftIO $ doesFileExist (fromRawFilePath logfile))
+		( mapMaybe (parse . decodeBS) . fileLines'
+			<$> liftIO (F.readFile' (toOsPath logfile))
 		, return []
 		)
   where

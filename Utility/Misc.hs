@@ -10,7 +10,6 @@
 
 module Utility.Misc (
 	hGetContentsStrict,
-	readFileStrict,
 	separate,
 	separate',
 	separateEnd',
@@ -46,10 +45,6 @@ import Prelude
  - all read before it gets closed. -}
 hGetContentsStrict :: Handle -> IO String
 hGetContentsStrict = hGetContents >=> \s -> length s `seq` return s
-
-{- A version of readFile that is not lazy. -}
-readFileStrict :: FilePath -> IO String
-readFileStrict = readFile >=> \s -> length s `seq` return s
 
 {- Like break, but the item matching the condition is not included
  - in the second result list.
