@@ -44,6 +44,7 @@ import Utility.Tmp.Dir
 import Utility.Rsync
 import Utility.FileMode
 import qualified Utility.RawFilePath as R
+import qualified Utility.FileIO as F
 
 import qualified Data.Set as S
 import qualified Data.ByteString.Lazy as L
@@ -87,7 +88,7 @@ explodePacks r = go =<< listPackFiles r
 			-- May fail, if pack file is corrupt.
 			void $ tryIO $
 				pipeWrite [Param "unpack-objects", Param "-r"] r' $ \h ->
-				L.hPut h =<< L.readFile (fromRawFilePath packfile)
+				L.hPut h =<< F.readFile (toOsPath packfile)
 		objs <- emptyWhenDoesNotExist (dirContentsRecursive (toRawFilePath tmpdir))
 		forM_ objs $ \objfile -> do
 			f <- relPathDirToFile
@@ -116,9 +117,9 @@ retrieveMissingObjects missing referencerepo r
 		unlessM (boolSystem "git" [Param "init", File tmpdir]) $
 			giveup $ "failed to create temp repository in " ++ tmpdir
 		tmpr <- Config.read =<< Construct.fromPath (toRawFilePath tmpdir)
-		let repoconfig r' = fromRawFilePath (localGitDir r' P.</> "config")
-		whenM (doesFileExist (repoconfig r)) $
-			L.readFile (repoconfig r) >>= L.writeFile (repoconfig tmpr)
+		let repoconfig r' = toOsPath (localGitDir r' P.</> "config")
+		whenM (doesFileExist (fromRawFilePath (fromOsPath (repoconfig r)))) $
+			F.readFile (repoconfig r) >>= F.writeFile (repoconfig tmpr)
 		rs <- Construct.fromRemotes r
 		stillmissing <- pullremotes tmpr rs fetchrefstags missing
 		if S.null (knownMissing stillmissing)

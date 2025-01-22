@@ -32,6 +32,7 @@ import Annex.SpecialRemote.Config (exportTreeField)
 import Remote.Helper.Chunked
 import Remote.Helper.Encryptable (encryptionField, highRandomQualityField)
 import Git.Types
+import qualified Utility.FileIO as F
 
 import Test.Tasty
 import Test.Tasty.Runners
@@ -255,18 +256,18 @@ test runannex mkr mkk =
 		get r k
 	, check "fsck downloaded object" fsck
 	, check "retrieveKeyFile resume from 0" $ \r k -> do
-		tmp <- fromRawFilePath <$> prepTmp k
-		liftIO $ writeFile tmp ""
+		tmp <- toOsPath <$> prepTmp k
+		liftIO $ F.writeFile' tmp mempty
 		lockContentForRemoval k noop removeAnnex
 		get r k
 	, check "fsck downloaded object" fsck
 	, check "retrieveKeyFile resume from 33%" $ \r k -> do
 		loc <- fromRawFilePath <$> Annex.calcRepo (gitAnnexLocation k)
-		tmp <- fromRawFilePath <$> prepTmp k
+		tmp <- toOsPath <$> prepTmp k
 		partial <- liftIO $ bracket (openBinaryFile loc ReadMode) hClose $ \h -> do
 			sz <- hFileSize h
 			L.hGet h $ fromInteger $ sz `div` 3
-		liftIO $ L.writeFile tmp partial
+		liftIO $ F.writeFile tmp partial
 		lockContentForRemoval k noop removeAnnex
 		get r k
 	, check "fsck downloaded object" fsck

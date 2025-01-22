@@ -35,10 +35,10 @@ import Annex.InodeSentinal
 import Utility.InodeCache
 import Utility.FileMode
 import qualified Utility.RawFilePath as R
+import qualified Utility.FileIO as F
 
 import qualified Data.Set as S
 import qualified Data.Map as M
-import qualified Data.ByteString.Lazy as L
 import System.PosixCompat.Files (isSymbolicLink)
 
 {- Merges from a branch into the current branch (which may not exist yet),
@@ -268,7 +268,7 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 			Nothing -> noop
 			Just sha -> replaceWorkTreeFile (toRawFilePath item) $ \tmp -> do
 				c <- catObject sha
-				liftIO $ L.writeFile (decodeBS tmp) c
+				liftIO $ F.writeFile (toOsPath tmp) c
 				when isexecutable $
 					liftIO $ void $ tryIO $ 
 						modifyFileMode tmp $

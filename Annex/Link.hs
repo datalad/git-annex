@@ -118,7 +118,7 @@ makeGitLink linktarget file = ifM (coreSymlinks <$> Annex.getGitConfig)
 	( liftIO $ do
 		void $ tryIO $ R.removeLink file
 		R.createSymbolicLink linktarget file
-	, liftIO $ S.writeFile (fromRawFilePath file) linktarget
+	, liftIO $ F.writeFile' (toOsPath file) linktarget
 	)
 
 {- Creates a link on disk, and additionally stages it in git. -}
@@ -153,7 +153,7 @@ stagePointerFile file mode sha =
 
 writePointerFile :: RawFilePath -> Key -> Maybe FileMode -> IO ()
 writePointerFile file k mode = do
-	S.writeFile (fromRawFilePath file) (formatPointer k)
+	F.writeFile' (toOsPath file) (formatPointer k)
 	maybe noop (R.setFileMode file) mode
 
 newtype Restage = Restage Bool

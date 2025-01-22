@@ -859,7 +859,7 @@ startPush' rmt manifest = do
 	f <- fromRepo (lastPushedManifestFile (Remote.uuid rmt))
 	oldmanifest <- liftIO $ 
 		fromRight mempty . parseManifest
-			<$> B.readFile (fromRawFilePath f)
+			<$> F.readFile' (toOsPath f)
 				`catchNonAsync` (const (pure mempty))
 	let oldmanifest' = mkManifest [] $
 		S.fromList (inManifest oldmanifest)

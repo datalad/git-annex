@@ -34,6 +34,7 @@ import Logs.File
 import qualified Git.LsTree
 import qualified Git.Tree
 import Annex.UUID
+import qualified Utility.FileIO as F
 
 import qualified Data.Map as M
 import qualified Data.ByteString as B
@@ -129,7 +130,7 @@ getExportExcluded :: UUID -> Annex [Git.Tree.TreeItem]
 getExportExcluded u = do
 	logf <- fromRepo $ gitAnnexExportExcludeLog u
 	liftIO $ catchDefaultIO [] $ exportExcludedParser
-		<$> L.readFile (fromRawFilePath logf)
+		<$> F.readFile (toOsPath logf)
   where
 
 exportExcludedParser :: L.ByteString -> [Git.Tree.TreeItem]

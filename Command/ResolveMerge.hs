@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Command.ResolveMerge where
 
 import Command
@@ -12,8 +14,9 @@ import qualified Git
 import Git.Sha
 import qualified Git.Branch
 import Annex.AutoMerge
+import qualified Utility.FileIO as F
 
-import qualified Data.ByteString as S
+import qualified System.FilePath.ByteString as P
 
 cmd :: Command
 cmd = command "resolvemerge" SectionPlumbing
@@ -26,10 +29,10 @@ seek = withNothing (commandAction start)
 start :: CommandStart
 start = starting "resolvemerge" (ActionItemOther Nothing) (SeekInput []) $ do
 	us <- fromMaybe nobranch <$> inRepo Git.Branch.current
-	d <- fromRawFilePath <$> fromRepo Git.localGitDir
-	let merge_head = d </> "MERGE_HEAD"
+	d <- fromRepo Git.localGitDir
+	let merge_head = toOsPath $ d P.</> "MERGE_HEAD"
 	them <- fromMaybe (giveup nomergehead) . extractSha
-		<$> liftIO (S.readFile merge_head)
+		<$> liftIO (F.readFile' merge_head)
 	ifM (resolveMerge (Just us) them False)
 		( do
 			void $ commitResolvedMerge Git.Branch.ManualCommit

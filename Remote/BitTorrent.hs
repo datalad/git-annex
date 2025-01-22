@@ -39,7 +39,7 @@ import qualified Data.ByteString as S
 
 #ifdef WITH_TORRENTPARSER
 import Data.Torrent
-import qualified Data.ByteString.Lazy as B
+import qualified Utility.FileIO as F
 #endif
 
 remote :: RemoteType
@@ -366,7 +366,7 @@ torrentFileSizes :: RawFilePath -> IO [(FilePath, Integer)]
 torrentFileSizes torrent = do
 #ifdef WITH_TORRENTPARSER
 	let mkfile = joinPath . map (scrub . decodeBL)
-	b <- B.readFile (fromRawFilePath torrent)
+	b <- F.readFile (toOsPath torrent)
 	return $ case readTorrent b of
 		Left e -> giveup $ "failed to parse torrent: " ++ e
 		Right t -> case tInfo t of

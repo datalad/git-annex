@@ -18,7 +18,7 @@ status.
   mechanical, with only some wrapper functions in Utility.FileIO and
   Utility.RawFilePath needing to be changed.
 * Utility.FileIO is used for most withFile and openFile, but not yet for
-  readFile, writeFile, and appendFile. Including versions of those from
+  readFile, writeFile, and appendFile (except most ones on bytestrings)
   bytestring. Also readFileStrict should be replaced with 
   Utility.FileIO.readFile'
   Note that the String versions can do newline translation, which has to be

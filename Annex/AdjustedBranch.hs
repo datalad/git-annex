@@ -268,7 +268,7 @@ updateAdjustedBranch adj (AdjBranch currbranch) origbranch
 			-- origbranch.
 			_ <- propigateAdjustedCommits' True origbranch adj commitlck
 			
-			origheadfile <- inRepo $ readFileStrict . Git.Ref.headFile
+			origheadfile <- inRepo $ readFileStrict . fromRawFilePath . Git.Ref.headFile
 			origheadsha <- inRepo (Git.Ref.sha currbranch)
 			
 			b <- adjustBranch adj origbranch
@@ -281,7 +281,7 @@ updateAdjustedBranch adj (AdjBranch currbranch) origbranch
 				Just s -> do
 					inRepo $ \r -> do
 						let newheadfile = fromRef s
-						writeFile (Git.Ref.headFile r) newheadfile
+						writeFile (fromRawFilePath (Git.Ref.headFile r)) newheadfile
 						return (Just newheadfile)
 				_ -> return Nothing
 	
@@ -295,9 +295,9 @@ updateAdjustedBranch adj (AdjBranch currbranch) origbranch
 		unless ok $ case newheadfile of
 			Nothing -> noop
 			Just v -> preventCommits $ \_commitlck -> inRepo $ \r -> do
-				v' <- readFileStrict (Git.Ref.headFile r)
+				v' <- readFileStrict (fromRawFilePath (Git.Ref.headFile r))
 				when (v == v') $
-					writeFile (Git.Ref.headFile r) origheadfile
+					writeFile (fromRawFilePath (Git.Ref.headFile r)) origheadfile
 
 		return ok
 	| otherwise = preventCommits $ \commitlck -> do

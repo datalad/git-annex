@@ -23,11 +23,11 @@ import Utility.Directory.Create
 import qualified Git
 import Git.Sha
 import qualified Utility.SimpleProtocol as Proto
+import qualified Utility.FileIO as F
 
 import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Concurrent.STM.TBMChan
-import qualified Data.ByteString as S
 import qualified System.FilePath.ByteString as P
 
 newtype ChangedRefs = ChangedRefs [Git.Ref]
@@ -104,7 +104,7 @@ notifyHook chan reffile _
 	| ".lock" `isSuffixOf` reffile = noop
 	| otherwise = void $ do
 		sha <- catchDefaultIO Nothing $
-			extractSha <$> S.readFile reffile
+			extractSha <$> F.readFile' (toOsPath (toRawFilePath reffile))
 		-- When the channel is full, there is probably no reader
 		-- running, or ref changes have been occurring very fast,
 		-- so it's ok to not write the change to it.

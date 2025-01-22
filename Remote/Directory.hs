@@ -15,7 +15,6 @@ module Remote.Directory (
 	removeDirGeneric,
 ) where
 
-import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
 import qualified Data.List.NonEmpty as NE
 import qualified System.FilePath.ByteString as P
@@ -52,6 +51,7 @@ import Utility.InodeCache
 import Utility.FileMode
 import Utility.Directory.Create
 import qualified Utility.RawFilePath as R
+import qualified Utility.FileIO as F
 #ifndef mingw32_HOST_OS
 import Utility.OpenFd
 #endif
@@ -257,7 +257,7 @@ retrieveKeyFileM d NoChunks cow = fileRetriever' $ \dest k p iv -> do
 	src <- liftIO $ fromRawFilePath <$> getLocation d k
 	void $ liftIO $ fileCopier cow src (fromRawFilePath dest) p iv
 retrieveKeyFileM d _ _ = byteRetriever $ \k sink ->
-	sink =<< liftIO (L.readFile . fromRawFilePath =<< getLocation d k)
+	sink =<< liftIO (F.readFile . toOsPath =<< getLocation d k)
 
 retrieveKeyFileCheapM :: RawFilePath -> ChunkConfig -> Maybe (Key -> AssociatedFile -> FilePath -> Annex ())
 -- no cheap retrieval possible for chunks
