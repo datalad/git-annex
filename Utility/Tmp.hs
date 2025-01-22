@@ -104,19 +104,26 @@ withTmpFileIn tmpdir template a = bracket create remove use
  - will be longer, and may exceed the maximum filename length.
  -
  - This generates a template that is never too long.
- - (Well, it allocates 20 characters for use in making a unique temp file,
- - anyway, which is enough for the current implementation and any
- - likely implementation.)
  -}
 relatedTemplate :: RawFilePath -> Template
 relatedTemplate f
-	| len > 20 = 
+	| len > templateAddedLength = 
 		{- Some filesystems like FAT have issues with filenames
 		 - ending in ".", so avoid truncating a filename to end
 		 - that way. -}
 		toOsPath $ toRawFilePath $ 
 			reverse $ dropWhile (== '.') $ reverse $
-				truncateFilePath (len - 20) (fromRawFilePath f)
+				truncateFilePath (len - templateAddedLength) (fromRawFilePath f)
 	| otherwise = toOsPath f
   where
 	len = B.length f
+
+{- When a Template is used to create a temporary file, some random bytes
+ - are appended to it. This is how many such bytes can be added, maximum.
+ -
+ - This needs to be as long or longer than the current implementation
+ - of openTempFile, and some extra has been added to make it longer
+ - than any likely implementation.
+ -}
+templateAddedLength :: Int
+templateAddedLength = 20
