@@ -1,6 +1,6 @@
 {- Temporary files.
  -
- - Copyright 2010-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2025 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -21,6 +21,7 @@ import System.IO
 import System.Directory
 import Control.Monad.IO.Class
 import System.IO.Error
+import Data.Char
 import qualified Data.ByteString as B
 import qualified System.FilePath.ByteString as P
 
@@ -111,12 +112,12 @@ relatedTemplate f
 		{- Some filesystems like FAT have issues with filenames
 		 - ending in ".", so avoid truncating a filename to end
 		 - that way. -}
-		toOsPath $ toRawFilePath $ 
-			reverse $ dropWhile (== '.') $ reverse $
-				truncateFilePath (len - templateAddedLength) (fromRawFilePath f)
+		toOsPath $ B.dropWhileEnd (== dot) $ toRawFilePath $ 
+			truncateFilePath (len - templateAddedLength) (fromRawFilePath f)
 	| otherwise = toOsPath f
   where
 	len = B.length f
+	dot = fromIntegral (ord '.')
 
 {- When a Template is used to create a temporary file, some random bytes
  - are appended to it. This is how many such bytes can be added, maximum.
