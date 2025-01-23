@@ -137,7 +137,7 @@ mkTreeOutput fm ot s f = concat
 	, " "
 	, fromRef s
 	, "\t"
-	, takeFileName (fromRawFilePath (getTopFilePath f))
+	, fromOsPath (takeFileName (getTopFilePath f))
 	, "\NUL"
 	]
 

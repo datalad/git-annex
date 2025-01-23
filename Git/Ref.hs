@@ -113,8 +113,8 @@ exists ref = runBool
 
 {- The file used to record a ref. (Git also stores some refs in a
  - packed-refs file.) -}
-file :: Ref -> Repo -> FilePath
-file ref repo = fromRawFilePath (localGitDir repo) </> fromRef ref
+file :: Ref -> Repo -> OsPath
+file ref repo = localGitDir repo </> toOsPath (fromRef' ref)
 
 {- Checks if HEAD exists. It generally will, except for in a repository
  - that was just created. -}

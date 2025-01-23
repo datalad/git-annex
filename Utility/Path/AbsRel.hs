@@ -17,7 +17,6 @@ module Utility.Path.AbsRel (
 	relHome,
 ) where
 
-import System.FilePath.ByteString
 import qualified Data.ByteString as B
 import Control.Applicative
 import Prelude

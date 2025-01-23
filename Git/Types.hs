@@ -9,6 +9,10 @@
 
 module Git.Types where
 
+import Utility.SafeCommand
+import Utility.FileSystemEncoding
+import Utility.OsPath
+
 import Network.URI
 import Data.String
 import Data.Default
@@ -16,8 +20,6 @@ import qualified Data.Map as M
 import qualified Data.ByteString as S
 import qualified Data.List.NonEmpty as NE
 import System.Posix.Types
-import Utility.SafeCommand
-import Utility.FileSystemEncoding
 import qualified Data.Semigroup as Sem
 import Prelude
 
@@ -32,8 +34,8 @@ import Prelude
  - else known about it.
  -}
 data RepoLocation
-	= Local { gitdir :: RawFilePath, worktree :: Maybe RawFilePath }
-	| LocalUnknown RawFilePath
+	= Local { gitdir :: OsPath, worktree :: Maybe OsPath }
+	| LocalUnknown OsPath
 	| Url URI
 	| UnparseableUrl String
 	| Unknown

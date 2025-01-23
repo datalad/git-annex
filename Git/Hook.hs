@@ -50,7 +50,7 @@ hookFile h r = localGitDir r P.</> "hooks" P.</> hookName h
  - is run with a bundled bash, so should start with #!/bin/sh
  -}
 hookWrite :: Hook -> Repo -> IO Bool
-hookWrite h r = ifM (doesFileExist (fromRawFilePath f))
+hookWrite h r = ifM (doesFileExist f)
 	( expectedContent h r >>= \case
 		UnexpectedContent -> return False
 		ExpectedContent -> return True
@@ -81,7 +81,7 @@ hookUnWrite h r = ifM (doesFileExist f)
 	, return True
 	)
   where
-	f = fromRawFilePath $ hookFile h r
+	f = hookFile h r
 
 data ExpectedContent = UnexpectedContent | ExpectedContent | OldExpectedContent
 

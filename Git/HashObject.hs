@@ -83,7 +83,7 @@ instance HashableBlob Builder where
 {- Injects a blob into git. Unfortunately, the current git-hash-object
  - interface does not allow batch hashing without using temp files. -}
 hashBlob :: HashableBlob b => HashObjectHandle -> b -> IO Sha
-hashBlob h b = withTmpFile (toOsPath "hash") $ \tmp tmph -> do
+hashBlob h b = withTmpFile (literalOsPath "hash") $ \tmp tmph -> do
 	hashableBlobToHandle tmph b
 	hClose tmph
 	hashFile h (fromOsPath tmp)

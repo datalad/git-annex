@@ -14,20 +14,19 @@ module Utility.OSX (
 	genOSXAutoStartFile,
 ) where
 
+import Common
 import Utility.UserInfo
 
-import System.FilePath
+autoStartBase :: String -> OsPath
+autoStartBase label = literalOsPath "Library" </> literalOsPath "LaunchAgents" </> literalOsPath (label ++ ".plist")
 
-autoStartBase :: String -> FilePath
-autoStartBase label = "Library" </> "LaunchAgents" </> label ++ ".plist"
+systemAutoStart :: String -> OsPath
+systemAutoStart label = literalOsPath "/" </> autoStartBase label
 
-systemAutoStart :: String -> FilePath
-systemAutoStart label = "/" </> autoStartBase label
-
-userAutoStart :: String -> IO FilePath
+userAutoStart :: String -> IO OsPath
 userAutoStart label = do
 	home <- myHomeDir
-	return $ home </> autoStartBase label
+	return $ toOsPath home </> autoStartBase label
 
 {- Generates an OSX autostart plist file with a given label, command, and
  - params to run at boot or login. -}

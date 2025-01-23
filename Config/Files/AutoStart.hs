@@ -14,38 +14,37 @@ import Config.Files
 import Utility.Tmp
 
 {- Returns anything listed in the autostart file (which may not exist). -}
-readAutoStartFile :: IO [FilePath]
+readAutoStartFile :: IO [OsPath]
 readAutoStartFile = do
 	f <- autoStartFile
-	filter valid . nub . map dropTrailingPathSeparator . lines
-		<$> catchDefaultIO "" (readFile f)
+	filter valid . nub . map (dropTrailingPathSeparator . toOsPath) . lines
+		<$> catchDefaultIO "" (readFile (fromOsPath f))
   where
 	-- Ignore any relative paths; some old buggy versions added eg "."
 	valid = isAbsolute
 
-modifyAutoStartFile :: ([FilePath] -> [FilePath]) -> IO ()
+modifyAutoStartFile :: ([OsPath] -> [OsPath]) -> IO ()
 modifyAutoStartFile func = do
 	dirs <- readAutoStartFile
 	let dirs' = nubBy equalFilePath $ func dirs
 	when (dirs' /= dirs) $ do
 		f <- autoStartFile
-		createDirectoryIfMissing True $
-			fromRawFilePath (parentDir (toRawFilePath f))
+		createDirectoryIfMissing True (parentDir f)
 		viaTmp (writeFile . fromRawFilePath . fromOsPath)
-			(toOsPath (toRawFilePath f))
-			(unlines dirs')
+			(toOsPath f)
+			(unlines (map fromOsPath dirs'))
 
 {- Adds a directory to the autostart file. If the directory is already
  - present, it's moved to the top, so it will be used as the default
  - when opening the webapp. -}
-addAutoStartFile :: FilePath -> IO ()
+addAutoStartFile :: OsPath -> IO ()
 addAutoStartFile path = do
-	path' <- fromRawFilePath <$> absPath (toRawFilePath path)
+	path' <- absPath path
 	modifyAutoStartFile $ (:) path'
 
 {- Removes a directory from the autostart file. -}
-removeAutoStartFile :: FilePath -> IO ()
+removeAutoStartFile :: OsPath -> IO ()
 removeAutoStartFile path = do
-	path' <- fromRawFilePath <$> absPath (toRawFilePath path)
+	path' <- absPath path
 	modifyAutoStartFile $
 		filter (not . equalFilePath path')

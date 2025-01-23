@@ -28,7 +28,6 @@ module Utility.Path (
 ) where
 
 import qualified Data.ByteString as B
-import qualified System.FilePath.ByteString as PB
 import Data.List
 import Data.Maybe
 import Control.Monad
@@ -70,9 +69,10 @@ simplifyPath path = dropTrailingPathSeparator $
 
 	norm c [] = reverse c
 	norm c (p:ps)
-		| p' == ".." && not (null c) && dropTrailingPathSeparator (c !! 0) /= ".." = 
-			norm (drop 1 c) ps
-		| p' == "." = norm c ps
+		| p' == dotdot && not (null c) 
+			&& dropTrailingPathSeparator (c !! 0) /= dotdot = 
+				norm (drop 1 c) ps
+		| p' == dot = norm c ps
 		| otherwise = norm (p:c) ps
 	  where
 		p' = dropTrailingPathSeparator p
@@ -86,8 +86,8 @@ parentDir = takeDirectory . dropTrailingPathSeparator
 upFrom :: OsPath -> Maybe OsPath
 upFrom dir
 	| length dirs < 2 = Nothing
-	| otherwise = Just $ joinDrive drive $ toOsPath $
-		B.intercalate (B.singleton PB.pathSeparator) $ init dirs
+	| otherwise = Just $ joinDrive drive $
+		OS.intercalate (OS.singleton pathSeparator) $ init dirs
   where
 	-- on Unix, the drive will be "/" when the dir is absolute,
 	-- otherwise ""
@@ -101,8 +101,8 @@ upFrom dir
 dirContains :: OsPath -> OsPath -> Bool
 dirContains a b = a == b
 	|| a' == b'
-	|| (a'' `B.isPrefixOf` b' && avoiddotdotb)
-	|| a' == "." && normalise ("." </> b') == b' && nodotdot b'
+	|| (a'' `OS.isPrefixOf` b' && avoiddotdotb)
+	|| a' == dot && normalise (dot </> b') == b' && nodotdot b'
 	|| dotdotcontains
   where
 	a' = norm a
@@ -124,7 +124,7 @@ dirContains a b = a == b
 
 	nodotdot p = all (not . isdotdot) (splitPath p)
 	
-	isdotdot s = dropTrailingPathSeparator s == ".."
+	isdotdot s = dropTrailingPathSeparator s == dotdot
 
 	{- This handles the case where a is ".." or "../.." etc,
 	 - and b is "foo" or "../foo" etc. The rule is that when
@@ -185,10 +185,10 @@ runSegmentPaths' si c a paths = segmentPaths' si c paths <$> a paths
  - count as dotfiles. -}
 dotfile :: OsPath -> Bool
 dotfile file
-	| f == "." = False
-	| f == ".." = False
-	| f == "" = False
-	| otherwise = "." `OS.isPrefixOf` f || dotfile (takeDirectory file)
+	| f == dot = False
+	| f == dotdot = False
+	| f == literalOsPath "" = False
+	| otherwise = dot `OS.isPrefixOf` f || dotfile (takeDirectory file)
   where
 	f = takeFileName file
 
@@ -226,7 +226,7 @@ relPathDirToFileAbs from to
 	common = map fst $ takeWhile same $ zip pfrom pto
 	same (c,d) = c == d
 	uncommon = drop numcommon pto
-	dotdots = replicate (length pfrom - numcommon) ".."
+	dotdots = replicate (length pfrom - numcommon) dotdot
 	numcommon = length common
 #ifdef mingw32_HOST_OS
 	normdrive = map toLower
@@ -255,7 +255,7 @@ inSearchPath command = isJust <$> searchPath command
 searchPath :: String -> IO (Maybe OsPath)
 searchPath command
 	| isAbsolute command' = copyright $ check command'
-	| otherwise = getSearchPath >>= getM indir . map toOsPath
+	| otherwise = getSearchPath >>= getM indir
   where
 	command' = toOsPath command
 	indir d = check (d </> command')
@@ -275,7 +275,14 @@ searchPath command
 searchPathContents :: (OsPath -> Bool) -> IO [OsPath]
 searchPathContents p =
 	filterM doesFileExist 
-		=<< (concat <$> (getSearchPath >>= mapM (go . toOsPath)))
+		=<< (concat <$> (getSearchPath >>= mapM go))
   where
 	go d = map (d </>) . filter p
 		<$> catchDefaultIO [] (getDirectoryContents d)
+
+dot :: OsPath
+dot = literalOsPath "."
+
+dotdot :: OsPath
+dotdot = literalOsPath ".."
+

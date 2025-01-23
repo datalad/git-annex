@@ -86,7 +86,7 @@ repoWorkTree Repo { location = Local { worktree = Just d } } = Just d
 repoWorkTree _ = Nothing
 
 {- Path to a local repository's .git directory. -}
-localGitDir :: Repo -> RawFilePath
+localGitDir :: Repo -> OsPath
 localGitDir Repo { location = Local { gitdir = d } } = d
 localGitDir _ = giveup "unknown localGitDir"
 
@@ -147,16 +147,17 @@ attributesLocal repo = localGitDir repo P.</> "info" P.</> "attributes"
 
 {- Path to a given hook script in a repository, only if the hook exists
  - and is executable. -}
-hookPath :: String -> Repo -> IO (Maybe FilePath)
+hookPath :: String -> Repo -> IO (Maybe OsPath)
 hookPath script repo = do
-	let hook = fromRawFilePath (localGitDir repo) </> "hooks" </> script
+	let hook = localGitDir repo </> literalOsPath "hooks" </> toOsPath script
 	ifM (catchBoolIO $ isexecutable hook)
 		( return $ Just hook , return Nothing )
   where
 #if mingw32_HOST_OS
 	isexecutable f = doesFileExist f
 #else
-	isexecutable f = isExecutable . fileMode <$> getSymbolicLinkStatus f
+	isexecutable f = isExecutable . fileMode
+		<$> getSymbolicLinkStatus (fromOsPath f)
 #endif
 
 {- Makes the path to a local Repo be relative to the cwd. -}

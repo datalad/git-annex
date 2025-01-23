@@ -34,8 +34,10 @@ initMagicMime = catchMaybeIO $ do
 	m <- magicOpen [MagicMime]
 	liftIO $ getEnv "GIT_ANNEX_DIR" >>= \case
 		Nothing -> magicLoadDefault m
-		Just d -> magicLoad m
-			(d </> "magic" </> "magic.mgc")
+		Just d -> magicLoad m $ fromOsPath $
+			toOsPath d
+				</> literalOsPath "magic"
+				</> literalOsPath "magic.mgc"
 	return m
 #else
 initMagicMime = return Nothing

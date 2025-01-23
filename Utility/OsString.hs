@@ -21,11 +21,12 @@ import System.OsString as X hiding (length)
 import qualified System.OsString
 import qualified Data.ByteString as B
 import Utility.OsPath
+import Prelude ((.), Int)
 
 {- Avoid System.OsString.length, which returns the number of code points on
  - windows. This is the number of bytes. -}
 length :: System.OsString.OsString -> Int
-length = B.length . fromOsString
+length = B.length . fromOsPath
 #else
 import Data.ByteString as X hiding (length)
 import Data.ByteString (length)

@@ -51,7 +51,7 @@ get = do
 		Just d -> do
 			curr <- R.getCurrentDirectory
 			unless (d `dirContains` curr) $
-				setCurrentDirectory (fromRawFilePath d)
+				setCurrentDirectory d
 			relPath $ addworktree wt r
   where
 	getpathenv s = do

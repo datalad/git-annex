@@ -17,7 +17,6 @@ module Utility.Path.Tests (
 	prop_dirContains_regressionTest,
 ) where
 
-import System.FilePath.ByteString
 import qualified Data.ByteString as B
 import Data.List
 import Data.Maybe
@@ -25,8 +24,8 @@ import Data.Char
 import Control.Applicative
 import Prelude
 
+import Common
 import Utility.Path
-import Utility.FileSystemEncoding
 import Utility.QuickCheck
 
 prop_upFrom_basics :: TestableFilePath -> Bool
