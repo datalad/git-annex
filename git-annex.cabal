@@ -1106,6 +1106,7 @@ Executable git-annex
     Utility.OptParse
     Utility.OSX
     Utility.OsPath
+    Utility.OsString
     Utility.PID
     Utility.PartialPrelude
     Utility.Path

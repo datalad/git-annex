@@ -40,6 +40,7 @@ import Utility.Monad
 import Utility.SystemDirectory
 import Utility.Exception
 import Utility.OsPath
+import qualified Utility.OsString as OS
 
 #ifdef mingw32_HOST_OS
 import Data.Char
@@ -86,12 +87,12 @@ upFrom :: OsPath -> Maybe OsPath
 upFrom dir
 	| length dirs < 2 = Nothing
 	| otherwise = Just $ joinDrive drive $ toOsPath $
-		B.intercalate (B.singleton pathSeparator) $ init dirs
+		B.intercalate (B.singleton PB.pathSeparator) $ init dirs
   where
 	-- on Unix, the drive will be "/" when the dir is absolute,
 	-- otherwise ""
 	(drive, path) = splitDrive dir
-	dirs = filter (not . B.null) $ B.splitWith PB.isPathSeparator $ fromOsPath path
+	dirs = filter (not . OS.null) $ OS.splitWith isPathSeparator path
 
 {- Checks if the first path is, or could be said to contain the second.
  - For example, "foo/" contains "foo/bar". Also, "foo", "./foo", "foo/" etc
@@ -119,7 +120,7 @@ dirContains a b = a == b
 	 - a'' is a prefix of b', so all that needs to be done is drop
 	 - that prefix, and check if the next path component is ".."
 	 -}
-	avoiddotdotb = nodotdot $ B.drop (B.length a'') $ fromOsPath b'
+	avoiddotdotb = nodotdot $ OS.drop (OS.length a'') b'
 
 	nodotdot p = all (not . isdotdot) (splitPath p)
 	
@@ -187,7 +188,7 @@ dotfile file
 	| f == "." = False
 	| f == ".." = False
 	| f == "" = False
-	| otherwise = "." `B.isPrefixOf` f || dotfile (takeDirectory file)
+	| otherwise = "." `OS.isPrefixOf` f || dotfile (takeDirectory file)
   where
 	f = takeFileName file
 
@@ -199,12 +200,12 @@ splitShortExtensions' :: Int -> OsPath -> (OsPath, [B.ByteString])
 splitShortExtensions' maxextension = go []
   where
 	go c f
-		| len > 0 && len <= maxextension && not (B.null base) = 
-			go (ext:c) base
+		| len > 0 && len <= maxextension && not (OS.null base) = 
+			go (fromOsPath ext:c) base
 		| otherwise = (f, c)
 	  where
 		(base, ext) = splitExtension f
-		len = B.length ext
+		len = OS.length ext
 
 {- This requires both paths to be absolute and normalized.
  -

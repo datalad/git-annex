@@ -54,17 +54,16 @@ import qualified System.FilePath.ByteString as P
 import Data.Maybe
 import Data.List
 import Network.BSD
-import System.FilePath
 import Control.Applicative
 import Prelude
 
-type PidLockFile = RawFilePath
+type PidLockFile = OsPath
 
 data LockHandle
 	= LockHandle PidLockFile FileStatus SideLockHandle
 	| ParentLocked
 
-type SideLockHandle = Maybe (RawFilePath, Posix.LockHandle)
+type SideLockHandle = Maybe (OsPath, Posix.LockHandle)
 
 data PidLock = PidLock
 	{ lockingPid :: ProcessID
@@ -79,7 +78,7 @@ mkPidLock = PidLock
 
 readPidLock :: PidLockFile -> IO (Maybe PidLock)
 readPidLock lockfile = (readish =<<)
-	<$> catchMaybeIO (readFile (fromRawFilePath lockfile))
+	<$> catchMaybeIO (readFile (fromOsPath lockfile))
 
 -- To avoid races when taking over a stale pid lock, a side lock is used.
 -- This is a regular posix exclusive lock.
@@ -112,25 +111,26 @@ dropSideLock (Just (f, h)) = do
 	-- to take the side lock will only succeed once the file is
 	-- deleted, and so will be able to immediately see that it's taken
 	-- a stale lock.
-	_ <- tryIO $ removeFile (fromRawFilePath f)
+	_ <- tryIO $ removeFile f
 	Posix.dropLock h
 
 -- The side lock is put in /dev/shm. This will work on most any
 -- Linux system, even if its whole root filesystem doesn't support posix
 -- locks. /tmp is used as a fallback.
-sideLockFile :: PidLockFile -> IO RawFilePath
+sideLockFile :: PidLockFile -> IO OsPath
 sideLockFile lockfile = do
-	f <- fromRawFilePath <$> absPath lockfile
-	let base = intercalate "_" (splitDirectories (makeRelative "/" f))
+	f <- absPath lockfile
+	let base = intercalate "_" $ map fromOsPath $
+		splitDirectories $ makeRelative (literalOsPath "/") f
 	let shortbase = reverse $ take 32 $ reverse base
 	let md5sum = if base == shortbase
 		then ""
-		else toRawFilePath $ show (md5 (encodeBL base))
-	dir <- ifM (doesDirectoryExist "/dev/shm")
-		( return "/dev/shm"
-		, return "/tmp"
+		else show (md5 (encodeBL base))
+	dir <- ifM (doesDirectoryExist (literalOsPath "/dev/shm"))
+		( return (literalOsPath "/dev/shm")
+		, return (literalOsPath "/tmp")
 		)
-	return $ dir P.</> md5sum <> toRawFilePath shortbase <> ".lck"
+	return $ dir </> toOsPath md5sum <> toOsPath shortbase <> literalOsPath ".lck"
 
 -- | Tries to take a lock; does not block when the lock is already held.
 --
@@ -152,7 +152,7 @@ tryLock lockfile = do
 	go abslockfile sidelock = do
 		(tmp, h) <- openTmpFileIn 
 			(toOsPath (P.takeDirectory abslockfile)) 
-			(toOsPath "locktmp")
+			(literalOsPath "locktmp")
 		let tmp' = fromOsPath tmp
 		setFileMode tmp' (combineModes readModes)
 		hPutStr h . show =<< mkPidLock

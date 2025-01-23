@@ -28,7 +28,6 @@ import Prelude
 import Utility.OsPath
 import Utility.Exception
 import Utility.Monad
-import Utility.FileSystemEncoding
 import qualified Utility.RawFilePath as R
 
 dirCruft :: R.RawFilePath -> Bool
