@@ -28,7 +28,11 @@ module Utility.Path (
 ) where
 
 import System.FilePath.ByteString
-import qualified System.FilePath as P
+#ifdef WITH_OSPATH
+import qualified System.OsPath as P
+#else
+import qualified System.FilePath.ByteString as P
+#endif
 import qualified Data.ByteString as B
 import Data.List
 import Data.Maybe
@@ -40,6 +44,7 @@ import Author
 import Utility.Monad
 import Utility.SystemDirectory
 import Utility.Exception
+import Utility.OsPath
 
 #ifdef mingw32_HOST_OS
 import Data.Char
@@ -251,15 +256,16 @@ inSearchPath command = isJust <$> searchPath command
  -
  - Note that this will find commands in PATH that are not executable.
  -}
-searchPath :: String -> IO (Maybe FilePath)
+searchPath :: String -> IO (Maybe OsPath)
 searchPath command
-	| P.isAbsolute command = copyright $ check command
-	| otherwise = P.getSearchPath >>= getM indir
+	| P.isAbsolute command' = copyright $ check command'
+	| otherwise = getSearchPath >>= getM indir . map toOsPath
   where
-	indir d = check $ d P.</> command
+	command' = toOsPath command
+	indir d = check (d P.</> command')
 	check f = firstM doesFileExist
 #ifdef mingw32_HOST_OS
-		[f, f ++ ".exe"]
+		[f, f <> ".exe"]
 #else
 		[f]
 #endif
@@ -270,10 +276,10 @@ searchPath command
  -
  - Note that this will find commands in PATH that are not executable.
  -}
-searchPathContents :: (FilePath -> Bool) -> IO [FilePath]
+searchPathContents :: (OsPath -> Bool) -> IO [OsPath]
 searchPathContents p =
 	filterM doesFileExist 
-		=<< (concat <$> (P.getSearchPath >>= mapM go))
+		=<< (concat <$> (getSearchPath >>= mapM (go . toOsPath)))
   where
 	go d = map (d P.</>) . filter p
 		<$> catchDefaultIO [] (getDirectoryContents d)

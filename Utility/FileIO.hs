@@ -89,21 +89,44 @@ openTempFile p s = do
 #endif
 
 #else
--- When not building with OsPath, export FilePath versions
--- instead. However, functions still use ByteString for the
--- file content in that case, unlike the Strings used by the Prelude.
+-- When not building with OsPath, export RawFilePath versions
+-- instead.
 import Utility.OsPath
-import System.IO (withFile, openFile, openTempFile, IO)
+import Utility.FileSystemEncoding
+import System.IO (IO, Handle, IOMode)
+import Prelude ((.), return)
 import qualified System.IO
-import Data.ByteString.Lazy (readFile, writeFile, appendFile)
 import qualified Data.ByteString as B
+import qualified Data.ByteString.Lazy as L
+
+withFile :: OsPath -> IOMode -> (Handle -> IO r) -> IO r 
+withFile = System.IO.withFile . fromRawFilePath
+
+openFile :: OsPath -> IOMode -> IO Handle
+openFile = System.IO.openFile . fromRawFilePath
+
+readFile :: OsPath -> IO L.ByteString
+readFile = L.readFile . fromRawFilePath
 
 readFile' :: OsPath -> IO B.ByteString
-readFile' = B.readFile
+readFile' = B.readFile . fromRawFilePath
+
+writeFile :: OsPath -> L.ByteString -> IO ()
+writeFile = L.writeFile . fromRawFilePath
 
 writeFile' :: OsPath -> B.ByteString -> IO ()
-writeFile' = B.writeFile
+writeFile' = B.writeFile . fromRawFilePath
+
+appendFile :: OsPath -> L.ByteString -> IO ()
+appendFile = L.appendFile . fromRawFilePath
 
 appendFile' :: OsPath -> B.ByteString -> IO ()
-appendFile' = B.appendFile
+appendFile' = B.appendFile . fromRawFilePath
+
+openTempFile :: OsPath -> OsPath -> IO (OsPath, Handle)
+openTempFile p s = do
+	(t, h) <- System.IO.openTempFile
+		(fromRawFilePath p)
+		(fromRawFilePath s)
+	return (toRawFilePath t, h)
 #endif
