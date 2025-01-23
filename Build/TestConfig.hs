@@ -11,7 +11,6 @@ import Utility.SystemDirectory
 import Utility.OsPath
 
 import System.IO
-import System.FilePath
 
 type ConfigKey = String
 data ConfigValue =
@@ -106,8 +105,11 @@ findCmdPath k command = do
 		)
   where
 	find d =
-		let f = d </> command
-		in ifM (doesFileExist (toOsPath f)) ( return (Just f), return Nothing )
+		let f = toOsPath d </> toOsPath command
+		in ifM (doesFileExist f)
+			( return (Just (fromOsPath f))
+			, return Nothing
+			)
 
 quiet :: String -> String
 quiet s = s ++ " >/dev/null 2>&1"

@@ -27,13 +27,8 @@ module Utility.Path (
 	searchPathContents,
 ) where
 
-import System.FilePath.ByteString
-#ifdef WITH_OSPATH
-import qualified System.OsPath as P
-#else
-import qualified System.FilePath.ByteString as P
-#endif
 import qualified Data.ByteString as B
+import qualified System.FilePath.ByteString as PB
 import Data.List
 import Data.Maybe
 import Control.Monad
@@ -58,15 +53,15 @@ copyright = author JoeyHess (1996+14)
  - and removing the trailing path separator.
  -
  - On Windows, preserves whichever style of path separator might be used in
- - the input RawFilePaths. This is done because some programs in Windows
+ - the input paths. This is done because some programs in Windows
  - demand a particular path separator -- and which one actually varies!
  -
  - This does not guarantee that two paths that refer to the same location,
  - and are both relative to the same location (or both absolute) will
- - yield the same result. Run both through normalise from System.RawFilePath
+ - yield the same result. Run both through normalise from System.OsPath
  - to ensure that.
  -}
-simplifyPath :: RawFilePath -> RawFilePath
+simplifyPath :: OsPath -> OsPath
 simplifyPath path = dropTrailingPathSeparator $ 
 	joinDrive drive $ joinPath $ norm [] $ splitPath path'
   where
@@ -82,27 +77,27 @@ simplifyPath path = dropTrailingPathSeparator $
 		p' = dropTrailingPathSeparator p
 
 {- takeDirectory "foo/bar/" is "foo/bar". This instead yields "foo" -}
-parentDir :: RawFilePath -> RawFilePath
+parentDir :: OsPath -> OsPath
 parentDir = takeDirectory . dropTrailingPathSeparator
 
 {- Just the parent directory of a path, or Nothing if the path has no
 - parent (ie for "/" or "." or "foo") -}
-upFrom :: RawFilePath -> Maybe RawFilePath
+upFrom :: OsPath -> Maybe OsPath
 upFrom dir
 	| length dirs < 2 = Nothing
-	| otherwise = Just $ joinDrive drive $
+	| otherwise = Just $ joinDrive drive $ toOsPath $
 		B.intercalate (B.singleton pathSeparator) $ init dirs
   where
 	-- on Unix, the drive will be "/" when the dir is absolute,
 	-- otherwise ""
 	(drive, path) = splitDrive dir
-	dirs = filter (not . B.null) $ B.splitWith isPathSeparator path
+	dirs = filter (not . B.null) $ B.splitWith PB.isPathSeparator $ fromOsPath path
 
-{- Checks if the first RawFilePath is, or could be said to contain the second.
+{- Checks if the first path is, or could be said to contain the second.
  - For example, "foo/" contains "foo/bar". Also, "foo", "./foo", "foo/" etc
  - are all equivalent.
  -}
-dirContains :: RawFilePath -> RawFilePath -> Bool
+dirContains :: OsPath -> OsPath -> Bool
 dirContains a b = a == b
 	|| a' == b'
 	|| (a'' `B.isPrefixOf` b' && avoiddotdotb)
@@ -124,7 +119,7 @@ dirContains a b = a == b
 	 - a'' is a prefix of b', so all that needs to be done is drop
 	 - that prefix, and check if the next path component is ".."
 	 -}
-	avoiddotdotb = nodotdot $ B.drop (B.length a'') b'
+	avoiddotdotb = nodotdot $ B.drop (B.length a'') $ fromOsPath b'
 
 	nodotdot p = all (not . isdotdot) (splitPath p)
 	
@@ -161,10 +156,10 @@ dirContains a b = a == b
  - we stop preserving ordering at that point. Presumably a user passing
  - that many paths in doesn't care too much about order of the later ones.
  -}
-segmentPaths :: (a -> RawFilePath) -> [RawFilePath] -> [a] -> [[a]]
+segmentPaths :: (a -> OsPath) -> [OsPath] -> [a] -> [[a]]
 segmentPaths = segmentPaths' (\_ r -> r)
 
-segmentPaths' :: (Maybe RawFilePath -> a -> r) -> (a -> RawFilePath) -> [RawFilePath] -> [a] -> [[r]]
+segmentPaths' :: (Maybe OsPath -> a -> r) -> (a -> OsPath) -> [OsPath] -> [a] -> [[r]]
 segmentPaths' f _ [] new = [map (f Nothing) new]
 segmentPaths' f _ [i] new = [map (f (Just i)) new] -- optimisation
 segmentPaths' f c (i:is) new = 
@@ -179,15 +174,15 @@ segmentPaths' f c (i:is) new =
  - than it would be to run the action separately with each path. In
  - the case of git file list commands, that assumption tends to hold.
  -}
-runSegmentPaths :: (a -> RawFilePath) -> ([RawFilePath] -> IO [a]) -> [RawFilePath] -> IO [[a]]
+runSegmentPaths :: (a -> OsPath) -> ([OsPath] -> IO [a]) -> [OsPath] -> IO [[a]]
 runSegmentPaths c a paths = segmentPaths c paths <$> a paths
 
-runSegmentPaths' :: (Maybe RawFilePath -> a -> r) -> (a -> RawFilePath) -> ([RawFilePath] -> IO [a]) -> [RawFilePath] -> IO [[r]]
+runSegmentPaths' :: (Maybe OsPath -> a -> r) -> (a -> OsPath) -> ([OsPath] -> IO [a]) -> [OsPath] -> IO [[r]]
 runSegmentPaths' si c a paths = segmentPaths' si c paths <$> a paths
 
 {- Checks if a filename is a unix dotfile. All files inside dotdirs
  - count as dotfiles. -}
-dotfile :: RawFilePath -> Bool
+dotfile :: OsPath -> Bool
 dotfile file
 	| f == "." = False
 	| f == ".." = False
@@ -196,11 +191,11 @@ dotfile file
   where
 	f = takeFileName file
 
-{- Similar to splitExtensions, but knows that some things in RawFilePaths
+{- Similar to splitExtensions, but knows that some things in paths
  - after a dot are too long to be extensions. -}
-splitShortExtensions :: RawFilePath -> (RawFilePath, [B.ByteString])
+splitShortExtensions :: OsPath -> (OsPath, [B.ByteString])
 splitShortExtensions = splitShortExtensions' 5 -- enough for ".jpeg"
-splitShortExtensions' :: Int -> RawFilePath -> (RawFilePath, [B.ByteString])
+splitShortExtensions' :: Int -> OsPath -> (OsPath, [B.ByteString])
 splitShortExtensions' maxextension = go []
   where
 	go c f
@@ -217,7 +212,7 @@ splitShortExtensions' maxextension = go []
  - a relative path is not possible and the path is simply
  - returned as-is.
  -}
-relPathDirToFileAbs :: RawFilePath -> RawFilePath -> RawFilePath
+relPathDirToFileAbs :: OsPath -> OsPath -> OsPath
 relPathDirToFileAbs from to
 #ifdef mingw32_HOST_OS
 	| normdrive from /= normdrive to = to
@@ -238,7 +233,7 @@ relPathDirToFileAbs from to
 		-- path separator, which takeDrive leaves on the drive
 		-- letter.
 		. dropWhileEnd (isPathSeparator . fromIntegral . ord)
-		. fromRawFilePath 
+		. fromOsPath 
 		. takeDrive
 #endif
 
@@ -258,11 +253,11 @@ inSearchPath command = isJust <$> searchPath command
  -}
 searchPath :: String -> IO (Maybe OsPath)
 searchPath command
-	| P.isAbsolute command' = copyright $ check command'
+	| isAbsolute command' = copyright $ check command'
 	| otherwise = getSearchPath >>= getM indir . map toOsPath
   where
 	command' = toOsPath command
-	indir d = check (d P.</> command')
+	indir d = check (d </> command')
 	check f = firstM doesFileExist
 #ifdef mingw32_HOST_OS
 		[f, f <> ".exe"]
@@ -281,5 +276,5 @@ searchPathContents p =
 	filterM doesFileExist 
 		=<< (concat <$> (getSearchPath >>= mapM (go . toOsPath)))
   where
-	go d = map (d P.</>) . filter p
+	go d = map (d </>) . filter p
 		<$> catchDefaultIO [] (getDirectoryContents d)

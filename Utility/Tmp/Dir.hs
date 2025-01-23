@@ -1,6 +1,6 @@
 {- Temporary directories
  -
- - Copyright 2010-2022 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2025 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -14,8 +14,6 @@ module Utility.Tmp.Dir (
 ) where
 
 import Control.Monad.IfElse
-import System.FilePath
-import System.Directory
 import Control.Monad.IO.Class
 #ifndef mingw32_HOST_OS
 import System.Posix.Temp (mkdtemp)
@@ -24,18 +22,20 @@ import System.Posix.Temp (mkdtemp)
 import Utility.Exception
 import Utility.Tmp (Template)
 import Utility.OsPath
-import Utility.FileSystemEncoding
+import Utility.SystemDirectory
 
 {- Runs an action with a tmp directory located within the system's tmp
  - directory (or within "." if there is none), then removes the tmp
  - directory and all its contents. -}
-withTmpDir :: (MonadMask m, MonadIO m) => Template -> (FilePath -> m a) -> m a
+withTmpDir :: (MonadMask m, MonadIO m) => Template -> (OsPath -> m a) -> m a
 withTmpDir template a = do
-	topleveltmpdir <- liftIO $ catchDefaultIO "." getTemporaryDirectory
+	topleveltmpdir <- liftIO $
+		catchDefaultIO (literalOsPath ".") getTemporaryDirectory
+	let p = fromOsPath $ topleveltmpdir </> template
 #ifndef mingw32_HOST_OS
 	-- Use mkdtemp to create a temp directory securely in /tmp.
 	bracket
-		(liftIO $ mkdtemp $ topleveltmpdir </> fromRawFilePath (fromOsPath template))
+		(liftIO $ toOsPath <$> mkdtemp p)
 		removeTmpDir
 		a
 #else
@@ -44,21 +44,21 @@ withTmpDir template a = do
 
 {- Runs an action with a tmp directory located within a specified directory,
  - then removes the tmp directory and all its contents. -}
-withTmpDirIn :: (MonadMask m, MonadIO m) => FilePath -> Template -> (FilePath -> m a) -> m a
+withTmpDirIn :: (MonadMask m, MonadIO m) => OsPath -> Template -> (OsPath -> m a) -> m a
 withTmpDirIn tmpdir template = bracketIO create removeTmpDir
   where
 	create = do
 		createDirectoryIfMissing True tmpdir
-		makenewdir (tmpdir </> fromRawFilePath (fromOsPath template)) (0 :: Int)
+		makenewdir (tmpdir </> template) (0 :: Int)
 	makenewdir t n = do
-		let dir = t ++ "." ++ show n
+		let dir = t <> toOsPath ("." ++ show n)
 		catchIOErrorType AlreadyExists (const $ makenewdir t $ n + 1) $ do
 			createDirectory dir
 			return dir
 
 {- Deletes the entire contents of the the temporary directory, if it
  - exists. -}
-removeTmpDir :: MonadIO m => FilePath -> m ()
+removeTmpDir :: MonadIO m => OsPath -> m ()
 removeTmpDir tmpdir = liftIO $ whenM (doesDirectoryExist tmpdir) $ do
 #if mingw32_HOST_OS
 	-- Windows will often refuse to delete a file

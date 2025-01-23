@@ -13,17 +13,24 @@
 module Utility.OsPath (
 	OsPath,
 	OsString,
+	RawFilePath,
 	literalOsPath,
 	toOsPath,
 	fromOsPath,
+	module X,
+	getSearchPath,
 ) where
 
 import Utility.FileSystemEncoding
 #ifdef WITH_OSPATH
+import System.OsPath as X hiding (OsPath, OsString)
 import System.OsPath
 import "os-string" System.OsString.Internal.Types
 import qualified Data.ByteString.Short as S
+import qualified System.FilePath.ByteString as PB
 #else
+import System.FilePath.ByteString as X hiding (RawFilePath, getSearchPath)
+import System.FilePath.ByteString (getSearchPath)
 import qualified Data.ByteString as S
 #endif
 
@@ -60,6 +67,10 @@ bytesFromOsPath = S.fromShort . getWindowsString . getOsString
 #else
 bytesFromOsPath = S.fromShort . getPosixString . getOsString
 #endif
+
+{- For some reason not included in System.OsPath -}
+getSearchPath :: IO [OsPath]
+getSearchPath = map toOsPath <$> PB.getSearchPath
 
 #else
 {- When not building with WITH_OSPATH, use RawFilePath.

@@ -64,11 +64,11 @@ fromPath dir
 	-- When dir == "foo/.git", git looks for "foo/.git/.git",
 	-- and failing that, uses "foo" as the repository.
 	| (P.pathSeparator `B.cons` ".git") `B.isSuffixOf` canondir =
-		ifM (doesDirectoryExist $ fromRawFilePath dir </> ".git")
+		ifM (doesDirectoryExist $ fromOsPath dir </> ".git")
 			( ret dir
 			, ret (P.takeDirectory canondir)
 			)
-	| otherwise = ifM (doesDirectoryExist (fromRawFilePath dir))
+	| otherwise = ifM (doesDirectoryExist (fromOsPath dir))
 		( checkGitDirFile dir >>= maybe (ret dir) (pure . newFrom)
 		-- git falls back to dir.git when dir doesn't
 		-- exist, as long as dir didn't end with a

@@ -10,7 +10,6 @@ import Data.List as X hiding (head, tail, init, last)
 import Data.Monoid as X
 import Data.Default as X
 
-import System.FilePath as X
 import System.IO as X hiding (FilePath)
 import System.Exit as X
 import System.PosixCompat.Files as X (FileStatus)
