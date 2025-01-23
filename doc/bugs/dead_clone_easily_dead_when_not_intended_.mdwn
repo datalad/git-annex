@@ -1,0 +1,34 @@
+### Please describe the problem.
+
+Current syntax of `dead` online at git annex dead [repository ...] [--key somekey ...] says
+
+`git annex dead [repository ...] [--key somekey ...]`
+
+which is also incorrect rendering I think since it is 
+
+```
+[d31548v@ndoli tmp]$ git annex dead --help
+git-annex dead - hide a lost repository or key
+
+Usage: git-annex dead [[REPOSITORY ...] | [--key KEY]]
+
+```
+
+so it is EITHER to announce REPOSITORY or a KEY.
+
+Naive/new/quick users, since many annex commands take file paths as arguments could provide `dead` with both - repository and local paths, e.g. `git annex dead here */*.nii.gz` or alike.  But then annex proceeds with marking `here` dead while then erroring out on paths:
+
+```shell
+(datalad-dev) [d78092t@ndoli 1080_wasabi]$ git-annex dead here sub-SID000743/ses-01/func/*.nii
+dead here (recording state in git...)
+ok
+git-annex: there is no available git remote named "sub-SID000743/ses-01/func/sub-SID000743_ses-01_task-hyperalignment_acq-mb8_run-04_bold.nii"
+```
+
+which is correct/expected behavior given the fact that if RTFM then those are to be taken as repositories.
+
+But I wondered if may be `git annex` could/should become more "protective" and fail early if any of provided repositories is "not available"?
+
+
+[[!meta author=yoh]]
+[[!tag projects/openneuro]]
