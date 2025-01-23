@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 1"
+ date="2025-01-23T15:53:39Z"
+ content="""
+is there `git annex undead` to easily mitigate users doing what they should have not done? ;-) 
+
+Would it be sufficient to just remove the corresponding `X` line from `trust.log`?
+"""]]
