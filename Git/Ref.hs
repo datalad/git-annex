@@ -20,17 +20,16 @@ import qualified Utility.FileIO as F
 import Data.Char (chr, ord)
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Char8 as S8
-import qualified System.FilePath.ByteString as P
 
 headRef :: Ref
 headRef = Ref "HEAD"
 
-headFile :: Repo -> RawFilePath
-headFile r = localGitDir r P.</> "HEAD"
+headFile :: Repo -> OsPath
+headFile r = localGitDir r </> literalOsPath "HEAD"
 
 setHeadRef :: Ref -> Repo -> IO ()
 setHeadRef ref r = 
-	F.writeFile' (toOsPath (headFile r)) ("ref: " <> fromRef' ref)
+	F.writeFile' (headFile r) ("ref: " <> fromRef' ref)
 
 {- Converts a fully qualified git ref into a user-visible string. -}
 describe :: Ref -> String
@@ -70,7 +69,7 @@ branchRef = underBase "refs/heads"
  - 
  - If the input file is located outside the repository, returns Nothing.
  -}
-fileRef :: RawFilePath -> Repo -> IO (Maybe Ref)
+fileRef :: OsPath -> Repo -> IO (Maybe Ref)
 fileRef f repo = do
 	-- The filename could be absolute, or contain eg "../repo/file",
 	-- neither of which work in a ref, so convert it to a minimal
@@ -80,12 +79,13 @@ fileRef f repo = do
  		-- Prefixing the file with ./ makes this work even when in a
 		-- subdirectory of a repo. Eg, ./foo in directory bar refers
 		-- to bar/foo, not to foo in the top of the repository.
-		then Just $ Ref $ ":./" <> toInternalGitPath f'
+		then Just $ Ref $ ":./" <> fromOsPath (toInternalGitPath f')
 		else Nothing
 
 {- A Ref that can be used to refer to a file in a particular branch. -}
-branchFileRef :: Branch -> RawFilePath -> Ref
-branchFileRef branch f = Ref $ fromRef' branch <> ":" <> toInternalGitPath f
+branchFileRef :: Branch -> OsPath -> Ref
+branchFileRef branch f = Ref $ fromOsPath $
+	toOsPath (fromRef' branch) <> literalOsPath ":" <> toInternalGitPath f
 
 {- Converts a Ref to refer to the content of the Ref on a given date. -}
 dateRef :: Ref -> RefDate -> Ref
@@ -96,7 +96,7 @@ dateRef r (RefDate d) = Ref $ fromRef' r <> "@" <> encodeBS d
  -
  - If the file path is located outside the repository, returns Nothing.
  -}
-fileFromRef :: Ref -> RawFilePath -> Repo -> IO (Maybe Ref)
+fileFromRef :: Ref -> OsPath -> Repo -> IO (Maybe Ref)
 fileFromRef r f repo = fileRef f repo >>= return . \case
 	Just (Ref fr) -> Just (Ref (fromRef' r <> fr))
 	Nothing -> Nothing

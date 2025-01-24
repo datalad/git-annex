@@ -11,7 +11,6 @@ module Config.Files where
 
 import Common
 import Utility.FreeDesktop
-import Utility.Exception
 
 {- ~/.config/git-annex/file -}
 userConfigFile :: OsPath -> IO OsPath

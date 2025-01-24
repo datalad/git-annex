@@ -163,7 +163,7 @@ feedRead cmd subcmd params password emptydirectory feeder reader = do
 	withTmpFile (toOsPath "sop") $ \tmpfile h -> do
 		liftIO $ B.hPutStr h password
 		liftIO $ hClose h
-		let passwordfile = [Param $ "--with-password=" ++ fromRawFilePath (fromOsPath tmpfile)]
+		let passwordfile = [Param $ "--with-password=" ++ fromOsPath tmpfile]
 		-- Don't need to pass emptydirectory since @FD is not used,
 		-- and so tmpfile also does not need to be made absolute.
 		case emptydirectory of

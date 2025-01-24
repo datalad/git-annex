@@ -178,7 +178,7 @@ treeItemsToTree = go M.empty
 			Just (NewSubTree d l) ->
 				go (addsubtree idir m (NewSubTree d (c:l))) is
 			_ ->
-				go (addsubtree idir m (NewSubTree (asTopFilePath idir) [c])) is
+				go (addsubtree idir m (NewSubTree (asTopFilePath (toOsPath idir)) [c])) is
 	  where
 		p = gitPath i
 		idir = P.takeDirectory p
@@ -191,7 +191,7 @@ treeItemsToTree = go M.empty
 				Just (NewSubTree d' l) ->
 					let l' = filter (\ti -> gitPath ti /= d) l
 					in addsubtree parent m' (NewSubTree d' (t:l'))
-				_ -> addsubtree parent m' (NewSubTree (asTopFilePath parent) [t])
+				_ -> addsubtree parent m' (NewSubTree (asTopFilePath (toOsPath parent)) [t])
 		| otherwise = M.insert d t m
 	  where
 		parent = P.takeDirectory d
@@ -362,7 +362,7 @@ graftTree' subtree graftloc basetree repo hdl = go basetree subdirs graftdirs
 
 	subdirs = P.splitDirectories $ gitPath graftloc
 
-	graftdirs = map (asTopFilePath . toInternalGitPath) $
+	graftdirs = map (asTopFilePath . toInternalGitPath . toOsPath) $
 		pathPrefixes subdirs
 
 {- Assumes the list is ordered, with tree objects coming right before their
@@ -401,7 +401,7 @@ instance GitPath FilePath where
 	gitPath = toRawFilePath
 
 instance GitPath TopFilePath where
-	gitPath = getTopFilePath
+	gitPath = fromOsPath . getTopFilePath
 
 instance GitPath TreeItem where
 	gitPath (TreeItem f _ _) = gitPath f

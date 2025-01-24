@@ -14,7 +14,6 @@ import qualified Data.ByteString as S
 import qualified Data.ByteString.Char8 as S8
 import qualified Data.List.NonEmpty as NE
 import Data.Char
-import qualified System.FilePath.ByteString as P
 import Control.Concurrent.Async
 
 import Common
@@ -76,7 +75,7 @@ read' repo = go repo
 		params = addparams ++ explicitrepoparams
 			++ ["config", "--null", "--list"]
 		p = (proc "git" params)
-			{ cwd = Just (fromRawFilePath d)
+			{ cwd = Just (fromOsPath d)
 			, env = gitEnv repo
 			, std_out = CreatePipe 
 			}
@@ -184,7 +183,7 @@ updateLocation' r l@(Local {}) = do
 		Just (ConfigValue d) -> do
 			{- core.worktree is relative to the gitdir -}
 			top <- absPath (gitdir l)
-			let p = absPathFrom top d
+			let p = absPathFrom top (toOsPath d)
 			return $ l { worktree = Just p }
 		Just NoConfigValue -> return l
 	return $ r { location = l' }
@@ -337,7 +336,7 @@ checkRepoConfigInaccessible r
 		-- Cannot use gitCommandLine here because specifying --git-dir
 		-- will bypass the git security check.
 		let p = (proc "git" ["config", "--local", "--list"])
-			{ cwd = Just (fromRawFilePath (repoPath r))
+			{ cwd = Just (fromOsPath (repoPath r))
 			, env = gitEnv r
 			}
 		(out, ok) <- processTranscript' p Nothing

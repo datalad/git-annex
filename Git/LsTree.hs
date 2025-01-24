@@ -137,7 +137,8 @@ parserLsTree long = case long of
 		-- sha
 		<*> (Ref <$> A8.takeTill A8.isSpace)
 
-	fileparser = asTopFilePath . Git.Quote.unquote <$> A.takeByteString
+	fileparser = asTopFilePath . toOsPath . Git.Quote.unquote
+		<$> A.takeByteString
 
 	sizeparser = fmap Just A8.decimal
 
@@ -152,4 +153,6 @@ formatLsTree ti = S.intercalate (S.singleton (fromIntegral (ord ' ')))
 	[ encodeBS (showOct (mode ti) "")
 	, typeobj ti
 	, fromRef' (sha ti)
-	] <> (S.cons (fromIntegral (ord '\t')) (getTopFilePath (file ti)))
+	] 
+	<> (S.cons (fromIntegral (ord '\t'))
+		(fromOsPath (getTopFilePath (file ti))))

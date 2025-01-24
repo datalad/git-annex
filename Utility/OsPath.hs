@@ -19,19 +19,23 @@ module Utility.OsPath (
 	fromOsPath,
 	module X,
 	getSearchPath,
+	unsafeFromChar
 ) where
 
 import Utility.FileSystemEncoding
+import Data.ByteString.Short (ShortByteString)
+import qualified Data.ByteString.Short as S
 #ifdef WITH_OSPATH
-import System.OsPath as X hiding (OsPath, OsString)
+import System.OsPath as X hiding (OsPath, OsString, unsafeFromChar)
 import System.OsPath
 import "os-string" System.OsString.Internal.Types
-import qualified Data.ByteString.Short as S
 import qualified System.FilePath.ByteString as PB
 #else
 import System.FilePath.ByteString as X hiding (RawFilePath, getSearchPath)
 import System.FilePath.ByteString (getSearchPath)
-import qualified Data.ByteString as S
+import Data.ByteString (ByteString)
+import Data.Char
+import Data.Word
 #endif
 
 class OsPathConv t where
@@ -48,24 +52,28 @@ literalOsPath = toOsPath
 
 #ifdef WITH_OSPATH
 instance OsPathConv RawFilePath where
+	toOsPath = bytesToOsPath . S.toShort
+	fromOsPath = S.fromShort . bytesFromOsPath
+
+instance OsPathConv ShortByteString where
 	toOsPath = bytesToOsPath
 	fromOsPath = bytesFromOsPath
 
 {- Unlike System.OsString.fromBytes, on Windows this does not ensure a
  - valid USC-2LE encoding. The input ByteString must be in a valid encoding
  - already or uses of the OsPath will fail. -}
-bytesToOsPath :: RawFilePath -> OsPath
+bytesToOsPath :: ShortByteString -> OsPath
 #if defined(mingw32_HOST_OS)
-bytesToOsPath = OsString . WindowsString . S.toShort
+bytesToOsPath = OsString . WindowsString
 #else
-bytesToOsPath = OsString . PosixString . S.toShort
+bytesToOsPath = OsString . PosixString
 #endif
 
-bytesFromOsPath :: OsPath -> RawFilePath
+bytesFromOsPath :: OsPath -> ShortByteString
 #if defined(mingw32_HOST_OS)
-bytesFromOsPath = S.fromShort . getWindowsString . getOsString
+bytesFromOsPath = getWindowsString . getOsString
 #else
-bytesFromOsPath = S.fromShort . getPosixString . getOsString
+bytesFromOsPath = getPosixString . getOsString
 #endif
 
 {- For some reason not included in System.OsPath -}
@@ -77,9 +85,16 @@ getSearchPath = map toOsPath <$> PB.getSearchPath
  -}
 type OsPath = RawFilePath
 
-type OsString = S.ByteString
+type OsString = ByteString
 
 instance OsPathConv RawFilePath where
 	toOsPath = id
 	fromOsPath = id
+
+instance OsPathConv ShortByteString where
+	toOsPath = S.fromShort
+	fromOsPath = S.toShort
+
+unsafeFromChar :: Char -> Word8
+unsafeFromChar = fromIntegral . ord
 #endif

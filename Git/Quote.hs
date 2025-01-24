@@ -90,12 +90,12 @@ quotedPaths (p:ps) = QuotedPath p <> if null ps
 instance Quoteable StringContainingQuotedPath where
 	quote _ (UnquotedString s) = safeOutput (encodeBS s)
 	quote _ (UnquotedByteString s) = safeOutput s
-	quote qp (QuotedPath p) = quote qp p
+	quote qp (QuotedPath p) = quote qp (fromOsPath p :: RawFilePath)
 	quote qp (a :+: b) = quote qp a <> quote qp b
 
 	noquote (UnquotedString s) = encodeBS s
 	noquote (UnquotedByteString s) = s
-	noquote (QuotedPath p) = p
+	noquote (QuotedPath p) = fromOsPath p
 	noquote (a :+: b) = noquote a <> noquote b
 
 instance IsString StringContainingQuotedPath where
@@ -117,6 +117,6 @@ instance Monoid StringContainingQuotedPath where
 -- limits what's tested to ascii, so avoids running into it.
 prop_quote_unquote_roundtrip :: TestableFilePath -> Bool
 prop_quote_unquote_roundtrip ts = 
-	s == fromOsPath (unquote (quoteAlways (toOsPath s)))
+	s == fromRawFilePath (unquote (quoteAlways (toRawFilePath s)))
   where
 	s = fromTestableFilePath ts

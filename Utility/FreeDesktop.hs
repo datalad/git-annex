@@ -29,15 +29,9 @@ module Utility.FreeDesktop (
 ) where
 
 import Common
-import Utility.Exception
 import Utility.UserInfo
-import Utility.Process
 
 import System.Environment
-import Data.List
-import Data.Maybe
-import Control.Applicative
-import Prelude
 
 type DesktopEntry = [(Key, Value)]
 

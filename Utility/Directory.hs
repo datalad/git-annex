@@ -21,7 +21,6 @@ import Control.Monad
 import System.PosixCompat.Files (isDirectory, isSymbolicLink)
 import Control.Applicative
 import System.IO.Unsafe (unsafeInterleaveIO)
-import qualified System.FilePath.ByteString as P
 import Data.Maybe
 import Prelude
 

@@ -97,15 +97,15 @@ updateIndexLine sha treeitemtype file = L.fromStrict $
 	<> " blob "
 	<> fromRef' sha
 	<> "\t"
-	<> indexPath file
+	<> fromOsPath (indexPath file)
 
-stageFile :: Sha -> TreeItemType -> RawFilePath -> Repo -> IO Streamer
+stageFile :: Sha -> TreeItemType -> OsPath -> Repo -> IO Streamer
 stageFile sha treeitemtype file repo = do
 	p <- toTopFilePath file repo
 	return $ pureStreamer $ updateIndexLine sha treeitemtype p
 
 {- A streamer that removes a file from the index. -}
-unstageFile :: RawFilePath -> Repo -> IO Streamer
+unstageFile :: OsPath -> Repo -> IO Streamer
 unstageFile file repo = do
 	p <- toTopFilePath file repo
 	return $ unstageFile' p
@@ -115,10 +115,10 @@ unstageFile' p = pureStreamer $ L.fromStrict $
 	"0 "
 	<> fromRef' deleteSha
 	<> "\t"
-	<> indexPath p
+	<> fromOsPath (indexPath p)
 
 {- A streamer that adds a symlink to the index. -}
-stageSymlink :: RawFilePath -> Sha -> Repo -> IO Streamer
+stageSymlink :: OsPath -> Sha -> Repo -> IO Streamer
 stageSymlink file sha repo = do
 	!line <- updateIndexLine
 		<$> pure sha
@@ -141,7 +141,7 @@ indexPath = toInternalGitPath . getTopFilePath
  - update-index. Sending Nothing will wait for update-index to finish
  - updating the index.
  -}
-refreshIndex :: (MonadIO m, MonadMask m) => Repo -> ((Maybe RawFilePath -> IO ()) -> m ()) -> m ()
+refreshIndex :: (MonadIO m, MonadMask m) => Repo -> ((Maybe OsPath -> IO ()) -> m ()) -> m ()
 refreshIndex repo feeder = bracket
 	(liftIO $ createProcess p)
 	(liftIO . cleanupProcess)
@@ -163,7 +163,7 @@ refreshIndex repo feeder = bracket
 			hClose h
 			forceSuccessProcess p pid
 		feeder $ \case
-			Just f -> S.hPut h (S.snoc f 0)
+			Just f -> S.hPut h (S.snoc (fromOsPath f) 0)
 			Nothing -> closer
 		liftIO $ closer
 	go _ = error "internal"

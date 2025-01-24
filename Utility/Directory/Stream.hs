@@ -33,6 +33,7 @@ import qualified System.Posix.Directory.ByteString as Posix
 import Utility.Directory
 import Utility.Exception
 import Utility.FileSystemEncoding
+import Utility.OsPath
 
 #ifndef mingw32_HOST_OS
 data DirectoryHandle = DirectoryHandle IsOpen Posix.DirStream
@@ -117,5 +118,5 @@ isDirectoryPopulated d = bracket (openDirectory d) closeDirectory check
 		case v of
 			Nothing -> return False
 			Just f
-				| not (dirCruft f) -> return True
+				| not (toOsPath f `elem` dirCruft) -> return True
 				| otherwise -> check h
