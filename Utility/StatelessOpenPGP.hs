@@ -27,7 +27,6 @@ import System.Posix.Types
 import System.Posix.IO
 #else
 import Utility.Tmp
-import Utility.OsPath
 #endif
 import Utility.Tmp.Dir
 import Author
