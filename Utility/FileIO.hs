@@ -36,7 +36,6 @@ import System.File.OsPath
 import Utility.Path.Windows
 import Utility.OsPath
 import System.IO (IO, Handle, IOMode)
-import System.OsPath (OsPath)
 import qualified System.File.OsPath as O
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
