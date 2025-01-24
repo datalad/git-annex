@@ -165,7 +165,7 @@ upgradeToDistribution newdir cleanup distributionfile = do
 	{- OS X uses a dmg, so mount it, and copy the contents into place. -}
 	unpack = liftIO $ do
 		olddir <- oldVersionLocation
-		withTmpDirIn (parentDir newdir) (toOsPath "git-annex.upgrade") $ \tmpdir -> do
+		withTmpDirIn (fromRawFilePath (parentDir (toRawFilePath newdir))) (toOsPath (toRawFilePath "git-annex.upgrade")) $ \tmpdir -> do
 			void $ boolSystem "hdiutil"
 				[ Param "attach", File distributionfile
 				, Param "-mountpoint", File tmpdir

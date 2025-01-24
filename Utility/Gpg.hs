@@ -182,7 +182,7 @@ feedRead cmd params passphrase feeder reader = do
 	withTmpFile (toOsPath "gpg") $ \tmpfile h -> do
 		liftIO $ B.hPutStr h passphrase
 		liftIO $ hClose h
-		let passphrasefile = [Param "--passphrase-file", File (fromosPath tmpfile)]
+		let passphrasefile = [Param "--passphrase-file", File (fromOsPath tmpfile)]
 		go $ passphrasefile ++ params
 #endif
   where
