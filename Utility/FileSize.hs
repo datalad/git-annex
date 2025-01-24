@@ -17,7 +17,6 @@ module Utility.FileSize (
 #ifdef mingw32_HOST_OS
 import Control.Exception (bracket)
 import System.IO
-import Utility.FileSystemEncoding
 import qualified Utility.FileIO as F
 import Utility.OsPath
 #else

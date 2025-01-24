@@ -189,6 +189,6 @@ winLockFile pid pidfile = do
 	prefix = pidfile ++ "."
 	suffix = ".lck"
 	cleanstale = mapM_ (void . tryIO . removeFile) =<<
-		(filter iswinlockfile <$> dirContents (fromRawFilePath (parentDir (toRawFilePath pidfile))))
+		(filter iswinlockfile . map fromRawFilePath <$> dirContents (parentDir (toRawFilePath pidfile)))
 	iswinlockfile f = suffix `isSuffixOf` f && prefix `isPrefixOf` f
 #endif

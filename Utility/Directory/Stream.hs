@@ -19,7 +19,6 @@ module Utility.Directory.Stream (
 
 import Control.Monad
 import Control.Concurrent
-import qualified Data.ByteString as B
 import Data.Maybe
 import Prelude
 
@@ -27,6 +26,7 @@ import Prelude
 import qualified System.Win32 as Win32
 import System.FilePath
 #else
+import qualified Data.ByteString as B
 import qualified System.Posix.Directory.ByteString as Posix
 #endif
 
