@@ -25,9 +25,7 @@ import Prelude
 import Utility.SystemDirectory
 import Utility.Path.AbsRel
 import Utility.Exception
-import Utility.FileSystemEncoding
 import Utility.OsPath
-import qualified Utility.RawFilePath as R
 import Utility.PartialPrelude
 
 {- Like createDirectoryIfMissing True, but it will only create
@@ -69,7 +67,7 @@ createDirectoryUnder' topdirs dir0 mkdir = do
 	-- it's not. And on Windows, if they are on different drives,
 	-- the path will not be relative.
 	let notbeneath = \(_topdir, (relp, dirs)) -> 
-		headMaybe dirs /= Just ".." && not (isAbsolute relp)
+		headMaybe dirs /= Just (literalOsPath "..") && not (isAbsolute relp)
 	case filter notbeneath $ zip topdirs (zip relps relparts) of
 		((topdir, (_relp, dirs)):_)
 			-- If dir0 is the same as the topdir, don't try to

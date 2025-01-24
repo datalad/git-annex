@@ -16,12 +16,12 @@ import Common
 type Hook a = Maybe (a -> Maybe FileStatus -> IO ())
 
 data WatchHooks = WatchHooks
-	{ addHook :: Hook FilePath
-	, addSymlinkHook :: Hook FilePath
-	, delHook :: Hook FilePath
-	, delDirHook :: Hook FilePath
+	{ addHook :: Hook OsPath
+	, addSymlinkHook :: Hook OsPath
+	, delHook :: Hook OsPath
+	, delDirHook :: Hook OsPath
 	, errHook :: Hook String -- error message
-	, modifyHook :: Hook FilePath
+	, modifyHook :: Hook OsPath
 	}
 
 mkWatchHooks :: WatchHooks

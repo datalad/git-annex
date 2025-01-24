@@ -38,12 +38,10 @@ module Git (
 	relPath,
 ) where
 
-import qualified Data.ByteString as B
 import Network.URI (uriPath, uriScheme, unEscapeString)
 #ifndef mingw32_HOST_OS
 import System.Posix.Files
 #endif
-import qualified System.FilePath.ByteString as P
 
 import Common
 import Git.Types

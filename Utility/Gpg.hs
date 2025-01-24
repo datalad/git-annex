@@ -416,9 +416,9 @@ testHarness tmpdir cmd a = ifM (inSearchPath (unGpgCmd cmd))
 	setup = do
 		subdir <- makenewdir (1 :: Integer)
 		origenviron <- getEnvironment
-		let environ = addEntry var subdir origenviron
+		let environ = addEntry var (fromOsPath subdir) origenviron
 		-- gpg is picky about permissions on its home dir
-		liftIO $ void $ tryIO $ modifyFileMode (toRawFilePath subdir) $
+		liftIO $ void $ tryIO $ modifyFileMode (fromOsPath subdir) $
 			removeModes $ otherGroupModes
 		-- For some reason, recent gpg needs a trustdb to be set up.
 		_ <- pipeStrict' cmd [Param "--trust-model", Param "auto", Param "--update-trustdb"] (Just environ) mempty

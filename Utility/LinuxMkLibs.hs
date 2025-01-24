@@ -44,7 +44,7 @@ installLib installfile top lib = ifM (doesFileExist (toOsPath lib))
 	( do
 		installfile top lib
 		checksymlink lib
-		return $ Just $ fromRawFilePath $ parentDir $ toRawFilePath lib
+		return $ Just $ fromOsPath $ parentDir $ toOsPath lib
 	, return Nothing
 	)
   where

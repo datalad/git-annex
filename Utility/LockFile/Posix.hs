@@ -25,6 +25,7 @@ import Utility.Applicative
 import Utility.FileMode
 import Utility.LockFile.LockStatus
 import Utility.OpenFd
+import Utility.OsPath
 
 import System.IO
 import System.Posix.Types
@@ -33,7 +34,7 @@ import System.Posix.Files.ByteString
 import System.FilePath.ByteString (RawFilePath)
 import Data.Maybe
 
-type LockFile = RawFilePath
+type LockFile = OsPath
 
 newtype LockHandle = LockHandle Fd
 
@@ -75,11 +76,12 @@ tryLock lockreq mode lockfile = uninterruptibleMask_ $ do
 -- Close on exec flag is set so child processes do not inherit the lock.
 openLockFile :: LockRequest -> Maybe ModeSetter -> LockFile -> IO Fd
 openLockFile lockreq filemode lockfile = do
-	l <- applyModeSetter filemode lockfile $ \filemode' ->
-		openFdWithMode lockfile openfor filemode' defaultFileFlags
+	l <- applyModeSetter filemode lockfile' $ \filemode' ->
+		openFdWithMode lockfile' openfor filemode' defaultFileFlags
 	setFdOption l CloseOnExec True
 	return l
   where
+	lockfile' = fromOsPath lockfile
 	openfor = case lockreq of
 		ReadLock -> ReadOnly
 		_ -> ReadWrite
@@ -120,7 +122,7 @@ dropLock (LockHandle fd) = closeFd fd
 -- else.
 checkSaneLock :: LockFile -> LockHandle -> IO Bool
 checkSaneLock lockfile (LockHandle fd) =
-	go =<< catchMaybeIO (getFileStatus lockfile)
+	go =<< catchMaybeIO (getFileStatus (fromOsPath lockfile))
   where
 	go Nothing = return False
 	go (Just st) = do

@@ -17,41 +17,39 @@ module Utility.Path.Tests (
 	prop_dirContains_regressionTest,
 ) where
 
-import qualified Data.ByteString as B
 import Data.List
 import Data.Maybe
-import Data.Char
 import Control.Applicative
 import Prelude
 
 import Common
-import Utility.Path
 import Utility.QuickCheck
+import qualified Utility.OsString as OS
 
 prop_upFrom_basics :: TestableFilePath -> Bool
 prop_upFrom_basics tdir
 	| dir == "/" = p == Nothing
 	| otherwise = p /= Just dir
   where
-	p = fromRawFilePath <$> upFrom (toRawFilePath dir)
+	p = fromOsPath <$> upFrom (toOsPath dir)
 	dir = fromTestableFilePath tdir
 
 prop_relPathDirToFileAbs_basics :: TestableFilePath -> Bool
 prop_relPathDirToFileAbs_basics pt = and
-	[ relPathDirToFileAbs p (p </> "bar") == "bar"
-	, relPathDirToFileAbs (p </> "bar") p == ".."
-	, relPathDirToFileAbs p p == ""
+	[ relPathDirToFileAbs p (p </> literalOsPath "bar") == literalOsPath "bar"
+	, relPathDirToFileAbs (p </> literalOsPath "bar") p == literalOsPath ".."
+	, relPathDirToFileAbs p p == literalOsPath ""
 	]
   where
 	-- relPathDirToFileAbs needs absolute paths, so make the path
 	-- absolute by adding a path separator to the front.
-	p = pathSeparator `B.cons` relf
+	p = pathSeparator `OS.cons` relf
 	-- Make the input a relative path. On windows, make sure it does
 	-- not contain anything that looks like a drive letter.
-	relf = B.dropWhile isPathSeparator $
-		B.filter (not . skipchar) $
-		toRawFilePath (fromTestableFilePath pt)
-	skipchar b = b == (fromIntegral (ord ':'))
+	relf = OS.dropWhile isPathSeparator $
+		OS.filter (not . skipchar) $
+		toOsPath (fromTestableFilePath pt)
+	skipchar b = b == unsafeFromChar ':'
 
 prop_relPathDirToFileAbs_regressionTest :: Bool
 prop_relPathDirToFileAbs_regressionTest = same_dir_shortcurcuits_at_difference
@@ -60,21 +58,25 @@ prop_relPathDirToFileAbs_regressionTest = same_dir_shortcurcuits_at_difference
 	 - location, but it's not really the same directory.
 	 - Code used to get this wrong. -}
 	same_dir_shortcurcuits_at_difference =
-		relPathDirToFileAbs (joinPath [pathSeparator `B.cons` "tmp", "r", "lll", "xxx", "yyy", "18"])
-			(joinPath [pathSeparator `B.cons` "tmp", "r", ".git", "annex", "objects", "18", "gk", "SHA256-foo", "SHA256-foo"])
-				== joinPath ["..", "..", "..", "..", ".git", "annex", "objects", "18", "gk", "SHA256-foo", "SHA256-foo"]
+		relPathDirToFileAbs (mkp [fromOsPath (pathSeparator `OS.cons` literalOsPath "tmp"), "r", "lll", "xxx", "yyy", "18"])
+			(mkp [fromOsPath (pathSeparator `OS.cons` literalOsPath "tmp"), "r", ".git", "annex", "objects", "18", "gk", "SHA256-foo", "SHA256-foo"])
+				== mkp ["..", "..", "..", "..", ".git", "annex", "objects", "18", "gk", "SHA256-foo", "SHA256-foo"]
+	  where
+		mkp = joinPath . map literalOsPath
 
 prop_dirContains_regressionTest :: Bool
 prop_dirContains_regressionTest = and
-	[ not $ dirContains "." ".."
-	, not $ dirContains ".." "../.."
-	, dirContains "." "foo"
-	, dirContains "." "."
-	, dirContains ".." ".."
-	, dirContains "../.." "../.."
-	, dirContains "." "./foo"
-	, dirContains ".." "../foo"
-	, dirContains "../.." "../foo"
-	, dirContains "../.." "../../foo"
-	, not $ dirContains "../.." "../../.."
+	[ not $ dc "." ".."
+	, not $ dc ".." "../.."
+	, dc "." "foo"
+	, dc "." "."
+	, dc ".." ".."
+	, dc "../.." "../.."
+	, dc "." "./foo"
+	, dc ".." "../foo"
+	, dc "../.." "../foo"
+	, dc "../.." "../../foo"
+	, not $ dc "../.." "../../.."
 	]
+  where
+	dc x y = dirContains (literalOsPath x) (literalOsPath y)

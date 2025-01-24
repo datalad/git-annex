@@ -70,7 +70,7 @@ runSuCommand Nothing _ = return False
 mkSuCommand :: String -> [CommandParam] -> IO (Maybe SuCommand)
 #ifndef mingw32_HOST_OS
 mkSuCommand cmd ps = do
-	pwd <- getCurrentDirectory
+	pwd <- fromOsPath <$> getCurrentDirectory
 	firstM (\(SuCommand _ p _) -> inSearchPath p) =<< selectcmds pwd
   where
 	selectcmds pwd = ifM (inx <||> (not <$> atconsole))

@@ -76,14 +76,14 @@ doMerge hashhandle ch differ repo streamer = do
 	void $ cleanup
   where
 	go [] = noop
-	go (info:file:rest) = mergeFile info file hashhandle ch >>=
+	go (info:file:rest) = mergeFile info (toOsPath file) hashhandle ch >>=
 		maybe (go rest) (\l -> streamer l >> go rest)
 	go (_:[]) = giveup $ "parse error " ++ show differ
 
 {- Given an info line from a git raw diff, and the filename, generates
  - a line suitable for update-index that union merges the two sides of the
  - diff. -}
-mergeFile :: S.ByteString -> RawFilePath -> HashObjectHandle -> CatFileHandle -> IO (Maybe L.ByteString)
+mergeFile :: S.ByteString -> OsPath -> HashObjectHandle -> CatFileHandle -> IO (Maybe L.ByteString)
 mergeFile info file hashhandle h = case S8.words info of
 	[_colonmode, _bmode, asha, bsha, _status] -> 
 		case filter (`notElem` nullShas) [Ref asha, Ref bsha] of
