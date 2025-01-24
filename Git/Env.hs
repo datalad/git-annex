@@ -30,9 +30,9 @@ addGitEnv g var val = adjustGitEnv g (addEntry var val)
  - and a copy of the rest of the system environment. -}
 propGitEnv :: Repo -> IO [(String, String)]
 propGitEnv g = do
-	g' <- addGitEnv g "GIT_DIR" (fromRawFilePath (localGitDir g))
+	g' <- addGitEnv g "GIT_DIR" (fromOsPath (localGitDir g))
 	g'' <- maybe (pure g')
-		(addGitEnv g' "GIT_WORK_TREE" . fromRawFilePath)
+		(addGitEnv g' "GIT_WORK_TREE" . fromOsPath)
 		(repoWorkTree g)
 	return $ fromMaybe [] (gitEnv g'')
 

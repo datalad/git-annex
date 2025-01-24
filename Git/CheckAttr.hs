@@ -11,12 +11,11 @@ import Common
 import Git
 import Git.Command
 import qualified Utility.CoProcess as CoProcess
-import qualified Utility.RawFilePath as R
 
 import System.IO.Error
 import qualified Data.ByteString as B
 
-type CheckAttrHandle = (CoProcess.CoProcessHandle, [Attr], RawFilePath)
+type CheckAttrHandle = (CoProcess.CoProcessHandle, [Attr], OsPath)
 
 type Attr = String
 
@@ -24,7 +23,7 @@ type Attr = String
  - and returns a handle.  -}
 checkAttrStart :: [Attr] -> Repo -> IO CheckAttrHandle
 checkAttrStart attrs repo = do
-	currdir <- R.getCurrentDirectory
+	currdir <- getCurrentDirectory
 	h <- gitCoProcessStart True params repo
 	return (h, attrs, currdir)
   where
@@ -38,14 +37,14 @@ checkAttrStart attrs repo = do
 checkAttrStop :: CheckAttrHandle -> IO ()
 checkAttrStop (h, _, _) = CoProcess.stop h
 
-checkAttr :: CheckAttrHandle -> Attr -> RawFilePath -> IO String
+checkAttr :: CheckAttrHandle -> Attr -> OsPath -> IO String
 checkAttr h want file = checkAttrs h [want] file >>= return . \case
 	(v:_) -> v
 	[] -> ""
 
 {- Gets attributes of a file. When an attribute is not specified,
  - returns "" for it. -}
-checkAttrs :: CheckAttrHandle -> [Attr] -> RawFilePath -> IO [String]
+checkAttrs :: CheckAttrHandle -> [Attr] -> OsPath -> IO [String]
 checkAttrs (h, attrs, currdir) want file = do
 	l <- CoProcess.query h send (receive "")
 	return (getvals l want)
@@ -54,9 +53,9 @@ checkAttrs (h, attrs, currdir) want file = do
 	getvals l (x:xs) = case map snd $ filter (\(attr, _) -> attr == x) l of
 			["unspecified"] -> "" : getvals l xs
 			[v] -> v : getvals l xs
-			_ -> giveup $ "unable to determine " ++ x ++ " attribute of " ++ fromRawFilePath file
+			_ -> giveup $ "unable to determine " ++ x ++ " attribute of " ++ fromOsPath file
 
-	send to = B.hPutStr to $ file' `B.snoc` 0
+	send to = B.hPutStr to $ (fromOsPath file') `B.snoc` 0
 	receive c from = do
 		s <- hGetSomeString from 1024
 		if null s

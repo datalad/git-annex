@@ -30,8 +30,7 @@ modifyAutoStartFile func = do
 	when (dirs' /= dirs) $ do
 		f <- autoStartFile
 		createDirectoryIfMissing True (parentDir f)
-		viaTmp (writeFile . fromRawFilePath . fromOsPath)
-			(toOsPath f)
+		viaTmp (writeFile . fromRawFilePath . fromOsPath) f
 			(unlines (map fromOsPath dirs'))
 
 {- Adds a directory to the autostart file. If the directory is already

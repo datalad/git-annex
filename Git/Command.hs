@@ -24,10 +24,10 @@ gitCommandLine params r@(Repo { location = l@(Local { } ) }) =
   where
 	setdir
 		| gitEnvOverridesGitDir r = []
-		| otherwise = [Param $ "--git-dir=" ++ fromRawFilePath (gitdir l)]
+		| otherwise = [Param $ "--git-dir=" ++ fromOsPath (gitdir l)]
 	settree = case worktree l of
 		Nothing -> []
-		Just t -> [Param $ "--work-tree=" ++ fromRawFilePath t]
+		Just t -> [Param $ "--work-tree=" ++ fromOsPath t]
 gitCommandLine _ repo = assertLocal repo $ error "internal"
 
 {- Runs git in the specified repo. -}

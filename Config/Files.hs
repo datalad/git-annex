@@ -16,7 +16,7 @@ import Utility.Exception
 {- ~/.config/git-annex/file -}
 userConfigFile :: OsPath -> IO OsPath
 userConfigFile file = do
-	dir <- toOsPath <$> userConfigDir
+	dir <- userConfigDir
 	return $ dir </> literalOsPath "git-annex" </> file
 
 autoStartFile :: IO OsPath

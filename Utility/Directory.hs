@@ -30,18 +30,14 @@ import Utility.Exception
 import Utility.Monad
 import qualified Utility.RawFilePath as R
 
-dirCruft :: R.RawFilePath -> Bool
-dirCruft "." = True
-dirCruft ".." = True
-dirCruft _ = False
+dirCruft :: [OsPath]
+dirCruft = [literalOsPath ".", literalOsPath ".."]
 
 {- Lists the contents of a directory.
  - Unlike getDirectoryContents, paths are not relative to the directory. -}
-dirContents :: RawFilePath -> IO [RawFilePath]
-dirContents d = 
-	map (\p -> d P.</> fromOsPath p) 
-		. filter (not . dirCruft . fromOsPath) 
-		<$> getDirectoryContents (toOsPath d)
+dirContents :: OsPath -> IO [OsPath]
+dirContents d = map (d </>) . filter (`notElem` dirCruft)
+	<$> getDirectoryContents d
 
 {- Gets files in a directory, and then its subdirectories, recursively,
  - and lazily.
@@ -53,13 +49,13 @@ dirContents d =
  - be accessed (the use of unsafeInterleaveIO would make it difficult to
  - trap such exceptions).
  -}
-dirContentsRecursive :: RawFilePath -> IO [RawFilePath]
+dirContentsRecursive :: OsPath -> IO [OsPath]
 dirContentsRecursive = dirContentsRecursiveSkipping (const False) True
 
 {- Skips directories whose basenames match the skipdir. -}
-dirContentsRecursiveSkipping :: (RawFilePath -> Bool) -> Bool -> RawFilePath -> IO [RawFilePath]
+dirContentsRecursiveSkipping :: (OsPath -> Bool) -> Bool -> OsPath -> IO [OsPath]
 dirContentsRecursiveSkipping skipdir followsubdirsymlinks topdir
-	| skipdir (P.takeFileName topdir) = return []
+	| skipdir (takeFileName topdir) = return []
 	| otherwise = do
 		-- Get the contents of the top directory outside of
 		-- unsafeInterleaveIO, which allows throwing exceptions if
@@ -71,26 +67,26 @@ dirContentsRecursiveSkipping skipdir followsubdirsymlinks topdir
   where
 	go [] = return []
 	go (dir:dirs)
-		| skipdir (P.takeFileName dir) = go dirs
+		| skipdir (takeFileName dir) = go dirs
 		| otherwise = unsafeInterleaveIO $ do
 			(files, dirs') <- collect [] []
 				=<< catchDefaultIO [] (dirContents dir)
 			files' <- go (dirs' ++ dirs)
 			return (files ++ files')
 	
-	collect :: [RawFilePath] -> [RawFilePath] -> [RawFilePath] -> IO ([RawFilePath], [RawFilePath])
+	collect :: [OsPath] -> [OsPath] -> [OsPath] -> IO ([OsPath], [OsPath])
 	collect files dirs' [] = return (reverse files, reverse dirs')
 	collect files dirs' (entry:entries)
-		| dirCruft entry = collect files dirs' entries
+		| entry `elem` dirCruft = collect files dirs' entries
 		| otherwise = do
 			let skip = collect (entry:files) dirs' entries
 			let recurse = collect files (entry:dirs') entries
-			ms <- catchMaybeIO $ R.getSymbolicLinkStatus entry
+			ms <- catchMaybeIO $ R.getSymbolicLinkStatus (fromOsPath entry)
 			case ms of
 				(Just s) 
 					| isDirectory s -> recurse
 					| isSymbolicLink s && followsubdirsymlinks ->
-						ifM (doesDirectoryExist (toOsPath entry))
+						ifM (doesDirectoryExist entry)
 							( recurse
 							, skip
 							)
@@ -105,22 +101,22 @@ dirContentsRecursiveSkipping skipdir followsubdirsymlinks topdir
  - be accessed (the use of unsafeInterleaveIO would make it difficult to
  - trap such exceptions).
  -}
-dirTreeRecursiveSkipping :: (RawFilePath -> Bool) -> RawFilePath -> IO [RawFilePath]
+dirTreeRecursiveSkipping :: (OsPath -> Bool) -> OsPath -> IO [OsPath]
 dirTreeRecursiveSkipping skipdir topdir
-	| skipdir (P.takeFileName topdir) = return []
+	| skipdir (takeFileName topdir) = return []
 	| otherwise = do
 		subdirs <- filterM isdir =<< dirContents topdir
 		go [] subdirs
   where
 	go c [] = return c
 	go c (dir:dirs)
-		| skipdir (P.takeFileName dir) = go c dirs
+		| skipdir (takeFileName dir) = go c dirs
 		| otherwise = unsafeInterleaveIO $ do
 			subdirs <- go []
 				=<< filterM isdir
 				=<< catchDefaultIO [] (dirContents dir)
 			go (subdirs++dir:c) dirs
-	isdir p = isDirectory <$> R.getSymbolicLinkStatus p
+	isdir p = isDirectory <$> R.getSymbolicLinkStatus (fromOsPath p)
 
 {- When the action fails due to the directory not existing, returns []. -}
 emptyWhenDoesNotExist :: IO [a] -> IO [a]

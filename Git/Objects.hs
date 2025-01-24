@@ -12,6 +12,7 @@ module Git.Objects where
 import Common
 import Git
 import Git.Sha
+import qualified Utility.OsString as OS
 
 import qualified Data.ByteString as B
 import qualified System.FilePath.ByteString as P
@@ -31,10 +32,19 @@ listPackFiles r = filter (".pack" `B.isSuffixOf`)
 
 listLooseObjectShas :: Repo -> IO [Sha]
 listLooseObjectShas r = catchDefaultIO [] $
-	mapMaybe (extractSha . encodeBS . concat . reverse . take 2 . reverse . splitDirectories . decodeBS)
-		<$> emptyWhenDoesNotExist (dirContentsRecursiveSkipping (== "pack") True (objectsDir r))
+	mapMaybe conv <$> emptyWhenDoesNotExist
+		(dirContentsRecursiveSkipping (== "pack") True (objectsDir r))
+  where
+	conv :: OsPath -> Maybe Sha
+	conv = extractSha 
+		. fromOsPath
+		. OS.concat
+		. reverse
+		. take 2
+		. reverse
+		. splitDirectories
 
-looseObjectFile :: Repo -> Sha -> RawFilePath
+looseObjectFile :: Repo -> Sha -> OsPath
 looseObjectFile r sha = objectsDir r P.</> prefix P.</> rest
   where
 	(prefix, rest) = B.splitAt 2 (fromRef' sha)

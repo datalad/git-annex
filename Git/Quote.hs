@@ -77,11 +77,11 @@ instance Quoteable RawFilePath where
 data StringContainingQuotedPath
 	= UnquotedString String 
 	| UnquotedByteString S.ByteString 
-	| QuotedPath RawFilePath
+	| QuotedPath OsPath
 	| StringContainingQuotedPath :+: StringContainingQuotedPath
 	deriving (Show, Eq)
 
-quotedPaths :: [RawFilePath] -> StringContainingQuotedPath
+quotedPaths :: [OsPath] -> StringContainingQuotedPath
 quotedPaths [] = mempty
 quotedPaths (p:ps) = QuotedPath p <> if null ps
 	then mempty
@@ -117,6 +117,6 @@ instance Monoid StringContainingQuotedPath where
 -- limits what's tested to ascii, so avoids running into it.
 prop_quote_unquote_roundtrip :: TestableFilePath -> Bool
 prop_quote_unquote_roundtrip ts = 
-	s == fromRawFilePath (unquote (quoteAlways (toRawFilePath s)))
+	s == fromOsPath (unquote (quoteAlways (toOsPath s)))
   where
 	s = fromTestableFilePath ts

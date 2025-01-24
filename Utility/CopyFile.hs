@@ -48,7 +48,7 @@ copyFileExternal :: CopyMetaData -> FilePath -> FilePath -> IO Bool
 copyFileExternal meta src dest = do
 	-- Delete any existing dest file because an unwritable file
 	-- would prevent cp from working.
-	void $ tryIO $ removeFile dest
+	void $ tryIO $ removeFile (toOsPath dest)
 	boolSystem "cp" $ params ++ [File src, File dest]
   where
 	params
@@ -76,7 +76,7 @@ copyCoW meta src dest
 		-- When CoW is not supported, cp creates the destination
 		-- file but leaves it empty.
 		unless ok $
-			void $ tryIO $ removeFile dest
+			void $ tryIO $ removeFile $ toOsPath dest
 		return ok
 	| otherwise = return False
   where

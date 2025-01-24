@@ -89,5 +89,5 @@ fromInternalGitPath = toOsPath . encodeBS . replace "/" "\\" . decodeBS . fromOs
 {- isAbsolute on Windows does not think "/foo" or "\foo" is absolute,
  - so try posix paths.
  -}
-absoluteGitPath :: RawFilePath -> Bool
+absoluteGitPath :: OsPath -> Bool
 absoluteGitPath p = isAbsolute p || isAbsolute (toInternalGitPath p)
