@@ -1,0 +1,1 @@
+I run a server and have a 2.5TB repo on a 4TB drive. Right now I have a bare repo for outside connections on it, but thought about a non-bare repo beside this on the same drive for local use. Does git-annex realize the repos are on the same btrfs-volume and uses ```cp --reflink``` while syncing between them?

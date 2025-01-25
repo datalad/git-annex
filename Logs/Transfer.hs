@@ -309,7 +309,6 @@ readTransferInfo mpid s = TransferInfo
 	(secondliner, rest) = separate (== '\n') otherlines
 	firstline = dropWhileEnd (== '\r') firstliner
 	secondline = dropWhileEnd (== '\r') secondliner
-	secondline = 
 	mpid' = readish secondline
 #else
 	(firstline, rest) = separate (== '\n') s
