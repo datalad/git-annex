@@ -26,6 +26,18 @@ status.
   Make Utility.SystemDirectory import it when built with OsPath,
   and the remaining 6 hours or work will explain itself..
   This has been started in the `ospath` branch.
+* As part of the OsPath conversion, Git.LsFiles has several
+  `pipeNullSplit'` calls that have toOsPath mapped over the results.
+  That adds an additional copy, so the lazy ByteString is converted to strict,
+  and then to ShortByteString, with a copy each time. This is in the
+  critical path for large git repos, and might be a noticable slowdown.
+  There is currently no easy way to go direct from a lazy ByteString to a
+  ShortByteString, although it would certianly be possible to write low
+  level code to do it efficiently. Alternatively, it would be possible to
+  read a strict ByteString direct from a handle, like hGetLine does
+  (although in this case it would need to stop at the terminating 0 byte)
+  and unsafePerformIO to stream to a list would avoid needing to rewrite
+  this code to not use a list.
 
 [[!tag confirmed]]
 

@@ -49,6 +49,7 @@ import Common
 import Utility.TimeStamp
 import Utility.QuickCheck
 import qualified Utility.RawFilePath as R
+import qualified Utility.FileIO as F
 
 import System.PosixCompat.Types
 import System.PosixCompat.Files (isRegularFile, fileID)
@@ -189,20 +190,20 @@ readInodeCache s = case words s of
 		return $ InodeCache $ InodeCachePrim i sz (MTimeHighRes t)
 	_ -> Nothing
 
-genInodeCache :: RawFilePath -> TSDelta -> IO (Maybe InodeCache)
+genInodeCache :: OsPath -> TSDelta -> IO (Maybe InodeCache)
 genInodeCache f delta = catchDefaultIO Nothing $
-	toInodeCache delta f =<< R.getSymbolicLinkStatus f
+	toInodeCache delta f =<< R.getSymbolicLinkStatus (fromOsPath f)
 
-toInodeCache :: TSDelta -> RawFilePath -> FileStatus -> IO (Maybe InodeCache)
+toInodeCache :: TSDelta -> OsPath -> FileStatus -> IO (Maybe InodeCache)
 toInodeCache d f s = toInodeCache' d f s (fileID s)
 
-toInodeCache' :: TSDelta -> RawFilePath -> FileStatus -> FileID -> IO (Maybe InodeCache)
+toInodeCache' :: TSDelta -> OsPath -> FileStatus -> FileID -> IO (Maybe InodeCache)
 toInodeCache' (TSDelta getdelta) f s inode
 	| isRegularFile s = do
 		delta <- getdelta
 		sz <- getFileSize' f s
 #ifdef mingw32_HOST_OS
-		mtime <- utcTimeToPOSIXSeconds <$> getModificationTime (fromRawFilePath f)
+		mtime <- utcTimeToPOSIXSeconds <$> getModificationTime f
 #else
 		let mtime = Posix.modificationTimeHiRes s
 #endif
@@ -214,8 +215,8 @@ toInodeCache' (TSDelta getdelta) f s inode
  - Its InodeCache at the time of its creation is written to the cache file,
  - so changes can later be detected. -}
 data SentinalFile = SentinalFile
-	{ sentinalFile :: RawFilePath
-	, sentinalCacheFile :: RawFilePath
+	{ sentinalFile :: OsPath
+	, sentinalCacheFile :: OsPath
 	}
 	deriving (Show)
 
@@ -232,8 +233,8 @@ noTSDelta = TSDelta (pure 0)
 
 writeSentinalFile :: SentinalFile -> IO ()
 writeSentinalFile s = do
-	writeFile (fromRawFilePath (sentinalFile s)) ""
-	maybe noop (writeFile (fromRawFilePath (sentinalCacheFile s)) . showInodeCache)
+	F.writeFile' (sentinalFile s) mempty
+	maybe noop (writeFile (fromOsPath (sentinalCacheFile s)) . showInodeCache)
 		=<< genInodeCache (sentinalFile s) noTSDelta
 
 data SentinalStatus = SentinalStatus
@@ -262,7 +263,7 @@ checkSentinalFile s = do
 				Just new -> return $ calc old new
   where
 	loadoldcache = catchDefaultIO Nothing $
-		readInodeCache <$> readFile (fromRawFilePath (sentinalCacheFile s))
+		readInodeCache <$> readFile (fromOsPath (sentinalCacheFile s))
 	gennewcache = genInodeCache (sentinalFile s) noTSDelta
 	calc (InodeCache (InodeCachePrim oldinode oldsize oldmtime)) (InodeCache (InodeCachePrim newinode newsize newmtime)) =
 		SentinalStatus (not unchanged) tsdelta
@@ -287,7 +288,7 @@ checkSentinalFile s = do
 	dummy = SentinalStatus True noTSDelta
 
 sentinalFileExists :: SentinalFile -> IO Bool
-sentinalFileExists s = allM R.doesPathExist [sentinalCacheFile s, sentinalFile s]
+sentinalFileExists s = allM doesPathExist [sentinalCacheFile s, sentinalFile s]
 
 instance Arbitrary InodeCache where
 	arbitrary =

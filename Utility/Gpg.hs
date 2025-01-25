@@ -182,7 +182,7 @@ feedRead cmd params passphrase feeder reader = do
 	withTmpFile (toOsPath "gpg") $ \tmpfile h -> do
 		liftIO $ B.hPutStr h passphrase
 		liftIO $ hClose h
-		let passphrasefile = [Param "--passphrase-file", File (fromRawFilePath (fromOsPath tmpfile))]
+		let passphrasefile = [Param "--passphrase-file", File (fromOsPath tmpfile)]
 		go $ passphrasefile ++ params
 #endif
   where
@@ -441,7 +441,7 @@ testHarness tmpdir cmd a = ifM (inSearchPath (unGpgCmd cmd))
 	go Nothing = return Nothing
 
         makenewdir n = do
-		let subdir = tmpdir </> show n
+		let subdir = toOsPath tmpdir </> toOsPath (show n)
 		catchIOErrorType AlreadyExists (const $ makenewdir $ n + 1) $ do
 			createDirectory subdir
 			return subdir

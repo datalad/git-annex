@@ -227,7 +227,7 @@ defaultChunkSize = 32 * k - chunkOverhead
  -}
 watchFileSize
 	:: (MonadIO m, MonadMask m)
-	=> RawFilePath
+	=> OsPath
 	-> MeterUpdate
 	-> (MeterUpdate -> m a)
 	-> m a
