@@ -19,9 +19,9 @@ module Database.Queue (
 ) where
 
 import Utility.Monad
-import Utility.RawFilePath
 import Utility.DebugLocks
 import Utility.Exception
+import Utility.OsPath
 import Database.Handle
 
 import Database.Persist.Sqlite
@@ -39,7 +39,7 @@ data DbQueue = DQ DbHandle (MVar Queue)
 {- Opens the database queue, but does not perform any migrations. Only use
  - if the database is known to exist and have the right tables; ie after
  - running initDb. -}
-openDbQueue :: RawFilePath -> TableName -> IO DbQueue
+openDbQueue :: OsPath -> TableName -> IO DbQueue
 openDbQueue db tablename = DQ
 	<$> openDb db tablename
 	<*> (newMVar =<< emptyQueue)

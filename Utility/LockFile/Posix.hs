@@ -31,7 +31,6 @@ import System.IO
 import System.Posix.Types
 import System.Posix.IO.ByteString
 import System.Posix.Files.ByteString
-import System.FilePath.ByteString (RawFilePath)
 import Data.Maybe
 
 type LockFile = OsPath
