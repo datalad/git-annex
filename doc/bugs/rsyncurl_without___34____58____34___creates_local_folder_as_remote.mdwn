@@ -30,12 +30,12 @@ git annex initremote myremote type=rsync rsyncurl=ssh.example.com: encryption=hy
 git annex copy . --to myremote
 ```
 
-This however, creates a local folder named `ssh.example.com` in my annexed directory:
+This however, doesn't copy to the correct remote, but creates a local folder named `ssh.example.com` in my annexed directory instead (note the missing `:` after the hostname):
 
 ```
 git annex initremote myremote type=rsync rsyncurl=ssh.example.com encryption=hybrid keyid=00001111222233334444
 git annex copy . --to myremote       # will copy successfully, BUT
-ls -l                                # shows the folder `ssh.example.com` in my directory
+ls -l                                # shows the folder `ssh.example.com` in my directory with the files in it, the rsync remote is empty
 ```
 
 ### What version of git-annex are you using? On what operating system?
