@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/6ac9c136a74bb8760c66f422d3d6dc32"
+ subject="comment 2"
+ date="2025-01-26T02:54:18Z"
+ content="""
+My issue apparently had to do with numcopies? I first passed `--numcopies 2` because I was curious but it didn't change anything. Then I passed `--numcopies 1` and it immediately dropped all the files as I'd have expected it to at `numcopies=3`. Running another sync without `--numcopies` didn't attempt to pull in the dropped files either.
+
+This smells like a bug? If numcopies was actually violated, it should attempt to correct that again, right? (All files were available from a connected repo.)
+
+Here are the numcopies stats from `git annex info .`:
+
+```
+numcopies stats: 
+	numcopies +1: 1213
+	numcopies +0: 25310
+```
+
+Some more background: I have a bunch of drives that are offline that I have set to be trusted. One repo on my NAS is online at all times and semitrusted.
+
+I have two offline groups: `cold` and `lukewarm`. All drives in those groups are trusted.
+
+It's weird that it didn't work with 2 but did work with 1. This leads me to believe it could have been due to the one repo being online while the others are offline and trusted; acting more like mincopies. Was behaviour changed in this regard recently?
+
+I'd still like to know how to debug wanted expressions too though.
+"""]]
