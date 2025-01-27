@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/cd1c0b3be1af288012e49197918395f0"
+ subject="comment 3"
+ date="2025-01-27T15:08:57Z"
+ content="""
+I can still reproduce this issue with 10.20250115, but in my testing it seems like it only happens against a forgejo-aneksajo instance on localhost without TLS, not against a different remote instance. This setup required `git config annex.security.allowed-ip-addresses 127.0.0.1`, maybe it has something to do with that or TLS...
+"""]]
