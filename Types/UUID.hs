@@ -10,6 +10,7 @@
 module Types.UUID where
 
 import qualified Data.ByteString as B
+import qualified Data.ByteString.Short as SB
 import qualified Data.Text as T
 import qualified Data.Map as M
 import qualified Data.UUID as U
@@ -53,6 +54,15 @@ instance ToUUID B.ByteString where
 	toUUID b
 		| B.null b = NoUUID
 		| otherwise = UUID b
+
+instance FromUUID SB.ShortByteString where
+	fromUUID (UUID u) = SB.toShort u
+	fromUUID NoUUID = SB.empty
+
+instance ToUUID SB.ShortByteString where
+	toUUID b
+		| SB.null b = NoUUID
+		| otherwise = UUID (SB.fromShort b)
 
 instance FromUUID String where
 	fromUUID s = decodeBS (fromUUID s)

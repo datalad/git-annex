@@ -29,14 +29,14 @@ data BranchState = BranchState
 	, unhandledTransitions :: [TransitionCalculator]
 	-- ^ when the branch was not able to be updated due to permissions,
 	-- this is transitions that need to be applied when making queries.
-	, cachedFileContents :: [(RawFilePath, L.ByteString)]
+	, cachedFileContents :: [(OsPath, L.ByteString)]
 	-- ^ contents of a few files recently read from the branch
 	, needInteractiveAccess :: Bool
 	-- ^ do new changes written to the journal or branch by another
 	-- process need to be noticed while the current process is running?
 	-- (This makes the journal always be read, and avoids using the
 	-- cache.)
-	, alternateJournal :: Maybe RawFilePath
+	, alternateJournal :: Maybe OsPath
 	-- ^ use this directory for all journals, rather than the
 	-- gitAnnexJournalDir and gitAnnexPrivateJournalDir.
 	}

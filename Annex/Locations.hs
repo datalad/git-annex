@@ -120,7 +120,7 @@ import Data.Char
 import Data.Default
 import qualified Data.List.NonEmpty as NE
 import qualified Data.ByteString.Char8 as S8
-import qualified System.FilePath.ByteString as P
+import qualified Data.ByteString.Short as SB
 
 import Common
 import Key
@@ -134,7 +134,6 @@ import qualified Git.Types as Git
 import Git.FilePath
 import Annex.DirHashes
 import Annex.Fixup
-import qualified Utility.RawFilePath as R
 
 {- Conventions:
  -
@@ -170,7 +169,7 @@ annexLocationsNonBare config key =
 	map (annexLocation config key) [hashDirMixed, hashDirLower]
 
 {- Annexed file's possible locations relative to a bare repository. -}
-annexLocationsBare :: GitConfig -> Key -> [RawFilePath]
+annexLocationsBare :: GitConfig -> Key -> [OsPath]
 annexLocationsBare config key = 
 	map (annexLocation config key) [hashDirLower, hashDirMixed]
 
@@ -182,7 +181,7 @@ annexLocation config key hasher = objectDir </> keyPath key (hasher $ objectHash
 exportAnnexObjectLocation :: GitConfig -> Key -> ExportLocation
 exportAnnexObjectLocation gc k =
 	mkExportLocation $
-		literalOsPath ".git" P.</> annexLocation gc k hashDirLower
+		literalOsPath ".git" </> annexLocation gc k hashDirLower
 
 {- Number of subdirectories from the gitAnnexObjectDir
  - to the gitAnnexLocation. -}
@@ -199,17 +198,17 @@ gitAnnexLocationDepth config = hashlevels + 1
  - When the file is not present, returns the location where the file should
  - be stored.
  -}
-gitAnnexLocation :: Key -> Git.Repo -> GitConfig -> IO RawFilePath
-gitAnnexLocation = gitAnnexLocation' R.doesPathExist
+gitAnnexLocation :: Key -> Git.Repo -> GitConfig -> IO OsPath
+gitAnnexLocation = gitAnnexLocation' doesPathExist
 
-gitAnnexLocation' :: (RawFilePath -> IO Bool) -> Key -> Git.Repo -> GitConfig -> IO RawFilePath
+gitAnnexLocation' :: (OsPath -> IO Bool) -> Key -> Git.Repo -> GitConfig -> IO OsPath
 gitAnnexLocation' checker key r config = gitAnnexLocation'' key r config
 	(annexCrippledFileSystem config)
 	(coreSymlinks config)
 	checker
 	(Git.localGitDir r)
 
-gitAnnexLocation'' :: Key -> Git.Repo -> GitConfig -> Bool -> Bool -> (RawFilePath -> IO Bool) -> RawFilePath -> IO RawFilePath
+gitAnnexLocation'' :: Key -> Git.Repo -> GitConfig -> Bool -> Bool -> (OsPath -> IO Bool) -> OsPath -> IO OsPath
 gitAnnexLocation'' key r config crippled symlinkssupported checker gitdir
 	{- Bare repositories default to hashDirLower for new
 	 - content, as it's more portable. But check all locations. -}
@@ -228,14 +227,14 @@ gitAnnexLocation'' key r config crippled symlinkssupported checker gitdir
 	only = return . inrepo . annexLocation config key
 	checkall f = check $ map inrepo $ f config key
 
-	inrepo d = gitdir P.</> d
+	inrepo d = gitdir </> d
 	check locs@(l:_) = fromMaybe l <$> firstM checker locs
 	check [] = error "internal"
 
 {- Calculates a symlink target to link a file to an annexed object. -}
-gitAnnexLink :: RawFilePath -> Key -> Git.Repo -> GitConfig -> IO RawFilePath
+gitAnnexLink :: OsPath -> Key -> Git.Repo -> GitConfig -> IO OsPath
 gitAnnexLink file key r config = do
-	currdir <- R.getCurrentDirectory
+	currdir <- getCurrentDirectory
 	let absfile = absNormPathUnix currdir file
 	let gitdir = getgitdir currdir
 	loc <- gitAnnexLocation'' key r config False False (\_ -> return True) gitdir
@@ -246,19 +245,19 @@ gitAnnexLink file key r config = do
 		 - supporting symlinks; generate link target that will
 		 - work portably. -}
 		| not (coreSymlinks config) && needsSubmoduleFixup r =
-			absNormPathUnix currdir (Git.repoPath r P.</> ".git")
+			absNormPathUnix currdir (Git.repoPath r </> literalOsPath ".git")
 		| otherwise = Git.localGitDir r
 	absNormPathUnix d p = toInternalGitPath $
 		absPathFrom (toInternalGitPath d) (toInternalGitPath p)
 
 {- Calculates a symlink target as would be used in a typical git
  - repository, with .git in the top of the work tree. -}
-gitAnnexLinkCanonical :: RawFilePath -> Key -> Git.Repo -> GitConfig -> IO RawFilePath
+gitAnnexLinkCanonical :: OsPath -> Key -> Git.Repo -> GitConfig -> IO OsPath
 gitAnnexLinkCanonical file key r config = gitAnnexLink file key r' config'
   where
 	r' = case r of
 		Git.Repo { Git.location = l@Git.Local { Git.worktree = Just wt } } ->
-			r { Git.location = l { Git.gitdir = wt P.</> ".git" } }
+			r { Git.location = l { Git.gitdir = wt </> literalOsPath ".git" } }
 		_ -> r
 	config' = config
 		{ annexCrippledFileSystem = False
@@ -266,23 +265,23 @@ gitAnnexLinkCanonical file key r config = gitAnnexLink file key r' config'
 		}
 
 {- File used to lock a key's content. -}
-gitAnnexContentLock :: Key -> Git.Repo -> GitConfig -> IO RawFilePath
+gitAnnexContentLock :: Key -> Git.Repo -> GitConfig -> IO OsPath
 gitAnnexContentLock key r config = do
 	loc <- gitAnnexLocation key r config
-	return $ loc <> ".lck"
+	return $ loc <> literalOsPath ".lck"
 
 {- File used to indicate a key's content should not be dropped until after
  - a specified time. -}
-gitAnnexContentRetentionTimestamp :: Key -> Git.Repo -> GitConfig -> IO RawFilePath
+gitAnnexContentRetentionTimestamp :: Key -> Git.Repo -> GitConfig -> IO OsPath
 gitAnnexContentRetentionTimestamp key r config = do
 	loc <- gitAnnexLocation key r config
-	return $ loc <> ".rtm"
+	return $ loc <> literalOsPath ".rtm"
 
 {- Lock file for gitAnnexContentRetentionTimestamp -}
-gitAnnexContentRetentionTimestampLock :: Key -> Git.Repo -> GitConfig -> IO RawFilePath
+gitAnnexContentRetentionTimestampLock :: Key -> Git.Repo -> GitConfig -> IO OsPath
 gitAnnexContentRetentionTimestampLock key r config = do
 	loc <- gitAnnexLocation key r config
-	return $ loc <> ".rtl"
+	return $ loc <> literalOsPath ".rtl"
 
 {- Lock that is held when taking the gitAnnexContentLock to support the v10
  - upgrade.
@@ -292,52 +291,52 @@ gitAnnexContentRetentionTimestampLock key r config = do
  - is mounted read-only. The gitAnnexInodeSentinal is created by git-annex
  - init, so should already exist.
  -}
-gitAnnexContentLockLock :: Git.Repo -> RawFilePath
+gitAnnexContentLockLock :: Git.Repo -> OsPath
 gitAnnexContentLockLock = gitAnnexInodeSentinal
 
-gitAnnexInodeSentinal :: Git.Repo -> RawFilePath
-gitAnnexInodeSentinal r = gitAnnexDir r P.</> "sentinal"
+gitAnnexInodeSentinal :: Git.Repo -> OsPath
+gitAnnexInodeSentinal r = gitAnnexDir r </> literalOsPath "sentinal"
 
-gitAnnexInodeSentinalCache :: Git.Repo -> RawFilePath
-gitAnnexInodeSentinalCache r = gitAnnexInodeSentinal r <> ".cache"
+gitAnnexInodeSentinalCache :: Git.Repo -> OsPath
+gitAnnexInodeSentinalCache r = gitAnnexInodeSentinal r <> literalOsPath ".cache"
 
 {- The annex directory of a repository. -}
-gitAnnexDir :: Git.Repo -> RawFilePath
-gitAnnexDir r = P.addTrailingPathSeparator $ Git.localGitDir r P.</> annexDir
+gitAnnexDir :: Git.Repo -> OsPath
+gitAnnexDir r = addTrailingPathSeparator $ Git.localGitDir r </> annexDir
 
 {- The part of the annex directory where file contents are stored. -}
-gitAnnexObjectDir :: Git.Repo -> RawFilePath
-gitAnnexObjectDir r = P.addTrailingPathSeparator $
-	Git.localGitDir r P.</> objectDir
+gitAnnexObjectDir :: Git.Repo -> OsPath
+gitAnnexObjectDir r = addTrailingPathSeparator $
+	Git.localGitDir r </> objectDir
 
 {- .git/annex/tmp/ is used for temp files for key's contents -}
-gitAnnexTmpObjectDir :: Git.Repo -> RawFilePath
-gitAnnexTmpObjectDir r = P.addTrailingPathSeparator $
-	gitAnnexDir r P.</> "tmp"
+gitAnnexTmpObjectDir :: Git.Repo -> OsPath
+gitAnnexTmpObjectDir r = addTrailingPathSeparator $
+	gitAnnexDir r </> literalOsPath "tmp"
 
 {- .git/annex/othertmp/ is used for other temp files -}
-gitAnnexTmpOtherDir :: Git.Repo -> RawFilePath
-gitAnnexTmpOtherDir r = P.addTrailingPathSeparator $
-	gitAnnexDir r P.</> "othertmp"
+gitAnnexTmpOtherDir :: Git.Repo -> OsPath
+gitAnnexTmpOtherDir r = addTrailingPathSeparator $
+	gitAnnexDir r </> literalOsPath "othertmp"
 
 {- Lock file for gitAnnexTmpOtherDir. -}
-gitAnnexTmpOtherLock :: Git.Repo -> RawFilePath
-gitAnnexTmpOtherLock r = gitAnnexDir r P.</> "othertmp.lck"
+gitAnnexTmpOtherLock :: Git.Repo -> OsPath
+gitAnnexTmpOtherLock r = gitAnnexDir r </> literalOsPath "othertmp.lck"
 
 {- .git/annex/misctmp/ was used by old versions of git-annex and is still
  - used during initialization -}
-gitAnnexTmpOtherDirOld :: Git.Repo -> RawFilePath
-gitAnnexTmpOtherDirOld r = P.addTrailingPathSeparator $ 
-	gitAnnexDir r P.</> "misctmp"
+gitAnnexTmpOtherDirOld :: Git.Repo -> OsPath
+gitAnnexTmpOtherDirOld r = addTrailingPathSeparator $ 
+	gitAnnexDir r </> literalOsPath "misctmp"
 
 {- .git/annex/watchtmp/ is used by the watcher and assistant -}
-gitAnnexTmpWatcherDir :: Git.Repo -> RawFilePath
-gitAnnexTmpWatcherDir r = P.addTrailingPathSeparator $
-	gitAnnexDir r P.</> "watchtmp"
+gitAnnexTmpWatcherDir :: Git.Repo -> OsPath
+gitAnnexTmpWatcherDir r = addTrailingPathSeparator $
+	gitAnnexDir r </> literalOsPath "watchtmp"
 
 {- The temp file to use for a given key's content. -}
-gitAnnexTmpObjectLocation :: Key -> Git.Repo -> RawFilePath
-gitAnnexTmpObjectLocation key r = gitAnnexTmpObjectDir r P.</> keyFile key
+gitAnnexTmpObjectLocation :: Key -> Git.Repo -> OsPath
+gitAnnexTmpObjectLocation key r = gitAnnexTmpObjectDir r </> keyFile key
 
 {- Given a temp file such as gitAnnexTmpObjectLocation, makes a name for a
  - subdirectory in the same location, that can be used as a work area
@@ -346,339 +345,353 @@ gitAnnexTmpObjectLocation key r = gitAnnexTmpObjectDir r P.</> keyFile key
  - There are ordering requirements for creating these directories;
  - use Annex.Content.withTmpWorkDir to set them up.
  -}
-gitAnnexTmpWorkDir :: RawFilePath -> RawFilePath
+gitAnnexTmpWorkDir :: OsPath -> OsPath
 gitAnnexTmpWorkDir p =
-	let (dir, f) = P.splitFileName p
+	let (dir, f) = splitFileName p
 	-- Using a prefix avoids name conflict with any other keys.
-	in dir P.</> "work." <> f
+	in dir </> literalOsPath "work." <> f
 
 {- .git/annex/bad/ is used for bad files found during fsck -}
-gitAnnexBadDir :: Git.Repo -> RawFilePath
-gitAnnexBadDir r = P.addTrailingPathSeparator $ gitAnnexDir r P.</> "bad"
+gitAnnexBadDir :: Git.Repo -> OsPath
+gitAnnexBadDir r = addTrailingPathSeparator $
+	gitAnnexDir r </> literalOsPath "bad"
 
 {- The bad file to use for a given key. -}
-gitAnnexBadLocation :: Key -> Git.Repo -> RawFilePath
-gitAnnexBadLocation key r = gitAnnexBadDir r P.</> keyFile key
+gitAnnexBadLocation :: Key -> Git.Repo -> OsPath
+gitAnnexBadLocation key r = gitAnnexBadDir r </> keyFile key
 
 {- .git/annex/foounused is used to number possibly unused keys -}
-gitAnnexUnusedLog :: RawFilePath -> Git.Repo -> RawFilePath
-gitAnnexUnusedLog prefix r = gitAnnexDir r P.</> (prefix <> "unused")
+gitAnnexUnusedLog :: OsPath -> Git.Repo -> OsPath
+gitAnnexUnusedLog prefix r =
+	gitAnnexDir r </> (prefix <> literalOsPath "unused")
 
 {- .git/annex/keysdb/ contains a database of information about keys. -}
-gitAnnexKeysDbDir :: Git.Repo -> GitConfig -> RawFilePath
-gitAnnexKeysDbDir r c = fromMaybe (gitAnnexDir r) (annexDbDir c) P.</> "keysdb"
+gitAnnexKeysDbDir :: Git.Repo -> GitConfig -> OsPath
+gitAnnexKeysDbDir r c = 
+	fromMaybe (gitAnnexDir r) (annexDbDir c) </> literalOsPath "keysdb"
 
 {- Lock file for the keys database. -}
-gitAnnexKeysDbLock :: Git.Repo -> GitConfig -> RawFilePath
-gitAnnexKeysDbLock r c = gitAnnexKeysDbDir r c <> ".lck"
+gitAnnexKeysDbLock :: Git.Repo -> GitConfig -> OsPath
+gitAnnexKeysDbLock r c = gitAnnexKeysDbDir r c <> literalOsPath ".lck"
 
 {- Contains the stat of the last index file that was
  - reconciled with the keys database. -}
-gitAnnexKeysDbIndexCache :: Git.Repo -> GitConfig -> RawFilePath
-gitAnnexKeysDbIndexCache r c = gitAnnexKeysDbDir r c <> ".cache"
+gitAnnexKeysDbIndexCache :: Git.Repo -> GitConfig -> OsPath
+gitAnnexKeysDbIndexCache r c =
+	gitAnnexKeysDbDir r c <> literalOsPath ".cache"
 
 {- .git/annex/fsck/uuid/ is used to store information about incremental
  - fscks. -}
-gitAnnexFsckDir :: UUID -> Git.Repo -> Maybe GitConfig -> RawFilePath
+gitAnnexFsckDir :: UUID -> Git.Repo -> Maybe GitConfig -> OsPath
 gitAnnexFsckDir u r mc = case annexDbDir =<< mc of
 	Nothing -> go (gitAnnexDir r)
 	Just d -> go d
   where
-	go d = d P.</> "fsck" P.</> fromUUID u
+	go d = d </> literalOsPath "fsck" </> uuidPath u
 
 {- used to store information about incremental fscks. -}
-gitAnnexFsckState :: UUID -> Git.Repo -> RawFilePath
-gitAnnexFsckState u r = gitAnnexFsckDir u r Nothing P.</> "state"
+gitAnnexFsckState :: UUID -> Git.Repo -> OsPath
+gitAnnexFsckState u r = gitAnnexFsckDir u r Nothing </> literalOsPath "state"
 
 {- Directory containing database used to record fsck info. -}
-gitAnnexFsckDbDir :: UUID -> Git.Repo -> GitConfig -> RawFilePath
-gitAnnexFsckDbDir u r c = gitAnnexFsckDir u r (Just c) P.</> "fsckdb"
+gitAnnexFsckDbDir :: UUID -> Git.Repo -> GitConfig -> OsPath
+gitAnnexFsckDbDir u r c = gitAnnexFsckDir u r (Just c) </> literalOsPath "fsckdb"
 
 {- Directory containing old database used to record fsck info. -}
-gitAnnexFsckDbDirOld :: UUID -> Git.Repo -> GitConfig -> RawFilePath
-gitAnnexFsckDbDirOld u r c = gitAnnexFsckDir u r (Just c) P.</> "db"
+gitAnnexFsckDbDirOld :: UUID -> Git.Repo -> GitConfig -> OsPath
+gitAnnexFsckDbDirOld u r c = gitAnnexFsckDir u r (Just c) </> literalOsPath "db"
 
 {- Lock file for the fsck database. -}
-gitAnnexFsckDbLock :: UUID -> Git.Repo -> GitConfig -> RawFilePath
-gitAnnexFsckDbLock u r c = gitAnnexFsckDir u r (Just c) P.</> "fsck.lck"
+gitAnnexFsckDbLock :: UUID -> Git.Repo -> GitConfig -> OsPath
+gitAnnexFsckDbLock u r c = gitAnnexFsckDir u r (Just c) </> literalOsPath "fsck.lck"
 
 {- .git/annex/fsckresults/uuid is used to store results of git fscks -}
-gitAnnexFsckResultsLog :: UUID -> Git.Repo -> RawFilePath
+gitAnnexFsckResultsLog :: UUID -> Git.Repo -> OsPath
 gitAnnexFsckResultsLog u r = 
-	gitAnnexDir r P.</> "fsckresults" P.</> fromUUID u
+	gitAnnexDir r </> literalOsPath "fsckresults" </> uuidPath u
 
 {- .git/annex/upgrade.log is used to record repository version upgrades. -}
-gitAnnexUpgradeLog :: Git.Repo -> RawFilePath
-gitAnnexUpgradeLog r = gitAnnexDir r P.</> "upgrade.log"
+gitAnnexUpgradeLog :: Git.Repo -> OsPath
+gitAnnexUpgradeLog r = gitAnnexDir r </> literalOsPath "upgrade.log"
 
-gitAnnexUpgradeLock :: Git.Repo -> RawFilePath
-gitAnnexUpgradeLock r = gitAnnexDir r P.</> "upgrade.lck"
+gitAnnexUpgradeLock :: Git.Repo -> OsPath
+gitAnnexUpgradeLock r = gitAnnexDir r </> literalOsPath "upgrade.lck"
 
 {- .git/annex/smudge.log is used to log smudged worktree files that need to
  - be updated. -}
-gitAnnexSmudgeLog :: Git.Repo -> RawFilePath
-gitAnnexSmudgeLog r = gitAnnexDir r P.</> "smudge.log"
+gitAnnexSmudgeLog :: Git.Repo -> OsPath
+gitAnnexSmudgeLog r = gitAnnexDir r </> literalOsPath "smudge.log"
 
-gitAnnexSmudgeLock :: Git.Repo -> RawFilePath
-gitAnnexSmudgeLock r = gitAnnexDir r P.</> "smudge.lck"
+gitAnnexSmudgeLock :: Git.Repo -> OsPath
+gitAnnexSmudgeLock r = gitAnnexDir r </> literalOsPath "smudge.lck"
 
 {- .git/annex/restage.log is used to log worktree files that need to be
  - restaged in git -}
-gitAnnexRestageLog :: Git.Repo -> RawFilePath
-gitAnnexRestageLog r = gitAnnexDir r P.</> "restage.log"
+gitAnnexRestageLog :: Git.Repo -> OsPath
+gitAnnexRestageLog r = gitAnnexDir r </> literalOsPath "restage.log"
 
 {- .git/annex/restage.old is used while restaging files in git -}
-gitAnnexRestageLogOld :: Git.Repo -> RawFilePath
-gitAnnexRestageLogOld r = gitAnnexDir r P.</> "restage.old"
+gitAnnexRestageLogOld :: Git.Repo -> OsPath
+gitAnnexRestageLogOld r = gitAnnexDir r </> literalOsPath "restage.old"
 
-gitAnnexRestageLock :: Git.Repo -> RawFilePath
-gitAnnexRestageLock r = gitAnnexDir r P.</> "restage.lck"
+gitAnnexRestageLock :: Git.Repo -> OsPath
+gitAnnexRestageLock r = gitAnnexDir r </> literalOsPath "restage.lck"
 
 {- .git/annex/adjust.log is used to log when the adjusted branch needs to
  - be updated. -}
-gitAnnexAdjustedBranchUpdateLog :: Git.Repo -> RawFilePath
-gitAnnexAdjustedBranchUpdateLog r = gitAnnexDir r P.</> "adjust.log"
+gitAnnexAdjustedBranchUpdateLog :: Git.Repo -> OsPath
+gitAnnexAdjustedBranchUpdateLog r = gitAnnexDir r </> literalOsPath "adjust.log"
 
-gitAnnexAdjustedBranchUpdateLock :: Git.Repo -> RawFilePath
-gitAnnexAdjustedBranchUpdateLock r = gitAnnexDir r P.</> "adjust.lck"
+gitAnnexAdjustedBranchUpdateLock :: Git.Repo -> OsPath
+gitAnnexAdjustedBranchUpdateLock r = gitAnnexDir r </> literalOsPath "adjust.lck"
 
 {- .git/annex/migrate.log is used to log migrations before committing them. -}
-gitAnnexMigrateLog :: Git.Repo -> RawFilePath
-gitAnnexMigrateLog r = gitAnnexDir r P.</> "migrate.log"
+gitAnnexMigrateLog :: Git.Repo -> OsPath
+gitAnnexMigrateLog r = gitAnnexDir r </> literalOsPath "migrate.log"
 
-gitAnnexMigrateLock :: Git.Repo -> RawFilePath
-gitAnnexMigrateLock r = gitAnnexDir r P.</> "migrate.lck"
+gitAnnexMigrateLock :: Git.Repo -> OsPath
+gitAnnexMigrateLock r = gitAnnexDir r </> literalOsPath "migrate.lck"
 
 {- .git/annex/migrations.log is used to log committed migrations. -}
-gitAnnexMigrationsLog :: Git.Repo -> RawFilePath
-gitAnnexMigrationsLog r = gitAnnexDir r P.</> "migrations.log"
+gitAnnexMigrationsLog :: Git.Repo -> OsPath
+gitAnnexMigrationsLog r = gitAnnexDir r </> literalOsPath "migrations.log"
 
-gitAnnexMigrationsLock :: Git.Repo -> RawFilePath
-gitAnnexMigrationsLock r = gitAnnexDir r P.</> "migrations.lck"
+gitAnnexMigrationsLock :: Git.Repo -> OsPath
+gitAnnexMigrationsLock r = gitAnnexDir r </> literalOsPath "migrations.lck"
 
 {- .git/annex/move.log is used to log moves that are in progress,
  - to better support resuming an interrupted move. -}
-gitAnnexMoveLog :: Git.Repo -> RawFilePath
-gitAnnexMoveLog r = gitAnnexDir r P.</> "move.log"
+gitAnnexMoveLog :: Git.Repo -> OsPath
+gitAnnexMoveLog r = gitAnnexDir r </> literalOsPath "move.log"
 
-gitAnnexMoveLock :: Git.Repo -> RawFilePath
-gitAnnexMoveLock r = gitAnnexDir r P.</> "move.lck"
+gitAnnexMoveLock :: Git.Repo -> OsPath
+gitAnnexMoveLock r = gitAnnexDir r </> literalOsPath "move.lck"
 
 {- .git/annex/export/ is used to store information about
  - exports to special remotes. -}
-gitAnnexExportDir :: Git.Repo -> GitConfig -> RawFilePath
-gitAnnexExportDir r c = fromMaybe (gitAnnexDir r) (annexDbDir c) P.</> "export"
+gitAnnexExportDir :: Git.Repo -> GitConfig -> OsPath
+gitAnnexExportDir r c = fromMaybe (gitAnnexDir r) (annexDbDir c)
+	</> literalOsPath "export"
 
 {- Directory containing database used to record export info. -}
-gitAnnexExportDbDir :: UUID -> Git.Repo -> GitConfig -> RawFilePath
+gitAnnexExportDbDir :: UUID -> Git.Repo -> GitConfig -> OsPath
 gitAnnexExportDbDir u r c = 
-	gitAnnexExportDir r c P.</> fromUUID u P.</> "exportdb"
+	gitAnnexExportDir r c </> uuidPath u </> literalOsPath "exportdb"
 
 {- Lock file for export database. -}
-gitAnnexExportLock :: UUID -> Git.Repo -> GitConfig -> RawFilePath
-gitAnnexExportLock u r c = gitAnnexExportDbDir u r c <> ".lck"
+gitAnnexExportLock :: UUID -> Git.Repo -> GitConfig -> OsPath
+gitAnnexExportLock u r c = gitAnnexExportDbDir u r c <> literalOsPath ".lck"
 
 {- Lock file for updating the export database with information from the
  - repository. -}
-gitAnnexExportUpdateLock :: UUID -> Git.Repo -> GitConfig -> RawFilePath
-gitAnnexExportUpdateLock u r c = gitAnnexExportDbDir u r c <> ".upl"
+gitAnnexExportUpdateLock :: UUID -> Git.Repo -> GitConfig -> OsPath
+gitAnnexExportUpdateLock u r c = gitAnnexExportDbDir u r c <> literalOsPath ".upl"
 
 {- Log file used to keep track of files that were in the tree exported to a
  - remote, but were excluded by its preferred content settings. -}
-gitAnnexExportExcludeLog :: UUID -> Git.Repo -> RawFilePath
-gitAnnexExportExcludeLog u r = gitAnnexDir r P.</> "export.ex" P.</> fromUUID u
+gitAnnexExportExcludeLog :: UUID -> Git.Repo -> OsPath
+gitAnnexExportExcludeLog u r = gitAnnexDir r 
+	</> literalOsPath "export.ex" </> uuidPath u
 
 {- Directory containing database used to record remote content ids.
  -
  - (This used to be "cid", but a problem with the database caused it to
  - need to be rebuilt with a new name.)
  -}
-gitAnnexContentIdentifierDbDir :: Git.Repo -> GitConfig -> RawFilePath
+gitAnnexContentIdentifierDbDir :: Git.Repo -> GitConfig -> OsPath
 gitAnnexContentIdentifierDbDir r c =
-	fromMaybe (gitAnnexDir r) (annexDbDir c) P.</> "cidsdb"
+	fromMaybe (gitAnnexDir r) (annexDbDir c) </> literalOsPath "cidsdb"
 
 {- Lock file for writing to the content id database. -}
-gitAnnexContentIdentifierLock :: Git.Repo -> GitConfig -> RawFilePath
-gitAnnexContentIdentifierLock r c = gitAnnexContentIdentifierDbDir r c <> ".lck"
+gitAnnexContentIdentifierLock :: Git.Repo -> GitConfig -> OsPath
+gitAnnexContentIdentifierLock r c = 
+	gitAnnexContentIdentifierDbDir r c <> literalOsPath ".lck"
 
 {- .git/annex/import/ is used to store information about
  - imports from special remotes. -}
-gitAnnexImportDir :: Git.Repo -> GitConfig -> RawFilePath
-gitAnnexImportDir r c = fromMaybe (gitAnnexDir r) (annexDbDir c) P.</> "import"
+gitAnnexImportDir :: Git.Repo -> GitConfig -> OsPath
+gitAnnexImportDir r c =
+	fromMaybe (gitAnnexDir r) (annexDbDir c) </> literalOsPath "import"
 
 {- File containing state about the last import done from a remote. -}
-gitAnnexImportLog :: UUID -> Git.Repo -> GitConfig -> RawFilePath
-gitAnnexImportLog u r c = 
-	gitAnnexImportDir r c P.</> fromUUID u P.</> "log"
+gitAnnexImportLog :: UUID -> Git.Repo -> GitConfig -> OsPath
+gitAnnexImportLog u r c =
+	gitAnnexImportDir r c </> uuidPath u </> literalOsPath "log"
 
 {- Directory containing database used by importfeed. -}
-gitAnnexImportFeedDbDir :: Git.Repo -> GitConfig -> RawFilePath
+gitAnnexImportFeedDbDir :: Git.Repo -> GitConfig -> OsPath
 gitAnnexImportFeedDbDir r c =
-	fromMaybe (gitAnnexDir r) (annexDbDir c) P.</> "importfeed"
+	fromMaybe (gitAnnexDir r) (annexDbDir c) </> literalOsPath "importfeed"
 
 {- Lock file for writing to the importfeed database. -}
-gitAnnexImportFeedDbLock :: Git.Repo -> GitConfig -> RawFilePath
-gitAnnexImportFeedDbLock r c = gitAnnexImportFeedDbDir r c <> ".lck"
+gitAnnexImportFeedDbLock :: Git.Repo -> GitConfig -> OsPath
+gitAnnexImportFeedDbLock r c =
+	gitAnnexImportFeedDbDir r c <> literalOsPath ".lck"
 
 {- Directory containing reposize database. -}
-gitAnnexRepoSizeDbDir :: Git.Repo -> GitConfig -> RawFilePath
+gitAnnexRepoSizeDbDir :: Git.Repo -> GitConfig -> OsPath
 gitAnnexRepoSizeDbDir r c =
-	fromMaybe (gitAnnexDir r) (annexDbDir c) P.</> "reposize" P.</> "db"
+	fromMaybe (gitAnnexDir r) (annexDbDir c) </> literalOsPath "reposize" </> literalOsPath "db"
 
 {- Lock file for the reposize database. -}
-gitAnnexRepoSizeDbLock :: Git.Repo -> GitConfig -> RawFilePath
+gitAnnexRepoSizeDbLock :: Git.Repo -> GitConfig -> OsPath
 gitAnnexRepoSizeDbLock r c =
-	fromMaybe (gitAnnexDir r) (annexDbDir c) P.</> "reposize" P.</> "lock"
+	fromMaybe (gitAnnexDir r) (annexDbDir c) </> literalOsPath "reposize" </> literalOsPath "lock"
 
 {- Directory containing liveness pid files. -}
-gitAnnexRepoSizeLiveDir :: Git.Repo -> GitConfig -> RawFilePath
+gitAnnexRepoSizeLiveDir :: Git.Repo -> GitConfig -> OsPath
 gitAnnexRepoSizeLiveDir r c =
-	fromMaybe (gitAnnexDir r) (annexDbDir c) P.</> "reposize" P.</> "live"
+	fromMaybe (gitAnnexDir r) (annexDbDir c) </> literalOsPath "reposize" </> literalOsPath "live"
 
 {- .git/annex/schedulestate is used to store information about when
  - scheduled jobs were last run. -}
-gitAnnexScheduleState :: Git.Repo -> RawFilePath
-gitAnnexScheduleState r = gitAnnexDir r P.</> "schedulestate"
+gitAnnexScheduleState :: Git.Repo -> OsPath
+gitAnnexScheduleState r = gitAnnexDir r </> literalOsPath "schedulestate"
 
 {- .git/annex/creds/ is used to store credentials to access some special
  - remotes. -}
-gitAnnexCredsDir :: Git.Repo -> RawFilePath
-gitAnnexCredsDir r = P.addTrailingPathSeparator $ gitAnnexDir r P.</> "creds"
+gitAnnexCredsDir :: Git.Repo -> OsPath
+gitAnnexCredsDir r = addTrailingPathSeparator $
+	gitAnnexDir r </> literalOsPath "creds"
 
 {- .git/annex/certificate.pem and .git/annex/key.pem are used by the webapp
  - when HTTPS is enabled -}
 gitAnnexWebCertificate :: Git.Repo -> FilePath
-gitAnnexWebCertificate r = fromRawFilePath $ gitAnnexDir r P.</> "certificate.pem"
+gitAnnexWebCertificate r = fromOsPath $
+	gitAnnexDir r </> literalOsPath "certificate.pem"
 gitAnnexWebPrivKey :: Git.Repo -> FilePath
-gitAnnexWebPrivKey r = fromRawFilePath $ gitAnnexDir r P.</> "privkey.pem"
+gitAnnexWebPrivKey r = fromOsPath $
+	gitAnnexDir r </> literalOsPath "privkey.pem"
 
 {- .git/annex/feeds/ is used to record per-key (url) state by importfeed -}
-gitAnnexFeedStateDir :: Git.Repo -> RawFilePath
-gitAnnexFeedStateDir r = P.addTrailingPathSeparator $
-	gitAnnexDir r P.</> "feedstate"
+gitAnnexFeedStateDir :: Git.Repo -> OsPath
+gitAnnexFeedStateDir r = addTrailingPathSeparator $
+	gitAnnexDir r </> literalOsPath "feedstate"
 
-gitAnnexFeedState :: Key -> Git.Repo -> RawFilePath
-gitAnnexFeedState k r = gitAnnexFeedStateDir r P.</> keyFile k
+gitAnnexFeedState :: Key -> Git.Repo -> OsPath
+gitAnnexFeedState k r = gitAnnexFeedStateDir r </> keyFile k
 
 {- .git/annex/merge/ is used as a empty work tree for merges in 
  - adjusted branches. -}
 gitAnnexMergeDir :: Git.Repo -> FilePath
-gitAnnexMergeDir r = fromRawFilePath $
-	P.addTrailingPathSeparator $ gitAnnexDir r P.</> "merge"
+gitAnnexMergeDir r = fromOsPath $
+	addTrailingPathSeparator $ gitAnnexDir r </> literalOsPath "merge"
 
 {- .git/annex/transfer/ is used to record keys currently
  - being transferred, and other transfer bookkeeping info. -}
-gitAnnexTransferDir :: Git.Repo -> RawFilePath
+gitAnnexTransferDir :: Git.Repo -> OsPath
 gitAnnexTransferDir r =
-	P.addTrailingPathSeparator $ gitAnnexDir r P.</> "transfer"
+	addTrailingPathSeparator $ gitAnnexDir r </> literalOsPath "transfer"
 
 {- .git/annex/journal/ is used to journal changes made to the git-annex
  - branch -}
-gitAnnexJournalDir :: BranchState -> Git.Repo -> RawFilePath
-gitAnnexJournalDir st r = P.addTrailingPathSeparator $ 
+gitAnnexJournalDir :: BranchState -> Git.Repo -> OsPath
+gitAnnexJournalDir st r = addTrailingPathSeparator $ 
 	case alternateJournal st of
-		Nothing -> gitAnnexDir r P.</> "journal"
+		Nothing -> gitAnnexDir r </> literalOsPath "journal"
 		Just d -> d
 
 {- .git/annex/journal.private/ is used to journal changes regarding private
  - repositories. -}
-gitAnnexPrivateJournalDir :: BranchState -> Git.Repo -> RawFilePath
-gitAnnexPrivateJournalDir st r = P.addTrailingPathSeparator $
+gitAnnexPrivateJournalDir :: BranchState -> Git.Repo -> OsPath
+gitAnnexPrivateJournalDir st r = addTrailingPathSeparator $
 	case alternateJournal st of
-		Nothing -> gitAnnexDir r P.</> "journal-private"
+		Nothing -> gitAnnexDir r </> literalOsPath "journal-private"
 		Just d -> d
 
 {- Lock file for the journal. -}
-gitAnnexJournalLock :: Git.Repo -> RawFilePath
-gitAnnexJournalLock r = gitAnnexDir r P.</> "journal.lck"
+gitAnnexJournalLock :: Git.Repo -> OsPath
+gitAnnexJournalLock r = gitAnnexDir r </> literalOsPath "journal.lck"
 
 {- Lock file for flushing a git queue that writes to the git index or
  - other git state that should only have one writer at a time. -}
-gitAnnexGitQueueLock :: Git.Repo -> RawFilePath
-gitAnnexGitQueueLock r = gitAnnexDir r P.</> "gitqueue.lck"
+gitAnnexGitQueueLock :: Git.Repo -> OsPath
+gitAnnexGitQueueLock r = gitAnnexDir r </> literalOsPath "gitqueue.lck"
 
 {- .git/annex/index is used to stage changes to the git-annex branch -}
-gitAnnexIndex :: Git.Repo -> RawFilePath
-gitAnnexIndex r = gitAnnexDir r P.</> "index"
+gitAnnexIndex :: Git.Repo -> OsPath
+gitAnnexIndex r = gitAnnexDir r </> literalOsPath "index"
 
 {- .git/annex/index-private is used to store information that is not to
  - be exposed to the git-annex branch. -}
-gitAnnexPrivateIndex :: Git.Repo -> RawFilePath
-gitAnnexPrivateIndex r = gitAnnexDir r P.</> "index-private"
+gitAnnexPrivateIndex :: Git.Repo -> OsPath
+gitAnnexPrivateIndex r = gitAnnexDir r </> literalOsPath "index-private"
 
 {- Holds the sha of the git-annex branch that the index was last updated to.
  -
  - The .lck in the name is a historical accident; this is not used as a
  - lock. -}
-gitAnnexIndexStatus :: Git.Repo -> RawFilePath
-gitAnnexIndexStatus r = gitAnnexDir r P.</> "index.lck"
+gitAnnexIndexStatus :: Git.Repo -> OsPath
+gitAnnexIndexStatus r = gitAnnexDir r </> literalOsPath "index.lck"
 
 {- The index file used to generate a filtered branch view._-}
-gitAnnexViewIndex :: Git.Repo -> RawFilePath
-gitAnnexViewIndex r = gitAnnexDir r P.</> "viewindex"
+gitAnnexViewIndex :: Git.Repo -> OsPath
+gitAnnexViewIndex r = gitAnnexDir r </> literalOsPath "viewindex"
 
 {- File containing a log of recently accessed views. -}
-gitAnnexViewLog :: Git.Repo -> RawFilePath
-gitAnnexViewLog r = gitAnnexDir r P.</> "viewlog"
+gitAnnexViewLog :: Git.Repo -> OsPath
+gitAnnexViewLog r = gitAnnexDir r </> literalOsPath "viewlog"
 
 {- List of refs that have already been merged into the git-annex branch. -}
-gitAnnexMergedRefs :: Git.Repo -> RawFilePath
-gitAnnexMergedRefs r = gitAnnexDir r P.</> "mergedrefs"
+gitAnnexMergedRefs :: Git.Repo -> OsPath
+gitAnnexMergedRefs r = gitAnnexDir r </> literalOsPath "mergedrefs"
 
 {- List of refs that should not be merged into the git-annex branch. -}
-gitAnnexIgnoredRefs :: Git.Repo -> RawFilePath
-gitAnnexIgnoredRefs r = gitAnnexDir r P.</> "ignoredrefs"
+gitAnnexIgnoredRefs :: Git.Repo -> OsPath
+gitAnnexIgnoredRefs r = gitAnnexDir r </> literalOsPath "ignoredrefs"
 
 {- Pid file for daemon mode. -}
-gitAnnexPidFile :: Git.Repo -> RawFilePath
-gitAnnexPidFile r = gitAnnexDir r P.</> "daemon.pid"
+gitAnnexPidFile :: Git.Repo -> OsPath
+gitAnnexPidFile r = gitAnnexDir r </> literalOsPath "daemon.pid"
 
 {- Pid lock file for pidlock mode -}
-gitAnnexPidLockFile :: Git.Repo -> RawFilePath
-gitAnnexPidLockFile r = gitAnnexDir r P.</> "pidlock"
+gitAnnexPidLockFile :: Git.Repo -> OsPath
+gitAnnexPidLockFile r = gitAnnexDir r </> literalOsPath "pidlock"
 
 {- Status file for daemon mode. -}
 gitAnnexDaemonStatusFile :: Git.Repo -> FilePath
-gitAnnexDaemonStatusFile r = fromRawFilePath $
-	gitAnnexDir r P.</> "daemon.status"
+gitAnnexDaemonStatusFile r = fromOsPath $
+	gitAnnexDir r </> literalOsPath "daemon.status"
 
 {- Log file for daemon mode. -}
-gitAnnexDaemonLogFile :: Git.Repo -> RawFilePath
-gitAnnexDaemonLogFile r = gitAnnexDir r P.</> "daemon.log"
+gitAnnexDaemonLogFile :: Git.Repo -> OsPath
+gitAnnexDaemonLogFile r = gitAnnexDir r </> literalOsPath "daemon.log"
 
 {- Log file for fuzz test. -}
 gitAnnexFuzzTestLogFile :: Git.Repo -> FilePath
-gitAnnexFuzzTestLogFile r = fromRawFilePath $
-	gitAnnexDir r P.</> "fuzztest.log"
+gitAnnexFuzzTestLogFile r = fromOsPath $
+	gitAnnexDir r </> literalOsPath "fuzztest.log"
 
 {- Html shim file used to launch the webapp. -}
-gitAnnexHtmlShim :: Git.Repo -> RawFilePath
-gitAnnexHtmlShim r = gitAnnexDir r P.</> "webapp.html"
+gitAnnexHtmlShim :: Git.Repo -> OsPath
+gitAnnexHtmlShim r = gitAnnexDir r </> literalOsPath "webapp.html"
 
 {- File containing the url to the webapp. -}
-gitAnnexUrlFile :: Git.Repo -> RawFilePath
-gitAnnexUrlFile r = gitAnnexDir r P.</> "url"
+gitAnnexUrlFile :: Git.Repo -> OsPath
+gitAnnexUrlFile r = gitAnnexDir r </> literalOsPath "url"
 
 {- Temporary file used to edit configuriation from the git-annex branch. -}
-gitAnnexTmpCfgFile :: Git.Repo -> RawFilePath
-gitAnnexTmpCfgFile r = gitAnnexDir r P.</> "config.tmp"
+gitAnnexTmpCfgFile :: Git.Repo -> OsPath
+gitAnnexTmpCfgFile r = gitAnnexDir r </> literalOsPath "config.tmp"
 
 {- .git/annex/ssh/ is used for ssh connection caching -}
-gitAnnexSshDir :: Git.Repo -> RawFilePath
-gitAnnexSshDir r = P.addTrailingPathSeparator $ gitAnnexDir r P.</> "ssh"
+gitAnnexSshDir :: Git.Repo -> OsPath
+gitAnnexSshDir r = addTrailingPathSeparator $
+	gitAnnexDir r </> literalOsPath "ssh"
 
 {- .git/annex/remotes/ is used for remote-specific state. -}
-gitAnnexRemotesDir :: Git.Repo -> RawFilePath
-gitAnnexRemotesDir r =
-	P.addTrailingPathSeparator $ gitAnnexDir r P.</> "remotes"
+gitAnnexRemotesDir :: Git.Repo -> OsPath
+gitAnnexRemotesDir r = addTrailingPathSeparator $
+	gitAnnexDir r </> literalOsPath "remotes"
 
 {- This is the base directory name used by the assistant when making
  - repositories, by default. -}
 gitAnnexAssistantDefaultDir :: FilePath
 gitAnnexAssistantDefaultDir = "annex"
 
-gitAnnexSimDir :: Git.Repo -> RawFilePath
-gitAnnexSimDir r = P.addTrailingPathSeparator $ gitAnnexDir r P.</> "sim"
+gitAnnexSimDir :: Git.Repo -> OsPath
+gitAnnexSimDir r = addTrailingPathSeparator $
+	gitAnnexDir r </> literalOsPath "sim"
 
 {- Sanitizes a String that will be used as part of a Key's keyName,
  - dealing with characters that cause problems.
@@ -730,23 +743,26 @@ reSanitizeKeyName = preSanitizeKeyName' True
  - Changing what this function escapes and how is not a good idea, as it
  - can cause existing objects to get lost.
  -}
-keyFile :: Key -> RawFilePath
+keyFile :: Key -> OsPath
 keyFile k = 
-	let b = serializeKey' k
-	in if S8.any (`elem` ['&', '%', ':', '/']) b
-		then S8.concatMap esc b
+	let b = serializeKey'' k
+	in toOsPath $ if SB.any (`elem` needesc) b
+		then SB.concat $ map esc (SB.unpack b)
 		else b
   where
-	esc '&' = "&a"
-	esc '%' = "&s"
-	esc ':' = "&c"
-	esc '/' = "%"
-	esc c = S8.singleton c
+	esc w = case chr (fromIntegral w) of
+		'&' -> "&a"
+		'%' -> "&s"
+		':' -> "&c"
+		'/' -> "%"
+		_ -> SB.singleton w
+
+	needesc = map (fromIntegral . ord) ['&', '%', ':', '/']
 
 {- Reverses keyFile, converting a filename fragment (ie, the basename of
  - the symlink target) into a key. -}
-fileKey :: RawFilePath -> Maybe Key
-fileKey = deserializeKey' . S8.intercalate "/" . map go . S8.split '%'
+fileKey :: OsPath -> Maybe Key
+fileKey = deserializeKey' . S8.intercalate "/" . map go . S8.split '%' . fromOsPath
   where
 	go = S8.concat . unescafterfirst . S8.split '&'
 	unescafterfirst [] = []
@@ -765,8 +781,8 @@ fileKey = deserializeKey' . S8.intercalate "/" . map go . S8.split '%'
  - The file is put in a directory with the same name, this allows
  - write-protecting the directory to avoid accidental deletion of the file.
  -}
-keyPath :: Key -> Hasher -> RawFilePath
-keyPath key hasher = hasher key P.</> f P.</> f
+keyPath :: Key -> Hasher -> OsPath
+keyPath key hasher = hasher key </> f </> f
   where
 	f = keyFile key
 
@@ -776,5 +792,9 @@ keyPath key hasher = hasher key P.</> f P.</> f
  - This is compatible with the annexLocationsNonBare and annexLocationsBare,
  - for interoperability between special remotes and git-annex repos.
  -}
-keyPaths :: Key -> NE.NonEmpty RawFilePath
+keyPaths :: Key -> NE.NonEmpty OsPath
 keyPaths key = NE.map (\h -> keyPath key (h def)) dirHashes
+
+uuidPath :: UUID -> OsPath
+uuidPath u = toOsPath (fromUUID u :: SB.ShortByteString)
+
