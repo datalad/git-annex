@@ -465,7 +465,7 @@ withCurrentState a = do
  - because the git repo paths are stored relative.
  - Instead, use this.
  -}
-changeDirectory :: FilePath -> Annex ()
+changeDirectory :: OsPath -> Annex ()
 changeDirectory d = do
 	r <- liftIO . Git.adjustPath absPath =<< gitRepo
 	liftIO $ setCurrentDirectory d

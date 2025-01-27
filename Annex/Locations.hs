@@ -151,13 +151,13 @@ import qualified Utility.RawFilePath as R
 
 {- The directory git annex uses for local state, relative to the .git
  - directory -}
-annexDir :: RawFilePath
-annexDir = P.addTrailingPathSeparator "annex"
+annexDir :: OsPath
+annexDir = addTrailingPathSeparator (literalOsPath "annex")
 
 {- The directory git annex uses for locally available object content,
  - relative to the .git directory -}
-objectDir :: RawFilePath
-objectDir = P.addTrailingPathSeparator $ annexDir P.</> "objects"
+objectDir :: OsPath
+objectDir = addTrailingPathSeparator $ annexDir </> literalOsPath "objects"
 
 {- Annexed file's possible locations relative to the .git directory
  - in a non-bare eepository.
@@ -165,7 +165,7 @@ objectDir = P.addTrailingPathSeparator $ annexDir P.</> "objects"
  - Normally it is hashDirMixed. However, it's always possible that a
  - bare repository was converted to non-bare, or that the cripped
  - filesystem setting changed, so still need to check both. -}
-annexLocationsNonBare :: GitConfig -> Key -> [RawFilePath]
+annexLocationsNonBare :: GitConfig -> Key -> [OsPath]
 annexLocationsNonBare config key = 
 	map (annexLocation config key) [hashDirMixed, hashDirLower]
 
@@ -174,15 +174,15 @@ annexLocationsBare :: GitConfig -> Key -> [RawFilePath]
 annexLocationsBare config key = 
 	map (annexLocation config key) [hashDirLower, hashDirMixed]
 
-annexLocation :: GitConfig -> Key -> (HashLevels -> Hasher) -> RawFilePath
-annexLocation config key hasher = objectDir P.</> keyPath key (hasher $ objectHashLevels config)
+annexLocation :: GitConfig -> Key -> (HashLevels -> Hasher) -> OsPath
+annexLocation config key hasher = objectDir </> keyPath key (hasher $ objectHashLevels config)
 
 {- For exportree remotes with annexobjects=true, objects are stored
  - in this location as well as in the exported tree. -}
 exportAnnexObjectLocation :: GitConfig -> Key -> ExportLocation
 exportAnnexObjectLocation gc k =
 	mkExportLocation $
-		".git" P.</> annexLocation gc k hashDirLower
+		literalOsPath ".git" P.</> annexLocation gc k hashDirLower
 
 {- Number of subdirectories from the gitAnnexObjectDir
  - to the gitAnnexLocation. -}

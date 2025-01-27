@@ -22,6 +22,7 @@ import Database.Utility
 import qualified Database.Queue as H
 import Utility.InodeCache
 import Git.FilePath
+import Utility.OsPath
 
 import Database.Persist.Sql hiding (Key)
 import Database.Persist.TH
@@ -84,7 +85,7 @@ addAssociatedFile k f = queueDb $
 		(Associated k af)
 		[AssociatedFile =. af, AssociatedKey =. k]
   where
-	af = SByteString (getTopFilePath f)
+	af = SByteString (fromOsPath (getTopFilePath f))
 
 -- Faster than addAssociatedFile, but only safe to use when the file
 -- was not associated with a different key before, as it does not delete
@@ -93,14 +94,14 @@ newAssociatedFile :: Key -> TopFilePath -> WriteHandle -> IO ()
 newAssociatedFile k f = queueDb $
 	insert_ $ Associated k af
   where
-	af = SByteString (getTopFilePath f)
+	af = SByteString (fromOsPath (getTopFilePath f))
 
 {- Note that the files returned were once associated with the key, but
  - some of them may not be any longer. -}
 getAssociatedFiles :: Key -> ReadHandle -> IO [TopFilePath]
 getAssociatedFiles k = readDb $ do
 	l <- selectList [AssociatedKey ==. k] []
-	return $ map (asTopFilePath . (\(SByteString f) -> f) . associatedFile . entityVal) l
+	return $ map (asTopFilePath . toOsPath . (\(SByteString f) -> f) . associatedFile . entityVal) l
 
 {- Gets any keys that are on record as having a particular associated file.
  - (Should be one or none.) -}
@@ -109,13 +110,13 @@ getAssociatedKey f = readDb $ do
 	l <- selectList [AssociatedFile ==. af] []
 	return $ map (associatedKey . entityVal) l
   where
-	af = SByteString (getTopFilePath f)
+	af = SByteString (fromOsPath (getTopFilePath f))
 
 removeAssociatedFile :: Key -> TopFilePath -> WriteHandle -> IO ()
 removeAssociatedFile k f = queueDb $
 	deleteWhere [AssociatedKey ==. k, AssociatedFile ==. af]
   where
-	af = SByteString (getTopFilePath f)
+	af = SByteString (fromOsPath (getTopFilePath f))
 
 addInodeCaches :: Key -> [InodeCache] -> WriteHandle -> IO ()
 addInodeCaches k is = queueDb $
