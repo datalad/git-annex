@@ -11,6 +11,22 @@ Eg a special remote could choose to always run a computation inside a
 particular container system and then if you trust that container system is
 secure, you can choose to install it.
 
-Note that enabling the special remote is not necessary, because a
-repository can be set to autoenable a special remote.
+Enabling the special remote is not necessary, because a
+repository can be set to autoenable a special remote. In some sense this is
+surprising. I had originally talked about enabling here and then I
+remembered autoenable.
+
+It may be that autoenable should only be allowed for
+special remote programs that the user explicitly whitelists, not only
+installs into PATH. That would break some existing workflows, though
+setting some git configs would not be too hard.
+
+There seems scope for both compute special remotes that execute code that
+comes from the git repository, and ones that only have metadata about the
+computation recorded in the git repository, in a way that cannot let them
+execute arbitrary code under the control of the git repository.
+
+A well-behaved compute special remote that does run code that comes from a
+git repository could require an additional git config to be set to allow it
+to do that.
 """]]
