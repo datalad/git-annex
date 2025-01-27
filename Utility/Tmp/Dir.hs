@@ -7,6 +7,7 @@
 
 {-# LANGUAGE CPP #-}
 {-# OPTIONS_GHC -fno-warn-tabs #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Utility.Tmp.Dir (
 	withTmpDir,

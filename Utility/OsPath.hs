@@ -46,10 +46,6 @@ instance OsPathConv FilePath where
 	toOsPath = toOsPath . toRawFilePath
 	fromOsPath = fromRawFilePath . fromOsPath
 
-{- Used for string constants. -}
-literalOsPath :: String -> OsPath
-literalOsPath = toOsPath
-
 #ifdef WITH_OSPATH
 instance OsPathConv RawFilePath where
 	toOsPath = bytesToOsPath . S.toShort
@@ -80,6 +76,10 @@ bytesFromOsPath = getPosixString . getOsString
 getSearchPath :: IO [OsPath]
 getSearchPath = map toOsPath <$> PB.getSearchPath
 
+{- Used for string constants. -}
+literalOsPath :: ShortByteString -> OsPath
+literalOsPath = bytesToOsPath
+
 #else
 {- When not building with WITH_OSPATH, use RawFilePath.
  -}
@@ -97,4 +97,7 @@ instance OsPathConv ShortByteString where
 
 unsafeFromChar :: Char -> Word8
 unsafeFromChar = fromIntegral . ord
+
+literalOsPath :: RawFilePath -> OsPath
+literalOsPath = id
 #endif

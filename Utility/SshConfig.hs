@@ -5,6 +5,8 @@
  - License: BSD-2-clause
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Utility.SshConfig (
 	SshConfig(..),
 	Comment(..),

@@ -5,6 +5,7 @@
  - License: BSD-2-clause
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Utility.OSX (
@@ -18,7 +19,9 @@ import Common
 import Utility.UserInfo
 
 autoStartBase :: String -> OsPath
-autoStartBase label = literalOsPath "Library" </> literalOsPath "LaunchAgents" </> literalOsPath (label ++ ".plist")
+autoStartBase label = literalOsPath "Library" 
+	</> literalOsPath "LaunchAgents"
+	</> toOsPath label <> literalOsPath ".plist"
 
 systemAutoStart :: String -> OsPath
 systemAutoStart label = literalOsPath "/" </> autoStartBase label

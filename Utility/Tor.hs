@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Utility.Tor (
 	OnionPort,
 	OnionAddress(..),
@@ -143,7 +145,7 @@ hiddenServiceHostnameFile appname uid ident =
 hiddenServiceSocketFile :: AppName -> UserID -> UniqueIdent -> OsPath
 hiddenServiceSocketFile appname uid ident = 
 	varLibDir </> toOsPath appname
-		</> toOsPath (show uid ++ "_" ++ ident) </> toOsPath "s"
+		</> toOsPath (show uid ++ "_" ++ ident) </> literalOsPath "s"
 
 -- | Parse torrc, to get the socket file used for a hidden service with
 -- the specified UniqueIdent.
@@ -155,7 +157,7 @@ getHiddenServiceSocketFile _appname uid ident =
 	parse [] = Nothing
 	parse (("HiddenServiceDir":hsdir:[]):("HiddenServicePort":_hsport:hsaddr:[]):rest)
 		| "unix:" `isPrefixOf` hsaddr && hasident (toOsPath hsdir) =
-			Just $ toOsPath $ drop (length "unix:") hsaddr
+			Just $ toOsPath $ drop (length ("unix:" :: String)) hsaddr
 		| otherwise = parse rest
 	parse (_:rest) = parse rest
 
