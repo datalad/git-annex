@@ -86,7 +86,7 @@ instance Arbitrary KeyData where
 
 instance Arbitrary AssociatedFile where
   	arbitrary = AssociatedFile
-		. fmap (toRawFilePath . fromTestableFilePath)
+		. fmap (toOsPath . fromTestableFilePath)
 		<$> arbitrary
 
 instance Arbitrary Key where

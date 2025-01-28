@@ -29,14 +29,14 @@ annexAttrs =
 	, "annex.mincopies"
 	]
 
-checkAttr :: Git.Attr -> RawFilePath -> Annex String
+checkAttr :: Git.Attr -> OsPath -> Annex String
 checkAttr attr file = withCheckAttrHandle $ \h -> do
 	r <- liftIO $ Git.checkAttr h attr file
 	if r == Git.unspecifiedAttr
 		then return ""
 		else return r
 
-checkAttrs :: [Git.Attr] -> RawFilePath -> Annex [String]
+checkAttrs :: [Git.Attr] -> OsPath -> Annex [String]
 checkAttrs attrs file = withCheckAttrHandle $ \h -> 
 	liftIO $ Git.checkAttrs h attrs file
 

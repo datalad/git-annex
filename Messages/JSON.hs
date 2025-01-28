@@ -50,7 +50,7 @@ import Key
 import Utility.Metered
 import Utility.Percentage
 import Utility.Aeson
-import Utility.FileSystemEncoding
+import Utility.OsPath
 import Types.Messages
 
 -- A global lock to avoid concurrent threads emitting json at the same time.
@@ -76,7 +76,7 @@ type JSONBuilder = Maybe (Object, Bool) -> Maybe (Object, Bool)
 none :: JSONBuilder
 none = id
 
-start :: String -> Maybe RawFilePath -> Maybe Key -> SeekInput -> JSONBuilder
+start :: String -> Maybe OsPath -> Maybe Key -> SeekInput -> JSONBuilder
 start command file key si _ = case j of
 	Object o -> Just (o, False)
 	_ -> Nothing
@@ -84,7 +84,7 @@ start command file key si _ = case j of
 	j = toJSON' $ JSONActionItem
 		{ itemCommand = Just command
 		, itemKey = key
-		, itemFile = fromRawFilePath <$> file
+		, itemFile = fromOsPath <$> file
 		, itemUUID = Nothing
 		, itemFields = Nothing :: Maybe Bool
 		, itemSeekInput = si
@@ -98,7 +98,7 @@ startActionItem command ai si _ = case j of
 	j = toJSON' $ JSONActionItem
 		{ itemCommand = Just command
 		, itemKey = actionItemKey ai
-		, itemFile = fromRawFilePath <$> actionItemFile ai
+		, itemFile = fromOsPath <$> actionItemFile ai
 		, itemUUID = actionItemUUID ai
 		, itemFields = Nothing :: Maybe Bool
 		, itemSeekInput = si

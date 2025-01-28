@@ -24,11 +24,11 @@ import qualified Git
 import Git.Sha
 import qualified Utility.SimpleProtocol as Proto
 import qualified Utility.FileIO as F
+import qualified Utility.OsString as OS
 
 import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Concurrent.STM.TBMChan
-import qualified System.FilePath.ByteString as P
 
 newtype ChangedRefs = ChangedRefs [Git.Ref]
 	deriving (Show)
@@ -82,7 +82,7 @@ watchChangedRefs = do
 	
 	g <- gitRepo
 	let gittop = Git.localGitDir g
-	let refdir = gittop P.</> "refs"
+	let refdir = gittop </> literalOsPath "refs"
 	liftIO $ createDirectoryUnder [gittop] refdir
 
 	let notifyhook = Just $ notifyHook chan
@@ -93,18 +93,17 @@ watchChangedRefs = do
 
 	if canWatch
 		then do
-			h <- liftIO $ watchDir
-				(fromRawFilePath refdir)
+			h <- liftIO $ watchDir refdir
 				(const False) True hooks id
 			return $ Just $ ChangedRefsHandle h chan
 		else return Nothing
 
-notifyHook :: TBMChan Git.Sha -> FilePath -> Maybe FileStatus -> IO ()
+notifyHook :: TBMChan Git.Sha -> OsPath -> Maybe FileStatus -> IO ()
 notifyHook chan reffile _
-	| ".lock" `isSuffixOf` reffile = noop
+	| literalOsPath ".lock" `OS.isSuffixOf` reffile = noop
 	| otherwise = void $ do
 		sha <- catchDefaultIO Nothing $
-			extractSha <$> F.readFile' (toOsPath (toRawFilePath reffile))
+			extractSha <$> F.readFile' reffile
 		-- When the channel is full, there is probably no reader
 		-- running, or ref changes have been occurring very fast,
 		-- so it's ok to not write the change to it.
