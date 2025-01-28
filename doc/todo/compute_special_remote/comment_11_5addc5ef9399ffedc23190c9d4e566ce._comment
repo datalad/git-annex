@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: worktree provisioning"""
+ date="2025-01-28T14:08:29Z"
+ content="""
+@m.risse in your example the "data.nc" file gets new content when
+retrieved from the special remote and the source file has changed. 
+
+But if you already have data.nc file present in a repository, it
+does not get updated immediately when you update the source
+"data.grib" file.
+
+So, a drop and re-get of a file changes the version of the file you have
+available. For that matter, if the old version has been stored on other
+remotes, a get may retrieve either an old or a new version. 
+That is not intuitive and it makes me wonder if using a
+special remote is really a good fit for what you're wanting to do.
+
+In your "cdo" example, it's not clear to me if the new version of the
+software generates an identical file to the old, or if it has a bug fix
+that causes it to generate a significantly different output. If the two
+outputs are significantly different then treating them as the same
+git-annex key seems questionable to me.
+"""]]

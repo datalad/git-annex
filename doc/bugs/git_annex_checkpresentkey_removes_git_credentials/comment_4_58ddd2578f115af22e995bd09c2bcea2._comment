@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/cd1c0b3be1af288012e49197918395f0"
+ subject="comment 4"
+ date="2025-01-27T15:14:44Z"
+ content="""
+It definitely takes a different code path somehow, as I don't see the `Utility.Url` debug messages when the remote is not on localhost.
+"""]]

@@ -4,13 +4,13 @@ I have a pretty big repository with around 300 000 files in the workdir of a bra
 I wanted to unlock all those files from that branch on a machine, so I tried to use git-annex-adjust --unlock. 
 Sadly, the command do not seems to finish, ever.
 
-Executing the command with debug from a clone(to avoid interacting with the broken index from the first), it seems to deadlock after executing between 10000 and 20000 "thawing" processes when executing the filter-process logic over the files in the worktree.
-The problem seems to be reproducible with any repository with a lot of files in the worktree as far as I can tell, independant of file size.
+Executing the command with the debug flag from a clone(to avoid interacting with the broken index from the first), it seems to deadlock after executing 10240 completed processes for the filter-process logic over the files in the worktree, which happens to match the annex.queuesize configuration value in use in those repositories.
+The problem seems to be reproducible with any repository with more than the aforementioned count of files in the worktree as far as I can tell, independant of file size.
 
-The deadlock described makes higher-level commands like git annex sync also block indefinitely when checkout-ing the unlocked branch for any reason.
+The deadlock described makes higher-level commands like git annex sync also block indefinitely when checkout-ing the unlocked branch for any reason in these kinds of unlocked repository du to implcit call to the deadlocking git-annex smudge code.
 Also, because the filtering is not completely applied, the index is pretty scrambled, its easier to clone the repo and move the annex than fix it, for me at least.
 
-I call the behavior "deadlock" due to the absence of debug log output and low cpu usage on the process when in that state. This seems to indicate some kind of multiprocessing deadlock to me.
+I call the behavior "deadlock" due to the absence of debug log output after the 10240 th process and 0% cpu usage on the remaining git and git-annex processes when the bug happens. This seems to indicate some kind of multiprocessing deadlock to me.
 
 ### What steps will reproduce the problem?
 
@@ -27,10 +27,13 @@ Here is a minimum set of bash commands that generate the deadlock on my end:
     git annex add
     git commit -m "add all empty files"
 
-    # This will get stuck after around ~10000-20000 processes from Utility.Process in the debug log while the git annex thaws files into unlocked files
-    # The deadlock seems to happens after outputing the start of a new thawing, ctrl-c seems to be the only end state for this
-    git annex adjust --unlock --debug
+    # This will get stuck after 10240 processes from Utility.Process completed in the debug log while git annex thaws files into unlocked files
+    # The deadlock seems to happens after outputing the start of the last thawing in the queue, ctrl-c seems to be the only end state for this
+    git annex adjust --unlock --debug 2> ~/unlock-log
+    # Ctrl-c the command above once the debug output cease to output new lines without exiting.
 
+    # This commands output the number of processes ran for the command above, which is 10240 for me
+    cat ~/unlock-log | grep Perms | wc -l
 
 ### What version of git-annex are you using? On what operating system?
 
@@ -64,14 +67,15 @@ Debian Bookworm [Compiled via "building from source on Debian"]
 
 ### Please provide any additional information below.
 
-Excerpt of the last lines from the huge debug log:
+Excerpt of the last lines from the huge debug log from the git annex adjust above:
 
     [2025-01-16 23:30:27.913022014] (Utility.Process) process [493397] done ExitSuccess
     [2025-01-16 23:30:27.91309169] (Annex.Perms) thawing content .git/annex/othertmp/BKQKGR.0/BKQKGR
 
-Given the huge debug log produced, it may be easier to reproduce the bug to have it than copying it here. If wanted, I can generate one as required.
+Given the huge debug log produced for this bug, it may be easier to reproduce the bug to have it than copying it here. If wanted, I can generate one as required with the process documented in for the bug repoduction above.
 
-Repeatedly calling this(and ctrl-c it when it inevitably get stuck) seems to eventually unlock the files, but its not really a valid solution in my case.
+
+Repeatedly calling this(and ctrl-c it when it inevitably get stuck) seems to eventually unlock the files ion batches of 10240, but its not really a valid solution in my case.
 
     git annex smudge --update --debug
 

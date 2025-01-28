@@ -1,0 +1,44 @@
+[[!comment format=mdwn
+ username="beryllium@5bc3c32eb8156390f96e363e4ba38976567425ec"
+ nickname="beryllium"
+ avatar="http://cdn.libravatar.org/avatar/62b67d68e918b381e7e9dd6a96c16137"
+ subject="Simple config amendment for Apache served repositories"
+ date="2025-01-28T08:34:40Z"
+ content="""
+If you follow the [git-http-backend][id] documentation for serving repositories via Apache, you'll read this section:
+
+<code>
+<p>To serve gitweb at the same url, use a ScriptAliasMatch to only
+those URLs that <em>git http-backend</em> can handle, and forward the
+rest to gitweb:</p>
+</div>
+<div class=\"listingblock\">
+<div class=\"content\">
+<pre>ScriptAliasMatch \
+	\"(?x)^/git/(.*/(HEAD | \
+			info/refs | \
+			objects/(info/[^/]+ | \
+				 [0-9a-f]{2}/[0-9a-f]{38} | \
+				 pack/pack-[0-9a-f]{40}\.(pack|idx)) | \
+			git-(upload|receive)-pack))$\" \
+	/usr/libexec/git-core/git-http-backend/$1
+
+ScriptAlias /git/ /var/www/cgi-bin/gitweb.cgi/</pre>
+</div>
+</div>
+</code>
+
+If you add the following AliasMatch between the two ScriptAlias directives, you can get Apache to serve the (...).git/config file to the http client, in this case git-annex.
+
+<pre>
+AliasMatch \"(?x)^/git/(.*/config)$\" /var/www/git/$1
+</pre>
+
+This allows the annexes to use the autoenable=true to pin the centralisation afforded by the git only repository. Keep a \"source of truth\" so to speak (acknowledging that this is antithetical to what git-annex aims to do).
+
+As an aside, the tip to generate a uuid didn't seem to work for me. But I suspect I missed the point somewhat.
+
+Regardless, if you are able to alter the configuration of your \"centralised\" git repository, this might be of assistance.
+
+[id]: https://git-scm.com/docs/git-http-backend  \"git-http-backend\"
+"""]]

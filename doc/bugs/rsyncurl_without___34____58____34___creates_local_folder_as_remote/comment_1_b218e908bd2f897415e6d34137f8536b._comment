@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/cd1c0b3be1af288012e49197918395f0"
+ subject="comment 1"
+ date="2025-01-27T11:28:43Z"
+ content="""
+I'd say this is intended behavior: I assume that the rsyncurl option is more less passed verbatim to rsync, and rsync can act on both local and remote paths. There is the possibility to use `rsync://` URLs, remote paths via SSH where the host and path are separated by a colon, and local paths.
+
+The rsync special remote with local paths behaves a bit differently than the directory special remote, namely the rsyncurl is remembered (e.g. for autoenable) while the directory special remote does not remember the directory. There can be use-cases for both.
+
+Besides, most of the time I think one would want to specify a remote directory with rsync, in which case the colon is necessary anyway.
+"""]]
