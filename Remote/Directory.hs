@@ -241,7 +241,7 @@ checkDiskSpaceDirectory d k = do
  - down. -}
 finalizeStoreGeneric :: RawFilePath -> RawFilePath -> RawFilePath -> IO ()
 finalizeStoreGeneric d tmp dest = do
-	removeDirGeneric False (fromRawFilePath d) dest'
+	removeDirGeneric False d dest
 	createDirectoryUnder [d] (parentDir dest)
 	renameDirectory (fromRawFilePath tmp) dest'
 	-- may fail on some filesystems
@@ -275,9 +275,7 @@ retrieveKeyFileCheapM _ _ = Nothing
 #endif
 
 removeKeyM :: RawFilePath -> Remover
-removeKeyM d _proof k = liftIO $ removeDirGeneric True
-	(fromRawFilePath d)
-	(fromRawFilePath (storeDir d k))
+removeKeyM d _proof k = liftIO $ removeDirGeneric True d (storeDir d k)
 
 {- Removes the directory, which must be located under the topdir.
  -
@@ -293,28 +291,30 @@ removeKeyM d _proof k = liftIO $ removeDirGeneric True
  - can also be removed. Failure to remove such a directory is not treated
  - as an error.
  -}
-removeDirGeneric :: Bool -> FilePath -> FilePath -> IO ()
+removeDirGeneric :: Bool -> RawFilePath -> RawFilePath -> IO ()
 removeDirGeneric removeemptyparents topdir dir = do
-	void $ tryIO $ allowWrite (toRawFilePath dir)
+	void $ tryIO $ allowWrite dir
 #ifdef mingw32_HOST_OS
 	{- Windows needs the files inside the directory to be writable
 	 - before it can delete them. -}
-	void $ tryIO $ mapM_ (allowWrite . toRawFilePath) =<< dirContents dir
+	void $ tryIO $ mapM_ allowWrite =<< dirContents dir
 #endif
-	tryNonAsync (removeDirectoryRecursive dir) >>= \case
+	tryNonAsync (removeDirectoryRecursive dir') >>= \case
 		Right () -> return ()
 		Left e ->
-			unlessM (doesDirectoryExist topdir <&&> (not <$> doesDirectoryExist dir)) $
+			unlessM (doesDirectoryExist topdir' <&&> (not <$> doesDirectoryExist dir')) $
 				throwM e
 	when removeemptyparents $ do
-		subdir <- relPathDirToFile (toRawFilePath topdir) (P.takeDirectory (toRawFilePath dir))
+		subdir <- relPathDirToFile topdir (P.takeDirectory dir)
 		goparents (Just (P.takeDirectory subdir)) (Right ())
   where
 	goparents _ (Left _e) = return ()
 	goparents Nothing _ = return ()
 	goparents (Just subdir) _ = do
-		let d = topdir </> fromRawFilePath subdir
+		let d = topdir' </> fromRawFilePath subdir
 		goparents (upFrom subdir) =<< tryIO (removeDirectory d)
+	dir' = fromRawFilePath dir
+	topdir' = fromRawFilePath topdir
 
 checkPresentM :: RawFilePath -> ChunkConfig -> CheckPresent
 checkPresentM d (LegacyChunks _) k = Legacy.checkKey d locations' k
