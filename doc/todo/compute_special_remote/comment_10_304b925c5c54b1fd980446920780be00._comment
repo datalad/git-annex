@@ -1,0 +1,39 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2025-01-28T14:06:41Z"
+ content="""
+Using metadata to store the inputs of computations like I did in my example
+above also seems that it would allow the metadata to be changed, which
+would change the output when a key gets recomputed.
+
+It might be possible for git-annex to pin down the current state of
+metadata (or the whole git-annex branch) and provide the same input to the
+computation when it's run again. (Unless `git-annex forget` has caused
+that old branch state to be lost..) But it can't fully isolate the program
+from all unpinned inputs without using some form of containerization,
+which feels out of scope for git-annex.
+
+Instead of using metadata, the input values could be stored in the
+per-special-remote state of the generated key. Or the input values could be
+encoded in the key itself, but then two computations that generate the same
+output would have two different keys, rather than hashing to the same key.
+
+And using a key with a regular hash backend lets the user find out if the
+computation turns out to not be reproducible later for whatever reason;
+getting the file from the compute special remote will fail at hash
+verification time. Something like a VURL key could still alternatively be
+used in cases where reproducibility is not important.
+
+To add a computed file, the interface would look close to the same,
+but now the --value options are setting fields in the compute special
+remote's state:
+
+	git-annex addcomputed foo --to ffmpeg-cut
+	    --input source=input.mov 
+	    --value starttime=15:00
+	    --value endtime=30:00
+
+The values could be provided to the "git-annex-compute-" program with
+environment variables.
+"""]]
