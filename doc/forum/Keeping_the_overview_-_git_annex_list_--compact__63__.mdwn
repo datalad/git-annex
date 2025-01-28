@@ -1,0 +1,31 @@
+Is there a way to obtain/keep the overview over a git annex repository with many directories and files?  For example to answer the following question in a compact way: which subdirectories of the current directory are complete locally?
+
+The needed information is provided by both `git annex list` and `git annex info`, but the output of both command is very verbose and difficult to parse visually.
+
+For example part of the output of `git annex list` could be:
+
+```
+XXX__ foo/bar/a
+XXX__ foo/bar/b
+XXX__ foo/bar/c
+XXX__ foo/hey/d
+XXX__ foo/hey/d
+XXX__ foo/hey/e
+```
+
+Assuming that the `foo` directory contains no further files this could be compacted to
+
+```
+XXX__ foo/bar/
+XXX__ foo/hey/
+```
+
+or even
+
+```
+XXX__ foo/
+```
+
+Of course the above procedure would only compact directories if all files have the same presence status.  But I guess that this will be true in many cases.
+
+I’m thinking about implementing this as a filter to the output of `git annex list`, but wanted to check whether similar ideas haven’t been considered here before. (I could not find anything.)
