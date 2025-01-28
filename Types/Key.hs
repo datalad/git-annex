@@ -203,7 +203,7 @@ splitKeyNameExtension' keyname = S8.span (/= '.') keyname
 
 {- A filename may be associated with a Key. -}
 newtype AssociatedFile = AssociatedFile (Maybe RawFilePath)
-	deriving (Show, Read, Eq, Ord)
+	deriving (Show, Eq, Ord)
 
 {- There are several different varieties of keys. -}
 data KeyVariety
