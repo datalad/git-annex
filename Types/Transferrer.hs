@@ -153,10 +153,10 @@ instance Proto.Serializable TransferAssociatedFile where
 	-- Comes last, so whitespace is ok. But, in case the filename
 	-- contains eg a newline, escape it. Use C-style encoding.
 	serialize (TransferAssociatedFile (AssociatedFile (Just f))) =
-		decodeBS (encode_c isUtf8Byte f)
+		fromRawFilePath (encode_c isUtf8Byte (fromOsPath f))
 	serialize (TransferAssociatedFile (AssociatedFile Nothing)) = ""
 
 	deserialize "" = Just $ TransferAssociatedFile $
 		AssociatedFile Nothing
 	deserialize s = Just $ TransferAssociatedFile $
-		AssociatedFile $ Just $ decode_c $ encodeBS s
+		AssociatedFile $ Just $ toOsPath $ decode_c $ toRawFilePath s
