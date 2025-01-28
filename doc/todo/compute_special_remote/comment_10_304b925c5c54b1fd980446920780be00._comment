@@ -4,8 +4,10 @@
  date="2025-01-28T14:06:41Z"
  content="""
 Using metadata to store the inputs of computations like I did in my example
-above also seems that it would allow the metadata to be changed, which
-would change the output when a key gets recomputed.
+above seems that it would allow the metadata to be changed later, which
+would change the output when a key gets recomputed. That feels surprising,
+because metadata could be changed for any reason, without the intention
+of affecting a compute special remote.
 
 It might be possible for git-annex to pin down the current state of
 metadata (or the whole git-annex branch) and provide the same input to the
@@ -19,7 +21,7 @@ per-special-remote state of the generated key. Or the input values could be
 encoded in the key itself, but then two computations that generate the same
 output would have two different keys, rather than hashing to the same key.
 
-And using a key with a regular hash backend lets the user find out if the
+Using a key with a regular hash backend also lets the user find out if the
 computation turns out to not be reproducible later for whatever reason;
 getting the file from the compute special remote will fail at hash
 verification time. Something like a VURL key could still alternatively be
@@ -29,11 +31,39 @@ To add a computed file, the interface would look close to the same,
 but now the --value options are setting fields in the compute special
 remote's state:
 
-	git-annex addcomputed foo --to ffmpeg-cut
-	    --input source=input.mov 
-	    --value starttime=15:00
+	git-annex addcomputed foo --to ffmpeg-cut \
+	    --input source=input.mov \
+	    --value starttime=15:00 \
 	    --value endtime=30:00
 
 The values could be provided to the "git-annex-compute-" program with
 environment variables.
+
+For `--input source=foo`, it could look up the git-annex key (or git sha1)
+of that file, and store that in the state. So it would provide the compute
+program with the same data every time. But it could *also* store the
+filename. And that allows for a command like this:
+
+	git-annex recompute foo --from ffmpeg-cut
+
+Which, when the input.mov file has been changed, would re-run the
+computation with the new content of the file, and stage a new version of
+the computed file. It could even be used to recompute every file in a tree:
+
+	git-annex recompute . --from ffmpeg-cut
+	
+Also, that command could let input values be adjusted later:
+
+	git-annex recompute foo --from ffmpeg-cut --value starttime=14:50
+	git commit -m 'include the introduction of the speaker in the clip'
+
+It would also be good to have a command that examines a computed key
+and displays the values and inputs. Eg:
+
+	git-annex examinecompute foo --from ffmpeg-cut
+	source=input.mov (annex key SHA256--xxxxxxxxx)
+	starttime=15:00
+	endtime=30:00
+
+This feels like it might allow for some useful workflows...
 """]]
