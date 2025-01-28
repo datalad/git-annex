@@ -9,8 +9,8 @@ XXX__ foo/bar/a
 XXX__ foo/bar/b
 XXX__ foo/bar/c
 XXX__ foo/hey/d
-XXX__ foo/hey/d
 XXX__ foo/hey/e
+XXX__ foo/hey/f
 ```
 
 Assuming that the `foo` directory contains no further files this could be compacted to
