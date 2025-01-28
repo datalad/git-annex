@@ -58,12 +58,13 @@ Also, that command could let input values be adjusted later:
 	git commit -m 'include the introduction of the speaker in the clip'
 
 It would also be good to have a command that examines a computed key
-and displays the values and inputs. Eg:
+and displays the values and inputs. That could be `git-annex whereis`
+or perhaps a dedicated command with more structured output:
 
 	git-annex examinecompute foo --from ffmpeg-cut
 	source=input.mov (annex key SHA256--xxxxxxxxx)
 	starttime=15:00
 	endtime=30:00
 
-This feels like it might allow for some useful workflows...
+This all feels like it might allow for some useful workflows...
 """]]
