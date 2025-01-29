@@ -53,36 +53,39 @@ instance OsPathConv FilePath where
 
 #ifdef WITH_OSPATH
 instance OsPathConv RawFilePath where
-	toOsPath = bytesToOsPath . S.toShort
 #if defined(mingw32_HOST_OS)
+	toOsPath = bytesToOsPath
 	fromOsPath = bytesFromOsPath
 #else
+	toOsPath = bytesToOsPath . S.toShort
 	fromOsPath = S.fromShort . bytesFromOsPath
 #endif
 
 instance OsPathConv ShortByteString where
-	toOsPath = bytesToOsPath
 #if defined(mingw32_HOST_OS)
+	toOsPath = bytesToOsPath . S.fromShort
 	fromOsPath = S.toShort . bytesFromOsPath
 #else
+	toOsPath = bytesToOsPath
 	fromOsPath = bytesFromOsPath
 #endif
 
-bytesToOsPath :: ShortByteString -> OsPath
 #if defined(mingw32_HOST_OS)
 -- On Windows, OsString contains a ShortByteString that is
--- utf-16 encoded. So have to convert the input to that.
--- This is relatively expensive.
+-- utf-16 encoded. But the input RawFilePath is assumed to
+-- be utf-8. So this is a relatively  expensive conversion.
+bytesToOsPath :: RawFilePath -> OsPath
 bytesToOsPath = unsafePerformIO . encodeFS . fromRawFilePath
 #else
+bytesToOsPath :: ShortByteString -> OsPath
 bytesToOsPath = OsString . PosixString
 #endif
 
 #if defined(mingw32_HOST_OS)
 bytesFromOsPath :: OsPath -> RawFilePath
 -- On Windows, OsString contains a ShortByteString that is
--- utf-16 encoded. So have to convert the input from that.
--- This is relatively expensive.
+-- utf-16 encoded, but RawFilePath is utf-8.
+-- So this is relatively expensive conversion.
 bytesFromOsPath = toRawFilePath . cWcharsToChars_UCS2 . BS16.unpack . getWindowsString
 #else
 bytesFromOsPath :: OsPath -> ShortByteString
