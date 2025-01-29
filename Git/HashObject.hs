@@ -5,7 +5,6 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Git.HashObject where
@@ -49,10 +48,6 @@ hashFile hdl@(HashObjectHandle h _ _) file = do
 	-- So, make the filename absolute, which will work now
 	-- and also if git's behavior later changes.
 	file' <- absPath file
-	-- XXX windows crash debugging
-#ifndef mingw32_HOST_OS
-	hPutStrLn stderr $ show ("hashFile called on file", file, "abspath is", file')
-#endif
 	if newline `S.elem` file' || carriagereturn `S.elem` file
 		then hashFile' hdl file
 		else CoProcess.query h (send file') receive
