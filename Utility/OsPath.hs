@@ -22,13 +22,16 @@ import Utility.FileSystemEncoding
 import System.OsPath
 import "os-string" System.OsString.Internal.Types
 import qualified Data.ByteString.Short as S
+#if defined(mingw32_HOST_OS)
+import GHC.IO (unsafePerformIO)
+#endif
 
-{- Unlike System.OsString.fromBytes, on Windows this does not ensure a
- - valid USC-2LE encoding. The input ByteString must be in a valid encoding
- - already or uses of the OsPath will fail. -}
 toOsPath :: RawFilePath -> OsPath
 #if defined(mingw32_HOST_OS)
-toOsPath = OsString . WindowsString . S.toShort
+-- On Windows, OsString contains a ShortByteString that is
+-- utf-16 encoded. So have to convert the input to that.
+-- This is relatively expensive.
+toOsPath = unsafePerformIO . encodeFS . fromRawFilePath
 #else
 toOsPath = OsString . PosixString . S.toShort
 #endif
