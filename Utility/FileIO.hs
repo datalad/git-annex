@@ -93,7 +93,6 @@ openTempFile p s = do
 -- file content in that case, unlike the Strings used by the Prelude.
 import Utility.OsPath
 import System.IO (withFile, openFile, openTempFile, IO)
-import qualified System.IO
 import Data.ByteString.Lazy (readFile, writeFile, appendFile)
 import qualified Data.ByteString as B
 
