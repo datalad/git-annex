@@ -30,6 +30,11 @@ import System.OsPath as X hiding (OsPath, OsString, unsafeFromChar)
 import System.OsPath
 import "os-string" System.OsString.Internal.Types
 import qualified System.FilePath.ByteString as PB
+#if defined(mingw32_HOST_OS)
+import GHC.IO (unsafePerformIO)
+import System.OsString.Encoding.Internal (cWcharsToChars_UCS2)
+import qualified System.OsString.Data.ByteString.Short.Word16 as BS16
+#endif
 #else
 import System.FilePath.ByteString as X hiding (RawFilePath, getSearchPath)
 import System.FilePath.ByteString (getSearchPath)
@@ -49,26 +54,38 @@ instance OsPathConv FilePath where
 #ifdef WITH_OSPATH
 instance OsPathConv RawFilePath where
 	toOsPath = bytesToOsPath . S.toShort
+#if defined(mingw32_HOST_OS)
+	fromOsPath = bytesFromOsPath
+#else
 	fromOsPath = S.fromShort . bytesFromOsPath
+#endif
 
 instance OsPathConv ShortByteString where
 	toOsPath = bytesToOsPath
+#if defined(mingw32_HOST_OS)
+	fromOsPath = S.toShort . bytesFromOsPath
+#else
 	fromOsPath = bytesFromOsPath
+#endif
 
-{- Unlike System.OsString.fromBytes, on Windows this does not ensure a
- - valid USC-2LE encoding. The input ByteString must be in a valid encoding
- - already or uses of the OsPath will fail. -}
 bytesToOsPath :: ShortByteString -> OsPath
 #if defined(mingw32_HOST_OS)
-bytesToOsPath = OsString . WindowsString
+-- On Windows, OsString contains a ShortByteString that is
+-- utf-16 encoded. So have to convert the input to that.
+-- This is relatively expensive.
+bytesToOsPath = unsafePerformIO . encodeFS . fromRawFilePath
 #else
 bytesToOsPath = OsString . PosixString
 #endif
 
-bytesFromOsPath :: OsPath -> ShortByteString
 #if defined(mingw32_HOST_OS)
-bytesFromOsPath = getWindowsString . getOsString
+bytesFromOsPath :: OsPath -> RawFilePath
+-- On Windows, OsString contains a ShortByteString that is
+-- utf-16 encoded. So have to convert the input from that.
+-- This is relatively expensive.
+bytesFromOsPath = toRawFilePath . cWcharsToChars_UCS2 . BS16.unpack . getWindowsString
 #else
+bytesFromOsPath :: OsPath -> ShortByteString
 bytesFromOsPath = getPosixString . getOsString
 #endif
 

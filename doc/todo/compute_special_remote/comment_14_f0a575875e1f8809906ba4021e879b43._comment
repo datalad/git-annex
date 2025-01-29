@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/cd1c0b3be1af288012e49197918395f0"
+ subject="comment 14"
+ date="2025-01-29T10:13:59Z"
+ content="""
+Some thoughts regarding your ideas:
+
+- Multiple output files could always be emulated by generating a single archive file and registering additional compute instructions that simply extract each output file from that archive. I think there could be some convenience functionality on the CLI side to set that up and the key of the archive file might not even need to correspond to an actual file in the tree.
+- For my use-cases (and I think DataLad at large) it is important to make this feature work across repository boundaries. E.g. I would like to use this feature to build a derived dataset from <https://atris.fz-juelich.de/MeteoCloud/ERA5>, where exactly this conversion from grib to netcdf happens in the compute step. I'd like to have the netcdf outputs as a separate dataset as some users might only be interested in the grib files, and it would scale better when there is more than just one kind of output that can be derived from an input by computation. `git annex get` doesn't work recursively across submodules/subdatasets though, and `datalad get` does not understand keys, just paths (at least so far).
+"""]]
