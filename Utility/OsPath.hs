@@ -98,7 +98,7 @@ getSearchPath = map toOsPath <$> PB.getSearchPath
 
 {- Used for string constants. -}
 literalOsPath :: ShortByteString -> OsPath
-literalOsPath = bytesToOsPath
+literalOsPath = toOsPath
 
 #else
 {- When not building with WITH_OSPATH, use RawFilePath.
