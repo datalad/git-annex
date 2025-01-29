@@ -25,6 +25,7 @@ import Utility.Path.AbsRel
 import Utility.Directory
 import Utility.Env
 import Utility.FileSystemEncoding
+import Utility.SystemDirectory
 import Build.BundledPrograms
 #ifdef darwin_HOST_OS
 import System.IO
@@ -71,14 +72,15 @@ installGitLibs topdir = do
 	-- install git-core programs; these are run by the git command
 	createDirectoryIfMissing True gitcoredestdir
 	execpath <- getgitpath "exec-path"
-	cfs <- dirContents execpath
+	cfs <- dirContents (toRawFilePath execpath)
 	forM_ cfs $ \f -> do
+		let f' = fromRawFilePath f
 		destf <- ((gitcoredestdir </>) . fromRawFilePath)
 			<$> relPathDirToFile
 				(toRawFilePath execpath)
-				(toRawFilePath f)
+				f
 		createDirectoryIfMissing True (takeDirectory destf)
-		issymlink <- isSymbolicLink <$> getSymbolicLinkStatus f
+		issymlink <- isSymbolicLink <$> getSymbolicLinkStatus f'
 		if issymlink
 			then do
 				-- many git-core files may symlink to eg
@@ -91,20 +93,20 @@ installGitLibs topdir = do
 				-- Other git-core files symlink to a file
 				-- beside them in the directory. Those
 				-- links can be copied as-is.
-				linktarget <- readSymbolicLink f
+				linktarget <- readSymbolicLink f'
 				if takeFileName linktarget == linktarget
-					then cp f destf
+					then cp f' destf
 					else do
 						let linktarget' = progDir topdir </> takeFileName linktarget
 						unlessM (doesFileExist linktarget') $ do
 							createDirectoryIfMissing True (takeDirectory linktarget')
-							L.readFile f >>= L.writeFile linktarget'
+							L.readFile f' >>= L.writeFile linktarget'
 						removeWhenExistsWith removeLink destf
 						rellinktarget <- relPathDirToFile
 							(toRawFilePath (takeDirectory destf))
 							(toRawFilePath linktarget')
 						createSymbolicLink (fromRawFilePath rellinktarget) destf
-			else cp f destf
+			else cp f' destf
 	
 	-- install git's template files
 	-- git does not have an option to get the path of these,
@@ -112,14 +114,14 @@ installGitLibs topdir = do
 	-- next to the --man-path, in eg /usr/share/git-core
 	manpath <- getgitpath "man-path"
 	let templatepath = manpath </> ".." </> "git-core" </> "templates"
-	tfs <- dirContents templatepath
+	tfs <- dirContents (toRawFilePath templatepath)
 	forM_ tfs $ \f -> do
 		destf <- ((templatedestdir </>) . fromRawFilePath)
 			<$> relPathDirToFile
 				(toRawFilePath templatepath)
-				(toRawFilePath f)
+				f
 		createDirectoryIfMissing True (takeDirectory destf)
-		cp f destf
+		cp (fromRawFilePath f) destf
   where
 	gitcoredestdir = topdir </> "git-core"
 	templatedestdir = topdir </> "templates"
