@@ -86,7 +86,7 @@ bytesFromOsPath :: OsPath -> RawFilePath
 -- On Windows, OsString contains a ShortByteString that is
 -- utf-16 encoded, but RawFilePath is utf-8.
 -- So this is relatively expensive conversion.
-bytesFromOsPath = toRawFilePath . cWcharsToChars_UCS2 . BS16.unpack . getWindowsString
+bytesFromOsPath = toRawFilePath . cWcharsToChars_UCS2 . BS16.unpack . getWindowsString . getOsString
 #else
 bytesFromOsPath :: OsPath -> ShortByteString
 bytesFromOsPath = getPosixString . getOsString
