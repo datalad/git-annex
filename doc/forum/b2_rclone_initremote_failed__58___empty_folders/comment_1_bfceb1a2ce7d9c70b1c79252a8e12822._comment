@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="dmcardle"
+ avatar="http://cdn.libravatar.org/avatar/b79468a0d03ec3ec7acbae547c4fa994"
+ subject="comment 1"
+ date="2025-01-29T14:44:37Z"
+ content="""
+Hi, author of rclone's \"gitannex\" command here. Sorry you're running into trouble with it!
+
+Based on the text, that error is definitely coming from [gitannex.go](https://github.com/rclone/rclone/blob/6494ac037fdd7ada2052ae9a8e05d230e7e686b2/cmd/gitannex/gitannex.go#L276).
+
+I believe that my intent was to detect that the following mkdir would fail, and offer up a more specific error message rather than letting it fail.
+
+I don't know anything about Backblaze B2, unfortunately. I suppose we could work around the issue by creating an empty file underneath the place we want the empty directory. Sounds plausible, right?
+
+Would you mind trying to make an empty directory on your B2 remote to verify it fails? Something like `rclone mkdir myremote:newdir`.
+
+And also try touching a file in a new directory to verify it's possible in one go? Something like `rclone touch --recursive myremote:newdir/newfile.txt`.
+"""]]
