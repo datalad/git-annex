@@ -5,21 +5,24 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Annex.VariantFile where
 
 import Annex.Common
 import Utility.Hash
+import qualified Utility.OsString as OS
 
 import qualified Data.ByteString as S
 
-variantMarker :: String
-variantMarker = ".variant-"
+variantMarker :: OsPath
+variantMarker = literalOsPath ".variant-"
 
-mkVariant :: FilePath -> String -> FilePath
+mkVariant :: OsPath -> OsPath -> OsPath
 mkVariant file variant = takeDirectory file
 	</> dropExtension (takeFileName file)
-	++ variantMarker ++ variant
-	++ takeExtension file
+	<> variantMarker <> variant
+	<> takeExtension file
 
 {- The filename to use when resolving a conflicted merge of a file,
  - that points to a key.
@@ -34,12 +37,12 @@ mkVariant file variant = takeDirectory file
  - conflicted merge resolution code. That case is detected, and the full
  - key is used in the filename.
  -}
-variantFile :: FilePath -> Key -> FilePath
+variantFile :: OsPath -> Key -> OsPath
 variantFile file key
-	| doubleconflict = mkVariant file (fromRawFilePath (keyFile key))
-	| otherwise = mkVariant file (shortHash $ serializeKey' key)
+	| doubleconflict = mkVariant file (keyFile key)
+	| otherwise = mkVariant file (toOsPath (shortHash $ serializeKey' key))
   where
-	doubleconflict = variantMarker `isInfixOf` file
+	doubleconflict = variantMarker `OS.isInfixOf` file
 
 shortHash :: S.ByteString -> String
 shortHash = take 4 . show . md5s

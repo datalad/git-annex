@@ -433,7 +433,7 @@ download' nocurlerror meterupdate iv url file uo =
 
 	downloadfile u = do
 		noverification
-		let src = unEscapeString (uriPath u)
+		let src = toOsPath $ unEscapeString (uriPath u)
 		withMeteredFile src meterupdate $
 			F.writeFile file
 		return $ Right ()

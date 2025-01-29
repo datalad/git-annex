@@ -75,7 +75,7 @@ sameCheckSum key s = s == expected
 	expected = reverse $ takeWhile (/= '-') $ reverse $
 		decodeBS $ S.fromShort $ fromKey keyName key
 
-genGitBundleKey :: UUID -> RawFilePath -> MeterUpdate -> Annex Key
+genGitBundleKey :: UUID -> OsPath -> MeterUpdate -> Annex Key
 genGitBundleKey remoteuuid file meterupdate = do
 	filesize <- liftIO $ getFileSize file
 	s <- Hash.hashFile hash file meterupdate

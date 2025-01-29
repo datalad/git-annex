@@ -64,7 +64,7 @@ hookWrite h r = ifM (doesFileExist f)
 		-- they typically use unix newlines, which does work there
 		-- and makes the repository more portable.
 		viaTmp F.writeFile' f (encodeBS (hookScript h))
-		void $ tryIO $ modifyFileMode (fromOsPath f) (addModes executeModes)
+		void $ tryIO $ modifyFileMode f (addModes executeModes)
 		return True
 
 {- Removes a hook. Returns False if the hook contained something else, and

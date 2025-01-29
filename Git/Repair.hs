@@ -61,7 +61,7 @@ cleanCorruptObjects fsckresults r = do
 	removeLoose s = removeWhenExistsWith R.removeLink $
 		fromOsPath $ looseObjectFile r s
 	removeBad s = do
-		void $ tryIO $ allowRead $ fromOsPath $ looseObjectFile r s
+		void $ tryIO $ allowRead $ looseObjectFile r s
 		whenM (isMissing s r) $
 			removeLoose s
 
@@ -85,7 +85,7 @@ explodePacks r = go =<< listPackFiles r
 		putStrLn "Unpacking all pack files."
 		forM_ packs $ \packfile -> do
 			-- Just in case permissions are messed up.
-			allowRead (fromOsPath packfile)
+			allowRead packfile
 			-- May fail, if pack file is corrupt.
 			void $ tryIO $
 				pipeWrite [Param "unpack-objects", Param "-r"] r' $ \h ->
@@ -477,7 +477,7 @@ preRepair g = do
 		writeFile (fromOsPath headfile) "ref: refs/heads/master"
 	explodePackedRefsFile g
 	unless (repoIsLocalBare g) $
-		void $ tryIO $ allowWrite $ fromOsPath $ indexFile g
+		void $ tryIO $ allowWrite $ indexFile g
   where
 	headfile = localGitDir g </> literalOsPath "HEAD"
 	validhead s = "ref: refs/" `isPrefixOf` s
@@ -652,5 +652,5 @@ successfulRepair = fst
 
 safeReadFile :: OsPath -> IO B.ByteString
 safeReadFile f = do
-	allowRead (fromOsPath f)
+	allowRead f
 	F.readFile' f

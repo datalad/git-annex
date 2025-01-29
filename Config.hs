@@ -94,7 +94,7 @@ setCrippledFileSystem :: Bool -> Annex ()
 setCrippledFileSystem b =
 	setConfig (annexConfig "crippledfilesystem") (Git.Config.boolConfig b)
 
-pidLockFile :: Annex (Maybe RawFilePath)
+pidLockFile :: Annex (Maybe OsPath)
 #ifndef mingw32_HOST_OS
 pidLockFile = ifM (annexPidLock <$> Annex.getGitConfig)
 	( Just <$> Annex.fromRepo gitAnnexPidLockFile
@@ -111,4 +111,4 @@ splitRemoteAnnexTrackingBranchSubdir tb = (branch, subdir)
 	branch = Git.Ref b
 	subdir = if S.null p
 		then Nothing
-		else Just (asTopFilePath p)
+		else Just (asTopFilePath (toOsPath p))

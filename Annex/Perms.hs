@@ -49,20 +49,20 @@ import System.PosixCompat.Files (fileMode, intersectFileModes, nullFileMode, gro
 withShared :: (SharedRepository -> Annex a) -> Annex a
 withShared a = a =<< coreSharedRepository <$> Annex.getGitConfig
 
-setAnnexFilePerm :: RawFilePath -> Annex ()
+setAnnexFilePerm :: OsPath -> Annex ()
 setAnnexFilePerm = setAnnexPerm False
 
-setAnnexDirPerm :: RawFilePath -> Annex ()
+setAnnexDirPerm :: OsPath -> Annex ()
 setAnnexDirPerm = setAnnexPerm True
 
 {- Sets appropriate file mode for a file or directory in the annex,
  - other than the content files and content directory. Normally,
  - don't change the mode, but with core.sharedRepository set,
  - allow the group to write, etc. -}
-setAnnexPerm :: Bool -> RawFilePath -> Annex ()
+setAnnexPerm :: Bool -> OsPath -> Annex ()
 setAnnexPerm isdir file = setAnnexPerm' Nothing isdir >>= \go -> liftIO (go file)
 
-setAnnexPerm' :: Maybe ([FileMode] -> FileMode -> FileMode) -> Bool -> Annex (RawFilePath -> IO ())
+setAnnexPerm' :: Maybe ([FileMode] -> FileMode -> FileMode) -> Bool -> Annex (OsPath -> IO ())
 setAnnexPerm' modef isdir = ifM crippledFileSystem
 	( return (const noop)
 	, withShared $ \s -> return $ \file -> go s file
@@ -79,11 +79,12 @@ setAnnexPerm' modef isdir = ifM crippledFileSystem
 		Nothing -> noop
 		Just f -> void $ tryIO $
 			modifyFileMode file $ f []
-	go (UmaskShared n) file = void $ tryIO $ R.setFileMode file $
-		if isdir then umaskSharedDirectory n else n
+	go (UmaskShared n) file = void $ tryIO $
+		R.setFileMode (fromOsPath file) $
+			if isdir then umaskSharedDirectory n else n
 	modef' = fromMaybe addModes modef
 
-resetAnnexFilePerm :: RawFilePath -> Annex ()
+resetAnnexFilePerm :: OsPath -> Annex ()
 resetAnnexFilePerm = resetAnnexPerm False
 
 {- Like setAnnexPerm, but ignores the current mode of the file entirely,
@@ -94,7 +95,7 @@ resetAnnexFilePerm = resetAnnexPerm False
  - which is going to be moved to a non-temporary location and needs
  - usual modes.
  -}
-resetAnnexPerm :: Bool -> RawFilePath -> Annex ()
+resetAnnexPerm :: Bool -> OsPath -> Annex ()
 resetAnnexPerm isdir file = unlessM crippledFileSystem $ do
 	defmode <- liftIO defaultFileMode
 	let modef moremodes _oldmode = addModes moremodes defmode
@@ -115,7 +116,7 @@ annexFileMode = do
 {- Creates a directory inside the gitAnnexDir (or possibly the dbdir), 
  - creating any parent directories up to and including the gitAnnexDir.
  - Makes directories with appropriate permissions. -}
-createAnnexDirectory :: RawFilePath -> Annex ()
+createAnnexDirectory :: OsPath -> Annex ()
 createAnnexDirectory dir = do
 	top <- parentDir <$> fromRepo gitAnnexDir
 	tops <- annexDbDir <$> Annex.getGitConfig >>= return . \case
@@ -124,7 +125,7 @@ createAnnexDirectory dir = do
 	createDirectoryUnder' tops dir createdir
   where
 	createdir p = do
-		liftIO $ R.createDirectory p
+		liftIO $ createDirectory p
 		setAnnexDirPerm p
 
 {- Create a directory in the git work tree, creating any parent
@@ -132,7 +133,7 @@ createAnnexDirectory dir = do
  -
  - Uses default permissions.
  -}
-createWorkTreeDirectory :: RawFilePath -> Annex ()
+createWorkTreeDirectory :: OsPath -> Annex ()
 createWorkTreeDirectory dir = do
 	fromRepo repoWorkTree >>= liftIO . \case
 		Just wt -> createDirectoryUnder [wt] dir
@@ -159,16 +160,16 @@ createWorkTreeDirectory dir = do
  - it should not normally have. checkContentWritePerm can detect when
  - that happens with write permissions.
  -}
-freezeContent :: RawFilePath -> Annex ()
+freezeContent :: OsPath -> Annex ()
 freezeContent file =
 	withShared $ \sr -> freezeContent' sr file
 
-freezeContent' :: SharedRepository -> RawFilePath -> Annex ()
+freezeContent' :: SharedRepository -> OsPath -> Annex ()
 freezeContent' sr file = freezeContent'' sr file =<< getVersion
 
-freezeContent'' :: SharedRepository -> RawFilePath -> Maybe RepoVersion -> Annex ()
+freezeContent'' :: SharedRepository -> OsPath -> Maybe RepoVersion -> Annex ()
 freezeContent'' sr file rv = do
-	fastDebug "Annex.Perms" ("freezing content " ++ fromRawFilePath file)
+	fastDebug "Annex.Perms" ("freezing content " ++ fromOsPath file)
 	unlessM crippledFileSystem $ go sr
 	freezeHook file
   where
@@ -211,7 +212,7 @@ freezeContent'' sr file rv = do
  - support removing write permissions, so when there is such a hook
  - write permissions are ignored.
  -}
-checkContentWritePerm :: RawFilePath -> Annex (Maybe Bool)
+checkContentWritePerm :: OsPath -> Annex (Maybe Bool)
 checkContentWritePerm file = ifM crippledFileSystem
 	( return (Just True)
 	, do
@@ -221,7 +222,7 @@ checkContentWritePerm file = ifM crippledFileSystem
 			liftIO $ checkContentWritePerm' sr file rv hasfreezehook
 	)
 
-checkContentWritePerm' :: SharedRepository -> RawFilePath -> Maybe RepoVersion -> Bool -> IO (Maybe Bool)
+checkContentWritePerm' :: SharedRepository -> OsPath -> Maybe RepoVersion -> Bool -> IO (Maybe Bool)
 checkContentWritePerm' sr file rv hasfreezehook
 	| hasfreezehook = return (Just True)
 	| otherwise = case sr of
@@ -240,7 +241,7 @@ checkContentWritePerm' sr file rv hasfreezehook
 			| otherwise -> want sharedret
 				(\havemode -> havemode == removeModes writeModes n)
   where
-	want mk f = catchMaybeIO (fileMode <$> R.getFileStatus file)
+	want mk f = catchMaybeIO (fileMode <$> R.getFileStatus (fromOsPath file))
 		>>= return . \case
 			Just havemode -> mk (f havemode)
 			Nothing -> mk True
@@ -253,18 +254,19 @@ checkContentWritePerm' sr file rv hasfreezehook
 
 {- Allows writing to an annexed file that freezeContent was called on
  - before. -}
-thawContent :: RawFilePath -> Annex ()
+thawContent :: OsPath -> Annex ()
 thawContent file = withShared $ \sr -> thawContent' sr file
 
-thawContent' :: SharedRepository -> RawFilePath -> Annex ()
+thawContent' :: SharedRepository -> OsPath -> Annex ()
 thawContent' sr file = do
-	fastDebug "Annex.Perms" ("thawing content " ++ fromRawFilePath file)
+	fastDebug "Annex.Perms" ("thawing content " ++ fromOsPath file)
 	thawPerms (go sr) (thawHook file)
   where
 	go GroupShared = liftIO $ void $ tryIO $ groupWriteRead file
 	go AllShared = liftIO $ void $ tryIO $ groupWriteRead file
 	go UnShared = liftIO $ allowWrite file
-	go (UmaskShared n) = liftIO $ void $ tryIO $ R.setFileMode file n
+	go (UmaskShared n) = liftIO $ void $ tryIO $
+		R.setFileMode (fromOsPath file) n
 
 {- Runs an action that thaws a file's permissions. This will probably
  - fail on a crippled filesystem. But, if file modes are supported on a
@@ -281,9 +283,9 @@ thawPerms a hook = ifM crippledFileSystem
  - is set, this is not done, since the group must be allowed to delete the
  - file without being able to thaw the directory.
  -}
-freezeContentDir :: RawFilePath -> Annex ()
+freezeContentDir :: OsPath -> Annex ()
 freezeContentDir file = do
-	fastDebug "Annex.Perms" ("freezing content directory " ++ fromRawFilePath dir)
+	fastDebug "Annex.Perms" ("freezing content directory " ++ fromOsPath dir)
 	unlessM crippledFileSystem $ withShared go
 	freezeHook dir
   where
@@ -291,29 +293,29 @@ freezeContentDir file = do
 	go UnShared = liftIO $ preventWrite dir
 	go GroupShared = liftIO $ void $ tryIO $ groupWriteRead dir
 	go AllShared = liftIO $ void $ tryIO $ groupWriteRead dir
-	go (UmaskShared n) = liftIO $ void $ tryIO $ R.setFileMode dir $
+	go (UmaskShared n) = liftIO $ void $ tryIO $ R.setFileMode (fromOsPath dir) $
 		umaskSharedDirectory $ 
-			-- If n includes group or other write mode, leave them set
-			-- to allow them to delete the file without being able to
-			-- thaw the directory.
+			-- If n includes group or other write mode, leave
+			-- them set to allow them to delete the file without
+			-- being able to thaw the directory.
 			removeModes [ownerWriteMode] n
 
-thawContentDir :: RawFilePath -> Annex ()
+thawContentDir :: OsPath -> Annex ()
 thawContentDir file = do
-	fastDebug "Annex.Perms" ("thawing content directory " ++ fromRawFilePath dir)
+	fastDebug "Annex.Perms" ("thawing content directory " ++ fromOsPath dir)
 	thawPerms (withShared (liftIO . go)) (thawHook dir)
   where
 	dir = parentDir file
 	go UnShared = allowWrite dir
 	go GroupShared = allowWrite dir
 	go AllShared = allowWrite dir
-	go (UmaskShared n) = R.setFileMode dir n
+	go (UmaskShared n) = R.setFileMode (fromOsPath dir) n
 
 {- Makes the directory tree to store an annexed file's content,
  - with appropriate permissions on each level. -}
-createContentDir :: RawFilePath -> Annex ()
+createContentDir :: OsPath -> Annex ()
 createContentDir dest = do
-	unlessM (liftIO $ R.doesPathExist dir) $
+	unlessM (liftIO $ doesDirectoryExist dir) $
 		createAnnexDirectory dir 
 	-- might have already existed with restricted perms
 	thawHook dir
@@ -324,7 +326,7 @@ createContentDir dest = do
 {- Creates the content directory for a file if it doesn't already exist,
  - or thaws it if it does, then runs an action to modify a file in the
  - directory, and finally, freezes the content directory. -}
-modifyContentDir :: RawFilePath -> Annex a -> Annex a
+modifyContentDir :: OsPath -> Annex a -> Annex a
 modifyContentDir f a = do
 	createContentDir f -- also thaws it
 	v <- tryNonAsync a
@@ -333,7 +335,7 @@ modifyContentDir f a = do
 
 {- Like modifyContentDir, but avoids creating the content directory if it
  - does not already exist. In that case, the action will probably fail. -}
-modifyContentDirWhenExists :: RawFilePath -> Annex a -> Annex a
+modifyContentDirWhenExists :: OsPath -> Annex a -> Annex a
 modifyContentDirWhenExists f a = do
 	thawContentDir f
 	v <- tryNonAsync a
@@ -352,11 +354,11 @@ hasThawHook =
 		<||>
 	(doesAnnexHookExist thawContentAnnexHook)
 
-freezeHook :: RawFilePath -> Annex ()
+freezeHook :: OsPath -> Annex ()
 freezeHook = void . runAnnexPathHook "%path"
 	freezeContentAnnexHook annexFreezeContentCommand
 
-thawHook :: RawFilePath -> Annex ()
+thawHook :: OsPath -> Annex ()
 thawHook = void . runAnnexPathHook "%path"
 	thawContentAnnexHook annexThawContentCommand
 

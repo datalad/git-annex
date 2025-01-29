@@ -16,6 +16,7 @@ module Utility.FileIO
 (
 	withFile,
 	openFile,
+	withBinaryFile,
 	openBinaryFile,
 	readFile,
 	readFile',
@@ -51,6 +52,11 @@ openFile :: OsPath -> IOMode -> IO Handle
 openFile f m = do
 	f' <- toOsPath <$> convertToWindowsNativeNamespace (fromOsPath f)
 	O.openFile f' m
+
+withBinaryFile :: OsPath -> IOMode -> (Handle -> IO r) -> IO r 
+withBinaryFile f m a = do
+	f' <- toOsPath <$> convertToWindowsNativeNamespace (fromOsPath f)
+	O.withBinaryFile f' m a
 
 openBinaryFile :: OsPath -> IOMode -> IO Handle
 openBinaryFile f m = do
@@ -109,6 +115,9 @@ withFile = System.IO.withFile . fromRawFilePath
 
 openFile :: OsPath -> IOMode -> IO Handle
 openFile = System.IO.openFile . fromRawFilePath
+
+withBinaryFile :: OsPath -> IOMode -> (Handle -> IO r) -> IO r 
+withBinaryFile = System.IO.withBinaryFile . fromRawFilePath
 
 openBinaryFile :: OsPath -> IOMode -> IO Handle
 openBinaryFile = System.IO.openBinaryFile . fromRawFilePath
