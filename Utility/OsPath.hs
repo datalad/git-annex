@@ -43,7 +43,7 @@ fromOsPath :: OsPath -> RawFilePath
 -- On Windows, OsString contains a ShortByteString that is
 -- utf-16 encoded. So have to convert the input from that.
 -- This is relatively expensive.
-fromOsPath = toRawFilePath . cWcharsToChars_UCS2 . BS16.unpack . getWindowsString
+fromOsPath = toRawFilePath . cWcharsToChars_UCS2 . BS16.unpack . getWindowsString . getOsString
 #else
 fromOsPath = S.fromShort . getPosixString . getOsString
 #endif
