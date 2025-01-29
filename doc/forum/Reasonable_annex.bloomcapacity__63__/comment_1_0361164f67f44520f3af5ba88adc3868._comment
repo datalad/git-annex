@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-01-29T15:54:19Z"
+ content="""
+What will happen with too small a bloom filter is `git-annex unused` may
+think that some keys are used which are really not. And 
+`git-annex sync --content` may operate on some keys that are not in the
+work tree.
+
+The `git-annex info` command displays how much memory the configured bloom
+filters use, which is why it's reporting 32 membibytes. But the
+annex.bloomcapacity setting is the number of expected files in the work
+tree, by default 500000.
+
+It would probably make sense for you to set it to 2000000 or so unless
+your system has an unusually small amount of RAM.
+"""]]
