@@ -17,15 +17,14 @@ status.
   replacing all the RawFilePath with OsPath, which should be pretty
   mechanical, with only some wrapper functions in Utility.FileIO and
   Utility.RawFilePath needing to be changed.
-* Utility.FileIO is used for most withFile and openFile, but not yet for
-  readFile, writeFile, and appendFile on FilePaths.
-  Note that the FilePath versions do newline translation on windows, 
-  which has to be handled when converting to the Utility.FileIO ones.
-* System.Directory.OsPath is available with OsPath build flag, but
-  not yet used, and would eliminate a lot of fromRawFilePaths.
-  Make Utility.SystemDirectory import it when built with OsPath,
-  and the remaining 6 hours or work will explain itself..
-  This has been started in the `ospath` branch.
+
+  An attempt was made on this, which is in the `ospath` branch. It
+  is unfinished and doesn't build. Some of the groundwork for that
+  culminated in [[!commit aaf4dd3b9cc71752624dd81352c242eeabe912c2]]
+  which builds and passes the test suite... except for on windows, where it
+  fails both with and without the new OsPath build flag it added, in
+  different and both surprising and seemingly difficult to understand ways.
+  That has caused me to give up on it for now.
 
 [[!tag confirmed]]
 
