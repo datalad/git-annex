@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="Exporting a synced/* branch works now! 🥳"
+ date="2025-01-21T18:30:50Z"
+ content="""
+Thank you very much, I can confirm that it works with git-annex 10.20250116-g8d80b07f5aee368579e04b2acba56a8821eeaab0. 👍
+"""]]

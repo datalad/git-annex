@@ -8,17 +8,24 @@ Some commands like `git-annex find` use RawFilePath end-to-end.
 But this conversion is not yet complete. This is a todo to keep track of the
 status.
 
-* The Abstract FilePath proposal (AFPP) has been implemented, and so a number of
-  libraries like unix and directory now have versions that operate on
-  OSPath. That could be used in git-annex eg for things like
-  getDirectoryContents, when built against those versions.
-  (But OSPath uses ShortByteString, while RawFilePath is ByteString, so
-  conversion still entails a copy.)
-* withFile remains to be converted, and is used in several important code
-  paths, including Annex.Journal and Annex.Link. 
-  There is a RawFilePath version in file-io library, but that is
-  not currently a git-annex dependency. (withFile is in base, and base is
-  unlikely to convert to AFPP soon)
+* unix has modules that operate on RawFilePath but no OSPath versions yet.
+  See https://github.com/haskell/unix/issues/240
+* filepath-1.4.100 implements support for OSPath. It is bundled with
+  ghc-9.6.1 and above. Will need to switch from filepath-bytestring to
+  this, and to avoid a lot of ifdefs, probably only after git-annex no
+  longers supports building with older ghc versions. This will entail
+  replacing all the RawFilePath with OsPath, which should be pretty
+  mechanical, with only some wrapper functions in Utility.FileIO and
+  Utility.RawFilePath needing to be changed.
+* Utility.FileIO is used for most withFile and openFile, but not yet for
+  readFile, writeFile, and appendFile on FilePaths.
+  Note that the FilePath versions do newline translation on windows, 
+  which has to be handled when converting to the Utility.FileIO ones.
+* System.Directory.OsPath is available with OsPath build flag, but
+  not yet used, and would eliminate a lot of fromRawFilePaths.
+  Make Utility.SystemDirectory import it when built with OsPath,
+  and the remaining 6 hours or work will explain itself..
+  This has been started in the `ospath` branch.
 
 [[!tag confirmed]]
 

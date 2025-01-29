@@ -1,0 +1,65 @@
+### Please describe the problem.
+
+I have in my mailbox
+
+```
+  80   T Jan 26 GitHub Actions  *-3.6* (3.7K/0) datalad/git-annex daily summary: 4 FAILED, 8 INCOMPLETE, 1 PASSED, 3 ABSENT                                                         
+ 206 N T Jan 25 GitHub Actions  *-3.8* (3.7K/0) datalad/git-annex daily summary: 4 FAILED, 8 INCOMPLETE, 1 PASSED, 3 ABSENT                                                         
+ 357   T Jan 24 GitHub Actions  *-4.4* (6.3K/0) datalad/git-annex daily summary: 12 FAILED, 8 INCOMPLETE, 1 PASSED, 3 ABSENT                                                        
+1279   T Jan 23 GitHub Actions  *-4.5* (3.7K/0) datalad/git-annex daily summary: 5 FAILED, 8 INCOMPLETE, 3 ABSENT                                                                   
+1715   T Jan 22 GitHub Actions  *-5.0* (3.7K/0) datalad/git-annex daily summary: 5 FAILED, 8 INCOMPLETE, 3 ABSENT                                                                   2335   T Jan 21 GitHub Actions  *-3.9* (3.7K/0) datalad/git-annex daily summary: 5 FAILED, 8 INCOMPLETE, 3 ABSENT                                                                   
+2656   T Jan 20 GitHub Actions  *-4.3* (6.8K/0) datalad/git-annex daily summary: 28 PASSED, 2 ABSENT                                                                                
+2862   T Jan 19 GitHub Actions  *-5.0* (6.8K/0) datalad/git-annex daily summary: 28 PASSED, 2 ABSENT  
+```
+
+and looking at the [latest ubuntu build logs](https://github.com/datalad/git-annex/actions/runs/12970824274/job/36176536041) I see
+
+```
+I: the tail of the log
+
+Build/LinuxMkLibs.hs:101:17: error:
+    Variable not in scope:
+      createDirectoryIfMissing :: Bool -> [Char] -> IO a3
+    |
+101 |                 createDirectoryIfMissing True (top ++ libdir </> takeDirectory d)
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^
+
+Build/LinuxMkLibs.hs:149:9: error:
+    Variable not in scope:
+      createDirectoryIfMissing :: Bool -> FilePath -> IO a2
+    |
+149 |         createDirectoryIfMissing True (top </> shimdir)
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^
+
+Build/LinuxMkLibs.hs:150:9: error:
+    Variable not in scope:
+      createDirectoryIfMissing :: Bool -> FilePath -> IO a1
+    |
+150 |         createDirectoryIfMissing True (top </> exedir)
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^
+
+Build/LinuxMkLibs.hs:160:19: error:
+    * Variable not in scope:
+        renameFile :: FilePath -> FilePath -> IO ()
+    * Perhaps you meant `readFile' (imported from Prelude)
+    |
+160 |                 , renameFile exe exedest
+    |                   ^^^^^^^^^^
+
+Build/LinuxMkLibs.hs:165:18: error:
+    Variable not in scope: doesFileExist :: FilePath -> IO Bool
+    |
+165 |         unlessM (doesFileExist (top </> exelink)) $
+    |                  ^^^^^^^^^^^^^
+
+Build/LinuxMkLibs.hs:181:9: error:
+    Variable not in scope:
+      createDirectoryIfMissing :: Bool -> FilePath -> IO a0
+    |
+181 |         createDirectoryIfMissing True destdir
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^
+make[3]: *** [Makefile:156: Build/Standalone] Error 1
+make[3]: Leaving directory '/home/runner/work/git-annex/git-annex/git-annex-source'
+make[2]: *** [Makefile:164: linuxstandalone] Error 2
+```
+

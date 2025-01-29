@@ -1,0 +1,362 @@
+### Please describe the problem.
+Running `git-annex enableremote local1 --with-url` for directory special remote `local` fails on macOS.
+
+Trying to sync to directory special remote configured manually as git-remote-annex fails on macOS.
+
+### What steps will reproduce the problem?
+[[!format sh """
+% pwd
+/tmp/git-annex-testing
+% mkdir repo
+% cd repo 
+% git init
+% git annex init
+% echo "file a" > a.txt
+% echo "file b" > b.txt
+% git annex add a.txt                                                                                              
+% git annex add b.txt 
+% git commit -m "added files"
+% git annex info
+...
+local annex keys: 2
+local annex size: 14 bytes
+annexed files in working tree: 2
+..
+% mkdir ../specialdirectoryremote
+% git annex initremote local1 type=directory directory=/tmp/git-annex-testing/specialdirectoryremote encryption=none
+initremote local1 ok
+(recording state in git...)
+% git annex copy --to=local1
+% git annex info local1
+uuid: 7d7560cd-2e80-489d-af4a-ec23b9b9abb7
+description: [local1]
+trust: semitrusted
+remote: local1
+cost: 100.0
+type: directory
+available: true
+directory: /tmp/git-annex-testing/specialdirectoryremote
+encryption: none
+chunking: none
+remote annex keys: 2
+remote annex size: 14 bytes
+% git-annex enableremote local1 --with-url
+enableremote local1 
+git-annex: Specify directory=
+failed
+enableremote: 1 failed
+"""]]
+
+
+### What version of git-annex are you using? On what operating system?
+[[!format sh """
+% git --version
+git version 2.48.0
+% git-annex version
+git-annex version: 10.20250103-gbd5d7e936d15abc1376f64ea9a124bba0b6e2d11
+build flags: Assistant Webapp Pairing FsEvents TorrentParser MagicMime Servant Benchmark Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.24.3 bloomfilter-2.0.1.2 crypton-1.0.1 DAV-1.3.4 feed-1.3.2.1 ghc-9.8.4 http-client-0.7.18 persistent-sqlite-2.13.3.0 torrent-10000.1.3 uuid-1.3.16 yesod-1.6.2.1
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL GITBUNDLE GITMANIFEST VURL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg rclone hook external
+operating system: darwin x86_64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
+local repository version: 10
+% sw_vers
+ProductName:	macOS
+ProductVersion:	12.6.3
+BuildVersion:	21G419
+% uname -a
+Darwin bumblebee.local 21.6.0 Darwin Kernel Version 21.6.0: Mon Dec 19 20:46:01 PST 2022; root:xnu-8020.240.18~2/RELEASE_ARM64_T8101 arm64
+% 
+"""]]
+
+### Please provide any additional information below.
+
+[[!format sh """
+% git --version
+git version 2.48.0
+% git-annex version
+git-annex version: 10.20250103-gbd5d7e936d15abc1376f64ea9a124bba0b6e2d11
+build flags: Assistant Webapp Pairing FsEvents TorrentParser MagicMime Servant Benchmark Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.24.3 bloomfilter-2.0.1.2 crypton-1.0.1 DAV-1.3.4 feed-1.3.2.1 ghc-9.8.4 http-client-0.7.18 persistent-sqlite-2.13.3.0 torrent-10000.1.3 uuid-1.3.16 yesod-1.6.2.1
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL GITBUNDLE GITMANIFEST VURL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg rclone hook external
+operating system: darwin x86_64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
+local repository version: 10
+% sw_vers
+ProductName:	macOS
+ProductVersion:	12.6.3
+BuildVersion:	21G419
+% uname -a
+Darwin bumblebee.local 21.6.0 Darwin Kernel Version 21.6.0: Mon Dec 19 20:46:01 PST 2022; root:xnu-8020.240.18~2/RELEASE_ARM64_T8101 arm64
+% 
+
+
+% pwd
+/tmp/git-annex-testing
+% mkdir repo
+% cd repo 
+% git init
+% git annex init
+% echo "file a" > a.txt
+% echo "file b" > b.txt
+% git annex add a.txt                                                                                              
+% git annex add b.txt 
+% git commit -m "added files"
+% git annex info
+...
+local annex keys: 2
+local annex size: 14 bytes
+annexed files in working tree: 2
+..
+% mkdir ../specialdirectoryremote
+% git annex initremote local1 type=directory directory=/tmp/git-annex-testing/specialdirectoryremote encryption=none
+initremote local1 ok
+(recording state in git...)
+% git annex copy --to=local1
+% git annex info local1
+uuid: 7d7560cd-2e80-489d-af4a-ec23b9b9abb7
+description: [local1]
+trust: semitrusted
+remote: local1
+cost: 100.0
+type: directory
+available: true
+directory: /tmp/git-annex-testing/specialdirectoryremote
+encryption: none
+chunking: none
+remote annex keys: 2
+remote annex size: 14 bytes
+% git-annex enableremote local1 --with-url
+enableremote local1 
+git-annex: Specify directory=
+failed
+enableremote: 1 failed
+
+% git config set annex.debug true 
+% git-annex enableremote local1 --with-url
+[2025-01-28 12:38:26.198647] (Utility.Process) process [13595] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2025-01-28 12:38:26.206976] (Utility.Process) process [13595] done ExitSuccess
+[2025-01-28 12:38:26.209633] (Utility.Process) process [13596] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2025-01-28 12:38:26.216084] (Utility.Process) process [13596] done ExitSuccess
+[2025-01-28 12:38:26.220051] (Utility.Process) process [13597] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+enableremote local1 
+git-annex: Specify directory=
+failed
+[2025-01-28 12:38:26.228828] (Utility.Process) process [13597] done ExitSuccess
+enableremote: 1 failed
+%  
+
+
+% git config remote.local1.url annex::
+% git config remote.local1.fetch '+refs/heads/*:refs/remotes/foo/*'
+
+
+
+% git push --set-upstream local1 master
+[2025-01-28 12:45:05.935101] (Utility.Process) process [20178] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2025-01-28 12:45:05.941251] (Utility.Process) process [20178] done ExitSuccess
+[2025-01-28 12:45:05.943896] (Utility.Process) process [20179] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2025-01-28 12:45:05.950867] (Utility.Process) process [20179] done ExitSuccess
+[2025-01-28 12:45:05.95425] (Utility.Process) process [20180] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+Full remote url: annex::7d7560cd-2e80-489d-af4a-ec23b9b9abb7?encryption=none&type=directory
+[2025-01-28 12:45:05.96577] (Utility.Process) process [20181] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","for-each-ref","refs/namespaces/git-remote-annex/7d7560cd-2e80-489d-af4a-ec23b9b9abb7/","--format=%(objectname) %(refname)"]
+[2025-01-28 12:45:05.973785] (Utility.Process) process [20181] done ExitSuccess
+[2025-01-28 12:45:05.976602] (Utility.Process) process [20182] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/master"]
+[2025-01-28 12:45:05.983816] (Utility.Process) process [20182] done ExitSuccess
+[2025-01-28 12:45:05.986197] (Utility.Process) process [20183] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","for-each-ref","refs/namespaces/git-remote-annex/7d7560cd-2e80-489d-af4a-ec23b9b9abb7/","--format=%(objectname) %(refname)"]
+[2025-01-28 12:45:05.992446] (Utility.Process) process [20183] done ExitSuccess
+[2025-01-28 12:45:05.994823] (Utility.Process) process [20184] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-ref","refs/namespaces/git-remote-annex/7d7560cd-2e80-489d-af4a-ec23b9b9abb7/refs/heads/master","cee403c71ad8d180c149c26818b268b4fba67c3f"]
+[2025-01-28 12:45:06.002395] (Utility.Process) process [20184] done ExitSuccess
+[2025-01-28 12:45:06.006364] (Utility.Process) process [20185] feed: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","bundle","create","--quiet","/var/folders/2p/4z266zp97g9f0w5xxx4hkjz40000gn/T/GITBUNDLE20173-0","--stdin"]
+[2025-01-28 12:45:06.027734] (Utility.Process) process [20185] done ExitSuccess
+[2025-01-28 12:45:06.028831] (Annex.Perms) freezing content .git/annex/objects/30/fM/GITBUNDLE-s595--7d7560cd-2e80-489d-af4a-ec23b9b9abb7-9aca839242a1231b8ea7d6c4544a582da92ec8a345a87d1f9ec2e7ac9c57917d/GITBUNDLE-s595--7d7560cd-2e80-489d-af4a-ec23b9b9abb7-9aca839242a1231b8ea7d6c4544a582da92ec8a345a87d1f9ec2e7ac9c57917d
+[2025-01-28 12:45:06.032936] (Annex.Perms) freezing content directory .git/annex/objects/30/fM/GITBUNDLE-s595--7d7560cd-2e80-489d-af4a-ec23b9b9abb7-9aca839242a1231b8ea7d6c4544a582da92ec8a345a87d1f9ec2e7ac9c57917d
+[2025-01-28 12:45:06.035315] (Utility.Process) process [20187] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2025-01-28 12:45:06.041878] (Utility.Process) process [20187] done ExitSuccess
+[2025-01-28 12:45:06.044996] (Utility.Process) process [20188] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2025-01-28 12:45:06.051196] (Utility.Process) process [20188] done ExitSuccess
+[2025-01-28 12:45:06.053205] (Utility.Process) process [20180] done ExitSuccess
+[2025-01-28 12:45:06.057349] (Utility.Process) process [20191] call: cp ["-a","/var/folders/2p/4z266zp97g9f0w5xxx4hkjz40000gn/T/GITMANIFEST20173-3",".git/annex/objects/9q/z3/GITMANIFEST--7d7560cd-2e80-489d-af4a-ec23b9b9abb7.bak/GITMANIFEST--7d7560cd-2e80-489d-af4a-ec23b9b9abb7.bak"]
+[2025-01-28 12:45:06.057467] (Utility.Process) process [20191] done ExitFailure (-9)
+[2025-01-28 12:45:06.05756] (Annex.Perms) freezing content directory .git/annex/objects/9q/z3/GITMANIFEST--7d7560cd-2e80-489d-af4a-ec23b9b9abb7.bak
+Push failed (Failed to upload manifest.)
+[2025-01-28 12:45:06.06058] (Utility.Process) process [20192] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","for-each-ref","refs/namespaces/git-remote-annex/7d7560cd-2e80-489d-af4a-ec23b9b9abb7/","--format=%(objectname) %(refname)"]
+[2025-01-28 12:45:06.068669] (Utility.Process) process [20192] done ExitSuccess
+[2025-01-28 12:45:06.071203] (Utility.Process) process [20193] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-ref","-d","refs/namespaces/git-remote-annex/7d7560cd-2e80-489d-af4a-ec23b9b9abb7/refs/heads/master","cee403c71ad8d180c149c26818b268b4fba67c3f"]
+[2025-01-28 12:45:06.078439] (Utility.Process) process [20193] done ExitSuccess
+warning: helper reported unexpected status of push
+Everything up-to-date
+[2025-01-28 12:45:06.081082] (Utility.Process) process [20194] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2025-01-28 12:45:06.0879] (Utility.Process) process [20194] done ExitSuccess
+[2025-01-28 12:45:06.090302] (Utility.Process) process [20195] read: git ["--version"]
+[2025-01-28 12:45:06.095789] (Utility.Process) process [20195] done ExitSuccess
+[2025-01-28 12:45:06.096182] (Annex.Perms) freezing content .git/annex/misctmp/gaprobe
+[2025-01-28 12:45:06.096262] (Annex.Perms) thawing content .git/annex/misctmp/gaprobe
+[2025-01-28 12:45:06.09862] (Utility.Process) process [20196] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+% exit                                                            
+% git config unset annex.debug                                     
+% git push --set-upstream local1 master
+Full remote url: annex::7d7560cd-2e80-489d-af4a-ec23b9b9abb7?encryption=none&type=directory
+Push failed (Failed to upload manifest.)
+warning: helper reported unexpected status of push
+Everything up-to-date
+% git annex sync
+commit  
+On branch master
+nothing to commit, working tree clean
+ok
+pull local1 
+Full remote url: annex::7d7560cd-2e80-489d-af4a-ec23b9b9abb7?encryption=none&type=directory
+git-annex: No git repository found in this remote.
+ok
+push local1 
+Full remote url: annex::7d7560cd-2e80-489d-af4a-ec23b9b9abb7?encryption=none&type=directory
+Push failed (Failed to upload manifest.)
+warning: helper reported unexpected status of push
+warning: helper reported unexpected status of push
+Everything up-to-date
+ok
+% git config set annex.debug true    
+% git annex sync                 
+[2025-01-28 12:46:47.892399] (Utility.Process) process [22027] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2025-01-28 12:46:47.898879] (Utility.Process) process [22027] done ExitSuccess
+[2025-01-28 12:46:47.901826] (Utility.Process) process [22028] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2025-01-28 12:46:47.908197] (Utility.Process) process [22028] done ExitSuccess
+[2025-01-28 12:46:47.911039] (Utility.Process) process [22029] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+commit  
+[2025-01-28 12:46:47.92136] (Utility.Process) process [22030] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","commit","-a","-m","git-annex in andrew:/private/tmp/git-annex-testing/repo"]
+[2025-01-28 12:46:47.981547] (Utility.Process) process [22035] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2025-01-28 12:46:47.988126] (Utility.Process) process [22035] done ExitSuccess
+[2025-01-28 12:46:47.990408] (Utility.Process) process [22036] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2025-01-28 12:46:47.996719] (Utility.Process) process [22036] done ExitSuccess
+[2025-01-28 12:46:48.000582] (Utility.Process) process [22037] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","diff","--cached","--name-only","-z","--diff-filter=ACMRT","--","."]
+[2025-01-28 12:46:48.007367] (Utility.Process) process [22037] done ExitSuccess
+[2025-01-28 12:46:48.010028] (Utility.Process) process [22038] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2025-01-28 12:46:48.016108] (Utility.Process) process [22038] done ExitSuccess
+[2025-01-28 12:46:48.018541] (Utility.Process) process [22039] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2025-01-28 12:46:48.025954] (Utility.Process) process [22039] done ExitSuccess
+On branch master
+nothing to commit, working tree clean
+[2025-01-28 12:46:48.043086] (Utility.Process) process [22030] done ExitFailure 1
+ok
+[2025-01-28 12:46:48.045582] (Utility.Process) process [22040] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2025-01-28 12:46:48.05211] (Utility.Process) process [22040] done ExitSuccess
+[2025-01-28 12:46:48.054886] (Utility.Process) process [22041] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2025-01-28 12:46:48.062284] (Utility.Process) process [22041] done ExitSuccess
+[2025-01-28 12:46:48.064679] (Utility.Process) process [22042] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--verify","-q","refs/heads/synced/master"]
+[2025-01-28 12:46:48.071504] (Utility.Process) process [22042] done ExitSuccess
+[2025-01-28 12:46:48.073977] (Utility.Process) process [22043] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/master..refs/heads/synced/master","--pretty=%H","-n1"]
+[2025-01-28 12:46:48.080766] (Utility.Process) process [22043] done ExitSuccess
+pull local1 
+[2025-01-28 12:46:48.084197] (Utility.Process) process [22044] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","fetch","local1"]
+[2025-01-28 12:46:48.170637] (Utility.Process) process [22080] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2025-01-28 12:46:48.179566] (Utility.Process) process [22080] done ExitSuccess
+[2025-01-28 12:46:48.183611] (Utility.Process) process [22081] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2025-01-28 12:46:48.192055] (Utility.Process) process [22081] done ExitSuccess
+[2025-01-28 12:46:48.197482] (Utility.Process) process [22086] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+Full remote url: annex::7d7560cd-2e80-489d-af4a-ec23b9b9abb7?encryption=none&type=directory
+[2025-01-28 12:46:48.215929] (Utility.Process) process [22087] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2025-01-28 12:46:48.223041] (Utility.Process) process [22087] done ExitSuccess
+[2025-01-28 12:46:48.225642] (Utility.Process) process [22088] read: git ["--version"]
+[2025-01-28 12:46:48.231226] (Utility.Process) process [22088] done ExitSuccess
+[2025-01-28 12:46:48.231795] (Annex.Perms) freezing content .git/annex/misctmp/gaprobe
+[2025-01-28 12:46:48.231889] (Annex.Perms) thawing content .git/annex/misctmp/gaprobe
+git-annex: No git repository found in this remote.
+[2025-01-28 12:46:48.239358] (Utility.Process) process [22044] done ExitFailure 128
+ok
+[2025-01-28 12:46:48.243384] (Utility.Process) process [22089] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2025-01-28 12:46:48.250955] (Utility.Process) process [22089] done ExitSuccess
+[2025-01-28 12:46:48.253625] (Utility.Process) process [22090] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2025-01-28 12:46:48.260937] (Utility.Process) process [22090] done ExitSuccess
+[2025-01-28 12:46:48.264403] (Utility.Process) process [22091] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2025-01-28 12:46:48.270737] (Utility.Process) process [22091] done ExitSuccess
+[2025-01-28 12:46:48.273298] (Utility.Process) process [22092] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2025-01-28 12:46:48.279777] (Utility.Process) process [22092] done ExitSuccess
+[2025-01-28 12:46:48.282444] (Utility.Process) process [22093] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","branch","-f","synced/master","refs/heads/master"]
+[2025-01-28 12:46:48.290967] (Utility.Process) process [22093] done ExitSuccess
+[2025-01-28 12:46:48.293498] (Utility.Process) process [22094] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--verify","-q","refs/remotes/local1/synced/master"]
+[2025-01-28 12:46:48.300336] (Utility.Process) process [22094] done ExitFailure 1
+push local1 
+[2025-01-28 12:46:48.302852] (Utility.Process) process [22095] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","push","local1","master:synced/master","+git-annex:synced/git-annex"]
+[2025-01-28 12:46:48.383262] (Utility.Process) process [22102] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2025-01-28 12:46:48.389482] (Utility.Process) process [22102] done ExitSuccess
+[2025-01-28 12:46:48.391771] (Utility.Process) process [22103] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2025-01-28 12:46:48.398109] (Utility.Process) process [22103] done ExitSuccess
+[2025-01-28 12:46:48.402067] (Utility.Process) process [22104] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+Full remote url: annex::7d7560cd-2e80-489d-af4a-ec23b9b9abb7?encryption=none&type=directory
+[2025-01-28 12:46:48.41247] (Utility.Process) process [22105] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","for-each-ref","refs/namespaces/git-remote-annex/7d7560cd-2e80-489d-af4a-ec23b9b9abb7/","--format=%(objectname) %(refname)"]
+[2025-01-28 12:46:48.419106] (Utility.Process) process [22105] done ExitSuccess
+[2025-01-28 12:46:48.42299] (Utility.Process) process [22106] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2025-01-28 12:46:48.430151] (Utility.Process) process [22106] done ExitSuccess
+[2025-01-28 12:46:48.434139] (Utility.Process) process [22107] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/master"]
+[2025-01-28 12:46:48.440655] (Utility.Process) process [22107] done ExitSuccess
+[2025-01-28 12:46:48.44324] (Utility.Process) process [22108] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","for-each-ref","refs/namespaces/git-remote-annex/7d7560cd-2e80-489d-af4a-ec23b9b9abb7/","--format=%(objectname) %(refname)"]
+[2025-01-28 12:46:48.449279] (Utility.Process) process [22108] done ExitSuccess
+[2025-01-28 12:46:48.452854] (Utility.Process) process [22109] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-ref","refs/namespaces/git-remote-annex/7d7560cd-2e80-489d-af4a-ec23b9b9abb7/refs/heads/synced/git-annex","b6817903fc3363e53ff863fcf79e90ab200130c3"]
+[2025-01-28 12:46:48.460699] (Utility.Process) process [22109] done ExitSuccess
+[2025-01-28 12:46:48.463036] (Utility.Process) process [22110] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-ref","refs/namespaces/git-remote-annex/7d7560cd-2e80-489d-af4a-ec23b9b9abb7/refs/heads/synced/master","cee403c71ad8d180c149c26818b268b4fba67c3f"]
+[2025-01-28 12:46:48.470252] (Utility.Process) process [22110] done ExitSuccess
+[2025-01-28 12:46:48.473412] (Utility.Process) process [22111] feed: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","bundle","create","--quiet","/var/folders/2p/4z266zp97g9f0w5xxx4hkjz40000gn/T/GITBUNDLE22097-0","--stdin"]
+[2025-01-28 12:46:48.494608] (Utility.Process) process [22111] done ExitSuccess
+[2025-01-28 12:46:48.49778] (Utility.Process) process [22104] done ExitSuccess
+[2025-01-28 12:46:48.505294] (Utility.Process) process [22116] call: cp ["-a","/var/folders/2p/4z266zp97g9f0w5xxx4hkjz40000gn/T/GITMANIFEST22097-3",".git/annex/objects/9q/z3/GITMANIFEST--7d7560cd-2e80-489d-af4a-ec23b9b9abb7.bak/GITMANIFEST--7d7560cd-2e80-489d-af4a-ec23b9b9abb7.bak"]
+[2025-01-28 12:46:48.505403] (Utility.Process) process [22116] done ExitFailure (-9)
+[2025-01-28 12:46:48.505502] (Annex.Perms) freezing content directory .git/annex/objects/9q/z3/GITMANIFEST--7d7560cd-2e80-489d-af4a-ec23b9b9abb7.bak
+Push failed (Failed to upload manifest.)
+[2025-01-28 12:46:48.507999] (Utility.Process) process [22117] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","for-each-ref","refs/namespaces/git-remote-annex/7d7560cd-2e80-489d-af4a-ec23b9b9abb7/","--format=%(objectname) %(refname)"]
+[2025-01-28 12:46:48.514991] (Utility.Process) process [22117] done ExitSuccess
+[2025-01-28 12:46:48.518649] (Utility.Process) process [22118] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-ref","-d","refs/namespaces/git-remote-annex/7d7560cd-2e80-489d-af4a-ec23b9b9abb7/refs/heads/synced/git-annex","b6817903fc3363e53ff863fcf79e90ab200130c3"]
+[2025-01-28 12:46:48.525217] (Utility.Process) process [22118] done ExitSuccess
+[2025-01-28 12:46:48.528742] (Utility.Process) process [22119] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-ref","-d","refs/namespaces/git-remote-annex/7d7560cd-2e80-489d-af4a-ec23b9b9abb7/refs/heads/synced/master","cee403c71ad8d180c149c26818b268b4fba67c3f"]
+[2025-01-28 12:46:48.535612] (Utility.Process) process [22119] done ExitSuccess
+warning: helper reported unexpected status of push
+warning: helper reported unexpected status of push
+Everything up-to-date
+[2025-01-28 12:46:48.5386] (Utility.Process) process [22120] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2025-01-28 12:46:48.545982] (Utility.Process) process [22120] done ExitSuccess
+[2025-01-28 12:46:48.549657] (Utility.Process) process [22121] read: git ["--version"]
+[2025-01-28 12:46:48.555248] (Utility.Process) process [22121] done ExitSuccess
+[2025-01-28 12:46:48.555667] (Annex.Perms) freezing content .git/annex/misctmp/gaprobe
+[2025-01-28 12:46:48.555747] (Annex.Perms) thawing content .git/annex/misctmp/gaprobe
+[2025-01-28 12:46:48.558896] (Utility.Process) process [22122] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2025-01-28 12:46:48.574158] (Utility.Process) process [22095] done ExitSuccess
+[2025-01-28 12:46:48.576864] (Utility.Process) process [22123] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","push","local1","git-annex"]
+[2025-01-28 12:46:48.808953] (Utility.Process) process [22123] done ExitSuccess
+[2025-01-28 12:46:48.813005] (Utility.Process) process [22148] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","push","local1","master"]
+[2025-01-28 12:46:49.062622] (Utility.Process) process [22148] done ExitSuccess
+ok
+[2025-01-28 12:46:49.063559] (Utility.Process) process [22029] done ExitSuccess
+% 
+
+
+% cat .git/config
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+	ignorecase = true
+	precomposeunicode = true
+[annex]
+	uuid = bb331ff4-2e85-4657-869a-202d269d4b3c
+	version = 10
+[filter "annex"]
+	smudge = git-annex smudge -- %f
+	clean = git-annex smudge --clean -- %f
+	process = git-annex filter-process
+[remote "local1"]
+	annex-directory = /tmp/git-annex-testing/specialdirectoryremote
+	annex-uuid = 7d7560cd-2e80-489d-af4a-ec23b9b9abb7
+	skipFetchAll = true
+	url = annex::
+	fetch = +refs/heads/*:refs/remotes/foo/*
+% 
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+Yup!
+

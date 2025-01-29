@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/cd1c0b3be1af288012e49197918395f0"
+ subject="comment 6"
+ date="2025-01-27T15:26:15Z"
+ content="""
+> > If the PSK were fully contained in the remote string then a third-party getting hold of that string could pretend to be the server
+
+> I agree this would be a problem, but how would a third-party get ahold of the string though? Remote urls don't usually get stored in the git repository, perhaps you were thinking of some other way.
+
+My thinking was that git remote URLs usually aren't sensitive information that inherently grant access to a repository, so a construct where the remote URL contains the credentials is just unexpected. A careless user might e.g. put it into a `type=git` special remote or treat it in some other way in which one wouldn't treat a password, without considering the implications. I am not aware of a way in which they could be leaked without user intervention, though.
+
+Having separate credentials explicitly named as such just seems safer. But in the end this would be the responsibility of the one implementing the p2p transport, anyway.
+"""]]

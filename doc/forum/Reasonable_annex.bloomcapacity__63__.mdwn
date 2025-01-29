@@ -1,0 +1,15 @@
+What is a reasonable value for ```annex.bloomcapacity``` in this situation and in what unit?
+
+    local annex keys: 670671
+    local annex size: 2.62 terabytes
+    annexed files in working tree: 1410199
+    size of annexed files in working tree: 3.52 terabytes
+    combined annex size of all repositories: 2.63 terabytes
+    annex sizes of repositories: 
+    	2.62 TB: b2e77041-584e-4699-947d-ef5004273901 -- pudong [here]
+    	7.39 GB: 42a53a13-7ad6-43a5-95ef-813d4f8c1a6f -- [batam_payload]
+    backend usage: 
+    	SHA256E: 1410199
+    bloom filter size: 32 mebibytes (appears too small for this repository; adjust annex.bloomcapacity)
+
+I don't really understand what happens when the bloom filter is too small.

@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="beryllium@5bc3c32eb8156390f96e363e4ba38976567425ec"
+ nickname="beryllium"
+ avatar="http://cdn.libravatar.org/avatar/62b67d68e918b381e7e9dd6a96c16137"
+ subject="comment 4"
+ date="2025-01-24T08:04:27Z"
+ content="""
+I don't know if this is expected behaviour, but for some files I imported from an importtree, when I use git-annex whereused --key with the correct key, nothing is shown unless I also add --historical
+
+And then I am shown the importtree branch information. It doesn't seem to make sense to me. The file is definitely present, and git-annex whereis confirms this, as does git-annex lock/unlock
+
+Willing to add more context if this is a little too vague
+
+Shaddy Baddah (beryllium at shaddybaddah dot name)
+
+"""]]
