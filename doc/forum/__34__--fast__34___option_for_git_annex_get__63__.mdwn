@@ -1,0 +1,1 @@
+What does the ```--fast``` option in ```git annex get -A --fast``` do?
