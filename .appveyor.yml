@@ -52,7 +52,7 @@ environment:
 
     # Windows core tests
     - ID: WinP39core
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
       STACK_ROOT: "c:\\sr"
     # MacOS core tests
     - ID: MacP38core
