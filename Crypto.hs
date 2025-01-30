@@ -211,7 +211,7 @@ encrypt gpgcmd c cipher feeder reader = case cipher of
 	Cipher{} -> 
 		let passphrase = cipherPassphrase cipher
 		in case statelessOpenPGPCommand c of
-			Just sopcmd -> withTmpDir "sop" $ \d ->
+			Just sopcmd -> withTmpDir (toOsPath "sop") $ \d ->
 				SOP.encryptSymmetric sopcmd passphrase
 					(SOP.EmptyDirectory d)
 					(statelessOpenPGPProfile c)
@@ -233,7 +233,7 @@ decrypt cmd c cipher feeder reader = case cipher of
 	Cipher{} -> 
 		let passphrase = cipherPassphrase cipher
 		in case statelessOpenPGPCommand c of
-			Just sopcmd -> withTmpDir "sop" $ \d ->
+			Just sopcmd -> withTmpDir (toOsPath "sop") $ \d ->
 				SOP.decryptSymmetric sopcmd passphrase
 					(SOP.EmptyDirectory d)
 					feeder reader

@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Git.Hook where
 
@@ -14,15 +15,16 @@ import Git
 import Utility.Tmp
 import Utility.Shell
 import Utility.FileMode
+import qualified Utility.FileIO as F
 #ifndef mingw32_HOST_OS
 import qualified Utility.RawFilePath as R
 import System.PosixCompat.Files (fileMode)
 #endif
 
-import qualified Data.ByteString as B
+import qualified System.FilePath.ByteString as P
 
 data Hook = Hook
-	{ hookName :: FilePath
+	{ hookName :: RawFilePath
 	, hookScript :: String
 	, hookOldScripts :: [String]
 	}
@@ -31,8 +33,8 @@ data Hook = Hook
 instance Eq Hook where
 	a == b = hookName a == hookName b
 
-hookFile :: Hook -> Repo -> FilePath
-hookFile h r = fromRawFilePath (localGitDir r) </> "hooks" </> hookName h
+hookFile :: Hook -> Repo -> RawFilePath
+hookFile h r = localGitDir r P.</> "hooks" P.</> hookName h
 
 {- Writes a hook. Returns False if the hook already exists with a different
  - content. Upgrades old scripts.
@@ -48,7 +50,7 @@ hookFile h r = fromRawFilePath (localGitDir r) </> "hooks" </> hookName h
  - is run with a bundled bash, so should start with #!/bin/sh
  -}
 hookWrite :: Hook -> Repo -> IO Bool
-hookWrite h r = ifM (doesFileExist f)
+hookWrite h r = ifM (doesFileExist (fromRawFilePath f))
 	( expectedContent h r >>= \case
 		UnexpectedContent -> return False
 		ExpectedContent -> return True
@@ -58,15 +60,13 @@ hookWrite h r = ifM (doesFileExist f)
   where
 	f = hookFile h r
 	go = do
-		-- On Windows, using B.writeFile here avoids
-		-- the newline translation done by writeFile.
+		-- On Windows, using a ByteString as the file content
+		-- avoids the newline translation done by writeFile.
 		-- Hook scripts on Windows could use CRLF endings, but
 		-- they typically use unix newlines, which does work there
 		-- and makes the repository more portable.
-		viaTmp B.writeFile f (encodeBS (hookScript h))
-		void $ tryIO $ modifyFileMode
-			(toRawFilePath f)
-			(addModes executeModes)
+		viaTmp F.writeFile' (toOsPath f) (encodeBS (hookScript h))
+		void $ tryIO $ modifyFileMode f (addModes executeModes)
 		return True
 
 {- Removes a hook. Returns False if the hook contained something else, and
@@ -81,7 +81,7 @@ hookUnWrite h r = ifM (doesFileExist f)
 	, return True
 	)
   where
-	f = hookFile h r
+	f = fromRawFilePath $ hookFile h r
 
 data ExpectedContent = UnexpectedContent | ExpectedContent | OldExpectedContent
 
@@ -91,7 +91,7 @@ expectedContent h r = do
 	-- and so a hook file that has CRLF will be treated the same as one
 	-- that has LF. That is intentional, since users may have a reason
 	-- to prefer one or the other.
-	content <- readFile $ hookFile h r
+	content <- readFile $ fromRawFilePath $ hookFile h r
 	return $ if content == hookScript h
 		then ExpectedContent
 		else if any (content ==) (hookOldScripts h)
@@ -103,13 +103,13 @@ hookExists h r = do
 	let f = hookFile h r
 	catchBoolIO $
 #ifndef mingw32_HOST_OS
-		isExecutable . fileMode <$> R.getFileStatus (toRawFilePath f)
+		isExecutable . fileMode <$> R.getFileStatus f
 #else
-		doesFileExist f
+		doesFileExist (fromRawFilePath f)
 #endif
 
 runHook :: (FilePath -> [CommandParam] -> IO a) -> Hook -> [CommandParam] -> Repo -> IO a
 runHook runner h ps r = do
-	let f = hookFile h r
+	let f = fromRawFilePath $ hookFile h r
 	(c, cps) <- findShellCommand f
 	runner c (cps ++ ps)

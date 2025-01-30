@@ -1,6 +1,6 @@
-{- streaming directory traversal
+{- streaming directory reading
  -
- - Copyright 2011-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2025 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -14,23 +14,25 @@ module Utility.Directory.Stream (
 	openDirectory,
 	closeDirectory,
 	readDirectory,
-	isDirectoryEmpty,
+	isDirectoryPopulated,
 ) where
 
 import Control.Monad
-import System.FilePath
 import Control.Concurrent
 import Data.Maybe
 import Prelude
 
 #ifdef mingw32_HOST_OS
 import qualified System.Win32 as Win32
+import System.FilePath
 #else
-import qualified System.Posix as Posix
+import qualified Data.ByteString as B
+import qualified System.Posix.Directory.ByteString as Posix
 #endif
 
 import Utility.Directory
 import Utility.Exception
+import Utility.FileSystemEncoding
 
 #ifndef mingw32_HOST_OS
 data DirectoryHandle = DirectoryHandle IsOpen Posix.DirStream
@@ -40,14 +42,14 @@ data DirectoryHandle = DirectoryHandle IsOpen Win32.HANDLE Win32.FindData (MVar 
 
 type IsOpen = MVar () -- full when the handle is open
 
-openDirectory :: FilePath -> IO DirectoryHandle
+openDirectory :: RawFilePath -> IO DirectoryHandle
 openDirectory path = do
 #ifndef mingw32_HOST_OS
 	dirp <- Posix.openDirStream path
 	isopen <- newMVar ()
 	return (DirectoryHandle isopen dirp)
 #else
-	(h, fdat) <- Win32.findFirstFile (path </> "*")
+	(h, fdat) <- Win32.findFirstFile (fromRawFilePath path </> "*")
 	-- Indicate that the fdat contains a filename that readDirectory
 	-- has not yet returned, by making the MVar be full.
 	-- (There's always at least a "." entry.)
@@ -75,11 +77,11 @@ closeDirectory (DirectoryHandle isopen h _ alreadyhave) =
 
 -- | Reads the next entry from the handle. Once the end of the directory
 -- is reached, returns Nothing and automatically closes the handle.
-readDirectory :: DirectoryHandle -> IO (Maybe FilePath)
+readDirectory :: DirectoryHandle -> IO (Maybe RawFilePath)
 #ifndef mingw32_HOST_OS
 readDirectory hdl@(DirectoryHandle _ dirp) = do
 	e <- Posix.readDirStream dirp
-	if null e
+	if B.null e
 		then do
 			closeDirectory hdl
 			return Nothing
@@ -102,18 +104,18 @@ readDirectory hdl@(DirectoryHandle _ h fdat mv) = do
   where
 	getfn = do
 		filename <- Win32.getFindDataFileName fdat
-		return (Just filename)
+		return (Just (toRawFilePath filename))
 #endif
 
--- | True only when directory exists and contains nothing.
--- Throws exception if directory does not exist.
-isDirectoryEmpty :: FilePath -> IO Bool
-isDirectoryEmpty d = bracket (openDirectory d) closeDirectory check
+-- | True only when directory exists and is not empty.
+isDirectoryPopulated :: RawFilePath -> IO Bool
+isDirectoryPopulated d = bracket (openDirectory d) closeDirectory check
+	`catchIO` const (return False)
   where
 	check h = do
 		v <- readDirectory h
 		case v of
-			Nothing -> return True
+			Nothing -> return False
 			Just f
-				| not (dirCruft f) -> return False
+				| not (dirCruft f) -> return True
 				| otherwise -> check h

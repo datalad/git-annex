@@ -24,6 +24,7 @@ import Annex.Tmp
 import Utility.Metered
 import Utility.Directory.Create
 import qualified Utility.RawFilePath as R
+import qualified Utility.FileIO as F
 
 withCheckedFiles :: (FilePath -> IO Bool) -> FilePath -> (FilePath -> Key -> [FilePath]) -> Key -> ([FilePath] -> IO Bool) -> IO Bool
 withCheckedFiles _ [] _locations _ _ = return False
@@ -101,13 +102,13 @@ retrieve :: (RawFilePath -> Key -> [RawFilePath]) -> RawFilePath -> Retriever
 retrieve locations d basek p _dest miv c = withOtherTmp $ \tmpdir -> do
 	showLongNote "This remote uses the deprecated chunksize setting. So this will be quite slow."
 	let tmp = tmpdir P.</> keyFile basek <> ".directorylegacy.tmp"
-	let tmp' = fromRawFilePath tmp
+	let tmp' = toOsPath tmp
 	let go = \k sink -> do
 		liftIO $ void $ withStoredFiles (fromRawFilePath d) (legacyLocations locations) k $ \fs -> do
 			forM_ fs $
-				S.appendFile tmp' <=< S.readFile
+				F.appendFile' tmp' <=< S.readFile
 			return True
-		b <- liftIO $ L.readFile tmp'
+		b <- liftIO $ F.readFile tmp'
 		liftIO $ removeWhenExistsWith R.removeLink tmp
 		sink b
 	byteRetriever go basek p tmp miv c

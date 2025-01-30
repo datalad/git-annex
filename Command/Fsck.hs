@@ -45,6 +45,7 @@ import qualified Database.Fsck as FsckDb
 import Types.CleanupActions
 import Types.Key
 import qualified Utility.RawFilePath as R
+import qualified Utility.FileIO as F
 
 import Data.Time.Clock.POSIX
 import System.Posix.Types (EpochTime)
@@ -417,7 +418,7 @@ verifyWorkTree key file = do
 	case mk of
 		Just k | k == key -> whenM (inAnnex key) $ do
 			showNote "fixing worktree content"
-			replaceWorkTreeFile (fromRawFilePath file) $ \tmp -> do
+			replaceWorkTreeFile file $ \tmp -> do
 				mode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus file
 				ifM (annexThin <$> Annex.getGitConfig)
 					( void $ linkFromAnnex' key tmp mode
@@ -678,7 +679,7 @@ recordStartTime u = do
 	f <- fromRepo (gitAnnexFsckState u)
 	createAnnexDirectory $ parentDir f
 	liftIO $ removeWhenExistsWith R.removeLink f
-	liftIO $ withFile (fromRawFilePath f) WriteMode $ \h -> do
+	liftIO $ F.withFile (toOsPath f) WriteMode $ \h -> do
 #ifndef mingw32_HOST_OS
 		t <- modificationTime <$> R.getFileStatus f
 #else
@@ -701,7 +702,7 @@ getStartTime u = do
 	liftIO $ catchDefaultIO Nothing $ do
 		timestamp <- modificationTime <$> R.getFileStatus f
 		let fromstatus = Just (realToFrac timestamp)
-		fromfile <- parsePOSIXTime <$> readFile (fromRawFilePath f)
+		fromfile <- parsePOSIXTime <$> F.readFile' (toOsPath f)
 		return $ if matchingtimestamp fromfile fromstatus
 			then Just timestamp
 			else Nothing

@@ -9,6 +9,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Annex.Hook where
 
 import Annex.Common
@@ -85,7 +87,8 @@ hookWarning :: Git.Hook -> String -> Annex ()
 hookWarning h msg = do
 	r <- gitRepo
 	warning $ UnquotedString $
-		Git.hookName h ++ " hook (" ++ Git.hookFile h r ++ ") " ++ msg
+		fromRawFilePath (Git.hookName h) ++ 
+			" hook (" ++ fromRawFilePath (Git.hookFile h r) ++ ") " ++ msg
 
 {- To avoid checking if the hook exists every time, the existing hooks
  - are cached. -}
@@ -118,7 +121,7 @@ runAnnexHook' hook commandcfg = ifM (doesAnnexHookExist hook)
 		( return Nothing
 		, do
 			h <- fromRepo (Git.hookFile hook)
-			commandfailed h
+			commandfailed (fromRawFilePath h)
 		)
 	runcommandcfg = commandcfg <$> Annex.getGitConfig >>= \case
 		Nothing -> return Nothing

@@ -22,6 +22,7 @@ import Annex.LockPool
 import Utility.TimeStamp
 import Logs.File
 import qualified Utility.RawFilePath as R
+import qualified Utility.FileIO as F
 #ifndef mingw32_HOST_OS
 import Annex.Perms
 #endif
@@ -29,6 +30,7 @@ import Annex.Perms
 import Data.Time.Clock
 import Data.Time.Clock.POSIX
 import Control.Concurrent.STM
+import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as B8
 import qualified System.FilePath.ByteString as P
 
@@ -118,7 +120,7 @@ checkTransfer t = debugLocks $ do
 		(Just oldlck, _) -> getLockStatus oldlck
 	case v' of
 		StatusLockedBy pid -> liftIO $ catchDefaultIO Nothing $
-			readTransferInfoFile (Just pid) (fromRawFilePath tfile)
+			readTransferInfoFile (Just pid) tfile
 		_ -> do
 			mode <- annexFileMode
 			-- Ignore failure due to permissions, races, etc.
@@ -139,7 +141,7 @@ checkTransfer t = debugLocks $ do
 	v <- liftIO $ lockShared lck
 	liftIO $ case v of
 		Nothing -> catchDefaultIO Nothing $
-			readTransferInfoFile Nothing (fromRawFilePath tfile)
+			readTransferInfoFile Nothing tfile
 		Just lockhandle -> do
 			dropLock lockhandle
 			deletestale
@@ -157,7 +159,7 @@ getTransfers' dirs wanted = do
 	infos <- mapM checkTransfer transfers
 	return $ mapMaybe running $ zip transfers infos
   where
-	findfiles = liftIO . mapM (emptyWhenDoesNotExist . dirContentsRecursive . fromRawFilePath)
+	findfiles = liftIO . mapM (emptyWhenDoesNotExist . dirContentsRecursive)
 		=<< mapM (fromRepo . transferDir) dirs
 	running (t, Just i) = Just (t, i)
 	running (_, Nothing) = Nothing
@@ -184,7 +186,7 @@ getFailedTransfers u = catMaybes <$> (liftIO . getpairs =<< concat <$> findfiles
 		return $ case (mt, mi) of
 			(Just t, Just i) -> Just (t, i)
 			_ -> Nothing
-	findfiles = liftIO . mapM (emptyWhenDoesNotExist . dirContentsRecursive . fromRawFilePath)
+	findfiles = liftIO . mapM (emptyWhenDoesNotExist . dirContentsRecursive)
 		=<< mapM (fromRepo . failedTransferDir u) [Download, Upload]
 
 clearFailedTransfers :: UUID -> Annex [(Transfer, TransferInfo)]
@@ -244,17 +246,17 @@ failedTransferFile (Transfer direction u kd) r =
 		P.</> keyFile (mkKey (const kd))
 
 {- Parses a transfer information filename to a Transfer. -}
-parseTransferFile :: FilePath -> Maybe Transfer
+parseTransferFile :: RawFilePath -> Maybe Transfer
 parseTransferFile file
-	| "lck." `isPrefixOf` takeFileName file = Nothing
+	| "lck." `B.isPrefixOf` P.takeFileName file = Nothing
 	| otherwise = case drop (length bits - 3) bits of
 		[direction, u, key] -> Transfer
 			<$> parseDirection direction
 			<*> pure (toUUID u)
-			<*> fmap (fromKey id) (fileKey (toRawFilePath key))
+			<*> fmap (fromKey id) (fileKey key)
 		_ -> Nothing
   where
-	bits = splitDirectories file
+	bits = P.splitDirectories file
 
 writeTransferInfoFile :: TransferInfo -> RawFilePath -> Annex ()
 writeTransferInfoFile info tfile = writeLogFile tfile $ writeTransferInfo info
@@ -284,9 +286,9 @@ writeTransferInfo info = unlines
 	  in maybe "" fromRawFilePath afile
 	]
 
-readTransferInfoFile :: Maybe PID -> FilePath -> IO (Maybe TransferInfo)
+readTransferInfoFile :: Maybe PID -> RawFilePath -> IO (Maybe TransferInfo)
 readTransferInfoFile mpid tfile = catchDefaultIO Nothing $
-	readTransferInfo mpid <$> readFileStrict tfile
+	readTransferInfo mpid . decodeBS <$> F.readFile' (toOsPath tfile)
 
 readTransferInfo :: Maybe PID -> String -> Maybe TransferInfo
 readTransferInfo mpid s = TransferInfo
@@ -303,8 +305,10 @@ readTransferInfo mpid s = TransferInfo
 	<*> pure False
   where
 #ifdef mingw32_HOST_OS
-	(firstline, otherlines) = separate (== '\n') s
-	(secondline, rest) = separate (== '\n') otherlines
+	(firstliner, otherlines) = separate (== '\n') s
+	(secondliner, rest) = separate (== '\n') otherlines
+	firstline = dropWhileEnd (== '\r') firstliner
+	secondline = dropWhileEnd (== '\r') secondliner
 	mpid' = readish secondline
 #else
 	(firstline, rest) = separate (== '\n') s
@@ -315,7 +319,7 @@ readTransferInfo mpid s = TransferInfo
 	bits = splitc ' ' firstline
 	numbits = length bits
 	time = if numbits > 0
-		then Just <$> parsePOSIXTime =<< headMaybe bits
+		then Just <$> parsePOSIXTime . encodeBS =<< headMaybe bits
 		else pure Nothing -- not failure
 	bytes = if numbits > 1
 		then Just <$> readish =<< headMaybe (drop 1 bits)

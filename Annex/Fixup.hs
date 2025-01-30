@@ -19,6 +19,7 @@ import Utility.Directory
 import Utility.Exception
 import Utility.Monad
 import Utility.FileSystemEncoding
+import Utility.SystemDirectory
 import qualified Utility.RawFilePath as R
 import Utility.PartialPrelude
 

@@ -17,7 +17,8 @@ module Utility.FileSize (
 #ifdef mingw32_HOST_OS
 import Control.Exception (bracket)
 import System.IO
-import Utility.FileSystemEncoding
+import qualified Utility.FileIO as F
+import Utility.OsPath
 #else
 import System.PosixCompat.Files (fileSize)
 #endif
@@ -36,7 +37,7 @@ getFileSize :: R.RawFilePath -> IO FileSize
 #ifndef mingw32_HOST_OS
 getFileSize f = fmap (fromIntegral . fileSize) (R.getFileStatus f)
 #else
-getFileSize f = bracket (openFile (fromRawFilePath f) ReadMode) hClose hFileSize
+getFileSize f = bracket (F.openFile (toOsPath f) ReadMode) hClose hFileSize
 #endif
 
 {- Gets the size of the file, when its FileStatus is already known.

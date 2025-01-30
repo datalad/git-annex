@@ -35,10 +35,11 @@ import qualified Utility.RawFilePath as R
 
 import Network.URI
 import qualified System.FilePath.ByteString as P
+import qualified Data.ByteString as S
 
 #ifdef WITH_TORRENTPARSER
 import Data.Torrent
-import qualified Data.ByteString.Lazy as B
+import qualified Utility.FileIO as F
 #endif
 
 remote :: RemoteType
@@ -208,31 +209,29 @@ downloadTorrentFile u = do
 					let metadir = othertmp P.</> "torrentmeta" P.</> kf
 					createAnnexDirectory metadir
 					showOutput
-					ok <- downloadMagnetLink u
-						(fromRawFilePath metadir)
-						(fromRawFilePath torrent)
+					ok <- downloadMagnetLink u metadir torrent
 					liftIO $ removeDirectoryRecursive
 						(fromRawFilePath metadir)
 					return ok
 				else withOtherTmp $ \othertmp -> do
-					withTmpFileIn (fromRawFilePath othertmp) "torrent" $ \f h -> do
+					withTmpFileIn (toOsPath othertmp) (toOsPath "torrent") $ \f h -> do
 						liftIO $ hClose h
-						resetAnnexFilePerm (toRawFilePath f)
+						resetAnnexFilePerm (fromOsPath f)
 						ok <- Url.withUrlOptions $ 
-							Url.download nullMeterUpdate Nothing u f
+							Url.download nullMeterUpdate Nothing u (fromRawFilePath (fromOsPath f))
 						when ok $
-							liftIO $ moveFile (toRawFilePath f) torrent
+							liftIO $ moveFile (fromOsPath f) torrent
 						return ok
 		)
 
-downloadMagnetLink :: URLString -> FilePath -> FilePath -> Annex Bool
+downloadMagnetLink :: URLString -> RawFilePath -> RawFilePath -> Annex Bool
 downloadMagnetLink u metadir dest = ifM download
 	( liftIO $ do
-		ts <- filter (".torrent" `isSuffixOf`)
+		ts <- filter (".torrent" `S.isSuffixOf`)
 			<$> dirContents metadir
 		case ts of
 			(t:[]) -> do
-				moveFile (toRawFilePath t) (toRawFilePath dest)
+				moveFile t dest
 				return True
 			_ -> return False
 	, return False
@@ -245,7 +244,7 @@ downloadMagnetLink u metadir dest = ifM download
 		, Param "--seed-time=0"
 		, Param "--summary-interval=0"
 		, Param "-d"
-		, File metadir
+		, File (fromRawFilePath metadir)
 		]
 
 downloadTorrentContent :: Key -> URLString -> FilePath -> Int -> MeterUpdate -> Annex Bool
@@ -367,7 +366,7 @@ torrentFileSizes :: RawFilePath -> IO [(FilePath, Integer)]
 torrentFileSizes torrent = do
 #ifdef WITH_TORRENTPARSER
 	let mkfile = joinPath . map (scrub . decodeBL)
-	b <- B.readFile (fromRawFilePath torrent)
+	b <- F.readFile (toOsPath torrent)
 	return $ case readTorrent b of
 		Left e -> giveup $ "failed to parse torrent: " ++ e
 		Right t -> case tInfo t of

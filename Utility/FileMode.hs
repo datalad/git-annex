@@ -27,6 +27,8 @@ import Control.Monad.Catch
 import Utility.Exception
 import Utility.FileSystemEncoding
 import qualified Utility.RawFilePath as R
+import qualified Utility.FileIO as F
+import Utility.OsPath
 
 {- Applies a conversion function to a file's mode. -}
 modifyFileMode :: RawFilePath -> (FileMode -> FileMode) -> IO ()
@@ -178,7 +180,7 @@ writeFileProtected' :: RawFilePath -> (Handle -> IO ()) -> IO ()
 writeFileProtected' file writer = bracket setup cleanup writer
   where
 	setup = do
-		h <- protectedOutput $ openFile (fromRawFilePath file) WriteMode
+		h <- protectedOutput $ F.openFile (toOsPath file) WriteMode
 		void $ tryIO $ modifyFileMode file $ removeModes otherGroupModes
 		return h
 	cleanup = hClose

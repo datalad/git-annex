@@ -266,8 +266,8 @@ getAuthEnv = do
 
 findRepos :: Options -> IO [Git.Repo]
 findRepos o = do
-	files <- map toRawFilePath . concat
-		<$> mapM dirContents (directoryOption o)
+	files <- concat
+		<$> mapM (dirContents . toRawFilePath) (directoryOption o)
 	map Git.Construct.newFrom . catMaybes 
 		<$> mapM Git.Construct.checkForRepo files
 

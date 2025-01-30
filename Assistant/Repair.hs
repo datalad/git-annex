@@ -5,6 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE CPP #-}
 
 module Assistant.Repair where
@@ -33,6 +34,8 @@ import Utility.ThreadScheduler
 import qualified Utility.RawFilePath as R
 
 import Control.Concurrent.Async
+import qualified Data.ByteString as S
+import qualified System.FilePath.ByteString as P
 
 {- When the FsckResults require a repair, tries to do a non-destructive
  - repair. If that fails, pops up an alert. -}
@@ -132,26 +135,26 @@ repairStaleGitLocks r = do
 	repairStaleLocks lockfiles
 	return $ not $ null lockfiles
   where
-	findgitfiles = dirContentsRecursiveSkipping (== dropTrailingPathSeparator (fromRawFilePath annexDir)) True . fromRawFilePath . Git.localGitDir
+	findgitfiles = dirContentsRecursiveSkipping (== P.dropTrailingPathSeparator annexDir) True . Git.localGitDir
 	islock f
-		| "gc.pid" `isInfixOf` f = False
-		| ".lock" `isSuffixOf` f = True
-		| takeFileName f == "MERGE_HEAD" = True
+		| "gc.pid" `S.isInfixOf` f = False
+		| ".lock" `S.isSuffixOf` f = True
+		| P.takeFileName f == "MERGE_HEAD" = True
 		| otherwise = False
 
-repairStaleLocks :: [FilePath] -> Assistant ()
+repairStaleLocks :: [RawFilePath] -> Assistant ()
 repairStaleLocks lockfiles = go =<< getsizes
   where
 	getsize lf = catchMaybeIO $ (\s -> (lf, s))
-		<$> getFileSize (toRawFilePath lf)
+		<$> getFileSize lf
 	getsizes = liftIO $ catMaybes <$> mapM getsize lockfiles
 	go [] = return ()
-	go l = ifM (liftIO $ null <$> Lsof.query ("--" : map fst l))
+	go l = ifM (liftIO $ null <$> Lsof.query ("--" : map (fromRawFilePath . fst) l))
 		( do
 			waitforit "to check stale git lock file"
 			l' <- getsizes
 			if l' == l
-				then liftIO $ mapM_ (removeWhenExistsWith R.removeLink . toRawFilePath . fst) l
+				then liftIO $ mapM_ (removeWhenExistsWith R.removeLink . fst) l
 				else go l'
 		, do
 			waitforit "for git lock file writer"

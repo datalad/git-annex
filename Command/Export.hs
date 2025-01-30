@@ -312,12 +312,12 @@ performExport r srcrs db ek af contentsha loc allfilledvar = do
 	sent <- tryNonAsync $ if not (isGitShaKey ek)
 		then tryrenameannexobject $ sendannexobject
 		-- Sending a non-annexed file.
-		else withTmpFile "export" $ \tmp h -> do
+		else withTmpFile (toOsPath "export") $ \tmp h -> do
 			b <- catObject contentsha
 			liftIO $ L.hPut h b
 			liftIO $ hClose h
 			Remote.action $
-				storer tmp ek loc nullMeterUpdate
+				storer (fromRawFilePath (fromOsPath tmp)) ek loc nullMeterUpdate
 	let failedsend = liftIO $ modifyMVar_ allfilledvar (pure . const (AllFilled False))
 	case sent of
 		Right True -> next $ cleanupExport r db ek loc True

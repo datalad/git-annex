@@ -47,7 +47,7 @@ transferPollerThread = namedThread "TransferPoller" $ do
 		| otherwise = do
 			let (f, _, _) = transferFileAndLockFile t g
 			mi <- liftIO $ catchDefaultIO Nothing $
-				readTransferInfoFile Nothing (fromRawFilePath f)
+				readTransferInfoFile Nothing f
 			maybe noop (newsize t info . bytesComplete) mi
 
 	newsize t info sz

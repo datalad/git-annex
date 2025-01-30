@@ -289,7 +289,7 @@ onAddSymlink' linktarget mk file filestatus = go mk
 		if linktarget == Just link
 			then ensurestaged (Just link) =<< getDaemonStatus
 			else do
-				liftAnnex $ replaceWorkTreeFile file $
+				liftAnnex $ replaceWorkTreeFile (toRawFilePath file) $
 					makeAnnexLink link
 				addLink file link (Just key)
 	-- other symlink, not git-annex

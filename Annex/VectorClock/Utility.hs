@@ -12,12 +12,13 @@ import Data.Time.Clock.POSIX
 import Types.VectorClock
 import Utility.Env
 import Utility.TimeStamp
+import Utility.FileSystemEncoding
 
 startVectorClock :: IO (IO CandidateVectorClock)
 startVectorClock = go =<< getEnv "GIT_ANNEX_VECTOR_CLOCK"
   where
 	go Nothing = timebased
-	go (Just s) = case parsePOSIXTime s of
+	go (Just s) = case parsePOSIXTime (encodeBS s) of
 		Just t -> return (pure (CandidateVectorClock t))
 		Nothing -> timebased
 	-- Avoid using fractional seconds in the CandidateVectorClock.

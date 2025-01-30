@@ -26,11 +26,12 @@ import Utility.Path.AbsRel
 import Utility.FileMode
 import Utility.CopyFile
 import Utility.FileSystemEncoding
+import Utility.SystemDirectory
 
 mklibs :: FilePath -> a -> IO Bool
 mklibs top _installedbins = do
-	fs <- dirContentsRecursive top
-	exes <- filterM checkExe fs
+	fs <- dirContentsRecursive (toRawFilePath top)
+	exes <- filterM checkExe (map fromRawFilePath fs)
 	libs <- runLdd exes
 	
 	glibclibs <- glibcLibs
@@ -80,7 +81,7 @@ consolidateUsrLib top libdirs = go [] libdirs
 			forM_ fs $ \f -> do
 				let src = inTop top (x </> f)
 				let dst = inTop top (d </> f)
-				unless (dirCruft f) $
+				unless (dirCruft (toRawFilePath f)) $
 					unlessM (doesDirectoryExist src) $
 						renameFile src dst
 			symlinkHwCapDirs top d

@@ -57,7 +57,7 @@ onErr = giveup
 
 {- Called when a new transfer information file is written. -}
 onAdd :: Handler
-onAdd file = case parseTransferFile file of
+onAdd file = case parseTransferFile (toRawFilePath file) of
 	Nothing -> noop
 	Just t -> go t =<< liftAnnex (checkTransfer t)
   where
@@ -73,9 +73,9 @@ onAdd file = case parseTransferFile file of
  - The only thing that should change in the transfer info is the
  - bytesComplete, so that's the only thing updated in the DaemonStatus. -}
 onModify :: Handler
-onModify file = case parseTransferFile file of
+onModify file = case parseTransferFile (toRawFilePath file) of
 	Nothing -> noop
-	Just t -> go t =<< liftIO (readTransferInfoFile Nothing file)
+	Just t -> go t =<< liftIO (readTransferInfoFile Nothing (toRawFilePath file))
   where
 	go _ Nothing = noop
 	go t (Just newinfo) = alterTransferInfo t $
@@ -88,7 +88,7 @@ watchesTransferSize = modifyTracked
 
 {- Called when a transfer information file is removed. -}
 onDel :: Handler
-onDel file = case parseTransferFile file of
+onDel file = case parseTransferFile (toRawFilePath file) of
 	Nothing -> noop
 	Just t -> do
 		debug [ "transfer finishing:", show t]

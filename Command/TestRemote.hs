@@ -32,6 +32,7 @@ import Annex.SpecialRemote.Config (exportTreeField)
 import Remote.Helper.Chunked
 import Remote.Helper.Encryptable (encryptionField, highRandomQualityField)
 import Git.Types
+import qualified Utility.FileIO as F
 
 import Test.Tasty
 import Test.Tasty.Runners
@@ -255,18 +256,18 @@ test runannex mkr mkk =
 		get r k
 	, check "fsck downloaded object" fsck
 	, check "retrieveKeyFile resume from 0" $ \r k -> do
-		tmp <- fromRawFilePath <$> prepTmp k
-		liftIO $ writeFile tmp ""
+		tmp <- toOsPath <$> prepTmp k
+		liftIO $ F.writeFile' tmp mempty
 		lockContentForRemoval k noop removeAnnex
 		get r k
 	, check "fsck downloaded object" fsck
 	, check "retrieveKeyFile resume from 33%" $ \r k -> do
 		loc <- fromRawFilePath <$> Annex.calcRepo (gitAnnexLocation k)
-		tmp <- fromRawFilePath <$> prepTmp k
+		tmp <- toOsPath <$> prepTmp k
 		partial <- liftIO $ bracket (openBinaryFile loc ReadMode) hClose $ \h -> do
 			sz <- hFileSize h
 			L.hGet h $ fromInteger $ sz `div` 3
-		liftIO $ L.writeFile tmp partial
+		liftIO $ F.writeFile tmp partial
 		lockContentForRemoval k noop removeAnnex
 		get r k
 	, check "fsck downloaded object" fsck
@@ -355,11 +356,11 @@ testExportTree runannex mkr mkk1 mkk2 =
 	storeexport ea k = do
 		loc <- fromRawFilePath <$> Annex.calcRepo (gitAnnexLocation k)
 		Remote.storeExport ea loc k testexportlocation nullMeterUpdate
-	retrieveexport ea k = withTmpFile "exported" $ \tmp h -> do
+	retrieveexport ea k = withTmpFile (toOsPath "exported") $ \tmp h -> do
 		liftIO $ hClose h
-		tryNonAsync (Remote.retrieveExport ea k testexportlocation tmp nullMeterUpdate) >>= \case
+		tryNonAsync (Remote.retrieveExport ea k testexportlocation (fromRawFilePath (fromOsPath tmp)) nullMeterUpdate) >>= \case
 			Left _ -> return False
-			Right v -> verifyKeyContentPostRetrieval RetrievalAllKeysSecure AlwaysVerify v k (toRawFilePath tmp)
+			Right v -> verifyKeyContentPostRetrieval RetrievalAllKeysSecure AlwaysVerify v k (fromOsPath tmp)
 	checkpresentexport ea k = Remote.checkPresentExport ea k testexportlocation
 	removeexport ea k = Remote.removeExport ea k testexportlocation
 	removeexportdirectory ea = case Remote.removeExportDirectory ea of
@@ -429,21 +430,21 @@ keySizes base fast = filter want
 		| otherwise = sz > 0
 
 randKey :: Int -> Annex Key
-randKey sz = withTmpFile "randkey" $ \f h -> do
+randKey sz = withTmpFile (toOsPath "randkey") $ \f h -> do
 	gen <- liftIO (newGenIO :: IO SystemRandom)
 	case genBytes sz gen of
 		Left e -> giveup $ "failed to generate random key: " ++ show e
 		Right (rand, _) -> liftIO $ B.hPut h rand
 	liftIO $ hClose h
 	let ks = KeySource
-		{ keyFilename = toRawFilePath f
-		, contentLocation = toRawFilePath f
+		{ keyFilename = fromOsPath f
+		, contentLocation = fromOsPath f
 		, inodeCache = Nothing
 		}
 	k <- case Types.Backend.genKey Backend.Hash.testKeyBackend of
 		Just a -> a ks nullMeterUpdate
 		Nothing -> giveup "failed to generate random key (backend problem)"
-	_ <- moveAnnex k (AssociatedFile Nothing) (toRawFilePath f)
+	_ <- moveAnnex k (AssociatedFile Nothing) (fromOsPath f)
 	return k
 
 getReadonlyKey :: Remote -> RawFilePath -> Annex Key

@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Annex.Proxy where
 
@@ -30,6 +31,7 @@ import Utility.Tmp.Dir
 import Utility.Metered
 import Git.Types
 import qualified Database.Export as Export
+import qualified Utility.FileIO as F
 #ifndef mingw32_HOST_OS
 import Utility.OpenFile
 #endif
@@ -173,7 +175,7 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv oclosedv mexportdb = go
 	-- independently. Also, this key is not getting added into the
 	-- local annex objects.
 	withproxytmpfile k a = withOtherTmp $ \othertmpdir ->
-		withTmpDirIn (fromRawFilePath othertmpdir) "proxy" $ \tmpdir ->
+		withTmpDirIn (fromRawFilePath othertmpdir) (toOsPath "proxy") $ \tmpdir ->
 			a (toRawFilePath tmpdir P.</> keyFile k)
 			
 	proxyput af k = do
@@ -184,7 +186,7 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv oclosedv mexportdb = go
 				-- the client, to avoid bad content
 				-- being stored in the special remote.
 				iv <- startVerifyKeyContentIncrementally Remote.AlwaysVerify k
-				h <- liftIO $ openFile (fromRawFilePath tmpfile) WriteMode
+				h <- liftIO $ F.openFile (toOsPath tmpfile) WriteMode
 				let nuketmp = liftIO $ removeWhenExistsWith removeFile (fromRawFilePath tmpfile)
 				gotall <- liftIO $ receivetofile iv h len
 				liftIO $ hClose h

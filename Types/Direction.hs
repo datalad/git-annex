@@ -18,7 +18,7 @@ formatDirection :: Direction -> B.ByteString
 formatDirection Upload = "upload"
 formatDirection Download = "download"
 
-parseDirection :: String -> Maybe Direction
+parseDirection :: B.ByteString -> Maybe Direction
 parseDirection "upload" = Just Upload
 parseDirection "download" = Just Download
 parseDirection _ = Nothing

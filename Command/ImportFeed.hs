@@ -158,10 +158,11 @@ getFeed o url st =
 		| scrapeOption o = scrape
 		| otherwise = get
 
-	get = withTmpFile "feed" $ \tmpf h -> do
+	get = withTmpFile (toOsPath "feed") $ \tmpf h -> do
+		let tmpf' = fromRawFilePath $ fromOsPath tmpf
 		liftIO $ hClose h
-		ifM (downloadFeed url tmpf)
-			( parse tmpf
+		ifM (downloadFeed url tmpf')
+			( parse tmpf'
 			, do
 				recordfail
 				next $ feedProblem url

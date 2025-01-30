@@ -89,9 +89,9 @@ webAppThread assistantdata urlrenderer noannex cannotrun postfirstrun listenhost
 		, return app
 		)
 	runWebApp tlssettings listenhost' listenport' app' $ \addr -> if noannex
-		then withTmpFile "webapp.html" $ \tmpfile h -> do
+		then withTmpFile (toOsPath "webapp.html") $ \tmpfile h -> do
 			hClose h
-			go tlssettings addr webapp tmpfile Nothing
+			go tlssettings addr webapp (fromRawFilePath (fromOsPath tmpfile)) Nothing
 		else do
 			htmlshim <- getAnnex' $ fromRepo gitAnnexHtmlShim
 			urlfile <- getAnnex' $ fromRepo gitAnnexUrlFile

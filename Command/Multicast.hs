@@ -130,7 +130,7 @@ send ups fs = do
 	-- the names of keys, and would have to be copied, which is too
 	-- expensive.
 	starting "sending files" (ActionItemOther Nothing) (SeekInput []) $
-		withTmpFile "send" $ \t h -> do
+		withTmpFile (toOsPath "send") $ \t h -> do
 			let ww = WarnUnmatchLsFiles "multicast"
 			(fs', cleanup) <- seekHelper id ww LsFiles.inRepo
 				=<< workTreeItems ww fs
@@ -163,7 +163,7 @@ send ups fs = do
 					-- only allow clients on the authlist
 					, Param "-H", Param ("@"++authlist)
 					-- pass in list of files to send
-					, Param "-i", File t
+					, Param "-i", File (fromRawFilePath (fromOsPath t))
 					] ++ ups
 				liftIO (boolSystem "uftp" ps) >>= showEndResult
 			next $ return True
@@ -178,7 +178,7 @@ receive ups = starting "receiving multicast files" ai si $ do
 	(callback, environ, statush) <- liftIO multicastCallbackEnv
 	tmpobjdir <- fromRepo gitAnnexTmpObjectDir
 	createAnnexDirectory tmpobjdir
-	withTmpDirIn (fromRawFilePath tmpobjdir) "multicast" $ \tmpdir -> withAuthList $ \authlist -> do
+	withTmpDirIn (fromRawFilePath tmpobjdir) (toOsPath "multicast") $ \tmpdir -> withAuthList $ \authlist -> do
 		abstmpdir <- liftIO $ absPath (toRawFilePath tmpdir)
 		abscallback <- liftIO $ searchPath callback
 		let ps =
@@ -245,10 +245,10 @@ uftpUID u = "0x" ++ (take 8 $ show $ sha2_256 $ B8.fromString (fromUUID u))
 withAuthList :: (FilePath -> Annex a) -> Annex a
 withAuthList a = do
 	m <- knownFingerPrints
-	withTmpFile "authlist" $ \t h -> do
+	withTmpFile (toOsPath "authlist") $ \t h -> do
 		liftIO $ hPutStr h (genAuthList m)
 		liftIO $ hClose h
-		a t
+		a (fromRawFilePath (fromOsPath t))
 
 genAuthList :: M.Map UUID Fingerprint -> String
 genAuthList = unlines . map fmt . M.toList

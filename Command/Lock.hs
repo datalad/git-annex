@@ -78,7 +78,7 @@ perform file key = do
 	breakhardlink obj = whenM (catchBoolIO $ (> 1) . linkCount <$> liftIO (R.getFileStatus obj)) $ do
 		mfc <- withTSDelta (liftIO . genInodeCache file)
 		unlessM (sameInodeCache obj (maybeToList mfc)) $ do
-			modifyContentDir obj $ replaceGitAnnexDirFile (fromRawFilePath obj) $ \tmp -> do
+			modifyContentDir obj $ replaceGitAnnexDirFile obj $ \tmp -> do
 				unlessM (checkedCopyFile key obj tmp Nothing) $
 					giveup "unable to lock file"
 			Database.Keys.storeInodeCaches key [obj]

@@ -38,6 +38,7 @@ import Utility.Tmp.Dir
 import Utility.CopyFile
 import qualified Database.Keys.Handle
 import qualified Utility.RawFilePath as R
+import qualified Utility.FileIO as F
 
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Char8 as S8
@@ -87,7 +88,7 @@ getAnnexLinkTarget' file coresymlinks = if coresymlinks
 
 	probesymlink = R.readSymbolicLink file
 
-	probefilecontent = withFile (fromRawFilePath file) ReadMode $ \h -> do
+	probefilecontent = F.withFile (toOsPath file) ReadMode $ \h -> do
 		s <- S.hGet h maxSymlinkSz
 		-- If we got the full amount, the file is too large
 		-- to be a symlink target.
@@ -117,7 +118,7 @@ makeGitLink linktarget file = ifM (coreSymlinks <$> Annex.getGitConfig)
 	( liftIO $ do
 		void $ tryIO $ R.removeLink file
 		R.createSymbolicLink linktarget file
-	, liftIO $ S.writeFile (fromRawFilePath file) linktarget
+	, liftIO $ F.writeFile' (toOsPath file) linktarget
 	)
 
 {- Creates a link on disk, and additionally stages it in git. -}
@@ -152,7 +153,7 @@ stagePointerFile file mode sha =
 
 writePointerFile :: RawFilePath -> Key -> Maybe FileMode -> IO ()
 writePointerFile file k mode = do
-	S.writeFile (fromRawFilePath file) (formatPointer k)
+	F.writeFile' (toOsPath file) (formatPointer k)
 	maybe noop (R.setFileMode file) mode
 
 newtype Restage = Restage Bool
@@ -245,7 +246,9 @@ restagePointerFiles r = unlessM (Annex.getState Annex.insmudgecleanfilter) $ do
 	when (numfiles > 0) $
 		bracket lockindex unlockindex go
   where
-	withtmpdir = withTmpDirIn (fromRawFilePath $ Git.localGitDir r) "annexindex"
+	withtmpdir = withTmpDirIn
+		(fromRawFilePath $ Git.localGitDir r)
+		(toOsPath "annexindex")
 
 	isunmodified tsd f orig = 
 		genInodeCache f tsd >>= return . \case
@@ -434,7 +437,7 @@ maxSymlinkSz = 8192
 isPointerFile :: RawFilePath -> IO (Maybe Key)
 isPointerFile f = catchDefaultIO Nothing $
 #if defined(mingw32_HOST_OS)
-	withFile (fromRawFilePath f) ReadMode readhandle
+	F.withFile (toOsPath f) ReadMode readhandle
 #else
 #if MIN_VERSION_unix(2,8,0)
 	let open = do
@@ -445,7 +448,7 @@ isPointerFile f = catchDefaultIO Nothing $
 #else
 	ifM (isSymbolicLink <$> R.getSymbolicLinkStatus f)
 		( return Nothing
-		, withFile (fromRawFilePath f) ReadMode readhandle
+		, F.withFile (toOsPath f) ReadMode readhandle
 		)
 #endif
 #endif

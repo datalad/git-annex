@@ -96,6 +96,7 @@ import Annex.Hook
 import Utility.Directory.Stream
 import Utility.Tmp
 import qualified Utility.RawFilePath as R
+import qualified Utility.FileIO as F
 
 {- Name of the branch that is used to store git-annex's information. -}
 name :: Git.Ref
@@ -711,9 +712,9 @@ forceUpdateIndex jl branchref = do
 {- Checks if the index needs to be updated. -}
 needUpdateIndex :: Git.Ref -> Annex Bool
 needUpdateIndex branchref = do
-	f <- fromRawFilePath <$> fromRepo gitAnnexIndexStatus
+	f <- toOsPath <$> fromRepo gitAnnexIndexStatus
 	committedref <- Git.Ref . firstLine' <$>
-		liftIO (catchDefaultIO mempty $ B.readFile f)
+		liftIO (catchDefaultIO mempty $ F.readFile' f)
 	return (committedref /= branchref)
 
 {- Record that the branch's index has been updated to correspond to a
@@ -741,7 +742,7 @@ stageJournal jl commitindex = withIndex $ withOtherTmp $ \tmpdir -> do
 	g <- gitRepo
 	st <- getState
 	let dir = gitAnnexJournalDir st g
-	(jlogf, jlogh) <- openjlog (fromRawFilePath tmpdir)
+	(jlogf, jlogh) <- openjlog tmpdir
 	withHashObjectHandle $ \h ->
 		withJournalHandle gitAnnexJournalDir $ \jh ->
 			Git.UpdateIndex.streamUpdateIndex g
@@ -752,12 +753,12 @@ stageJournal jl commitindex = withIndex $ withOtherTmp $ \tmpdir -> do
 	genstream dir h jh jlogh streamer = readDirectory jh >>= \case
 		Nothing -> return ()
 		Just file -> do
-			let path = dir P.</> toRawFilePath file
+			let path = dir P.</> file
 			unless (dirCruft file) $ whenM (isfile path) $ do
 				sha <- Git.HashObject.hashFile h path
-				hPutStrLn jlogh file
+				B.hPutStr jlogh (file <> "\n")
 				streamer $ Git.UpdateIndex.updateIndexLine
-					sha TreeFile (asTopFilePath $ fileJournal $ toRawFilePath file)
+					sha TreeFile (asTopFilePath $ fileJournal file)
 			genstream dir h jh jlogh streamer
 	isfile file = isRegularFile <$> R.getFileStatus file
 	-- Clean up the staged files, as listed in the temp log file.
@@ -769,8 +770,8 @@ stageJournal jl commitindex = withIndex $ withOtherTmp $ \tmpdir -> do
 		stagedfs <- lines <$> hGetContents jlogh
 		mapM_ (removeFile . (dir </>)) stagedfs
 		hClose jlogh
-		removeWhenExistsWith (R.removeLink) (toRawFilePath jlogf)
-	openjlog tmpdir = liftIO $ openTmpFileIn tmpdir "jlog"
+		removeWhenExistsWith (R.removeLink) (fromOsPath jlogf)
+	openjlog tmpdir = liftIO $ openTmpFileIn (toOsPath tmpdir) (toOsPath "jlog")
 
 getLocalTransitions :: Annex Transitions
 getLocalTransitions = 
@@ -931,8 +932,8 @@ getIgnoredRefs =
 	S.fromList . mapMaybe Git.Sha.extractSha . fileLines' <$> content
   where
 	content = do
-		f <- fromRawFilePath <$> fromRepo gitAnnexIgnoredRefs
-		liftIO $ catchDefaultIO mempty $ B.readFile f
+		f <- toOsPath <$> fromRepo gitAnnexIgnoredRefs
+		liftIO $ catchDefaultIO mempty $ F.readFile' f
 
 addMergedRefs :: [(Git.Sha, Git.Branch)] -> Annex ()
 addMergedRefs [] = return ()
@@ -949,8 +950,8 @@ getMergedRefs = S.fromList . map fst <$> getMergedRefs'
 
 getMergedRefs' :: Annex [(Git.Sha, Git.Branch)]
 getMergedRefs' = do
-	f <- fromRawFilePath <$> fromRepo gitAnnexMergedRefs
-	s <- liftIO $ catchDefaultIO mempty $ B.readFile f
+	f <- toOsPath <$> fromRepo gitAnnexMergedRefs
+	s <- liftIO $ catchDefaultIO mempty $ F.readFile' f
 	return $ map parse $ fileLines' s
   where
 	parse l = 

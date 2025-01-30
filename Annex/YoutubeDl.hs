@@ -30,6 +30,8 @@ import Utility.Metered
 import Utility.Tmp
 import Messages.Progress
 import Logs.Transfer
+import qualified Utility.RawFilePath as R
+import qualified Utility.FileIO as F
 
 import Network.URI
 import Control.Concurrent.Async
@@ -37,7 +39,6 @@ import Text.Read
 import Data.Either
 import qualified Data.Aeson as Aeson
 import GHC.Generics
-import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as B8
 
 -- youtube-dl can follow redirects to anywhere, including potentially
@@ -101,9 +102,9 @@ youtubeDl' url workdir p uo
 		| isytdlp cmd = liftIO $ 
 			(nub . lines <$> readFile filelistfile)
 				`catchIO` (pure . const [])
-		| otherwise = workdirfiles
-	workdirfiles = liftIO $ filter (/= filelistfile) 
-		<$> (filterM (doesFileExist) =<< dirContents workdir)
+		| otherwise = map fromRawFilePath <$> workdirfiles
+	workdirfiles = liftIO $ filter (/= toRawFilePath filelistfile) 
+		<$> (filterM R.doesPathExist =<< dirContents (toRawFilePath workdir))
 	filelistfile = workdir </> filelistfilebase
 	filelistfilebase = "git-annex-file-list-file"
 	isytdlp cmd = cmd == "yt-dlp"
@@ -159,7 +160,7 @@ youtubeDlMaxSize workdir = ifM (Annex.getRead Annex.force)
 		Just have -> do
 			inprogress <- sizeOfDownloadsInProgress (const True)
 			partial <- liftIO $ sum 
-				<$> (mapM (getFileSize . toRawFilePath) =<< dirContents workdir)
+				<$> (mapM getFileSize =<< dirContents (toRawFilePath workdir))
 			reserve <- annexDiskReserve <$> Annex.getGitConfig
 			let maxsize = have - reserve - inprogress + partial
 			if maxsize > 0
@@ -352,7 +353,7 @@ youtubePlaylist url = do
 		else return $ Left $ "Scraping needs yt-dlp, but git-annex has been configured to use " ++ cmd
 
 youtubePlaylist' :: URLString -> String -> IO (Either String [YoutubePlaylistItem])
-youtubePlaylist' url cmd = withTmpFile "yt-dlp" $ \tmpfile h -> do
+youtubePlaylist' url cmd = withTmpFile (toOsPath (toRawFilePath "yt-dlp")) $ \tmpfile h -> do
 	hClose h
 	(outerr, ok) <- processTranscript cmd
 		[ "--simulate"
@@ -362,14 +363,14 @@ youtubePlaylist' url cmd = withTmpFile "yt-dlp" $ \tmpfile h -> do
 		, "--print-to-file"
 		-- Write json with selected fields.
 		, "%(.{" ++ intercalate "," youtubePlaylistItemFields ++ "})j"
-		, tmpfile
+		, fromRawFilePath (fromOsPath tmpfile)
 		, url
 		]
 		Nothing
 	if ok
 		then flip catchIO (pure . Left . show) $ do
 			v <- map Aeson.eitherDecodeStrict . B8.lines
-				<$> B.readFile tmpfile
+				<$> F.readFile' tmpfile
 			return $ case partitionEithers v of
 				((parserr:_), _) -> 
 					Left $ "yt-dlp json parse error: " ++ parserr

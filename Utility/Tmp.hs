@@ -1,11 +1,11 @@
 {- Temporary files.
  -
- - Copyright 2010-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2025 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
 
-{-# LANGUAGE CPP #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Utility.Tmp (
@@ -13,33 +13,38 @@ module Utility.Tmp (
 	viaTmp,
 	withTmpFile,
 	withTmpFileIn,
-	relatedTemplate,
 	openTmpFileIn,
+	relatedTemplate,
+	relatedTemplate',
 ) where
 
 import System.IO
-import System.FilePath
 import System.Directory
 import Control.Monad.IO.Class
 import System.IO.Error
+import Data.Char
+import qualified Data.ByteString as B
+import qualified System.FilePath.ByteString as P
 
 import Utility.Exception
 import Utility.FileSystemEncoding
 import Utility.FileMode
 import qualified Utility.RawFilePath as R
+import qualified Utility.FileIO as F
+import Utility.OsPath
 
-type Template = String
+type Template = OsString
 
 {- This is the same as openTempFile, except when there is an
  - error, it displays the template as well as the directory,
  - to help identify what call was responsible.
  -}
-openTmpFileIn :: FilePath -> String -> IO (FilePath, Handle)
-openTmpFileIn dir template = openTempFile dir template
+openTmpFileIn :: OsPath -> Template -> IO (OsPath, Handle)
+openTmpFileIn dir template = F.openTempFile dir template
 	`catchIO` decoraterrror
   where
 	decoraterrror e = throwM $
-		let loc = ioeGetLocation e ++ " template " ++ template
+		let loc = ioeGetLocation e ++ " template " ++ decodeBS (fromOsPath template)
 		in annotateIOError e loc Nothing Nothing
 
 {- Runs an action like writeFile, writing to a temp file first and
@@ -50,34 +55,36 @@ openTmpFileIn dir template = openTempFile dir template
  - mode as it would when using writeFile, unless the writer action changes
  - it.
  -}
-viaTmp :: (MonadMask m, MonadIO m) => (FilePath -> v -> m ()) -> FilePath -> v -> m ()
+viaTmp :: (MonadMask m, MonadIO m) => (OsPath -> v -> m ()) -> OsPath -> v -> m ()
 viaTmp a file content = bracketIO setup cleanup use
   where
-	(dir, base) = splitFileName file
-	template = relatedTemplate (base ++ ".tmp")
+	(dir, base) = P.splitFileName (fromOsPath file)
+	template = relatedTemplate (base <> ".tmp")
 	setup = do
-		createDirectoryIfMissing True dir
-		openTmpFileIn dir template
+		createDirectoryIfMissing True (fromRawFilePath dir)
+		openTmpFileIn (toOsPath dir) template
 	cleanup (tmpfile, h) = do
 		_ <- tryIO $ hClose h
-		tryIO $ removeFile tmpfile
+		tryIO $ R.removeLink (fromOsPath tmpfile)
 	use (tmpfile, h) = do
-		let tmpfile' = toRawFilePath tmpfile
+		let tmpfile' = fromOsPath tmpfile
 		-- Make mode the same as if the file were created usually,
 		-- not as a temp file. (This may fail on some filesystems
 		-- that don't support file modes well, so ignore
 		-- exceptions.)
-		_ <- liftIO $ tryIO $ R.setFileMode tmpfile' =<< defaultFileMode
+		_ <- liftIO $ tryIO $
+			R.setFileMode (fromOsPath tmpfile)
+				=<< defaultFileMode
 		liftIO $ hClose h
 		a tmpfile content
-		liftIO $ R.rename tmpfile' (toRawFilePath file)
+		liftIO $ R.rename tmpfile' (fromOsPath file)
 
 {- Runs an action with a tmp file located in the system's tmp directory
  - (or in "." if there is none) then removes the file. -}
-withTmpFile :: (MonadIO m, MonadMask m) => Template -> (FilePath -> Handle -> m a) -> m a
+withTmpFile :: (MonadIO m, MonadMask m) => Template -> (OsPath -> Handle -> m a) -> m a
 withTmpFile template a = do
 	tmpdir <- liftIO $ catchDefaultIO "." getTemporaryDirectory
-	withTmpFileIn tmpdir template a
+	withTmpFileIn (toOsPath (toRawFilePath tmpdir)) template a
 
 {- Runs an action with a tmp file located in the specified directory,
  - then removes the file.
@@ -85,13 +92,13 @@ withTmpFile template a = do
  - Note that the tmp file will have a file mode that only allows the
  - current user to access it.
  -}
-withTmpFileIn :: (MonadIO m, MonadMask m) => FilePath -> Template -> (FilePath -> Handle -> m a) -> m a
+withTmpFileIn :: (MonadIO m, MonadMask m) => OsPath -> Template -> (OsPath -> Handle -> m a) -> m a
 withTmpFileIn tmpdir template a = bracket create remove use
   where
 	create = liftIO $ openTmpFileIn tmpdir template
 	remove (name, h) = liftIO $ do
 		hClose h
-		catchBoolIO (removeFile name >> return True)
+		tryIO $ R.removeLink (fromOsPath name)
 	use (name, h) = a name h
 
 {- It's not safe to use a FilePath of an existing file as the template
@@ -99,18 +106,29 @@ withTmpFileIn tmpdir template a = bracket create remove use
  - will be longer, and may exceed the maximum filename length.
  -
  - This generates a template that is never too long.
- - (Well, it allocates 20 characters for use in making a unique temp file,
- - anyway, which is enough for the current implementation and any
- - likely implementation.)
  -}
-relatedTemplate :: FilePath -> FilePath
-relatedTemplate f
-	| len > 20 = 
+relatedTemplate :: RawFilePath -> Template
+relatedTemplate = toOsPath . relatedTemplate'
+
+relatedTemplate' :: RawFilePath -> RawFilePath
+relatedTemplate' f
+	| len > templateAddedLength = 
 		{- Some filesystems like FAT have issues with filenames
 		 - ending in ".", so avoid truncating a filename to end
 		 - that way. -}
-		reverse $ dropWhile (== '.') $ reverse $
-			truncateFilePath (len - 20) f
+		B.dropWhileEnd (== dot) $
+			truncateFilePath (len - templateAddedLength) f
 	| otherwise = f
   where
-	len = length f
+	len = B.length f
+	dot = fromIntegral (ord '.')
+
+{- When a Template is used to create a temporary file, some random bytes
+ - are appended to it. This is how many such bytes can be added, maximum.
+ -
+ - This needs to be as long or longer than the current implementation
+ - of openTempFile, and some extra has been added to make it longer
+ - than any likely implementation.
+ -}
+templateAddedLength :: Int
+templateAddedLength = 20

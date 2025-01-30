@@ -17,7 +17,9 @@ import Git.Types
 import Config
 import Utility.Directory.Create
 import Annex.Version
+import qualified Utility.FileIO as F
 
+import qualified Data.ByteString as S
 import qualified System.FilePath.ByteString as P
 
 configureSmudgeFilter :: Annex ()
@@ -44,11 +46,12 @@ configureSmudgeFilter = unlessM (fromRepo Git.repoIsLocalBare) $ do
 	lfs <- readattr lf
 	gfs <- readattr gf
 	gittop <- Git.localGitDir <$> gitRepo
-	liftIO $ unless ("filter=annex" `isInfixOf` (lfs ++ gfs)) $ do
+	liftIO $ unless ("filter=annex" `S.isInfixOf` (lfs <> gfs)) $ do
 		createDirectoryUnder [gittop] (P.takeDirectory lf)
-		writeFile (fromRawFilePath lf) (lfs ++ "\n" ++ unlines stdattr)
+		F.writeFile' (toOsPath lf) $
+			linesFile' (lfs <> encodeBS ("\n" ++ unlines stdattr))
   where
-	readattr = liftIO . catchDefaultIO "" . readFileStrict . fromRawFilePath
+	readattr = liftIO . catchDefaultIO mempty . F.readFile' . toOsPath
 
 configureSmudgeFilterProcess :: Annex ()
 configureSmudgeFilterProcess =
@@ -65,9 +68,10 @@ stdattr =
 -- git-annex does not commit that.
 deconfigureSmudgeFilter :: Annex ()
 deconfigureSmudgeFilter = do
-	lf <- fromRawFilePath <$> Annex.fromRepo Git.attributesLocal
-	ls <- liftIO $ catchDefaultIO [] $ lines <$> readFileStrict lf
-	liftIO $ writeFile lf $ unlines $
+	lf <- Annex.fromRepo Git.attributesLocal
+	ls <- liftIO $ catchDefaultIO [] $ 
+		map decodeBS . fileLines' <$> F.readFile' (toOsPath lf)
+	liftIO $ writeFile (fromRawFilePath lf) $ unlines $
 		filter (\l -> l `notElem` stdattr && not (null l)) ls
 	unsetConfig (ConfigKey "filter.annex.smudge")
 	unsetConfig (ConfigKey "filter.annex.clean")

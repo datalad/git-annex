@@ -1,20 +1,24 @@
 {- misc utility functions
  -
- - Copyright 2010-2011 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2025 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
 
+{-# LANGUAGE CPP #-}
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Utility.Misc (
 	hGetContentsStrict,
-	readFileStrict,
 	separate,
 	separate',
 	separateEnd',
 	firstLine,
 	firstLine',
+	fileLines,
+	fileLines',
+	linesFile,
+	linesFile',
 	segment,
 	segmentDelim,
 	massReplace,
@@ -32,16 +36,15 @@ import Data.List
 import System.Exit
 import Control.Applicative
 import qualified Data.ByteString as S
+import qualified Data.ByteString.Char8 as S8
+import qualified Data.ByteString.Lazy as L
+import qualified Data.ByteString.Lazy.Char8 as L8
 import Prelude
 
 {- A version of hgetContents that is not lazy. Ensures file is 
  - all read before it gets closed. -}
 hGetContentsStrict :: Handle -> IO String
 hGetContentsStrict = hGetContents >=> \s -> length s `seq` return s
-
-{- A version of readFile that is not lazy. -}
-readFileStrict :: FilePath -> IO String
-readFileStrict = readFile >=> \s -> length s `seq` return s
 
 {- Like break, but the item matching the condition is not included
  - in the second result list.
@@ -77,6 +80,51 @@ firstLine' :: S.ByteString -> S.ByteString
 firstLine' = S.takeWhile (/= nl)
   where
 	nl = fromIntegral (ord '\n')
+
+-- On windows, readFile does NewlineMode translation,
+-- stripping CR before LF. When converting to ByteString,
+-- use this to emulate that.
+fileLines :: L.ByteString -> [L.ByteString]
+#ifdef mingw32_HOST_OS
+fileLines = map stripCR . L8.lines
+  where
+	stripCR b = case L8.unsnoc b of
+		Nothing -> b
+		Just (b', e)
+			| e == '\r' -> b'
+			| otherwise -> b
+#else
+fileLines = L8.lines
+#endif
+
+fileLines' :: S.ByteString -> [S.ByteString]
+#ifdef mingw32_HOST_OS
+fileLines' = map stripCR . S8.lines
+  where
+	stripCR b = case S8.unsnoc b of
+		Nothing -> b
+		Just (b', e)
+			| e == '\r' -> b'
+			| otherwise -> b
+#else
+fileLines' = S8.lines
+#endif
+
+-- One windows, writeFile does NewlineMode translation,
+-- adding CR before LF. When converting to ByteString, use this to emulate that.
+linesFile :: L.ByteString -> L.ByteString
+#ifndef mingw32_HOST_OS
+linesFile = id
+#else
+linesFile = L8.concat . concatMap (\x -> [x, L8.pack "\r\n"]) . fileLines
+#endif
+
+linesFile' :: S.ByteString -> S.ByteString
+#ifndef mingw32_HOST_OS
+linesFile' = id
+#else
+linesFile' = S8.concat . concatMap (\x -> [x, S8.pack "\r\n"]) . fileLines'
+#endif
 
 {- Splits a list into segments that are delimited by items matching
  - a predicate. (The delimiters are not included in the segments.)

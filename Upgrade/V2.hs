@@ -20,6 +20,7 @@ import Annex.Content
 import Utility.Tmp
 import Logs
 import Messages.Progress
+import qualified Utility.FileIO as F
 
 olddir :: Git.Repo -> FilePath
 olddir g
@@ -73,14 +74,14 @@ locationLogs = do
 	config <- Annex.getGitConfig
 	dir <- fromRepo gitStateDir
 	liftIO $ do
-		levela <- dirContents dir
+		levela <- dirContents (toRawFilePath dir)
 		levelb <- mapM tryDirContents levela
 		files <- mapM tryDirContents (concat levelb)
 		return $ mapMaybe (islogfile config) (concat files)
   where
 	tryDirContents d = catchDefaultIO [] $ dirContents d
-	islogfile config f = maybe Nothing (\k -> Just (k, f)) $
-			locationLogFileKey config (toRawFilePath f)
+	islogfile config f = maybe Nothing (\k -> Just (k, fromRawFilePath f)) $
+			locationLogFileKey config f
 
 inject :: FilePath -> FilePath -> Annex ()
 inject source dest = do
@@ -135,12 +136,15 @@ attrLines =
 
 gitAttributesUnWrite :: Git.Repo -> IO ()
 gitAttributesUnWrite repo = do
-	let attributes = fromRawFilePath (Git.attributes repo)
-	whenM (doesFileExist attributes) $ do
-		c <- readFileStrict attributes
-		liftIO $ viaTmp writeFile attributes $ unlines $
-			filter (`notElem` attrLines) $ lines c
-		Git.Command.run [Param "add", File attributes] repo
+	let attributes = Git.attributes repo
+	let attributes' = fromRawFilePath attributes
+	whenM (doesFileExist attributes') $ do
+		c <- map decodeBS . fileLines'
+			<$> F.readFile' (toOsPath attributes)
+		liftIO $ viaTmp (writeFile . fromRawFilePath . fromOsPath)
+			(toOsPath attributes) 
+			(unlines $ filter (`notElem` attrLines) c)
+		Git.Command.run [Param "add", File attributes'] repo
 
 stateDir :: FilePath
 stateDir = addTrailingPathSeparator ".git-annex"

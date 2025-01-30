@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Test.Framework where
 
 import Test.Tasty
@@ -302,7 +304,7 @@ ensuredir d = do
  - happen concurrently with a test case running, and would be a problem
  - since setEnv is not thread safe. This is run before tasty. -}
 setTestEnv :: IO a -> IO a
-setTestEnv a = Utility.Tmp.Dir.withTmpDir "testhome" $ \tmphome -> do
+setTestEnv a = Utility.Tmp.Dir.withTmpDir (toOsPath "testhome") $ \tmphome -> do
 	tmphomeabs <- fromRawFilePath <$> absPath (toRawFilePath tmphome)
 	{- Prevent global git configs from affecting the test suite. -}
 	Utility.Env.Set.setEnv "HOME" tmphomeabs True
@@ -339,14 +341,14 @@ removeDirectoryForCleanup = removePathForcibly
 
 cleanup :: FilePath -> IO ()
 cleanup dir = whenM (doesDirectoryExist dir) $ do
-	Command.Uninit.prepareRemoveAnnexDir' dir
+	Command.Uninit.prepareRemoveAnnexDir' (toRawFilePath dir)
 	-- This can fail if files in the directory are still open by a
 	-- subprocess.
 	void $ tryIO $ removeDirectoryForCleanup dir
 
 finalCleanup :: IO ()
 finalCleanup = whenM (doesDirectoryExist tmpdir) $ do
-	Command.Uninit.prepareRemoveAnnexDir' tmpdir
+	Command.Uninit.prepareRemoveAnnexDir' (toRawFilePath tmpdir)
 	catchIO (removeDirectoryForCleanup tmpdir) $ \e -> do
 		print e
 		putStrLn "sleeping 10 seconds and will retry directory cleanup"

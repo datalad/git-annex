@@ -27,6 +27,7 @@ import Annex.BranchState
 import Types.BranchState
 import Utility.Directory.Stream
 import qualified Utility.RawFilePath as R
+import qualified Utility.FileIO as F
 
 import qualified Data.Set as S
 import qualified Data.ByteString.Lazy as L
@@ -92,7 +93,7 @@ setJournalFile _jl ru file content = withOtherTmp $ \tmp -> do
 	-- journal file is written atomically
 	let jfile = journalFile file
 	let tmpfile = tmp P.</> jfile
-	liftIO $ withFile (fromRawFilePath tmpfile) WriteMode $ \h ->
+	liftIO $ F.withFile (toOsPath tmpfile) WriteMode $ \h ->
 		writeJournalHandle h content
 	let dest = jd P.</> jfile
 	let mv = do
@@ -133,7 +134,7 @@ checkCanAppendJournalFile _jl ru file = do
  -}
 appendJournalFile :: Journalable content => JournalLocked -> AppendableJournalFile -> content -> Annex ()
 appendJournalFile _jl (AppendableJournalFile (jd, jfile)) content = do
-	let write = liftIO $ withFile (fromRawFilePath jfile) ReadWriteMode $ \h -> do
+	let write = liftIO $ F.withFile (toOsPath jfile) ReadWriteMode $ \h -> do
 		sz <- hFileSize h
 		when (sz /= 0) $ do
 			hSeek h SeekFromEnd (-1)
@@ -204,7 +205,7 @@ getJournalFileStale (GetPrivate getprivate) file = do
 	jfile = journalFile file
 	getfrom d = catchMaybeIO $
 		discardIncompleteAppend . L.fromStrict
-			<$> B.readFile (fromRawFilePath (d P.</> jfile))
+			<$> F.readFile' (toOsPath (d P.</> jfile))
 
 -- Note that this forces read of the whole lazy bytestring.
 discardIncompleteAppend :: L.ByteString -> L.ByteString
@@ -243,17 +244,15 @@ withJournalHandle getjournaldir a = do
   where
 	-- avoid overhead of creating the journal directory when it already
 	-- exists
-	opendir d = liftIO (openDirectory (fromRawFilePath d))
+	opendir d = liftIO (openDirectory d)
 		`catchIO` (const (createAnnexDirectory d >> opendir d))
 
 {- Checks if there are changes in the journal. -}
 journalDirty :: (BranchState -> Git.Repo -> RawFilePath) -> Annex Bool
 journalDirty getjournaldir = do
 	st <- getState
-	d <- fromRawFilePath <$> fromRepo (getjournaldir st)
-	liftIO $ 
-		(not <$> isDirectoryEmpty d)
-			`catchIO` (const $ doesDirectoryExist d)
+	d <- fromRepo (getjournaldir st)
+	liftIO $ isDirectoryPopulated d
 
 {- Produces a filename to use in the journal for a file on the branch.
  - The filename does not include the journal directory.

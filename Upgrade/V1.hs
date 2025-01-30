@@ -15,7 +15,6 @@ import Data.Default
 import Data.ByteString.Builder
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Short as S (toShort, fromShort)
-import qualified Data.ByteString.Lazy as L
 import qualified System.FilePath.ByteString as P
 import System.PosixCompat.Files (isRegularFile)
 import Text.Read
@@ -35,6 +34,7 @@ import Utility.FileMode
 import Utility.Tmp
 import qualified Upgrade.V2
 import qualified Utility.RawFilePath as R
+import qualified Utility.FileIO as F
 
 -- v2 adds hashing of filenames of content and location log files.
 -- Key information is encoded in filenames differently, so
@@ -198,11 +198,13 @@ fileKey1 file = readKey1 $
 	replace "&a" "&" $ replace "&s" "%" $ replace "%" "/" file
 
 writeLog1 :: FilePath -> [LogLine] -> IO ()
-writeLog1 file ls = viaTmp L.writeFile file (toLazyByteString $ buildLog ls)
+writeLog1 file ls = viaTmp F.writeFile
+	(toOsPath (toRawFilePath file))
+	(toLazyByteString $ buildLog ls)
 
 readLog1 :: FilePath -> IO [LogLine]
 readLog1 file = catchDefaultIO [] $
-	parseLog . encodeBL <$> readFileStrict file
+	parseLog <$> F.readFile (toOsPath (toRawFilePath file))
 
 lookupKey1 :: FilePath -> Annex (Maybe (Key, Backend))
 lookupKey1 file = do

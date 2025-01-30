@@ -57,6 +57,8 @@ import Utility.Tmp.Dir
 import Utility.Env
 import Utility.Metered
 import Utility.FileMode
+import qualified Utility.RawFilePath as R
+import qualified Utility.FileIO as F
 
 import Network.URI
 import Data.Either
@@ -65,7 +67,6 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.Map.Strict as M
 import qualified System.FilePath.ByteString as P
-import qualified Utility.RawFilePath as R
 import qualified Data.Set as S
 
 run :: [String] -> IO ()
@@ -495,13 +496,16 @@ resolveSpecialRemoteWebUrl :: String -> Annex (Maybe String)
 resolveSpecialRemoteWebUrl url
 	| "http://" `isPrefixOf` lcurl || "https://" `isPrefixOf` lcurl =
 		Url.withUrlOptionsPromptingCreds $ \uo ->
-			withTmpFile "git-remote-annex" $ \tmp h -> do
+			withTmpFile (toOsPath "git-remote-annex") $ \tmp h -> do
 				liftIO $ hClose h
-				Url.download' nullMeterUpdate Nothing url tmp uo >>= \case
+				let tmp' = fromRawFilePath $ fromOsPath tmp
+				Url.download' nullMeterUpdate Nothing url tmp' uo >>= \case
 					Left err -> giveup $ url ++ " " ++ err
 					Right () -> liftIO $
-						(headMaybe . lines)
-							<$> readFileStrict tmp
+						fmap decodeBS 
+							. headMaybe 
+							. fileLines'
+							<$> F.readFile' tmp
 	| otherwise = return Nothing
   where
 	lcurl = map toLower url
@@ -724,10 +728,10 @@ downloadManifest rmt = get mkmain >>= maybe (get mkbak) (pure . Just)
 	-- it needs to re-download it fresh every time, and the object
 	-- file should not be stored locally.
 	gettotmp dl = withOtherTmp $ \othertmp ->
-		withTmpFileIn (fromRawFilePath othertmp) "GITMANIFEST" $ \tmp tmph -> do
+		withTmpFileIn (toOsPath othertmp) (toOsPath "GITMANIFEST") $ \tmp tmph -> do
 			liftIO $ hClose tmph
-			_ <- dl tmp
-			b <- liftIO (B.readFile tmp)
+			_ <- dl (fromRawFilePath (fromOsPath tmp))
+			b <- liftIO (F.readFile' tmp)
 			case parseManifest b of
 				Right m -> Just <$> verifyManifest rmt m
 				Left err -> giveup err
@@ -774,7 +778,7 @@ uploadManifest rmt manifest = do
 		dropKey' rmt mk
 		put mk
 
-	put mk = withTmpFile "GITMANIFEST" $ \tmp tmph -> do
+	put mk = withTmpFile (toOsPath "GITMANIFEST") $ \tmp tmph -> do
 		liftIO $ B8.hPut tmph (formatManifest manifest)
 		liftIO $ hClose tmph
 		-- Uploading needs the key to be in the annex objects
@@ -785,7 +789,7 @@ uploadManifest rmt manifest = do
 		-- keys, which it is not.
 		objfile <- calcRepo (gitAnnexLocation mk)
 		modifyContentDir objfile $
-			linkOrCopy mk (toRawFilePath tmp) objfile Nothing >>= \case
+			linkOrCopy mk (fromOsPath tmp) objfile Nothing >>= \case
 				-- Important to set the right perms even
 				-- though the object is only present
 				-- briefly, since sending objects may rely
@@ -857,7 +861,7 @@ startPush' rmt manifest = do
 	f <- fromRepo (lastPushedManifestFile (Remote.uuid rmt))
 	oldmanifest <- liftIO $ 
 		fromRight mempty . parseManifest
-			<$> B.readFile (fromRawFilePath f)
+			<$> F.readFile' (toOsPath f)
 				`catchNonAsync` (const (pure mempty))
 	let oldmanifest' = mkManifest [] $
 		S.fromList (inManifest oldmanifest)
@@ -973,14 +977,15 @@ generateGitBundle
 	-> Manifest
 	-> Annex (Key, Annex ())
 generateGitBundle rmt bs manifest =
-	withTmpFile "GITBUNDLE" $ \tmp tmph -> do
+	withTmpFile (toOsPath "GITBUNDLE") $ \tmp tmph -> do
+		let tmp' = fromOsPath tmp
 		liftIO $ hClose tmph
-		inRepo $ Git.Bundle.create tmp bs
+		inRepo $ Git.Bundle.create (fromRawFilePath tmp') bs
 		bundlekey <- genGitBundleKey (Remote.uuid rmt)
-			(toRawFilePath tmp) nullMeterUpdate
+			tmp' nullMeterUpdate
 		if (bundlekey `notElem` inManifest manifest)
 			then do
-				unlessM (moveAnnex bundlekey (AssociatedFile Nothing) (toRawFilePath tmp)) $
+				unlessM (moveAnnex bundlekey (AssociatedFile Nothing) tmp') $
 					giveup "Unable to push"
 				return (bundlekey, uploadaction bundlekey)
 			else return (bundlekey, noop)
@@ -1122,7 +1127,7 @@ startAnnexBranch = ifM (null <$> Annex.Branch.siblingBranches)
 -- journal writes to a temporary directory, so that all writes
 -- to the git-annex branch by the action will be discarded.
 specialRemoteFromUrl :: StartAnnexBranch -> Annex a -> Annex a
-specialRemoteFromUrl sab a = withTmpDir "journal" $ \tmpdir -> do
+specialRemoteFromUrl sab a = withTmpDir (toOsPath "journal") $ \tmpdir -> do
 	Annex.overrideGitConfig $ \c -> 
 		c { annexAlwaysCommit = False }
 	Annex.BranchState.changeState $ \st -> 
@@ -1162,7 +1167,8 @@ specialRemoteFromUrl sab a = withTmpDir "journal" $ \tmpdir -> do
 -- objects are deleted.
 cleanupInitialization :: StartAnnexBranch -> FilePath -> Annex ()
 cleanupInitialization sab alternatejournaldir = void $ tryNonAsync $ do
-	liftIO $ mapM_ removeFile =<< dirContents alternatejournaldir
+	liftIO $ mapM_ R.removeLink
+		=<< dirContents (toRawFilePath alternatejournaldir)
 	case sab of
 		AnnexBranchExistedAlready _ -> noop
 		AnnexBranchCreatedEmpty r ->

@@ -34,8 +34,7 @@ import Utility.InodeCache
 import Utility.DottedVersion
 import Annex.AdjustedBranch
 import qualified Utility.RawFilePath as R
-
-import qualified Data.ByteString as S
+import qualified Utility.FileIO as F
 
 upgrade :: Bool -> Annex UpgradeResult
 upgrade automatic = flip catchNonAsync onexception $ do
@@ -130,7 +129,7 @@ upgradeDirectWorkTree = do
 			Just k -> do
 				stagePointerFile f Nothing =<< hashPointerFile k
 				ifM (isJust <$> getAnnexLinkTarget f)
-					( writepointer (fromRawFilePath f) k
+					( writepointer f k
 					, fromdirect (fromRawFilePath f) k
 					)
 				Database.Keys.addAssociatedFile k
@@ -158,8 +157,8 @@ upgradeDirectWorkTree = do
 		)
 	
 	writepointer f k = liftIO $ do
-		removeWhenExistsWith R.removeLink (toRawFilePath f)
-		S.writeFile f (formatPointer k)
+		removeWhenExistsWith R.removeLink f
+		F.writeFile' (toOsPath f) (formatPointer k)
 
 {- Remove all direct mode bookkeeping files. -}
 removeDirectCruft :: Annex ()

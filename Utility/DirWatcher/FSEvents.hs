@@ -70,7 +70,8 @@ watchDir dir ignored scanevents hooks = do
 	scan d = unless (ignoredPath ignored d) $
 		-- Do not follow symlinks when scanning.
 		-- This mirrors the inotify startup scan behavior.
-		mapM_ go =<< emptyWhenDoesNotExist (dirContentsRecursiveSkipping (const False) False d)
+		mapM_ (go . fromRawFilePath) =<< emptyWhenDoesNotExist
+			(dirContentsRecursiveSkipping (const False) False (toRawFilePath d))
 	  where		
 		go f
 			| ignoredPath ignored f = noop

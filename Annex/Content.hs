@@ -108,6 +108,7 @@ import Utility.HumanTime
 import Utility.TimeStamp
 import Utility.FileMode
 import qualified Utility.RawFilePath as R
+import qualified Utility.FileIO as F
 
 import qualified System.FilePath.ByteString as P
 import System.PosixCompat.Files (isSymbolicLink, linkCount)
@@ -581,7 +582,7 @@ linkToAnnex key src srcic = ifM (checkSecureHashes' key)
  -}
 linkFromAnnex :: Key -> RawFilePath -> Maybe FileMode -> Annex LinkAnnexResult
 linkFromAnnex key dest destmode =
-	replaceFile' (const noop) (fromRawFilePath dest) (== LinkAnnexOk) $ \tmp ->
+	replaceFile' (const noop) dest (== LinkAnnexOk) $ \tmp ->
 		linkFromAnnex' key tmp destmode
 
 {- This is only safe to use when dest is not a worktree file. -}
@@ -817,7 +818,7 @@ listKeys' keyloc want = do
 	s <- Annex.getState id
 	r <- Annex.getRead id
 	depth <- gitAnnexLocationDepth <$> Annex.getGitConfig
-	liftIO $ walk (s, r) depth (fromRawFilePath dir)
+	liftIO $ walk (s, r) depth dir
   where
 	walk s depth dir = do
 		contents <- catchDefaultIO [] (dirContents dir)
@@ -825,7 +826,7 @@ listKeys' keyloc want = do
 			then do
 				contents' <- filterM present contents
 				keys <- filterM (Annex.eval s . want) $
-					mapMaybe (fileKey . P.takeFileName . toRawFilePath) contents'
+					mapMaybe (fileKey . P.takeFileName) contents'
 				continue keys []
 			else do
 				let deeper = walk s (depth - 1)
@@ -843,8 +844,8 @@ listKeys' keyloc want = do
 	present _ | inanywhere = pure True
 	present d = presentInAnnex d
 
-	presentInAnnex = doesFileExist . contentfile
-	contentfile d = d </> takeFileName d
+	presentInAnnex = R.doesPathExist . contentfile
+	contentfile d = d P.</> P.takeFileName d
 
 {- Things to do to record changes to content when shutting down.
  -
@@ -1076,7 +1077,7 @@ writeContentRetentionTimestamp key rt t = do
 	modifyContentDirWhenExists lckfile $ bracket (lock lckfile) unlock $ \_ ->
 		readContentRetentionTimestamp rt >>= \case
 			Just ts | ts >= t -> return ()
-			_ -> replaceFile (const noop) (fromRawFilePath rt) $ \tmp ->
+			_ -> replaceFile (const noop) rt $ \tmp ->
 				liftIO $ writeFile (fromRawFilePath tmp) $ show t
   where
 	lock = takeExclusiveLock
@@ -1086,7 +1087,7 @@ writeContentRetentionTimestamp key rt t = do
 readContentRetentionTimestamp :: RawFilePath -> Annex (Maybe POSIXTime)
 readContentRetentionTimestamp rt =
 	liftIO $ join <$> tryWhenExists 
-		(parsePOSIXTime <$> readFile (fromRawFilePath rt))
+		(parsePOSIXTime <$> F.readFile' (toOsPath rt))
 
 {- Checks if the retention timestamp is in the future, if so returns
  - Nothing.

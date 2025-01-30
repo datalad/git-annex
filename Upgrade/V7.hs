@@ -22,6 +22,7 @@ import qualified Git
 import Git.FilePath
 import Config
 import qualified Utility.RawFilePath as R
+import qualified Utility.FileIO as F
 
 import qualified System.FilePath.ByteString as P
 import System.PosixCompat.Files (isSymbolicLink)
@@ -127,11 +128,12 @@ populateKeysDb = unlessM isBareRepo $ do
 -- checked into the repository.
 updateSmudgeFilter :: Annex ()
 updateSmudgeFilter = do
-	lf <- fromRawFilePath <$> Annex.fromRepo Git.attributesLocal
-	ls <- liftIO $ lines <$> catchDefaultIO "" (readFileStrict lf)
+	lf <- Annex.fromRepo Git.attributesLocal
+	ls <- liftIO $ map decodeBS . fileLines'
+		<$> catchDefaultIO "" (F.readFile' (toOsPath lf))
 	let ls' = removedotfilter ls
 	when (ls /= ls') $
-		liftIO $ writeFile lf (unlines ls')
+		liftIO $ writeFile (fromRawFilePath lf) (unlines ls')
   where
 	removedotfilter ("* filter=annex":".* !filter":rest) =
 		"* filter=annex" : removedotfilter rest

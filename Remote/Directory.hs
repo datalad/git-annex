@@ -15,7 +15,6 @@ module Remote.Directory (
 	removeDirGeneric,
 ) where
 
-import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
 import qualified Data.List.NonEmpty as NE
 import qualified System.FilePath.ByteString as P
@@ -52,6 +51,7 @@ import Utility.InodeCache
 import Utility.FileMode
 import Utility.Directory.Create
 import qualified Utility.RawFilePath as R
+import qualified Utility.FileIO as F
 #ifndef mingw32_HOST_OS
 import Utility.OpenFd
 #endif
@@ -241,12 +241,12 @@ checkDiskSpaceDirectory d k = do
  - down. -}
 finalizeStoreGeneric :: RawFilePath -> RawFilePath -> RawFilePath -> IO ()
 finalizeStoreGeneric d tmp dest = do
-	removeDirGeneric False (fromRawFilePath d) dest'
+	removeDirGeneric False d dest
 	createDirectoryUnder [d] (parentDir dest)
 	renameDirectory (fromRawFilePath tmp) dest'
 	-- may fail on some filesystems
 	void $ tryIO $ do
-		mapM_ (preventWrite . toRawFilePath) =<< dirContents dest'
+		mapM_ preventWrite =<< dirContents dest
 		preventWrite dest
   where
 	dest' = fromRawFilePath dest
@@ -257,7 +257,7 @@ retrieveKeyFileM d NoChunks cow = fileRetriever' $ \dest k p iv -> do
 	src <- liftIO $ fromRawFilePath <$> getLocation d k
 	void $ liftIO $ fileCopier cow src (fromRawFilePath dest) p iv
 retrieveKeyFileM d _ _ = byteRetriever $ \k sink ->
-	sink =<< liftIO (L.readFile . fromRawFilePath =<< getLocation d k)
+	sink =<< liftIO (F.readFile . toOsPath =<< getLocation d k)
 
 retrieveKeyFileCheapM :: RawFilePath -> ChunkConfig -> Maybe (Key -> AssociatedFile -> FilePath -> Annex ())
 -- no cheap retrieval possible for chunks
@@ -275,9 +275,7 @@ retrieveKeyFileCheapM _ _ = Nothing
 #endif
 
 removeKeyM :: RawFilePath -> Remover
-removeKeyM d _proof k = liftIO $ removeDirGeneric True
-	(fromRawFilePath d)
-	(fromRawFilePath (storeDir d k))
+removeKeyM d _proof k = liftIO $ removeDirGeneric True d (storeDir d k)
 
 {- Removes the directory, which must be located under the topdir.
  -
@@ -293,28 +291,30 @@ removeKeyM d _proof k = liftIO $ removeDirGeneric True
  - can also be removed. Failure to remove such a directory is not treated
  - as an error.
  -}
-removeDirGeneric :: Bool -> FilePath -> FilePath -> IO ()
+removeDirGeneric :: Bool -> RawFilePath -> RawFilePath -> IO ()
 removeDirGeneric removeemptyparents topdir dir = do
-	void $ tryIO $ allowWrite (toRawFilePath dir)
+	void $ tryIO $ allowWrite dir
 #ifdef mingw32_HOST_OS
 	{- Windows needs the files inside the directory to be writable
 	 - before it can delete them. -}
-	void $ tryIO $ mapM_ (allowWrite . toRawFilePath) =<< dirContents dir
+	void $ tryIO $ mapM_ allowWrite =<< dirContents dir
 #endif
-	tryNonAsync (removeDirectoryRecursive dir) >>= \case
+	tryNonAsync (removeDirectoryRecursive dir') >>= \case
 		Right () -> return ()
 		Left e ->
-			unlessM (doesDirectoryExist topdir <&&> (not <$> doesDirectoryExist dir)) $
+			unlessM (doesDirectoryExist topdir' <&&> (not <$> doesDirectoryExist dir')) $
 				throwM e
 	when removeemptyparents $ do
-		subdir <- relPathDirToFile (toRawFilePath topdir) (P.takeDirectory (toRawFilePath dir))
+		subdir <- relPathDirToFile topdir (P.takeDirectory dir)
 		goparents (Just (P.takeDirectory subdir)) (Right ())
   where
 	goparents _ (Left _e) = return ()
 	goparents Nothing _ = return ()
 	goparents (Just subdir) _ = do
-		let d = topdir </> fromRawFilePath subdir
+		let d = topdir' </> fromRawFilePath subdir
 		goparents (upFrom subdir) =<< tryIO (removeDirectory d)
+	dir' = fromRawFilePath dir
+	topdir' = fromRawFilePath topdir
 
 checkPresentM :: RawFilePath -> ChunkConfig -> CheckPresent
 checkPresentM d (LegacyChunks _) k = Legacy.checkKey d locations' k
@@ -338,10 +338,10 @@ storeExportM d cow src _k loc p = do
 	liftIO $ createDirectoryUnder [d] (P.takeDirectory dest)
 	-- Write via temp file so that checkPresentGeneric will not
 	-- see it until it's fully stored.
-	viaTmp go (fromRawFilePath dest) ()
+	viaTmp go (toOsPath dest) ()
   where
 	dest = exportPath d loc
-	go tmp () = void $ liftIO $ fileCopier cow src tmp p Nothing
+	go tmp () = void $ liftIO $ fileCopier cow src (fromRawFilePath (fromOsPath tmp)) p Nothing
 
 retrieveExportM :: RawFilePath -> CopyCoWTried -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Verification
 retrieveExportM d cow k loc dest p = 
@@ -389,8 +389,7 @@ removeExportLocation topdir loc =
 
 listImportableContentsM :: IgnoreInodes -> RawFilePath -> Annex (Maybe (ImportableContentsChunkable Annex (ContentIdentifier, ByteSize)))
 listImportableContentsM ii dir = liftIO $ do
-	l <- dirContentsRecursiveSkipping (const False) False (fromRawFilePath dir)
-	l' <- mapM (go . toRawFilePath) l
+	l' <- mapM go =<< dirContentsRecursiveSkipping (const False) False dir
 	return $ Just $ ImportableContentsComplete $
 		ImportableContents (catMaybes l') []
   where
@@ -542,11 +541,11 @@ retrieveExportWithContentIdentifierM ii dir cow loc cids dest gk p =
 
 storeExportWithContentIdentifierM :: IgnoreInodes -> RawFilePath -> CopyCoWTried -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex ContentIdentifier
 storeExportWithContentIdentifierM ii dir cow src _k loc overwritablecids p = do
-	liftIO $ createDirectoryUnder [dir] (toRawFilePath destdir)
-	withTmpFileIn destdir template $ \tmpf tmph -> do
+	liftIO $ createDirectoryUnder [dir] destdir
+	withTmpFileIn (toOsPath destdir) template $ \tmpf tmph -> do
+		let tmpf' = fromOsPath tmpf
 		liftIO $ hClose tmph
-		void $ liftIO $ fileCopier cow src tmpf p Nothing
-		let tmpf' = toRawFilePath tmpf
+		void $ liftIO $ fileCopier cow src (fromRawFilePath tmpf') p Nothing
 		resetAnnexFilePerm tmpf'
 		liftIO (R.getSymbolicLinkStatus tmpf') >>= liftIO . mkContentIdentifier ii tmpf' >>= \case
 			Nothing -> giveup "unable to generate content identifier"
@@ -558,8 +557,8 @@ storeExportWithContentIdentifierM ii dir cow src _k loc overwritablecids p = do
 				return newcid
   where
 	dest = exportPath dir loc
-	(destdir, base) = splitFileName (fromRawFilePath dest)
-	template = relatedTemplate (base ++ ".tmp")
+	(destdir, base) = P.splitFileName dest
+	template = relatedTemplate (base <> ".tmp")
 
 removeExportWithContentIdentifierM :: IgnoreInodes -> RawFilePath -> Key -> ExportLocation -> [ContentIdentifier] -> Annex ()
 removeExportWithContentIdentifierM ii dir k loc removeablecids =

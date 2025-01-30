@@ -200,12 +200,12 @@ checkUrl addunlockedmatcher r o si u = do
 startRemote :: AddUnlockedMatcher -> Remote -> AddUrlOptions -> SeekInput -> FilePath -> URLString -> Maybe Integer -> CommandStart
 startRemote addunlockedmatcher r o si file uri sz = do
 	pathmax <- liftIO $ fileNameLengthLimit "."
-	let file' = joinPath $ map (truncateFilePath pathmax) $
-		splitDirectories file
+	let file' = P.joinPath $ map (truncateFilePath pathmax) $
+		P.splitDirectories (toRawFilePath file)
 	startingAddUrl si uri o $ do
 		showNote $ UnquotedString $ "from " ++ Remote.name r 
-		showDestinationFile (toRawFilePath file')
-		performRemote addunlockedmatcher r o uri (toRawFilePath file') sz
+		showDestinationFile file'
+		performRemote addunlockedmatcher r o uri file' sz
 
 performRemote :: AddUnlockedMatcher -> Remote -> AddUrlOptions -> URLString -> RawFilePath -> Maybe Integer -> CommandPerform
 performRemote addunlockedmatcher r o uri file sz = lookupKey file >>= \case
@@ -279,7 +279,8 @@ sanitizeOrPreserveFilePath o f
 		return f
 	| otherwise = do
 		pathmax <- liftIO $ fileNameLengthLimit "."
-		return $ truncateFilePath pathmax $ sanitizeFilePath f
+		return $ fromRawFilePath $ truncateFilePath pathmax $
+			toRawFilePath $ sanitizeFilePath f
 
 -- sanitizeFilePath avoids all these security problems
 -- (and probably others, but at least this catches the most egrarious ones).
@@ -353,7 +354,7 @@ downloadWeb addunlockedmatcher o url urlinfo file =
 	urlkey = addSizeUrlKey urlinfo $ Backend.URL.fromUrl url Nothing (verifiableOption o)
 	downloader f p = Url.withUrlOptions $ downloadUrl False urlkey p Nothing [url] f
 	go Nothing = return Nothing
-	go (Just (tmp, backend)) = ifM (useYoutubeDl o <&&> liftIO (isHtmlFile (fromRawFilePath tmp)))
+	go (Just (tmp, backend)) = ifM (useYoutubeDl o <&&> liftIO (isHtmlFile tmp))
 		( tryyoutubedl tmp backend
 		, normalfinish tmp backend
 		)
@@ -567,8 +568,8 @@ nodownloadWeb' o addunlockedmatcher url key file = checkCanAdd o file $ \canadd 
 
 url2file :: URI -> Maybe Int -> Int -> FilePath
 url2file url pathdepth pathmax = case pathdepth of
-	Nothing -> truncateFilePath pathmax $ sanitizeFilePath fullurl
-	Just depth
+	Nothing -> truncatesanitize fullurl
+	Just depth 
 		| depth >= length urlbits -> frombits id
 		| depth > 0 -> frombits $ drop depth
 		| depth < 0 -> frombits $ reverse . take (negate depth) . reverse
@@ -580,8 +581,12 @@ url2file url pathdepth pathmax = case pathdepth of
 		, uriQuery url
 		]
 	frombits a = intercalate "/" $ a urlbits
-	urlbits = map (truncateFilePath pathmax . sanitizeFilePath) $
+	urlbits = map truncatesanitize $
 		filter (not . null) $ splitc '/' fullurl
+	truncatesanitize = fromRawFilePath 
+		. truncateFilePath pathmax 
+		. toRawFilePath 
+		. sanitizeFilePath
 
 urlString2file :: URLString -> Maybe Int -> Int -> FilePath
 urlString2file s pathdepth pathmax = case Url.parseURIRelaxed s of

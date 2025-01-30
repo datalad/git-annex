@@ -41,9 +41,11 @@ import qualified Utility.Url as Url
 import qualified Annex.Url as Url hiding (download)
 import Utility.Tuple
 import qualified Utility.RawFilePath as R
+import qualified Utility.FileIO as F
 
 import Data.Either
 import qualified Data.Map as M
+import qualified System.FilePath.ByteString as P
 
 {- Upgrade without interaction in the webapp. -}
 unattendedUpgrade :: Assistant ()
@@ -163,7 +165,7 @@ upgradeToDistribution newdir cleanup distributionfile = do
 	{- OS X uses a dmg, so mount it, and copy the contents into place. -}
 	unpack = liftIO $ do
 		olddir <- oldVersionLocation
-		withTmpDirIn (fromRawFilePath (parentDir (toRawFilePath newdir))) "git-annex.upgrade" $ \tmpdir -> do
+		withTmpDirIn (fromRawFilePath (parentDir (toRawFilePath newdir))) (toOsPath (toRawFilePath "git-annex.upgrade")) $ \tmpdir -> do
 			void $ boolSystem "hdiutil"
 				[ Param "attach", File distributionfile
 				, Param "-mountpoint", File tmpdir
@@ -188,7 +190,7 @@ upgradeToDistribution newdir cleanup distributionfile = do
 	 - into place. -}
 	unpack = liftIO $ do
 		olddir <- oldVersionLocation
-		withTmpDirIn (fromRawFilePath $ parentDir $ toRawFilePath newdir) "git-annex.upgrade" $ \tmpdir -> do
+		withTmpDirIn (fromRawFilePath $ parentDir $ toRawFilePath newdir) (toOsPath $ toRawFilePath "git-annex.upgrade") $ \tmpdir -> do
 			let tarball = tmpdir </> "tar"
 			-- Cannot rely on filename extension, and this also
 			-- avoids problems if tar doesn't support transparent
@@ -212,8 +214,8 @@ upgradeToDistribution newdir cleanup distributionfile = do
 			makeorigsymlink olddir
 		return (newdir </> "git-annex", deleteold)
 	installby a dstdir srcdir =
-		mapM_ (\x -> a (toRawFilePath x) (toRawFilePath (dstdir </> takeFileName x)))
-			=<< dirContents srcdir
+		mapM_ (\x -> a x (toRawFilePath dstdir P.</> P.takeFileName x))
+			=<< dirContents (toRawFilePath srcdir)
 #endif
 	sanitycheck dir = 
 		unlessM (doesDirectoryExist dir) $
@@ -280,14 +282,14 @@ deleteFromManifest dir = do
 	fs <- map (dir </>) . lines <$> catchDefaultIO "" (readFile manifest)
 	mapM_ (removeWhenExistsWith R.removeLink . toRawFilePath) fs
 	removeWhenExistsWith R.removeLink (toRawFilePath manifest)
-	removeEmptyRecursive dir
+	removeEmptyRecursive (toRawFilePath dir)
   where
 	manifest = dir </> "git-annex.MANIFEST"
 
-removeEmptyRecursive :: FilePath -> IO ()
+removeEmptyRecursive :: RawFilePath -> IO ()
 removeEmptyRecursive dir = do
 	mapM_ removeEmptyRecursive =<< dirContents dir
-	void $ tryIO $ removeDirectory dir
+	void $ tryIO $ removeDirectory (fromRawFilePath dir)
 
 {- This is a file that the UpgradeWatcher can watch for modifications to
  - detect when git-annex has been upgraded.
@@ -322,13 +324,14 @@ downloadDistributionInfo :: Assistant (Maybe GitAnnexDistribution)
 downloadDistributionInfo = do
 	uo <- liftAnnex Url.getUrlOptions
 	gpgcmd <- liftAnnex $ gpgCmd <$> Annex.getGitConfig
-	liftIO $ withTmpDir "git-annex.tmp" $ \tmpdir -> do
+	liftIO $ withTmpDir (toOsPath (toRawFilePath "git-annex.tmp")) $ \tmpdir -> do
 		let infof = tmpdir </> "info"
 		let sigf = infof ++ ".sig"
 		ifM (isRight <$> Url.download nullMeterUpdate Nothing distributionInfoUrl infof uo
 			<&&> (isRight <$> Url.download nullMeterUpdate Nothing distributionInfoSigUrl sigf uo)
 			<&&> verifyDistributionSig gpgcmd sigf)
-			( parseInfoFile <$> readFileStrict infof
+			( parseInfoFile . map decodeBS . fileLines' 
+				<$> F.readFile' (toOsPath (toRawFilePath infof))
 			, return Nothing
 			)
 
@@ -360,7 +363,7 @@ upgradeSupported = False
 verifyDistributionSig :: GpgCmd -> FilePath -> IO Bool
 verifyDistributionSig gpgcmd sig = readProgramFile >>= \case
 	Just p | isAbsolute p ->
-		withUmask 0o0077 $ withTmpDir "git-annex-gpg.tmp" $ \gpgtmp -> do
+		withUmask 0o0077 $ withTmpDir (toOsPath (toRawFilePath "git-annex-gpg.tmp")) $ \gpgtmp -> do
 			let trustedkeys = takeDirectory p </> "trustedkeys.gpg"
 			boolGpgCmd gpgcmd
 				[ Param "--no-default-keyring"

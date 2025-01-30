@@ -24,6 +24,7 @@ import Utility.Process as X
 import Utility.Path as X
 import Utility.Path.AbsRel as X
 import Utility.Directory as X
+import Utility.SystemDirectory as X
 import Utility.MoveFile as X
 import Utility.Monad as X
 import Utility.Data as X
@@ -32,5 +33,6 @@ import Utility.FileSize as X
 import Utility.Network as X
 import Utility.Split as X
 import Utility.FileSystemEncoding as X
+import Utility.OsPath as X
 
 import Utility.PartialPrelude as X

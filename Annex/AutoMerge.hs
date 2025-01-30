@@ -35,10 +35,10 @@ import Annex.InodeSentinal
 import Utility.InodeCache
 import Utility.FileMode
 import qualified Utility.RawFilePath as R
+import qualified Utility.FileIO as F
 
 import qualified Data.Set as S
 import qualified Data.Map as M
-import qualified Data.ByteString.Lazy as L
 import System.PosixCompat.Files (isSymbolicLink)
 
 {- Merges from a branch into the current branch (which may not exist yet),
@@ -236,8 +236,9 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 		| otherwise = pure f
 
 	makesymlink key dest = do
-		l <- calcRepo $ gitAnnexLink (toRawFilePath dest) key
-		unless inoverlay $ replacewithsymlink dest l
+		let rdest = toRawFilePath dest
+		l <- calcRepo $ gitAnnexLink rdest key
+		unless inoverlay $ replacewithsymlink rdest l
 		dest' <- toRawFilePath <$> stagefile dest
 		stageSymlink dest' =<< hashSymlink l
 
@@ -265,9 +266,9 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 				
 		let replacefile isexecutable = case selectwant' (LsFiles.unmergedSha u) of
 			Nothing -> noop
-			Just sha -> replaceWorkTreeFile item $ \tmp -> do
+			Just sha -> replaceWorkTreeFile (toRawFilePath item) $ \tmp -> do
 				c <- catObject sha
-				liftIO $ L.writeFile (decodeBS tmp) c
+				liftIO $ F.writeFile (toOsPath tmp) c
 				when isexecutable $
 					liftIO $ void $ tryIO $ 
 						modifyFileMode tmp $
@@ -280,7 +281,7 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 					Nothing -> noop
 					Just sha -> do
 						link <- catSymLinkTarget sha
-						replacewithsymlink item link
+						replacewithsymlink (toRawFilePath item) link
 			(Just TreeFile, Just TreeSymlink) -> replacefile False
 			(Just TreeExecutable, Just TreeSymlink) -> replacefile True
 			_ -> ifM (liftIO $ doesDirectoryExist item)

@@ -19,7 +19,6 @@ import Data.Time
 import Data.Ratio
 import Control.Applicative
 import qualified Data.ByteString as B
-import qualified Data.ByteString.Char8 as B8
 import qualified Data.Attoparsec.ByteString as A
 import Data.Attoparsec.ByteString.Char8 (char, decimal, signed, isDigit_w8)
 
@@ -41,9 +40,9 @@ parserPOSIXTime = mkPOSIXTime
 			A.parseOnly (decimal <* A.endOfInput) b
 		return (d, len)
 
-parsePOSIXTime :: String -> Maybe POSIXTime
-parsePOSIXTime s = eitherToMaybe $ 
-	A.parseOnly (parserPOSIXTime <* A.endOfInput) (B8.pack s)
+parsePOSIXTime :: B.ByteString -> Maybe POSIXTime
+parsePOSIXTime b = eitherToMaybe $ 
+	A.parseOnly (parserPOSIXTime <* A.endOfInput) b
 
 {- This implementation allows for higher precision in a POSIXTime than
  - supported by the system's Double, and avoids the complications of

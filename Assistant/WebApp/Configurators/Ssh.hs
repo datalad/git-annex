@@ -389,13 +389,13 @@ sshAuthTranscript sshinput opts sshhost cmd input = case inputAuthMethod sshinpu
 		v <- getCachedCred login
 		liftIO $ case v of
 			Nothing -> go [passwordprompts 0] Nothing
-			Just pass -> withTmpFile "ssh" $ \passfile h -> do
+			Just pass -> withTmpFile (toOsPath "ssh") $ \passfile h -> do
 				hClose h
-				writeFileProtected (toRawFilePath passfile) pass
+				writeFileProtected (fromOsPath passfile) pass
 				environ <- getEnvironment
 				let environ' = addEntries
 					[ ("SSH_ASKPASS", program)
-					, (sshAskPassEnv, passfile)
+					, (sshAskPassEnv, fromRawFilePath $ fromOsPath passfile)
 					, ("DISPLAY", ":0")
 					] environ
 				go [passwordprompts 1] (Just environ')

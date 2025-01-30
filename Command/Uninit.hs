@@ -102,14 +102,14 @@ startCheckIncomplete recordnotok file key =
 removeAnnexDir :: CommandCleanup -> CommandStart
 removeAnnexDir recordok = do
 	Annex.Queue.flush
-	annexdir <- fromRawFilePath <$> fromRepo gitAnnexDir
+	annexdir <- fromRepo gitAnnexDir
 	annexobjectdir <- fromRepo gitAnnexObjectDir
 	starting ("uninit objects") (ActionItemOther Nothing) (SeekInput []) $ do
 		leftovers <- removeUnannexed =<< listKeys InAnnex
 		prepareRemoveAnnexDir annexdir
 		if null leftovers
 			then do
-				liftIO $ removeDirectoryRecursive annexdir
+				liftIO $ removeDirectoryRecursive (fromRawFilePath annexdir)
 				next recordok
 			else giveup $ unlines
 				[ "Not fully uninitialized"
@@ -134,15 +134,15 @@ removeAnnexDir recordok = do
  -
  - Also closes sqlite databases that might be in the directory,
  - to avoid later failure to write any cached changes to them. -}
-prepareRemoveAnnexDir :: FilePath -> Annex ()
+prepareRemoveAnnexDir :: RawFilePath -> Annex ()
 prepareRemoveAnnexDir annexdir = do
 	Database.Keys.closeDb
 	liftIO $ prepareRemoveAnnexDir' annexdir
 
-prepareRemoveAnnexDir' :: FilePath -> IO ()
+prepareRemoveAnnexDir' :: RawFilePath -> IO ()
 prepareRemoveAnnexDir' annexdir =
 	emptyWhenDoesNotExist (dirTreeRecursiveSkipping (const False) annexdir)
-		>>= mapM_ (void . tryIO . allowWrite . toRawFilePath)
+		>>= mapM_ (void . tryIO . allowWrite)
 
 {- Keys that were moved out of the annex have a hard link still in the
  - annex, with > 1 link count, and those can be removed.

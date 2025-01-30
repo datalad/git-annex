@@ -32,6 +32,7 @@ import qualified Data.Map as M
 import qualified Data.Set as S
 import Data.Time.Clock.POSIX
 import Data.Time
+import qualified Utility.FileIO as F
 
 import Annex.Common
 import qualified Annex
@@ -73,14 +74,14 @@ writeUnusedLog prefix l = do
 
 readUnusedLog :: RawFilePath -> Annex UnusedLog
 readUnusedLog prefix = do
-	f <- fromRawFilePath <$> fromRepo (gitAnnexUnusedLog prefix)
-	ifM (liftIO $ doesFileExist f)
-		( M.fromList . mapMaybe parse . lines
-			<$> liftIO (readFileStrict f)
+	f <- fromRepo (gitAnnexUnusedLog prefix)
+	ifM (liftIO $ doesFileExist (fromRawFilePath f))
+		( M.fromList . mapMaybe (parse . decodeBS) . fileLines'
+			<$> liftIO (F.readFile' (toOsPath f))
 		, return M.empty
 		)
   where
-	parse line = case (readish sint, deserializeKey skey, parsePOSIXTime ts) of
+	parse line = case (readish sint, deserializeKey skey, parsePOSIXTime (encodeBS ts)) of
 		(Just int, Just key, mtimestamp) -> Just (key, (int, mtimestamp))
 		_ -> Nothing
 	  where

@@ -373,4 +373,4 @@ inodeCaches locs repo = guardSafeForLsFiles repo $ do
 		mkInodeCache
 			<$> (readish =<< M.lookup "ino:" m)
 			<*> (readish =<< M.lookup "size:" m)
-			<*> (parsePOSIXTime =<< (replace ":" "." <$> M.lookup "mtime:" m))
+			<*> (parsePOSIXTime =<< (encodeBS . replace ":" "." <$> M.lookup "mtime:" m))

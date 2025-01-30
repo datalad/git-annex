@@ -37,9 +37,10 @@ import Remote.Helper.Encryptable (remoteCipher, remoteCipher', embedCreds, Encry
 import Utility.Env (getEnv)
 import Utility.Base64
 import qualified Utility.RawFilePath as R
+import qualified Utility.FileIO as F
 
-import qualified Data.ByteString.Lazy.Char8 as L
-import qualified Data.ByteString.Char8 as S
+import qualified Data.ByteString.Lazy.Char8 as L8
+import qualified Data.ByteString.Char8 as S8
 import qualified Data.Map as M
 import qualified System.FilePath.ByteString as P
 
@@ -99,7 +100,7 @@ setRemoteCredPair' pc encsetup gc storage mcreds = case mcreds of
 	storeconfig creds key (Just cipher) = do
 		cmd <- gpgCmd <$> Annex.getGitConfig
 		s <- liftIO $ encrypt cmd (pc, gc) cipher
-			(feedBytes $ L.pack $ encodeCredPair creds)
+			(feedBytes $ L8.pack $ encodeCredPair creds)
 			(readBytesStrictly return)
 		storeconfig' key (Accepted (decodeBS (toB64 s)))
 	storeconfig creds key Nothing =
@@ -135,8 +136,8 @@ getRemoteCredPair c gc storage = maybe fromcache (return . Just) =<< fromenv
 	fromenccreds enccreds cipher storablecipher = do
 		cmd <- gpgCmd <$> Annex.getGitConfig
 		mcreds <- liftIO $ catchMaybeIO $ decrypt cmd (c, gc) cipher
-			(feedBytes $ L.fromStrict $ fromB64 enccreds)
-			(readBytesStrictly $ return . S.unpack)
+			(feedBytes $ L8.fromStrict $ fromB64 enccreds)
+			(readBytesStrictly $ return . S8.unpack)
 		case mcreds of
 			Just creds -> fromcreds creds
 			Nothing -> do
@@ -202,7 +203,10 @@ writeCreds creds file = do
 	liftIO $ writeFileProtected (d P.</> toRawFilePath file) creds
 
 readCreds :: FilePath -> Annex (Maybe Creds)
-readCreds f = liftIO . catchMaybeIO . readFileStrict =<< credsFile f
+readCreds f = do
+	f' <- toOsPath . toRawFilePath <$> credsFile f
+	liftIO $ catchMaybeIO $ decodeBS . S8.unlines . fileLines'
+		<$> F.readFile' f'
 
 credsFile :: FilePath -> Annex FilePath
 credsFile basefile = do

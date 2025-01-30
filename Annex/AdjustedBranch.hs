@@ -70,6 +70,7 @@ import Logs.View (is_branchView)
 import Logs.AdjustedBranchUpdate
 import Utility.FileMode
 import qualified Utility.RawFilePath as R
+import qualified Utility.FileIO as F
 
 import Data.Time.Clock.POSIX
 import qualified Data.Map as M
@@ -268,7 +269,7 @@ updateAdjustedBranch adj (AdjBranch currbranch) origbranch
 			-- origbranch.
 			_ <- propigateAdjustedCommits' True origbranch adj commitlck
 			
-			origheadfile <- inRepo $ readFileStrict . Git.Ref.headFile
+			origheadfile <- inRepo $ F.readFile' . toOsPath . Git.Ref.headFile
 			origheadsha <- inRepo (Git.Ref.sha currbranch)
 			
 			b <- adjustBranch adj origbranch
@@ -280,8 +281,8 @@ updateAdjustedBranch adj (AdjBranch currbranch) origbranch
 			newheadfile <- case origheadsha of
 				Just s -> do
 					inRepo $ \r -> do
-						let newheadfile = fromRef s
-						writeFile (Git.Ref.headFile r) newheadfile
+						let newheadfile = fromRef' s
+						F.writeFile' (toOsPath (Git.Ref.headFile r)) newheadfile
 						return (Just newheadfile)
 				_ -> return Nothing
 	
@@ -295,9 +296,9 @@ updateAdjustedBranch adj (AdjBranch currbranch) origbranch
 		unless ok $ case newheadfile of
 			Nothing -> noop
 			Just v -> preventCommits $ \_commitlck -> inRepo $ \r -> do
-				v' <- readFileStrict (Git.Ref.headFile r)
+				v' <- F.readFile' (toOsPath (Git.Ref.headFile r))
 				when (v == v') $
-					writeFile (Git.Ref.headFile r) origheadfile
+					F.writeFile' (toOsPath (Git.Ref.headFile r)) origheadfile
 
 		return ok
 	| otherwise = preventCommits $ \commitlck -> do

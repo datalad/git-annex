@@ -3,6 +3,7 @@ git-annex (10.20250116) UNRELEASED; urgency=medium
   * Support help.autocorrect settings "prompt", "never", and "immediate".
   * Allow setting remote.foo.annex-tracking-branch to a branch name
     that contains "/", as long as it's not a remote tracking branch.
+  * Added OsPath build flag, which speeds up git-annex's operations on files.
 
  -- Joey Hess <id@joeyh.name>  Mon, 20 Jan 2025 10:24:51 -0400
 

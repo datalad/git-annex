@@ -5,6 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE CPP #-}
 
 module Annex.Ssh (
@@ -100,15 +101,16 @@ consumeStdinParams NoConsumeStdin = [Param "-n"]
 
 {- Returns a filename to use for a ssh connection caching socket, and
  - parameters to enable ssh connection caching. -}
-sshCachingInfo :: (SshHost, Maybe Integer) -> Annex (Maybe FilePath, [CommandParam])
+sshCachingInfo :: (SshHost, Maybe Integer) -> Annex (Maybe RawFilePath, [CommandParam])
 sshCachingInfo (host, port) = go =<< sshCacheDir'
   where
 	go (Right dir) =
 		liftIO (bestSocketPath $ dir P.</> hostport2socket host port) >>= return . \case
 			Nothing -> (Nothing, [])
 			Just socketfile -> 
-				let socketfile' = fromRawFilePath socketfile
-				in (Just socketfile', sshConnectionCachingParams socketfile')
+				(Just socketfile
+				, sshConnectionCachingParams (fromRawFilePath socketfile)
+				)
 	-- No connection caching with concurrency is not a good
 	-- combination, so warn the user.
 	go (Left whynocaching) = do
@@ -214,7 +216,7 @@ portParams (Just port) = [Param "-p", Param $ show port]
  - Locks the socket lock file to prevent other git-annex processes from
  - stopping the ssh multiplexer on this socket.
  -}
-prepSocket :: FilePath -> SshHost -> [CommandParam] -> Annex ()
+prepSocket :: RawFilePath -> SshHost -> [CommandParam] -> Annex ()
 prepSocket socketfile sshhost sshparams = do
 	-- There could be stale ssh connections hanging around
 	-- from a previous git-annex run that was interrupted.
@@ -286,13 +288,13 @@ prepSocket socketfile sshhost sshparams = do
  - and this check makes such files be skipped since the corresponding lock
  - file won't exist.
  -}
-enumSocketFiles :: Annex [FilePath]
+enumSocketFiles :: Annex [RawFilePath]
 enumSocketFiles = liftIO . go =<< sshCacheDir
   where
 	go Nothing = return []
 	go (Just dir) = filterM (R.doesPathExist . socket2lock)
 		=<< filter (not . isLock)
-		<$> catchDefaultIO [] (dirContents (fromRawFilePath dir))
+		<$> catchDefaultIO [] (dirContents dir)
 
 {- Stop any unused ssh connection caching processes. -}
 sshCleanup :: Annex ()
@@ -324,9 +326,9 @@ sshCleanup = mapM_ cleanup =<< enumSocketFiles
 forceSshCleanup :: Annex ()
 forceSshCleanup = mapM_ forceStopSsh =<< enumSocketFiles
 
-forceStopSsh :: FilePath -> Annex ()
+forceStopSsh :: RawFilePath -> Annex ()
 forceStopSsh socketfile = withNullHandle $ \nullh -> do
-	let (dir, base) = splitFileName socketfile
+	let (dir, base) = splitFileName (fromRawFilePath socketfile)
 	let p = (proc "ssh" $ toCommand $
 		[ Param "-O", Param "stop" ] ++ 
 		sshConnectionCachingParams base ++ 
@@ -338,7 +340,7 @@ forceStopSsh socketfile = withNullHandle $ \nullh -> do
 		}
 	void $ liftIO $ catchMaybeIO $ withCreateProcess p $ \_ _ _ pid ->
 		forceSuccessProcess p pid
-	liftIO $ removeWhenExistsWith R.removeLink (toRawFilePath socketfile)
+	liftIO $ removeWhenExistsWith R.removeLink socketfile
 
 {- This needs to be as short as possible, due to limitations on the length
  - of the path to a socket file. At the same time, it needs to be unique
@@ -355,13 +357,13 @@ hostport2socket' s
   where
 	lengthofmd5s = 32
 
-socket2lock :: FilePath -> RawFilePath
-socket2lock socket = toRawFilePath (socket ++ lockExt)
+socket2lock :: RawFilePath -> RawFilePath
+socket2lock socket = socket <> lockExt
 
-isLock :: FilePath -> Bool
-isLock f = lockExt `isSuffixOf` f
+isLock :: RawFilePath -> Bool
+isLock f = lockExt `S.isSuffixOf` f
 
-lockExt :: String
+lockExt :: S.ByteString
 lockExt = ".lock"
 
 {- This is the size of the sun_path component of sockaddr_un, which

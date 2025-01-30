@@ -118,20 +118,21 @@ lockDown' cfg file = tryNonAsync $ ifM crippledFileSystem
 	withhardlink tmpdir = do
 		setperms
 		withTSDelta $ \delta -> liftIO $ do
-			(tmpfile, h) <- openTmpFileIn (fromRawFilePath tmpdir) $
-				relatedTemplate $ "ingest-" ++ takeFileName file
+			(tmpfile, h) <- openTmpFileIn (toOsPath tmpdir) $
+				relatedTemplate $ toRawFilePath $ 
+					"ingest-" ++ takeFileName file
 			hClose h
-			removeWhenExistsWith R.removeLink (toRawFilePath tmpfile)
-			withhardlink' delta tmpfile
+			let tmpfile' = fromOsPath tmpfile
+			removeWhenExistsWith R.removeLink tmpfile'
+			withhardlink' delta tmpfile'
 				`catchIO` const (nohardlink' delta)
 
 	withhardlink' delta tmpfile = do
-		let tmpfile' = toRawFilePath tmpfile
-		R.createLink file' tmpfile'
-		cache <- genInodeCache tmpfile' delta
+		R.createLink file' tmpfile
+		cache <- genInodeCache tmpfile delta
 		return $ LockedDown cfg $ KeySource
 			{ keyFilename = file'
-			, contentLocation = tmpfile'
+			, contentLocation = tmpfile
 			, inodeCache = cache
 			}
 		
@@ -308,7 +309,7 @@ restoreFile file key e = do
 makeLink :: RawFilePath -> Key -> Maybe InodeCache -> Annex LinkTarget
 makeLink file key mcache = flip catchNonAsync (restoreFile file key) $ do
 	l <- calcRepo $ gitAnnexLink file key
-	replaceWorkTreeFile file' $ makeAnnexLink l
+	replaceWorkTreeFile file $ makeAnnexLink l
 
 	-- touch symlink to have same time as the original file,
 	-- as provided in the InodeCache
@@ -317,8 +318,6 @@ makeLink file key mcache = flip catchNonAsync (restoreFile file key) $ do
 		Nothing -> noop
 
 	return l
-  where
-	file' = fromRawFilePath file
 
 {- Creates the symlink to the annexed content, and stages it in git. -}
 addSymlink :: RawFilePath -> Key -> Maybe InodeCache -> Annex ()

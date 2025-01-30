@@ -44,8 +44,10 @@ import Utility.Tmp.Dir
 import Utility.Rsync
 import Utility.FileMode
 import qualified Utility.RawFilePath as R
+import qualified Utility.FileIO as F
 
 import qualified Data.Set as S
+import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import qualified System.FilePath.ByteString as P
 
@@ -78,29 +80,28 @@ explodePacks :: Repo -> IO Bool
 explodePacks r = go =<< listPackFiles r
   where
 	go [] = return False
-	go packs = withTmpDir "packs" $ \tmpdir -> do
+	go packs = withTmpDir (toOsPath "packs") $ \tmpdir -> do
 		r' <- addGitEnv r "GIT_OBJECT_DIRECTORY" tmpdir
 		putStrLn "Unpacking all pack files."
 		forM_ packs $ \packfile -> do
 			-- Just in case permissions are messed up.
-			allowRead (toRawFilePath packfile)
+			allowRead packfile
 			-- May fail, if pack file is corrupt.
 			void $ tryIO $
 				pipeWrite [Param "unpack-objects", Param "-r"] r' $ \h ->
-				L.hPut h =<< L.readFile packfile
-		objs <- emptyWhenDoesNotExist (dirContentsRecursive tmpdir)
+				L.hPut h =<< F.readFile (toOsPath packfile)
+		objs <- emptyWhenDoesNotExist (dirContentsRecursive (toRawFilePath tmpdir))
 		forM_ objs $ \objfile -> do
 			f <- relPathDirToFile
 				(toRawFilePath tmpdir)
-				(toRawFilePath objfile)
+				objfile
 			let dest = objectsDir r P.</> f
 			createDirectoryIfMissing True
 				(fromRawFilePath (parentDir dest))
-			moveFile (toRawFilePath objfile) dest
+			moveFile objfile dest
 		forM_ packs $ \packfile -> do
-			let f = toRawFilePath packfile
-			removeWhenExistsWith R.removeLink f
-			removeWhenExistsWith R.removeLink (packIdxFile f)
+			removeWhenExistsWith R.removeLink packfile
+			removeWhenExistsWith R.removeLink (packIdxFile packfile)
 		return True
 
 {- Try to retrieve a set of missing objects, from the remotes of a
@@ -113,13 +114,13 @@ explodePacks r = go =<< listPackFiles r
 retrieveMissingObjects :: FsckResults -> Maybe FilePath -> Repo -> IO FsckResults
 retrieveMissingObjects missing referencerepo r
 	| not (foundBroken missing) = return missing
-	| otherwise = withTmpDir "tmprepo" $ \tmpdir -> do
+	| otherwise = withTmpDir (toOsPath "tmprepo") $ \tmpdir -> do
 		unlessM (boolSystem "git" [Param "init", File tmpdir]) $
 			giveup $ "failed to create temp repository in " ++ tmpdir
 		tmpr <- Config.read =<< Construct.fromPath (toRawFilePath tmpdir)
-		let repoconfig r' = fromRawFilePath (localGitDir r' P.</> "config")
-		whenM (doesFileExist (repoconfig r)) $
-			L.readFile (repoconfig r) >>= L.writeFile (repoconfig tmpr)
+		let repoconfig r' = toOsPath (localGitDir r' P.</> "config")
+		whenM (doesFileExist (fromRawFilePath (fromOsPath (repoconfig r)))) $
+			F.readFile (repoconfig r) >>= F.writeFile (repoconfig tmpr)
 		rs <- Construct.fromRemotes r
 		stillmissing <- pullremotes tmpr rs fetchrefstags missing
 		if S.null (knownMissing stillmissing)
@@ -248,13 +249,14 @@ badBranches missing r = filterM isbad =<< getAllRefs r
  - Relies on packed refs being exploded before it's called.
  -}
 getAllRefs :: Repo -> IO [Ref]
-getAllRefs r = getAllRefs' (fromRawFilePath (localGitDir r) </> "refs")
+getAllRefs r = getAllRefs' (localGitDir r P.</> "refs")
 
-getAllRefs' :: FilePath -> IO [Ref]
+getAllRefs' :: RawFilePath -> IO [Ref]
 getAllRefs' refdir = do
-	let topsegs = length (splitPath refdir) - 1
+	let topsegs = length (P.splitPath refdir) - 1
 	let toref = Ref . toInternalGitPath . encodeBS 
-		. joinPath . drop topsegs . splitPath
+		. joinPath . drop topsegs . splitPath 
+		. decodeBS
 	map toref <$> emptyWhenDoesNotExist (dirContentsRecursive refdir)
 
 explodePackedRefsFile :: Repo -> IO ()
@@ -262,7 +264,9 @@ explodePackedRefsFile r = do
 	let f = packedRefsFile r
 	let f' = toRawFilePath f
 	whenM (doesFileExist f) $ do
-		rs <- mapMaybe parsePacked . lines
+		rs <- mapMaybe parsePacked
+			. map decodeBS
+			. fileLines'
 			<$> catchDefaultIO "" (safeReadFile f')
 		forM_ rs makeref
 		removeWhenExistsWith R.removeLink f'
@@ -473,7 +477,7 @@ displayList items header
  -}
 preRepair :: Repo -> IO ()
 preRepair g = do
-	unlessM (validhead <$> catchDefaultIO "" (safeReadFile headfile)) $ do
+	unlessM (validhead <$> catchDefaultIO "" (decodeBS <$> safeReadFile headfile)) $ do
 		removeWhenExistsWith R.removeLink headfile
 		writeFile (fromRawFilePath headfile) "ref: refs/heads/master"
 	explodePackedRefsFile g
@@ -651,7 +655,7 @@ runRepair' removablebranch fsckresult forced referencerepo g = do
 successfulRepair :: (Bool, [Branch]) -> Bool
 successfulRepair = fst
 
-safeReadFile :: RawFilePath -> IO String
+safeReadFile :: RawFilePath -> IO B.ByteString
 safeReadFile f = do
 	allowRead f
-	readFileStrict (fromRawFilePath f)
+	F.readFile' (toOsPath f)

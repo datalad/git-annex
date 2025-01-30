@@ -1,11 +1,9 @@
 {- git-annex file replacing
  -
- - Copyright 2013-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
-
-{-# LANGUAGE CPP #-}
 
 module Annex.ReplaceFile (
 	replaceGitAnnexDirFile,
@@ -19,24 +17,24 @@ import Annex.Common
 import Annex.Tmp
 import Annex.Perms
 import Git
+import Utility.Tmp
 import Utility.Tmp.Dir
 import Utility.Directory.Create
-#ifndef mingw32_HOST_OS
-import Utility.Path.Max
-#endif
+
+import qualified System.FilePath.ByteString as P
 
 {- replaceFile on a file located inside the gitAnnexDir. -}
-replaceGitAnnexDirFile :: FilePath -> (RawFilePath -> Annex a) -> Annex a
+replaceGitAnnexDirFile :: RawFilePath -> (RawFilePath -> Annex a) -> Annex a
 replaceGitAnnexDirFile = replaceFile createAnnexDirectory
 
 {- replaceFile on a file located inside the .git directory. -}
-replaceGitDirFile :: FilePath -> (RawFilePath -> Annex a) -> Annex a
+replaceGitDirFile :: RawFilePath -> (RawFilePath -> Annex a) -> Annex a
 replaceGitDirFile = replaceFile $ \dir -> do
 	top <- fromRepo localGitDir
 	liftIO $ createDirectoryUnder [top] dir
 
 {- replaceFile on a worktree file. -}
-replaceWorkTreeFile :: FilePath -> (RawFilePath -> Annex a) -> Annex a
+replaceWorkTreeFile :: RawFilePath -> (RawFilePath -> Annex a) -> Annex a
 replaceWorkTreeFile = replaceFile createWorkTreeDirectory
 
 {- Replaces a possibly already existing file with a new version, 
@@ -54,28 +52,17 @@ replaceWorkTreeFile = replaceFile createWorkTreeDirectory
  - The createdirectory action is only run when moving the file into place
  - fails, and can create any parent directory structure needed.
  -}
-replaceFile :: (RawFilePath -> Annex ()) -> FilePath -> (RawFilePath -> Annex a) -> Annex a
+replaceFile :: (RawFilePath -> Annex ()) -> RawFilePath -> (RawFilePath -> Annex a) -> Annex a
 replaceFile createdirectory file action = replaceFile' createdirectory file (const True) action
 
-replaceFile' :: (RawFilePath -> Annex ()) -> FilePath -> (a -> Bool) -> (RawFilePath -> Annex a) -> Annex a
+replaceFile' :: (RawFilePath -> Annex ()) -> RawFilePath -> (a -> Bool) -> (RawFilePath -> Annex a) -> Annex a
 replaceFile' createdirectory file checkres action = withOtherTmp $ \othertmpdir -> do
-	let othertmpdir' = fromRawFilePath othertmpdir
-#ifndef mingw32_HOST_OS
-	-- Use part of the filename as the template for the temp
-	-- directory. This does not need to be unique, but it
-	-- makes it more clear what this temp directory is for.
-	filemax <- liftIO $ fileNameLengthLimit othertmpdir'
-	let basetmp = take (filemax `div` 2) (takeFileName file)
-#else
-	-- Windows has limits on the whole path length, so keep
-	-- it short.
-	let basetmp = "t"
-#endif
-	withTmpDirIn othertmpdir' basetmp $ \tmpdir -> do
-		let tmpfile = toRawFilePath (tmpdir </> basetmp)
+	let basetmp = relatedTemplate' (P.takeFileName file)
+	withTmpDirIn (fromRawFilePath othertmpdir) (toOsPath basetmp) $ \tmpdir -> do
+		let tmpfile = toRawFilePath tmpdir P.</> basetmp
 		r <- action tmpfile
 		when (checkres r) $
-			replaceFileFrom tmpfile (toRawFilePath file) createdirectory
+			replaceFileFrom tmpfile file createdirectory
 		return r
 
 replaceFileFrom :: RawFilePath -> RawFilePath -> (RawFilePath -> Annex ()) -> Annex ()

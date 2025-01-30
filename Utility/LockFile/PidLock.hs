@@ -27,6 +27,7 @@ import Utility.PartialPrelude
 import Utility.Exception
 import Utility.Applicative
 import Utility.Directory
+import Utility.SystemDirectory
 import Utility.Monad
 import Utility.Path.AbsRel
 import Utility.FileMode
@@ -38,6 +39,8 @@ import Utility.FileSystemEncoding
 import Utility.Env
 import Utility.Env.Set
 import Utility.Tmp
+import Utility.RawFilePath
+import Utility.OsPath
 import qualified Utility.LockFile.Posix as Posix
 
 import System.IO
@@ -147,9 +150,10 @@ tryLock lockfile = do
 		_ -> return (Just ParentLocked)
   where
 	go abslockfile sidelock = do
-		let abslockfile' = fromRawFilePath abslockfile
-		(tmp, h) <- openTmpFileIn (takeDirectory abslockfile') "locktmp"
-		let tmp' = toRawFilePath tmp
+		(tmp, h) <- openTmpFileIn 
+			(toOsPath (P.takeDirectory abslockfile)) 
+			(toOsPath "locktmp")
+		let tmp' = fromOsPath tmp
 		setFileMode tmp' (combineModes readModes)
 		hPutStr h . show =<< mkPidLock
 		hClose h
@@ -241,15 +245,14 @@ linkToLock (Just _) src dest = do
 -- with the SAME FILENAME exist.
 checkInsaneLustre :: RawFilePath -> IO Bool
 checkInsaneLustre dest = do
-	let dest' = fromRawFilePath dest
-	fs <- dirContents (takeDirectory dest')
-	case length (filter (== dest') fs) of
+	fs <- dirContents (P.takeDirectory dest)
+	case length (filter (== dest) fs) of
 		1 -> return False -- whew!
 		0 -> return True -- wtf?
 		_ -> do
 			-- Try to clean up the extra copy we made
 			-- that has the same name. Egads.
-			_ <- tryIO $ removeFile dest'
+			_ <- tryIO $ removeLink dest
 			return True
 
 -- | Waits as necessary to take a lock.

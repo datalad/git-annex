@@ -75,9 +75,9 @@ openLock sharemode f = do
 	return $ if h == iNVALID_HANDLE_VALUE
 		then Nothing
 		else Just h
-#endif
   where
 	security_attributes = maybePtr Nothing
+#endif
 
 dropLock :: LockHandle -> IO ()
 dropLock = closeHandle

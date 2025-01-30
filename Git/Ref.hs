@@ -15,19 +15,22 @@ import Git.Command
 import Git.Sha
 import Git.Types
 import Git.FilePath
+import qualified Utility.FileIO as F
 
 import Data.Char (chr, ord)
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Char8 as S8
+import qualified System.FilePath.ByteString as P
 
 headRef :: Ref
 headRef = Ref "HEAD"
 
-headFile :: Repo -> FilePath
-headFile r = fromRawFilePath (localGitDir r) </> "HEAD"
+headFile :: Repo -> RawFilePath
+headFile r = localGitDir r P.</> "HEAD"
 
 setHeadRef :: Ref -> Repo -> IO ()
-setHeadRef ref r = S.writeFile (headFile r) ("ref: " <> fromRef' ref)
+setHeadRef ref r = 
+	F.writeFile' (toOsPath (headFile r)) ("ref: " <> fromRef' ref)
 
 {- Converts a fully qualified git ref into a user-visible string. -}
 describe :: Ref -> String

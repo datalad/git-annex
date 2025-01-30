@@ -26,6 +26,7 @@ import Utility.FileMode
 import Utility.ThreadScheduler
 import Utility.SafeOutput
 import qualified Utility.RawFilePath as R
+import qualified Utility.FileIO as F
 import qualified Utility.MagicWormhole as Wormhole
 
 import Control.Concurrent.Async
@@ -193,12 +194,11 @@ serializePairData :: PairData -> String
 serializePairData (PairData (HalfAuthToken ha) addrs) = unlines $
 	T.unpack ha : map formatP2PAddress addrs
 
-deserializePairData :: String -> Maybe PairData
-deserializePairData s = case lines s of
-	[] -> Nothing
-	(ha:l) -> do
-		addrs <- mapM unformatP2PAddress l
-		return (PairData (HalfAuthToken (T.pack ha)) addrs)
+deserializePairData :: [String] -> Maybe PairData
+deserializePairData [] = Nothing
+deserializePairData (ha:l) = do
+	addrs <- mapM unformatP2PAddress l
+	return (PairData (HalfAuthToken (T.pack ha)) addrs)
 
 data PairingResult
 	= PairSuccess
@@ -220,7 +220,7 @@ wormholePairing remotename ouraddrs ui = do
 	-- files. Permissions of received files may allow others
 	-- to read them. So, set up a temp directory that only
 	-- we can read.
-	withTmpDir "pair" $ \tmp -> do
+	withTmpDir (toOsPath "pair") $ \tmp -> do
 		liftIO $ void $ tryIO $ modifyFileMode (toRawFilePath tmp) $ 
 			removeModes otherGroupModes
 		let sendf = tmp </> "send"
@@ -245,13 +245,14 @@ wormholePairing remotename ouraddrs ui = do
 				then return ReceiveFailed
 				else do
 					r <- liftIO $ tryIO $
-						readFileStrict recvf
+						map decodeBS . fileLines' <$> F.readFile'
+							(toOsPath (toRawFilePath recvf))
 					case r of
 						Left _e -> return ReceiveFailed
-						Right s -> maybe 
+						Right ls -> maybe 
 							(return ReceiveFailed)
 							(finishPairing 100 remotename ourhalf)
-							(deserializePairData s)
+							(deserializePairData ls)
 
 -- | Allow the peer we're pairing with to authenticate to us,
 -- using an authtoken constructed from the two HalfAuthTokens.

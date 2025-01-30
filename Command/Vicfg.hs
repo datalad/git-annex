@@ -35,6 +35,7 @@ import Remote
 import Git.Types (fromConfigKey, fromConfigValue)
 import Utility.DataUnits
 import qualified Utility.RawFilePath as R
+import qualified Utility.FileIO as F
 
 cmd :: Command
 cmd = command "vicfg" SectionSetup "edit configuration in git-annex branch"
@@ -60,7 +61,10 @@ vicfg curcfg f = do
 	-- Allow EDITOR to be processed by the shell, so it can contain options.
 	unlessM (liftIO $ boolSystem "sh" [Param "-c", Param $ unwords [vi, shellEscape f]]) $
 		giveup $ vi ++ " exited nonzero; aborting"
-	r <- parseCfg (defCfg curcfg) <$> liftIO (readFileStrict f)
+	r <- liftIO $ parseCfg (defCfg curcfg) 
+		. map decodeBS
+		. fileLines'
+		<$> F.readFile' (toOsPath (toRawFilePath f))
 	liftIO $ removeWhenExistsWith R.removeLink (toRawFilePath f)
 	case r of
 		Left s -> do
@@ -278,8 +282,8 @@ lcom = map (\l -> if "#" `isPrefixOf` l then l else '#' : l)
 
 {- If there's a parse error, returns a new version of the file,
  - with the problem lines noted. -}
-parseCfg :: Cfg -> String -> Either String Cfg
-parseCfg defcfg = go [] defcfg . lines
+parseCfg :: Cfg -> [String] -> Either String Cfg
+parseCfg defcfg = go [] defcfg
   where
 	go c cfg []
 		| null (mapMaybe fst c) = Right cfg

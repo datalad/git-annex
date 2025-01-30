@@ -22,6 +22,7 @@ import qualified Remote
 import qualified Types.Remote as Remote
 import Config.DynamicConfig
 import Annex.SpecialRemote.Config
+import qualified Utility.FileIO as F
 
 import Control.Concurrent.STM
 import System.Posix.Types
@@ -121,9 +122,9 @@ startDaemonStatus = do
  - and parts of it are not relevant. -}
 writeDaemonStatusFile :: FilePath -> DaemonStatus -> IO ()
 writeDaemonStatusFile file status = 
-	viaTmp writeFile file =<< serialized <$> getPOSIXTime
+	viaTmp F.writeFile' (toOsPath (toRawFilePath file)) =<< serialized <$> getPOSIXTime
   where
-	serialized now = unlines
+	serialized now = encodeBS $ unlines
 		[ "lastRunning:" ++ show now
 		, "scanComplete:" ++ show (scanComplete status)
 		, "sanityCheckRunning:" ++ show (sanityCheckRunning status)
@@ -135,13 +136,13 @@ readDaemonStatusFile file = parse <$> newDaemonStatus <*> readFile file
   where
 	parse status = foldr parseline status . lines
 	parseline line status
-		| key == "lastRunning" = parseval parsePOSIXTime $ \v ->
+		| key == "lastRunning" = parseval (parsePOSIXTime . encodeBS) $ \v ->
 			status { lastRunning = Just v }
 		| key == "scanComplete" = parseval readish $ \v ->
 			status { scanComplete = v }
 		| key == "sanityCheckRunning" = parseval readish $ \v ->
 			status { sanityCheckRunning = v }
-		| key == "lastSanityCheck" = parseval parsePOSIXTime $ \v ->
+		| key == "lastSanityCheck" = parseval (parsePOSIXTime . encodeBS) $ \v ->
 			status { lastSanityCheck = Just v }
 		| otherwise = status -- unparsable line
 	  where

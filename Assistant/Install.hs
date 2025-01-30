@@ -17,6 +17,7 @@ import Utility.Shell
 import Utility.Tmp
 import Utility.Env
 import Utility.SshConfig
+import qualified Utility.FileIO as F
 
 #ifdef darwin_HOST_OS
 import Utility.OSX
@@ -28,6 +29,7 @@ import Utility.Android
 #endif
 
 import System.PosixCompat.Files (ownerExecuteMode)
+import qualified Data.ByteString.Char8 as S8
 
 standaloneAppBase :: IO (Maybe FilePath)
 standaloneAppBase = getEnv "GIT_ANNEX_APP_BASE"
@@ -82,7 +84,7 @@ ensureInstalled = ifM (isJust <$> getEnv "GIT_ANNEX_PACKAGE_INSTALL")
 		let runshell var = "exec " ++ base </> "runshell " ++ var
 		let rungitannexshell var = runshell $ "git-annex-shell -c \"" ++ var ++ "\""
 
-		installWrapper (sshdir </> "git-annex-shell") $ unlines
+		installWrapper (toRawFilePath (sshdir </> "git-annex-shell")) $
 			[ shebang
 			, "set -e"
 			, "if [ \"x$SSH_ORIGINAL_COMMAND\" != \"x\" ]; then"
@@ -91,7 +93,7 @@ ensureInstalled = ifM (isJust <$> getEnv "GIT_ANNEX_PACKAGE_INSTALL")
 			,   rungitannexshell "$@"
 			, "fi"
 			]
-		installWrapper (sshdir </> "git-annex-wrapper") $ unlines
+		installWrapper (toRawFilePath (sshdir </> "git-annex-wrapper")) $
 			[ shebang
 			, "set -e"
 			, runshell "\"$@\""
@@ -99,14 +101,15 @@ ensureInstalled = ifM (isJust <$> getEnv "GIT_ANNEX_PACKAGE_INSTALL")
 
 		installFileManagerHooks program
 
-installWrapper :: FilePath -> String -> IO ()
+installWrapper :: RawFilePath -> [String] -> IO ()
 installWrapper file content = do
-	curr <- catchDefaultIO "" $ readFileStrict file
-	when (curr /= content) $ do
-		createDirectoryIfMissing True (fromRawFilePath (parentDir (toRawFilePath file)))
-		viaTmp writeFile file content
-		modifyFileMode (toRawFilePath file) $ 
-			addModes [ownerExecuteMode]
+	let content' = map encodeBS content
+	curr <- catchDefaultIO [] $ fileLines' <$> F.readFile' (toOsPath file)
+	when (curr /= content') $ do
+		createDirectoryIfMissing True (fromRawFilePath (parentDir file))
+		viaTmp F.writeFile' (toOsPath file) $
+			linesFile' (S8.unlines content')
+		modifyFileMode file $ addModes [ownerExecuteMode]
 
 installFileManagerHooks :: FilePath -> IO ()
 #ifdef linux_HOST_OS
@@ -127,17 +130,18 @@ installFileManagerHooks program = unlessM osAndroid $ do
 		(kdeDesktopFile actions)
   where
 	genNautilusScript scriptdir action =
-		installscript (scriptdir </> scriptname action) $ unlines
+		installscript (toRawFilePath (scriptdir </> scriptname action)) $ unlines
 			[ shebang
 			, autoaddedcomment
 			, "exec " ++ program ++ " " ++ action ++ " --notify-start --notify-finish -- \"$@\""
 			]
 	scriptname action = "git-annex " ++ action
 	installscript f c = whenM (safetoinstallscript f) $ do
-		writeFile f c
-		modifyFileMode (toRawFilePath f) $ addModes [ownerExecuteMode]
+		writeFile (fromRawFilePath f) c
+		modifyFileMode f $ addModes [ownerExecuteMode]
 	safetoinstallscript f = catchDefaultIO True $
-		elem autoaddedcomment . lines <$> readFileStrict f
+		elem (encodeBS autoaddedcomment) . fileLines'
+			<$> F.readFile' (toOsPath f)
 	autoaddedcomment = "# " ++ autoaddedmsg ++ " (To disable, chmod 600 this file.)"
 	autoaddedmsg = "Automatically added by git-annex, do not edit."
 
