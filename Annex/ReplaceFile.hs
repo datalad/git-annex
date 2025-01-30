@@ -5,8 +5,6 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Annex.ReplaceFile (
 	replaceGitAnnexDirFile,
 	replaceGitDirFile,
@@ -59,11 +57,7 @@ replaceFile createdirectory file action = replaceFile' createdirectory file (con
 
 replaceFile' :: (RawFilePath -> Annex ()) -> RawFilePath -> (a -> Bool) -> (RawFilePath -> Annex a) -> Annex a
 replaceFile' createdirectory file checkres action = withOtherTmp $ \othertmpdir -> do
-#ifndef mingw32_HOST_OS
 	let basetmp = relatedTemplate' (P.takeFileName file)
-#else
-	let basetmp = toRawFilePath "t"
-#endif
 	withTmpDirIn (fromRawFilePath othertmpdir) (toOsPath basetmp) $ \tmpdir -> do
 		let tmpfile = toRawFilePath tmpdir P.</> basetmp
 		r <- action tmpfile
