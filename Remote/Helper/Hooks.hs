@@ -11,7 +11,6 @@
 module Remote.Helper.Hooks (addHooks) where
 
 import qualified Data.Map as M
-import qualified System.FilePath.ByteString as P
 
 import Annex.Common
 import Types.Remote
@@ -51,13 +50,13 @@ addHooks' r starthook stophook = r'
 runHooks :: Remote -> Maybe String -> Maybe String -> Annex a -> Annex a
 runHooks r starthook stophook a = do
 	dir <- fromRepo gitAnnexRemotesDir
-	let lck = dir P.</> remoteid <> ".lck"
+	let lck = dir </> remoteid <> literalOsPath ".lck"
 	whenM (notElem lck . M.keys <$> getLockCache) $ do
 		createAnnexDirectory dir
 		firstrun lck
 	a
   where
-	remoteid = fromUUID (uuid r)
+	remoteid = uuidPath (uuid r)
 	run Nothing = noop
 	run (Just command) = void $ liftIO $
 		boolSystem "sh" [Param "-c", Param command]

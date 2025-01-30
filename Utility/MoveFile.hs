@@ -27,21 +27,20 @@ import Utility.SystemDirectory
 import Utility.Tmp
 import Utility.Exception
 import Utility.Monad
-import Utility.FileSystemEncoding
 import Utility.OsPath
 import qualified Utility.RawFilePath as R
 import Author
 
 {- Moves one filename to another.
  - First tries a rename, but falls back to moving across devices if needed. -}
-moveFile :: RawFilePath -> RawFilePath -> IO ()
-moveFile src dest = tryIO (R.rename src dest) >>= onrename
+moveFile :: OsPath -> OsPath -> IO ()
+moveFile src dest = tryIO (renamePath src dest) >>= onrename
   where
 	onrename (Right _) = noop
 	onrename (Left e)
 		| isPermissionError e = rethrow
 		| isDoesNotExistError e = rethrow
-		| otherwise = viaTmp mv (toOsPath dest) ()
+		| otherwise = viaTmp mv dest ()
 	  where
 		rethrow = throwM e
 
@@ -57,8 +56,8 @@ moveFile src dest = tryIO (R.rename src dest) >>= onrename
 			whenM (isdir dest) rethrow
 			ok <- copyright =<< boolSystem "mv"
 				[ Param "-f"
-				, Param (fromRawFilePath src)
-				, Param (fromRawFilePath (fromOsPath tmp))
+				, Param (fromOsPath src)
+				, Param (fromOsPath tmp)
 				]
 			let e' = e
 #else
@@ -74,7 +73,7 @@ moveFile src dest = tryIO (R.rename src dest) >>= onrename
 
 #ifndef mingw32_HOST_OS	
 	isdir f = do
-		r <- tryIO $ R.getSymbolicLinkStatus f
+		r <- tryIO $ R.getSymbolicLinkStatus (fromOsPath f)
 		case r of
 			(Left _) -> return False
 			(Right s) -> return $ isDirectory s

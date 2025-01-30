@@ -795,6 +795,3 @@ keyPath key hasher = hasher key </> f </> f
 keyPaths :: Key -> NE.NonEmpty OsPath
 keyPaths key = NE.map (\h -> keyPath key (h def)) dirHashes
 
-uuidPath :: UUID -> OsPath
-uuidPath u = toOsPath (fromUUID u :: SB.ShortByteString)
-

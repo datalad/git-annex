@@ -24,6 +24,7 @@ import Git.Types (ConfigValue(..))
 import Utility.FileSystemEncoding
 import Utility.QuickCheck
 import Utility.Aeson
+import Utility.OsPath
 import qualified Utility.SimpleProtocol as Proto
 
 -- A UUID is either an arbitrary opaque string, or UUID info may be missing.
@@ -100,6 +101,9 @@ buildUUID NoUUID = mempty
 
 isUUID :: String -> Bool
 isUUID = isJust . U.fromString
+
+uuidPath :: UUID -> OsPath
+uuidPath u = toOsPath (fromUUID u :: SB.ShortByteString)
 
 -- A description of a UUID.
 newtype UUIDDesc = UUIDDesc B.ByteString

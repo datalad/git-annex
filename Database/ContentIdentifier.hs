@@ -98,8 +98,8 @@ AnnexBranch
 openDb :: Annex ContentIdentifierHandle
 openDb = do
 	dbdir <- calcRepo' gitAnnexContentIdentifierDbDir
-	let db = dbdir P.</> "db"
-	isnew <- liftIO $ not <$> R.doesPathExist db
+	let db = dbdir </> literalOsPath "db"
+	isnew <- liftIO $ not <$> doesDirectoryPathExist db
 	if isnew
 		then initDb db $ void $ 
 			runMigrationSilent migrateContentIdentifier

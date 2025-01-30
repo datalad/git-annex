@@ -13,6 +13,6 @@ module Types.LockCache (
 import Utility.LockPool (LockHandle)
 
 import qualified Data.Map as M
-import System.FilePath.ByteString (RawFilePath)
+import Utility.OsPath
 
-type LockCache = M.Map RawFilePath LockHandle
+type LockCache = M.Map OsPath LockHandle

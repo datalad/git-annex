@@ -33,9 +33,9 @@ writeUpgradeLog v t = do
 readUpgradeLog :: Annex [(RepoVersion, POSIXTime)]
 readUpgradeLog = do
 	logfile <- fromRepo gitAnnexUpgradeLog
-	ifM (liftIO $ doesFileExist (fromRawFilePath logfile))
+	ifM (liftIO $ doesFileExist logfile)
 		( mapMaybe (parse . decodeBS) . fileLines'
-			<$> liftIO (F.readFile' (toOsPath logfile))
+			<$> liftIO (F.readFile' logfile)
 		, return []
 		)
   where
