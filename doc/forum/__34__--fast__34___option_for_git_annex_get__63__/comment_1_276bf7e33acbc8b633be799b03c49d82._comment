@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-01-30T18:56:04Z"
+ content="""
+Nothing. --fast happens to be parsed as a global option so it's
+accepted with every command, but it does not change the usual behavior of
+`git-annex get` at all.
+
+Commands like `git-annex copy` 
+that implement a different behavior for --fast have it documented
+in their individual man pages.
+"""]]
