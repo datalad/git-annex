@@ -63,6 +63,7 @@ replaceFile' createdirectory file checkres action = withOtherTmp $ \othertmpdir 
 	let basetmp = relatedTemplate' (P.takeFileName file)
 #else
 	let basetmp = toRawFilePath "t"
+	liftIO $ hPutStrLn stderr $ show ("replaceFile debug", file, P.takeFileName file, relatedTemplate' (P.takeFileName file))
 #endif
 	withTmpDirIn (fromRawFilePath othertmpdir) (toOsPath basetmp) $ \tmpdir -> do
 		let tmpfile = toRawFilePath tmpdir P.</> basetmp
