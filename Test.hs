@@ -37,9 +37,9 @@ import qualified Git.Types
 import qualified Git.Ref
 import qualified Git.LsTree
 import qualified Git.FilePath
-import qualified Git.Bundle
 import qualified Annex.Locations
 #ifndef mingw32_HOST_OS
+import qualified Git.Bundle
 import qualified Types.GitConfig
 #endif
 import qualified Types.TrustLevel
@@ -452,7 +452,7 @@ test_git_remote_annex exporttree
 				git_annex "get" [annexedfile] "get from origin special remote"
 	diruuid="89ddefa4-a04c-11ef-87b5-e880882a4f98"
 #else
-test_git_remote_annex exporttree =
+test_git_remote_annex _exporttree =
 	-- git-remote-annex is not currently installed on Windows
 	return ()
 #endif
