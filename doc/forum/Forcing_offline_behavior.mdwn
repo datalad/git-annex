@@ -1,0 +1,1 @@
+It seems that things like `git annex wanted . present` cause network activity, maybe git-annex fetches remotes and tries to look up IDs and such. I didn't find a general flag to disables this. Something like `--offline` would be nice for scripts in networks that might hang indefinitely in certain situations. Does this exist? 🤔
