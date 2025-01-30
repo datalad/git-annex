@@ -18,13 +18,7 @@ status.
   mechanical, with only some wrapper functions in Utility.FileIO and
   Utility.RawFilePath needing to be changed.
 
-  An attempt was made on this, which is in the `ospath` branch. It
-  is unfinished and doesn't build. Some of the groundwork for that
-  culminated in [[!commit aaf4dd3b9cc71752624dd81352c242eeabe912c2]]
-  which builds and passes the test suite... except for on windows, where it
-  fails both with and without the new OsPath build flag it added, in
-  different and both surprising and seemingly difficult to understand ways.
-  That has caused me to give up on it for now.
+  Work on this is underway, in the `ospath` branch.
 
 [[!tag confirmed]]
 
