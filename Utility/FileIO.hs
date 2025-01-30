@@ -37,7 +37,9 @@ import System.File.OsPath
 -- https://github.com/haskell/file-io/issues/39
 import Utility.Path.Windows
 import Utility.OsPath
+import System.OsPath
 import System.IO (IO, Handle, IOMode)
+import Prelude (return)
 import qualified System.File.OsPath as O
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
@@ -96,7 +98,10 @@ appendFile' f b = do
 openTempFile :: OsPath -> OsPath -> IO (OsPath, Handle)
 openTempFile p s = do
 	p' <- toOsPath <$> convertToWindowsNativeNamespace (fromOsPath p)
-	O.openTempFile p' s
+	(t, h) <- O.openTempFile p' s
+	-- Avoid returning mangled path from convertToWindowsNativeNamespace
+	let t' = p </> takeFileName t
+	return (t', h)
 #endif
 
 #else
