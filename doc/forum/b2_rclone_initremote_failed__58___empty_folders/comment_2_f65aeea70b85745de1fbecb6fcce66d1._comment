@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="dmcardle"
+ avatar="http://cdn.libravatar.org/avatar/b79468a0d03ec3ec7acbae547c4fa994"
+ subject="comment 2"
+ date="2025-01-30T13:56:30Z"
+ content="""
+I just created rclone [issue #8349](https://github.com/rclone/rclone/issues/8349) to track this.
+"""]]

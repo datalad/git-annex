@@ -341,25 +341,25 @@ content from the key-value store.
 
   Initializes a new cluster.
   
-  See [[git-annex-initcluster](1) for details.
+  See [[git-annex-initcluster]](1) for details.
 
 * `updatecluster`
 
   Update records of cluster nodes.
   
-  See [[git-annex-updatecluster](1) for details.
+  See [[git-annex-updatecluster]](1) for details.
 
 * `extendcluster`
 
   Adds an additional gateway to a cluster.
   
-  See [[git-annex-extendcluster](1) for details.
+  See [[git-annex-extendcluster]](1) for details.
 
 * `updateproxy`
 
   Update records with proxy configuration.
   
-  See [[git-annex-updateproxy](1) for details.
+  See [[git-annex-updateproxy]](1) for details.
 
 * `schedule repository [expression]`
 

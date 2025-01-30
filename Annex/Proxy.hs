@@ -40,12 +40,14 @@ import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Concurrent.Async
 import qualified Data.ByteString as B
-import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as L
 import qualified System.FilePath.ByteString as P
 import qualified Data.Map as M
 import qualified Data.Set as S
+#ifndef mingw32_HOST_OS
+import qualified Data.ByteString as BS
 import System.IO.Unsafe
+#endif
 
 proxyRemoteSide :: ProtocolVersion -> Bypass -> Remote -> Annex RemoteSide
 proxyRemoteSide clientmaxversion bypass r
@@ -262,7 +264,11 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv oclosedv mexportdb = go
 	proxyget offset af k = withproxytmpfile k $ \tmpfile -> do
 		let retrieve = tryNonAsync $ Remote.retrieveKeyFile r k af
 			(fromRawFilePath tmpfile) nullMeterUpdate vc
+#ifndef mingw32_HOST_OS
 		ordered <- Remote.retrieveKeyFileInOrder r
+#else
+		_ <- Remote.retrieveKeyFileInOrder r
+#endif
 		case fromKey keySize k of
 #ifndef mingw32_HOST_OS
 			Just size | size > 0 && ordered -> do

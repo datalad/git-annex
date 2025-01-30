@@ -78,7 +78,7 @@ moveFile src dest = tryIO (R.rename src dest) >>= onrename
 		case r of
 			(Left _) -> return False
 			(Right s) -> return $ isDirectory s
+#endif
 
 copyright :: Copyright
 copyright = author JoeyHess (2022-11)
-#endif

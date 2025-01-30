@@ -1,0 +1,68 @@
+### Please describe the problem.
+
+Trying to copy annexed files to an lfs server via the configured http schemed url results in an error of this form:
+
+[[!format sh """
+$ git-annex copy -t lfsonly
+copy mod_access_compat.so (HttpExceptionRequest Request {
+  host                 = "computer-ubul.local"
+  port                 = 5965
+  secure               = True
+  requestHeaders       = [("Accept","application/vnd.git-lfs+json"),("Content-Type","application/vnd.git-lfs+json"),("User-Agent","git-annex/10.20241031-1~ndall+1")]
+  path                 = ".git/info/lfs/objects/batch"
+  queryString          = ""
+  method               = "POST"
+  proxy                = Nothing
+  rawBody              = False
+  redirectCount        = 10
+  responseTimeout      = ResponseTimeoutDefault
+  requestVersion       = HTTP/1.1
+  proxySecureMode      = ProxySecureWithConnect
+}
+ (InternalException (HandshakeFailed (Error_Packet_Parsing "Failed reading: invalid header type: 72\nFrom:\theader\n\n")))) failed
+copy mod_autoindex.so (HttpExceptionRequest Request {
+  host                 = "computer-ubul.local"
+  port                 = 5965
+  secure               = True
+  requestHeaders       = [("Accept","application/vnd.git-lfs+json"),("Content-Type","application/vnd.git-lfs+json"),("User-Agent","git-annex/10.20241031-1~ndall+1")]
+  path                 = ".git/info/lfs/objects/batch"
+  queryString          = ""
+  method               = "POST"
+  proxy                = Nothing
+  rawBody              = False
+  redirectCount        = 10
+  responseTimeout      = ResponseTimeoutDefault
+  requestVersion       = HTTP/1.1
+  proxySecureMode      = ProxySecureWithConnect
+}
+ (InternalException (HandshakeFailed (Error_Packet_Parsing "Failed reading: invalid header type: 72\nFrom:\theader\n\n")))) failed
+copy: 2 failed
+"""]]
+
+From what I can see, there is no way to work around this. Unlike, for example, the S3 special remotes, initremote doesn't take a protocol=http setting.
+
+
+### What steps will reproduce the problem?
+
+[[!format sh """
+$ git-annex initremote lfsonly type=git-lfs encryption=none url=http://computer-ubul.local:5965/
+initremote lfsonly ok
+(recording state in git...)
+$ git config annex.security.allowed-ip-addresses 172.17.0.1 # required to overcome ConnectionRestricted error
+$ git-annex copy -t lfsonly
+... eror from above
+"""]]
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex/10.20241031-1~ndall+1 on Ubuntu 22.04 LTS:
+
+Linux computer-ubul 6.8.0-40-generic #40~22.04.3-Ubuntu SMP PREEMPT_DYNAMIC Tue Jul 30 17:30:19 UTC 2 x86_64 x86_64 x86_64 GNU/Linux
+
+### Please provide any additional information below.
+
+Nil
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Love git-annex. Long time supporter.
