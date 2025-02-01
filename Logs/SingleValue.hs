@@ -27,13 +27,13 @@ import Annex.VectorClock
 
 import qualified Data.Set as S
 
-readLog :: (Ord v, SingleValueSerializable v) => RawFilePath -> Annex (Log v)
+readLog :: (Ord v, SingleValueSerializable v) => OsPath -> Annex (Log v)
 readLog = parseLog <$$> Annex.Branch.get
 
-getLog :: (Ord v, SingleValueSerializable v) => RawFilePath -> Annex (Maybe v)
+getLog :: (Ord v, SingleValueSerializable v) => OsPath -> Annex (Maybe v)
 getLog = newestValue <$$> readLog
 
-setLog :: (Ord v, SingleValueSerializable v) => Annex.Branch.RegardingUUID -> RawFilePath -> v -> Annex ()
+setLog :: (Ord v, SingleValueSerializable v) => Annex.Branch.RegardingUUID -> OsPath -> v -> Annex ()
 setLog ru f v = do
 	c <- currentVectorClock
 	Annex.Branch.change ru f $ \old ->

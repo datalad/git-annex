@@ -54,7 +54,6 @@ import Data.Char
 import Data.ByteString.Builder
 import Control.Concurrent (threadDelay)
 import Control.Concurrent.MVar
-import qualified System.FilePath.ByteString as P
 import System.PosixCompat.Files (isRegularFile)
 
 import Annex.Common
@@ -644,7 +643,7 @@ branchFiles :: Annex ([OsPath], IO Bool)
 branchFiles = withIndex $ inRepo branchFiles'
 
 branchFiles' :: Git.Repo -> IO ([OsPath], IO Bool)
-branchFiles' = Git.Command.pipeNullSplit' $
+branchFiles' = Git.Command.pipeNullSplit'' toOsPath $
 	lsTreeParams Git.LsTree.LsTreeRecursive (Git.LsTree.LsTreeLong False)
 		fullname
 		[Param "--name-only"]
@@ -681,7 +680,8 @@ mergeIndex jl branches = do
 prepareModifyIndex :: JournalLocked -> Annex ()
 prepareModifyIndex _jl = do
 	index <- fromRepo gitAnnexIndex
-	void $ liftIO $ tryIO $ R.removeLink (index <> ".lock")
+	void $ liftIO $ tryIO $
+		removeFile (index <> literalOsPath ".lock")
 
 {- Runs an action using the branch's index file. -}
 withIndex :: Annex a -> Annex a
@@ -690,7 +690,7 @@ withIndex' :: Bool -> Annex a -> Annex a
 withIndex' bootstrapping a = withIndexFile AnnexIndexFile $ \f -> do
 	checkIndexOnce $ unlessM (liftIO $ doesFileExist f) $ do
 		unless bootstrapping create
-		createAnnexDirectory $ toOsPath $ takeDirectory f
+		createAnnexDirectory $ takeDirectory f
 		unless bootstrapping $ inRepo genIndex
 	a
 
@@ -712,7 +712,7 @@ forceUpdateIndex jl branchref = do
 {- Checks if the index needs to be updated. -}
 needUpdateIndex :: Git.Ref -> Annex Bool
 needUpdateIndex branchref = do
-	f <- toOsPath <$> fromRepo gitAnnexIndexStatus
+	f <- fromRepo gitAnnexIndexStatus
 	committedref <- Git.Ref . firstLine' <$>
 		liftIO (catchDefaultIO mempty $ F.readFile' f)
 	return (committedref /= branchref)
@@ -748,19 +748,20 @@ stageJournal jl commitindex = withIndex $ withOtherTmp $ \tmpdir -> do
 			Git.UpdateIndex.streamUpdateIndex g
 				[genstream dir h jh jlogh]
 	commitindex
-	liftIO $ cleanup (fromOsPath dir) jlogh jlogf
+	liftIO $ cleanup dir jlogh jlogf
   where
 	genstream dir h jh jlogh streamer = readDirectory jh >>= \case
 		Nothing -> return ()
 		Just file -> do
-			let path = dir P.</> file
-			unless (dirCruft file) $ whenM (isfile path) $ do
+			let file' = toOsPath file
+			let path = dir </> file'
+			unless (file' `elem` dirCruft) $ whenM (isfile path) $ do
 				sha <- Git.HashObject.hashFile h path
 				B.hPutStr jlogh (file <> "\n")
 				streamer $ Git.UpdateIndex.updateIndexLine
-					sha TreeFile (asTopFilePath $ fileJournal file)
+					sha TreeFile (asTopFilePath $ fileJournal file')
 			genstream dir h jh jlogh streamer
-	isfile file = isRegularFile <$> R.getFileStatus file
+	isfile file = isRegularFile <$> R.getFileStatus (fromOsPath file)
 	-- Clean up the staged files, as listed in the temp log file.
 	-- The temp file is used to avoid needing to buffer all the
 	-- filenames in memory.
@@ -768,10 +769,10 @@ stageJournal jl commitindex = withIndex $ withOtherTmp $ \tmpdir -> do
 		hFlush jlogh
 		hSeek jlogh AbsoluteSeek 0
 		stagedfs <- lines <$> hGetContents jlogh
-		mapM_ (removeFile . (dir </>)) stagedfs
+		mapM_ (removeFile . (dir </>) . toOsPath) stagedfs
 		hClose jlogh
 		removeWhenExistsWith (R.removeLink) (fromOsPath jlogf)
-	openjlog tmpdir = liftIO $ openTmpFileIn (toOsPath tmpdir) (toOsPath "jlog")
+	openjlog tmpdir = liftIO $ openTmpFileIn tmpdir (literalOsPath "jlog")
 
 getLocalTransitions :: Annex Transitions
 getLocalTransitions = 
@@ -932,7 +933,7 @@ getIgnoredRefs =
 	S.fromList . mapMaybe Git.Sha.extractSha . fileLines' <$> content
   where
 	content = do
-		f <- toOsPath <$> fromRepo gitAnnexIgnoredRefs
+		f <- fromRepo gitAnnexIgnoredRefs
 		liftIO $ catchDefaultIO mempty $ F.readFile' f
 
 addMergedRefs :: [(Git.Sha, Git.Branch)] -> Annex ()
@@ -950,7 +951,7 @@ getMergedRefs = S.fromList . map fst <$> getMergedRefs'
 
 getMergedRefs' :: Annex [(Git.Sha, Git.Branch)]
 getMergedRefs' = do
-	f <- toOsPath <$> fromRepo gitAnnexMergedRefs
+	f <- fromRepo gitAnnexMergedRefs
 	s <- liftIO $ catchDefaultIO mempty $ F.readFile' f
 	return $ map parse $ fileLines' s
   where

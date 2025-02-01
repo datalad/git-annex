@@ -32,7 +32,7 @@ requiredContentSet u expr = do
 	setLog requiredContentLog u expr
 	Annex.changeState $ \st -> st { Annex.requiredcontentmap = Nothing }
 
-setLog :: RawFilePath -> UUID -> PreferredContentExpression -> Annex ()
+setLog :: OsPath -> UUID -> PreferredContentExpression -> Annex ()
 setLog logfile uuid@(UUID _) val = do
 	c <- currentVectorClock
 	Annex.Branch.change (Annex.Branch.RegardingUUID [uuid]) logfile $

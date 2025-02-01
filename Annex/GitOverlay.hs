@@ -23,7 +23,7 @@ import qualified Annex.Queue
 import Config.Smudge
 
 {- Runs an action using a different git index file. -}
-withIndexFile :: AltIndexFile -> (FilePath -> Annex a) -> Annex a
+withIndexFile :: AltIndexFile -> (OsPath -> Annex a) -> Annex a
 withIndexFile i = withAltRepo usecachedgitenv restoregitenv
   where
 	-- This is an optimisation. Since withIndexFile is run repeatedly,
@@ -58,7 +58,7 @@ withIndexFile i = withAltRepo usecachedgitenv restoregitenv
 		f <- indexEnvVal $ case i of
 			AnnexIndexFile -> gitAnnexIndex g
 			ViewIndexFile -> gitAnnexViewIndex g
-		g' <- addGitEnv g indexEnv f
+		g' <- addGitEnv g indexEnv (fromOsPath f)
 		return (g', f)
 	
 	restoregitenv g g' = g' { gitEnv = gitEnv g }

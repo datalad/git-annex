@@ -24,7 +24,6 @@ import Config
 import qualified Utility.RawFilePath as R
 import qualified Utility.FileIO as F
 
-import qualified System.FilePath.ByteString as P
 import System.PosixCompat.Files (isSymbolicLink)
 
 upgrade :: Bool -> Annex UpgradeResult
@@ -40,48 +39,52 @@ upgrade automatic = do
 	-- The old content identifier database is deleted here, but the
 	-- new database is not populated. It will be automatically
 	-- populated from the git-annex branch the next time it is used.
-	removeOldDb . fromRawFilePath =<< fromRepo gitAnnexContentIdentifierDbDirOld
-	liftIO . removeWhenExistsWith R.removeLink
+	removeOldDb =<< fromRepo gitAnnexContentIdentifierDbDirOld
+	liftIO . removeWhenExistsWith (R.removeLink . fromOsPath)
 		=<< fromRepo gitAnnexContentIdentifierLockOld
 
 	-- The export databases are deleted here. The new databases
 	-- will be populated by the next thing that needs them, the same
 	-- way as they would be in a fresh clone.
-	removeOldDb . fromRawFilePath =<< calcRepo' gitAnnexExportDir
+	removeOldDb =<< calcRepo' gitAnnexExportDir
 
 	populateKeysDb
-	removeOldDb . fromRawFilePath =<< fromRepo gitAnnexKeysDbOld
-	liftIO . removeWhenExistsWith R.removeLink
+	removeOldDb =<< fromRepo gitAnnexKeysDbOld
+	liftIO . removeWhenExistsWith (R.removeLink . fromOsPath)
 		=<< fromRepo gitAnnexKeysDbIndexCacheOld
-	liftIO . removeWhenExistsWith R.removeLink
+	liftIO . removeWhenExistsWith (R.removeLink . fromOsPath)
 		=<< fromRepo gitAnnexKeysDbLockOld
 	
 	updateSmudgeFilter
 
 	return UpgradeSuccess
 
-gitAnnexKeysDbOld :: Git.Repo -> RawFilePath
-gitAnnexKeysDbOld r = gitAnnexDir r P.</> "keys"
+gitAnnexKeysDbOld :: Git.Repo -> OsPath
+gitAnnexKeysDbOld r = gitAnnexDir r </> literalOsPath "keys"
 
-gitAnnexKeysDbLockOld :: Git.Repo -> RawFilePath
-gitAnnexKeysDbLockOld r = gitAnnexKeysDbOld r <> ".lck"
+gitAnnexKeysDbLockOld :: Git.Repo -> OsPath
+gitAnnexKeysDbLockOld r =
+	gitAnnexKeysDbOld r <> literalOsPath ".lck"
 
-gitAnnexKeysDbIndexCacheOld :: Git.Repo -> RawFilePath
-gitAnnexKeysDbIndexCacheOld r = gitAnnexKeysDbOld r <> ".cache"
+gitAnnexKeysDbIndexCacheOld :: Git.Repo -> OsPath
+gitAnnexKeysDbIndexCacheOld r =
+	gitAnnexKeysDbOld r <> literalOsPath ".cache"
 
-gitAnnexContentIdentifierDbDirOld :: Git.Repo -> RawFilePath
-gitAnnexContentIdentifierDbDirOld r = gitAnnexDir r P.</> "cids"
+gitAnnexContentIdentifierDbDirOld :: Git.Repo -> OsPath
+gitAnnexContentIdentifierDbDirOld r =
+	gitAnnexDir r </> literalOsPath "cids"
 
-gitAnnexContentIdentifierLockOld :: Git.Repo -> RawFilePath
-gitAnnexContentIdentifierLockOld r = gitAnnexContentIdentifierDbDirOld r <> ".lck"
+gitAnnexContentIdentifierLockOld :: Git.Repo -> OsPath
+gitAnnexContentIdentifierLockOld r =
+	gitAnnexContentIdentifierDbDirOld r <> literalOsPath ".lck"
 
-removeOldDb :: FilePath -> Annex ()
+removeOldDb :: OsPath -> Annex ()
 removeOldDb db =
 	whenM (liftIO $ doesDirectoryExist db) $ do
 		v <- liftIO $ tryNonAsync $
 			removePathForcibly db
 		case v of
-			Left ex -> giveup $ "Failed removing old database directory " ++ db ++ " during upgrade (" ++ show ex ++ ") -- delete that and re-run git-annex to finish the upgrade."
+			Left ex -> giveup $ "Failed removing old database directory " ++ fromOsPath db ++ " during upgrade (" ++ show ex ++ ") -- delete that and re-run git-annex to finish the upgrade."
 			Right () -> return ()
 
 -- Populate the new keys database with associated files and inode caches.
@@ -108,11 +111,11 @@ populateKeysDb = unlessM isBareRepo $ do
 	(l, cleanup) <- inRepo $ LsFiles.inodeCaches [top]
 	forM_ l $ \case
 		(_f, Nothing) -> giveup "Unable to parse git ls-files --debug output while upgrading git-annex sqlite databases."
-		(f, Just ic) -> unlessM (liftIO $ catchBoolIO $ isSymbolicLink <$> R.getSymbolicLinkStatus (toRawFilePath f)) $ do
-			catKeyFile (toRawFilePath f) >>= \case
+		(f, Just ic) -> unlessM (liftIO $ catchBoolIO $ isSymbolicLink <$> R.getSymbolicLinkStatus (fromOsPath f)) $ do
+			catKeyFile f >>= \case
 				Nothing -> noop
 				Just k -> do
-					topf <- inRepo $ toTopFilePath $ toRawFilePath f
+					topf <- inRepo $ toTopFilePath f
 					Database.Keys.runWriter AssociatedTable $ \h -> liftIO $
 						Database.Keys.SQL.addAssociatedFile k topf h
 					Database.Keys.runWriter ContentTable $ \h -> liftIO $
@@ -130,10 +133,10 @@ updateSmudgeFilter :: Annex ()
 updateSmudgeFilter = do
 	lf <- Annex.fromRepo Git.attributesLocal
 	ls <- liftIO $ map decodeBS . fileLines'
-		<$> catchDefaultIO "" (F.readFile' (toOsPath lf))
+		<$> catchDefaultIO "" (F.readFile' lf)
 	let ls' = removedotfilter ls
 	when (ls /= ls') $
-		liftIO $ writeFile (fromRawFilePath lf) (unlines ls')
+		liftIO $ writeFile (fromOsPath lf) (unlines ls')
   where
 	removedotfilter ("* filter=annex":".* !filter":rest) =
 		"* filter=annex" : removedotfilter rest

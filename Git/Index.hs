@@ -28,8 +28,8 @@ indexEnv = "GIT_INDEX_FILE"
  -
  - So, an absolute path is the only safe option for this to return.
  -}
-indexEnvVal :: OsPath -> IO String
-indexEnvVal p = fromOsPath <$> absPath p
+indexEnvVal :: OsPath -> IO OsPath
+indexEnvVal p = absPath p
 
 {- Forces git to use the specified index file.
  -
@@ -42,7 +42,7 @@ override :: OsPath -> Repo -> IO (IO ())
 override index _r = do
 	res <- getEnv var
 	val <- indexEnvVal index
-	setEnv var val True
+	setEnv var (fromOsPath val) True
 	return $ reset res
   where
 	var = "GIT_INDEX_FILE"

@@ -19,7 +19,7 @@ import Data.Time.Clock.POSIX
 data LoggedFileChange t = LoggedFileChange
 	{ changetime :: POSIXTime
 	, changed :: t
-	, changedfile :: FilePath
+	, changedfile :: OsPath
 	, oldref :: Ref
 	, newref :: Ref
 	}
@@ -34,7 +34,7 @@ getGitLog
 	-> Maybe Ref
 	-> [FilePath]
 	-> [CommandParam]
-	-> (Sha -> FilePath -> Maybe t)
+	-> (Sha -> OsPath -> Maybe t)
 	-> Repo
 	-> IO ([LoggedFileChange t], IO Bool)
 getGitLog ref stopref fs os selector repo = do
@@ -75,7 +75,7 @@ commitinfoFormat = "%H %ct"
 --
 -- The commitinfo is not included before all changelines, so
 -- keep track of the most recently seen commitinfo.
-parseGitRawLog :: (Ref -> FilePath -> Maybe t) -> [String] -> [LoggedFileChange t]
+parseGitRawLog :: (Ref -> OsPath -> Maybe t) -> [String] -> [LoggedFileChange t]
 parseGitRawLog selector = parse (deleteSha, epoch)
   where
 	epoch = toEnum 0 :: POSIXTime
@@ -91,11 +91,12 @@ parseGitRawLog selector = parse (deleteSha, epoch)
 				_ -> (oldcommitsha, oldts, cl')
 	  	mrc = do
 			(old, new) <- parseRawChangeLine cl
-			v <- selector commitsha c2
+			let c2' = toOsPath c2
+			v <- selector commitsha c2'
 			return $ LoggedFileChange
 				{ changetime = ts
 				, changed = v
-				, changedfile = c2
+				, changedfile = c2'
 				, oldref = old
 				, newref = new
 				}

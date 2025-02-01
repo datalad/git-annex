@@ -123,9 +123,12 @@ pipeNullSplit params repo = do
  - convenience.
  -}
 pipeNullSplit' :: [CommandParam] -> Repo -> IO ([S.ByteString], IO Bool)
-pipeNullSplit' params repo = do
+pipeNullSplit' = pipeNullSplit'' id
+
+pipeNullSplit'' :: (S.ByteString -> t) -> [CommandParam] -> Repo -> IO ([t], IO Bool)
+pipeNullSplit'' f params repo = do
 	(s, cleanup) <- pipeNullSplit params repo
-	return (map L.toStrict s, cleanup)
+	return (map (f . L.toStrict) s, cleanup)
 
 pipeNullSplitStrict :: [CommandParam] -> Repo -> IO [S.ByteString]
 pipeNullSplitStrict params repo = do

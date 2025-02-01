@@ -332,7 +332,7 @@ reduceUnmerged c (i:is) = reduceUnmerged (new:c) rest
  - Note that this uses a --debug option whose output could change at some
  - point in the future. If the output is not as expected, will use Nothing.
  -}
-inodeCaches :: [OsPath] -> Repo -> IO ([(FilePath, Maybe InodeCache)], IO Bool)
+inodeCaches :: [OsPath] -> Repo -> IO ([(OsPath, Maybe InodeCache)], IO Bool)
 inodeCaches locs repo = guardSafeForLsFiles repo $ do
 	(ls, cleanup) <- pipeNullSplit params repo
 	return (parse Nothing (map decodeBL ls), cleanup)
@@ -348,11 +348,11 @@ inodeCaches locs repo = guardSafeForLsFiles repo $ do
 	parse Nothing (f:ls) = parse (Just f) ls
 	parse (Just f) (s:[]) = 
 		let i = parsedebug s
-		in (f, i) : []
+		in (toOsPath f, i) : []
 	parse (Just f) (s:ls) =
 		let (d, f') = splitdebug s
 		    i = parsedebug d
-		in (f, i) : parse (Just f') ls
+		in (toOsPath f, i) : parse (Just f') ls
 	parse _ _ = []
 
 	-- First 5 lines are --debug output, remainder is the next filename.

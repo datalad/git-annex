@@ -187,7 +187,7 @@ insertAuthToken extractAuthToken predicate webapp root pathbits params =
  - to avoid exposing the secret token when launching the web browser. -}
 writeHtmlShim :: String -> String -> FilePath -> IO ()
 writeHtmlShim title url file = 
-	viaTmp (writeFileProtected . fromOsPath)
+	viaTmp (writeFileProtected)
 		(toOsPath $ toRawFilePath file) 
 		(genHtmlShim title url)
 

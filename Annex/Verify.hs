@@ -39,13 +39,13 @@ import Utility.Metered
 import Annex.WorkerPool
 import Types.WorkerPool
 import Types.Key
+import qualified Utility.FileIO as F
 
 import Control.Concurrent.STM
 import Control.Concurrent.Async
 import qualified Data.ByteString as S
 #if WITH_INOTIFY
 import qualified System.INotify as INotify
-import qualified System.FilePath.ByteString as P
 #endif
 
 shouldVerify :: VerifyConfig -> Annex Bool
@@ -73,7 +73,7 @@ shouldVerify (RemoteVerify r) =
  - If the RetrievalSecurityPolicy requires verification and the key's
  - backend doesn't support it, the verification will fail.
  -}
-verifyKeyContentPostRetrieval :: RetrievalSecurityPolicy -> VerifyConfig -> Verification -> Key -> RawFilePath -> Annex Bool
+verifyKeyContentPostRetrieval :: RetrievalSecurityPolicy -> VerifyConfig -> Verification -> Key -> OsPath -> Annex Bool
 verifyKeyContentPostRetrieval rsp v verification k f = case (rsp, verification) of
 	(_, Verified) -> return True
 	(RetrievalVerifiableKeysSecure, _) -> ifM (isVerifiable k)
@@ -105,11 +105,11 @@ verifyKeyContentPostRetrieval rsp v verification k f = case (rsp, verification) 
 -- When possible, does an incremental verification, because that can be
 -- faster. Eg, the VURL backend can need to try multiple checksums and only
 -- with an incremental verification does it avoid reading files twice.
-verifyKeyContent :: Key -> RawFilePath -> Annex Bool
+verifyKeyContent :: Key -> OsPath -> Annex Bool
 verifyKeyContent k f = verifyKeySize k f <&&> verifyKeyContent' k f
 
 -- Does not verify size.
-verifyKeyContent' :: Key -> RawFilePath -> Annex Bool
+verifyKeyContent' :: Key -> OsPath -> Annex Bool
 verifyKeyContent' k f = 
 	Backend.maybeLookupBackendVariety (fromKey keyVariety k) >>= \case
 		Nothing -> return True
@@ -119,7 +119,7 @@ verifyKeyContent' k f =
 				iv <- mkiv k
 				showAction (UnquotedString (descIncrementalVerifier iv))
 				res <- liftIO $ catchDefaultIO Nothing $
-					withBinaryFile (fromRawFilePath f) ReadMode $ \h -> do
+					F.withBinaryFile f ReadMode $ \h -> do
 						feedIncrementalVerifier h iv
 						finalizeIncrementalVerifier iv
 				case res of
@@ -129,7 +129,7 @@ verifyKeyContent' k f =
 						Just verifier -> verifier k f
 			(Nothing, Just verifier) -> verifier k f
 
-resumeVerifyKeyContent :: Key -> RawFilePath -> IncrementalVerifier -> Annex Bool
+resumeVerifyKeyContent :: Key -> OsPath -> IncrementalVerifier -> Annex Bool
 resumeVerifyKeyContent k f iv = liftIO (positionIncrementalVerifier iv) >>= \case
 	Nothing -> fallback
 	Just endpos -> do
@@ -151,7 +151,7 @@ resumeVerifyKeyContent k f iv = liftIO (positionIncrementalVerifier iv) >>= \cas
 		| otherwise = do
 			showAction (UnquotedString (descIncrementalVerifier iv))
 			liftIO $ catchDefaultIO (Just False) $
-				withBinaryFile (fromRawFilePath f) ReadMode $ \h -> do
+				F.withBinaryFile f ReadMode $ \h -> do
 					hSeek h AbsoluteSeek endpos
 					feedIncrementalVerifier h iv
 					finalizeIncrementalVerifier iv
@@ -167,7 +167,7 @@ feedIncrementalVerifier h iv = do
   where
 	chunk = 65536
 
-verifyKeySize :: Key -> RawFilePath -> Annex Bool
+verifyKeySize :: Key -> OsPath -> Annex Bool
 verifyKeySize k f = case fromKey keySize k of
 	Just size -> do
 		size' <- liftIO $ catchDefaultIO 0 $ getFileSize f
@@ -295,7 +295,7 @@ resumeVerifyFromOffset o incrementalverifier meterupdate h
 -- and if the disk is slow, the reader may never catch up to the writer,
 -- and the disk cache may never speed up reads. So this should only be
 -- used when there's not a better way to incrementally verify.
-tailVerify :: Maybe IncrementalVerifier -> RawFilePath -> Annex a -> Annex a
+tailVerify :: Maybe IncrementalVerifier -> OsPath -> Annex a -> Annex a
 tailVerify (Just iv) f writer = do
 	finished <- liftIO newEmptyTMVarIO
 	t <- liftIO $ async $ tailVerify' iv f finished
@@ -305,7 +305,7 @@ tailVerify (Just iv) f writer = do
 	writer `finally` finishtail
 tailVerify Nothing _ writer = writer
 
-tailVerify' :: IncrementalVerifier -> RawFilePath -> TMVar () -> IO ()
+tailVerify' :: IncrementalVerifier -> OsPath -> TMVar () -> IO ()
 #if WITH_INOTIFY
 tailVerify' iv f finished = 
 	tryNonAsync go >>= \case
@@ -318,15 +318,16 @@ tailVerify' iv f finished =
 	-- of resuming, and waiting for modification deals with such
 	-- situations.
 	inotifydirchange i cont =
-		INotify.addWatch i [INotify.Modify] dir $ \case
+		INotify.addWatch i [INotify.Modify] (fromOsPath dir) $ \case
 			-- Ignore changes to other files in the directory.
 			INotify.Modified { INotify.maybeFilePath = fn }
-				| fn == Just basef -> cont
+				| fn == Just basef' -> cont
 			_ -> noop
 	  where
-		(dir, basef) = P.splitFileName f
+		(dir, basef) = splitFileName f
+		basef' = fromOsPath basef
 	
-	inotifyfilechange i = INotify.addWatch i [INotify.Modify] f . const
+	inotifyfilechange i = INotify.addWatch i [INotify.Modify] (fromOsPath f) . const
 
 	go = INotify.withINotify $ \i -> do
 		modified <- newEmptyTMVarIO
@@ -354,7 +355,7 @@ tailVerify' iv f finished =
 		case v of
 			Just () -> do
 				r <- tryNonAsync $
-					tryWhenExists (openBinaryFile (fromRawFilePath f) ReadMode) >>= \case
+					tryWhenExists (F.openBinaryFile f ReadMode) >>= \case
 						Just h -> return (Just h)
 						-- File does not exist, must have been
 						-- deleted. Wait for next modification

@@ -221,7 +221,7 @@ data AnnexState = AnnexState
 	, existinghooks :: M.Map Git.Hook.Hook Bool
 	, workers :: Maybe (TMVar (WorkerPool (AnnexState, AnnexRead)))
 	, cachedcurrentbranch :: (Maybe (Maybe Git.Branch, Maybe Adjustment))
-	, cachedgitenv :: Maybe (AltIndexFile, FilePath, [(String, String)])
+	, cachedgitenv :: Maybe (AltIndexFile, OsPath, [(String, String)])
 	, urloptions :: Maybe UrlOptions
 	, insmudgecleanfilter :: Bool
 	, getvectorclock :: IO CandidateVectorClock

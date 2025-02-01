@@ -67,7 +67,7 @@ getBackend :: FilePath -> Key -> Annex (Maybe Backend)
 getBackend file k = maybeLookupBackendVariety (fromKey keyVariety k) >>= \case
 	Just backend -> return $ Just backend
 	Nothing -> do
-		warning $ "skipping " <> QuotedPath (toRawFilePath file) <> " (" <>
+		warning $ "skipping " <> QuotedPath (toOsPath file) <> " (" <>
 			UnquotedString (unknownBackendVarietyMessage (fromKey keyVariety k)) <> ")"
 		return Nothing
 
@@ -78,7 +78,7 @@ unknownBackendVarietyMessage v =
 {- Looks up the backend that should be used for a file.
  - That can be configured on a per-file basis in the gitattributes file,
  - or forced with --backend. -}
-chooseBackend :: RawFilePath -> Annex Backend
+chooseBackend :: OsPath -> Annex Backend
 chooseBackend f = Annex.getRead Annex.forcebackend >>= go
   where
 	go Nothing = do

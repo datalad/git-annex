@@ -54,7 +54,7 @@ import System.PosixCompat.Files (isSymbolicLink)
 type LinkTarget = S.ByteString
 
 {- Checks if a file is a link to a key. -}
-isAnnexLink :: RawFilePath -> Annex (Maybe Key)
+isAnnexLink :: OsPath -> Annex (Maybe Key)
 isAnnexLink file = maybe Nothing parseLinkTargetOrPointer <$> getAnnexLinkTarget file
 
 {- Gets the link target of a symlink.
@@ -65,13 +65,13 @@ isAnnexLink file = maybe Nothing parseLinkTargetOrPointer <$> getAnnexLinkTarget
  - Returns Nothing if the file is not a symlink, or not a link to annex
  - content.
  -}
-getAnnexLinkTarget :: RawFilePath -> Annex (Maybe LinkTarget)
+getAnnexLinkTarget :: OsPath -> Annex (Maybe LinkTarget)
 getAnnexLinkTarget f = getAnnexLinkTarget' f
 	=<< (coreSymlinks <$> Annex.getGitConfig)
 
 {- Pass False to force looking inside file, for when git checks out
  - symlinks as plain files. -}
-getAnnexLinkTarget' :: RawFilePath -> Bool -> Annex (Maybe S.ByteString)
+getAnnexLinkTarget' :: OsPath -> Bool -> Annex (Maybe S.ByteString)
 getAnnexLinkTarget' file coresymlinks = if coresymlinks
 	then check probesymlink $
 		return Nothing
@@ -86,9 +86,9 @@ getAnnexLinkTarget' file coresymlinks = if coresymlinks
 				| otherwise -> return Nothing
 			Nothing -> fallback
 
-	probesymlink = R.readSymbolicLink file
+	probesymlink = R.readSymbolicLink (fromOsPath file)
 
-	probefilecontent = F.withFile (toOsPath file) ReadMode $ \h -> do
+	probefilecontent = F.withFile file ReadMode $ \h -> do
 		s <- S.hGet h maxSymlinkSz
 		-- If we got the full amount, the file is too large
 		-- to be a symlink target.
@@ -241,6 +241,7 @@ restagePointerFiles r = unlessM (Annex.getState Annex.insmudgecleanfilter) $ do
 		let replaceindex = liftIO $ moveFile tmpindex realindex
 		let updatetmpindex = do
 			r' <- liftIO $ Git.Env.addGitEnv r Git.Index.indexEnv
+				. fromOsPath
 				=<< Git.Index.indexEnvVal tmpindex
 			configfilterprocess numsz $
 				runupdateindex tsd r' replaceindex
@@ -452,7 +453,7 @@ isPointerFile f = catchDefaultIO Nothing $
 		fdToHandle fd
 	in bracket open hClose readhandle
 #else
-	ifM (isSymbolicLink <$> R.getSymbolicLinkStatus (toRawFilePath f))
+	ifM (isSymbolicLink <$> R.getSymbolicLinkStatus (fromOsPath f))
 		( return Nothing
 		, F.withFile f ReadMode readhandle
 		)

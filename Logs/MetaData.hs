@@ -59,7 +59,7 @@ import qualified Data.ByteString.Lazy as L
 getCurrentMetaData :: Key -> Annex MetaData
 getCurrentMetaData = getCurrentMetaData' metaDataLogFile
 
-getCurrentMetaData' :: (GitConfig -> Key -> RawFilePath) -> Key -> Annex MetaData
+getCurrentMetaData' :: (GitConfig -> Key -> OsPath) -> Key -> Annex MetaData
 getCurrentMetaData' getlogfile k = do
 	config <- Annex.getGitConfig
 	parseCurrentMetaData <$> Annex.Branch.get (getlogfile config k)
@@ -101,7 +101,7 @@ getCurrentRemoteMetaData (RemoteStateHandle u) k = extractRemoteMetaData u <$>
 addMetaData :: Key -> MetaData -> Annex ()
 addMetaData = addMetaData' (Annex.Branch.RegardingUUID []) metaDataLogFile
 
-addMetaData' :: Annex.Branch.RegardingUUID -> (GitConfig -> Key -> RawFilePath) -> Key -> MetaData -> Annex ()
+addMetaData' :: Annex.Branch.RegardingUUID -> (GitConfig -> Key -> OsPath) -> Key -> MetaData -> Annex ()
 addMetaData' ru getlogfile k metadata = 
 	addMetaDataClocked' ru getlogfile k metadata =<< currentVectorClock
 
@@ -112,7 +112,7 @@ addMetaData' ru getlogfile k metadata =
 addMetaDataClocked :: Key -> MetaData -> CandidateVectorClock -> Annex ()
 addMetaDataClocked = addMetaDataClocked' (Annex.Branch.RegardingUUID []) metaDataLogFile
 
-addMetaDataClocked' :: Annex.Branch.RegardingUUID -> (GitConfig -> Key -> RawFilePath) -> Key -> MetaData -> CandidateVectorClock -> Annex ()
+addMetaDataClocked' :: Annex.Branch.RegardingUUID -> (GitConfig -> Key -> OsPath) -> Key -> MetaData -> CandidateVectorClock -> Annex ()
 addMetaDataClocked' ru getlogfile k d@(MetaData m) c
 	| d == emptyMetaData = noop
 	| otherwise = do
@@ -160,5 +160,5 @@ copyMetaData oldkey newkey
 					(const $ buildLog l)
 				return True
 
-readLog :: RawFilePath -> Annex (Log MetaData)
+readLog :: OsPath -> Annex (Log MetaData)
 readLog = parseLog <$$> Annex.Branch.get

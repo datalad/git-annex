@@ -41,18 +41,16 @@ import Config
 import Annex.Perms
 #endif
 
-import qualified System.FilePath.ByteString as P
-
 {- Checks if a given key's content is currently present. -}
 inAnnex :: Key -> Annex Bool
-inAnnex key = inAnnexCheck key $ liftIO . R.doesPathExist
+inAnnex key = inAnnexCheck key $ liftIO . R.doesPathExist . fromOsPath
 
 {- Runs an arbitrary check on a key's content. -}
-inAnnexCheck :: Key -> (RawFilePath -> Annex Bool) -> Annex Bool
+inAnnexCheck :: Key -> (OsPath -> Annex Bool) -> Annex Bool
 inAnnexCheck key check = inAnnex' id False check key
 
 {- inAnnex that performs an arbitrary check of the key's content. -}
-inAnnex' :: (a -> Bool) -> a -> (RawFilePath -> Annex a) -> Key -> Annex a
+inAnnex' :: (a -> Bool) -> a -> (OsPath -> Annex a) -> Key -> Annex a
 inAnnex' isgood bad check key = withObjectLoc key $ \loc -> do
 	r <- check loc
 	if isgood r
@@ -75,7 +73,7 @@ inAnnex' isgood bad check key = withObjectLoc key $ \loc -> do
 objectFileExists :: Key -> Annex Bool
 objectFileExists key =
 	calcRepo (gitAnnexLocation key)
-		>>= liftIO . R.doesPathExist
+		>>= liftIO . doesFileExist
 
 {- A safer check; the key's content must not only be present, but
  - is not in the process of being removed. -}
@@ -93,7 +91,7 @@ inAnnexSafe key = inAnnex' (fromMaybe True) (Just False) go key
 	{- The content file must exist, but the lock file generally
 	 - won't exist unless a removal is in process. -}
 	checklock (Just lockfile) contentfile =
-		ifM (liftIO $ doesFileExist (fromRawFilePath contentfile))
+		ifM (liftIO $ doesFileExist contentfile)
 			( checkOr is_unlocked lockfile
 			, return is_missing
 			)
@@ -102,7 +100,7 @@ inAnnexSafe key = inAnnex' (fromMaybe True) (Just False) go key
 		Just True -> is_locked
 		Just False -> is_unlocked
 #else
-	checklock Nothing contentfile = liftIO $ ifM (doesFileExist (fromRawFilePath contentfile))
+	checklock Nothing contentfile = liftIO $ ifM (doesFileExist contentfile)
 		( lockShared contentfile >>= \case
 			Nothing -> return is_locked
 			Just lockhandle -> do
@@ -113,7 +111,7 @@ inAnnexSafe key = inAnnex' (fromMaybe True) (Just False) go key
 	{- In Windows, see if we can take a shared lock. If so, 
 	 - remove the lock file to clean up after ourselves. -}
 	checklock (Just lockfile) contentfile =
-		ifM (liftIO $ doesFileExist (fromRawFilePath contentfile))
+		ifM (liftIO $ doesFileExist contentfile)
 			( modifyContentDir lockfile $ liftIO $
 				lockShared lockfile >>= \case
 					Nothing -> return is_locked
@@ -134,7 +132,7 @@ inAnnexSafe key = inAnnex' (fromMaybe True) (Just False) go key
  - content locking works, from running at the same time as content is locked
  - using the old method.
  -}
-withContentLockFile :: Key -> (Maybe RawFilePath -> Annex a) -> Annex a
+withContentLockFile :: Key -> (Maybe OsPath -> Annex a) -> Annex a
 withContentLockFile k a = do
 	v <- getVersion
 	if versionNeedsWritableContentFiles v
@@ -146,7 +144,7 @@ withContentLockFile k a = do
 			 - will switch over to v10 content lock files at the
 			 - right time. -}
 			gitdir <- fromRepo Git.localGitDir
-			let gitconfig = gitdir P.</> "config"
+			let gitconfig = gitdir </> literalOsPath "config"
 			ic <- withTSDelta (liftIO . genInodeCache gitconfig)
 			oldic <- Annex.getState Annex.gitconfiginodecache
 			v' <- if fromMaybe False (compareStrong <$> ic <*> oldic)
@@ -161,7 +159,7 @@ withContentLockFile k a = do
   where
 	go v = contentLockFile k v >>= a
 
-contentLockFile :: Key -> Maybe RepoVersion -> Annex (Maybe RawFilePath)
+contentLockFile :: Key -> Maybe RepoVersion -> Annex (Maybe OsPath)
 #ifndef mingw32_HOST_OS
 {- Older versions of git-annex locked content files themselves, but newer
  - versions use a separate lock file, to better support repos shared
@@ -177,7 +175,7 @@ contentLockFile key _ = Just <$> calcRepo (gitAnnexContentLock key)
 #endif
 
 {- Performs an action, passing it the location to use for a key's content. -}
-withObjectLoc :: Key -> (RawFilePath -> Annex a) -> Annex a
+withObjectLoc :: Key -> (OsPath -> Annex a) -> Annex a
 withObjectLoc key a = a =<< calcRepo (gitAnnexLocation key)
 
 {- Check if a file contains the unmodified content of the key.
@@ -185,7 +183,7 @@ withObjectLoc key a = a =<< calcRepo (gitAnnexLocation key)
  - The expensive way to tell is to do a verification of its content.
  - The cheaper way is to see if the InodeCache for the key matches the
  - file. -}
-isUnmodified :: Key -> RawFilePath -> Annex Bool
+isUnmodified :: Key -> OsPath -> Annex Bool
 isUnmodified key f = 
 	withTSDelta (liftIO . genInodeCache f) >>= \case
 		Just fc -> do
@@ -193,7 +191,7 @@ isUnmodified key f =
 			isUnmodified' key f fc ic
 		Nothing -> return False
 
-isUnmodified' :: Key -> RawFilePath -> InodeCache -> [InodeCache] -> Annex Bool
+isUnmodified' :: Key -> OsPath -> InodeCache -> [InodeCache] -> Annex Bool
 isUnmodified' = isUnmodifiedLowLevel Database.Keys.addInodeCaches
 
 {- Cheap check if a file contains the unmodified content of the key,
@@ -206,7 +204,7 @@ isUnmodified' = isUnmodifiedLowLevel Database.Keys.addInodeCaches
  - this may report a false positive when repeated edits are made to a file
  - within a small time window (eg 1 second).
  -}
-isUnmodifiedCheap :: Key -> RawFilePath -> Annex Bool
+isUnmodifiedCheap :: Key -> OsPath -> Annex Bool
 isUnmodifiedCheap key f = maybe (pure False) (isUnmodifiedCheap' key) 
 	=<< withTSDelta (liftIO . genInodeCache f)
 
