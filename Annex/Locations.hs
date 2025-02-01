@@ -387,7 +387,7 @@ gitAnnexFsckDir u r mc = case annexDbDir =<< mc of
 	Nothing -> go (gitAnnexDir r)
 	Just d -> go d
   where
-	go d = d </> literalOsPath "fsck" </> uuidPath u
+	go d = d </> literalOsPath "fsck" </> fromUUID u
 
 {- used to store information about incremental fscks. -}
 gitAnnexFsckState :: UUID -> Git.Repo -> OsPath
@@ -408,7 +408,7 @@ gitAnnexFsckDbLock u r c = gitAnnexFsckDir u r (Just c) </> literalOsPath "fsck.
 {- .git/annex/fsckresults/uuid is used to store results of git fscks -}
 gitAnnexFsckResultsLog :: UUID -> Git.Repo -> OsPath
 gitAnnexFsckResultsLog u r = 
-	gitAnnexDir r </> literalOsPath "fsckresults" </> uuidPath u
+	gitAnnexDir r </> literalOsPath "fsckresults" </> fromUUID u
 
 {- .git/annex/upgrade.log is used to record repository version upgrades. -}
 gitAnnexUpgradeLog :: Git.Repo -> OsPath
@@ -476,7 +476,7 @@ gitAnnexExportDir r c = fromMaybe (gitAnnexDir r) (annexDbDir c)
 {- Directory containing database used to record export info. -}
 gitAnnexExportDbDir :: UUID -> Git.Repo -> GitConfig -> OsPath
 gitAnnexExportDbDir u r c = 
-	gitAnnexExportDir r c </> uuidPath u </> literalOsPath "exportdb"
+	gitAnnexExportDir r c </> fromUUID u </> literalOsPath "exportdb"
 
 {- Lock file for export database. -}
 gitAnnexExportLock :: UUID -> Git.Repo -> GitConfig -> OsPath
@@ -491,7 +491,7 @@ gitAnnexExportUpdateLock u r c = gitAnnexExportDbDir u r c <> literalOsPath ".up
  - remote, but were excluded by its preferred content settings. -}
 gitAnnexExportExcludeLog :: UUID -> Git.Repo -> OsPath
 gitAnnexExportExcludeLog u r = gitAnnexDir r 
-	</> literalOsPath "export.ex" </> uuidPath u
+	</> literalOsPath "export.ex" </> fromUUID u
 
 {- Directory containing database used to record remote content ids.
  -
@@ -516,7 +516,7 @@ gitAnnexImportDir r c =
 {- File containing state about the last import done from a remote. -}
 gitAnnexImportLog :: UUID -> Git.Repo -> GitConfig -> OsPath
 gitAnnexImportLog u r c =
-	gitAnnexImportDir r c </> uuidPath u </> literalOsPath "log"
+	gitAnnexImportDir r c </> fromUUID u </> literalOsPath "log"
 
 {- Directory containing database used by importfeed. -}
 gitAnnexImportFeedDbDir :: Git.Repo -> GitConfig -> OsPath

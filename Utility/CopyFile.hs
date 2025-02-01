@@ -44,12 +44,12 @@ copyMetaDataParams meta = map snd $ filter fst
 {- The cp command is used, because I hate reinventing the wheel,
  - and because this allows easy access to features like cp --reflink
  - and preserving metadata. -}
-copyFileExternal :: CopyMetaData -> FilePath -> FilePath -> IO Bool
+copyFileExternal :: CopyMetaData -> OsPath -> OsPath -> IO Bool
 copyFileExternal meta src dest = do
 	-- Delete any existing dest file because an unwritable file
 	-- would prevent cp from working.
-	void $ tryIO $ removeFile (toOsPath dest)
-	boolSystem "cp" $ params ++ [File src, File dest]
+	void $ tryIO $ removeFile dest
+	boolSystem "cp" $ params ++ [File (fromOsPath src), File (fromOsPath dest)]
   where
 	params
 		| BuildInfo.cp_reflink_supported =
@@ -87,10 +87,10 @@ copyCoW meta src dest
 
 {- Create a hard link if the filesystem allows it, and fall back to copying
  - the file. -}
-createLinkOrCopy :: RawFilePath -> RawFilePath -> IO Bool
+createLinkOrCopy :: OsPath -> OsPath -> IO Bool
 createLinkOrCopy src dest = go `catchIO` const fallback
   where
 	go = do
-		R.createLink src dest
+		R.createLink (fromOsPath src) (fromOsPath dest)
 		return True
-	fallback = copyFileExternal CopyAllMetaData (fromRawFilePath src) (fromRawFilePath dest)
+	fallback = copyFileExternal CopyAllMetaData src dest

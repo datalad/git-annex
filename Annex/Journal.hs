@@ -26,13 +26,12 @@ import Annex.LockFile
 import Annex.BranchState
 import Types.BranchState
 import Utility.Directory.Stream
-import qualified Utility.RawFilePath as R
 import qualified Utility.FileIO as F
+import qualified Utility.OsString as OS
 
 import qualified Data.Set as S
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString as B
-import qualified System.FilePath.ByteString as P
 import Data.ByteString.Builder
 import Data.Char
 
@@ -83,7 +82,7 @@ privateUUIDsKnown' = not . S.null . annexPrivateRepos . Annex.gitconfig
  - interrupted write truncating information that was earlier read from the
  - file, and so losing data.
  -}
-setJournalFile :: Journalable content => JournalLocked -> RegardingUUID -> RawFilePath -> content -> Annex ()
+setJournalFile :: Journalable content => JournalLocked -> RegardingUUID -> OsPath -> content -> Annex ()
 setJournalFile _jl ru file content = withOtherTmp $ \tmp -> do
 	st <- getState
 	jd <- fromRepo =<< ifM (regardingPrivateUUID ru)
@@ -92,10 +91,10 @@ setJournalFile _jl ru file content = withOtherTmp $ \tmp -> do
 		)
 	-- journal file is written atomically
 	let jfile = journalFile file
-	let tmpfile = tmp P.</> jfile
-	liftIO $ F.withFile (toOsPath tmpfile) WriteMode $ \h ->
+	let tmpfile = tmp </> jfile
+	liftIO $ F.withFile tmpfile WriteMode $ \h ->
 		writeJournalHandle h content
-	let dest = jd P.</> jfile
+	let dest = jd </> jfile
 	let mv = do
 		liftIO $ moveFile tmpfile dest
 		setAnnexFilePerm dest
@@ -103,20 +102,20 @@ setJournalFile _jl ru file content = withOtherTmp $ \tmp -> do
 	-- exists
 	mv `catchIO` (const (createAnnexDirectory jd >> mv))
 
-newtype AppendableJournalFile = AppendableJournalFile (RawFilePath, RawFilePath)
+newtype AppendableJournalFile = AppendableJournalFile (OsPath, OsPath)
 
 {- If the journal file does not exist, it cannot be appended to, because
  - that would overwrite whatever content the file has in the git-annex
  - branch. -}
-checkCanAppendJournalFile :: JournalLocked -> RegardingUUID -> RawFilePath -> Annex (Maybe AppendableJournalFile)
+checkCanAppendJournalFile :: JournalLocked -> RegardingUUID -> OsPath -> Annex (Maybe AppendableJournalFile)
 checkCanAppendJournalFile _jl ru file = do
 	st <- getState
 	jd <- fromRepo =<< ifM (regardingPrivateUUID ru)
 		( return (gitAnnexPrivateJournalDir st)
 		, return (gitAnnexJournalDir st)
 		)
-	let jfile = jd P.</> journalFile file
-	ifM (liftIO $ R.doesPathExist jfile)
+	let jfile = jd </> journalFile file
+	ifM (liftIO $ doesFileExist jfile)
 		( return (Just (AppendableJournalFile (jd, jfile)))
 		, return Nothing
 		)
@@ -134,7 +133,7 @@ checkCanAppendJournalFile _jl ru file = do
  -}
 appendJournalFile :: Journalable content => JournalLocked -> AppendableJournalFile -> content -> Annex ()
 appendJournalFile _jl (AppendableJournalFile (jd, jfile)) content = do
-	let write = liftIO $ F.withFile (toOsPath jfile) ReadWriteMode $ \h -> do
+	let write = liftIO $ F.withFile jfile ReadWriteMode $ \h -> do
 		sz <- hFileSize h
 		when (sz /= 0) $ do
 			hSeek h SeekFromEnd (-1)
@@ -161,7 +160,7 @@ data JournalledContent
 	-- information that were made after that journal file was written.
 
 {- Gets any journalled content for a file in the branch. -}
-getJournalFile :: JournalLocked -> GetPrivate -> RawFilePath -> Annex JournalledContent
+getJournalFile :: JournalLocked -> GetPrivate -> OsPath -> Annex JournalledContent
 getJournalFile _jl = getJournalFileStale
 
 data GetPrivate = GetPrivate Bool
@@ -179,7 +178,7 @@ data GetPrivate = GetPrivate Bool
  - (or is in progress when this is called), if the file content does not end
  - with a newline, it is truncated back to the previous newline.
  -}
-getJournalFileStale :: GetPrivate -> RawFilePath -> Annex JournalledContent
+getJournalFileStale :: GetPrivate -> OsPath -> Annex JournalledContent
 getJournalFileStale (GetPrivate getprivate) file = do
 	st <- Annex.getState id
 	let repo = Annex.repo st
@@ -205,7 +204,7 @@ getJournalFileStale (GetPrivate getprivate) file = do
 	jfile = journalFile file
 	getfrom d = catchMaybeIO $
 		discardIncompleteAppend . L.fromStrict
-			<$> F.readFile' (toOsPath (d P.</> jfile))
+			<$> F.readFile' (d </> jfile)
 
 -- Note that this forces read of the whole lazy bytestring.
 discardIncompleteAppend :: L.ByteString -> L.ByteString
@@ -224,18 +223,18 @@ discardIncompleteAppend v
 {- List of existing journal files in a journal directory, but without locking,
  - may miss new ones just being added, or may have false positives if the
  - journal is staged as it is run. -}
-getJournalledFilesStale :: (BranchState -> Git.Repo -> RawFilePath) -> Annex [RawFilePath]
+getJournalledFilesStale :: (BranchState -> Git.Repo -> OsPath) -> Annex [OsPath]
 getJournalledFilesStale getjournaldir = do
 	bs <- getState
 	repo <- Annex.gitRepo
 	let d = getjournaldir bs repo
 	fs <- liftIO $ catchDefaultIO [] $ 
-		getDirectoryContents (fromRawFilePath d)
-	return $ filter (`notElem` [".", ".."]) $
-		map (fileJournal . toRawFilePath) fs
+		getDirectoryContents d
+	return $ filter (`notElem` dirCruft) $
+		map fileJournal fs
 
 {- Directory handle open on a journal directory. -}
-withJournalHandle :: (BranchState -> Git.Repo -> RawFilePath) -> (DirectoryHandle -> IO a) -> Annex a
+withJournalHandle :: (BranchState -> Git.Repo -> OsPath) -> (DirectoryHandle -> IO a) -> Annex a
 withJournalHandle getjournaldir a = do
 	bs <- getState
 	repo <- Annex.gitRepo
@@ -244,15 +243,15 @@ withJournalHandle getjournaldir a = do
   where
 	-- avoid overhead of creating the journal directory when it already
 	-- exists
-	opendir d = liftIO (openDirectory d)
+	opendir d = liftIO (openDirectory (fromOsPath d))
 		`catchIO` (const (createAnnexDirectory d >> opendir d))
 
 {- Checks if there are changes in the journal. -}
-journalDirty :: (BranchState -> Git.Repo -> RawFilePath) -> Annex Bool
+journalDirty :: (BranchState -> Git.Repo -> OsPath) -> Annex Bool
 journalDirty getjournaldir = do
 	st <- getState
 	d <- fromRepo (getjournaldir st)
-	liftIO $ isDirectoryPopulated d
+	liftIO $ isDirectoryPopulated (fromOsPath d)
 
 {- Produces a filename to use in the journal for a file on the branch.
  - The filename does not include the journal directory.
@@ -261,33 +260,33 @@ journalDirty getjournaldir = do
  - used in the branch is not necessary, and all the files are put directly
  - in the journal directory.
  -}
-journalFile :: RawFilePath -> RawFilePath
-journalFile file = B.concatMap mangle file
+journalFile :: OsPath -> OsPath
+journalFile file = OS.concat $ map mangle $ OS.unpack file
   where
 	mangle c
-		| P.isPathSeparator c = B.singleton underscore
-		| c == underscore = B.pack [underscore, underscore]
-		| otherwise = B.singleton c
-	underscore = fromIntegral (ord '_')
+		| isPathSeparator c = OS.singleton underscore
+		| c == underscore = OS.pack [underscore, underscore]
+		| otherwise = OS.singleton c
+	underscore = unsafeFromChar '_'
 
 {- Converts a journal file (relative to the journal dir) back to the
  - filename on the branch. -}
-fileJournal :: RawFilePath -> RawFilePath
+fileJournal :: OsPath -> OsPath
 fileJournal = go
   where
 	go b = 
-		let (h, t) = B.break (== underscore) b
-		in h <> case B.uncons t of
+		let (h, t) = OS.break (== underscore) b
+		in h <> case OS.uncons t of
 			Nothing -> t
-			Just (_u, t') -> case B.uncons t' of
+			Just (_u, t') -> case OS.uncons t' of
 				Nothing -> t'			
 				Just (w, t'')
 					| w == underscore ->
-						B.cons underscore (go t'')
+						OS.cons underscore (go t'')
 					| otherwise -> 
-						B.cons P.pathSeparator (go t')
+						OS.cons pathSeparator (go t')
 	
-	underscore = fromIntegral (ord '_')
+	underscore = unsafeFromChar '_'
 
 {- Sentinal value, only produced by lockJournal; required
  - as a parameter by things that need to ensure the journal is

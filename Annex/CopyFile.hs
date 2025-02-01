@@ -51,7 +51,7 @@ tryCopyCoW (CopyCoWTried copycowtried) src dest meterupdate =
 				-- CoW is known to work, so delete
 				-- dest if it exists in order to do a fast
 				-- CoW copy.
-				void $ tryIO $ removeFile dest
+				void $ tryIO $ removeFile dest'
 				docopycow
 			, return False
 			)
@@ -60,18 +60,18 @@ tryCopyCoW (CopyCoWTried copycowtried) src dest meterupdate =
 	docopycow = watchFileSize dest' meterupdate $ const $
 		copyCoW CopyTimeStamps src dest
 	
-	dest' = toRawFilePath dest
+	dest' = toOsPath dest
 
 	-- Check if the dest file already exists, which would prevent
 	-- probing CoW. If the file exists but is empty, there's no benefit
 	-- to resuming from it when CoW does not work, so remove it.
 	destfilealreadypopulated = 
-		tryIO (R.getFileStatus dest') >>= \case
+		tryIO (R.getFileStatus (toRawFilePath dest)) >>= \case
 			Left _ -> return False
 			Right st -> do
 				sz <- getFileSize' dest' st
 				if sz == 0
-					then tryIO (removeFile dest) >>= \case
+					then tryIO (removeFile dest') >>= \case
 						Right () -> return False
 						Left _ -> return True
 					else return True
@@ -111,14 +111,15 @@ fileCopier copycowtried src dest meterupdate iv =
 	docopy = do
 		-- The file might have had the write bit removed,
 		-- so make sure we can write to it.
-		void $ tryIO $ allowWrite dest'
+		void $ tryIO $ allowWrite (toOsPath dest)
 
 		withBinaryFile src ReadMode $ \hsrc ->
 			fileContentCopier hsrc dest meterupdate iv
 		
 		-- Copy src mode and mtime.
 		mode <- fileMode <$> R.getFileStatus (toRawFilePath src)
-		mtime <- utcTimeToPOSIXSeconds <$> getModificationTime src
+		mtime <- utcTimeToPOSIXSeconds
+			<$> getModificationTime (toOsPath src)
 		R.setFileMode dest' mode
 		touch dest' mtime False
 

@@ -32,8 +32,8 @@ import qualified Data.ByteString.Lazy as L
 import qualified Data.Attoparsec.ByteString.Lazy as A
 import qualified Data.Attoparsec.ByteString.Char8 as A8
 
-transitionsLog :: RawFilePath
-transitionsLog = "transitions.log"
+transitionsLog :: OsPath
+transitionsLog = literalOsPath "transitions.log"
 
 data Transition
 	= ForgetGitHistory
@@ -102,7 +102,7 @@ knownTransitionList = nub . rights . map transition . S.elems
 
 {- Typically ran with Annex.Branch.change, but we can't import Annex.Branch
  - here since it depends on this module. -}
-recordTransitions :: (RawFilePath -> (L.ByteString -> Builder) -> Annex ()) -> Transitions -> Annex ()
+recordTransitions :: (OsPath -> (L.ByteString -> Builder) -> Annex ()) -> Transitions -> Annex ()
 recordTransitions changer t = changer transitionsLog $
 	buildTransitions . S.union t . parseTransitionsStrictly "local"
 

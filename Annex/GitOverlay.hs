@@ -66,13 +66,13 @@ withIndexFile i = withAltRepo usecachedgitenv restoregitenv
 {- Runs an action using a different git work tree.
  -
  - Smudge and clean filters are disabled in this work tree. -}
-withWorkTree :: FilePath -> Annex a -> Annex a
+withWorkTree :: OsPath -> Annex a -> Annex a
 withWorkTree d a = withAltRepo
 	(\g -> return $ (g { location = modlocation (location g), gitGlobalOpts = gitGlobalOpts g ++ bypassSmudgeConfig }, ()))
 	(\g g' -> g' { location = location g, gitGlobalOpts = gitGlobalOpts g })
 	(const a)
   where
-	modlocation l@(Local {}) = l { worktree = Just (toRawFilePath d) }
+	modlocation l@(Local {}) = l { worktree = Just d }
 	modlocation _ = giveup "withWorkTree of non-local git repo"
 
 {- Runs an action with the git index file and HEAD, and a few other
@@ -83,13 +83,13 @@ withWorkTree d a = withAltRepo
  -
  - Needs git 2.2.0 or newer.
  -}
-withWorkTreeRelated :: FilePath -> Annex a -> Annex a
+withWorkTreeRelated :: OsPath -> Annex a -> Annex a
 withWorkTreeRelated d a = withAltRepo modrepo unmodrepo (const a)
   where
 	modrepo g = liftIO $ do
-		g' <- addGitEnv g "GIT_COMMON_DIR" . fromRawFilePath
+		g' <- addGitEnv g "GIT_COMMON_DIR" . fromOsPath
 			=<< absPath (localGitDir g)
-		g'' <- addGitEnv g' "GIT_DIR" d
+		g'' <- addGitEnv g' "GIT_DIR" (fromOsPath d)
 		return (g'' { gitEnvOverridesGitDir = True }, ())
 	unmodrepo g g' = g'
 		{ gitEnv = gitEnv g

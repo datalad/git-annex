@@ -175,7 +175,7 @@ serveUnixSocket unixsocket serveconn = do
         -- Connections have to authenticate to do anything,
         -- so it's fine that other local users can connect to the
         -- socket.
-	modifyFileMode (toRawFilePath unixsocket) $ addModes
+	modifyFileMode (toOsPath unixsocket) $ addModes
 		[groupReadMode, groupWriteMode, otherReadMode, otherWriteMode]
 	S.listen soc 2
 	forever $ do
@@ -381,7 +381,7 @@ runRelayService conn runner service = case connRepo conn of
 	
 	serviceproc repo = gitCreateProcess
 		[ Param cmd
-		, File (fromRawFilePath (repoPath repo))
+		, File (fromOsPath (repoPath repo))
 		] repo
 	serviceproc' repo = (serviceproc repo)
 		{ std_out = CreatePipe

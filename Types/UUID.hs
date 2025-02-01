@@ -65,6 +65,14 @@ instance ToUUID SB.ShortByteString where
 		| SB.null b = NoUUID
 		| otherwise = UUID (SB.fromShort b)
 
+-- OsPath is a ShortByteString internally, so this is the most
+-- efficient conversion.
+instance FromUUID OsPath where
+	fromUUID s = toOsPath (fromUUID s :: SB.ShortByteString)
+
+instance ToUUID OsPath where
+	toUUID s = toUUID (fromOsPath s :: SB.ShortByteString)
+
 instance FromUUID String where
 	fromUUID s = decodeBS (fromUUID s)
 
@@ -101,9 +109,6 @@ buildUUID NoUUID = mempty
 
 isUUID :: String -> Bool
 isUUID = isJust . U.fromString
-
-uuidPath :: UUID -> OsPath
-uuidPath u = toOsPath (fromUUID u :: SB.ShortByteString)
 
 -- A description of a UUID.
 newtype UUIDDesc = UUIDDesc B.ByteString

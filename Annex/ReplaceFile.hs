@@ -21,8 +21,6 @@ import Utility.Tmp
 import Utility.Tmp.Dir
 import Utility.Directory.Create
 
-import qualified System.FilePath.ByteString as P
-
 {- replaceFile on a file located inside the gitAnnexDir. -}
 replaceGitAnnexDirFile :: OsPath -> (OsPath -> Annex a) -> Annex a
 replaceGitAnnexDirFile = replaceFile createAnnexDirectory

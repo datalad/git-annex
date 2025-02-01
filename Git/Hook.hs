@@ -108,6 +108,6 @@ hookExists h r = do
 
 runHook :: (FilePath -> [CommandParam] -> IO a) -> Hook -> [CommandParam] -> Repo -> IO a
 runHook runner h ps r = do
-	let f = fromOsPath $ hookFile h r
+	let f = hookFile h r
 	(c, cps) <- findShellCommand f
 	runner c (cps ++ ps)

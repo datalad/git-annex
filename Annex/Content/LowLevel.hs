@@ -19,13 +19,12 @@ import Utility.DataUnits
 import Utility.CopyFile
 import qualified Utility.RawFilePath as R
 
-import qualified System.FilePath.ByteString as P
 import System.PosixCompat.Files (linkCount)
 
 {- Runs the secure erase command if set, otherwise does nothing.
  - File may or may not be deleted at the end; caller is responsible for
  - making sure it's deleted. -}
-secureErase :: RawFilePath -> Annex ()
+secureErase :: OsPath -> Annex ()
 secureErase = void . runAnnexPathHook "%file"
 	secureEraseAnnexHook annexSecureEraseCommand
 
@@ -44,45 +43,48 @@ data LinkedOrCopied = Linked | Copied
  - execute bit will be set. The mode is not fully copied over because
  - git doesn't support file modes beyond execute.
  -}
-linkOrCopy :: Key -> RawFilePath -> RawFilePath -> Maybe FileMode -> Annex (Maybe LinkedOrCopied)
+linkOrCopy :: Key -> OsPath -> OsPath -> Maybe FileMode -> Annex (Maybe LinkedOrCopied)
 linkOrCopy = linkOrCopy' (annexThin <$> Annex.getGitConfig)
 
-linkOrCopy' :: Annex Bool -> Key -> RawFilePath -> RawFilePath -> Maybe FileMode -> Annex (Maybe LinkedOrCopied)
+linkOrCopy' :: Annex Bool -> Key -> OsPath -> OsPath -> Maybe FileMode -> Annex (Maybe LinkedOrCopied)
 linkOrCopy' canhardlink key src dest destmode = catchDefaultIO Nothing $
 	ifM canhardlink
-		( hardlink
+		( hardlinkorcopy
 		, copy =<< getstat
 		)
   where
-	hardlink = do
+	hardlinkorcopy = do
 		s <- getstat
 		if linkCount s > 1
 			then copy s
-			else liftIO (R.createLink src dest >> preserveGitMode dest destmode >> return (Just Linked))
-				`catchIO` const (copy s)
+			else hardlink `catchIO` const (copy s)
+	hardlink = liftIO $ do
+		R.createLink (fromOsPath src) (fromOsPath dest)
+		void $ preserveGitMode dest destmode
+		return (Just Linked)
 	copy s = ifM (checkedCopyFile' key src dest destmode s)
 		( return (Just Copied)
 		, return Nothing
 		)
-	getstat = liftIO $ R.getFileStatus src
+	getstat = liftIO $ R.getFileStatus (fromOsPath src)
 
 {- Checks disk space before copying. -}
-checkedCopyFile :: Key -> RawFilePath -> RawFilePath -> Maybe FileMode -> Annex Bool
+checkedCopyFile :: Key -> OsPath -> OsPath -> Maybe FileMode -> Annex Bool
 checkedCopyFile key src dest destmode = catchBoolIO $
 	checkedCopyFile' key src dest destmode
-		=<< liftIO (R.getFileStatus src)
+		=<< liftIO (R.getFileStatus (fromOsPath src))
 
-checkedCopyFile' :: Key -> RawFilePath -> RawFilePath -> Maybe FileMode -> FileStatus -> Annex Bool
+checkedCopyFile' :: Key -> OsPath -> OsPath -> Maybe FileMode -> FileStatus -> Annex Bool
 checkedCopyFile' key src dest destmode s = catchBoolIO $ do
 	sz <- liftIO $ getFileSize' src s
-	ifM (checkDiskSpace' sz (Just $ P.takeDirectory dest) key 0 True)
+	ifM (checkDiskSpace' sz (Just $ takeDirectory dest) key 0 True)
 		( liftIO $
-			copyFileExternal CopyAllMetaData (fromRawFilePath src) (fromRawFilePath dest)
+			copyFileExternal CopyAllMetaData src dest
 				<&&> preserveGitMode dest destmode
 		, return False
 		)
 
-preserveGitMode :: RawFilePath -> Maybe FileMode -> IO Bool
+preserveGitMode :: OsPath -> Maybe FileMode -> IO Bool
 preserveGitMode f (Just mode)
 	| isExecutable mode = catchBoolIO $ do
 		modifyFileMode f $ addModes executeModes
@@ -100,12 +102,12 @@ preserveGitMode _ _ = return True
  - to be downloaded from the free space. This way, we avoid overcommitting
  - when doing concurrent downloads.
  -}
-checkDiskSpace :: Maybe FileSize -> Maybe RawFilePath -> Key -> Integer -> Bool -> Annex Bool
+checkDiskSpace :: Maybe FileSize -> Maybe OsPath -> Key -> Integer -> Bool -> Annex Bool
 checkDiskSpace msz destdir key = checkDiskSpace' sz destdir key
   where
 	sz = fromMaybe 1 (fromKey keySize key <|> msz)
 
-checkDiskSpace' :: FileSize -> Maybe RawFilePath -> Key -> Integer -> Bool -> Annex Bool
+checkDiskSpace' :: FileSize -> Maybe OsPath -> Key -> Integer -> Bool -> Annex Bool
 checkDiskSpace' sz destdir key alreadythere samefilesystem = ifM (Annex.getRead Annex.force)
 	( return True
 	, do
@@ -118,7 +120,7 @@ checkDiskSpace' sz destdir key alreadythere samefilesystem = ifM (Annex.getRead 
 		inprogress <- if samefilesystem
 			then sizeOfDownloadsInProgress (/= key)
 			else pure 0
-		dir >>= liftIO . getDiskFree . fromRawFilePath >>= \case
+		dir >>= liftIO . getDiskFree . fromOsPath >>= \case
 			Just have -> do
 				reserve <- annexDiskReserve <$> Annex.getGitConfig
 				let delta = sz + reserve - have - alreadythere + inprogress

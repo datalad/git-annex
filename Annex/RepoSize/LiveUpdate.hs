@@ -23,8 +23,6 @@ import Utility.PID
 import Control.Concurrent
 import Text.Read
 import Data.Time.Clock.POSIX
-import qualified Utility.RawFilePath as R
-import qualified System.FilePath.ByteString as P
 
 {- Called when a location log change is journalled, so the LiveUpdate
  - is done. This is called with the journal still locked, so no concurrent
@@ -146,12 +144,11 @@ checkStaleSizeChanges :: RepoSizeHandle -> Annex ()
 checkStaleSizeChanges h@(RepoSizeHandle (Just _) livev) = do
 	livedir <- calcRepo' gitAnnexRepoSizeLiveDir
 	pid <- liftIO getPID
-	let pidlockfile = show pid
+	let pidlockfile = toOsPath (show pid)
 	now <- liftIO getPOSIXTime
 	liftIO (takeMVar livev) >>= \case
 		Nothing -> do
-			lck <- takeExclusiveLock $
-				livedir P.</> toRawFilePath pidlockfile
+			lck <- takeExclusiveLock $ livedir </> pidlockfile
 			go livedir lck pidlockfile now
 		Just v@(lck, lastcheck)
 			| now >= lastcheck + 60 ->
@@ -161,11 +158,11 @@ checkStaleSizeChanges h@(RepoSizeHandle (Just _) livev) = do
   where
 	go livedir lck pidlockfile now = do
 		void $ tryNonAsync $ do
-			lockfiles <- liftIO $ filter (not . dirCruft . toRawFilePath) 
-				<$> getDirectoryContents (fromRawFilePath livedir)
+			lockfiles <- liftIO $ filter (`notElem` dirCruft)
+				<$> getDirectoryContents livedir
 			stale <- forM lockfiles $ \lockfile ->
 				if (lockfile /= pidlockfile)
-					then case readMaybe lockfile of
+					then case readMaybe (fromOsPath lockfile) of
 						Nothing -> return Nothing
 						Just pid -> checkstale livedir lockfile pid
 					else return Nothing
@@ -176,7 +173,7 @@ checkStaleSizeChanges h@(RepoSizeHandle (Just _) livev) = do
 		liftIO $ putMVar livev (Just (lck, now))
 
 	checkstale livedir lockfile pid =
-		let f = livedir P.</> toRawFilePath lockfile
+		let f = livedir </> lockfile
 		in trySharedLock f >>= \case
 			Nothing -> return Nothing
 			Just lck -> do
@@ -184,6 +181,6 @@ checkStaleSizeChanges h@(RepoSizeHandle (Just _) livev) = do
 					( StaleSizeChanger (SizeChangeProcessId pid)
 					, do
 						dropLock lck
-						removeWhenExistsWith R.removeLink f
+						removeWhenExistsWith removeFile f
 					)
 checkStaleSizeChanges (RepoSizeHandle Nothing _) = noop

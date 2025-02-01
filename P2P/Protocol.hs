@@ -10,6 +10,7 @@
 {-# LANGUAGE DeriveFunctor, TemplateHaskell, FlexibleContexts #-}
 {-# LANGUAGE TypeSynonymInstances, FlexibleInstances, RankNTypes #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module P2P.Protocol where
@@ -25,8 +26,9 @@ import Utility.AuthToken
 import Utility.Applicative
 import Utility.PartialPrelude
 import Utility.Metered
-import Utility.FileSystemEncoding
 import Utility.MonotonicClock
+import Utility.OsPath
+import qualified Utility.OsString as OS
 import Git.FilePath
 import Annex.ChangedRefs (ChangedRefs)
 import Types.NumCopies
@@ -37,8 +39,6 @@ import Control.Monad.Free.TH
 import Control.Monad.Catch
 import System.Exit (ExitCode(..))
 import System.IO
-import qualified System.FilePath.ByteString as P
-import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Set as S
 import Data.Char
@@ -224,17 +224,19 @@ instance Proto.Serializable Service where
 instance Proto.Serializable ProtoAssociatedFile where
 	serialize (ProtoAssociatedFile (AssociatedFile Nothing)) = ""
 	serialize (ProtoAssociatedFile (AssociatedFile (Just af))) = 
-		decodeBS $ toInternalGitPath $ encodeBS $ concatMap esc $ fromRawFilePath af
+		fromOsPath $ toInternalGitPath $
+			OS.concat $ map esc $ OS.unpack af
 	  where
-		esc '%' = "%%"
-		esc c 
-			| isSpace c = "%"
-			| otherwise = [c]
+	  	esc c = case OS.toChar c of
+			'%' -> literalOsPath "%%"
+			c' | isSpace c' -> literalOsPath "%"
+			_ -> OS.singleton c
 	
-	deserialize s = case fromInternalGitPath $ toRawFilePath $ deesc [] s of
+	deserialize s = case fromInternalGitPath $ toOsPath $ deesc [] s of
 		f
-			| B.null f -> Just $ ProtoAssociatedFile $ AssociatedFile Nothing
-			| P.isRelative f -> Just $ ProtoAssociatedFile $ 
+			| OS.null f -> Just $ ProtoAssociatedFile $
+				AssociatedFile Nothing
+			| isRelative f -> Just $ ProtoAssociatedFile $ 
 				AssociatedFile $ Just f
 			| otherwise -> Nothing
 	  where

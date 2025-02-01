@@ -313,7 +313,7 @@ updateTo' pairs = do
  - transitions that have not been applied to all refs will be applied on
  - the fly.
  -}
-get :: RawFilePath -> Annex L.ByteString
+get :: OsPath -> Annex L.ByteString
 get file = do
 	st <- update
 	case getCache file st of
@@ -353,7 +353,7 @@ getUnmergedRefs = unmergedRefs <$> update
  - using some optimised method. The journal has to be checked, in case
  - it has a newer version of the file that has not reached the branch yet.
  -}
-precache :: RawFilePath -> L.ByteString -> Annex ()
+precache :: OsPath -> L.ByteString -> Annex ()
 precache file branchcontent = do
 	st <- getState
 	content <- if journalIgnorable st
@@ -369,12 +369,12 @@ precache file branchcontent = do
  - reflect changes in remotes.
  - (Changing the value this returns, and then merging is always the
  - same as using get, and then changing its value.) -}
-getLocal :: RawFilePath -> Annex L.ByteString
+getLocal :: OsPath -> Annex L.ByteString
 getLocal = getLocal' (GetPrivate True)
 
-getLocal' :: GetPrivate -> RawFilePath -> Annex L.ByteString
+getLocal' :: GetPrivate -> OsPath -> Annex L.ByteString
 getLocal' getprivate file = do
-	fastDebug "Annex.Branch" ("read " ++ fromRawFilePath file)
+	fastDebug "Annex.Branch" ("read " ++ fromOsPath file)
 	go =<< getJournalFileStale getprivate file
   where
 	go NoJournalledContent = getRef fullname file
@@ -384,14 +384,14 @@ getLocal' getprivate file = do
 		return (v <> journalcontent)
 
 {- Gets the content of a file as staged in the branch's index. -}
-getStaged :: RawFilePath -> Annex L.ByteString
+getStaged :: OsPath -> Annex L.ByteString
 getStaged = getRef indexref
   where
 	-- This makes git cat-file be run with ":file",
 	-- so it looks at the index.
 	indexref = Ref ""
 
-getHistorical :: RefDate -> RawFilePath -> Annex L.ByteString
+getHistorical :: RefDate -> OsPath -> Annex L.ByteString
 getHistorical date file =
 	-- This check avoids some ugly error messages when the reflog
 	-- is empty.
@@ -400,7 +400,7 @@ getHistorical date file =
 		, getRef (Git.Ref.dateRef fullname date) file
 		)
 
-getRef :: Ref -> RawFilePath -> Annex L.ByteString
+getRef :: Ref -> OsPath -> Annex L.ByteString
 getRef ref file = withIndex $ catFile ref file
 
 {- Applies a function to modify the content of a file.
@@ -408,7 +408,7 @@ getRef ref file = withIndex $ catFile ref file
  - Note that this does not cause the branch to be merged, it only
  - modifies the current content of the file on the branch.
  -}
-change :: Journalable content => RegardingUUID -> RawFilePath -> (L.ByteString -> content) -> Annex ()
+change :: Journalable content => RegardingUUID -> OsPath -> (L.ByteString -> content) -> Annex ()
 change ru file f = lockJournal $ \jl -> f <$> getToChange ru file >>= set jl ru file
 
 {- Applies a function which can modify the content of a file, or not.
@@ -416,7 +416,7 @@ change ru file f = lockJournal $ \jl -> f <$> getToChange ru file >>= set jl ru 
  - When the file was modified, runs the onchange action, and returns
  - True. The action is run while the journal is still locked,
  - so another concurrent call to this cannot happen while it is running. -}
-maybeChange :: Journalable content => RegardingUUID -> RawFilePath -> (L.ByteString -> Maybe content) -> Annex () -> Annex Bool
+maybeChange :: Journalable content => RegardingUUID -> OsPath -> (L.ByteString -> Maybe content) -> Annex () -> Annex Bool
 maybeChange ru file f onchange = lockJournal $ \jl -> do
 	v <- getToChange ru file
 	case f v of
@@ -449,7 +449,7 @@ data ChangeOrAppend t = Change t | Append t
  - state that would confuse the older version. This is planned to be
  - changed in a future repository version.
  -}
-changeOrAppend :: Journalable content => RegardingUUID -> RawFilePath -> (L.ByteString -> ChangeOrAppend content) -> Annex ()
+changeOrAppend :: Journalable content => RegardingUUID -> OsPath -> (L.ByteString -> ChangeOrAppend content) -> Annex ()
 changeOrAppend ru file f = lockJournal $ \jl ->
 	checkCanAppendJournalFile jl ru file >>= \case
 		Just appendable -> ifM (annexAlwaysCompact <$> Annex.getGitConfig)
@@ -481,7 +481,7 @@ changeOrAppend ru file f = lockJournal $ \jl ->
 					oldc <> journalableByteString toappend
 
 {- Only get private information when the RegardingUUID is itself private. -}
-getToChange :: RegardingUUID -> RawFilePath -> Annex L.ByteString
+getToChange :: RegardingUUID -> OsPath -> Annex L.ByteString
 getToChange ru f = flip getLocal' f . GetPrivate =<< regardingPrivateUUID ru
 
 {- Records new content of a file into the journal.
@@ -493,11 +493,11 @@ getToChange ru f = flip getLocal' f . GetPrivate =<< regardingPrivateUUID ru
  - git-annex index, and should not be written to the public git-annex
  - branch.
  -}
-set :: Journalable content => JournalLocked -> RegardingUUID -> RawFilePath -> content -> Annex ()
+set :: Journalable content => JournalLocked -> RegardingUUID -> OsPath -> content -> Annex ()
 set jl ru f c = do
 	journalChanged
 	setJournalFile jl ru f c
-	fastDebug "Annex.Branch" ("set " ++ fromRawFilePath f)
+	fastDebug "Annex.Branch" ("set " ++ fromOsPath f)
 	-- Could cache the new content, but it would involve
 	-- evaluating a Journalable Builder twice, which is not very
 	-- efficient. Instead, assume that it's not common to need to read
@@ -505,11 +505,11 @@ set jl ru f c = do
 	invalidateCache f
 
 {- Appends content to the journal file. -}
-append :: Journalable content => JournalLocked -> RawFilePath -> AppendableJournalFile -> content -> Annex ()
+append :: Journalable content => JournalLocked -> OsPath -> AppendableJournalFile -> content -> Annex ()
 append jl f appendable toappend = do
 	journalChanged
 	appendJournalFile jl appendable toappend
-	fastDebug "Annex.Branch" ("append " ++ fromRawFilePath f)
+	fastDebug "Annex.Branch" ("append " ++ fromOsPath f)
 	invalidateCache f
 
 {- Commit message used when making a commit of whatever data has changed
@@ -611,7 +611,7 @@ commitIndex' jl branchref message basemessage retrynum parents = do
  - not been merged in, returns Nothing, because it's not possible to
  - efficiently handle that.
  -}
-files :: Annex (Maybe ([RawFilePath], IO Bool))
+files :: Annex (Maybe ([OsPath], IO Bool))
 files = do
 	st <- update
         if not (null (unmergedRefs st))
@@ -629,10 +629,10 @@ files = do
 
 {- Lists all files currently in the journal, but not files in the private
  - journal. -}
-journalledFiles :: Annex [RawFilePath]
+journalledFiles :: Annex [OsPath]
 journalledFiles = getJournalledFilesStale gitAnnexJournalDir
 
-journalledFilesPrivate :: Annex [RawFilePath]
+journalledFilesPrivate :: Annex [OsPath]
 journalledFilesPrivate = ifM privateUUIDsKnown
 	( getJournalledFilesStale gitAnnexPrivateJournalDir
 	, return []
@@ -640,10 +640,10 @@ journalledFilesPrivate = ifM privateUUIDsKnown
 
 {- Files in the branch, not including any from journalled changes,
  - and without updating the branch. -}
-branchFiles :: Annex ([RawFilePath], IO Bool)
+branchFiles :: Annex ([OsPath], IO Bool)
 branchFiles = withIndex $ inRepo branchFiles'
 
-branchFiles' :: Git.Repo -> IO ([RawFilePath], IO Bool)
+branchFiles' :: Git.Repo -> IO ([OsPath], IO Bool)
 branchFiles' = Git.Command.pipeNullSplit' $
 	lsTreeParams Git.LsTree.LsTreeRecursive (Git.LsTree.LsTreeLong False)
 		fullname
@@ -690,7 +690,7 @@ withIndex' :: Bool -> Annex a -> Annex a
 withIndex' bootstrapping a = withIndexFile AnnexIndexFile $ \f -> do
 	checkIndexOnce $ unlessM (liftIO $ doesFileExist f) $ do
 		unless bootstrapping create
-		createAnnexDirectory $ toRawFilePath $ takeDirectory f
+		createAnnexDirectory $ toOsPath $ takeDirectory f
 		unless bootstrapping $ inRepo genIndex
 	a
 
@@ -748,7 +748,7 @@ stageJournal jl commitindex = withIndex $ withOtherTmp $ \tmpdir -> do
 			Git.UpdateIndex.streamUpdateIndex g
 				[genstream dir h jh jlogh]
 	commitindex
-	liftIO $ cleanup (fromRawFilePath dir) jlogh jlogf
+	liftIO $ cleanup (fromOsPath dir) jlogh jlogf
   where
 	genstream dir h jh jlogh streamer = readDirectory jh >>= \case
 		Nothing -> return ()
@@ -999,7 +999,7 @@ data UnmergedBranches t
 	= UnmergedBranches t 
 	| NoUnmergedBranches t
 
-type FileContents t b = Maybe (t, RawFilePath, Maybe (L.ByteString, Maybe b))
+type FileContents t b = Maybe (t, OsPath, Maybe (L.ByteString, Maybe b))
 
 {- Runs an action on the content of selected files from the branch.
  - This is much faster than reading the content of each file in turn,
@@ -1022,7 +1022,7 @@ overBranchFileContents
 	-- the callback can be run more than once on the same filename,
 	-- and in this case it's also possible for the callback to be
 	-- passed some of the same file content repeatedly.
-	-> (RawFilePath -> Maybe v)
+	-> (OsPath -> Maybe v)
 	-> (Annex (FileContents v Bool) -> Annex a)
 	-> Annex (UnmergedBranches (a, Git.Sha))
 overBranchFileContents ignorejournal select go = do
@@ -1036,7 +1036,7 @@ overBranchFileContents ignorejournal select go = do
 		else NoUnmergedBranches v
 
 overBranchFileContents'
-	:: (RawFilePath -> Maybe v)
+	:: (OsPath -> Maybe v)
 	-> (Annex (FileContents v Bool) -> Annex a)
 	-> BranchState
 	-> Annex (a, Git.Sha)
@@ -1086,11 +1086,11 @@ combineStaleJournalWithBranch branchcontent journalledcontent =
  - files.
  -}
 overJournalFileContents
-	:: (RawFilePath -> L.ByteString -> Annex (L.ByteString, Maybe b))
+	:: (OsPath -> L.ByteString -> Annex (L.ByteString, Maybe b))
 	-- ^ Called with the journalled file content when the journalled
 	-- content may be stale or lack information committed to the
 	-- git-annex branch.
-	-> (RawFilePath -> Maybe v)
+	-> (OsPath -> Maybe v)
 	-> (Annex (FileContents v b) -> Annex a)
 	-> Annex a
 overJournalFileContents handlestale select go = do
@@ -1098,9 +1098,9 @@ overJournalFileContents handlestale select go = do
 	go $ overJournalFileContents' buf handlestale select
 
 overJournalFileContents'
-	:: MVar ([RawFilePath], [RawFilePath])
-	-> (RawFilePath -> L.ByteString -> Annex (L.ByteString, Maybe b))
-	-> (RawFilePath -> Maybe a)
+	:: MVar ([OsPath], [OsPath])
+	-> (OsPath -> L.ByteString -> Annex (L.ByteString, Maybe b))
+	-> (OsPath -> Maybe a)
 	-> Annex (FileContents a b)
 overJournalFileContents' buf handlestale select =
 	liftIO (tryTakeMVar buf) >>= \case

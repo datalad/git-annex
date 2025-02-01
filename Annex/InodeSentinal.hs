@@ -30,22 +30,22 @@ compareInodeCachesWith = ifM inodesChanged ( return Weakly, return Strongly )
 
 {- Checks if one of the provided old InodeCache matches the current
  - version of a file. -}
-sameInodeCache :: RawFilePath -> [InodeCache] -> Annex Bool
+sameInodeCache :: OsPath -> [InodeCache] -> Annex Bool
 sameInodeCache file [] = do
 	fastDebug "Annex.InodeSentinal" $
-		fromRawFilePath file ++ " inode cache empty"
+		fromOsPath file ++ " inode cache empty"
 	return False
 sameInodeCache file old = go =<< withTSDelta (liftIO . genInodeCache file)
   where
 	go Nothing = do
 		fastDebug "Annex.InodeSentinal" $
-			fromRawFilePath file ++ " not present, cannot compare with inode cache"
+			fromOsPath file ++ " not present, cannot compare with inode cache"
 		return False
 	go (Just curr) = ifM (elemInodeCaches curr old)
 		( return True
 		, do
 			fastDebug "Annex.InodeSentinal" $
-				fromRawFilePath file ++ " (" ++ show curr ++ ") does not match inode cache (" ++ show old ++ ")"
+				fromOsPath file ++ " (" ++ show curr ++ ") does not match inode cache (" ++ show old ++ ")"
 			return False
 		)
 
@@ -99,7 +99,7 @@ createInodeSentinalFile evenwithobjects =
 	alreadyexists = liftIO. sentinalFileExists =<< annexSentinalFile
 	hasobjects
 		| evenwithobjects = pure False
-		| otherwise = liftIO . doesDirectoryExist . fromRawFilePath
+		| otherwise = liftIO . doesDirectoryExist
 			=<< fromRepo gitAnnexObjectDir
 
 annexSentinalFile :: Annex SentinalFile
