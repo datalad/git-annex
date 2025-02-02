@@ -370,7 +370,7 @@ lockContentUsing contentlocker key fallback a = withContentLockFile key $ \mlock
 
 	cleanuplockfile lockfile = void $ tryNonAsync $ do
 		thawContentDir lockfile
-		liftIO $ removeWhenExistsWith R.removeLink $ fromOsPath lockfile
+		liftIO $ removeWhenExistsWith removeFile lockfile
 		cleanObjectDirs lockfile
 
 {- Runs an action, passing it the temp file to get,
@@ -437,7 +437,7 @@ verificationOfContentFailed :: OsPath -> Annex ()
 verificationOfContentFailed tmpfile = do
 	warning "Verification of content failed"
 	pruneTmpWorkDirBefore tmpfile
-		(liftIO . removeWhenExistsWith R.removeLink . fromOsPath)
+		(liftIO . removeWhenExistsWith removeFile)
 
 {- Checks if there is enough free disk space to download a key
  - to its temp file.
@@ -476,7 +476,7 @@ withTmp :: Key -> (OsPath -> Annex a) -> Annex a
 withTmp key action = do
 	tmp <- prepTmp key
 	res <- action tmp
-	pruneTmpWorkDirBefore tmp (liftIO . removeWhenExistsWith R.removeLink . fromOsPath)
+	pruneTmpWorkDirBefore tmp (liftIO . removeWhenExistsWith removeFile)
 	return res
 
 {- Moves a key's content into .git/annex/objects/
@@ -539,7 +539,7 @@ moveAnnex key af src = ifM (checkSecureHashes' key)
 				Database.Keys.addInodeCaches key
 					(catMaybes (destic:ics))
 		)
-	alreadyhave = liftIO $ R.removeLink $ fromOsPath src
+	alreadyhave = liftIO $ removeFile src
 
 checkSecureHashes :: Key -> Annex (Maybe String)
 checkSecureHashes key = ifM (Backend.isCryptographicallySecureKey key)
@@ -635,7 +635,7 @@ linkAnnex fromto key src (Just srcic) dest destmode =
 				catMaybes [destic, Just srcic]
 			return LinkAnnexOk
 		_ -> do
-			liftIO $ removeWhenExistsWith R.removeLink $ fromOsPath dest
+			liftIO $ removeWhenExistsWith removeFile dest
 			failed
 
 {- Removes the annex object file for a key. Lowlevel. -}
@@ -644,7 +644,7 @@ unlinkAnnex key = do
 	obj <- calcRepo (gitAnnexLocation key)
 	modifyContentDir obj $ do
 		secureErase obj
-		liftIO $ removeWhenExistsWith R.removeLink $ fromOsPath obj
+		liftIO $ removeWhenExistsWith removeFile obj
 
 {- Runs an action to transfer an object's content. The action is also
  - passed the size of the object.
@@ -767,7 +767,7 @@ removeAnnex :: ContentRemovalLock -> Annex ()
 removeAnnex (ContentRemovalLock key) = withObjectLoc key $ \file ->
 	cleanObjectLoc key $ do
 		secureErase file
-		liftIO $ removeWhenExistsWith R.removeLink $ fromOsPath file
+		liftIO $ removeWhenExistsWith removeFile file
 		g <- Annex.gitRepo 
 		mapM_ (\f -> void $ tryIO $ resetpointer $ fromTopFilePath f g)
 			=<< Database.Keys.getAssociatedFiles key
@@ -945,7 +945,7 @@ staleKeysPrune dirspec nottransferred = do
 	dir <- fromRepo dirspec
 	forM_ dups $ \k ->
 		pruneTmpWorkDirBefore (dir </> keyFile k)
-			(liftIO . R.removeLink . fromOsPath)
+			(liftIO . removeFile)
 
 	if nottransferred
 		then do
@@ -1117,6 +1117,6 @@ checkRetentionTimestamp key locker = do
  - time. -}
 removeRetentionTimeStamp :: Key -> OsPath -> Annex ()
 removeRetentionTimeStamp key rt = modifyContentDirWhenExists rt $ do
-	liftIO $ removeWhenExistsWith R.removeLink $ fromOsPath rt
+	liftIO $ removeWhenExistsWith removeFile rt
 	rtl <- calcRepo (gitAnnexContentRetentionTimestampLock key)
-	liftIO $ removeWhenExistsWith R.removeLink $ fromOsPath rtl
+	liftIO $ removeWhenExistsWith removeFile rtl

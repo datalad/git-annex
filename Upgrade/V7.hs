@@ -40,7 +40,7 @@ upgrade automatic = do
 	-- new database is not populated. It will be automatically
 	-- populated from the git-annex branch the next time it is used.
 	removeOldDb =<< fromRepo gitAnnexContentIdentifierDbDirOld
-	liftIO . removeWhenExistsWith (R.removeLink . fromOsPath)
+	liftIO . removeWhenExistsWith removeFile
 		=<< fromRepo gitAnnexContentIdentifierLockOld
 
 	-- The export databases are deleted here. The new databases
@@ -50,9 +50,9 @@ upgrade automatic = do
 
 	populateKeysDb
 	removeOldDb =<< fromRepo gitAnnexKeysDbOld
-	liftIO . removeWhenExistsWith (R.removeLink . fromOsPath)
+	liftIO . removeWhenExistsWith removeFile
 		=<< fromRepo gitAnnexKeysDbIndexCacheOld
-	liftIO . removeWhenExistsWith (R.removeLink . fromOsPath)
+	liftIO . removeWhenExistsWith removeFile
 		=<< fromRepo gitAnnexKeysDbLockOld
 	
 	updateSmudgeFilter

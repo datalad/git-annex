@@ -158,12 +158,12 @@ tryLock lockfile = do
 		hClose h
 		let failedlock = do
 			dropSideLock sidelock
-			removeWhenExistsWith removeLink tmp'
+			removeWhenExistsWith removeFile tmp
 			return Nothing
 		let tooklock st = return $ Just $ LockHandle abslockfile st sidelock
 		linkToLock sidelock tmp' (fromOsPath abslockfile) >>= \case
 			Just lckst -> do
-				removeWhenExistsWith removeLink tmp'
+				removeWhenExistsWith removeFile tmp
 				tooklock lckst
 			Nothing -> do
 				v <- readPidLock abslockfile
@@ -251,7 +251,7 @@ checkInsaneLustre dest = do
 		_ -> do
 			-- Try to clean up the extra copy we made
 			-- that has the same name. Egads.
-			_ <- tryIO $ removeLink $ fromOsPath dest
+			_ <- tryIO $ removeFile dest
 			return True
 
 -- | Waits as necessary to take a lock.
@@ -295,7 +295,7 @@ dropLock (LockHandle lockfile _ sidelock) = do
 	-- Drop side lock first, at which point the pid lock will be
 	-- considered stale.
 	dropSideLock sidelock
-	removeWhenExistsWith removeLink (fromOsPath lockfile)
+	removeWhenExistsWith removeFile lockfile
 dropLock ParentLocked = return ()
 
 getLockStatus :: PidLockFile -> IO LockStatus

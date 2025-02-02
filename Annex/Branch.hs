@@ -771,7 +771,7 @@ stageJournal jl commitindex = withIndex $ withOtherTmp $ \tmpdir -> do
 		stagedfs <- lines <$> hGetContents jlogh
 		mapM_ (removeFile . (dir </>) . toOsPath) stagedfs
 		hClose jlogh
-		removeWhenExistsWith (R.removeLink) (fromOsPath jlogf)
+		removeWhenExistsWith removeFile jlogf
 	openjlog tmpdir = liftIO $ openTmpFileIn tmpdir (literalOsPath "jlog")
 
 getLocalTransitions :: Annex Transitions

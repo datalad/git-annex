@@ -223,7 +223,7 @@ decodeCredPair creds = case lines creds of
 removeCreds :: OsPath -> Annex ()
 removeCreds file = do
 	d <- fromRepo gitAnnexCredsDir
-	liftIO $ removeWhenExistsWith R.removeLink (fromOsPath (d </> file))
+	liftIO $ removeWhenExistsWith removeFile (d </> file)
 
 includeCredsInfo :: ParsedRemoteConfig -> CredPairStorage -> [(String, String)] -> Annex [(String, String)]
 includeCredsInfo pc@(ParsedRemoteConfig cm _) storage info = do

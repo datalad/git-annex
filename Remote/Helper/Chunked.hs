@@ -420,10 +420,10 @@ writeRetrievedContent dest enc encc mh mp content miv = case (enc, mh, content) 
 		withBytes content $ \b ->
 			decrypt cmd encc cipher (feedBytes b) $
 				readBytes write
-		liftIO $ removeWhenExistsWith R.removeLink (fromOsPath f)
+		liftIO $ removeWhenExistsWith removeFile f
 	(Nothing, _, FileContent f) -> do
 		withBytes content write
-		liftIO $ removeWhenExistsWith R.removeLink (fromOsPath f)
+		liftIO $ removeWhenExistsWith removeFile f
 	(Nothing, _, ByteContent b) -> write b
   where
 	write b = case mh of
