@@ -15,7 +15,6 @@ import Data.Default
 import Data.ByteString.Builder
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Short as S (toShort, fromShort)
-import qualified System.FilePath.ByteString as P
 import System.PosixCompat.Files (isRegularFile)
 import Text.Read
 
@@ -82,20 +81,19 @@ moveContent = do
 	forM_ files move
   where
 	move f = do
-		let f' = toRawFilePath f
-		let k = fileKey1 (fromRawFilePath (P.takeFileName f'))
-		let d = parentDir f'
+		let k = fileKey1 (fromOsPath $ takeFileName f)
+		let d = parentDir f
 		liftIO $ allowWrite d
-		liftIO $ allowWrite f'
-		_ <- moveAnnex k (AssociatedFile Nothing) f'
-		liftIO $ removeDirectory (fromRawFilePath d)
+		liftIO $ allowWrite f
+		_ <- moveAnnex k (AssociatedFile Nothing) f
+		liftIO $ removeDirectory d
 
 updateSymlinks :: Annex ()
 updateSymlinks = do
 	showAction "updating symlinks"
 	top <- fromRepo Git.repoPath
 	(files, cleanup) <- inRepo $ LsFiles.inRepo [] [top]
-	forM_ files (fixlink . fromRawFilePath)
+	forM_ files fixlink
 	void $ liftIO cleanup
   where
 	fixlink f = do
@@ -103,11 +101,10 @@ updateSymlinks = do
 		case r of
 			Nothing -> noop
 			Just (k, _) -> do
-				link <- fromRawFilePath
-					<$> calcRepo (gitAnnexLink (toRawFilePath f) k)
+				link <- calcRepo (gitAnnexLink f k)
 				liftIO $ removeFile f
-				liftIO $ R.createSymbolicLink (toRawFilePath link) (toRawFilePath f)
-				Annex.Queue.addCommand [] "add" [Param "--"] [f]
+				liftIO $ R.createSymbolicLink (fromOsPath link) (fromOsPath f)
+				Annex.Queue.addCommand [] "add" [Param "--"] [(fromOsPath f)]
 
 moveLocationLogs :: Annex ()
 moveLocationLogs = do
@@ -118,15 +115,15 @@ moveLocationLogs = do
 	oldlocationlogs = do
 		dir <- fromRepo Upgrade.V2.gitStateDir
 		ifM (liftIO $ doesDirectoryExist dir)
-			( mapMaybe oldlog2key
+			( mapMaybe (oldlog2key . fromOsPath)
 				<$> liftIO (getDirectoryContents dir)
 			, return []
 			)
 	move (l, k) = do
 		dest <- fromRepo (logFile2 k)
 		dir <- fromRepo Upgrade.V2.gitStateDir
-		let f = dir </> l
-		createWorkTreeDirectory (parentDir (toRawFilePath dest))
+		let f = dir </> toOsPath l
+		createWorkTreeDirectory (parentDir dest)
 		-- could just git mv, but this way deals with
 		-- log files that are not checked into git,
 		-- as well as merging with already upgraded
@@ -134,9 +131,9 @@ moveLocationLogs = do
 		old <- liftIO $ readLog1 f
 		new <- liftIO $ readLog1 dest
 		liftIO $ writeLog1 dest (old++new)
-		Annex.Queue.addCommand [] "add" [Param "--"] [dest]
-		Annex.Queue.addCommand [] "add" [Param "--"] [f]
-		Annex.Queue.addCommand [] "rm" [Param "--quiet", Param "-f", Param "--"] [f]
+		Annex.Queue.addCommand [] "add" [Param "--"] [fromOsPath dest]
+		Annex.Queue.addCommand [] "add" [Param "--"] [fromOsPath f]
+		Annex.Queue.addCommand [] "rm" [Param "--quiet", Param "-f", Param "--"] [fromOsPath f]
 
 oldlog2key :: FilePath -> Maybe (FilePath, Key)
 oldlog2key l
@@ -197,70 +194,64 @@ fileKey1 :: FilePath -> Key
 fileKey1 file = readKey1 $
 	replace "&a" "&" $ replace "&s" "%" $ replace "%" "/" file
 
-writeLog1 :: FilePath -> [LogLine] -> IO ()
-writeLog1 file ls = viaTmp F.writeFile
-	(toOsPath (toRawFilePath file))
-	(toLazyByteString $ buildLog ls)
+writeLog1 :: OsPath -> [LogLine] -> IO ()
+writeLog1 file ls = viaTmp F.writeFile file (toLazyByteString $ buildLog ls)
 
-readLog1 :: FilePath -> IO [LogLine]
-readLog1 file = catchDefaultIO [] $
-	parseLog <$> F.readFile (toOsPath (toRawFilePath file))
+readLog1 :: OsPath -> IO [LogLine]
+readLog1 file = catchDefaultIO [] $ parseLog <$> F.readFile file
 
-lookupKey1 :: FilePath -> Annex (Maybe (Key, Backend))
+lookupKey1 :: OsPath -> Annex (Maybe (Key, Backend))
 lookupKey1 file = do
 	tl <- liftIO $ tryIO getsymlink
 	case tl of
 		Left _ -> return Nothing
 		Right l -> makekey l
   where
-	getsymlink = takeFileName . fromRawFilePath
-		<$> R.readSymbolicLink (toRawFilePath file)
+	getsymlink :: IO OsPath
+	getsymlink = takeFileName . toOsPath
+		<$> R.readSymbolicLink (fromOsPath file)
 	makekey l = maybeLookupBackendVariety (fromKey keyVariety k) >>= \case
 		Nothing -> do
 			unless (null kname || null bname ||
-			        not (isLinkToAnnex (toRawFilePath l))) $
+			        not (isLinkToAnnex (fromOsPath l))) $
 				warning (UnquotedString skip)
 			return Nothing
 		Just backend -> return $ Just (k, backend)
 	  where
-		k = fileKey1 l
+		k = fileKey1 (fromOsPath l)
 		bname = decodeBS (formatKeyVariety (fromKey keyVariety k))
 		kname = decodeBS (S.fromShort (fromKey keyName k))
-		skip = "skipping " ++ file ++ 
+		skip = "skipping " ++ fromOsPath file ++ 
 			" (unknown backend " ++ bname ++ ")"
 
-getKeyFilesPresent1 :: Annex [FilePath]
-getKeyFilesPresent1  = getKeyFilesPresent1' . fromRawFilePath
-	=<< fromRepo gitAnnexObjectDir
-getKeyFilesPresent1' :: FilePath -> Annex [FilePath]
+getKeyFilesPresent1 :: Annex [OsPath]
+getKeyFilesPresent1  = getKeyFilesPresent1' =<< fromRepo gitAnnexObjectDir
+getKeyFilesPresent1' :: OsPath -> Annex [OsPath]
 getKeyFilesPresent1' dir =
 	ifM (liftIO $ doesDirectoryExist dir)
 		(  do
 			dirs <- liftIO $ getDirectoryContents dir
-			let files = map (\d -> dir ++ "/" ++ d ++ "/" ++ takeFileName d) dirs
+			let files = map (\d -> dir <> literalOsPath "/" <> d <> literalOsPath "/" <> takeFileName d) dirs
 			liftIO $ filterM present files
 		, return []
 		)
   where
+	present :: OsPath -> IO Bool
 	present f = do
-		result <- tryIO $ R.getFileStatus (toRawFilePath f)
+		result <- tryIO $ R.getFileStatus (fromOsPath f)
 		case result of
 			Right s -> return $ isRegularFile s
 			Left _ -> return False
 
-logFile1 :: Git.Repo -> Key -> String
-logFile1 repo key = Upgrade.V2.gitStateDir repo ++ keyFile1 key ++ ".log"
-
-logFile2 :: Key -> Git.Repo -> String
+logFile2 :: Key -> Git.Repo -> OsPath
 logFile2 = logFile' (hashDirLower def)
 
-logFile' :: (Key -> RawFilePath) -> Key -> Git.Repo -> String
+logFile' :: (Key -> OsPath) -> Key -> Git.Repo -> OsPath
 logFile' hasher key repo =
-	gitStateDir repo ++ fromRawFilePath (hasher key) ++ fromRawFilePath (keyFile key) ++ ".log"
+	gitStateDir repo <> hasher key <> keyFile key <> literalOsPath ".log"
 
-stateDir :: FilePath
-stateDir = addTrailingPathSeparator ".git-annex"
+stateDir :: OsPath
+stateDir = addTrailingPathSeparator (literalOsPath ".git-annex")
 
-gitStateDir :: Git.Repo -> FilePath
-gitStateDir repo = addTrailingPathSeparator $
-	fromRawFilePath (Git.repoPath repo) </> stateDir
+gitStateDir :: Git.Repo -> OsPath
+gitStateDir repo = addTrailingPathSeparator $ Git.repoPath repo </> stateDir
