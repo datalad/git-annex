@@ -53,6 +53,7 @@ import Messages.Progress
 import qualified Git
 import qualified Git.Construct
 import Git.Types
+import qualified Utility.FileIO as F
 
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
@@ -92,12 +93,11 @@ mkRetrievalVerifiableKeysSecure gc
 
 -- A Storer that expects to be provided with a file containing
 -- the content of the key to store.
-fileStorer :: (Key -> FilePath -> MeterUpdate -> Annex ()) -> Storer
+fileStorer :: (Key -> OsPath -> MeterUpdate -> Annex ()) -> Storer
 fileStorer a k (FileContent f) m = a k f m
 fileStorer a k (ByteContent b) m = withTmp k $ \f -> do
-	let f' = fromRawFilePath f
-	liftIO $ L.writeFile f' b
-	a k f' m
+	liftIO $ L.writeFile (fromOsPath f) b
+	a k f m
 
 -- A Storer that expects to be provided with a L.ByteString of
 -- the content to store.
@@ -107,7 +107,7 @@ byteStorer a k c m = withBytes c $ \b -> a k b m
 -- A Retriever that generates a lazy ByteString containing the Key's
 -- content, and passes it to a callback action which will fully consume it
 -- before returning.
-byteRetriever :: (Key -> (L.ByteString -> Annex a) -> Annex a) -> Key -> MeterUpdate -> RawFilePath -> Maybe IncrementalVerifier -> (ContentSource -> Annex a) -> Annex a
+byteRetriever :: (Key -> (L.ByteString -> Annex a) -> Annex a) -> Key -> MeterUpdate -> OsPath -> Maybe IncrementalVerifier -> (ContentSource -> Annex a) -> Annex a
 byteRetriever a k _m _dest _miv callback = a k (callback . ByteContent)
 
 -- A Retriever that writes the content of a Key to a file.
@@ -115,7 +115,7 @@ byteRetriever a k _m _dest _miv callback = a k (callback . ByteContent)
 -- retrieves data. The incremental verifier is updated in the background as
 -- the action writes to the file, but may not be updated with the entire
 -- content of the file.
-fileRetriever :: (RawFilePath -> Key -> MeterUpdate -> Annex ()) -> Retriever
+fileRetriever :: (OsPath -> Key -> MeterUpdate -> Annex ()) -> Retriever
 fileRetriever a = fileRetriever' $ \f k m miv -> 
 	let retrieve = a f k m
 	in tailVerify miv f retrieve
@@ -124,20 +124,20 @@ fileRetriever a = fileRetriever' $ \f k m miv ->
  - The action is responsible for updating the progress meter and the 
  - incremental verifier as it retrieves data.
  -}
-fileRetriever' :: (RawFilePath -> Key -> MeterUpdate -> Maybe IncrementalVerifier -> Annex ()) -> Retriever
+fileRetriever' :: (OsPath -> Key -> MeterUpdate -> Maybe IncrementalVerifier -> Annex ()) -> Retriever
 fileRetriever' a k m dest miv callback = do
 	createAnnexDirectory (parentDir dest)
 	a dest k m miv
-	pruneTmpWorkDirBefore dest (callback . FileContent . fromRawFilePath)
+	pruneTmpWorkDirBefore dest (callback . FileContent)
 
 {- The base Remote that is provided to specialRemote needs to have
  - storeKey, retrieveKeyFile, removeKey, and checkPresent methods,
  - but they are never actually used (since specialRemote replaces them).
  - Here are some dummy ones.
  -}
-storeKeyDummy :: Key -> AssociatedFile -> Maybe FilePath -> MeterUpdate -> Annex ()
+storeKeyDummy :: Key -> AssociatedFile -> Maybe OsPath -> MeterUpdate -> Annex ()
 storeKeyDummy _ _ _ _ = error "missing storeKey implementation"
-retrieveKeyFileDummy :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification
+retrieveKeyFileDummy :: Key -> AssociatedFile -> OsPath -> MeterUpdate -> VerifyConfig -> Annex Verification
 retrieveKeyFileDummy _ _ _ _ _ = error "missing retrieveKeyFile implementation"
 removeKeyDummy :: Maybe SafeDropProof -> Key -> Annex ()
 removeKeyDummy _ _ = error "missing removeKey implementation"
@@ -258,9 +258,9 @@ specialRemote' cfg c storer retriever remover checkpresent baser = encr
 
 	displayprogress bwlimit p k srcfile a
 		| displayProgress cfg = do
-			metered (Just p) (KeySizer k (pure (fmap toRawFilePath srcfile))) bwlimit (const a)
+			metered (Just p) (KeySizer k (pure srcfile)) bwlimit (const a)
 		| otherwise = a p
 
 withBytes :: ContentSource -> (L.ByteString -> Annex a) -> Annex a
 withBytes (ByteContent b) a = a b
-withBytes (FileContent f) a = a =<< liftIO (L.readFile f)
+withBytes (FileContent f) a = a =<< liftIO (F.readFile f)

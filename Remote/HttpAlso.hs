@@ -122,14 +122,14 @@ httpAlsoSetup _ (Just u) _ c gc = do
 
 downloadKey :: Maybe URLString -> LearnedLayout -> Retriever
 downloadKey baseurl ll = fileRetriever' $ \dest key p iv ->
-	downloadAction (fromRawFilePath dest) p iv (keyUrlAction baseurl ll key)
+	downloadAction dest p iv (keyUrlAction baseurl ll key)
 
-retriveExportHttpAlso :: Maybe URLString -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Verification
+retriveExportHttpAlso :: Maybe URLString -> Key -> ExportLocation -> OsPath -> MeterUpdate -> Annex Verification
 retriveExportHttpAlso baseurl key loc dest p = do
 	verifyKeyContentIncrementally AlwaysVerify key $ \iv ->
 		downloadAction dest p iv (exportLocationUrlAction baseurl loc)
 
-downloadAction :: FilePath -> MeterUpdate -> Maybe IncrementalVerifier -> ((URLString -> Annex (Either String ())) -> Annex (Either String ())) -> Annex ()
+downloadAction :: OsPath -> MeterUpdate -> Maybe IncrementalVerifier -> ((URLString -> Annex (Either String ())) -> Annex (Either String ())) -> Annex ()
 downloadAction dest p iv run =
 	Url.withUrlOptions $ \uo ->
 		run (\url -> Url.download' p iv url dest uo)
@@ -192,7 +192,7 @@ exportLocationUrlAction
 	-> (URLString -> Annex (Either String ()))
 	-> Annex (Either String ())
 exportLocationUrlAction (Just baseurl) loc a =
-	a (baseurl P.</> fromRawFilePath (fromExportLocation loc))
+	a (baseurl P.</> fromOsPath (fromExportLocation loc))
 exportLocationUrlAction Nothing _ _ = noBaseUrlError
 
 -- cannot normally happen
@@ -228,5 +228,5 @@ supportedLayouts baseurl =
 	  ]
 	]
   where
-	mkurl k hasher = baseurl P.</> fromRawFilePath (hasher k) P.</> kf k
-	kf k = fromRawFilePath (keyFile k)
+	mkurl k hasher = baseurl P.</> fromOsPath (hasher k) P.</> kf k
+	kf k = fromOsPath (keyFile k)

@@ -33,7 +33,6 @@ import Crypto
 import Backend (isStableKey)
 import Annex.SpecialRemote.Config
 import Annex.Verify
-import qualified Utility.RawFilePath as R
 import qualified Utility.FileIO as F
 
 import qualified Data.ByteString as S
@@ -584,4 +583,4 @@ ensureChunksAreLogged _ _ (ChunkKeys _) = return ()
 
 withBytes :: ContentSource -> (L.ByteString -> Annex a) -> Annex a
 withBytes (ByteContent b) a = a b
-withBytes (FileContent f) a = a =<< liftIO (L.readFile (fromOsPath f))
+withBytes (FileContent f) a = a =<< liftIO (F.readFile f)

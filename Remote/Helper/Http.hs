@@ -14,6 +14,7 @@ import Types.StoreRetrieve
 import Remote.Helper.Special
 import Utility.Metered
 import Utility.Hash (IncrementalVerifier(..))
+import qualified Utility.FileIO as F
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString as S
@@ -31,14 +32,14 @@ httpStorer a = fileStorer $ \k f m -> a k =<< liftIO (httpBodyStorer f m)
 
 -- Reads the file and generates a streaming request body, that will update
 -- the meter as it's sent.
-httpBodyStorer :: FilePath -> MeterUpdate -> IO RequestBody
+httpBodyStorer :: OsPath -> MeterUpdate -> IO RequestBody
 httpBodyStorer src m = do
-	size <- getFileSize (toRawFilePath src)
+	size <- getFileSize src
 	let streamer sink = withMeteredFile src m $ \b -> byteStringPopper b sink
 	return $ RequestBodyStream (fromInteger size) streamer
 
 -- Like httpBodyStorer, but generates a chunked request body.
-httpBodyStorerChunked :: FilePath -> MeterUpdate -> RequestBody
+httpBodyStorerChunked :: OsPath -> MeterUpdate -> RequestBody
 httpBodyStorerChunked src m =
 	let streamer sink = withMeteredFile src m $ \b -> byteStringPopper b sink
 	in RequestBodyStreamChunked streamer
@@ -75,10 +76,10 @@ handlePopper numchunks chunksize meterupdate h sink = do
 
 -- Reads the http body and stores it to the specified file, updating the
 -- meter and incremental verifier as it goes.
-httpBodyRetriever :: FilePath -> MeterUpdate -> Maybe IncrementalVerifier -> Response BodyReader -> IO ()
+httpBodyRetriever :: OsPath -> MeterUpdate -> Maybe IncrementalVerifier -> Response BodyReader -> IO ()
 httpBodyRetriever dest meterupdate iv resp
 	| responseStatus resp /= ok200 = giveup $ show $ responseStatus resp
-	| otherwise = bracket (openBinaryFile dest WriteMode) hClose (go zeroBytesProcessed)
+	| otherwise = bracket (F.openBinaryFile dest WriteMode) hClose (go zeroBytesProcessed)
   where
 	reader = responseBody resp
 	go sofar h = do

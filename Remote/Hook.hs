@@ -118,8 +118,8 @@ hookEnv action k f = Just <$> mergeenv (fileenv f ++ keyenv)
 		]
 	fileenv Nothing = []
 	fileenv (Just file) =  [envvar "FILE" file]
-	hashbits = map takeDirectory $ splitPath $
-		fromRawFilePath $ hashDirMixed def k
+	hashbits = map (fromOsPath . takeDirectory) $
+		splitPath $ hashDirMixed def k
 
 lookupHook :: HookName -> Action -> Annex (Maybe String)
 lookupHook hookname action = do
@@ -159,11 +159,11 @@ runHook' hook action k f a = maybe (return False) run =<< lookupHook hook action
 			)
 
 store :: HookName -> Storer
-store h = fileStorer $ \k src _p -> runHook h "store" k (Just src)
+store h = fileStorer $ \k src _p -> runHook h "store" k (Just (fromOsPath src))
 
 retrieve :: HookName -> Retriever
 retrieve h = fileRetriever $ \d k _p ->
-	unlessM (runHook' h "retrieve" k (Just (fromRawFilePath d)) $ return True) $
+	unlessM (runHook' h "retrieve" k (Just (fromOsPath d)) $ return True) $
 		giveup "failed to retrieve content"
 
 remove :: HookName -> Remover

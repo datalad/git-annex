@@ -31,6 +31,7 @@ module Types.Remote
 
 import Data.Ord
 
+import Common
 import qualified Git
 import Types.Key
 import Types.UUID
@@ -47,7 +48,6 @@ import Utility.Hash (IncrementalVerifier)
 import Config.Cost
 import Utility.Metered
 import Git.Types (RemoteName)
-import Utility.SafeCommand
 import Utility.Url
 import Utility.DataUnits
 
@@ -92,18 +92,18 @@ data RemoteA a = Remote
 	-- The key should not appear to be present on the remote until
 	-- all of its contents have been transferred.
 	-- Throws exception on failure.
-	, storeKey :: Key -> AssociatedFile -> Maybe FilePath -> MeterUpdate -> a ()
+	, storeKey :: Key -> AssociatedFile -> Maybe OsPath -> MeterUpdate -> a ()
 	-- Retrieves a key's contents to a file.
 	-- (The MeterUpdate does not need to be used if it writes
 	-- sequentially to the file.)
 	-- Throws exception on failure.
-	, retrieveKeyFile :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfigA a -> a Verification
+	, retrieveKeyFile :: Key -> AssociatedFile -> OsPath -> MeterUpdate -> VerifyConfigA a -> a Verification
 	{- Will retrieveKeyFile write to the file in order? -}
 	, retrieveKeyFileInOrder :: a Bool
 	-- Retrieves a key's contents to a tmp file, if it can be done cheaply.
 	-- It's ok to create a symlink or hardlink.
 	-- Throws exception on failure.
-	, retrieveKeyFileCheap :: Maybe (Key -> AssociatedFile -> FilePath -> a ())
+	, retrieveKeyFileCheap :: Maybe (Key -> AssociatedFile -> OsPath -> a ())
 	-- Security policy for reteiving keys from this remote.
 	, retrievalSecurityPolicy :: RetrievalSecurityPolicy
 	-- Removes a key's contents (succeeds even the contents are not present)
@@ -147,7 +147,7 @@ data RemoteA a = Remote
 	-- a Remote's configuration from git
 	, gitconfig :: RemoteGitConfig
 	-- a Remote can be associated with a specific local filesystem path
-	, localpath :: Maybe FilePath
+	, localpath :: Maybe OsPath
 	-- a Remote can be known to be readonly
 	, readonly :: Bool
 	-- a Remote can allow writes but not have a way to delete content
@@ -270,12 +270,12 @@ data ExportActions a = ExportActions
 	-- The exported file should not appear to be present on the remote
 	-- until all of its contents have been transferred.
 	-- Throws exception on failure.
-	{ storeExport :: FilePath -> Key -> ExportLocation -> MeterUpdate -> a ()
+	{ storeExport :: OsPath -> Key -> ExportLocation -> MeterUpdate -> a ()
 	-- Retrieves exported content to a file.
 	-- (The MeterUpdate does not need to be used if it writes
 	-- sequentially to the file.)
 	-- Throws exception on failure.
-	, retrieveExport :: Key -> ExportLocation -> FilePath -> MeterUpdate -> a Verification
+	, retrieveExport :: Key -> ExportLocation -> OsPath -> MeterUpdate -> a Verification
 	-- Removes an exported file (succeeds if the contents are not present)
 	-- Can throw exception if unable to access remote, or if remote
 	-- refuses to remove the content.
@@ -351,7 +351,7 @@ data ImportActions a = ImportActions
 		:: ExportLocation
 		-> [ContentIdentifier]
 		-- file to write content to
-		-> FilePath
+		-> OsPath
 		-- Either the key, or when it's not yet known, a callback
 		-- that generates a key from the downloaded content.
 		-> Either Key (a Key)
@@ -376,7 +376,7 @@ data ImportActions a = ImportActions
 	--
 	-- Throws exception on failure.
 	, storeExportWithContentIdentifier
-		:: FilePath
+		:: OsPath
 		-> Key
 		-> ExportLocation
 		-- old content that it's safe to overwrite

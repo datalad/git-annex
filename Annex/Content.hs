@@ -653,7 +653,7 @@ unlinkAnnex key = do
  - If this happens, runs the rollback action and throws an exception.
  - The rollback action should remove the data that was transferred.
  -}
-sendAnnex :: Key -> Maybe FilePath -> Annex () -> (FilePath -> FileSize -> Annex a) -> Annex a
+sendAnnex :: Key -> Maybe OsPath -> Annex () -> (OsPath -> FileSize -> Annex a) -> Annex a
 sendAnnex key o rollback sendobject = go =<< prepSendAnnex' key o
   where
 	go (Just (f, sz, check)) = do
@@ -676,10 +676,10 @@ sendAnnex key o rollback sendobject = go =<< prepSendAnnex' key o
  - Annex monad of the remote that is receiving the object, rather than
  - the sender. So it cannot rely on Annex state.
  -}
-prepSendAnnex :: Key -> Maybe FilePath -> Annex (Maybe (FilePath, FileSize, Annex Bool))
+prepSendAnnex :: Key -> Maybe OsPath -> Annex (Maybe (OsPath, FileSize, Annex Bool))
 prepSendAnnex key Nothing = withObjectLoc key $ \f -> do
 	let retval c cs = return $ Just 
-		( fromOsPath f
+		( f
 		, inodeCacheFileSize c
 		, sameInodeCache f cs
 		)
@@ -704,19 +704,18 @@ prepSendAnnex key Nothing = withObjectLoc key $ \f -> do
 			Nothing -> return Nothing
 -- If the provided object file is the annex object file, handle as above.
 prepSendAnnex key (Just o) = withObjectLoc key $ \aof ->
-	let o' = toOsPath o
-	in if aof == o'
+	if aof == o
 		then prepSendAnnex key Nothing
 		else do
-			withTSDelta (liftIO . genInodeCache o') >>= \case
+			withTSDelta (liftIO . genInodeCache o) >>= \case
 				Nothing -> return Nothing
 				Just c -> return $ Just
 					( o
 					, inodeCacheFileSize c
-					, sameInodeCache o' [c]
+					, sameInodeCache o [c]
 					)
 
-prepSendAnnex' :: Key -> Maybe FilePath -> Annex (Maybe (FilePath, FileSize, Annex (Maybe String)))
+prepSendAnnex' :: Key -> Maybe OsPath -> Annex (Maybe (OsPath, FileSize, Annex (Maybe String)))
 prepSendAnnex' key o = prepSendAnnex key o >>= \case
 	Just (f, sz, checksuccess) -> 
 		let checksuccess' = ifM checksuccess
