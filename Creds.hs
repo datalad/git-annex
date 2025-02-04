@@ -36,7 +36,6 @@ import Types.ProposedAccepted
 import Remote.Helper.Encryptable (remoteCipher, remoteCipher', embedCreds, EncryptionIsSetup, extractCipher)
 import Utility.Env (getEnv)
 import Utility.Base64
-import qualified Utility.RawFilePath as R
 import qualified Utility.FileIO as F
 
 import qualified Data.ByteString.Lazy.Char8 as L8

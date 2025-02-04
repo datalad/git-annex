@@ -43,7 +43,6 @@ import Utility.Directory.Create
 import Utility.Tmp.Dir
 import Utility.Rsync
 import Utility.FileMode
-import qualified Utility.RawFilePath as R
 import qualified Utility.FileIO as F
 
 import qualified Data.Set as S

@@ -31,12 +31,9 @@ import Annex.UUID
 import qualified Annex.Url as Url
 import Remote.Helper.ExportImport
 import Annex.SpecialRemote.Config
-import qualified Utility.RawFilePath as R
+import qualified Utility.OsString as OS
 
 import Network.URI
-import qualified System.FilePath.ByteString as P
-import qualified Data.ByteString as S
-
 #ifdef WITH_TORRENTPARSER
 import Data.Torrent
 import qualified Utility.FileIO as F
@@ -101,7 +98,7 @@ gen r _ rc gc rs = do
 		, remoteStateHandle = rs
 		}
 
-downloadKey :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification
+downloadKey :: Key -> AssociatedFile -> OsPath -> MeterUpdate -> VerifyConfig -> Annex Verification
 downloadKey key _file dest p _ = do
 	get . map (torrentUrlNum . fst . getDownloader) =<< getBitTorrentUrls key
 	-- While bittorrent verifies the hash in the torrent file,
@@ -122,7 +119,7 @@ downloadKey key _file dest p _ = do
 		unless ok $
 			get []
 
-uploadKey :: Key -> AssociatedFile -> Maybe FilePath -> MeterUpdate -> Annex ()
+uploadKey :: Key -> AssociatedFile -> Maybe OsPath -> MeterUpdate -> Annex ()
 uploadKey _ _ _ _ = giveup "upload to bittorrent not supported"
 
 dropKey :: Maybe SafeDropProof -> Key -> Annex ()
@@ -180,7 +177,7 @@ torrentUrlKey :: URLString -> Annex Key
 torrentUrlKey u = return $ fromUrl (fst $ torrentUrlNum u) Nothing False
 
 {- Temporary filename to use to store the torrent file. -}
-tmpTorrentFile :: URLString -> Annex RawFilePath
+tmpTorrentFile :: URLString -> Annex OsPath
 tmpTorrentFile u = fromRepo . gitAnnexTmpObjectLocation =<< torrentUrlKey u
 
 {- A cleanup action is registered to delete the torrent file
@@ -192,13 +189,13 @@ tmpTorrentFile u = fromRepo . gitAnnexTmpObjectLocation =<< torrentUrlKey u
  -}
 registerTorrentCleanup :: URLString -> Annex ()
 registerTorrentCleanup u = Annex.addCleanupAction (TorrentCleanup u) $
-	liftIO . removeWhenExistsWith R.removeLink =<< tmpTorrentFile u
+	liftIO . removeWhenExistsWith removeFile =<< tmpTorrentFile u
 
 {- Downloads the torrent file. (Not its contents.) -}
 downloadTorrentFile :: URLString -> Annex Bool
 downloadTorrentFile u = do
 	torrent <- tmpTorrentFile u
-	ifM (liftIO $ doesFileExist (fromRawFilePath torrent))
+	ifM (liftIO $ doesFileExist torrent)
 		( return True
 		, do
 			showAction "downloading torrent file"
@@ -206,28 +203,27 @@ downloadTorrentFile u = do
 			if isTorrentMagnetUrl u
 				then withOtherTmp $ \othertmp -> do
 					kf <- keyFile <$> torrentUrlKey u
-					let metadir = othertmp P.</> "torrentmeta" P.</> kf
+					let metadir = othertmp </> literalOsPath "torrentmeta" </> kf
 					createAnnexDirectory metadir
 					showOutput
 					ok <- downloadMagnetLink u metadir torrent
-					liftIO $ removeDirectoryRecursive
-						(fromRawFilePath metadir)
+					liftIO $ removeDirectoryRecursive metadir
 					return ok
 				else withOtherTmp $ \othertmp -> do
-					withTmpFileIn (toOsPath othertmp) (toOsPath "torrent") $ \f h -> do
+					withTmpFileIn othertmp (literalOsPath "torrent") $ \f h -> do
 						liftIO $ hClose h
-						resetAnnexFilePerm (fromOsPath f)
+						resetAnnexFilePerm f
 						ok <- Url.withUrlOptions $ 
-							Url.download nullMeterUpdate Nothing u (fromRawFilePath (fromOsPath f))
+							Url.download nullMeterUpdate Nothing u f
 						when ok $
-							liftIO $ moveFile (fromOsPath f) torrent
+							liftIO $ moveFile f torrent
 						return ok
 		)
 
-downloadMagnetLink :: URLString -> RawFilePath -> RawFilePath -> Annex Bool
+downloadMagnetLink :: URLString -> OsPath -> OsPath -> Annex Bool
 downloadMagnetLink u metadir dest = ifM download
 	( liftIO $ do
-		ts <- filter (".torrent" `S.isSuffixOf`)
+		ts <- filter (literalOsPath ".torrent" `OS.isSuffixOf`)
 			<$> dirContents metadir
 		case ts of
 			(t:[]) -> do
@@ -244,22 +240,22 @@ downloadMagnetLink u metadir dest = ifM download
 		, Param "--seed-time=0"
 		, Param "--summary-interval=0"
 		, Param "-d"
-		, File (fromRawFilePath metadir)
+		, File (fromOsPath metadir)
 		]
 
-downloadTorrentContent :: Key -> URLString -> FilePath -> Int -> MeterUpdate -> Annex Bool
+downloadTorrentContent :: Key -> URLString -> OsPath -> Int -> MeterUpdate -> Annex Bool
 downloadTorrentContent k u dest filenum p = do
 	torrent <- tmpTorrentFile u
 	withOtherTmp $ \othertmp -> do
 		kf <- keyFile <$> torrentUrlKey u
-		let downloaddir = othertmp P.</> "torrent" P.</> kf
+		let downloaddir = othertmp </> literalOsPath "torrent" </> kf
 		createAnnexDirectory downloaddir
 		f <- wantedfile torrent
-		let dlf = fromRawFilePath downloaddir </> f
+		let dlf = downloaddir </> f
 		showOutput
 		ifM (download torrent downloaddir <&&> liftIO (doesFileExist dlf))
 			( do
-				liftIO $ moveFile (toRawFilePath dlf) (toRawFilePath dest)
+				liftIO $ moveFile dlf dest
 				-- The downloaddir is not removed here,
 				-- so if aria downloaded parts of other
 				-- files, and this is called again, it will
@@ -273,9 +269,9 @@ downloadTorrentContent k u dest filenum p = do
   where
 	download torrent tmpdir = ariaProgress (fromKey keySize k) p
 		[ Param $ "--select-file=" ++ show filenum
-		, File (fromRawFilePath torrent)
+		, File (fromOsPath torrent)
 		, Param "-d"
-		, File (fromRawFilePath tmpdir)
+		, File (fromOsPath tmpdir)
 		, Param "--seed-time=0"
 		, Param "--summary-interval=0"
 		, Param "--file-allocation=none"
@@ -362,11 +358,11 @@ btshowmetainfo torrent field =
 {- Examines the torrent file and gets the list of files in it,
  - and their sizes.
  -}
-torrentFileSizes :: RawFilePath -> IO [(FilePath, Integer)]
+torrentFileSizes :: OsPath -> IO [(OsPath, Integer)]
 torrentFileSizes torrent = do
 #ifdef WITH_TORRENTPARSER
-	let mkfile = joinPath . map (scrub . decodeBL)
-	b <- F.readFile (toOsPath torrent)
+	let mkfile = joinPath . map (scrub . toOsPath)
+	b <- F.readFile torrent
 	return $ case readTorrent b of
 		Left e -> giveup $ "failed to parse torrent: " ++ e
 		Right t -> case tInfo t of
@@ -382,19 +378,19 @@ torrentFileSizes torrent = do
 			fnl <- getfield "file name"
 			szl <- map readish <$> getfield "file size"
 			case (fnl, szl) of
-				((fn:[]), (Just sz:[])) -> return [(scrub fn, sz)]
+				((fn:[]), (Just sz:[])) -> return [(scrub (toOsPath fn), sz)]
 		 		_ -> parsefailed (show (fnl, szl))
 		else do
 			v <- getfield "directory name"
 			case v of
-				(d:[]) -> return $ map (splitsize d) files
+				(d:[]) -> return $ map (splitsize (toOsPath d)) files
 				_ -> parsefailed (show v)
   where
-	getfield = btshowmetainfo (fromRawFilePath torrent)
+	getfield = btshowmetainfo (fromOsPath torrent)
 	parsefailed s = giveup $ "failed to parse btshowmetainfo output for torrent file: " ++ show s
 
 	-- btshowmetainfo outputs a list of "filename (size)"
-	splitsize d l = (scrub (d </> fn), sz)
+	splitsize d l = (scrub (d </> toOsPath fn), sz)
 	  where
 		sz = fromMaybe (parsefailed l) $ readish $ 
 			reverse $ takeWhile (/= '(') $ dropWhile (== ')') $
@@ -403,7 +399,7 @@ torrentFileSizes torrent = do
 			dropWhile (/= '(') $ dropWhile (== ')') $ reverse l
 #endif
 	-- a malicious torrent file might try to do directory traversal
-	scrub f = if isAbsolute f || any (== "..") (splitPath f)
+	scrub f = if isAbsolute f || any (== literalOsPath "..") (splitPath f)
 		then giveup "found unsafe filename in torrent!"
 		else f
 

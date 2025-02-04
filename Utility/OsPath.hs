@@ -25,6 +25,7 @@ module Utility.OsPath (
 import Utility.FileSystemEncoding
 import Data.ByteString.Short (ShortByteString)
 import qualified Data.ByteString.Short as S
+import qualified Data.ByteString.Lazy as L
 #ifdef WITH_OSPATH
 import System.OsPath as X hiding (OsPath, OsString, unsafeFromChar)
 import System.OsPath
@@ -70,6 +71,10 @@ instance OsPathConv ShortByteString where
 	fromOsPath = bytesFromOsPath
 #endif
 
+instance OsPathConv L.ByteString where
+	toOsPath = toOsPath . L.toStrict
+	fromOsPath = L.fromStrict . fromOsPath
+
 #if defined(mingw32_HOST_OS)
 -- On Windows, OsString contains a ShortByteString that is
 -- utf-16 encoded. But the input RawFilePath is assumed to
@@ -114,6 +119,10 @@ instance OsPathConv RawFilePath where
 instance OsPathConv ShortByteString where
 	toOsPath = S.fromShort
 	fromOsPath = S.toShort
+
+instance OsPathConv L.ByteString where
+	toOsPath = L.toStrict
+	fromOsPath = L.fromStrict
 
 unsafeFromChar :: Char -> Word8
 unsafeFromChar = fromIntegral . ord
