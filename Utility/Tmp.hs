@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE CPP #-}
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Utility.Tmp (
@@ -110,6 +111,7 @@ relatedTemplate :: RawFilePath -> Template
 relatedTemplate = toOsPath . relatedTemplate'
 
 relatedTemplate' :: RawFilePath -> RawFilePath
+#ifndef mingw32_HOST_OS
 relatedTemplate' f
 	| len > templateAddedLength = 
 		{- Some filesystems like FAT have issues with filenames
@@ -121,6 +123,11 @@ relatedTemplate' f
   where
 	len = B.length f
 	dot = fromIntegral (ord '.')
+#else
+-- Avoids a test suite failure on windows, reason unknown, but
+-- best to keep paths short on windows anyway.
+relatedTemplate' _ = "t"
+#endif
 
 {- When a Template is used to create a temporary file, some random bytes
  - are appended to it. This is how many such bytes can be added, maximum.
