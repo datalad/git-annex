@@ -81,6 +81,7 @@ lsTree (Ref x) repo streamer = do
 	void $ cleanup
   where
 	params = map Param ["ls-tree", "-z", "-r", "--full-tree", decodeBS x]
+
 lsSubTree :: Ref -> FilePath -> Repo -> Streamer
 lsSubTree (Ref x) p repo streamer = do
 	(s, cleanup) <- pipeNullSplit params repo
