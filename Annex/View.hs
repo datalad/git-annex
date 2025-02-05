@@ -40,13 +40,12 @@ import Logs.View
 import Utility.Glob
 import Types.Command
 import CmdLine.Action
-import qualified Utility.RawFilePath as R
+import qualified Utility.OsString as OS
 
 import qualified Data.Text as T
 import qualified Data.ByteString as B
 import qualified Data.Set as S
 import qualified Data.Map as M
-import qualified System.FilePath.ByteString as P
 import Control.Concurrent.Async
 import "mtl" Control.Monad.Writer
 
@@ -251,7 +250,7 @@ combineViewFilter (ExcludeValues _) new@(FilterGlobOrUnset _ _) = (new, Widening
  - evaluate this function with the view parameter and reuse
  - the result. The globs in the view will then be compiled and memoized.
  -}
-viewedFiles :: View -> MkViewedFile -> FilePath -> MetaData -> [ViewedFile]
+viewedFiles :: View -> MkViewedFile -> OsPath -> MetaData -> [ViewedFile]
 viewedFiles view = 
 	let matchers = map viewComponentMatcher (viewComponents view)
 	in \mkviewedfile file metadata ->
@@ -260,7 +259,8 @@ viewedFiles view =
 			then []
 			else 
 				let paths = pathProduct $
-					map (map toviewpath) (visible matches)
+					map (map (toOsPath . toviewpath))
+						(visible matches)
 				in if null paths
 					then [mkviewedfile file]
 					else map (</> mkviewedfile file) paths
@@ -346,7 +346,7 @@ fromViewPath = toMetaValue . encodeBS . deescapepseudo []
 prop_viewPath_roundtrips :: MetaValue -> Bool
 prop_viewPath_roundtrips v = fromViewPath (toViewPath v) == v
 
-pathProduct :: [[FilePath]] -> [FilePath]
+pathProduct :: [[OsPath]] -> [OsPath]
 pathProduct [] = []
 pathProduct (l:ls) = foldl combinel l ls
   where
@@ -364,7 +364,7 @@ fromView view f = MetaData $ m `M.difference` derived
 		filter (not . isviewunset) (zip visible values)
 	visible = filter viewVisible (viewComponents view)
 	paths = splitDirectories (dropFileName f)
-	values = map (S.singleton . fromViewPath) paths
+	values = map (S.singleton . fromViewPath . fromOsPath) paths
 	MetaData derived = getViewedFileMetaData f
 	convfield (vc, v) = (viewField vc, v)
 
@@ -385,9 +385,9 @@ fromView view f = MetaData $ m `M.difference` derived
 prop_view_roundtrips :: AssociatedFile -> MetaData -> Bool -> Bool
 prop_view_roundtrips (AssociatedFile Nothing) _ _ = True
 prop_view_roundtrips (AssociatedFile (Just f)) metadata visible = or
-	[ B.null (P.takeFileName f) && B.null (P.takeDirectory f)
+	[ OS.null (takeFileName f) && OS.null (takeDirectory f)
 	, viewTooLarge view
-	, all hasfields (viewedFiles view (viewedFileFromReference' Nothing Nothing) (fromRawFilePath f) metadata)
+	, all hasfields (viewedFiles view (viewedFileFromReference' Nothing Nothing) f metadata)
 	]
   where
 	view = View (Git.Ref "foo") $
@@ -402,19 +402,19 @@ prop_view_roundtrips (AssociatedFile (Just f)) metadata visible = or
  - Note that this may generate MetaFields that legalField rejects.
  - This is necessary to have a 1:1 mapping between directory names and
  - fields. So this MetaData cannot safely be serialized. -}
-getDirMetaData :: FilePath -> MetaData
+getDirMetaData :: OsPath -> MetaData
 getDirMetaData d = MetaData $ M.fromList $ zip fields values
   where
 	dirs = splitDirectories d
-	fields = map (mkMetaFieldUnchecked . T.pack . addTrailingPathSeparator . joinPath)
+	fields = map (mkMetaFieldUnchecked . T.pack . fromOsPath . addTrailingPathSeparator . joinPath)
 		(inits dirs)
 	values = map (S.singleton . toMetaValue . encodeBS . fromMaybe "" . headMaybe)
-		(tails dirs)
+		(tails (map fromOsPath dirs))
 
-getWorkTreeMetaData :: FilePath -> MetaData
+getWorkTreeMetaData :: OsPath -> MetaData
 getWorkTreeMetaData = getDirMetaData . dropFileName
 
-getViewedFileMetaData :: FilePath -> MetaData
+getViewedFileMetaData :: OsPath -> MetaData
 getViewedFileMetaData = getDirMetaData . dirFromViewedFile . takeFileName
 
 {- Applies a view to the currently checked out branch, generating a new
@@ -439,7 +439,7 @@ narrowView = applyView' viewedFileReuse getViewedFileMetaData
  - Look up the metadata of annexed files, and generate any ViewedFiles,
  - and stage them.
  -}
-applyView' :: MkViewedFile -> (FilePath -> MetaData) -> View -> Maybe Adjustment -> Annex Git.Branch
+applyView' :: MkViewedFile -> (OsPath -> MetaData) -> View -> Maybe Adjustment -> Annex Git.Branch
 applyView' mkviewedfile getfilemetadata view madj = do
 	top <- fromRepo Git.repoPath
 	(l, clean) <- inRepo $ Git.LsFiles.inRepoDetails [] [top]
@@ -452,7 +452,7 @@ applyView' mkviewedfile getfilemetadata view madj = do
 
 applyView''
 	:: MkViewedFile
-	-> (FilePath -> MetaData)
+	-> (OsPath -> MetaData)
 	-> View
 	-> Maybe Adjustment
 	-> [t]
@@ -488,18 +488,18 @@ applyView'' mkviewedfile getfilemetadata view madj l clean conv = do
 				-- Git.UpdateIndex.streamUpdateIndex'
 				-- here would race with process's calls
 				-- to it.
-				| "." `B.isPrefixOf` getTopFilePath topf ->
-					feed "dummy"
+				| literalOsPath "." `OS.isPrefixOf` getTopFilePath topf ->
+					feed (literalOsPath "dummy")
 				| otherwise -> noop
 		getmetadata gc mdfeeder mdcloser ts
 
 	process uh mdreader = liftIO mdreader >>= \case
 		Just ((topf, _, mtreeitemtype, Just k), mdlog) -> do
 			let metadata = maybe emptyMetaData parseCurrentMetaData mdlog
-			let f = fromRawFilePath $ getTopFilePath topf
+			let f = getTopFilePath topf
 			let metadata' = getfilemetadata f `unionMetaData` metadata
 			forM_ (genviewedfiles f metadata') $ \fv -> do
-				f' <- fromRepo (fromTopFilePath $ asTopFilePath $ toRawFilePath fv)
+				f' <- fromRepo (fromTopFilePath $ asTopFilePath fv)
 				stagefile uh f' k mtreeitemtype
 			process uh mdreader
 		Just ((topf, sha, Just treeitemtype, Nothing), _) -> do
@@ -527,7 +527,7 @@ applyView'' mkviewedfile getfilemetadata view madj l clean conv = do
 		_ -> stagesymlink uh f k
 
 	stagesymlink uh f k = do
-		linktarget <- calcRepo (gitAnnexLink f k)
+		linktarget <- fromOsPath <$> calcRepo (gitAnnexLink f k)
 		sha <- hashSymlink linktarget
 		liftIO . Git.UpdateIndex.streamUpdateIndex' uh
 			=<< inRepo (Git.UpdateIndex.stageSymlink f sha)
@@ -609,7 +609,7 @@ withViewChanges addmeta removemeta = do
 				=<< catKey (DiffTree.dstsha item)
 		| otherwise = noop
 	handlechange item a = maybe noop
-		(void . commandAction . a (fromRawFilePath $ getTopFilePath $ DiffTree.file item))
+		(void . commandAction . a (getTopFilePath $ DiffTree.file item))
 
 {- Runs an action using the view index file.
  - Note that the file does not necessarily exist, or can contain
@@ -619,7 +619,8 @@ withViewIndex = withIndexFile ViewIndexFile . const
 
 withNewViewIndex :: Annex a -> Annex a
 withNewViewIndex a = do
-	liftIO . removeWhenExistsWith R.removeLink =<< fromRepo gitAnnexViewIndex
+	liftIO . removeWhenExistsWith removeFile
+		=<< fromRepo gitAnnexViewIndex
 	withViewIndex a
 
 {- Generates a branch for a view, using the view index file

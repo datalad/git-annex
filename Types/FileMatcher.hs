@@ -61,7 +61,7 @@ keyMatchInfoWithoutContent key file = MatchingInfo $ ProvidedInfo
 -- This is used when testing a matcher, with values to match against
 -- provided by the user.
 data UserProvidedInfo = UserProvidedInfo
-	{ userProvidedFilePath :: UserInfo FilePath
+	{ userProvidedFilePath :: UserInfo OsPath
 	, userProvidedKey :: UserInfo Key
 	, userProvidedFileSize :: UserInfo FileSize
 	, userProvidedMimeType :: UserInfo MimeType

@@ -25,8 +25,7 @@ import qualified Utility.OsString as OS
 
 import qualified Data.ByteString as S
 
-type FileName = String
-type ViewedFile = FileName
+type ViewedFile = OsPath
 
 type MkViewedFile = OsPath -> ViewedFile
 
@@ -45,7 +44,7 @@ viewedFileFromReference g = viewedFileFromReference'
 	(annexMaxExtensions g)
 
 viewedFileFromReference' :: Maybe Int -> Maybe Int -> MkViewedFile
-viewedFileFromReference' maxextlen maxextensions f = concat $
+viewedFileFromReference' maxextlen maxextensions f = toOsPath $ concat $
 	[ escape (fromOsPath base')
 	, if null dirs
 		then ""
@@ -90,12 +89,12 @@ escchar = '!'
 {- For use when operating already within a view, so whatever filepath
  - is present in the work tree is already a ViewedFile. -}
 viewedFileReuse :: MkViewedFile
-viewedFileReuse = fromOsPath . takeFileName
+viewedFileReuse = takeFileName
 
 {- Extracts from a ViewedFile the directory where the file is located on
  - in the reference branch. -}
-dirFromViewedFile :: ViewedFile -> FilePath
-dirFromViewedFile = fromOsPath . joinPath . map toOsPath . drop 1 . sep [] ""
+dirFromViewedFile :: ViewedFile -> OsPath
+dirFromViewedFile = joinPath . map toOsPath . drop 1 . sep [] "" . fromOsPath
   where
 	sep l _ [] = reverse l
 	sep l curr (c:cs)
@@ -110,7 +109,7 @@ prop_viewedFile_roundtrips tf
 	-- Relative filenames wanted, not directories.
 	| OS.any isPathSeparator (toOsPath (end f ++ beginning f)) = True
 	| isAbsolute (toOsPath f) || isDrive (toOsPath f) = True
-	| otherwise = fromOsPath dir == dirFromViewedFile 
+	| otherwise = dir == dirFromViewedFile 
 		(viewedFileFromReference' Nothing Nothing (toOsPath f))
   where
 	f = fromTestableFilePath tf

@@ -66,7 +66,7 @@ data LockedDown = LockedDown
 data LockDownConfig = LockDownConfig
 	{ lockingFile :: Bool
 	-- ^ write bit removed during lock down
-	, hardlinkFileTmpDir :: Maybe RawFilePath
+	, hardlinkFileTmpDir :: Maybe OsPath
 	-- ^ hard link to temp directory
 	, checkWritePerms :: Bool
 	-- ^ check that write perms are successfully removed
@@ -87,13 +87,13 @@ data LockDownConfig = LockDownConfig
  - Lockdown can fail if a file gets deleted, or if it's unable to remove
  - write permissions, and Nothing will be returned.
  -}
-lockDown :: LockDownConfig-> FilePath -> Annex (Maybe LockedDown)
+lockDown :: LockDownConfig-> OsPath -> Annex (Maybe LockedDown)
 lockDown cfg file = either 
 		(\e -> warning (UnquotedString (show e)) >> return Nothing)
 		(return . Just)
 	=<< lockDown' cfg file
 
-lockDown' :: LockDownConfig -> FilePath -> Annex (Either SomeException LockedDown)
+lockDown' :: LockDownConfig -> OsPath -> Annex (Either SomeException LockedDown)
 lockDown' cfg file = tryNonAsync $ ifM crippledFileSystem
 	( nohardlink
 	, case hardlinkFileTmpDir cfg of
@@ -101,49 +101,46 @@ lockDown' cfg file = tryNonAsync $ ifM crippledFileSystem
 		Just tmpdir -> withhardlink tmpdir
 	)
   where
-	file' = toRawFilePath file
-
 	nohardlink = do
 		setperms
 		withTSDelta $ liftIO . nohardlink'
 
 	nohardlink' delta = do
-		cache <- genInodeCache file' delta
+		cache <- genInodeCache file delta
 		return $ LockedDown cfg $ KeySource
-			{ keyFilename = file'
-			, contentLocation = file'
+			{ keyFilename = file
+			, contentLocation = file
 			, inodeCache = cache
 			}
 	
 	withhardlink tmpdir = do
 		setperms
 		withTSDelta $ \delta -> liftIO $ do
-			(tmpfile, h) <- openTmpFileIn (toOsPath tmpdir) $
-				relatedTemplate $ toRawFilePath $ 
-					"ingest-" ++ takeFileName file
+			(tmpfile, h) <- openTmpFileIn tmpdir $
+				relatedTemplate $ fromOsPath $
+					literalOsPath "ingest-" <> takeFileName file
 			hClose h
-			let tmpfile' = fromOsPath tmpfile
-			removeWhenExistsWith R.removeLink tmpfile'
-			withhardlink' delta tmpfile'
+			removeWhenExistsWith R.removeLink (fromOsPath tmpfile)
+			withhardlink' delta tmpfile
 				`catchIO` const (nohardlink' delta)
 
 	withhardlink' delta tmpfile = do
-		R.createLink file' tmpfile
+		R.createLink (fromOsPath file) (fromOsPath tmpfile)
 		cache <- genInodeCache tmpfile delta
 		return $ LockedDown cfg $ KeySource
-			{ keyFilename = file'
+			{ keyFilename = file
 			, contentLocation = tmpfile
 			, inodeCache = cache
 			}
 		
 	setperms = when (lockingFile cfg) $ do
-		freezeContent file'
+		freezeContent file
 		when (checkWritePerms cfg) $ do
 			qp <- coreQuotePath <$> Annex.getGitConfig
 			maybe noop (giveup . decodeBS . quote qp)
-				=<< checkLockedDownWritePerms file' file'
+				=<< checkLockedDownWritePerms file file
 
-checkLockedDownWritePerms :: RawFilePath -> RawFilePath -> Annex (Maybe StringContainingQuotedPath)
+checkLockedDownWritePerms :: OsPath -> OsPath -> Annex (Maybe StringContainingQuotedPath)
 checkLockedDownWritePerms file displayfile = checkContentWritePerm file >>= return . \case
 	Just False -> Just $ "Unable to remove all write permissions from "
 		<> QuotedPath displayfile
@@ -167,7 +164,8 @@ ingestAdd' meterupdate ld@(Just (LockedDown cfg source)) mk = do
 				then addSymlink f k mic
 				else do
 					mode <- liftIO $ catchMaybeIO $
-						fileMode <$> R.getFileStatus (contentLocation source)
+						fileMode <$> R.getFileStatus
+							(fromOsPath (contentLocation source))
 					stagePointerFile f mode =<< hashPointerFile k
 			return (Just k)
 
@@ -188,7 +186,7 @@ ingest' preferredbackend meterupdate (Just (LockedDown cfg source)) mk restage =
 			fst <$> genKey source meterupdate backend
 		Just k -> return k
 	let src = contentLocation source
-	ms <- liftIO $ catchMaybeIO $ R.getFileStatus src
+	ms <- liftIO $ catchMaybeIO $ R.getFileStatus (fromOsPath src)
 	mcache <- maybe (pure Nothing) (liftIO . toInodeCache delta src) ms
 	case (mcache, inodeCache source) of
 		(_, Nothing) -> go k mcache
@@ -263,12 +261,12 @@ populateUnlockedFiles key source restage _ = do
 
 cleanCruft :: KeySource -> Annex ()
 cleanCruft source = when (contentLocation source /= keyFilename source) $
-	liftIO $ removeWhenExistsWith R.removeLink $ contentLocation source
+	liftIO $ removeWhenExistsWith removeFile $ contentLocation source
 
 -- If a worktree file was was hard linked to an annex object before,
 -- modifying the file would have caused the object to have the wrong
 -- content. Clean up from that.
-cleanOldKeys :: RawFilePath -> Key -> Annex ()
+cleanOldKeys :: OsPath -> Key -> Annex ()
 cleanOldKeys file newkey = do
 	g <- Annex.gitRepo
 	topf <- inRepo (toTopFilePath file)
@@ -293,37 +291,38 @@ cleanOldKeys file newkey = do
 
 {- On error, put the file back so it doesn't seem to have vanished.
  - This can be called before or after the symlink is in place. -}
-restoreFile :: RawFilePath -> Key -> SomeException -> Annex a
+restoreFile :: OsPath -> Key -> SomeException -> Annex a
 restoreFile file key e = do
 	whenM (inAnnex key) $ do
-		liftIO $ removeWhenExistsWith R.removeLink file
+		liftIO $ removeWhenExistsWith removeFile file
 		-- The key could be used by other files too, so leave the
 		-- content in the annex, and make a copy back to the file.
-		obj <- fromRawFilePath <$> calcRepo (gitAnnexLocation key)
-		unlessM (liftIO $ copyFileExternal CopyTimeStamps obj (fromRawFilePath file)) $
-			warning $ "Unable to restore content of " <> QuotedPath file <> "; it should be located in " <> QuotedPath (toRawFilePath obj)
+		obj <- calcRepo (gitAnnexLocation key)
+		unlessM (liftIO $ copyFileExternal CopyTimeStamps obj file) $
+			warning $ "Unable to restore content of " <> QuotedPath file <> "; it should be located in " <> QuotedPath obj
 		thawContent file
 	throwM e
 
 {- Creates the symlink to the annexed content, returns the link target. -}
-makeLink :: RawFilePath -> Key -> Maybe InodeCache -> Annex LinkTarget
+makeLink :: OsPath -> Key -> Maybe InodeCache -> Annex LinkTarget
 makeLink file key mcache = flip catchNonAsync (restoreFile file key) $ do
-	l <- calcRepo $ gitAnnexLink file key
+	l <- fromOsPath <$> calcRepo (gitAnnexLink file key)
 	replaceWorkTreeFile file $ makeAnnexLink l
 
 	-- touch symlink to have same time as the original file,
 	-- as provided in the InodeCache
 	case mcache of
-		Just c -> liftIO $ touch file (inodeCacheToMtime c) False
+		Just c -> liftIO $
+			touch (fromOsPath file) (inodeCacheToMtime c) False
 		Nothing -> noop
 
 	return l
 
 {- Creates the symlink to the annexed content, and stages it in git. -}
-addSymlink :: RawFilePath -> Key -> Maybe InodeCache -> Annex ()
+addSymlink :: OsPath -> Key -> Maybe InodeCache -> Annex ()
 addSymlink file key mcache = stageSymlink file =<< genSymlink file key mcache
 
-genSymlink :: RawFilePath -> Key -> Maybe InodeCache -> Annex Git.Sha
+genSymlink :: OsPath -> Key -> Maybe InodeCache -> Annex Git.Sha
 genSymlink file key mcache = do
 	linktarget <- makeLink file key mcache
 	hashSymlink linktarget
@@ -368,12 +367,12 @@ addUnlocked matcher mi contentpresent =
  -
  - When the content of the key is not accepted into the annex, returns False.
  -}
-addAnnexedFile :: AddUnlockedMatcher -> RawFilePath -> Key -> Maybe RawFilePath -> Annex Bool
+addAnnexedFile :: AddUnlockedMatcher -> OsPath -> Key -> Maybe OsPath -> Annex Bool
 addAnnexedFile matcher file key mtmp = ifM (addUnlocked matcher mi (isJust mtmp))
 	( do
 		mode <- maybe
 			(pure Nothing)
-			(\tmp -> liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus tmp)
+			(\tmp -> liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus (fromOsPath tmp))
 			mtmp
 		stagePointerFile file mode =<< hashPointerFile key
 		Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath file)
@@ -411,7 +410,7 @@ addAnnexedFile matcher file key mtmp = ifM (addUnlocked matcher mi (isJust mtmp)
 {- Use with actions that add an already existing annex symlink or pointer
  - file. The warning avoids a confusing situation where the file got copied
  - from another git-annex repo, probably by accident. -}
-addingExistingLink :: RawFilePath -> Key -> Annex a -> Annex a
+addingExistingLink :: OsPath -> Key -> Annex a -> Annex a
 addingExistingLink f k a = do
 	unlessM (isKnownKey k <||> inAnnex k) $ do
 		islink <- isJust <$> isAnnexLink f
