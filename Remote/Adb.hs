@@ -25,6 +25,7 @@ import Utility.Metered
 import Types.ProposedAccepted
 import Annex.SpecialRemote.Config
 import Annex.Verify
+import qualified Utility.OsString as OS
 
 import qualified Data.Map as M
 import qualified System.FilePath.Posix as Posix
@@ -34,7 +35,7 @@ newtype AndroidSerial = AndroidSerial { fromAndroidSerial :: String }
 	deriving (Show, Eq)
 
 -- | A location on an Android device. 
-newtype AndroidPath = AndroidPath { fromAndroidPath :: FilePath }
+newtype AndroidPath = AndroidPath { fromAndroidPath :: Posix.FilePath }
 
 remote :: RemoteType
 remote = specialRemoteType $ RemoteType
@@ -182,20 +183,20 @@ store serial adir = fileStorer $ \k src _p ->
 	in unlessM (store' serial dest src) $
 		giveup "adb failed"
 
-store' :: AndroidSerial -> AndroidPath -> FilePath -> Annex Bool
+store' :: AndroidSerial -> AndroidPath -> OsPath -> Annex Bool
 store' serial dest src = checkAdbInPath False $ do
-	let destdir = takeDirectory $ fromAndroidPath dest
+	let destdir = Posix.takeDirectory $ fromAndroidPath dest
 	void $ adbShell serial [Param "mkdir", Param "-p", File destdir]
 	showOutput -- make way for adb push output
 	liftIO $ boolSystem "adb" $ mkAdbCommand serial
-		[Param "push", File src, File (fromAndroidPath dest)]
+		[Param "push", File (fromOsPath src), File (fromAndroidPath dest)]
 
 retrieve :: AndroidSerial -> AndroidPath -> Retriever
 retrieve serial adir = fileRetriever $ \dest k _p ->
 	let src = androidLocation adir k
-	in retrieve' serial src (fromRawFilePath dest)
+	in retrieve' serial src dest
 
-retrieve' :: AndroidSerial -> AndroidPath -> FilePath -> Annex ()
+retrieve' :: AndroidSerial -> AndroidPath -> OsPath -> Annex ()
 retrieve' serial src dest =
 	unlessM go $
 		giveup "adb pull failed"
@@ -206,7 +207,7 @@ retrieve' serial src dest =
 			[ Param "pull"
 			, Param "-a"
 			, File $ fromAndroidPath src
-			, File dest
+			, File $ fromOsPath dest
 			]
 
 remove :: AndroidSerial -> AndroidPath -> Remover
@@ -240,21 +241,22 @@ androidLocation adir k = AndroidPath $
 
 androidHashDir :: AndroidPath -> Key -> AndroidPath
 androidHashDir adir k = AndroidPath $ 
-	fromAndroidPath adir ++ "/" ++ hdir
+	fromAndroidPath adir ++ "/" ++ fromOsPath hdir
   where
-	hdir = replace [pathSeparator] "/" (fromRawFilePath (hashDirLower def k))
+	hdir = OS.intercalate (literalOsPath "/") $ OS.split pathSeparator $
+		hashDirLower def k
 
-storeExportM :: AndroidSerial -> AndroidPath -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex ()
+storeExportM :: AndroidSerial -> AndroidPath -> OsPath -> Key -> ExportLocation -> MeterUpdate -> Annex ()
 storeExportM serial adir src _k loc _p = 
 	unlessM (store' serial dest src) $
 		giveup "adb failed"
   where
 	dest = androidExportLocation adir loc
 
-retrieveExportM :: AndroidSerial -> AndroidPath -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Verification
+retrieveExportM :: AndroidSerial -> AndroidPath -> Key -> ExportLocation -> OsPath -> MeterUpdate -> Annex Verification
 retrieveExportM serial adir k loc dest _p = 
 	verifyKeyContentIncrementally AlwaysVerify k $ \iv ->
-		tailVerify iv (toRawFilePath dest) $
+		tailVerify iv dest $
 			retrieve' serial src dest
   where
 	src = androidExportLocation adir loc
@@ -342,7 +344,7 @@ listImportableContentsM serial adir c = adbfind >>= \case
 		let (stat, fn) = separate (== '\t') l
 		    sz = fromMaybe 0 (readish (takeWhile (/= ' ') stat))
 		    cid = ContentIdentifier (encodeBS stat)
-		    loc = mkImportLocation $ toRawFilePath $ 
+		    loc = mkImportLocation $ toOsPath $ 
 		    	Posix.makeRelative (fromAndroidPath adir) fn
 		in Just (loc, (cid, sz))
 	mk _ = Nothing
@@ -351,7 +353,7 @@ listImportableContentsM serial adir c = adbfind >>= \case
 -- connection is reasonably fast, it's probably as good as
 -- git's handling of similar situations with files being modified while
 -- it's updating the working tree for a merge.
-retrieveExportWithContentIdentifierM :: AndroidSerial -> AndroidPath -> ExportLocation -> [ContentIdentifier] -> FilePath -> Either Key (Annex Key) -> MeterUpdate -> Annex (Key, Verification)
+retrieveExportWithContentIdentifierM :: AndroidSerial -> AndroidPath -> ExportLocation -> [ContentIdentifier] -> OsPath -> Either Key (Annex Key) -> MeterUpdate -> Annex (Key, Verification)
 retrieveExportWithContentIdentifierM serial adir loc cids dest gk _p = do
 	case gk of
 		Right mkkey -> do
@@ -360,7 +362,7 @@ retrieveExportWithContentIdentifierM serial adir loc cids dest gk _p = do
 			return (k, UnVerified)
 		Left k -> do
 			v <- verifyKeyContentIncrementally DefaultVerify k
-				(\iv -> tailVerify iv (toRawFilePath dest) go)
+				(\iv -> tailVerify iv dest go)
 			return (k, v)
   where
 	go = do
@@ -371,7 +373,7 @@ retrieveExportWithContentIdentifierM serial adir loc cids dest gk _p = do
 			_ -> giveup "the file on the android device has changed"
 	src = androidExportLocation adir loc
 
-storeExportWithContentIdentifierM :: AndroidSerial -> AndroidPath -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex ContentIdentifier
+storeExportWithContentIdentifierM :: AndroidSerial -> AndroidPath -> OsPath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex ContentIdentifier
 storeExportWithContentIdentifierM serial adir src _k loc overwritablecids _p =
 	ifM checkcanoverwrite
 		( ifM (store' serial dest src)
@@ -410,7 +412,7 @@ checkPresentExportWithContentIdentifierM serial adir _k loc knowncids =
 
 androidExportLocation :: AndroidPath -> ExportLocation -> AndroidPath
 androidExportLocation adir loc = AndroidPath $
-	fromAndroidPath adir ++ "/" ++ fromRawFilePath (fromExportLocation loc)
+	fromAndroidPath adir ++ "/" ++ fromOsPath (fromExportLocation loc)
 
 -- | List all connected Android devices.
 enumerateAdbConnected :: Annex [AndroidSerial]
