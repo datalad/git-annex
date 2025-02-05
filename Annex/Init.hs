@@ -56,6 +56,7 @@ import Annex.Perms
 #ifndef mingw32_HOST_OS
 import Utility.ThreadScheduler
 import qualified Utility.RawFilePath as R
+import qualified Utility.FileIO as F
 import Utility.FileMode
 import System.Posix.User
 import qualified Utility.LockFile.Posix as Posix
@@ -66,7 +67,6 @@ import Control.Monad.IO.Class (MonadIO)
 #ifndef mingw32_HOST_OS
 import System.PosixCompat.Files (ownerReadMode, isNamedPipe)
 import Data.Either
-import qualified System.FilePath.ByteString as P
 import Control.Concurrent.Async
 #endif
 
@@ -99,13 +99,12 @@ initializeAllowed = noAnnexFileContent' >>= \case
 	Just _ -> return False
 
 noAnnexFileContent' :: Annex (Maybe String)
-noAnnexFileContent' = inRepo $
-	noAnnexFileContent . fmap fromRawFilePath . Git.repoWorkTree
+noAnnexFileContent' = inRepo $ noAnnexFileContent . Git.repoWorkTree
 
 genDescription :: Maybe String -> Annex UUIDDesc
 genDescription (Just d) = return $ UUIDDesc $ encodeBS d
 genDescription Nothing = do
-	reldir <- liftIO . relHome . fromRawFilePath
+	reldir <- liftIO . relHome
 		=<< liftIO . absPath
 		=<< fromRepo Git.repoPath
 	hostname <- fromMaybe "" <$> liftIO getHostname
@@ -238,12 +237,12 @@ autoInitializeAllowed = Annex.Branch.hasSibling <&&> objectDirNotPresent
 
 objectDirNotPresent :: Annex Bool
 objectDirNotPresent = do
-	d <- fromRawFilePath <$> fromRepo gitAnnexObjectDir
+	d <- fromRepo gitAnnexObjectDir
 	exists <- liftIO $ doesDirectoryExist d
 	when exists $ guardSafeToUseRepo $
 		giveup $ unwords $ 
 			[ "This repository is not initialized for use"
-			, "by git-annex, but " ++ d ++ " exists,"
+			, "by git-annex, but " ++ fromOsPath d ++ " exists,"
 			, "which indicates this repository was used by"
 			, "git-annex before, and may have lost its"
 			, "annex.uuid and annex.version configs. Either"
@@ -263,7 +262,7 @@ guardSafeToUseRepo a = ifM (inRepo Git.Config.checkRepoConfigInaccessible)
 			, ""
 			-- This mirrors git's wording.
 			, "To add an exception for this directory, call:"
-			, "\tgit config --global --add safe.directory " ++ fromRawFilePath p
+			, "\tgit config --global --add safe.directory " ++ fromOsPath p
 			]
 	, a
 	)
@@ -301,40 +300,39 @@ probeCrippledFileSystem = withEventuallyCleanedOtherTmp $ \tmp -> do
 
 probeCrippledFileSystem'
 	:: (MonadIO m, MonadCatch m)
-	=> RawFilePath
-	-> Maybe (RawFilePath -> m ())
-	-> Maybe (RawFilePath -> m ())
+	=> OsPath
+	-> Maybe (OsPath -> m ())
+	-> Maybe (OsPath -> m ())
 	-> Bool
 	-> m (Bool, [String])
 #ifdef mingw32_HOST_OS
 probeCrippledFileSystem' _ _ _ _ = return (True, [])
 #else
 probeCrippledFileSystem' tmp freezecontent thawcontent hasfreezehook = do
-	let f = tmp P.</> "gaprobe"
-	let f' = fromRawFilePath f
-	liftIO $ writeFile f' ""
-	r <- probe f'
+	let f = tmp </> literalOsPath "gaprobe"
+	liftIO $ F.writeFile' f ""
+	r <- probe f
 	void $ tryNonAsync $ (fromMaybe (liftIO . allowWrite) thawcontent) f
-	liftIO $ removeFile f'
+	liftIO $ removeFile f
 	return r
   where
 	probe f = catchDefaultIO (True, []) $ do
-		let f2 = f ++ "2"
-		liftIO $ removeWhenExistsWith R.removeLink (toRawFilePath f2)
-		liftIO $ R.createSymbolicLink (toRawFilePath f) (toRawFilePath f2)
-		liftIO $ removeWhenExistsWith R.removeLink (toRawFilePath f2)
-		(fromMaybe (liftIO . preventWrite) freezecontent) (toRawFilePath f)
+		let f2 = f <> literalOsPath "2"
+		liftIO $ removeWhenExistsWith removeFile f2
+		liftIO $ R.createSymbolicLink (fromOsPath f) (fromOsPath f2)
+		liftIO $ removeWhenExistsWith removeFile f2
+		(fromMaybe (liftIO . preventWrite) freezecontent) f
 		-- Should be unable to write to the file (unless
 		-- running as root). But some crippled
 		-- filesystems ignore write bit removals or ignore
 		-- permissions entirely.
-		ifM ((== Just False) <$> liftIO (checkContentWritePerm' UnShared (toRawFilePath f) Nothing hasfreezehook))
+		ifM ((== Just False) <$> liftIO (checkContentWritePerm' UnShared f Nothing hasfreezehook))
 			( return (True, ["Filesystem does not allow removing write bit from files."])
 			, liftIO $ ifM ((== 0) <$> getRealUserID)
 				( return (False, [])
 				, do
 					r <- catchBoolIO $ do
-						writeFile f "2"
+						F.writeFile' f "2"
 						return True
 					if r
 						then return (True, ["Filesystem allows writing to files whose write bit is not set."])
@@ -363,19 +361,19 @@ probeLockSupport :: Annex Bool
 probeLockSupport = return True
 #else
 probeLockSupport = withEventuallyCleanedOtherTmp $ \tmp -> do
-	let f = tmp P.</> "lockprobe"
+	let f = tmp </> literalOsPath "lockprobe"
 	mode <- annexFileMode
 	annexrunner <- Annex.makeRunner
 	liftIO $ withAsync (warnstall annexrunner) (const (go f mode))
   where
 	go f mode = do
-		removeWhenExistsWith R.removeLink f
+		removeWhenExistsWith removeFile f
 		let locktest = bracket
 			(Posix.lockExclusive (Just mode) f)
 			Posix.dropLock
 			(const noop)
 		ok <- isRight <$> tryNonAsync locktest
-		removeWhenExistsWith R.removeLink f
+		removeWhenExistsWith removeFile f
 		return ok
 	
 	warnstall annexrunner = do
@@ -391,17 +389,17 @@ probeFifoSupport = do
 	return False
 #else
 	withEventuallyCleanedOtherTmp $ \tmp -> do
-		let f = tmp P.</> "gaprobe"
-		let f2 = tmp P.</> "gaprobe2"
+		let f = tmp </> literalOsPath "gaprobe"
+		let f2 = tmp </> literalOsPath "gaprobe2"
 		liftIO $ do
-			removeWhenExistsWith R.removeLink f
-			removeWhenExistsWith R.removeLink f2
+			removeWhenExistsWith removeFile f
+			removeWhenExistsWith removeFile f2
 			ms <- tryIO $ do
-				R.createNamedPipe f ownerReadMode
-				R.createLink f f2
-				R.getFileStatus f
-			removeWhenExistsWith R.removeLink f
-			removeWhenExistsWith R.removeLink f2
+				R.createNamedPipe (fromOsPath f) ownerReadMode
+				R.createLink (fromOsPath f) (fromOsPath f2)
+				R.getFileStatus (fromOsPath f)
+			removeWhenExistsWith removeFile f
+			removeWhenExistsWith removeFile f2
 			return $ either (const False) isNamedPipe ms
 #endif
 
@@ -473,14 +471,14 @@ autoEnableSpecialRemotes remotelist = do
 	-- could result in password prompts for http credentials,
 	-- which would then not end up cached in this process's state.
 	_ <- remotelist
-	rp <- fromRawFilePath <$> fromRepo Git.repoPath
+	rp <- fromRepo Git.repoPath
 	withNullHandle $ \nullh -> gitAnnexChildProcess "init"
 		[ Param "--autoenable" ]
 		(\p -> p
 			{ std_out = UseHandle nullh
 			, std_err = UseHandle nullh
 			, std_in = UseHandle nullh
-			, cwd = Just rp
+			, cwd = Just (fromOsPath rp)
 			}
 		)
 		(\_ _ _ pid -> void $ waitForProcess pid)

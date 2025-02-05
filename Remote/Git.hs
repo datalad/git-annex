@@ -49,6 +49,7 @@ import Logs.Cluster.Basic
 import Utility.Metered
 import Utility.Env
 import Utility.Batch
+import qualified Utility.FileIO as F
 import Remote.Helper.Git
 import Remote.Helper.Messages
 import Remote.Helper.ExportImport
@@ -324,10 +325,9 @@ tryGitConfigRead autoinit r hasuuid
 
 	geturlconfig = Url.withUrlOptionsPromptingCreds $ \uo -> do
 		let url = Git.repoLocation r ++ "/config"
-		v <- withTmpFile (toOsPath "git-annex.tmp") $ \tmpfile h -> do
+		v <- withTmpFile (literalOsPath "git-annex.tmp") $ \tmpfile h -> do
 			liftIO $ hClose h
-			let tmpfile' = fromRawFilePath $ fromOsPath tmpfile
-			Url.download' nullMeterUpdate Nothing url tmpfile' uo >>= \case
+			Url.download' nullMeterUpdate Nothing url tmpfile uo >>= \case
 				Right () ->
 					pipedconfig Git.Config.ConfigNullList
 						False url "git"
@@ -335,7 +335,7 @@ tryGitConfigRead autoinit r hasuuid
 						, Param "--null"
 						, Param "--list"
 						, Param "--file"
-						, File tmpfile'
+						, File (fromOsPath tmpfile)
 						] >>= return . \case
 							Right r' -> Right r'
 							Left exitcode -> Left $ "git config exited " ++ show exitcode
@@ -470,9 +470,9 @@ keyUrls gc repo r key = map tourl locs'
 		| remoteAnnexBare remoteconfig == Just False = annexLocationsNonBare gc key
 		| otherwise = annexLocationsBare gc key
 #ifndef mingw32_HOST_OS
-	locs' = map fromRawFilePath locs
+	locs' = map fromOsPath locs
 #else
-	locs' = map (replace "\\" "/" . fromRawFilePath) locs
+	locs' = map (replace "\\" "/" . fromOsPath) locs
 #endif
 	remoteconfig = gitconfig r
 
@@ -560,12 +560,12 @@ lockKey' repo r st@(State connpool duc _ _ _) key callback
 	failedlock = giveup "can't lock content"
 
 {- Tries to copy a key's content from a remote's annex to a file. -}
-copyFromRemote :: Remote -> State -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification
+copyFromRemote :: Remote -> State -> Key -> AssociatedFile -> OsPath -> MeterUpdate -> VerifyConfig -> Annex Verification
 copyFromRemote r st key file dest meterupdate vc = do
 	repo <- getRepo r
 	copyFromRemote'' repo r st key file dest meterupdate vc
 
-copyFromRemote'' :: Git.Repo -> Remote -> State -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification
+copyFromRemote'' :: Git.Repo -> Remote -> State -> Key -> AssociatedFile -> OsPath -> MeterUpdate -> VerifyConfig -> Annex Verification
 copyFromRemote'' repo r st@(State connpool _ _ _ _) key af dest meterupdate vc
 	| isP2PHttp r = copyp2phttp
 	| Git.repoIsHttp repo = verifyKeyContentIncrementally vc key $ \iv -> do
@@ -603,9 +603,8 @@ copyFromRemote'' repo r st@(State connpool _ _ _ _) key af dest meterupdate vc
 		<|> remoteAnnexBwLimit (gitconfig r)
 		
 	copyp2phttp = verifyKeyContentIncrementally vc key $ \iv -> do
-		startsz <- liftIO $ tryWhenExists $
-			getFileSize (toRawFilePath dest)
-		bracketIO (openBinaryFile dest ReadWriteMode) (hClose) $ \h -> do
+		startsz <- liftIO $ tryWhenExists $ getFileSize dest
+		bracketIO (F.openBinaryFile dest ReadWriteMode) (hClose) $ \h -> do
 			metered (Just meterupdate) key bwlimit $ \_ p -> do
 				p' <- case startsz of
 					Just startsz' -> liftIO $ do
@@ -617,16 +616,18 @@ copyFromRemote'' repo r st@(State connpool _ _ _ _) key af dest meterupdate vc
 					Valid -> return ()
 					Invalid -> giveup "Transfer failed"
 
-copyFromRemoteCheap :: State -> Git.Repo -> Maybe (Key -> AssociatedFile -> FilePath -> Annex ())
+copyFromRemoteCheap :: State -> Git.Repo -> Maybe (Key -> AssociatedFile -> OsPath -> Annex ())
 #ifndef mingw32_HOST_OS
 copyFromRemoteCheap st repo
 	| not $ Git.repoIsUrl repo = Just $ \key _af file -> guardUsable repo (giveup "cannot access remote") $ do
 		gc <- getGitConfigFromState st
 		loc <- liftIO $ gitAnnexLocation key repo gc
-		liftIO $ ifM (R.doesPathExist loc)
+		liftIO $ ifM (doesFileExist loc)
 			( do
 				absloc <- absPath loc
-				R.createSymbolicLink absloc (toRawFilePath file)
+				R.createSymbolicLink
+					(fromOsPath absloc)
+					(fromOsPath file)
 			, giveup "remote does not contain key"
 			)
 	| otherwise = Nothing
@@ -635,12 +636,12 @@ copyFromRemoteCheap _ _ = Nothing
 #endif
 
 {- Tries to copy a key's content to a remote's annex. -}
-copyToRemote :: Remote -> State -> Key -> AssociatedFile -> Maybe FilePath -> MeterUpdate -> Annex ()
+copyToRemote :: Remote -> State -> Key -> AssociatedFile -> Maybe OsPath -> MeterUpdate -> Annex ()
 copyToRemote r st key af o meterupdate = do
 	repo <- getRepo r
 	copyToRemote' repo r st key af o meterupdate
 
-copyToRemote' :: Git.Repo -> Remote -> State -> Key -> AssociatedFile -> Maybe FilePath -> MeterUpdate -> Annex ()
+copyToRemote' :: Git.Repo -> Remote -> State -> Key -> AssociatedFile -> Maybe OsPath -> MeterUpdate -> Annex ()
 copyToRemote' repo r st@(State connpool duc _ _ _) key af o meterupdate
 	| isP2PHttp r = prepsendwith copyp2phttp
 	| not $ Git.repoIsUrl repo = ifM duc
@@ -683,7 +684,7 @@ copyToRemote' repo r st@(State connpool duc _ _ _) key af o meterupdate
 					Nothing -> return True
 				logStatusAfter NoLiveUpdate key $ Annex.Content.getViaTmp rsp verify key af (Just sz) $ \dest ->
 					metered (Just (combineMeterUpdate meterupdate p)) key bwlimit $ \_ p' -> 
-						copier object (fromRawFilePath dest) key p' checksuccess verify
+						copier object dest key p' checksuccess verify
 			)
 		unless res $
 			failedsend
@@ -719,10 +720,12 @@ fsckOnRemote r params
 		r' <- Git.Config.read r
 		environ <- getEnvironment
 		let environ' = addEntries 
-			[ ("GIT_WORK_TREE", fromRawFilePath $ Git.repoPath r')
-			, ("GIT_DIR", fromRawFilePath $ Git.localGitDir r')
+			[ ("GIT_WORK_TREE", fromOsPath $ Git.repoPath r')
+			, ("GIT_DIR", fromOsPath $ Git.localGitDir r')
 			] environ
-		batchCommandEnv program (Param "fsck" : params) (Just environ')
+		batchCommandEnv (fromOsPath program)
+			(Param "fsck" : params)
+			(Just environ')
 
 {- The passed repair action is run in the Annex monad of the remote. -}
 repairRemote :: Git.Repo -> Annex Bool -> Annex (IO Bool)
@@ -816,7 +819,7 @@ wantHardLink = (annexHardLink <$> Annex.getGitConfig)
 	-- because they can be modified at any time.
 	<&&> (not <$> annexThin <$> Annex.getGitConfig)
 
-type FileCopier = FilePath -> FilePath -> Key -> MeterUpdate -> Annex Bool -> VerifyConfig -> Annex (Bool, Verification)
+type FileCopier = OsPath -> OsPath -> Key -> MeterUpdate -> Annex Bool -> VerifyConfig -> Annex (Bool, Verification)
 
 -- If either the remote or local repository wants to use hard links,
 -- the copier will do so (falling back to copying if a hard link cannot be
@@ -829,14 +832,14 @@ type FileCopier = FilePath -> FilePath -> Key -> MeterUpdate -> Annex Bool -> Ve
 mkFileCopier :: Bool -> State -> Annex FileCopier
 mkFileCopier remotewanthardlink (State _ _ copycowtried _ _) = do
 	localwanthardlink <- wantHardLink
-	let linker = \src dest -> R.createLink (toRawFilePath src) (toRawFilePath dest) >> return True
+	let linker = \src dest -> R.createLink (fromOsPath src) (fromOsPath dest) >> return True
 	if remotewanthardlink || localwanthardlink
 		then return $ \src dest k p check verifyconfig ->
 			ifM (liftIO (catchBoolIO (linker src dest)))
 				( ifM check
 					( return (True, Verified)
 					, do
-						verificationOfContentFailed (toRawFilePath dest)
+						verificationOfContentFailed dest
 						return (False, UnVerified)
 					)
 				, copier src dest k p check verifyconfig
@@ -845,11 +848,11 @@ mkFileCopier remotewanthardlink (State _ _ copycowtried _ _) = do
   where
 	copier src dest k p check verifyconfig = do
 		iv <- startVerifyKeyContentIncrementally verifyconfig k
-		liftIO (fileCopier copycowtried src dest p iv) >>= \case
+		liftIO (fileCopier copycowtried (fromOsPath src) (fromOsPath dest) p iv) >>= \case
 			Copied -> ifM check
 				( finishVerifyKeyContentIncrementally iv
 				, do
-					verificationOfContentFailed (toRawFilePath dest)
+					verificationOfContentFailed dest
 					return (False, UnVerified)
 				)
 			CopiedCoW -> unVerified check

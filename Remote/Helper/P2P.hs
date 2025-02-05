@@ -53,7 +53,7 @@ storeFanout lu k logstatus remoteuuid us =
 		when (u /= remoteuuid) $
 			logChange lu k u logstatus
 
-retrieve :: RemoteGitConfig -> (ProtoRunner (Bool, Verification)) -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification
+retrieve :: RemoteGitConfig -> (ProtoRunner (Bool, Verification)) -> Key -> AssociatedFile -> OsPath -> MeterUpdate -> VerifyConfig -> Annex Verification
 retrieve gc runner k af dest p verifyconfig = do
 	iv <- startVerifyKeyContentIncrementally verifyconfig k
 	let bwlimit = remoteAnnexBwLimitDownload gc <|> remoteAnnexBwLimit gc

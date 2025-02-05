@@ -573,9 +573,9 @@ gitAnnexFeedState k r = gitAnnexFeedStateDir r </> keyFile k
 
 {- .git/annex/merge/ is used as a empty work tree for merges in 
  - adjusted branches. -}
-gitAnnexMergeDir :: Git.Repo -> FilePath
-gitAnnexMergeDir r = fromOsPath $
-	addTrailingPathSeparator $ gitAnnexDir r </> literalOsPath "merge"
+gitAnnexMergeDir :: Git.Repo -> OsPath
+gitAnnexMergeDir r = addTrailingPathSeparator $
+	gitAnnexDir r </> literalOsPath "merge"
 
 {- .git/annex/transfer/ is used to record keys currently
  - being transferred, and other transfer bookkeeping info. -}

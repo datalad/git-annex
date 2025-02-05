@@ -42,7 +42,6 @@ import Utility.Debug
 import Utility.MonotonicClock
 import Types.UUID
 import Annex.ChangedRefs
-import qualified Utility.RawFilePath as R
 
 import Control.Monad.Free
 import Control.Monad.IO.Class
@@ -162,11 +161,11 @@ closeConnection conn = do
 -- Note that while the callback is running, other connections won't be
 -- processed, so longterm work should be run in a separate thread by
 -- the callback.
-serveUnixSocket :: FilePath -> (Handle -> IO ()) -> IO ()
+serveUnixSocket :: OsPath -> (Handle -> IO ()) -> IO ()
 serveUnixSocket unixsocket serveconn = do
-	removeWhenExistsWith R.removeLink (toRawFilePath unixsocket)
+	removeWhenExistsWith removeFile unixsocket
 	soc <- S.socket S.AF_UNIX S.Stream S.defaultProtocol
-	S.bind soc (S.SockAddrUnix unixsocket)
+	S.bind soc (S.SockAddrUnix (fromOsPath unixsocket))
 	-- Allow everyone to read and write to the socket,
 	-- so a daemon like tor, that is probably running as a different
 	-- de sock $ addModes
@@ -175,7 +174,7 @@ serveUnixSocket unixsocket serveconn = do
         -- Connections have to authenticate to do anything,
         -- so it's fine that other local users can connect to the
         -- socket.
-	modifyFileMode (toOsPath unixsocket) $ addModes
+	modifyFileMode unixsocket $ addModes
 		[groupReadMode, groupWriteMode, otherReadMode, otherWriteMode]
 	S.listen soc 2
 	forever $ do

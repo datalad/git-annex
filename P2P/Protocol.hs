@@ -293,12 +293,12 @@ data LocalF c
 	= TmpContentSize Key (Len -> c)
 	-- ^ Gets size of the temp file where received content may have
 	-- been stored. If not present, returns 0.
-	| FileSize FilePath (Len -> c)
+	| FileSize OsPath (Len -> c)
 	-- ^ Gets size of the content of a file. If not present, returns 0.
 	| ContentSize Key (Maybe Len -> c)
 	-- ^ Gets size of the content of a key, when the full content is
 	-- present.
-	| ReadContent Key AssociatedFile (Maybe FilePath) Offset (L.ByteString -> Proto Validity -> Proto (Maybe [UUID])) (Maybe [UUID] -> c)
+	| ReadContent Key AssociatedFile (Maybe OsPath) Offset (L.ByteString -> Proto Validity -> Proto (Maybe [UUID])) (Maybe [UUID] -> c)
 	-- ^ Reads the content of a key and sends it to the callback.
 	-- Must run the callback, or terminate the protocol connection.
 	--
@@ -323,7 +323,7 @@ data LocalF c
 	-- Note: The ByteString may not contain the entire remaining content
 	-- of the key. Only once the temp file size == Len has the whole
 	-- content been transferred.
-	| StoreContentTo FilePath (Maybe IncrementalVerifier) Offset Len (Proto L.ByteString) (Proto (Maybe Validity)) ((Bool, Verification) -> c)
+	| StoreContentTo OsPath (Maybe IncrementalVerifier) Offset Len (Proto L.ByteString) (Proto (Maybe Validity)) ((Bool, Verification) -> c)
 	-- ^ Like StoreContent, but stores the content to a temp file.
 	| SendContentWith (L.ByteString -> Annex (Maybe Validity -> Annex Bool)) (Proto L.ByteString) (Proto (Maybe Validity)) (Bool -> c)
 	-- ^ Reads content from the Proto L.ByteString and sends it to the
@@ -481,7 +481,7 @@ removeBeforeRemoteEndTime remoteendtime key = do
 		REMOVE_BEFORE remoteendtime key
 	checkSuccessFailurePlus	
 
-get :: FilePath -> Key -> Maybe IncrementalVerifier -> AssociatedFile -> Meter -> MeterUpdate -> Proto (Bool, Verification)
+get :: OsPath -> Key -> Maybe IncrementalVerifier -> AssociatedFile -> Meter -> MeterUpdate -> Proto (Bool, Verification)
 get dest key iv af m p = 
 	receiveContent (Just m) p sizer storer noothermessages $ \offset ->
 		GET offset (ProtoAssociatedFile af) key
@@ -727,7 +727,7 @@ checkCONNECTServerMode service servermode a =
 		(ServeReadOnly, UploadPack) -> a Nothing
 		(ServeReadOnly, ReceivePack) -> a (Just sendReadOnlyError)
 
-sendContent :: Key -> AssociatedFile -> Maybe FilePath -> Offset -> MeterUpdate -> Proto (Maybe [UUID])
+sendContent :: Key -> AssociatedFile -> Maybe OsPath -> Offset -> MeterUpdate -> Proto (Maybe [UUID])
 sendContent key af o offset@(Offset n) p = go =<< local (contentSize key)
   where
 	go (Just (Len totallen)) = do

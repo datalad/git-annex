@@ -29,10 +29,7 @@ import Annex.GitOverlay
 import Utility.Tmp.Dir
 import Utility.CopyFile
 import Utility.Directory.Create
-import qualified Utility.RawFilePath as R
 import qualified Utility.FileIO as F
-
-import qualified System.FilePath.ByteString as P
 
 canMergeToAdjustedBranch :: Branch -> (OrigBranch, Adjustment) -> Annex Bool
 canMergeToAdjustedBranch tomerge (origbranch, adj) =
@@ -74,23 +71,24 @@ mergeToAdjustedBranch tomerge (origbranch, adj) mergeconfig canresolvemerge comm
 	changestomerge (Just updatedorig) = withOtherTmp $ \othertmpdir -> do
 		git_dir <- fromRepo Git.localGitDir
 		tmpwt <- fromRepo gitAnnexMergeDir
-		withTmpDirIn (fromRawFilePath othertmpdir) (toOsPath "git") $ \tmpgit -> withWorkTreeRelated tmpgit $
+		withTmpDirIn othertmpdir (literalOsPath "git") $ \tmpgit -> withWorkTreeRelated tmpgit $
 			withemptydir git_dir tmpwt $ withWorkTree tmpwt $ do
-				let tmpgit' = toRawFilePath tmpgit
-				liftIO $ writeFile (tmpgit </> "HEAD") (fromRef updatedorig)
+				liftIO $ F.writeFile'
+					(tmpgit </> literalOsPath "HEAD")
+					(fromRef' updatedorig)
 				-- Copy in refs and packed-refs, to work
 				-- around bug in git 2.13.0, which
 				-- causes it not to look in GIT_DIR for refs.
 				refs <- liftIO $ emptyWhenDoesNotExist $ 
 					dirContentsRecursive $
-						git_dir P.</> "refs"
-				let refs' = (git_dir P.</> "packed-refs") : refs
+						git_dir </> literalOsPath "refs"
+				let refs' = (git_dir </> literalOsPath "packed-refs") : refs
 				liftIO $ forM_ refs' $ \src -> do
-					whenM (R.doesPathExist src) $ do
+					whenM (doesFileExist src) $ do
 						dest <- relPathDirToFile git_dir src
-						let dest' = tmpgit' P.</> dest
+						let dest' = tmpgit </> dest
 						createDirectoryUnder [git_dir]
-							(P.takeDirectory dest')
+							(takeDirectory dest')
 						void $ createLinkOrCopy src dest'
 				-- This reset makes git merge not care
 				-- that the work tree is empty; otherwise
@@ -107,7 +105,7 @@ mergeToAdjustedBranch tomerge (origbranch, adj) mergeconfig canresolvemerge comm
 				if merged
 					then do
 						!mergecommit <- liftIO $ extractSha
-							<$> F.readFile' (toOsPath (tmpgit' P.</> "HEAD"))
+							<$> F.readFile' (tmpgit </> literalOsPath "HEAD")
 						-- This is run after the commit lock is dropped.
 						return $ postmerge mergecommit
 					else return $ return False
@@ -118,7 +116,7 @@ mergeToAdjustedBranch tomerge (origbranch, adj) mergeconfig canresolvemerge comm
 		setup = do
 			whenM (doesDirectoryExist d) $
 				removeDirectoryRecursive d
-			createDirectoryUnder [git_dir] (toRawFilePath d)
+			createDirectoryUnder [git_dir] d
 		cleanup _ = removeDirectoryRecursive d
 
 	{- A merge commit has been made between the basisbranch and 
