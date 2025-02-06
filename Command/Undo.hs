@@ -18,7 +18,6 @@ import qualified Annex
 import qualified Git.LsFiles as LsFiles
 import qualified Git.Command as Git
 import qualified Git.Branch
-import qualified Utility.RawFilePath as R
 
 cmd :: Command
 cmd = notBareRepo $ withAnnexOptions [jsonOptions] $
@@ -30,7 +29,7 @@ seek :: CmdParams -> CommandSeek
 seek ps = do
 	-- Safety first; avoid any undo that would touch files that are not
 	-- in the index.
-	(fs, cleanup) <- inRepo $ LsFiles.notInRepo [] False (map toRawFilePath ps)
+	(fs, cleanup) <- inRepo $ LsFiles.notInRepo [] False (map toOsPath ps)
 	unless (null fs) $ do
 		qp <- coreQuotePath <$> Annex.getGitConfig
 		giveup $ decodeBS $ quote qp $ 
@@ -48,19 +47,20 @@ seek ps = do
 
 start :: FilePath -> CommandStart
 start p = starting "undo" ai si $
-	perform p
+	perform p'
   where
-	ai = ActionItemOther (Just (QuotedPath (toRawFilePath p)))
+	p' = toOsPath p
+	ai = ActionItemOther (Just (QuotedPath p'))
 	si = SeekInput [p]
 
-perform :: FilePath -> CommandPerform
+perform :: OsPath -> CommandPerform
 perform p = do
 	g <- gitRepo
 
 	-- Get the reversed diff that needs to be applied to undo.
 	(diff, cleanup) <- inRepo $
-		diffLog [Param "-R", Param "--", Param p]
-	top <- inRepo $ toTopFilePath $ toRawFilePath p
+		diffLog [Param "-R", Param "--", Param (fromOsPath p)]
+	top <- inRepo $ toTopFilePath p
 	let diff' = filter (`isDiffOf` top) diff
 	liftIO $ streamUpdateIndex g (map stageDiffTreeItem diff')
 
@@ -73,10 +73,10 @@ perform p = do
 
 	forM_ removals $ \di -> do
 		f <- mkrel di
-		liftIO $ removeWhenExistsWith R.removeLink f
+		liftIO $ removeWhenExistsWith removeFile f
 
 	forM_ adds $ \di -> do
-		f <- fromRawFilePath <$> mkrel di
+		f <- fromOsPath <$> mkrel di
 		inRepo $ Git.run [Param "checkout", Param "--", File f]
 
 	next $ liftIO cleanup

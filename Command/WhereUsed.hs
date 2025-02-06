@@ -124,7 +124,7 @@ findHistorical key = do
 		display key (descBranchFilePath (BranchFilePath r tf))
 		return True
 
-searchLog :: Key -> [CommandParam] -> (S.ByteString -> [RawFilePath] -> Annex Bool) -> Annex Bool
+searchLog :: Key -> [CommandParam] -> (S.ByteString -> [OsPath] -> Annex Bool) -> Annex Bool
 searchLog key ps a = do
 	(output, cleanup) <- Annex.inRepo $ Git.Command.pipeNullSplit ps'
 	found <- case output of
@@ -154,7 +154,7 @@ searchLog key ps a = do
 		-- so a regexp is used. Since annex pointer files
 		-- may contain a newline followed by perhaps something
 		-- else, that is also matched.
-		, Param ("-G" ++ escapeRegexp (fromRawFilePath (keyFile key)) ++ "($|\n)")
+		, Param ("-G" ++ escapeRegexp (fromOsPath (keyFile key)) ++ "($|\n)")
 		-- Skip commits where the file was deleted,
 		-- only find those where it was added or modified.
 		, Param "--diff-filter=ACMRTUX"

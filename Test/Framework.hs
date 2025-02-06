@@ -66,6 +66,7 @@ import qualified Utility.Tmp.Dir
 import qualified Utility.Metered
 import qualified Utility.HumanTime
 import qualified Command.Uninit
+import qualified Utility.OsString as OS
 
 -- Run a process. The output and stderr is captured, and is only
 -- displayed if the process does not return the expected value.
@@ -123,13 +124,14 @@ git_annex'' expectedret expectedtranscript command params environ faildesc = do
 	let params' = if debug
 		then "--debug":params
 		else params
-	testProcess pp (command:params') environ expectedret expectedtranscript faildesc
+	testProcess (fromOsPath pp) (command:params') environ
+		expectedret expectedtranscript faildesc
 
 {- Runs git-annex and returns its standard output. -}
 git_annex_output :: String -> [String] -> IO String
 git_annex_output command params = do
 	pp <- Annex.Path.programPath
-	Utility.Process.readProcess pp (command:params)
+	Utility.Process.readProcess (fromOsPath pp) (command:params)
 
 git_annex_expectoutput :: String -> [String] -> [String] -> Assertion
 git_annex_expectoutput command params expected = do
@@ -159,7 +161,7 @@ with_ssh_origin cloner a = cloner $ do
 	let v = Git.Types.ConfigValue (toRawFilePath "/dev/null")
 	origindir <- absPath . Git.Types.fromConfigValue
 		=<< annexeval (Config.getConfig k v)
-	let originurl = "localhost:" ++ fromRawFilePath origindir
+	let originurl = "localhost:" ++ fromOsPath origindir
 	git "config" [config, originurl] "git config failed"
 	a
   where
@@ -170,7 +172,7 @@ intmpclonerepo a = withtmpclonerepo $ \r -> intopdir r a
 
 checkRepo :: Types.Annex a -> FilePath -> IO a
 checkRepo getval d = do
-	s <- Annex.new =<< Git.Construct.fromPath (toRawFilePath d)
+	s <- Annex.new =<< Git.Construct.fromPath (toOsPath d)
 	Annex.eval s $
 		getval `finally` Annex.Action.stopCoProcesses
 
@@ -218,7 +220,7 @@ inpath path a = do
 	-- any type of error and change back to currdir before
 	-- rethrowing.
 	r <- bracket_
-		(setCurrentDirectory path)
+		(setCurrentDirectory (toOsPath path))
 		(setCurrentDirectory currdir)
 		(tryNonAsync a)
 	case r of
@@ -295,17 +297,18 @@ configrepo dir = intopdir dir $ do
 
 ensuredir :: FilePath -> IO ()
 ensuredir d = do
-	e <- doesDirectoryExist d
+	let d' = toOsPath d
+	e <- doesDirectoryExist d'
 	unless e $
-		createDirectory d
+		createDirectory d'
 
 {- This is the only place in the test suite that can use setEnv.
  - Using it elsewhere can conflict with tasty's use of getEnv, which can
  - happen concurrently with a test case running, and would be a problem
  - since setEnv is not thread safe. This is run before tasty. -}
 setTestEnv :: IO a -> IO a
-setTestEnv a = Utility.Tmp.Dir.withTmpDir (toOsPath "testhome") $ \tmphome -> do
-	tmphomeabs <- fromRawFilePath <$> absPath (toRawFilePath tmphome)
+setTestEnv a = Utility.Tmp.Dir.withTmpDir (literalOsPath "testhome") $ \tmphome -> do
+	tmphomeabs <- fromOsPath <$> absPath tmphome
 	{- Prevent global git configs from affecting the test suite. -}
 	Utility.Env.Set.setEnv "HOME" tmphomeabs True
 	Utility.Env.Set.setEnv "XDG_CONFIG_HOME" tmphomeabs True
@@ -313,9 +316,11 @@ setTestEnv a = Utility.Tmp.Dir.withTmpDir (toOsPath "testhome") $ \tmphome -> do
 	
 	-- Ensure that the same git-annex binary that is running
 	-- git-annex test is at the front of the PATH.
-	p <- Utility.Env.getEnvDefault "PATH" ""
 	pp <- Annex.Path.programPath
-	Utility.Env.Set.setEnv "PATH" (takeDirectory pp ++ [searchPathSeparator] ++ p) True
+	p <- Utility.Env.getEnvDefault "PATH" ""
+	let p' = fromOsPath $
+		takeDirectory pp <> OS.singleton searchPathSeparator <> toOsPath p
+	Utility.Env.Set.setEnv "PATH" p' True
 	
 	-- Avoid git complaining if it cannot determine the user's
 	-- email address, or exploding if it doesn't know the user's name.
@@ -332,34 +337,34 @@ setTestEnv a = Utility.Tmp.Dir.withTmpDir (toOsPath "testhome") $ \tmphome -> do
 
 	-- Record top directory.
 	currdir <- getCurrentDirectory
-	Utility.Env.Set.setEnv "TOPDIR" currdir True
+	Utility.Env.Set.setEnv "TOPDIR" (fromOsPath currdir) True
 	
 	a
 
 removeDirectoryForCleanup :: FilePath -> IO ()
-removeDirectoryForCleanup = removePathForcibly
+removeDirectoryForCleanup = removePathForcibly . toOsPath
 
 cleanup :: FilePath -> IO ()
-cleanup dir = whenM (doesDirectoryExist dir) $ do
-	Command.Uninit.prepareRemoveAnnexDir' (toRawFilePath dir)
+cleanup dir = whenM (doesDirectoryExist (toOsPath dir)) $ do
+	Command.Uninit.prepareRemoveAnnexDir' (toOsPath dir)
 	-- This can fail if files in the directory are still open by a
 	-- subprocess.
 	void $ tryIO $ removeDirectoryForCleanup dir
 
 finalCleanup :: IO ()
-finalCleanup = whenM (doesDirectoryExist tmpdir) $ do
-	Command.Uninit.prepareRemoveAnnexDir' (toRawFilePath tmpdir)
+finalCleanup = whenM (doesDirectoryExist (toOsPath tmpdir)) $ do
+	Command.Uninit.prepareRemoveAnnexDir' (toOsPath tmpdir)
 	catchIO (removeDirectoryForCleanup tmpdir) $ \e -> do
 		print e
 		putStrLn "sleeping 10 seconds and will retry directory cleanup"
 		Utility.ThreadScheduler.threadDelaySeconds $
 			Utility.ThreadScheduler.Seconds 10
-		whenM (doesDirectoryExist tmpdir) $
+		whenM (doesDirectoryExist (toOsPath tmpdir)) $
 			removeDirectoryForCleanup tmpdir
 
 checklink :: FilePath -> Assertion
 checklink f = ifM (annexeval Config.crippledFileSystem)
-	( (isJust <$> annexeval (Annex.Link.getAnnexLinkTarget (toRawFilePath f)))
+	( (isJust <$> annexeval (Annex.Link.getAnnexLinkTarget (toOsPath f)))
 		@? f ++ " is not a (crippled) symlink"
 	, do
 		s <- R.getSymbolicLinkStatus (toRawFilePath f)
@@ -417,7 +422,7 @@ checkdangling f = ifM (annexeval Config.crippledFileSystem)
 checklocationlog :: FilePath -> Bool -> Assertion
 checklocationlog f expected = do
 	thisuuid <- annexeval Annex.UUID.getUUID
-	r <- annexeval $ Annex.WorkTree.lookupKey (toRawFilePath f)
+	r <- annexeval $ Annex.WorkTree.lookupKey (toOsPath f)
 	case r of
 		Just k -> do
 			uuids <- annexeval $ Remote.keyLocations k
@@ -428,11 +433,11 @@ checklocationlog f expected = do
 checkbackend :: FilePath -> Types.Backend -> Assertion
 checkbackend file expected = do
 	b <- annexeval $ maybe (return Nothing) (Backend.getBackend file) 
-		=<< Annex.WorkTree.lookupKey (toRawFilePath file)
+		=<< Annex.WorkTree.lookupKey (toOsPath file)
 	assertEqual ("backend for " ++ file) (Just expected) b
 
 checkispointerfile :: FilePath -> Assertion
-checkispointerfile f = unlessM (isJust <$> Annex.Link.isPointerFile (toRawFilePath f)) $
+checkispointerfile f = unlessM (isJust <$> Annex.Link.isPointerFile (toOsPath f)) $
 	assertFailure $ f ++ " is not a pointer file"
 
 inlocationlog :: FilePath -> Assertion
@@ -501,7 +506,7 @@ unannexed = runchecks [checkregularfile, checkcontent, checkwritable]
 unannexed_in_git :: FilePath -> Assertion
 unannexed_in_git f = do
 	unannexed f
-	r <- annexeval $ Annex.WorkTree.lookupKey (toRawFilePath f)
+	r <- annexeval $ Annex.WorkTree.lookupKey (toOsPath f)
 	case r of
 		Just _k -> assertFailure $ f ++ " is annexed in git"
 		Nothing -> return ()
@@ -585,10 +590,10 @@ newmainrepodir = go (0 :: Int)
   where
 	go n = do
 		let d = "main" ++ show n
-		ifM (doesDirectoryExist d)
+		ifM (doesDirectoryExist (toOsPath d))
 			( go $ n + 1
 			, do
-				createDirectory d
+				createDirectory (toOsPath d)
 				return d
 			)
 
@@ -597,7 +602,7 @@ tmprepodir = go (0 :: Int)
   where
 	go n = do
 		let d = "tmprepo" ++ show n
-		ifM (doesDirectoryExist d)
+		ifM (doesDirectoryExist (toOsPath d))
 			( go $ n + 1
 			, return d
 			)
@@ -637,9 +642,9 @@ writecontent :: FilePath -> String -> IO ()
 writecontent f c = go (10000000 :: Integer)
   where
 	go ticsleft = do
-		oldmtime <- catchMaybeIO $ getModificationTime f
+		oldmtime <- catchMaybeIO $ getModificationTime (toOsPath f)
 		writeFile f c
-		newmtime <- getModificationTime f
+		newmtime <- getModificationTime (toOsPath f)
 		if Just newmtime == oldmtime
 			then do
 				threadDelay 100000
@@ -679,8 +684,8 @@ getKey b f = case Types.Backend.genKey b of
 	Nothing -> error "internal"
   where
 	ks = Types.KeySource.KeySource
-		{ Types.KeySource.keyFilename = toRawFilePath f
-		, Types.KeySource.contentLocation = toRawFilePath f
+		{ Types.KeySource.keyFilename = toOsPath f
+		, Types.KeySource.contentLocation = toOsPath f
 		, Types.KeySource.inodeCache = Nothing
 		}
 
@@ -799,7 +804,7 @@ parallelTestRunner' numjobs opts mkts
 	go Nothing = summarizeresults $ withConcurrentOutput $ do
 		ensuredir tmpdir
 		crippledfilesystem <- fst <$> Annex.Init.probeCrippledFileSystem'
-			(toRawFilePath tmpdir)
+			(toOsPath tmpdir)
 			Nothing Nothing False
 		adjustedbranchok <- Annex.AdjustedBranch.isGitVersionSupported
 		let ts = mkts numparts crippledfilesystem adjustedbranchok opts
@@ -809,13 +814,13 @@ parallelTestRunner' numjobs opts mkts
 			mapM_ (hPutStrLn stderr) warnings
 		environ <- Utility.Env.getEnvironment
 		args <- getArgs
-		pp <- Annex.Path.programPath
+		pp <- fromOsPath <$> Annex.Path.programPath
 		termcolor <- hSupportsANSIColor stdout
 		let ps = if useColor (lookupOption tastyopts) termcolor
 			then "--color=always":args
 			else "--color=never":args
 		let runone n = do
-			let subdir = tmpdir </> show n
+			let subdir = fromOsPath $ toOsPath tmpdir </> toOsPath (show n)
 			ensuredir subdir
 			let p = (proc pp ps)
 				{ env = Just ((subenv, show (n, crippledfilesystem, adjustedbranchok)):environ)

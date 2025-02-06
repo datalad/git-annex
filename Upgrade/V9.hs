@@ -55,7 +55,7 @@ upgrade automatic
 	 - run for an entire year and so predate the v9 upgrade. -}
 	assistantrunning = do
 		pidfile <- fromRepo gitAnnexPidFile
-		isJust <$> liftIO (checkDaemon (fromOsPath pidfile))
+		isJust <$> liftIO (checkDaemon pidfile)
 	
 	unsafeupgrade =
 		[ "Not upgrading from v9 to v10, because there may be git-annex"

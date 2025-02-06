@@ -34,7 +34,6 @@ import Types.NumCopies
 import Remote
 import Git.Types (fromConfigKey, fromConfigValue)
 import Utility.DataUnits
-import qualified Utility.RawFilePath as R
 import qualified Utility.FileIO as F
 
 cmd :: Command
@@ -47,30 +46,35 @@ seek = withNothing (commandAction start)
 start :: CommandStart
 start = do
 	f <- fromRepo gitAnnexTmpCfgFile
-	let f' = fromRawFilePath f
 	createAnnexDirectory $ parentDir f
 	cfg <- getCfg
 	descs <- uuidDescriptions
-	liftIO $ writeFile f' $ genCfg cfg descs
-	vicfg cfg f'
+	liftIO $ writeFile (fromOsPath f) $ genCfg cfg descs
+	vicfg cfg f
 	stop
 
-vicfg :: Cfg -> FilePath -> Annex ()
+vicfg :: Cfg -> OsPath -> Annex ()
 vicfg curcfg f = do
 	vi <- liftIO $ catchDefaultIO "vi" $ getEnv "EDITOR"
-	-- Allow EDITOR to be processed by the shell, so it can contain options.
-	unlessM (liftIO $ boolSystem "sh" [Param "-c", Param $ unwords [vi, shellEscape f]]) $
+	unlessM (liftIO $ boolSystem "sh" (shparams vi)) $
 		giveup $ vi ++ " exited nonzero; aborting"
 	r <- liftIO $ parseCfg (defCfg curcfg) 
 		. map decodeBS
 		. fileLines'
-		<$> F.readFile' (toOsPath (toRawFilePath f))
-	liftIO $ removeWhenExistsWith R.removeLink (toRawFilePath f)
+		<$> F.readFile' f
+	liftIO $ removeWhenExistsWith removeFile f
 	case r of
 		Left s -> do
-			liftIO $ writeFile f s
+			liftIO $ writeFile (fromOsPath f) s
 			vicfg curcfg f
 		Right newcfg -> setCfg curcfg newcfg
+  where
+	-- Allow EDITOR to be processed by the shell,
+	-- so it can contain options.
+	shparams editor = 
+		[ Param "-c"
+		, Param $ unwords [editor, shellEscape (fromOsPath f)]
+		]
 
 data Cfg = Cfg
 	{ cfgTrustMap :: M.Map UUID (Down TrustLevel)

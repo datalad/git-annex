@@ -107,6 +107,9 @@ instance FromConfigValue S.ByteString where
 instance FromConfigValue String where
 	fromConfigValue = decodeBS . fromConfigValue
 
+instance FromConfigValue OsPath where
+	fromConfigValue v = toOsPath (fromConfigValue v :: S.ByteString)
+
 instance Show ConfigValue where
 	show = fromConfigValue
 
