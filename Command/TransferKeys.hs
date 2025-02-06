@@ -51,7 +51,7 @@ start = do
 		| otherwise = notifyTransfer direction af $
 			download' (Remote.uuid remote) key af Nothing stdRetry $ \p ->
 				logStatusAfter NoLiveUpdate key $ getViaTmp (Remote.retrievalSecurityPolicy remote) (RemoteVerify remote) key af Nothing $ \t -> do
-					r <- tryNonAsync (Remote.retrieveKeyFile remote key af (fromRawFilePath t) p (RemoteVerify remote)) >>= \case
+					r <- tryNonAsync (Remote.retrieveKeyFile remote key af t p (RemoteVerify remote)) >>= \case
 						Left e -> do
 							warning (UnquotedString (show e))
 							return (False, UnVerified)
@@ -128,10 +128,10 @@ instance TCSerialized Direction where
 	deserialize _ = Nothing
 
 instance TCSerialized AssociatedFile where
-	serialize (AssociatedFile (Just f)) = fromRawFilePath f
+	serialize (AssociatedFile (Just f)) = fromOsPath f
 	serialize (AssociatedFile Nothing) = ""
 	deserialize "" = Just (AssociatedFile Nothing)
-	deserialize f = Just (AssociatedFile (Just (toRawFilePath f)))
+	deserialize f = Just (AssociatedFile (Just (toOsPath f)))
 
 instance TCSerialized RemoteName where
 	serialize n = n

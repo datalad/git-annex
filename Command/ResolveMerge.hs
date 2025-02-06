@@ -16,8 +16,6 @@ import qualified Git.Branch
 import Annex.AutoMerge
 import qualified Utility.FileIO as F
 
-import qualified System.FilePath.ByteString as P
-
 cmd :: Command
 cmd = command "resolvemerge" SectionPlumbing
 	"resolve merge conflicts"
@@ -30,7 +28,7 @@ start :: CommandStart
 start = starting "resolvemerge" (ActionItemOther Nothing) (SeekInput []) $ do
 	us <- fromMaybe nobranch <$> inRepo Git.Branch.current
 	d <- fromRepo Git.localGitDir
-	let merge_head = toOsPath $ d P.</> "MERGE_HEAD"
+	let merge_head = d </> literalOsPath "MERGE_HEAD"
 	them <- fromMaybe (giveup nomergehead) . extractSha
 		<$> liftIO (F.readFile' merge_head)
 	ifM (resolveMerge (Just us) them False)
@@ -41,4 +39,4 @@ start = starting "resolvemerge" (ActionItemOther Nothing) (SeekInput []) $ do
 		)
   where
 	nobranch = giveup "No branch is currently checked out."
-	nomergehead = giveup "No SHA found in .git/merge_head"
+	nomergehead = giveup "No SHA found in .git/MERGE_HEAD"

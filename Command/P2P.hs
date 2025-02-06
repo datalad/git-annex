@@ -25,7 +25,6 @@ import Utility.Tmp.Dir
 import Utility.FileMode
 import Utility.ThreadScheduler
 import Utility.SafeOutput
-import qualified Utility.RawFilePath as R
 import qualified Utility.FileIO as F
 import qualified Utility.MagicWormhole as Wormhole
 
@@ -220,12 +219,12 @@ wormholePairing remotename ouraddrs ui = do
 	-- files. Permissions of received files may allow others
 	-- to read them. So, set up a temp directory that only
 	-- we can read.
-	withTmpDir (toOsPath "pair") $ \tmp -> do
-		liftIO $ void $ tryIO $ modifyFileMode (toRawFilePath tmp) $ 
+	withTmpDir (literalOsPath "pair") $ \tmp -> do
+		liftIO $ void $ tryIO $ modifyFileMode tmp $ 
 			removeModes otherGroupModes
-		let sendf = tmp </> "send"
-		let recvf = tmp </> "recv"
-		liftIO $ writeFileProtected (toRawFilePath sendf) $
+		let sendf = tmp </> literalOsPath "send"
+		let recvf = tmp </> literalOsPath "recv"
+		liftIO $ writeFileProtected sendf $
 			serializePairData ourpairdata
 
 		observer <- liftIO Wormhole.mkCodeObserver
@@ -235,18 +234,18 @@ wormholePairing remotename ouraddrs ui = do
 		-- the same channels that other wormhole users use.
 		let appid = Wormhole.appId "git-annex.branchable.com/p2p-setup"
 		(sendres, recvres) <- liftIO $
-			Wormhole.sendFile sendf observer appid
+			Wormhole.sendFile (fromOsPath sendf) observer appid
 				`concurrently`
-			Wormhole.receiveFile recvf producer appid
-		liftIO $ removeWhenExistsWith R.removeLink (toRawFilePath sendf)
+			Wormhole.receiveFile (fromOsPath recvf) producer appid
+		liftIO $ removeWhenExistsWith removeFile sendf
 		if sendres /= True
 			then return SendFailed
 			else if recvres /= True
 				then return ReceiveFailed
 				else do
 					r <- liftIO $ tryIO $
-						map decodeBS . fileLines' <$> F.readFile'
-							(toOsPath (toRawFilePath recvf))
+						map decodeBS . fileLines'
+							<$> F.readFile' recvf
 					case r of
 						Left _e -> return ReceiveFailed
 						Right ls -> maybe 

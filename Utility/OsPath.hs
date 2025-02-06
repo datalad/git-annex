@@ -15,11 +15,12 @@ module Utility.OsPath (
 	OsString,
 	RawFilePath,
 	literalOsPath,
+	stringToOsPath,
 	toOsPath,
 	fromOsPath,
 	module X,
 	getSearchPath,
-	unsafeFromChar
+	unsafeFromChar,
 ) where
 
 import Utility.FileSystemEncoding
@@ -101,7 +102,9 @@ bytesFromOsPath = getPosixString . getOsString
 getSearchPath :: IO [OsPath]
 getSearchPath = map toOsPath <$> PB.getSearchPath
 
-{- Used for string constants. -}
+{- Used for string constants. Note that when using OverloadedStrings,
+ - the IsString instance for ShortByteString only works properly with
+ - ASCII characters. -}
 literalOsPath :: ShortByteString -> OsPath
 literalOsPath = toOsPath
 
@@ -130,3 +133,6 @@ unsafeFromChar = fromIntegral . ord
 literalOsPath :: RawFilePath -> OsPath
 literalOsPath = id
 #endif
+
+stringToOsPath :: String -> OsPath
+stringToOsPath = toOsPath
