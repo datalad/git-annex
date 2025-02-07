@@ -52,7 +52,6 @@ import System.Posix.Types (EpochTime)
 import qualified Data.Set as S
 import qualified Data.Map as M
 import Data.Either
-import qualified System.FilePath.ByteString as P
 import System.PosixCompat.Files (fileMode, isSymbolicLink, modificationTime)
 
 cmd :: Command
@@ -123,8 +122,8 @@ checkDeadRepo u =
 	whenM ((==) DeadTrusted <$> lookupTrust u) $
 		earlyWarning "Warning: Fscking a repository that is currently marked as dead."
 
-start :: Maybe Remote -> Incremental -> SeekInput -> RawFilePath -> Key -> CommandStart
-start from inc si file key = Backend.getBackend (fromRawFilePath file) key >>= \case
+start :: Maybe Remote -> Incremental -> SeekInput -> OsPath -> Key -> CommandStart
+start from inc si file key = Backend.getBackend file key >>= \case
 	Nothing -> stop
 	Just backend -> do
 		(numcopies, _mincopies) <- getFileNumMinCopies file
@@ -135,7 +134,7 @@ start from inc si file key = Backend.getBackend (fromRawFilePath file) key >>= \
 	go = runFsck inc si (mkActionItem (key, afile)) key
 	afile = AssociatedFile (Just file)
 
-perform :: Key -> RawFilePath -> Backend -> NumCopies -> Annex Bool
+perform :: Key -> OsPath -> Backend -> NumCopies -> Annex Bool
 perform key file backend numcopies = do
 	keystatus <- getKeyFileStatus key file
 	check
@@ -194,11 +193,11 @@ performRemote key afile numcopies remote =
 		pid <- liftIO getPID
 		t <- fromRepo gitAnnexTmpObjectDir
 		createAnnexDirectory t
-		let tmp = t P.</> "fsck" <> toRawFilePath (show pid) <> "." <> keyFile key
-		let cleanup = liftIO $ catchIO (R.removeLink tmp) (const noop)
+		let tmp = t </> literalOsPath "fsck" <> toOsPath (show pid) <> literalOsPath "." <> keyFile key
+		let cleanup = liftIO $ catchIO (removeFile tmp) (const noop)
 		cleanup
 		cleanup `after` a tmp
-	getfile tmp = ifM (checkDiskSpace Nothing (Just (P.takeDirectory tmp)) key 0 True)
+	getfile tmp = ifM (checkDiskSpace Nothing (Just (takeDirectory tmp)) key 0 True)
 		( ifM (getcheap tmp)
 			( return (Just (Right UnVerified))
 			, ifM (Annex.getRead Annex.fast)
@@ -208,9 +207,9 @@ performRemote key afile numcopies remote =
 			)
 		, return Nothing
 		)
-	getfile' tmp = Remote.retrieveKeyFile remote key (AssociatedFile Nothing) (fromRawFilePath tmp) nullMeterUpdate (RemoteVerify remote)
+	getfile' tmp = Remote.retrieveKeyFile remote key (AssociatedFile Nothing) tmp nullMeterUpdate (RemoteVerify remote)
 	getcheap tmp = case Remote.retrieveKeyFileCheap remote of
-		Just a -> isRight <$> tryNonAsync (a key afile (fromRawFilePath tmp))
+		Just a -> isRight <$> tryNonAsync (a key afile tmp)
 		Nothing -> return False
 
 startKey :: Maybe Remote -> Incremental -> (SeekInput, Key, ActionItem) -> NumCopies -> CommandStart
@@ -236,10 +235,10 @@ check :: [Annex Bool] -> Annex Bool
 check cs = and <$> sequence cs
 
 {- Checks that symlinks points correctly to the annexed content. -}
-fixLink :: Key -> RawFilePath -> Annex Bool
+fixLink :: Key -> OsPath -> Annex Bool
 fixLink key file = do
 	want <- calcRepo $ gitAnnexLink file key
-	have <- getAnnexLinkTarget file
+	have <- fmap toOsPath <$> getAnnexLinkTarget file
 	maybe noop (go want) have
 	return True
   where
@@ -247,8 +246,8 @@ fixLink key file = do
 		| want /= fromInternalGitPath have = do
 			showNote "fixing link"
 			createWorkTreeDirectory (parentDir file)
-			liftIO $ R.removeLink file
-			addAnnexLink want file
+			liftIO $ R.removeLink (fromOsPath file)
+			addAnnexLink (fromOsPath want) file
 		| otherwise = noop
 
 {- A repository that supports symlinks and is not bare may have in the past
@@ -272,7 +271,7 @@ fixObjectLocation key = do
 	idealloc <- calcRepo (gitAnnexLocation' (const (pure True)) key)
 	if loc == idealloc
 		then return True
-		else ifM (liftIO $ R.doesPathExist loc)
+		else ifM (liftIO $ R.doesPathExist $ fromOsPath loc)
 			( moveobjdir loc idealloc
 				`catchNonAsync` \_e -> return True
 			, return True
@@ -291,14 +290,12 @@ fixObjectLocation key = do
 			-- Thaw the content directory to allow renaming it.
 			thawContentDir src
 			createAnnexDirectory (parentDir destdir)
-			liftIO $ renameDirectory
-				(fromRawFilePath srcdir)
-				(fromRawFilePath destdir)
+			liftIO $ renameDirectory srcdir destdir
 			-- Since the directory was moved, lockContentForRemoval
 			-- will not be able to remove the lock file it
 			-- made. So, remove the lock file here.
 			mlockfile <- contentLockFile key =<< getVersion
-			liftIO $ maybe noop (removeWhenExistsWith R.removeLink) mlockfile
+			liftIO $ maybe noop (removeWhenExistsWith removeFile) mlockfile
 			freezeContentDir dest
 			cleanObjectDirs src
 			return True
@@ -310,7 +307,7 @@ verifyLocationLog :: Key -> KeyStatus -> ActionItem -> Annex Bool
 verifyLocationLog key keystatus ai = do
 	obj <- calcRepo (gitAnnexLocation key)
 	present <- if isKeyUnlockedThin keystatus
-		then liftIO (doesFileExist (fromRawFilePath obj))
+		then liftIO (doesFileExist obj)
 		else inAnnex key
 	u <- getUUID
 	
@@ -324,7 +321,7 @@ verifyLocationLog key keystatus ai = do
 		checkContentWritePerm obj >>= \case
 			Nothing -> warning $ "** Unable to set correct write mode for " <> QuotedPath obj <> " ; perhaps you don't own that file, or perhaps it has an xattr or ACL set"
 			_ -> return ()
-	whenM (liftIO $ R.doesPathExist $ parentDir obj) $
+	whenM (liftIO $ doesDirectoryExist $ parentDir obj) $
 		freezeContentDir obj
 
 	{- Warn when annex.securehashesonly is set and content using an 
@@ -401,7 +398,7 @@ verifyRequiredContent key ai@(ActionItemAssociatedFile afile _) = case afile of
 verifyRequiredContent _ _ = return True
 
 {- Verifies the associated file records. -}
-verifyAssociatedFiles :: Key -> KeyStatus -> RawFilePath -> Annex Bool
+verifyAssociatedFiles :: Key -> KeyStatus -> OsPath -> Annex Bool
 verifyAssociatedFiles key keystatus file = do
 	when (isKeyUnlockedThin keystatus) $ do
 		f <- inRepo $ toTopFilePath file
@@ -410,7 +407,7 @@ verifyAssociatedFiles key keystatus file = do
 			Database.Keys.addAssociatedFile key f
 	return True
 
-verifyWorkTree :: Key -> RawFilePath -> Annex Bool
+verifyWorkTree :: Key -> OsPath -> Annex Bool
 verifyWorkTree key file = do
 	{- Make sure that a pointer file is replaced with its content,
 	 - when the content is available. -}
@@ -419,7 +416,9 @@ verifyWorkTree key file = do
 		Just k | k == key -> whenM (inAnnex key) $ do
 			showNote "fixing worktree content"
 			replaceWorkTreeFile file $ \tmp -> do
-				mode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus file
+				mode <- liftIO $ catchMaybeIO $
+					fileMode <$> R.getFileStatus
+						(fromOsPath file)
 				ifM (annexThin <$> Annex.getGitConfig)
 					( void $ linkFromAnnex' key tmp mode
 					, do
@@ -440,20 +439,20 @@ checkKeySize :: Key -> KeyStatus -> ActionItem -> Annex Bool
 checkKeySize _ KeyUnlockedThin _ = return True
 checkKeySize key _ ai = do
 	file <- calcRepo $ gitAnnexLocation key
-	ifM (liftIO $ R.doesPathExist file)
+	ifM (liftIO $ R.doesPathExist (fromOsPath file))
 		( checkKeySizeOr badContent key file ai
 		, return True
 		)
 
-withLocalCopy :: Maybe RawFilePath -> (RawFilePath -> Annex Bool) -> Annex Bool
+withLocalCopy :: Maybe OsPath -> (OsPath -> Annex Bool) -> Annex Bool
 withLocalCopy Nothing _ = return True
 withLocalCopy (Just localcopy) f = f localcopy
 
-checkKeySizeRemote :: Key -> Remote -> ActionItem -> RawFilePath -> Annex Bool
+checkKeySizeRemote :: Key -> Remote -> ActionItem -> OsPath -> Annex Bool
 checkKeySizeRemote key remote ai localcopy =
 	checkKeySizeOr (badContentRemote remote localcopy) key localcopy ai
 
-checkKeySizeOr :: (Key -> Annex String) -> Key -> RawFilePath -> ActionItem -> Annex Bool
+checkKeySizeOr :: (Key -> Annex String) -> Key -> OsPath -> ActionItem -> Annex Bool
 checkKeySizeOr bad key file ai = case fromKey keySize key of
 	Nothing -> return True
 	Just size -> do
@@ -505,7 +504,7 @@ checkKeyUpgrade _ _ _ (AssociatedFile Nothing) =
 checkBackend :: Key -> KeyStatus -> AssociatedFile -> Annex Bool
 checkBackend key keystatus afile = do
 	content <- calcRepo (gitAnnexLocation key)
-	ifM (liftIO $ R.doesPathExist content)
+	ifM (liftIO $ R.doesPathExist (fromOsPath content))
 		( ifM (pure (isKeyUnlockedThin keystatus) <&&> (not <$> isUnmodified key content))
 			( nocheck
 			, do
@@ -524,11 +523,11 @@ checkBackend key keystatus afile = do
 
 	ai = mkActionItem (key, afile)
 
-checkBackendRemote :: Key -> Remote -> ActionItem -> RawFilePath -> Annex Bool
+checkBackendRemote :: Key -> Remote -> ActionItem -> OsPath -> Annex Bool
 checkBackendRemote key remote ai localcopy =
 	checkBackendOr (badContentRemote remote localcopy) key localcopy ai
 
-checkBackendOr :: (Key -> Annex String) -> Key -> RawFilePath -> ActionItem -> Annex Bool
+checkBackendOr :: (Key -> Annex String) -> Key -> OsPath -> ActionItem -> Annex Bool
 checkBackendOr bad key file ai =
 	ifM (Annex.getRead Annex.fast)
 		( return True
@@ -552,7 +551,7 @@ checkBackendOr bad key file ai =
  - verified to be correct. The InodeCache is generated again to detect if
  - the object file was changed while the content was being verified.
  -}
-checkInodeCache :: Key -> RawFilePath -> Maybe InodeCache -> ActionItem -> Annex ()
+checkInodeCache :: Key -> OsPath -> Maybe InodeCache -> ActionItem -> Annex ()
 checkInodeCache key content mic ai = case mic of
 	Nothing -> noop
 	Just ic -> do
@@ -569,7 +568,7 @@ checkInodeCache key content mic ai = case mic of
 checkKeyNumCopies :: Key -> AssociatedFile -> NumCopies -> Annex Bool
 checkKeyNumCopies key afile numcopies = do
 	let (desc, hasafile) = case afile of
-		AssociatedFile Nothing -> (serializeKey' key, False)
+		AssociatedFile Nothing -> (toOsPath (serializeKey'' key), False)
 		AssociatedFile (Just af) -> (af, True)
 	locs <- loggedLocations key
 	(untrustedlocations, otherlocations) <- trustPartition UnTrusted locs
@@ -590,7 +589,7 @@ checkKeyNumCopies key afile numcopies = do
 			)
 		else return True
 
-missingNote :: RawFilePath -> Int -> NumCopies -> String -> String -> StringContainingQuotedPath
+missingNote :: OsPath -> Int -> NumCopies -> String -> String -> StringContainingQuotedPath
 missingNote file 0 _ [] dead = 
 		"** No known copies exist of " <> QuotedPath file <> UnquotedString (honorDead dead)
 missingNote file 0 _ untrusted dead =
@@ -615,25 +614,24 @@ honorDead dead
 badContent :: Key -> Annex String
 badContent key = do
 	dest <- moveBad key
-	return $ "moved to " ++ fromRawFilePath dest
+	return $ "moved to " ++ fromOsPath dest
 
 {- Bad content is dropped from the remote. We have downloaded a copy
  - from the remote to a temp file already (in some cases, it's just a
  - symlink to a file in the remote). To avoid any further data loss,
  - that temp file is moved to the bad content directory unless 
  - the local annex has a copy of the content. -}
-badContentRemote :: Remote -> RawFilePath -> Key -> Annex String
+badContentRemote :: Remote -> OsPath -> Key -> Annex String
 badContentRemote remote localcopy key = do
 	bad <- fromRepo gitAnnexBadDir
-	let destbad = bad P.</> keyFile key
-	let destbad' = fromRawFilePath destbad
-	movedbad <- ifM (inAnnex key <||> liftIO (doesFileExist destbad'))
+	let destbad = bad </> keyFile key
+	movedbad <- ifM (inAnnex key <||> liftIO (doesFileExist destbad))
 		( return False
 		, do
 			createAnnexDirectory (parentDir destbad)
 			liftIO $ catchDefaultIO False $
-				ifM (isSymbolicLink <$> R.getSymbolicLinkStatus localcopy)
-					( copyFileExternal CopyTimeStamps (fromRawFilePath localcopy) destbad'
+				ifM (isSymbolicLink <$> R.getSymbolicLinkStatus (fromOsPath localcopy))
+					( copyFileExternal CopyTimeStamps localcopy destbad
 					, do
 						moveFile localcopy destbad
 						return True
@@ -645,7 +643,7 @@ badContentRemote remote localcopy key = do
 		Remote.logStatus NoLiveUpdate remote key InfoMissing
 	return $ case (movedbad, dropped) of
 		(True, Right ()) -> "moved from " ++ Remote.name remote ++
-			" to " ++ fromRawFilePath destbad
+			" to " ++ fromOsPath destbad
 		(False, Right ()) -> "dropped from " ++ Remote.name remote
 		(_, Left e) -> "failed to drop from" ++ Remote.name remote ++ ": " ++ show e
 
@@ -678,10 +676,10 @@ recordStartTime :: UUID -> Annex ()
 recordStartTime u = do
 	f <- fromRepo (gitAnnexFsckState u)
 	createAnnexDirectory $ parentDir f
-	liftIO $ removeWhenExistsWith R.removeLink f
-	liftIO $ F.withFile (toOsPath f) WriteMode $ \h -> do
+	liftIO $ removeWhenExistsWith removeFile f
+	liftIO $ F.withFile f WriteMode $ \h -> do
 #ifndef mingw32_HOST_OS
-		t <- modificationTime <$> R.getFileStatus f
+		t <- modificationTime <$> R.getFileStatus (fromOsPath f)
 #else
 		t <- getPOSIXTime
 #endif
@@ -692,7 +690,7 @@ recordStartTime u = do
 	showTime = show
 
 resetStartTime :: UUID -> Annex ()
-resetStartTime u = liftIO . removeWhenExistsWith R.removeLink
+resetStartTime u = liftIO . removeWhenExistsWith removeFile
 	=<< fromRepo (gitAnnexFsckState u)
 
 {- Gets the incremental fsck start time. -}
@@ -700,9 +698,9 @@ getStartTime :: UUID -> Annex (Maybe EpochTime)
 getStartTime u = do
 	f <- fromRepo (gitAnnexFsckState u)
 	liftIO $ catchDefaultIO Nothing $ do
-		timestamp <- modificationTime <$> R.getFileStatus f
+		timestamp <- modificationTime <$> R.getFileStatus (fromOsPath f)
 		let fromstatus = Just (realToFrac timestamp)
-		fromfile <- parsePOSIXTime <$> F.readFile' (toOsPath f)
+		fromfile <- parsePOSIXTime <$> F.readFile' f
 		return $ if matchingtimestamp fromfile fromstatus
 			then Just timestamp
 			else Nothing

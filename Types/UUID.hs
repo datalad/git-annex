@@ -5,7 +5,9 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE TypeSynonymInstances, FlexibleInstances, GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE CPP #-}
 
 module Types.UUID where
 
@@ -20,11 +22,10 @@ import Data.ByteString.Builder
 import Control.DeepSeq
 import qualified Data.Semigroup as Sem
 
+import Common
 import Git.Types (ConfigValue(..))
-import Utility.FileSystemEncoding
 import Utility.QuickCheck
 import Utility.Aeson
-import Utility.OsPath
 import qualified Utility.SimpleProtocol as Proto
 
 -- A UUID is either an arbitrary opaque string, or UUID info may be missing.
@@ -65,6 +66,7 @@ instance ToUUID SB.ShortByteString where
 		| SB.null b = NoUUID
 		| otherwise = UUID (SB.fromShort b)
 
+#ifdef WITH_OSPATH
 -- OsPath is a ShortByteString internally, so this is the most
 -- efficient conversion.
 instance FromUUID OsPath where
@@ -72,6 +74,7 @@ instance FromUUID OsPath where
 
 instance ToUUID OsPath where
 	toUUID s = toUUID (fromOsPath s :: SB.ShortByteString)
+#endif
 
 instance FromUUID String where
 	fromUUID s = decodeBS (fromUUID s)

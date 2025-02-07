@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE OverloadedStrings, TypeSynonymInstances, FlexibleInstances #-}
+{-# LANGUAGE CPP #-}
 
 module Git.Types where
 
@@ -107,8 +108,10 @@ instance FromConfigValue S.ByteString where
 instance FromConfigValue String where
 	fromConfigValue = decodeBS . fromConfigValue
 
+#ifdef WITH_OSPATH
 instance FromConfigValue OsPath where
 	fromConfigValue v = toOsPath (fromConfigValue v :: S.ByteString)
+#endif
 
 instance Show ConfigValue where
 	show = fromConfigValue

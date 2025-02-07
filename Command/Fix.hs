@@ -44,25 +44,27 @@ seek ps = unlessM crippledFileSystem $
 
 data FixWhat = FixSymlinks | FixAll
 
-start :: FixWhat -> SeekInput -> RawFilePath -> Key -> CommandStart
+start :: FixWhat -> SeekInput -> OsPath -> Key -> CommandStart
 start fixwhat si file key = do
-	currlink <- liftIO $ catchMaybeIO $ R.readSymbolicLink file
+	currlink <- liftIO $ catchMaybeIO $ R.readSymbolicLink file'
 	wantlink <- calcRepo $ gitAnnexLink file key
 	case currlink of
 		Just l
-			| l /=  wantlink -> fixby $ fixSymlink file wantlink
+			| l /=  fromOsPath wantlink ->
+				fixby $ fixSymlink file wantlink
 			| otherwise -> stop
 		Nothing -> case fixwhat of
 			FixAll -> fixthin
 			FixSymlinks -> stop
   where
+	file' = fromOsPath file
 	fixby = starting "fix" (mkActionItem (key, file)) si
 	fixthin = do
 		obj <- calcRepo (gitAnnexLocation key)
 		stopUnless (isUnmodified key file <&&> isUnmodified key obj) $ do
 			thin <- annexThin <$> Annex.getGitConfig
-			fs <- liftIO $ catchMaybeIO $ R.getFileStatus file
-			os <- liftIO $ catchMaybeIO $ R.getFileStatus obj
+			fs <- liftIO $ catchMaybeIO $ R.getFileStatus file'
+			os <- liftIO $ catchMaybeIO $ R.getFileStatus (fromOsPath obj)
 			case (linkCount <$> fs, linkCount <$> os, thin) of
 				(Just 1, Just 1, True) ->
 					fixby $ makeHardLink file key
@@ -70,10 +72,10 @@ start fixwhat si file key = do
 					fixby $ breakHardLink file key obj
 				_ -> stop
 
-breakHardLink :: RawFilePath -> Key -> RawFilePath -> CommandPerform
+breakHardLink :: OsPath -> Key -> OsPath -> CommandPerform
 breakHardLink file key obj = do
 	replaceWorkTreeFile file $ \tmp -> do
-		mode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus file
+		mode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus (fromOsPath file)
 		unlessM (checkedCopyFile key obj tmp mode) $
 			giveup "unable to break hard link"
 		thawContent tmp
@@ -81,26 +83,30 @@ breakHardLink file key obj = do
 		modifyContentDir obj $ freezeContent obj
 	next $ return True
 
-makeHardLink :: RawFilePath -> Key -> CommandPerform
+makeHardLink :: OsPath -> Key -> CommandPerform
 makeHardLink file key = do
 	replaceWorkTreeFile file $ \tmp -> do
-		mode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus file
+		mode <- liftIO $ catchMaybeIO $ fileMode
+			<$> R.getFileStatus (fromOsPath file)
 		linkFromAnnex' key tmp mode >>= \case
 			LinkAnnexFailed -> giveup "unable to make hard link"
 			_ -> noop
 	next $ return True
 
-fixSymlink :: RawFilePath -> RawFilePath -> CommandPerform
+fixSymlink :: OsPath -> OsPath -> CommandPerform
 fixSymlink file link = do
 #if ! defined(mingw32_HOST_OS)
 	-- preserve mtime of symlink
 	mtime <- liftIO $ catchMaybeIO $ Posix.modificationTimeHiRes
-		<$> R.getSymbolicLinkStatus file
+		<$> R.getSymbolicLinkStatus (fromOsPath file)
 #endif
 	replaceWorkTreeFile file $ \tmpfile -> do
-		liftIO $ R.createSymbolicLink link tmpfile
+		let tmpfile' = fromOsPath tmpfile
+		liftIO $ R.createSymbolicLink link' tmpfile'
 #if ! defined(mingw32_HOST_OS)
-		liftIO $ maybe noop (\t -> touch tmpfile t False) mtime
+		liftIO $ maybe noop (\t -> touch tmpfile' t False) mtime
 #endif
-	stageSymlink file =<< hashSymlink link
+	stageSymlink file =<< hashSymlink link'
 	next $ return True
+  where
+	link' = fromOsPath link

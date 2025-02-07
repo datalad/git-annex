@@ -39,7 +39,7 @@ optParser desc = MatchExpressionOptions
 	<*> (MatchingUserInfo . addkeysize <$> dataparser)
   where
 	dataparser = UserProvidedInfo
-		<$> optinfo "file" (strOption
+		<$> optinfo "file" ((fmap stringToOsPath . strOption)
 			( long "file" <> metavar paramFile
 			<> help "specify filename to match against"
 			))

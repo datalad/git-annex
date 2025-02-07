@@ -71,7 +71,7 @@ getAnnexLinkTarget f = getAnnexLinkTarget' f
 
 {- Pass False to force looking inside file, for when git checks out
  - symlinks as plain files. -}
-getAnnexLinkTarget' :: OsPath -> Bool -> Annex (Maybe S.ByteString)
+getAnnexLinkTarget' :: OsPath -> Bool -> Annex (Maybe LinkTarget)
 getAnnexLinkTarget' file coresymlinks = if coresymlinks
 	then check probesymlink $
 		return Nothing

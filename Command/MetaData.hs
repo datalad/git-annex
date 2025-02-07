@@ -99,7 +99,7 @@ seek o = case batchOption o of
 			)
 		_ -> giveup "--batch is currently only supported in --json mode"
 
-start :: CandidateVectorClock -> MetaDataOptions -> SeekInput -> RawFilePath -> Key -> CommandStart
+start :: CandidateVectorClock -> MetaDataOptions -> SeekInput -> OsPath -> Key -> CommandStart
 start c o si file k = startKeys c o (si, k, mkActionItem (k, afile))
   where
 	afile = AssociatedFile (Just file)
@@ -134,7 +134,7 @@ cleanup k = do
 	unwrapmeta (f, v) = (fromMetaField f, map fromMetaValue (S.toList v))
 	showmeta (f, vs) = map ((T.unpack f ++ "=") ++) (map decodeBS vs)
 
-parseJSONInput :: String -> Annex (Either String (Either RawFilePath Key, MetaData))
+parseJSONInput :: String -> Annex (Either String (Either OsPath Key, MetaData))
 parseJSONInput i = case eitherDecode (BU.fromString i) of
 	Left e -> return (Left e)
 	Right v -> do
@@ -145,12 +145,12 @@ parseJSONInput i = case eitherDecode (BU.fromString i) of
 			(Just k, _) -> return $
 				Right (Right k, m)
 			(Nothing, Just f) -> do
-				f' <- liftIO $ relPathCwdToFile (toRawFilePath f)
+				f' <- liftIO $ relPathCwdToFile f
 				return $ Right (Left f', m)
 			(Nothing, Nothing) -> return $ 
 				Left "JSON input is missing either file or key"
 
-startBatch :: (SeekInput, (Either RawFilePath Key, MetaData)) -> CommandStart
+startBatch :: (SeekInput, (Either OsPath Key, MetaData)) -> CommandStart
 startBatch (si, (i, (MetaData m))) = case i of
 	Left f -> do
 		mk <- lookupKeyStaged f

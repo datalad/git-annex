@@ -14,7 +14,7 @@ import "mtl" Control.Monad.State.Strict
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 import qualified Data.Vector as V
-import qualified System.FilePath.ByteString as P
+import Data.ByteString.Short (fromShort)
 import System.PosixCompat.Files (isDirectory)
 import Data.Ord
 import qualified Data.Semigroup as Sem
@@ -188,9 +188,9 @@ itemInfo o (si, p) = ifM (isdir (toRawFilePath p))
 		Right r -> remoteInfo o r si
 		Left _ -> Remote.nameToUUID' p >>= \case
 			([], _) -> do
-				relp <- liftIO $ relPathCwdToFile (toRawFilePath p)
+				relp <- liftIO $ relPathCwdToFile (toOsPath p)
 				lookupKey relp >>= \case
-					Just k -> fileInfo o (fromRawFilePath relp) si k
+					Just k -> fileInfo o (fromOsPath relp) si k
 					Nothing -> treeishInfo o p si
 			([u], _) -> uuidInfo o u si
 			(_us, msg) -> noInfo p si msg
@@ -203,7 +203,7 @@ noInfo s si msg = do
 	-- The string may not really be a file, but use ActionItemTreeFile,
 	-- rather than ActionItemOther to avoid breaking back-compat of
 	-- json output.
-	let ai = ActionItemTreeFile (toRawFilePath s)
+	let ai = ActionItemTreeFile (toOsPath s)
 	showStartMessage (StartMessage "info" ai si)
 	showNote (UnquotedString msg)
 	showEndFail
@@ -237,7 +237,7 @@ treeishInfo o t si = do
 fileInfo :: InfoOptions -> FilePath -> SeekInput -> Key -> Annex ()
 fileInfo o file si k = do
 	matcher <- Limit.getMatcher
-	let file' = toRawFilePath file
+	let file' = toOsPath file
 	whenM (matcher $ MatchingFile $ FileInfo file' file' (Just k)) $
 		showCustom (unwords ["info", file]) si $ do
 			evalStateT (mapM_ showStat (file_stats file k)) (emptyStatInfo o)
@@ -502,17 +502,17 @@ transfer_list = stat desc $ nojson $ lift $ do
   where
 	desc = "transfers in progress"
 	line qp uuidmap t i = unwords
-		[ fromRawFilePath (formatDirection (transferDirection t)) ++ "ing"
-		, fromRawFilePath $ quote qp $ actionItemDesc $ mkActionItem
+		[ decodeBS $ fromShort (formatDirection (transferDirection t)) <> "ing"
+		, decodeBS $ quote qp $ actionItemDesc $ mkActionItem
 			(transferKey t, associatedFile i)
 		, if transferDirection t == Upload then "to" else "from"
 		, maybe (fromUUID $ transferUUID t) Remote.name $
 			M.lookup (transferUUID t) uuidmap
 		]
 	jsonify t i = object $ map (\(k, v) -> (textKey (packString k), v)) $
-		[ ("transfer", toJSON' (formatDirection (transferDirection t)))
+		[ ("transfer", toJSON' (fromShort (formatDirection (transferDirection t))))
 		, ("key", toJSON' (transferKey t))
-		, ("file", toJSON' (fromRawFilePath <$> afile))
+		, ("file", toJSON' ((fromOsPath <$> afile) :: Maybe FilePath))
 		, ("remote", toJSON' (fromUUID (transferUUID t) :: String))
 		]
 	  where
@@ -522,7 +522,7 @@ disk_size :: Stat
 disk_size = simpleStat "available local disk space" $
 	calcfree
 		<$> (lift $ annexDiskReserve <$> Annex.getGitConfig)
-		<*> (lift $ inRepo $ getDiskFree . fromRawFilePath . gitAnnexDir)
+		<*> (lift $ inRepo $ getDiskFree . fromOsPath . gitAnnexDir)
 		<*> mkSizer
   where
 	calcfree reserve (Just have) sizer = unwords
@@ -700,7 +700,7 @@ getDirStatInfo o dir = do
 	fast <- Annex.getRead Annex.fast
 	matcher <- Limit.getMatcher
 	(presentdata, referenceddata, numcopiesstats, repodata) <-
-		Command.Unused.withKeysFilesReferencedIn dir initial
+		Command.Unused.withKeysFilesReferencedIn (toOsPath dir) initial
 			(update matcher fast)
 	return $ StatInfo
 		(Just presentdata)
@@ -797,7 +797,7 @@ updateRepoData key locs m = m'
 		M.fromList $ zip locs (map update locs)
 	update loc = addKey key (fromMaybe emptyKeyInfo $ M.lookup loc m)
 
-updateNumCopiesStats :: RawFilePath -> NumCopiesStats -> [UUID] -> Annex NumCopiesStats
+updateNumCopiesStats :: OsPath -> NumCopiesStats -> [UUID] -> Annex NumCopiesStats
 updateNumCopiesStats file (NumCopiesStats m) locs = do
 	have <- trustExclude UnTrusted locs
 	!variance <- Variance <$> numCopiesCheck' file (-) have
@@ -817,7 +817,7 @@ showSizeKeys d = do
 			"+ " ++ show (unknownSizeKeys d) ++
 			" unknown size"
 
-staleSize :: String -> (Git.Repo -> RawFilePath) -> Stat
+staleSize :: String -> (Git.Repo -> OsPath) -> Stat
 staleSize label dirspec = go =<< lift (dirKeys dirspec)
   where
 	go [] = nostat
@@ -830,7 +830,7 @@ staleSize label dirspec = go =<< lift (dirKeys dirspec)
 	keysizes keys = do
 		dir <- lift $ fromRepo dirspec
 		liftIO $ forM keys $ \k -> 
-			catchDefaultIO 0 $ getFileSize (dir P.</> keyFile k)
+			catchDefaultIO 0 $ getFileSize (dir </> keyFile k)
 
 aside :: String -> String
 aside s = " (" ++ s ++ ")"

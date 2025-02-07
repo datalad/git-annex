@@ -432,8 +432,9 @@ checklocationlog f expected = do
 
 checkbackend :: FilePath -> Types.Backend -> Assertion
 checkbackend file expected = do
-	b <- annexeval $ maybe (return Nothing) (Backend.getBackend file) 
-		=<< Annex.WorkTree.lookupKey (toOsPath file)
+	let file' = toOsPath file
+	b <- annexeval $ maybe (return Nothing) (Backend.getBackend file')
+		=<< Annex.WorkTree.lookupKey file'
 	assertEqual ("backend for " ++ file) (Just expected) b
 
 checkispointerfile :: FilePath -> Assertion

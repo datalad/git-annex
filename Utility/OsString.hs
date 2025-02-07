@@ -13,7 +13,10 @@
 
 module Utility.OsString (
 	module X,
-	length
+	length,
+#ifndef WITH_OSPATH
+	toChar,
+#endif
 ) where
 
 #ifdef WITH_OSPATH
@@ -30,4 +33,10 @@ length = B.length . fromOsPath
 #else
 import Data.ByteString as X hiding (length)
 import Data.ByteString (length)
+import Data.Char
+import Data.Word
+import Prelude (fromIntegral, (.))
+
+toChar :: Word8 -> Char
+toChar = chr . fromIntegral
 #endif

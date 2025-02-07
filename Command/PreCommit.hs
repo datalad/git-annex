@@ -62,14 +62,14 @@ addViewMetaData :: View -> ViewedFile -> Key -> CommandStart
 addViewMetaData v f k = starting "metadata" ai si $
 	next $ changeMetaData k $ fromView v f
   where
-	ai = mkActionItem (k, toRawFilePath f)
+	ai = mkActionItem (k, f)
 	si = SeekInput []
 
 removeViewMetaData :: View -> ViewedFile -> Key -> CommandStart
 removeViewMetaData v f k = starting "metadata" ai si $
 	next $ changeMetaData k $ unsetMetaData $ fromView v f
   where
-	ai = mkActionItem (k, toRawFilePath f)
+	ai = mkActionItem (k, f)
 	si = SeekInput []
 
 changeMetaData :: Key -> MetaData -> CommandCleanup

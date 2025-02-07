@@ -46,7 +46,7 @@ initMagicMime = return Nothing
 
 getMagicMime :: Magic -> OsPath -> IO (Maybe (MimeType, MimeEncoding))
 #ifdef WITH_MAGICMIME
-getMagicMime m f = Just . parse <$> magicConcurrentSafe (magicFile m f)
+getMagicMime m f = Just . parse <$> magicConcurrentSafe (magicFile m (fromOsPath f))
   where
 	parse s = 
 		let (mimetype, rest) = separate (== ';') s
