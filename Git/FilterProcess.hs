@@ -130,7 +130,7 @@ longRunningFilterProcessHandshake =
 	-- Delay capability is not implemented, so filter it out.
 	filtercapabilities = filter (`elem` [Capability "smudge", Capability "clean"])
 
-data FilterRequest = Smudge FilePath | Clean FilePath
+data FilterRequest = Smudge OsPath | Clean OsPath
 	deriving (Show, Eq)
 
 {- Waits for the next FilterRequest to be received. Does not read
@@ -143,8 +143,8 @@ getFilterRequest = do
 	let cs = mapMaybe decodeConfigValue ps
 	case (extractConfigValue cs "command", extractConfigValue cs "pathname") of
 		(Just command, Just pathname)
-			| command == "smudge" -> return $ Just $ Smudge pathname
-			| command == "clean" -> return $ Just $ Clean pathname
+			| command == "smudge" -> return $ Just $ Smudge $ toOsPath pathname
+			| command == "clean" -> return $ Just $ Clean $ toOsPath pathname
 			| otherwise -> return Nothing
 		_ -> return Nothing
 

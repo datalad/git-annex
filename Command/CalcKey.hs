@@ -32,4 +32,4 @@ run _ _ file = tryNonAsync (genKey ks nullMeterUpdate =<< defaultBackend) >>= \c
 	Left _err -> return False
   where
 	ks = KeySource file' file' Nothing
-	file' = toRawFilePath file
+	file' = toOsPath file

@@ -77,7 +77,7 @@ seek' o fto = startConcurrency (Command.Move.stages fto) $ do
 {- A copy is just a move that does not delete the source file.
  - However, auto mode avoids unnecessary copies, and avoids getting or
  - sending non-preferred content. -}
-start :: CopyOptions -> FromToHereOptions -> SeekInput -> RawFilePath -> Key -> CommandStart
+start :: CopyOptions -> FromToHereOptions -> SeekInput -> OsPath -> Key -> CommandStart
 start o fto si file key = do
 	ru <- case fto of
 		FromOrToRemote (ToRemote dest) -> getru dest
@@ -90,7 +90,7 @@ start o fto si file key = do
   where
 	getru dest = Just . Remote.uuid <$> getParsed dest
 
-start' :: LiveUpdate -> CopyOptions -> FromToHereOptions -> SeekInput -> RawFilePath -> Key -> CommandStart
+start' :: LiveUpdate -> CopyOptions -> FromToHereOptions -> SeekInput -> OsPath -> Key -> CommandStart
 start' lu o fto si file key = stopUnless shouldCopy $ 
 	Command.Move.start lu fto Command.Move.RemoveNever si file key
   where

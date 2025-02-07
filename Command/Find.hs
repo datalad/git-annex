@@ -88,9 +88,9 @@ contentPresentUnlessLimited s = do
 			else Just True
 		}
 
-start :: FindOptions -> IsTerminal -> SeekInput -> RawFilePath -> Key -> CommandStart
+start :: FindOptions -> IsTerminal -> SeekInput -> OsPath -> Key -> CommandStart
 start o isterminal _ file key = startingCustomOutput key $ do
-	showFormatted isterminal (formatOption o) file
+	showFormatted isterminal (formatOption o) (fromOsPath file)
 		(formatVars key (AssociatedFile (Just file)))
 	next $ return True
 
@@ -113,14 +113,14 @@ showFormatted (IsTerminal isterminal) format unformatted vars =
 
 formatVars :: Key -> AssociatedFile -> [(String, String)]
 formatVars key (AssociatedFile af) =
-	(maybe id (\f l -> (("file", fromRawFilePath f) : l)) af)
+	(maybe id (\f l -> (("file", fromOsPath f) : l)) af)
 	[ ("key", serializeKey key)
 	, ("backend", decodeBS $ formatKeyVariety $ fromKey keyVariety key)
 	, ("bytesize", size show)
 	, ("humansize", size $ roughSize storageUnits True)
 	, ("keyname", decodeBS $ S.fromShort $ fromKey keyName key)
-	, ("hashdirlower", fromRawFilePath $ hashDirLower def key)
-	, ("hashdirmixed", fromRawFilePath $ hashDirMixed def key)
+	, ("hashdirlower", fromOsPath $ hashDirLower def key)
+	, ("hashdirmixed", fromOsPath $ hashDirMixed def key)
 	, ("mtime", whenavail show $ fromKey keyMtime key)
 	]
   where

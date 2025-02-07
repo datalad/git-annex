@@ -14,7 +14,6 @@ module Utility.HtmlDetect (
 
 import Author
 import qualified Utility.FileIO as F
-import Utility.RawFilePath
 import Utility.OsPath
 
 import Text.HTML.TagSoup
@@ -60,8 +59,8 @@ isHtmlBs = isHtml . B8.unpack
 -- It would be equivalent to use isHtml <$> readFile file,
 -- but since that would not read all of the file, the handle
 -- would remain open until it got garbage collected sometime later.
-isHtmlFile :: RawFilePath -> IO Bool
-isHtmlFile file = F.withFile (toOsPath file) ReadMode $ \h ->
+isHtmlFile :: OsPath -> IO Bool
+isHtmlFile file = F.withFile file ReadMode $ \h ->
 	isHtmlBs <$> B.hGet h htmlPrefixLength
 
 -- | How much of the beginning of a html document is needed to detect it.

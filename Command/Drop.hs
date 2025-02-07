@@ -76,7 +76,7 @@ seek o = startConcurrency commandStages $ do
   where
 	ww = WarnUnmatchLsFiles "drop"
 
-start :: DropOptions -> Maybe Remote -> SeekInput -> RawFilePath -> Key -> CommandStart
+start :: DropOptions -> Maybe Remote -> SeekInput -> OsPath -> Key -> CommandStart
 start o from si file key = start' o from key afile ai si
   where
 	afile = AssociatedFile (Just file)

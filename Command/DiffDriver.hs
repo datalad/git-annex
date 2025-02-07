@@ -119,7 +119,7 @@ fixupReq req@(Req {}) opts =
 			maybe (return r) go (parseLinkTargetOrPointer =<< v)
 		_ -> maybe (return r) go =<< liftIO (isPointerFile f)
 	  where
-		f = toRawFilePath (getfile r)
+		f = toOsPath (getfile r)
 	  	go k = do
 			when (getOption opts) $
 				unlessM (inAnnex k) $
@@ -132,7 +132,7 @@ fixupReq req@(Req {}) opts =
 			si = SeekInput []
 			af = AssociatedFile (Just f)
 		repoint k = withObjectLoc k $
-			pure . setfile r . fromRawFilePath
+			pure . setfile r . fromOsPath
 
 externalDiffer :: String -> [String] -> Differ
 externalDiffer c ps = \req -> boolSystem c (map Param ps ++ serializeReq req )

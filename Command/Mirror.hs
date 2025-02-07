@@ -57,7 +57,7 @@ seek o = startConcurrency stages $
 		, usesLocationLog = True
 		}
 
-start :: MirrorOptions -> SeekInput -> RawFilePath -> Key -> CommandStart
+start :: MirrorOptions -> SeekInput -> OsPath -> Key -> CommandStart
 start o si file k = startKey o afile (si, k, ai)
   where
 	afile = AssociatedFile (Just file)

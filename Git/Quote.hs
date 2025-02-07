@@ -7,6 +7,7 @@
  -}
 
 {-# LANGUAGE OverloadedStrings, TypeSynonymInstances #-}
+{-# LANGUAGE CPP #-}
 
 module Git.Quote (
 	unquote,
@@ -70,6 +71,12 @@ instance Quoteable RawFilePath where
 			| otherwise = False
 
 	noquote = id
+
+#ifdef WITH_OSPATH
+instance Quoteable OsPath where
+	quote qp f = quote qp (fromOsPath f :: RawFilePath)
+	noquote = fromOsPath
+#endif
 
 -- Allows building up a string that contains paths, which will get quoted.
 -- With OverloadedStrings, strings are passed through without quoting.

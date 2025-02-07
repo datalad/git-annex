@@ -52,11 +52,11 @@ checkIgnoreStop :: CheckIgnoreHandle -> IO ()
 checkIgnoreStop = void . tryIO . CoProcess.stop
 
 {- Returns True if a file is ignored. -}
-checkIgnored :: CheckIgnoreHandle -> RawFilePath -> IO Bool
+checkIgnored :: CheckIgnoreHandle -> OsPath -> IO Bool
 checkIgnored h file = CoProcess.query h send (receive "")
   where
 	send to = do
-		B.hPutStr to $ file `B.snoc` 0
+		B.hPutStr to $ fromOsPath file `B.snoc` 0
 		hFlush to
 	receive c from = do
 		s <- hGetSomeString from 1024
@@ -68,4 +68,4 @@ checkIgnored h file = CoProcess.query h send (receive "")
 	parse s = case segment (== '\0') s of
 		(_source:_line:pattern:_pathname:_eol:[]) -> Just $ not $ null pattern
 		_ -> Nothing
-	eofError = ioError $ mkIOError userErrorType "git cat-file EOF" Nothing Nothing
+	eofError = ioError $ mkIOError userErrorType "git check-ignore EOF" Nothing Nothing
