@@ -233,7 +233,7 @@ listImportableContentsM u borgrepo c = prompt $ do
 			-- importable keys, so avoids needing to buffer all
 			-- the rest of the files in memory.
 			in case ThirdPartyPopulated.importKey' loc reqsz of
-				Just k -> (fromOsPath loc, (borgContentIdentifier, retsz k))
+				Just k -> (loc, (borgContentIdentifier, retsz k))
 					: parsefilelist archivename rest
 				Nothing -> parsefilelist archivename rest
 	parsefilelist _ _ = []
@@ -296,7 +296,7 @@ extractImportLocation loc = go $ splitDirectories $
 -- last imported tree. And the contents of those archives can be retrieved
 -- by listing the subtree recursively, which will likely be quite a lot
 -- faster than running borg.
-getImported :: UUID -> Annex (M.Map BorgArchiveName (Annex [(RawFilePath, (ContentIdentifier, ByteSize))]))
+getImported :: UUID -> Annex (M.Map BorgArchiveName (Annex [(OsPath, (ContentIdentifier, ByteSize))]))
 getImported u = M.unions <$> (mapM go . exportedTreeishes =<< getExport u)
   where
 	go t = M.fromList . mapMaybe mk
@@ -317,7 +317,7 @@ getImported u = M.unions <$> (mapM go . exportedTreeishes =<< getExport u)
 			mkImportLocation $ getTopFilePath $ LsTree.file ti
 		k <- fileKey (takeFileName f)
 		return
-			( fromOsPath (genImportLocation f)
+			( genImportLocation f
 			,
 				( borgContentIdentifier
 				-- defaulting to 0 size is ok, this size

@@ -94,7 +94,7 @@ data ImportableContentsChunkable m info
  - of the main tree. Nested subtrees are not allowed. -}
 data ImportableContentsChunk m info = ImportableContentsChunk
 	{ importableContentsSubDir :: ImportChunkSubDir
-	, importableContentsSubTree :: [(RawFilePath, info)]
+	, importableContentsSubTree :: [(OsPath, info)]
 	-- ^ locations are relative to importableContentsSubDir
 	, importableContentsNextChunk :: m (Maybe (ImportableContentsChunk m info))
 	-- ^ Continuation to get the next chunk.

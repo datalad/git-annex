@@ -108,7 +108,7 @@ handleDropsFrom locs rs reason fromhere key afile si preverified runner = do
 					[ "dropped"
 					, case afile of
 						AssociatedFile Nothing -> serializeKey key
-						AssociatedFile (Just af) -> fromRawFilePath af
+						AssociatedFile (Just af) -> fromOsPath af
 					, "(from " ++ maybe "here" show u ++ ")"
 					, "(copies now " ++ show (have - 1) ++ ")"
 					, ": " ++ reason
