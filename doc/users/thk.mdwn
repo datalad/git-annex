@@ -1,8 +1,9 @@
-I'm thk at debian org
+https://blog.koch.ro
 
 
 # My TODO items
 
+- implement p2p for annex with iroh: https://git-annex.branchable.com/todo/generic_p2p_socket_transport/#comment-de273c852db02cb46a6bab4987429a3a
 - write a tip on using git worktree to inspect the git-annex branch
   - Is there a way to filter out the directories?
 - write a tip on how to deal with permission issues on ext formatted USB drives
