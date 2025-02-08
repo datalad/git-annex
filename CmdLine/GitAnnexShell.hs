@@ -136,7 +136,7 @@ builtin cmd dir params = do
 		"Restricted login shell for git-annex only SSH access"
   where
 	mkrepo = do
-		r <- Git.Construct.repoAbsPath (toRawFilePath dir)
+		r <- Git.Construct.repoAbsPath (toOsPath dir)
 			>>= Git.Construct.fromAbsPath
 		let r' = r { repoPathSpecifiedExplicitly = True }
 		Git.Config.read r'

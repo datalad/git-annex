@@ -76,9 +76,9 @@ relPathDirToFile :: OsPath -> OsPath -> IO OsPath
 relPathDirToFile from to = relPathDirToFileAbs <$> absPath from <*> absPath to
 
 {- Converts paths in the home directory to use ~/ -}
-relHome :: OsPath -> IO String
+relHome :: OsPath -> IO OsPath
 relHome path = do
 	home <- toOsPath <$> myHomeDir
 	return $ if dirContains home path
-		then fromOsPath (literalOsPath "~/" <> relPathDirToFileAbs home path)
-		else fromOsPath path
+		then literalOsPath "~/" <> relPathDirToFileAbs home path
+		else path

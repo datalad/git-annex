@@ -111,8 +111,8 @@ genDescription Nothing = do
 	let at = if null hostname then "" else "@"
 	v <- liftIO myUserName
 	return $ UUIDDesc $ encodeBS $ concat $ case v of
-		Right username -> [username, at, hostname, ":", reldir]
-		Left _ -> [hostname, ":", reldir]
+		Right username -> [username, at, hostname, ":", fromOsPath reldir]
+		Left _ -> [hostname, ":", fromOsPath reldir]
 
 initialize :: Annex () -> Maybe String -> Maybe RepoVersion -> Annex ()
 initialize startupannex mdescription mversion = checkInitializeAllowed $ \initallowed -> do
