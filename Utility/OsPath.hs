@@ -28,7 +28,7 @@ import Data.ByteString.Short (ShortByteString)
 import qualified Data.ByteString.Short as S
 import qualified Data.ByteString.Lazy as L
 #ifdef WITH_OSPATH
-import System.OsPath as X hiding (OsPath, OsString, unsafeFromChar)
+import System.OsPath as X hiding (OsPath, OsString, pack, unpack, unsafeFromChar)
 import System.OsPath
 import "os-string" System.OsString.Internal.Types
 import qualified System.FilePath.ByteString as PB
