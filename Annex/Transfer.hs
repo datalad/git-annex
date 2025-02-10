@@ -161,7 +161,7 @@ runTransfer' ignorelock t eventualbackend afile stalldetection retrydecider tran
 						createtfile
 						return (Just (lockhandle, Nothing), False)
 					Just oldlckfile -> do
-						createAnnexDirectory oldlckfile
+						createAnnexDirectory $ takeDirectory oldlckfile
 						tryLockExclusive (Just mode) oldlckfile >>= \case
 							Nothing -> do
 								liftIO $ dropLock lockhandle
@@ -181,14 +181,14 @@ runTransfer' ignorelock t eventualbackend afile stalldetection retrydecider tran
 				)
 #else
 	prep lckfile moldlckfile createtfile _mode = catchPermissionDenied (const prepfailed) $ do
-		createAnnexDirectory lckfile
+		createAnnexDirectory $ takeDirectory lckfile
 		catchMaybeIO (liftIO $ lockExclusive lckfile) >>= \case
 			Just (Just lockhandle) -> case moldlckfile of
 				Nothing -> do
 					createtfile
 					return (Just (lockhandle, Nothing), False)
 				Just oldlckfile -> do
-					createAnnexDirectory oldlckfile
+					createAnnexDirectory $ takeDirectory oldlckfile
 					catchMaybeIO (liftIO $ lockExclusive oldlckfile) >>= \case
 						Just (Just oldlockhandle) -> do
 							createtfile
