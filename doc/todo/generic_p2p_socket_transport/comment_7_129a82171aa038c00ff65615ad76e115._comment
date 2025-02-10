@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="thk"
+ avatar="http://cdn.libravatar.org/avatar/bfef10a428769701aeee1db978951461"
+ subject="iroh"
+ date="2025-02-08T06:56:31Z"
+ content="""
+Please take a look at [iroh](https://www.iroh.computer). It started as an IPFS implementation in rust, realized that IPFS is slow and overengineered and now pivoted to providing p2p connections with quic. 
+
+* Peers/nodes/endpoints use ed25519 keys as identities.
+* The iroh project hosts relay servers for initial NAT hole punching and as connection fallbacks.
+* So far there are 4 initial [discovery](https://www.iroh.computer/docs/concepts/discovery) implementations: DNS, Local (mDNS), [Pkarr](https://github.com/nuhvi/pkarr) or Bittorrents Mainline DHT
+
+I'm waiting for their [FOSDEM talk](https://fosdem.org/2025/schedule/event/fosdem-2025-6053-building-peer-to-peer-quic/). But there is also a good presentation on YT: [A tour of iroh](https://www.youtube.com/watch?v=AkHaIVuFHK4&list=PLvsg-fc7APc3TOrumoQdjggwoLTSfiqRE&index=2).
+
+
+"""]]
