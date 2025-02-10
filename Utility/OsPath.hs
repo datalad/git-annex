@@ -31,7 +31,7 @@ import qualified Data.ByteString.Lazy as L
 import System.OsPath as X hiding (OsPath, OsString, pack, unpack, unsafeFromChar)
 import System.OsPath
 import "os-string" System.OsString.Internal.Types
-import qualified System.FilePath.ByteString as PB
+import qualified System.FilePath as PS
 #if defined(mingw32_HOST_OS)
 import GHC.IO (unsafePerformIO)
 import System.OsString.Encoding.Internal (cWcharsToChars_UCS2)
@@ -100,7 +100,7 @@ bytesFromOsPath = getPosixString . getOsString
 
 {- For some reason not included in System.OsPath -}
 getSearchPath :: IO [OsPath]
-getSearchPath = map toOsPath <$> PB.getSearchPath
+getSearchPath = map toOsPath <$> PS.getSearchPath
 
 {- Used for string constants. Note that when using OverloadedStrings,
  - the IsString instance for ShortByteString only works properly with

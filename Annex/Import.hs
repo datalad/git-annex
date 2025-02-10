@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE CPP #-}
 
 module Annex.Import (
 	ImportTreeConfig(..),
@@ -68,8 +69,10 @@ import Backend.Utilities
 import Control.Concurrent.STM
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
-import qualified System.FilePath.Posix.ByteString as Posix
 import qualified Data.ByteArray.Encoding as BA
+#ifdef mingw32_HOST_OS
+import qualified System.FilePath.Posix as Posix
+#endif
 
 {- Configures how to build an import tree. -}
 data ImportTreeConfig
@@ -428,8 +431,12 @@ buildImportTreesGeneric converttree basetree msubdir importable@(ImportableConte
 		-- Full directory prefix where the sub tree is located.
 		let fullprefix = asTopFilePath $ case msubdir of
 			Nothing -> subdir
-			Just d -> toOsPath $
-				fromOsPath (getTopFilePath d) Posix.</> fromOsPath subdir
+			Just d ->
+#ifdef mingw32_HOST_OS
+				toOsPath $ fromOsPath (getTopFilePath d) Posix.</> fromOsPath subdir
+#else
+				getTopFilePath d </> subdir
+#endif
 		Tree ts <- converttree (Just fullprefix) $
 			map (\(p, i) -> (mkImportLocation p, i))
 				(importableContentsSubTree c)
@@ -1091,7 +1098,11 @@ getImportableContents r importtreeconfig ci matcher = do
 			isknown <||> (matches <&&> notignored)
 	  where
 		-- Checks, from least to most expensive.
+#ifdef mingw32_HOST_OS
 		ingitdir = ".git" `elem` Posix.splitDirectories (fromOsPath (fromImportLocation loc))
+#else
+		ingitdir = literalOsPath ".git" `elem` splitDirectories (fromImportLocation loc)
+#endif
 		matches = matchesImportLocation matcher loc sz
 		isknown = isKnownImportLocation dbhandle loc
 		notignored = notIgnoredImportLocation importtreeconfig ci loc

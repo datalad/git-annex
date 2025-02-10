@@ -64,7 +64,6 @@ import Control.Concurrent.STM
 import qualified Data.Set as S
 import qualified Data.Map as M
 import qualified Data.ByteString as B
-import qualified System.FilePath.ByteString as P
 
 -- | A configurable value, that may not be fully determined yet because
 -- the global git config has not yet been loaded.
@@ -244,7 +243,7 @@ extractGitConfig configsource r = GitConfig
 	, annexPidLock = getbool (annexConfig "pidlock") False
 	, annexPidLockTimeout = Seconds $ fromMaybe 300 $
 		getmayberead (annexConfig "pidlocktimeout")
-	, annexDbDir = (\d -> toOsPath (toRawFilePath d P.</> fromUUID hereuuid))
+	, annexDbDir = (\d -> toOsPath d </> fromUUID hereuuid)
 		<$> getmaybe (annexConfig "dbdir")
 	, annexAddUnlocked = configurable Nothing $
 		fmap Just $ getmaybe (annexConfig "addunlocked")

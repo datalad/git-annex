@@ -38,7 +38,6 @@ import qualified Utility.RawFilePath as R
 import qualified Annex.Transfer as Transfer
 
 import Network.URI
-import qualified System.FilePath.ByteString as P
 
 cmd :: Command
 cmd = notBareRepo $ withAnnexOptions 
@@ -200,8 +199,9 @@ checkUrl addunlockedmatcher r o si u = do
 startRemote :: AddUnlockedMatcher -> Remote -> AddUrlOptions -> SeekInput -> FilePath -> URLString -> Maybe Integer -> CommandStart
 startRemote addunlockedmatcher r o si file uri sz = do
 	pathmax <- liftIO $ fileNameLengthLimit "."
-	let file' = toOsPath $ P.joinPath $ map (truncateFilePath pathmax) $
-		P.splitDirectories (toRawFilePath file)
+	let file' = joinPath $ 
+		map (toOsPath . truncateFilePath pathmax . fromOsPath) $
+			splitDirectories (toOsPath file)
 	startingAddUrl si uri o $ do
 		showNote $ UnquotedString $ "from " ++ Remote.name r 
 		showDestinationFile file'

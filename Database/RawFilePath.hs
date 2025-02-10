@@ -38,7 +38,7 @@ module Database.RawFilePath where
 #if MIN_VERSION_persistent_sqlite(2,13,3)
 import Database.Persist.Sqlite
 import qualified Database.Sqlite as Sqlite
-import qualified System.FilePath.ByteString as P
+import Utility.RawFilePath (RawFilePath)
 import qualified Control.Exception as E
 import Control.Monad.Logger (MonadLoggerIO)
 import Control.Monad.IO.Unlift (MonadUnliftIO)
@@ -47,7 +47,7 @@ import Control.Monad.Trans.Reader (ReaderT)
 import UnliftIO.Resource (ResourceT, runResourceT)
 
 openWith'
-	:: P.RawFilePath 
+	:: RawFilePath 
 	-> (SqlBackend -> Sqlite.Connection -> r)
 	-> SqliteConnectionInfo
 	-> LogFunc
@@ -58,7 +58,7 @@ openWith' db f connInfo logFunc = do
 	return $ f backend conn
 
 runSqlite' :: (MonadUnliftIO m)
-	=> P.RawFilePath
+	=> RawFilePath
 	-> ReaderT SqlBackend (NoLoggingT (ResourceT m)) a
 	-> m a
 runSqlite' connstr = runResourceT
@@ -68,7 +68,7 @@ runSqlite' connstr = runResourceT
 
 withSqliteConn'
 	:: (MonadUnliftIO m, MonadLoggerIO m)
-	=> P.RawFilePath
+	=> RawFilePath
 	-> (SqlBackend -> m a)
 	-> m a
 withSqliteConn' connstr = withSqliteConnInfo' connstr $
@@ -76,7 +76,7 @@ withSqliteConn' connstr = withSqliteConnInfo' connstr $
 
 runSqliteInfo'
 	:: (MonadUnliftIO m)
-	=> P.RawFilePath
+	=> RawFilePath
 	-> SqliteConnectionInfo
 	-> ReaderT SqlBackend (NoLoggingT (ResourceT m)) a
 	-> m a
@@ -87,7 +87,7 @@ runSqliteInfo' db conInfo = runResourceT
 
 withSqliteConnInfo'
 	:: (MonadUnliftIO m, MonadLoggerIO m)
-        => P.RawFilePath
+        => RawFilePath
 	-> SqliteConnectionInfo
 	-> (SqlBackend -> m a)
 	-> m a

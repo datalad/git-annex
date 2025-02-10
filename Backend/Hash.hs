@@ -187,7 +187,7 @@ trivialMigrate' oldkey newbackend afile maxextlen maxexts
 		AssociatedFile Nothing -> Nothing
 		AssociatedFile (Just file) -> Just $ alterKey oldkey $ \d -> d
 			{ keyName = S.toShort $ keyHash oldkey 
-				<> selectExtension maxextlen maxexts (fromOsPath file)
+				<> selectExtension maxextlen maxexts file
 			, keyVariety = newvariety
 			}
 	{- Upgrade to fix bad previous migration that created a

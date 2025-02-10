@@ -15,9 +15,10 @@ module Utility.Path.Windows (
 import Utility.Path
 import Utility.OsPath
 import Utility.SystemDirectory
+import Utility.FileSystemEncoding
 
 import qualified Data.ByteString as B
-import qualified System.FilePath.Windows.ByteString as P
+import qualified System.FilePath.Windows as WinPath
 
 {- Convert a filepath to use Windows's native namespace.
  - This avoids filesystem length limits.
@@ -36,9 +37,9 @@ convertToWindowsNativeNamespace f
 		-- Make absolute because any '.' and '..' in the path
 		-- will not be resolved once it's converted.
 		cwd <- getCurrentDirectory
-		let p = fromOsPath (simplifyPath (combine cwd (toOsPath f)))
+		let p = simplifyPath (combine cwd (toOsPath f))
 		-- Normalize slashes.
-		let p' = P.normalise p
+		let p' = encodeBS $ WinPath.normalise $ fromOsPath p
 		return (win32_file_namespace <> p')
   where
 	win32_dev_namespace = "\\\\.\\"
