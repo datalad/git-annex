@@ -53,7 +53,7 @@ programPath = go =<< getEnv "GIT_ANNEX_DIR"
 			else pure "git-annex"
 		p <- if isAbsolute (toOsPath exe)
 			then return exe
-			else fromMaybe exe <$> readProgramFile
+			else maybe exe fromOsPath <$> readProgramFile
 		maybe cannotFindProgram return =<< searchPath p
 
 	reqgitannex name
@@ -62,10 +62,10 @@ programPath = go =<< getEnv "GIT_ANNEX_DIR"
 	isgitannex = flip M.notMember otherMulticallCommands
 
 {- Returns the path for git-annex that is recorded in the programFile. -}
-readProgramFile :: IO (Maybe FilePath)
+readProgramFile :: IO (Maybe OsPath)
 readProgramFile = catchDefaultIO Nothing $ do
 	programfile <- programFile
-	headMaybe . lines <$> readFile (fromOsPath programfile)
+	fmap toOsPath . headMaybe . lines <$> readFile (fromOsPath programfile)
 
 cannotFindProgram :: IO a
 cannotFindProgram = do

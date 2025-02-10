@@ -556,12 +556,10 @@ gitAnnexCredsDir r = addTrailingPathSeparator $
 
 {- .git/annex/certificate.pem and .git/annex/key.pem are used by the webapp
  - when HTTPS is enabled -}
-gitAnnexWebCertificate :: Git.Repo -> FilePath
-gitAnnexWebCertificate r = fromOsPath $
-	gitAnnexDir r </> literalOsPath "certificate.pem"
-gitAnnexWebPrivKey :: Git.Repo -> FilePath
-gitAnnexWebPrivKey r = fromOsPath $
-	gitAnnexDir r </> literalOsPath "privkey.pem"
+gitAnnexWebCertificate :: Git.Repo -> OsPath
+gitAnnexWebCertificate r = gitAnnexDir r </> literalOsPath "certificate.pem"
+gitAnnexWebPrivKey :: Git.Repo -> OsPath
+gitAnnexWebPrivKey r = gitAnnexDir r </> literalOsPath "privkey.pem"
 
 {- .git/annex/feeds/ is used to record per-key (url) state by importfeed -}
 gitAnnexFeedStateDir :: Git.Repo -> OsPath
@@ -686,8 +684,8 @@ gitAnnexRemotesDir r = addTrailingPathSeparator $
 
 {- This is the base directory name used by the assistant when making
  - repositories, by default. -}
-gitAnnexAssistantDefaultDir :: FilePath
-gitAnnexAssistantDefaultDir = "annex"
+gitAnnexAssistantDefaultDir :: OsPath
+gitAnnexAssistantDefaultDir = literalOsPath "annex"
 
 gitAnnexSimDir :: Git.Repo -> OsPath
 gitAnnexSimDir r = addTrailingPathSeparator $

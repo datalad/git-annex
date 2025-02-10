@@ -138,12 +138,12 @@ pollingThread urlrenderer = go =<< liftIO currentMountPoints
 
 handleMounts :: UrlRenderer -> MountPoints -> MountPoints -> Assistant ()
 handleMounts urlrenderer wasmounted nowmounted =
-	mapM_ (handleMount urlrenderer . mnt_dir) $
+	mapM_ (handleMount urlrenderer . toOsPath . mnt_dir) $
 		S.toList $ newMountPoints wasmounted nowmounted
 
-handleMount :: UrlRenderer -> FilePath -> Assistant ()
+handleMount :: UrlRenderer -> OsPath -> Assistant ()
 handleMount urlrenderer dir = do
-	debug ["detected mount of", dir]
+	debug ["detected mount of", fromOsPath dir]
 	rs <- filterM (Git.repoIsLocal <$$> liftAnnex . Remote.getRepo)
 		=<< remotesUnder dir
 	mapM_ (fsckNudge urlrenderer . Just) rs
@@ -157,7 +157,7 @@ handleMount urlrenderer dir = do
  - at startup time, or may have changed (it could even be a different
  - repository at the same remote location..)
  -}
-remotesUnder :: FilePath -> Assistant [Remote]
+remotesUnder :: OsPath -> Assistant [Remote]
 remotesUnder dir = do
 	repotop <- liftAnnex $ fromRepo Git.repoPath
 	rs <- liftAnnex remoteList
@@ -169,7 +169,7 @@ remotesUnder dir = do
 	return $ mapMaybe snd $ filter fst pairs
   where
 	checkremote repotop r = case Remote.localpath r of
-		Just p | dirContains (toRawFilePath dir) (absPathFrom repotop (toRawFilePath p)) ->
+		Just p | dirContains dir (absPathFrom repotop p) ->
 			(,) <$> pure True <*> updateRemote r
 		_ -> return (False, Just r)
 

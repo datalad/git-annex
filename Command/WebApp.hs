@@ -86,15 +86,15 @@ start' allowauto o = do
 		listenPort' <- if isJust (listenPort o)
 			then pure (listenPort o)
 			else annexPort <$> Annex.getGitConfig
-		ifM (checkpid <&&> checkshim (fromRawFilePath f))
+		ifM (checkpid <&&> checkshim f)
 			( if isJust (listenAddress o) || isJust (listenPort o)
 				then giveup "The assistant is already running, so --listen and --port cannot be used."
 				else do
-					url <- liftIO . readFile . fromRawFilePath
+					url <- liftIO . readFile . fromOsPath
 						=<< fromRepo gitAnnexUrlFile
 					liftIO $ if isJust listenAddress'
 						then putStrLn url
-						else liftIO $ openBrowser browser (fromRawFilePath f) url Nothing Nothing
+						else liftIO $ openBrowser browser f url Nothing Nothing
 			, do
 				startDaemon True True Nothing cannotrun listenAddress' listenPort' $ Just $ 
 					\origout origerr url htmlshim ->
@@ -104,11 +104,11 @@ start' allowauto o = do
 			)
 	checkpid = do
 		pidfile <- fromRepo gitAnnexPidFile
-		liftIO $ isJust <$> checkDaemon (fromRawFilePath pidfile)
+		liftIO $ isJust <$> checkDaemon pidfile
 	checkshim f = liftIO $ doesFileExist f
 	notinitialized = do
 		g <- Annex.gitRepo
-		liftIO $ cannotStartIn (Git.repoLocation g) "repository has not been initialized by git-annex"
+		liftIO $ cannotStartIn (Git.repoPath g) "repository has not been initialized by git-annex"
 		liftIO $ firstRun o
 
 {- If HOME is a git repo, even if it's initialized for git-annex,
@@ -117,7 +117,7 @@ notHome :: Annex Bool
 notHome = do
 	g <- Annex.gitRepo
 	d <- liftIO $ absPath (Git.repoPath g)
-	h <- liftIO $ absPath . toRawFilePath =<< myHomeDir
+	h <- liftIO $ absPath . toOsPath =<< myHomeDir
 	return (d /= h)
 
 {- When run without a repo, start the first available listed repository in
@@ -136,14 +136,15 @@ startNoRepo o = go =<< liftIO (filterM doesDirectoryExist =<< readAutoStartFile)
 				go ds
 			Right state -> void $ Annex.eval state $ do
 				whenM (fromRepo Git.repoIsLocalBare) $
-					giveup $ d ++ " is a bare git repository, cannot run the webapp in it"
+					giveup $ fromOsPath d ++ " is a bare git repository, cannot run the webapp in it"
 				r <- callCommandAction $
 					start' False o
 				quiesce False
 				return r
 
-cannotStartIn :: FilePath -> String -> IO ()
-cannotStartIn d reason = warningIO $ "unable to start webapp in repository " ++ d ++ ": " ++ reason
+cannotStartIn :: OsPath -> String -> IO ()
+cannotStartIn d reason = warningIO $
+	"unable to start webapp in repository " ++ fromOsPath d ++ ": " ++ reason
 
 {- Run the webapp without a repository, which prompts the user, makes one,
  - changes to it, starts the regular assistant, and redirects the
@@ -203,12 +204,12 @@ firstRun o = do
 					(Just $ sendurlback v)
 	sendurlback v _origout _origerr url _htmlshim = putMVar v url
 
-openBrowser :: Maybe FilePath -> FilePath -> String -> Maybe Handle -> Maybe Handle -> IO ()
+openBrowser :: Maybe OsPath -> OsPath -> String -> Maybe Handle -> Maybe Handle -> IO ()
 openBrowser mcmd htmlshim realurl outh errh = do
-	htmlshim' <- fromRawFilePath <$> absPath (toRawFilePath htmlshim)
+	htmlshim' <- absPath htmlshim
 	openBrowser' mcmd htmlshim' realurl outh errh
 
-openBrowser' :: Maybe FilePath -> FilePath -> String -> Maybe Handle -> Maybe Handle -> IO ()
+openBrowser' :: Maybe OsPath -> OsPath -> String -> Maybe Handle -> Maybe Handle -> IO ()
 openBrowser' mcmd htmlshim realurl outh errh =
 	ifM osAndroid
 		{- Android does not support file:// urls well, but neither
@@ -220,7 +221,7 @@ openBrowser' mcmd htmlshim realurl outh errh =
   where
 	runbrowser url = do
 		let p = case mcmd of
-			Just c -> proc c [url]
+			Just c -> proc (fromOsPath c) [url]
 			Nothing -> 
 #ifndef mingw32_HOST_OS
 				browserProc url
@@ -228,8 +229,8 @@ openBrowser' mcmd htmlshim realurl outh errh =
 				{- Windows hack to avoid using the full path,
 				 - which might contain spaces that cause problems
 				 - for browserProc. -}
-				(browserProc (takeFileName htmlshim))
-					{ cwd = Just (takeDirectory htmlshim) } 
+				(browserProc (fromOsPath (takeFileName htmlshim)))
+					{ cwd = Just (fromOsPath (takeDirectory htmlshim)) } 
 #endif
 		hPutStrLn (fromMaybe stdout outh) $ "Launching web browser on " ++ url
 		hFlush stdout
@@ -245,8 +246,8 @@ openBrowser' mcmd htmlshim realurl outh errh =
 				hPutStrLn (fromMaybe stderr errh) "failed to start web browser"
 
 {- web.browser is a generic git config setting for a web browser program -}
-webBrowser :: Git.Repo -> Maybe FilePath
+webBrowser :: Git.Repo -> Maybe OsPath
 webBrowser = fmap fromConfigValue <$> Git.Config.getMaybe "web.browser"
 
-fileUrl :: FilePath -> String
-fileUrl file = "file://" ++ file
+fileUrl :: OsPath -> String
+fileUrl file = "file://" ++ fromOsPath file

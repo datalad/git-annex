@@ -31,11 +31,9 @@ import qualified Data.Text as T
 #endif
 import qualified Utility.Lsof as Lsof
 import Utility.ThreadScheduler
-import qualified Utility.RawFilePath as R
+import qualified Utility.OsString as OS
 
 import Control.Concurrent.Async
-import qualified Data.ByteString as S
-import qualified System.FilePath.ByteString as P
 
 {- When the FsckResults require a repair, tries to do a non-destructive
  - repair. If that fails, pops up an alert. -}
@@ -98,7 +96,7 @@ runRepair u mrmt destructiverepair = do
 			thisrepopath <- liftIO . absPath
 				=<< liftAnnex (fromRepo Git.repoPath)
 			a <- liftAnnex $ mkrepair $
-				repair fsckresults (Just (fromRawFilePath thisrepopath))
+				repair fsckresults (Just (fromOsPath thisrepopath))
 			liftIO $ catchBoolIO a
 
 	repair fsckresults referencerepo = do
@@ -110,7 +108,7 @@ runRepair u mrmt destructiverepair = do
 	
 	backgroundfsck params = liftIO $ void $ async $ do
 		program <- programPath
-		batchCommand program (Param "fsck" : params)
+		batchCommand (fromOsPath program) (Param "fsck" : params)
 
 {- Detect when a git lock file exists and has no git process currently
  - writing to it. This strongly suggests it is a stale lock file.
@@ -135,26 +133,26 @@ repairStaleGitLocks r = do
 	repairStaleLocks lockfiles
 	return $ not $ null lockfiles
   where
-	findgitfiles = dirContentsRecursiveSkipping (== P.dropTrailingPathSeparator annexDir) True . Git.localGitDir
+	findgitfiles = dirContentsRecursiveSkipping (== dropTrailingPathSeparator annexDir) True . Git.localGitDir
 	islock f
-		| "gc.pid" `S.isInfixOf` f = False
-		| ".lock" `S.isSuffixOf` f = True
-		| P.takeFileName f == "MERGE_HEAD" = True
+		| literalOsPath "gc.pid" `OS.isInfixOf` f = False
+		| literalOsPath ".lock" `OS.isSuffixOf` f = True
+		| takeFileName f == literalOsPath "MERGE_HEAD" = True
 		| otherwise = False
 
-repairStaleLocks :: [RawFilePath] -> Assistant ()
+repairStaleLocks :: [OsPath] -> Assistant ()
 repairStaleLocks lockfiles = go =<< getsizes
   where
 	getsize lf = catchMaybeIO $ (\s -> (lf, s))
 		<$> getFileSize lf
 	getsizes = liftIO $ catMaybes <$> mapM getsize lockfiles
 	go [] = return ()
-	go l = ifM (liftIO $ null <$> Lsof.query ("--" : map (fromRawFilePath . fst) l))
+	go l = ifM (liftIO $ null <$> Lsof.query ("--" : map (fromOsPath . fst) l))
 		( do
 			waitforit "to check stale git lock file"
 			l' <- getsizes
 			if l' == l
-				then liftIO $ mapM_ (removeWhenExistsWith R.removeLink . fst) l
+				then liftIO $ mapM_ (removeWhenExistsWith removeFile . fst) l
 				else go l'
 		, do
 			waitforit "for git lock file writer"

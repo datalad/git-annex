@@ -20,6 +20,7 @@ import Git.Remote
 import Utility.SshHost
 import Utility.Process.Transcript
 import qualified Utility.FileIO as F
+import qualified Utility.OsString as OS
 
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -103,7 +104,7 @@ parseSshUrl u
 		{ sshHostName = T.pack host
 		, sshUserName = if null user then Nothing else Just $ T.pack user
 		, sshDirectory = T.pack dir
-		, sshRepoName = genSshRepoName host dir
+		, sshRepoName = genSshRepoName host (toOsPath dir)
 		-- dummy values, cannot determine from url
 		, sshPort = 22
 		, needsPubKey = True
@@ -120,10 +121,10 @@ parseSshUrl u
 	fromssh = mkdata . break (== '/')
 
 {- Generates a git remote name, like host_dir or host -}
-genSshRepoName :: String -> FilePath -> String
+genSshRepoName :: String -> OsPath -> String
 genSshRepoName host dir
-	| null dir = makeLegalName host
-	| otherwise = makeLegalName $ host ++ "_" ++ dir
+	| OS.null dir = makeLegalName host
+	| otherwise = makeLegalName $ host ++ "_" ++ fromOsPath dir
 
 {- The output of ssh, including both stdout and stderr. -}
 sshTranscript :: [String] -> SshHost -> String -> (Maybe String) -> IO (String, Bool)
@@ -151,13 +152,13 @@ validateSshPubKey pubkey
 	  where
 		(ssh, keytype) = separate (== '-') prefix
 
-addAuthorizedKeys :: Bool -> FilePath -> SshPubKey -> IO Bool
+addAuthorizedKeys :: Bool -> OsPath -> SshPubKey -> IO Bool
 addAuthorizedKeys gitannexshellonly dir pubkey = boolSystem "sh"
 	[ Param "-c" , Param $ addAuthorizedKeysCommand gitannexshellonly dir pubkey ]
 
 {- Should only be used within the same process that added the line;
  - the layout of the line is not kepy stable across versions. -}
-removeAuthorizedKeys :: Bool -> FilePath -> SshPubKey -> IO ()
+removeAuthorizedKeys :: Bool -> OsPath -> SshPubKey -> IO ()
 removeAuthorizedKeys gitannexshellonly dir pubkey = do
 	let keyline = authorizedKeysLine gitannexshellonly dir pubkey
 	sshdir <- sshDir
@@ -173,7 +174,7 @@ removeAuthorizedKeys gitannexshellonly dir pubkey = do
  - The ~/.ssh/git-annex-shell wrapper script is created if not already
  - present.
  -}
-addAuthorizedKeysCommand :: Bool -> FilePath -> SshPubKey -> String
+addAuthorizedKeysCommand :: Bool -> OsPath -> SshPubKey -> String
 addAuthorizedKeysCommand gitannexshellonly dir pubkey = intercalate "&&"
 	[ "mkdir -p ~/.ssh"
 	, intercalate "; "
@@ -204,14 +205,14 @@ addAuthorizedKeysCommand gitannexshellonly dir pubkey = intercalate "&&"
 		]
 	runshell var = "exec git-annex-shell -c \"" ++ var ++ "\""
 
-authorizedKeysLine :: Bool -> FilePath -> SshPubKey -> String
+authorizedKeysLine :: Bool -> OsPath -> SshPubKey -> String
 authorizedKeysLine gitannexshellonly dir pubkey
 	| gitannexshellonly = limitcommand ++ pubkey
 	{- TODO: Locking down rsync is difficult, requiring a rather
 	 - long perl script. -}
 	| otherwise = pubkey
   where
-	limitcommand = "command=\"env GIT_ANNEX_SHELL_DIRECTORY="++shellEscape dir++" ~/.ssh/git-annex-shell\",no-agent-forwarding,no-port-forwarding,no-X11-forwarding,no-pty "
+	limitcommand = "command=\"env GIT_ANNEX_SHELL_DIRECTORY="++shellEscape (fromOsPath dir)++" ~/.ssh/git-annex-shell\",no-agent-forwarding,no-port-forwarding,no-X11-forwarding,no-pty "
 
 {- Generates a ssh key pair. -}
 genSshKeyPair :: IO SshKeyPair

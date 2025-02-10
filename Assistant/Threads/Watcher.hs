@@ -42,6 +42,7 @@ import Git.FilePath
 import Config.GitConfig
 import Utility.ThreadScheduler
 import Logs.Location
+import qualified Utility.OsString as OS
 import qualified Database.Keys
 #ifndef mingw32_HOST_OS
 import qualified Utility.Lsof as Lsof
@@ -94,16 +95,16 @@ runWatcher = do
 	delhook <- hook onDel
 	addsymlinkhook <- hook onAddSymlink
 	deldirhook <- hook onDelDir
-	errhook <- hook onErr
+	errhook <- asIO2 onErr
 	let hooks = mkWatchHooks
 		{ addHook = addhook
 		, delHook = delhook
 		, addSymlinkHook = addsymlinkhook
 		, delDirHook = deldirhook
-		, errHook = errhook
+		, errHook = Just errhook
 		}
 	scanevents <- liftAnnex $ annexStartupScan <$> Annex.getGitConfig
-	h <- liftIO $ watchDir "." ignored scanevents hooks startup
+	h <- liftIO $ watchDir (literalOsPath ".") ignored scanevents hooks startup
 	debug [ "watching", "."]
 	
 	{- Let the DirWatcher thread run until signalled to pause it,
@@ -138,9 +139,8 @@ startupScan scanner = do
 		top <- liftAnnex $ fromRepo Git.repoPath
 		(fs, cleanup) <- liftAnnex $ inRepo $ LsFiles.deleted [] [top]
 		forM_ fs $ \f -> do
-			let f' = fromRawFilePath f
-			liftAnnex $ onDel' f'
-			maybe noop recordChange =<< madeChange f' RmChange
+			liftAnnex $ onDel' f
+			maybe noop recordChange =<< madeChange f RmChange
 		void $ liftIO cleanup
 		
 		liftAnnex $ showAction "started"
@@ -157,30 +157,31 @@ startupScan scanner = do
 
 {- Hardcoded ignores, passed to the DirWatcher so it can avoid looking
  - at the entire .git directory. Does not include .gitignores. -}
-ignored :: FilePath -> Bool
+ignored :: OsPath -> Bool
 ignored = ig . takeFileName
   where
-	ig ".git" = True
-	ig ".gitignore" = True
-	ig ".gitattributes" = True
+	ig f
+		| f == literalOsPath ".git" = True
+		| f == literalOsPath ".gitignore" = True
+		| f == literalOsPath ".gitattributes" = True
 #ifdef darwin_HOST_OS
-	ig ".DS_Store" = True
+		| f == literlosPath ".DS_Store" = True
 #endif
-	ig _ = False
+		| otherwise = False
 
-unlessIgnored :: FilePath -> Assistant (Maybe Change) -> Assistant (Maybe Change)
-unlessIgnored file a = ifM (liftAnnex $ checkIgnored (CheckGitIgnore True) (toRawFilePath file))
+unlessIgnored :: OsPath -> Assistant (Maybe Change) -> Assistant (Maybe Change)
+unlessIgnored file a = ifM (liftAnnex $ checkIgnored (CheckGitIgnore True) file)
 	( noChange
 	, a
 	)
 
-type Handler = FilePath -> Maybe FileStatus -> Assistant (Maybe Change)
+type Handler = OsPath -> Maybe FileStatus -> Assistant (Maybe Change)
 
 {- Runs an action handler, and if there was a change, adds it to the ChangeChan.
  -
  - Exceptions are ignored, otherwise a whole watcher thread could be crashed.
  -}
-runHandler :: Handler -> FilePath -> Maybe FileStatus -> Assistant ()
+runHandler :: Handler -> OsPath -> Maybe FileStatus -> Assistant ()
 runHandler handler file filestatus = void $ do
 	r <- tryIO <~> handler (normalize file) filestatus
 	case r of
@@ -189,7 +190,7 @@ runHandler handler file filestatus = void $ do
 		Right (Just change) -> recordChange change
   where
 	normalize f
-		| "./" `isPrefixOf` file = drop 2 f
+		| literalOsPath "./" `OS.isPrefixOf` file = OS.drop 2 f
 		| otherwise = f
 
 shouldRestage :: DaemonStatus -> Bool
@@ -201,34 +202,34 @@ onAddFile symlinkssupported f fs =
   where
 	addassociatedfile key file = 
 		Database.Keys.addAssociatedFile key
-			=<< inRepo (toTopFilePath (toRawFilePath file))
+			=<< inRepo (toTopFilePath file)
 	samefilestatus key file status = do
 		cache <- Database.Keys.getInodeCaches key
 		curr <- withTSDelta $ \delta ->
-			liftIO $ toInodeCache delta (toRawFilePath file) status
+			liftIO $ toInodeCache delta file status
 		case (cache, curr) of
 			(_, Just c) -> elemInodeCaches c cache
 			([], Nothing) -> return True
 			_ -> return False
 	contentchanged oldkey file = do
 		Database.Keys.removeAssociatedFile oldkey
-			=<< inRepo (toTopFilePath (toRawFilePath file))
+			=<< inRepo (toTopFilePath file)
 		unlessM (inAnnex oldkey) $
 			logStatus NoLiveUpdate oldkey InfoMissing
 	addlink file key = do
-		mode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus (toRawFilePath file)
-		liftAnnex $ stagePointerFile (toRawFilePath file) mode =<< hashPointerFile key
+		mode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus (fromOsPath file)
+		liftAnnex $ stagePointerFile file mode =<< hashPointerFile key
 		madeChange file $ LinkChange (Just key)
 
 onAddFile'
-	:: (Key -> FilePath -> Annex ())
-	-> (Key -> FilePath -> Annex ())
-	-> (FilePath -> Key -> Assistant (Maybe Change))
-	-> (Key -> FilePath -> FileStatus -> Annex Bool)
+	:: (Key -> OsPath -> Annex ())
+	-> (Key -> OsPath -> Annex ())
+	-> (OsPath -> Key -> Assistant (Maybe Change))
+	-> (Key -> OsPath -> FileStatus -> Annex Bool)
 	-> Bool
 	-> Handler
 onAddFile' contentchanged addassociatedfile addlink samefilestatus symlinkssupported file fs = do
-	v <- liftAnnex $ catKeyFile (toRawFilePath file)
+	v <- liftAnnex $ catKeyFile file
 	case (v, fs) of
 		(Just key, Just filestatus) ->
 			ifM (liftAnnex $ samefilestatus key file filestatus)
@@ -242,13 +243,13 @@ onAddFile' contentchanged addassociatedfile addlink samefilestatus symlinkssuppo
 					, noChange
 					)
 				, guardSymlinkStandin (Just key) $ do
-					debug ["changed", file]
+					debug ["changed", fromOsPath file]
 					liftAnnex $ contentchanged key file
 					pendingAddChange file
 				)
 		_ -> unlessIgnored file $
 			guardSymlinkStandin Nothing $ do
-				debug ["add", file]
+				debug ["add", fromOsPath file]
 				pendingAddChange file
   where
 	{- On a filesystem without symlinks, we'll get changes for regular
@@ -258,8 +259,7 @@ onAddFile' contentchanged addassociatedfile addlink samefilestatus symlinkssuppo
 	guardSymlinkStandin mk a
 		| symlinkssupported = a
 		| otherwise = do
-			linktarget <- liftAnnex $ getAnnexLinkTarget $
-				toRawFilePath file
+			linktarget <- liftAnnex $ getAnnexLinkTarget file
 			case linktarget of
 				Nothing -> a
 				Just lt -> do
@@ -275,21 +275,20 @@ onAddFile' contentchanged addassociatedfile addlink samefilestatus symlinkssuppo
  -}
 onAddSymlink :: Handler
 onAddSymlink file filestatus = unlessIgnored file $ do
-	linktarget <- liftIO (catchMaybeIO $ R.readSymbolicLink file')
-	kv <- liftAnnex (lookupKey file')
+	linktarget <- liftIO $ catchMaybeIO $
+		R.readSymbolicLink (fromOsPath file)
+	kv <- liftAnnex (lookupKey file)
 	onAddSymlink' linktarget kv file filestatus
-  where
-	file' = toRawFilePath file
 
 onAddSymlink' :: Maybe LinkTarget -> Maybe Key -> Handler
 onAddSymlink' linktarget mk file filestatus = go mk
   where
 	go (Just key) = do
-		link <- liftAnnex $ calcRepo $ gitAnnexLink (toRawFilePath file) key
+		link <- liftAnnex $ fromOsPath <$> calcRepo (gitAnnexLink file key)
 		if linktarget == Just link
 			then ensurestaged (Just link) =<< getDaemonStatus
 			else do
-				liftAnnex $ replaceWorkTreeFile (toRawFilePath file) $
+				liftAnnex $ replaceWorkTreeFile file $
 					makeAnnexLink link
 				addLink file link (Just key)
 	-- other symlink, not git-annex
@@ -315,33 +314,32 @@ onAddSymlink' linktarget mk file filestatus = go mk
 	ensurestaged Nothing _ = noChange
 
 {- For speed, tries to reuse the existing blob for symlink target. -}
-addLink :: FilePath -> LinkTarget -> Maybe Key -> Assistant (Maybe Change)
+addLink :: OsPath -> LinkTarget -> Maybe Key -> Assistant (Maybe Change)
 addLink file link mk = do
-	debug ["add symlink", file]
+	debug ["add symlink", fromOsPath file]
 	liftAnnex $ do
-		v <- catObjectDetails $ Ref $ encodeBS $ ':':file
+		v <- catObjectDetails $ Ref $ encodeBS $ ':':fromOsPath file
 		case v of
 			Just (currlink, sha, _type)
 				| L.fromStrict link == currlink ->
-					stageSymlink (toRawFilePath file) sha
-			_ -> stageSymlink (toRawFilePath file)
-				=<< hashSymlink link
+					stageSymlink file sha
+			_ -> stageSymlink file =<< hashSymlink link
 	madeChange file $ LinkChange mk
 
 onDel :: Handler
 onDel file _ = do
-	debug ["file deleted", file]
+	debug ["file deleted", fromOsPath file]
 	liftAnnex $ onDel' file
 	madeChange file RmChange
 
-onDel' :: FilePath -> Annex ()
+onDel' :: OsPath -> Annex ()
 onDel' file = do
-	topfile <- inRepo (toTopFilePath (toRawFilePath file))
+	topfile <- inRepo (toTopFilePath file)
 	withkey $ flip Database.Keys.removeAssociatedFile topfile
 	Annex.Queue.addUpdateIndex =<<
-		inRepo (Git.UpdateIndex.unstageFile (toRawFilePath file))
+		inRepo (Git.UpdateIndex.unstageFile file)
   where
-	withkey a = maybe noop a =<< catKeyFile (toRawFilePath file)
+	withkey a = maybe noop a =<< catKeyFile file
 
 {- A directory has been deleted, or moved, so tell git to remove anything
  - that was inside it from its cache. Since it could reappear at any time,
@@ -351,23 +349,21 @@ onDel' file = do
  - pairing up renamed files when the directory was renamed. -}
 onDelDir :: Handler
 onDelDir dir _ = do
-	debug ["directory deleted", dir]
-	(fs, clean) <- liftAnnex $ inRepo $ LsFiles.deleted [] [toRawFilePath dir]
-	let fs' = map fromRawFilePath fs
+	debug ["directory deleted", fromOsPath dir]
+	(fs, clean) <- liftAnnex $ inRepo $ LsFiles.deleted [] [dir]
 
-	liftAnnex $ mapM_ onDel' fs'
+	liftAnnex $ mapM_ onDel' fs
 
 	-- Get the events queued up as fast as possible, so the
 	-- committer sees them all in one block.
 	now <- liftIO getCurrentTime
-	recordChanges $ map (\f -> Change now f RmChange) fs'
+	recordChanges $ map (\f -> Change now f RmChange) fs
 
 	void $ liftIO clean
 	noChange
 
 {- Called when there's an error with inotify or kqueue. -}
-onErr :: Handler
+onErr :: String -> Maybe FileStatus -> Assistant ()
 onErr msg _ = do
 	liftAnnex $ warning (UnquotedString msg)
 	void $ addAlert $ warningAlert "watcher" msg
-	noChange

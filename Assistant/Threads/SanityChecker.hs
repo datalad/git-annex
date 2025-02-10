@@ -68,7 +68,7 @@ sanityCheckerStartupThread startupdelay = namedThreadUnchecked "SanityCheckerSta
 	ifM (not <$> liftAnnex (inRepo checkIndexFast))
 		( do
 			debug ["corrupt index file found at startup; removing and restaging"]
-			liftAnnex $ inRepo $ removeWhenExistsWith R.removeLink . indexFile
+			liftAnnex $ inRepo $ removeWhenExistsWith removeFile . indexFile
 			{- Normally the startup scan avoids re-staging files,
 			 - but with the index deleted, everything needs to be
 			 - restaged. -}
@@ -82,7 +82,7 @@ sanityCheckerStartupThread startupdelay = namedThreadUnchecked "SanityCheckerSta
 	 - will be automatically regenerated. -}
 	unlessM (liftAnnex $ Annex.Branch.withIndex $ inRepo $ Git.Repair.checkIndexFast) $ do
 		debug ["corrupt annex/index file found at startup; removing"]
-		liftAnnex $ liftIO . removeWhenExistsWith R.removeLink =<< fromRepo gitAnnexIndex
+		liftAnnex $ liftIO . removeWhenExistsWith removeFile =<< fromRepo gitAnnexIndex
 
 	{- Fix up ssh remotes set up by past versions of the assistant. -}
 	liftIO $ fixUpSshRemotes
@@ -154,13 +154,13 @@ dailyCheck urlrenderer = do
 	batchmaker <- liftIO getBatchCommandMaker
 
 	-- Find old unstaged symlinks, and add them to git.
-	(unstaged, cleanup) <- liftIO $ Git.LsFiles.notInRepo [] False ["."] g
+	(unstaged, cleanup) <- liftIO $ Git.LsFiles.notInRepo [] False [literalOsPath "."] g
 	now <- liftIO getPOSIXTime
 	forM_ unstaged $ \file -> do
-		ms <- liftIO $ catchMaybeIO $ R.getSymbolicLinkStatus file
+		ms <- liftIO $ catchMaybeIO $ R.getSymbolicLinkStatus $ fromOsPath file
 		case ms of
 			Just s	| toonew (statusChangeTime s) now -> noop
-				| isSymbolicLink s -> addsymlink (fromRawFilePath file) ms
+				| isSymbolicLink s -> addsymlink file ms
 			_ -> noop
 	liftIO $ void cleanup
 
@@ -182,7 +182,7 @@ dailyCheck urlrenderer = do
 	{- Run git-annex unused once per day. This is run as a separate
 	 - process to stay out of the annex monad and so it can run as a
 	 - batch job. -}
-	program <- liftIO programPath
+	program <- fromOsPath <$> liftIO programPath
 	let (program', params') = batchmaker (program, [Param "unused"])
 	void $ liftIO $ boolSystem program' params'
 	{- Invalidate unused keys cache, and queue transfers of all unused
@@ -202,7 +202,7 @@ dailyCheck urlrenderer = do
 		void $ addAlert $ sanityCheckFixAlert msg
 	addsymlink file s = do
 		Watcher.runHandler Watcher.onAddSymlink file s
-		insanity $ "found unstaged symlink: " ++ file
+		insanity $ "found unstaged symlink: " ++ fromOsPath file
 
 hourlyCheck :: Assistant ()
 hourlyCheck = do
@@ -222,14 +222,14 @@ hourlyCheck = do
  -}
 checkLogSize :: Int -> Assistant ()
 checkLogSize n = do
-	f <- liftAnnex $ fromRawFilePath <$> fromRepo gitAnnexDaemonLogFile
-	logs <- liftIO $ listLogs f
-	totalsize <- liftIO $ sum <$> mapM (getFileSize . toRawFilePath) logs
+	f <- liftAnnex $ fromRepo gitAnnexDaemonLogFile
+	logs <- liftIO $ listLogs (fromOsPath f)
+	totalsize <- liftIO $ sum <$> mapM (getFileSize . toOsPath) logs
 	when (totalsize > 2 * oneMegabyte) $ do
 		debug ["Rotated logs due to size:", show totalsize]
-		liftIO $ openLog f >>= handleToFd >>= redirLog
+		liftIO $ openLog (fromOsPath f) >>= handleToFd >>= redirLog
 		when (n < maxLogs + 1) $ do
-			df <- liftIO $ getDiskFree $ takeDirectory f
+			df <- liftIO $ getDiskFree $ fromOsPath $ takeDirectory f
 			case df of
 				Just free
 					| free < fromIntegral totalsize ->
@@ -270,5 +270,5 @@ checkOldUnused urlrenderer = go =<< annexExpireUnused <$> liftAnnex Annex.getGit
 checkRepoExists :: Assistant ()
 checkRepoExists = do
 	g <- liftAnnex gitRepo
-	liftIO $ unlessM (doesDirectoryExist $ fromRawFilePath $ Git.repoPath g) $
+	liftIO $ unlessM (doesDirectoryExist $ Git.repoPath g) $
 		terminateSelf

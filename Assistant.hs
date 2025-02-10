@@ -62,40 +62,39 @@ import qualified Utility.Debug as Debug
 import Network.Socket (HostName, PortNumber)
 
 stopDaemon :: Annex ()
-stopDaemon = liftIO . Utility.Daemon.stopDaemon . fromRawFilePath
-	=<< fromRepo gitAnnexPidFile
+stopDaemon = liftIO . Utility.Daemon.stopDaemon =<< fromRepo gitAnnexPidFile
 
 {- Starts the daemon. If the daemon is run in the foreground, once it's
  - running, can start the browser.
  -
  - startbrowser is passed the url and html shim file, as well as the original
  - stdout and stderr descriptors. -}
-startDaemon :: Bool -> Bool -> Maybe Duration -> Maybe String -> Maybe HostName -> Maybe PortNumber ->  Maybe (Maybe Handle -> Maybe Handle -> String -> FilePath -> IO ()) -> Annex ()
+startDaemon :: Bool -> Bool -> Maybe Duration -> Maybe String -> Maybe HostName -> Maybe PortNumber ->  Maybe (Maybe Handle -> Maybe Handle -> String -> OsPath -> IO ()) -> Annex ()
 startDaemon assistant foreground startdelay cannotrun listenhost listenport startbrowser = do
 	Annex.changeState $ \s -> s { Annex.daemon = True }
 	enableInteractiveBranchAccess
 	pidfile <- fromRepo gitAnnexPidFile
 	logfile <- fromRepo gitAnnexDaemonLogFile
-	liftIO $ Debug.debug "Assistant" $ "logging to " ++ fromRawFilePath logfile
+	liftIO $ Debug.debug "Assistant" $ "logging to " ++ fromOsPath logfile
 	createAnnexDirectory (parentDir pidfile)
 #ifndef mingw32_HOST_OS
 	createAnnexDirectory (parentDir logfile)
-	let logfd = handleToFd =<< openLog (fromRawFilePath logfile)
+	let logfd = handleToFd =<< openLog (fromOsPath logfile)
 	if foreground
 		then do
 			origout <- liftIO $ catchMaybeIO $ 
 				fdToHandle =<< dup stdOutput
 			origerr <- liftIO $ catchMaybeIO $ 
 				fdToHandle =<< dup stdError
-			let undaemonize = Utility.Daemon.foreground logfd (Just (fromRawFilePath pidfile))
+			let undaemonize = Utility.Daemon.foreground logfd (Just pidfile)
 			start undaemonize $ 
 				case startbrowser of
 					Nothing -> Nothing
 					Just a -> Just $ a origout origerr
 		else do
-			git_annex <- liftIO programPath
+			git_annex <- fromOsPath <$> liftIO programPath
 			ps <- gitAnnexDaemonizeParams
-			start (Utility.Daemon.daemonize git_annex ps logfd (Just (fromRawFilePath pidfile)) False) Nothing
+			start (Utility.Daemon.daemonize git_annex ps logfd (Just pidfile) False) Nothing
 #else
 	-- Windows doesn't daemonize, but does redirect output to the
 	-- log file. The only way to do so is to restart the program.
@@ -104,7 +103,7 @@ startDaemon assistant foreground startdelay cannotrun listenhost listenport star
 		createAnnexDirectory (parentDir logfile)
 		ifM (liftIO $ isNothing <$> getEnv flag)
 			( liftIO $ withNullHandle $ \nullh -> do
-				loghandle <- openLog (fromRawFilePath logfile)
+				loghandle <- openLog (fromOsPath logfile)
 				e <- getEnvironment
 				cmd <- programPath
 				ps <- getArgs
@@ -117,7 +116,7 @@ startDaemon assistant foreground startdelay cannotrun listenhost listenport star
 				exitcode <- withCreateProcess p $ \_ _ _ pid ->
 					waitForProcess pid
 				exitWith exitcode
-			, start (Utility.Daemon.foreground (Just (fromRawFilePath pidfile))) $
+			, start (Utility.Daemon.foreground (Just (fromOsPath pidfile))) $
 				case startbrowser of
 					Nothing -> Nothing
 					Just a -> Just $ a Nothing Nothing
@@ -128,7 +127,7 @@ startDaemon assistant foreground startdelay cannotrun listenhost listenport star
 		checkCanWatch
 		dstatus <- startDaemonStatus
 		logfile <- fromRepo gitAnnexDaemonLogFile
-		liftIO $ Debug.debug "Assistant" $ "logging to " ++ fromRawFilePath logfile
+		liftIO $ Debug.debug "Assistant" $ "logging to " ++ fromOsPath logfile
 		liftIO $ daemonize $
 			flip runAssistant (go webappwaiter) 
 				=<< newAssistantData st dstatus
