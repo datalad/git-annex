@@ -54,11 +54,10 @@ import Git.Branch (writeTreeQuiet, update')
 import qualified Git.Ref
 import Config
 import Config.Smudge
-import qualified Utility.RawFilePath as R
+import qualified Utility.OsString as OS
 
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Char8 as S8
-import qualified System.FilePath.ByteString as P
 import Control.Concurrent.Async
 
 {- Runs an action that reads from the database.
@@ -129,8 +128,8 @@ openDb forwrite _ = do
 	lck <- calcRepo' gitAnnexKeysDbLock
 	catchPermissionDenied permerr $ withExclusiveLock lck $ do
 		dbdir <- calcRepo' gitAnnexKeysDbDir
-		let db = dbdir P.</> "db"
-		dbexists <- liftIO $ R.doesPathExist db
+		let db = dbdir </> literalOsPath "db"
+		dbexists <- liftIO $ doesDirectoryExist db
 		case dbexists of
 			True -> open db False
 			False -> do
@@ -182,7 +181,7 @@ emptyWhenBare a = ifM isBareRepo
 	)
 
 {- Include a known associated file along with any recorded in the database. -}
-getAssociatedFilesIncluding :: AssociatedFile -> Key -> Annex [RawFilePath]
+getAssociatedFilesIncluding :: AssociatedFile -> Key -> Annex [OsPath]
 getAssociatedFilesIncluding afile k = emptyWhenBare $ do
 	g <- Annex.gitRepo
 	l <- map (`fromTopFilePath` g) <$> getAssociatedFiles k
@@ -201,7 +200,7 @@ removeAssociatedFile k = runWriterIO AssociatedTable .
 	SQL.removeAssociatedFile k
 
 {- Stats the files, and stores their InodeCaches. -}
-storeInodeCaches :: Key -> [RawFilePath] -> Annex ()
+storeInodeCaches :: Key -> [OsPath] -> Annex ()
 storeInodeCaches k fs = withTSDelta $ \d ->
 	addInodeCaches k . catMaybes
 		=<< liftIO (mapM (\f -> genInodeCache f d) fs)
@@ -265,7 +264,7 @@ reconcileStaged dbisnew qh = ifM isBareRepo
 	( return mempty
 	, do
 		gitindex <- inRepo currentIndexFile
-		indexcache <- fromRawFilePath <$> calcRepo' gitAnnexKeysDbIndexCache
+		indexcache <- fromOsPath <$> calcRepo' gitAnnexKeysDbIndexCache
 		withTSDelta (liftIO . genInodeCache gitindex) >>= \case
 			Just cur -> readindexcache indexcache >>= \case
 				Nothing -> go cur indexcache =<< getindextree
@@ -356,8 +355,9 @@ reconcileStaged dbisnew qh = ifM isBareRepo
 		-- be a pointer file. And a pointer file that is replaced with
 		-- a non-pointer file will match this. This is only a
 		-- prefilter so that's ok.
-		, Param $ "-G" ++ fromRawFilePath (toInternalGitPath $
-			P.pathSeparator `S.cons` objectDir)
+		, Param $ "-G" ++ 
+			fromOsPath (toInternalGitPath $
+				pathSeparator `OS.cons` objectDir)
 		-- Disable rename detection.
 		, Param "--no-renames"
 		-- Avoid other complications.
@@ -371,6 +371,7 @@ reconcileStaged dbisnew qh = ifM isBareRepo
 	procdiff mdfeeder (info:file:rest) conflicted
 		| ":" `S.isPrefixOf` info = case S8.words info of
 			(_colonsrcmode:dstmode:srcsha:dstsha:status:[]) -> do
+				let file' = asTopFilePath (toOsPath file)
 				let conflicted' = status == "U"
 				-- avoid removing associated file when
 				-- there is a merge conflict
@@ -378,17 +379,15 @@ reconcileStaged dbisnew qh = ifM isBareRepo
 					send mdfeeder (Ref srcsha) $ \case
 						Just oldkey -> do
 							liftIO $ SQL.removeAssociatedFile oldkey
-								(asTopFilePath file)
-								(SQL.WriteHandle qh)
+								file' (SQL.WriteHandle qh)
 							return True
 						Nothing -> return False
 				send mdfeeder (Ref dstsha) $ \case
 					Just key -> do
 						liftIO $ addassociatedfile key
-							(asTopFilePath file)
-							(SQL.WriteHandle qh)
+							file' (SQL.WriteHandle qh)
 						when (dstmode /= fmtTreeItemType TreeSymlink) $
-							reconcilepointerfile (asTopFilePath file) key
+							reconcilepointerfile file' key
 						return True
 					Nothing -> return False
 				procdiff mdfeeder rest
@@ -403,11 +402,11 @@ reconcileStaged dbisnew qh = ifM isBareRepo
 	procmergeconflictdiff mdfeeder (info:file:rest) conflicted
 		| ":" `S.isPrefixOf` info = case S8.words info of
 			(_colonmode:_mode:sha:_sha:status:[]) -> do
+				let file' = asTopFilePath (toOsPath file)
 				send mdfeeder (Ref sha) $ \case
 					Just key -> do
 						liftIO $ SQL.addAssociatedFile key
-							(asTopFilePath file)
-							(SQL.WriteHandle qh)
+							file' (SQL.WriteHandle qh)
 						return True
 					Nothing -> return False
 				let conflicted' = status == "U"

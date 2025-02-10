@@ -51,14 +51,17 @@ seek o = do
   where
 	ww = WarnUnmatchLsFiles "inprogress"
 
-start :: IsTerminal -> S.Set Key -> SeekInput -> RawFilePath -> Key -> CommandStart
+start :: IsTerminal -> S.Set Key -> SeekInput -> OsPath -> Key -> CommandStart
 start isterminal s _si _file k
 	| S.member k s = start' isterminal k
 	| otherwise = stop
 
 start' :: IsTerminal -> Key -> CommandStart
 start' (IsTerminal isterminal) k = startingCustomOutput k $ do
-	tmpf <- fromRawFilePath <$> fromRepo (gitAnnexTmpObjectLocation k)
+	tmpf <- fromRepo (gitAnnexTmpObjectLocation k)
 	whenM (liftIO $ doesFileExist tmpf) $
-		liftIO $ putStrLn (if isterminal then safeOutput tmpf else tmpf)
+		liftIO $ putStrLn $ 
+			if isterminal
+				then safeOutput (fromOsPath tmpf)
+				else fromOsPath tmpf
 	next $ return True

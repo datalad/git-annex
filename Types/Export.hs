@@ -1,11 +1,12 @@
 {- git-annex export types
  -
- - Copyright 2017-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2017-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE CPP #-}
 
 module Types.Export (
 	ExportLocation,
@@ -19,48 +20,63 @@ module Types.Export (
 
 import Git.FilePath
 import Utility.Split
-import Utility.FileSystemEncoding
+import Utility.OsPath
 
-import qualified Data.ByteString.Short as S
-import qualified System.FilePath.Posix as Posix
 import GHC.Generics
 import Control.DeepSeq
+#ifdef WITH_OSPATH
+import qualified System.OsPath.Posix as Posix
+import System.OsString.Internal.Types
+#else
+import qualified System.FilePath.Posix as Posix
+import Utility.FileSystemEncoding
+#endif
 
 -- A location such as a path on a remote, that a key can be exported to.
 -- The path is relative to the top of the remote, and uses unix-style
 -- path separators.
 --
--- This uses a ShortByteString to avoid problems with ByteString getting
--- PINNED in memory which caused memory fragmentation and excessive memory
--- use.
-newtype ExportLocation = ExportLocation S.ShortByteString
+-- This must be a ShortByteString (which OsPath is) in order to to avoid
+-- problems with ByteString getting PINNED in memory which caused memory
+-- fragmentation and excessive memory use.
+newtype ExportLocation = ExportLocation OsPath
 	deriving (Show, Eq, Generic, Ord)
 
 instance NFData ExportLocation
 
-mkExportLocation :: RawFilePath -> ExportLocation
-mkExportLocation = ExportLocation . S.toShort . toInternalGitPath
+mkExportLocation :: OsPath -> ExportLocation
+mkExportLocation = ExportLocation . toInternalGitPath
 
-fromExportLocation :: ExportLocation -> RawFilePath
-fromExportLocation (ExportLocation f) = S.fromShort f
+fromExportLocation :: ExportLocation -> OsPath
+fromExportLocation (ExportLocation f) = f
 
-newtype ExportDirectory = ExportDirectory RawFilePath
+newtype ExportDirectory = ExportDirectory OsPath
 	deriving (Show, Eq)
 
-mkExportDirectory :: RawFilePath -> ExportDirectory
+mkExportDirectory :: OsPath -> ExportDirectory
 mkExportDirectory = ExportDirectory . toInternalGitPath
 
-fromExportDirectory :: ExportDirectory -> RawFilePath
+fromExportDirectory :: ExportDirectory -> OsPath
 fromExportDirectory (ExportDirectory f) = f
 
 -- | All subdirectories down to the ExportLocation, with the deepest ones
 -- last. Does not include the top of the export.
 exportDirectories :: ExportLocation -> [ExportDirectory]
 exportDirectories (ExportLocation f) =
-	map (ExportDirectory . encodeBS . Posix.joinPath . reverse) (subs [] dirs)
+	map (ExportDirectory . fromposixpath . Posix.joinPath . reverse)
+		(subs [] dirs)
   where
 	subs _ [] = []
 	subs ps (d:ds) = (d:ps) : subs (d:ps) ds
 
+#ifdef WITH_OSPATH
 	dirs = map Posix.dropTrailingPathSeparator $
-		dropFromEnd 1 $ Posix.splitPath $ decodeBS $ S.fromShort f
+		dropFromEnd 1 $ Posix.splitPath $ PosixString $ fromOsPath f
+
+	fromposixpath = toOsPath . getPosixString
+#else
+	dirs = map Posix.dropTrailingPathSeparator $
+		dropFromEnd 1 $ Posix.splitPath $ fromOsPath f
+
+	fromposixpath = encodeBS
+#endif

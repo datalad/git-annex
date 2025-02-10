@@ -70,14 +70,12 @@ openLock sharemode f = do
 		Right h -> Just h
 #else
 	h <- withTString (fromRawFilePath f') $ \c_f ->
-		c_CreateFile c_f gENERIC_READ sharemode security_attributes
+		c_CreateFile c_f gENERIC_READ sharemode (maybePtr Nothing)
 			oPEN_ALWAYS fILE_ATTRIBUTE_NORMAL (maybePtr Nothing)
 	return $ if h == iNVALID_HANDLE_VALUE
 		then Nothing
 		else Just h
 #endif
-  where
-	security_attributes = maybePtr Nothing
 
 dropLock :: LockHandle -> IO ()
 dropLock = closeHandle

@@ -10,11 +10,12 @@ module Types.UrlContents (
 ) where
 
 import Utility.Url
+import Utility.OsPath
 
 data UrlContents
 	-- An URL contains a file, whose size may be known.
 	-- There might be a nicer filename to use.
-	= UrlContents (Maybe Integer) (Maybe FilePath)
+	= UrlContents (Maybe Integer) (Maybe OsPath)
 	-- Sometimes an URL points to multiple files, each accessible
 	-- by their own URL.
-	| UrlMulti [(URLString, Maybe Integer, FilePath)]
+	| UrlMulti [(URLString, Maybe Integer, OsPath)]

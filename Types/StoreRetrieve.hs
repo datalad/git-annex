@@ -18,7 +18,7 @@ import qualified Data.ByteString.Lazy as L
 
 -- A source of a Key's content.
 data ContentSource
-	= FileContent FilePath
+	= FileContent OsPath
 	| ByteContent L.ByteString
 
 isByteContent :: ContentSource -> Bool
@@ -43,7 +43,7 @@ type Storer = Key -> ContentSource -> MeterUpdate -> Annex ()
 -- content to the verifier before running the callback.
 -- This should not be done when it retrieves ByteContent.
 type Retriever = forall a.
-	Key -> MeterUpdate -> RawFilePath -> Maybe IncrementalVerifier
+	Key -> MeterUpdate -> OsPath -> Maybe IncrementalVerifier
 		-> (ContentSource -> Annex a) -> Annex a
 
 -- Action that removes a Key's content from a remote.

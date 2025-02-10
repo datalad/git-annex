@@ -49,7 +49,7 @@ import Utility.ThreadScheduler
 {- The TMVar is left empty until tahoe has been verified to be running. -}
 data TahoeHandle = TahoeHandle TahoeConfigDir (TMVar ())
 
-type TahoeConfigDir = FilePath
+type TahoeConfigDir = OsPath
 type SharedConvergenceSecret = String
 type IntroducerFurl = String
 type Capability = String
@@ -81,7 +81,9 @@ gen r u rc gc rs = do
 	c <- parsedRemoteConfig remote rc
 	cst <- remoteCost gc c expensiveRemoteCost
 	hdl <- liftIO $ TahoeHandle
-		<$> maybe (defaultTahoeConfigDir u) return (remoteAnnexTahoe gc)
+		<$> maybe (defaultTahoeConfigDir u)
+			(return . toOsPath)
+			(remoteAnnexTahoe gc)
 		<*> newEmptyTMVarIO
 	return $ Just $ Remote
 		{ uuid = u
@@ -136,18 +138,18 @@ tahoeSetup _ mu _ c _ = do
 			, (scsField, Proposed scs)
 			]
 		else c
-	gitConfigSpecialRemote u c' [("tahoe", configdir)]
+	gitConfigSpecialRemote u c' [("tahoe", fromOsPath configdir)]
 	return (c', u)
   where
 	missingfurl = giveup "Set TAHOE_FURL to the introducer furl to use."
 
-store :: RemoteStateHandle -> TahoeHandle -> Key -> AssociatedFile -> Maybe FilePath -> MeterUpdate -> Annex ()
+store :: RemoteStateHandle -> TahoeHandle -> Key -> AssociatedFile -> Maybe OsPath -> MeterUpdate -> Annex ()
 store rs hdl k _af o _p = sendAnnex k o noop $ \src _sz ->
-	parsePut <$> liftIO (readTahoe hdl "put" [File src]) >>= maybe
+	parsePut <$> liftIO (readTahoe hdl "put" [File (fromOsPath src)]) >>= maybe
 		(giveup "tahoe failed to store content")
 		(\cap -> storeCapability rs k cap)
 
-retrieve :: RemoteStateHandle -> TahoeHandle -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification
+retrieve :: RemoteStateHandle -> TahoeHandle -> Key -> AssociatedFile -> OsPath -> MeterUpdate -> VerifyConfig -> Annex Verification
 retrieve rs hdl k _f d _p _ = do
 	go =<< getCapability rs k
 	-- Tahoe verifies the content it retrieves using cryptographically
@@ -155,7 +157,7 @@ retrieve rs hdl k _f d _p _ = do
 	return Verified
   where
 	go Nothing = giveup "tahoe capability is not known"
-	go (Just cap) = unlessM (liftIO $ requestTahoe hdl "get" [Param cap, File d]) $
+	go (Just cap) = unlessM (liftIO $ requestTahoe hdl "get" [Param cap, File (fromOsPath d)]) $
 		giveup "tahoe failed to reteieve content"
 
 remove :: Maybe SafeDropProof -> Key -> Annex ()
@@ -185,7 +187,7 @@ checkKey rs hdl k = go =<< getCapability rs k
 defaultTahoeConfigDir :: UUID -> IO TahoeConfigDir
 defaultTahoeConfigDir u = do
 	h <- myHomeDir 
-	return $ h </> ".tahoe-git-annex" </> fromUUID u
+	return $ toOsPath h </> literalOsPath ".tahoe-git-annex" </> fromUUID u
 
 tahoeConfigure :: TahoeConfigDir -> IntroducerFurl -> Maybe SharedConvergenceSecret -> IO SharedConvergenceSecret
 tahoeConfigure configdir furl mscs = do
@@ -197,8 +199,7 @@ tahoeConfigure configdir furl mscs = do
 
 createClient :: TahoeConfigDir -> IntroducerFurl -> IO Bool
 createClient configdir furl = do
-	createDirectoryIfMissing True $
-		fromRawFilePath $ parentDir $ toRawFilePath configdir
+	createDirectoryIfMissing True $ parentDir configdir
 	boolTahoe configdir "create-client"
 		[ Param "--nickname", Param "git-annex"
 		, Param "--introducer", Param furl
@@ -206,7 +207,8 @@ createClient configdir furl = do
 
 writeSharedConvergenceSecret :: TahoeConfigDir -> SharedConvergenceSecret -> IO ()
 writeSharedConvergenceSecret configdir scs = 
-	writeFile (convergenceFile configdir) (unlines [scs])
+	writeFile (fromOsPath (convergenceFile configdir))
+		(unlines [scs])
 
 {- The tahoe daemon writes the convergenceFile shortly after it starts
  - (it does not need to connect to the network). So, try repeatedly to read
@@ -215,7 +217,7 @@ writeSharedConvergenceSecret configdir scs =
 getSharedConvergenceSecret :: TahoeConfigDir -> IO SharedConvergenceSecret
 getSharedConvergenceSecret configdir = go (60 :: Int)
   where
-	f = convergenceFile configdir
+	f = fromOsPath $ convergenceFile configdir
 	go n
 		| n == 0 = giveup $ "tahoe did not write " ++ f ++ " after 1 minute. Perhaps the daemon failed to start?"
 		| otherwise = do
@@ -227,8 +229,9 @@ getSharedConvergenceSecret configdir = go (60 :: Int)
 					threadDelaySeconds (Seconds 1)
 					go (n - 1)
 
-convergenceFile :: TahoeConfigDir -> FilePath
-convergenceFile configdir = configdir </> "private" </> "convergence"
+convergenceFile :: TahoeConfigDir -> OsPath
+convergenceFile configdir = 
+	configdir </> literalOsPath "private" </> literalOsPath "convergence"
 
 startTahoeDaemon :: TahoeConfigDir -> IO ()
 startTahoeDaemon configdir = void $ boolTahoe configdir "start" []
@@ -267,7 +270,7 @@ readTahoe hdl command params = withTahoeConfigDir hdl $ \configdir ->
 
 tahoeParams :: TahoeConfigDir -> String -> [CommandParam] -> [CommandParam]
 tahoeParams configdir command params = 
-	Param "-d" : File configdir : Param command : params
+	Param "-d" : File (fromOsPath configdir) : Param command : params
 
 storeCapability :: RemoteStateHandle -> Key -> Capability -> Annex ()
 storeCapability rs k cap = setRemoteState rs k cap

@@ -25,13 +25,13 @@ start ps@(keyname:file:[]) = starting "setkey" ai si $
   where
 	ai = ActionItemOther (Just (QuotedPath file'))
 	si = SeekInput ps
-	file' = toRawFilePath file
+	file' = toOsPath file
 start _ = giveup "specify a key and a content file"
 
 keyOpt :: String -> Key
 keyOpt = fromMaybe (giveup "bad key") . deserializeKey
 
-perform :: RawFilePath -> Key -> CommandPerform
+perform :: OsPath -> Key -> CommandPerform
 perform file key = do
 	-- the file might be on a different filesystem, so moveFile is used
 	-- rather than simply calling moveAnnex; disk space is also

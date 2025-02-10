@@ -34,6 +34,7 @@ module Messages.JSON (
 import Control.Applicative
 import qualified Data.Map as M
 import qualified Data.Vector as V
+import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Aeson.KeyMap as HM
 import System.IO
@@ -50,7 +51,7 @@ import Key
 import Utility.Metered
 import Utility.Percentage
 import Utility.Aeson
-import Utility.FileSystemEncoding
+import Utility.OsPath
 import Types.Messages
 
 -- A global lock to avoid concurrent threads emitting json at the same time.
@@ -76,7 +77,7 @@ type JSONBuilder = Maybe (Object, Bool) -> Maybe (Object, Bool)
 none :: JSONBuilder
 none = id
 
-start :: String -> Maybe RawFilePath -> Maybe Key -> SeekInput -> JSONBuilder
+start :: String -> Maybe OsPath -> Maybe Key -> SeekInput -> JSONBuilder
 start command file key si _ = case j of
 	Object o -> Just (o, False)
 	_ -> Nothing
@@ -84,7 +85,7 @@ start command file key si _ = case j of
 	j = toJSON' $ JSONActionItem
 		{ itemCommand = Just command
 		, itemKey = key
-		, itemFile = fromRawFilePath <$> file
+		, itemFile = file
 		, itemUUID = Nothing
 		, itemFields = Nothing :: Maybe Bool
 		, itemSeekInput = si
@@ -98,7 +99,7 @@ startActionItem command ai si _ = case j of
 	j = toJSON' $ JSONActionItem
 		{ itemCommand = Just command
 		, itemKey = actionItemKey ai
-		, itemFile = fromRawFilePath <$> actionItemFile ai
+		, itemFile = actionItemFile ai
 		, itemUUID = actionItemUUID ai
 		, itemFields = Nothing :: Maybe Bool
 		, itemSeekInput = si
@@ -206,7 +207,7 @@ instance ToJSON' a => ToJSON' (ObjectMap a) where
 data JSONActionItem a = JSONActionItem
 	{ itemCommand :: Maybe String
 	, itemKey :: Maybe Key
-	, itemFile :: Maybe FilePath
+	, itemFile :: Maybe OsPath
 	, itemUUID :: Maybe UUID
 	, itemFields :: Maybe a
 	, itemSeekInput :: SeekInput
@@ -220,7 +221,9 @@ instance ToJSON' a => ToJSON' (JSONActionItem a) where
 			Just k -> Just $ "key" .= toJSON' k
 			Nothing -> Nothing
 		, case itemFile i of
-			Just f -> Just $ "file" .= toJSON' f
+			Just f -> 
+				let f' = (fromOsPath f) :: S.ByteString
+				in Just $ "file" .= toJSON' f'
 			Nothing -> Nothing
 		, case itemFields i of
 			Just f -> Just $ "fields" .= toJSON' f
@@ -235,7 +238,7 @@ instance FromJSON a => FromJSON (JSONActionItem a) where
 	parseJSON (Object v) = JSONActionItem
 		<$> (v .:? "command")
 		<*> (maybe (return Nothing) parseJSON =<< (v .:? "key"))
-		<*> (v .:? "file")
+		<*> (fmap stringToOsPath <$> (v .:? "file"))
 		<*> (v .:? "uuid")
 		<*> (v .:? "fields")
 		-- ^ fields is used for metadata, which is currently the

@@ -42,11 +42,9 @@ import Database.Utility
 import Database.Types
 import Annex.LockFile
 import Git.Types
-import qualified Utility.RawFilePath as R
 
 import Database.Persist.Sql hiding (Key)
 import Database.Persist.TH
-import qualified System.FilePath.ByteString as P
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 import Control.Exception
@@ -107,8 +105,8 @@ getRepoSizeHandle = Annex.getState Annex.reposizehandle >>= \case
 openDb :: Annex RepoSizeHandle
 openDb = lockDbWhile permerr $ do
 	dbdir <- calcRepo' gitAnnexRepoSizeDbDir
-	let db = dbdir P.</> "db"
-	unlessM (liftIO $ R.doesPathExist db) $ do
+	let db = dbdir </> literalOsPath "db"
+	unlessM (liftIO $ doesDirectoryExist db) $ do
 		initDb db $ void $
 			runMigrationSilent migrateRepoSizes
 	h <- liftIO $ H.openDb db "repo_sizes"

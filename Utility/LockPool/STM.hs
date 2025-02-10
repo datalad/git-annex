@@ -23,14 +23,14 @@ module Utility.LockPool.STM (
 ) where
 
 import Utility.Monad
+import Utility.OsPath
 
 import System.IO.Unsafe (unsafePerformIO)
-import System.FilePath.ByteString (RawFilePath)
 import qualified Data.Map.Strict as M
 import Control.Concurrent.STM
 import Control.Exception
 
-type LockFile = RawFilePath
+type LockFile = OsPath
 
 data LockMode = LockExclusive | LockShared
 	deriving (Eq)

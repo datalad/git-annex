@@ -48,7 +48,6 @@ import Control.Monad.Writer
 import Data.Time.Clock.POSIX
 import qualified Data.Set as S
 import qualified Data.Map as M
-import qualified System.FilePath.ByteString as P
 import System.PosixCompat.Files (accessTime, isSymbolicLink)
 
 {- Some limits can look at the current status of files on
@@ -140,11 +139,12 @@ matchGlobFile :: String -> MatchInfo -> Annex Bool
 matchGlobFile glob = go
   where
 	cglob = compileGlob glob CaseSensitive (GlobFilePath True) -- memoized
-	go (MatchingFile fi) = pure $ matchGlob cglob (fromRawFilePath (matchFile fi))
+	go (MatchingFile fi) = pure $ matchGlob cglob (fromOsPath (matchFile fi))
 	go (MatchingInfo p) = pure $ case providedFilePath p of
-		Just f -> matchGlob cglob (fromRawFilePath f)
+		Just f -> matchGlob cglob (fromOsPath f)
 		Nothing -> False
-	go (MatchingUserInfo p) = matchGlob cglob <$> getUserInfo (userProvidedFilePath p)
+	go (MatchingUserInfo p) = matchGlob cglob . fromOsPath
+		<$> getUserInfo (userProvidedFilePath p)
 
 {- Add a limit to skip files when there is no other file using the same
  - content, with a name matching the glob. -}
@@ -188,23 +188,22 @@ matchSameContentGlob glob mi = checkKey (go mi) mi
 		Just f -> check k f
 		Nothing -> return False
 	go (MatchingUserInfo p) k = 
-		check k . toRawFilePath
-			=<< getUserInfo (userProvidedFilePath p)
+		check k =<< getUserInfo (userProvidedFilePath p)
 	
 	cglob = compileGlob glob CaseSensitive (GlobFilePath True) -- memoized
 	
-	matchesglob f = matchGlob cglob (fromRawFilePath f)
+	matchesglob f = matchGlob cglob (fromOsPath f)
 #ifdef mingw32_HOST_OS
-		|| matchGlob cglob (fromRawFilePath (toInternalGitPath f))
+		|| matchGlob cglob (fromOsPath (toInternalGitPath f))
 #endif
 
 	check k skipf = do
 		-- Find other files with the same content, with filenames
 		-- matching the glob.
 		g <- Annex.gitRepo
-		fs <- filter (/= P.normalise skipf)
+		fs <- filter (/= normalise skipf)
 			. filter matchesglob
-			. map (\f -> P.normalise (fromTopFilePath f g))
+			. map (\f -> normalise (fromTopFilePath f g))
 			<$> Database.Keys.getAssociatedFiles k
 		-- Some associated files in the keys database may no longer
 		-- correspond to files in the repository. This is checked
@@ -219,7 +218,7 @@ addMimeEncoding = addMagicLimit "mimeencoding" getMagicMimeEncoding providedMime
 
 addMagicLimit
 	:: String
-	-> (Magic -> FilePath -> Annex (Maybe String))
+	-> (Magic -> OsPath -> Annex (Maybe String))
 	-> (ProvidedInfo -> Maybe String)
 	-> (UserProvidedInfo -> UserInfo String)
 	-> String
@@ -228,20 +227,19 @@ addMagicLimit limitname querymagic selectprovidedinfo selectuserprovidedinfo glo
 	magic <- liftIO initMagicMime
 	addLimit $ matchMagic limitname querymagic' selectprovidedinfo selectuserprovidedinfo magic glob
   where
-	querymagic' magic f = liftIO (isPointerFile (toRawFilePath f)) >>= \case
+	querymagic' magic f = liftIO (isPointerFile f) >>= \case
 		-- Avoid getting magic of a pointer file, which would
 		-- wrongly be detected as text.
 		Just _ -> return Nothing
 		-- When the file is an annex symlink, get magic of the
 		-- object file.
-		Nothing -> isAnnexLink (toRawFilePath f) >>= \case
-			Just k -> withObjectLoc k $
-				querymagic magic . fromRawFilePath
+		Nothing -> isAnnexLink f >>= \case
+			Just k -> withObjectLoc k (querymagic magic)
 			Nothing -> querymagic magic f
 
 matchMagic
 	:: String
-	-> (Magic -> FilePath -> Annex (Maybe String))
+	-> (Magic -> OsPath -> Annex (Maybe String))
 	-> (ProvidedInfo -> Maybe String)
 	-> (UserProvidedInfo -> UserInfo String)
 	-> Maybe Magic
@@ -261,7 +259,7 @@ matchMagic limitname querymagic selectprovidedinfo selectuserprovidedinfo (Just 
  	cglob = compileGlob glob CaseSensitive (GlobFilePath False) -- memoized
 	go (MatchingFile fi) = catchBoolIO $
 		maybe False (matchGlob cglob)
-			<$> querymagic magic (fromRawFilePath (contentFile fi))
+			<$> querymagic magic (contentFile fi)
 	go (MatchingInfo p) = maybe
 		(usecontent (providedKey p))
 		(pure . matchGlob cglob)
@@ -269,8 +267,7 @@ matchMagic limitname querymagic selectprovidedinfo selectuserprovidedinfo (Just 
 	go (MatchingUserInfo p) =
 		matchGlob cglob <$> getUserInfo (selectuserprovidedinfo p)
 	usecontent (Just k) = withObjectLoc k $ \obj -> catchBoolIO $
-		maybe False (matchGlob cglob)
-			<$> querymagic magic (fromRawFilePath obj)
+		maybe False (matchGlob cglob) <$> querymagic magic obj
 	usecontent Nothing = pure False
 matchMagic limitname _ _ _ Nothing _ = 
 	Left $ "unable to load magic database; \""++limitname++"\" cannot be used"
@@ -305,7 +302,7 @@ matchLockStatus wantlocked (MatchingFile fi) = liftIO $ do
 	islocked <- isPointerFile f >>= \case
 		Just _key -> return False
 		Nothing -> isSymbolicLink
-			<$> R.getSymbolicLinkStatus f
+			<$> R.getSymbolicLinkStatus (fromOsPath f)
 	return (islocked == wantlocked)
 matchLockStatus wantlocked (MatchingInfo p) = 
 	pure $ case providedLinkType p of
@@ -388,7 +385,7 @@ limitPresent u = MatchFiles
 	}
 
 {- Limit to content that is in a directory, anywhere in the repository tree -}
-limitInDir :: FilePath -> String -> MatchFiles Annex
+limitInDir :: OsPath -> String -> MatchFiles Annex
 limitInDir dir desc = MatchFiles 
 	{ matchAction = const $ const go
 	, matchNeedsFileName = True
@@ -400,8 +397,8 @@ limitInDir dir desc = MatchFiles
 	, matchDesc = matchDescSimple desc
 	}
   where
-	go (MatchingFile fi) = checkf $ fromRawFilePath $ matchFile fi
-	go (MatchingInfo p) = maybe (pure False) (checkf . fromRawFilePath) (providedFilePath p)
+	go (MatchingFile fi) = checkf $ matchFile fi
+	go (MatchingInfo p) = maybe (pure False) checkf (providedFilePath p)
 	go (MatchingUserInfo p) = checkf =<< getUserInfo (userProvidedFilePath p)
 	checkf = return . elem dir . splitPath . takeDirectory
 
@@ -867,7 +864,7 @@ addAccessedWithin duration = do
   where
 	check now k = inAnnexCheck k $ \f ->
 		liftIO $ catchDefaultIO False $ do
-			s <- R.getSymbolicLinkStatus f
+			s <- R.getSymbolicLinkStatus (fromOsPath f)
 			let accessed = realToFrac (accessTime s)
 			let delta = now - accessed
 			return $ delta <= secs

@@ -22,11 +22,11 @@ import qualified Data.Text as T
 
 {- Authorized keys are set up before pairing is complete, so that the other
  - side can immediately begin syncing. -}
-setupAuthorizedKeys :: PairMsg -> FilePath -> IO ()
+setupAuthorizedKeys :: PairMsg -> OsPath -> IO ()
 setupAuthorizedKeys msg repodir = case validateSshPubKey $ remoteSshPubKey $ pairMsgData msg of
 	Left err -> giveup err
 	Right pubkey -> do
-		absdir <- fromRawFilePath <$> absPath (toRawFilePath repodir)
+		absdir <- absPath repodir
 		unlessM (liftIO $ addAuthorizedKeys True absdir pubkey) $
 			giveup "failed setting up ssh authorized keys"
 
@@ -66,7 +66,7 @@ pairMsgToSshData msg = do
 		{ sshHostName = T.pack hostname
 		, sshUserName = Just (T.pack $ remoteUserName d)
 		, sshDirectory = T.pack dir
-		, sshRepoName = genSshRepoName hostname dir
+		, sshRepoName = genSshRepoName hostname (toOsPath dir)
 		, sshPort = 22
 		, needsPubKey = True
 		, sshCapabilities = [GitAnnexShellCapable, GitCapable, RsyncCapable]

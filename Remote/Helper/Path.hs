@@ -10,7 +10,7 @@ module Remote.Helper.Path where
 import Annex.Common
 import Types.Availability
 
-checkPathAvailability :: Bool -> FilePath -> Annex Availability
+checkPathAvailability :: Bool -> OsPath -> Annex Availability
 checkPathAvailability islocal d
 	| not islocal = return GloballyAvailable
 	| otherwise = ifM (liftIO $ doesDirectoryExist d)

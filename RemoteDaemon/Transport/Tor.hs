@@ -191,7 +191,7 @@ transport (RemoteRepo r gc) url@(RemoteURI uri) th ichan ochan =
 			runBool [Param "fetch", Param $ Git.repoDescribe r]
 		send (DONESYNCING url ok)
 
-torSocketFile :: Annex.Annex (Maybe FilePath)
+torSocketFile :: Annex.Annex (Maybe OsPath)
 torSocketFile = do
 	u <- getUUID
 	let ident = fromUUID u

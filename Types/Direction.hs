@@ -9,16 +9,16 @@
 
 module Types.Direction where
 
-import qualified Data.ByteString as B
+import Data.ByteString.Short
 
 data Direction = Upload | Download
 	deriving (Eq, Ord, Show, Read)
 
-formatDirection :: Direction -> B.ByteString
+formatDirection :: Direction -> ShortByteString
 formatDirection Upload = "upload"
 formatDirection Download = "download"
 
-parseDirection :: B.ByteString -> Maybe Direction
+parseDirection :: ShortByteString -> Maybe Direction
 parseDirection "upload" = Just Upload
 parseDirection "download" = Just Download
 parseDirection _ = Nothing

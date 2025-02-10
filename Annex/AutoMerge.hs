@@ -133,7 +133,7 @@ autoMergeFrom' branch currbranch mergeconfig commitmode willresolvemerge toresol
 resolveMerge :: Maybe Git.Ref -> Git.Ref -> Bool -> Annex Bool
 resolveMerge us them inoverlay = do
 	top <- if inoverlay
-		then pure "."
+		then pure (literalOsPath ".")
 		else fromRepo Git.repoPath
 	(fs, cleanup) <- inRepo (LsFiles.unmerged [top])
 	srcmap <- if inoverlay
@@ -150,7 +150,7 @@ resolveMerge us them inoverlay = do
 		unless (null deleted) $
 			Annex.Queue.addCommand [] "rm"
 				[Param "--quiet", Param "-f", Param "--"]
-				(map fromRawFilePath deleted)
+				(map fromOsPath deleted)
 		void $ liftIO cleanup2
 
 	when merged $ do
@@ -167,7 +167,7 @@ resolveMerge us them inoverlay = do
 		, LsFiles.unmergedSiblingFile u
 		]
 
-resolveMerge' :: InodeMap -> Maybe Git.Ref -> Git.Ref -> Bool -> LsFiles.Unmerged -> Annex ([Key], Maybe FilePath)
+resolveMerge' :: InodeMap -> Maybe Git.Ref -> Git.Ref -> Bool -> LsFiles.Unmerged -> Annex ([Key], Maybe OsPath)
 resolveMerge' _ Nothing _ _ _ = return ([], Nothing)
 resolveMerge' unstagedmap (Just us) them inoverlay u = do
 	kus <- getkey LsFiles.valUs
@@ -182,7 +182,7 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 				-- files, so delete here.
 				unless inoverlay $
 					unless (islocked LsFiles.valUs) $
-						liftIO $ removeWhenExistsWith R.removeLink (toRawFilePath file)
+						liftIO $ removeWhenExistsWith removeFile file
 			| otherwise -> resolveby [keyUs, keyThem] $
 				-- Only resolve using symlink when both
 				-- were locked, otherwise use unlocked
@@ -204,8 +204,8 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 		-- Neither side is annexed file; cannot resolve.
 		(Nothing, Nothing) -> return ([], Nothing)
   where
-	file = fromRawFilePath $ LsFiles.unmergedFile u
-	sibfile = fromRawFilePath <$> LsFiles.unmergedSiblingFile u
+	file = LsFiles.unmergedFile u
+	sibfile = LsFiles.unmergedSiblingFile u
 
 	getkey select = 
 		case select (LsFiles.unmergedSha u) of
@@ -230,16 +230,15 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 		dest = variantFile file key
 		destmode = fromTreeItemType <$> select (LsFiles.unmergedTreeItemType u)
 
-	stagefile :: FilePath -> Annex FilePath
+	stagefile :: OsPath -> Annex OsPath
 	stagefile f
-		| inoverlay = (</> f) . fromRawFilePath <$> fromRepo Git.repoPath
+		| inoverlay = (</> f) <$> fromRepo Git.repoPath
 		| otherwise = pure f
 
 	makesymlink key dest = do
-		let rdest = toRawFilePath dest
-		l <- calcRepo $ gitAnnexLink rdest key
-		unless inoverlay $ replacewithsymlink rdest l
-		dest' <- toRawFilePath <$> stagefile dest
+		l <- fromOsPath <$> calcRepo (gitAnnexLink dest key)
+		unless inoverlay $ replacewithsymlink dest l
+		dest' <- stagefile dest
 		stageSymlink dest' =<< hashSymlink l
 
 	replacewithsymlink dest link = replaceWorkTreeFile dest $
@@ -248,27 +247,27 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 	makepointer key dest destmode = do
 		unless inoverlay $ 
 			unlessM (reuseOldFile unstagedmap key file dest) $
-				linkFromAnnex key (toRawFilePath dest) destmode >>= \case
+				linkFromAnnex key dest destmode >>= \case
 					LinkAnnexFailed -> liftIO $
-						writePointerFile (toRawFilePath dest) key destmode
+						writePointerFile dest key destmode
 					_ -> noop
-		dest' <- toRawFilePath <$> stagefile dest
+		dest' <- stagefile dest
 		stagePointerFile dest' destmode =<< hashPointerFile key
 		unless inoverlay $
 			Database.Keys.addAssociatedFile key
-				=<< inRepo (toTopFilePath (toRawFilePath dest))
+				=<< inRepo (toTopFilePath dest)
 
 	{- Stage a graft of a directory or file from a branch
 	 - and update the work tree. -}
 	graftin b item selectwant selectwant' selectunwant = do
 		Annex.Queue.addUpdateIndex
-			=<< fromRepo (UpdateIndex.lsSubTree b item)
-				
+			=<< fromRepo (UpdateIndex.lsSubTree b (fromOsPath item))
+		
 		let replacefile isexecutable = case selectwant' (LsFiles.unmergedSha u) of
 			Nothing -> noop
-			Just sha -> replaceWorkTreeFile (toRawFilePath item) $ \tmp -> do
+			Just sha -> replaceWorkTreeFile item $ \tmp -> do
 				c <- catObject sha
-				liftIO $ F.writeFile (toOsPath tmp) c
+				liftIO $ F.writeFile tmp c
 				when isexecutable $
 					liftIO $ void $ tryIO $ 
 						modifyFileMode tmp $
@@ -281,7 +280,7 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 					Nothing -> noop
 					Just sha -> do
 						link <- catSymLinkTarget sha
-						replacewithsymlink (toRawFilePath item) link
+						replacewithsymlink item (fromOsPath link)
 			(Just TreeFile, Just TreeSymlink) -> replacefile False
 			(Just TreeExecutable, Just TreeSymlink) -> replacefile True
 			_ -> ifM (liftIO $ doesDirectoryExist item)
@@ -305,9 +304,9 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 			, Param "--cached"
 			, Param "--"
 			]
-			(catMaybes [Just file, sibfile])
+			(map fromOsPath $ catMaybes [Just file, sibfile])
 		liftIO $ maybe noop
-			(removeWhenExistsWith R.removeLink . toRawFilePath)
+			(removeWhenExistsWith removeFile)
 			sibfile
 		void a
 		return (ks, Just file)
@@ -322,13 +321,13 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
  - C) are pointers to or have the content of keys that were involved
  - in the merge.
  -}
-cleanConflictCruft :: [Key] -> [FilePath] -> InodeMap -> Annex ()
+cleanConflictCruft :: [Key] -> [OsPath] -> InodeMap -> Annex ()
 cleanConflictCruft resolvedks resolvedfs unstagedmap = do
 	is <- S.fromList . map (inodeCacheToKey Strongly) . concat 
 		<$> mapM Database.Keys.getInodeCaches resolvedks
 	forM_ (M.toList unstagedmap) $ \(i, f) ->
 		whenM (matchesresolved is i f) $
-			liftIO $ removeWhenExistsWith R.removeLink (toRawFilePath f)
+			liftIO $ removeWhenExistsWith removeFile f
   where
 	fs = S.fromList resolvedfs
 	ks = S.fromList resolvedks
@@ -336,19 +335,24 @@ cleanConflictCruft resolvedks resolvedfs unstagedmap = do
 	matchesresolved is i f
 		| S.member f fs || S.member (conflictCruftBase f) fs = anyM id
 			[ pure $ either (const False) (`S.member` is) i
-			, inks <$> isAnnexLink (toRawFilePath f)
-			, inks <$> liftIO (isPointerFile (toRawFilePath f))
+			, inks <$> isAnnexLink f
+			, inks <$> liftIO (isPointerFile f)
 			]
 		| otherwise = return False
 
-conflictCruftBase :: FilePath -> FilePath
-conflictCruftBase f = reverse $ drop 1 $ dropWhile (/= '~') $ reverse f
+conflictCruftBase :: OsPath -> OsPath
+conflictCruftBase = toOsPath
+	. reverse
+	. drop 1
+	. dropWhile (/= '~')
+	. reverse
+	. fromOsPath
 
 {- When possible, reuse an existing file from the srcmap as the
  - content of a worktree file in the resolved merge. It must have the
  - same name as the origfile, or a name that git would use for conflict
  - cruft. And, its inode cache must be a known one for the key. -}
-reuseOldFile :: InodeMap -> Key -> FilePath -> FilePath -> Annex Bool
+reuseOldFile :: InodeMap -> Key -> OsPath -> OsPath -> Annex Bool
 reuseOldFile srcmap key origfile destfile = do
 	is <- map (inodeCacheToKey Strongly)
 		<$> Database.Keys.getInodeCaches key
@@ -374,19 +378,18 @@ commitResolvedMerge commitmode = do
 		, Param "git-annex automatic merge conflict fix"
 		]
 
-type InodeMap = M.Map (Either FilePath InodeCacheKey) FilePath
+type InodeMap = M.Map (Either OsPath InodeCacheKey) OsPath
 
-inodeMap :: Annex ([RawFilePath], IO Bool) -> Annex InodeMap
+inodeMap :: Annex ([OsPath], IO Bool) -> Annex InodeMap
 inodeMap getfiles = do
 	(fs, cleanup) <- getfiles
 	fsis <- forM fs $ \f -> do
-		s <- liftIO $ R.getSymbolicLinkStatus f
-		let f' = fromRawFilePath f
+		s <- liftIO $ R.getSymbolicLinkStatus (fromOsPath f)
 		if isSymbolicLink s
-			then pure $ Just (Left f', f')
+			then pure $ Just (Left f, f)
 			else withTSDelta (\d -> liftIO $ toInodeCache d f s)
 				>>= return . \case
-					Just i -> Just (Right (inodeCacheToKey Strongly i), f')
+					Just i -> Just (Right (inodeCacheToKey Strongly i), f)
 					Nothing -> Nothing
 	void $ liftIO cleanup
 	return $ M.fromList $ catMaybes fsis

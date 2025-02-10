@@ -37,7 +37,7 @@ run o _ file
 	| refOption o = catKey (Ref (toRawFilePath file)) >>= display
 	| otherwise = do
 		checkNotBareRepo
-		seekSingleGitFile file >>= \case
+		seekSingleGitFile (toOsPath file) >>= \case
 			Nothing -> return False
 			Just file' -> catKeyFile file' >>= display
 
@@ -51,13 +51,13 @@ display Nothing = return False
 
 -- To support absolute filenames, pass through git ls-files.
 -- But, this plumbing command does not recurse through directories.
-seekSingleGitFile :: FilePath -> Annex (Maybe RawFilePath)
+seekSingleGitFile :: OsPath -> Annex (Maybe OsPath)
 seekSingleGitFile file
-	| isRelative file = return (Just (toRawFilePath file))
+	| isRelative file = return (Just file)
 	| otherwise = do
-		(l, cleanup) <- inRepo (Git.LsFiles.inRepo [] [toRawFilePath file])
+		(l, cleanup) <- inRepo (Git.LsFiles.inRepo [] [file])
 		r <- case l of
-			(f:[]) | takeFileName (fromRawFilePath f) == takeFileName file ->
+			(f:[]) | takeFileName f == takeFileName file ->
 				return (Just f)
 			_ -> return Nothing
 		void $ liftIO cleanup

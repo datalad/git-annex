@@ -97,12 +97,12 @@ gen r u rc gc rs = do
 		, getRepo = return r
 		, gitconfig = gc
 		, localpath = if ddarLocal ddarrepo && not (null $ ddarRepoLocation ddarrepo)
-			then Just $ ddarRepoLocation ddarrepo
+			then Just $ toOsPath $ ddarRepoLocation ddarrepo
 			else Nothing
 		, remotetype = remote
 		, availability = checkPathAvailability
 			(ddarLocal ddarrepo && not (null $ ddarRepoLocation ddarrepo))
-			(ddarRepoLocation ddarrepo)
+			(toOsPath (ddarRepoLocation ddarrepo))
 		, readonly = False
 		, appendonly = False
 		, untrustworthy = False
@@ -136,7 +136,7 @@ store ddarrepo = fileStorer $ \k src _p -> do
 		, Param "-N"
 		, Param $ serializeKey k
 		, Param $ ddarRepoLocation ddarrepo
-		, File src
+		, File $ fromOsPath src
 		]
 	unlessM (liftIO $ boolSystem "ddar" params) $
 		giveup "ddar failed"

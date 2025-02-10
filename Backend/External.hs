@@ -96,7 +96,7 @@ genKeyExternal ebname hasext ks meterupdate =
 	withExternalState ebname hasext $ \st ->
 		handleRequest st req notavail go
   where
-	req = GENKEY (fromRawFilePath (contentLocation ks))
+	req = GENKEY (fromOsPath (contentLocation ks))
 	notavail = giveup $ "Cannot generate a key, since " ++ externalBackendProgram ebname ++ " is not available."
 	
 	go (GENKEY_SUCCESS pk) = Just $ Result <$> fromProtoKey pk hasext ks
@@ -107,12 +107,12 @@ genKeyExternal ebname hasext ks meterupdate =
 		return $ GetNextMessage go
 	go _ = Nothing
 
-verifyKeyContentExternal :: ExternalBackendName -> HasExt -> MeterUpdate -> Key -> RawFilePath -> Annex Bool
+verifyKeyContentExternal :: ExternalBackendName -> HasExt -> MeterUpdate -> Key -> OsPath -> Annex Bool
 verifyKeyContentExternal ebname hasext meterupdate k f = 
 	withExternalState ebname hasext $ \st ->
 		handleRequest st req notavail go
   where
-	req = VERIFYKEYCONTENT (toProtoKey k) (fromRawFilePath f)
+	req = VERIFYKEYCONTENT (toProtoKey k) (fromOsPath f)
 
 	-- This should not be able to happen, because CANVERIFY is checked
 	-- before this function is enable, and so the external program 

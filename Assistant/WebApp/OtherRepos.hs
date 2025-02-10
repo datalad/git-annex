@@ -15,7 +15,6 @@ import Assistant.WebApp.Page
 import Config.Files.AutoStart
 import Utility.Yesod
 import Assistant.Restart
-import qualified Utility.RawFilePath as R
 
 getRepositorySwitcherR :: Handler Html
 getRepositorySwitcherR = page "Switch repository" Nothing $ do
@@ -25,15 +24,16 @@ getRepositorySwitcherR = page "Switch repository" Nothing $ do
 listOtherRepos :: IO [(String, String)]
 listOtherRepos = do
 	dirs <- readAutoStartFile
-	pwd <- R.getCurrentDirectory
+	pwd <- getCurrentDirectory
 	gooddirs <- filterM isrepo $
-		filter (\d -> not $ toRawFilePath d `dirContains` pwd) dirs
+		filter (\d -> not $ d `dirContains` pwd) dirs
 	names <- mapM relHome gooddirs
-	return $ sort $ zip names gooddirs
+	return $ sort $ zip (map fromOsPath names) (map fromOsPath gooddirs)
   where
-	isrepo d = doesDirectoryExist (d </> ".git")
+	isrepo d = doesDirectoryExist (d </> literalOsPath ".git")
 
 getSwitchToRepositoryR :: FilePath -> Handler Html
 getSwitchToRepositoryR repo = do
-	liftIO $ addAutoStartFile repo -- make this the new default repo
-	redirect =<< liftIO (newAssistantUrl repo)
+	let repo' = toOsPath repo
+	liftIO $ addAutoStartFile repo' -- make this the new default repo
+	redirect =<< liftIO (newAssistantUrl repo')

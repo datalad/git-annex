@@ -28,7 +28,7 @@ import qualified Data.Set as S
 
 remoteControlThread :: NamedThread
 remoteControlThread = namedThread "RemoteControl" $ do
-	program <- liftIO programPath
+	program <- liftIO $ fromOsPath <$> programPath
 	(cmd, params) <- liftIO $ toBatchCommand
 		(program, [Param "remotedaemon", Param "--foreground"])
 	let p = proc cmd (toCommand params)

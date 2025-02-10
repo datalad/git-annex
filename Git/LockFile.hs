@@ -21,9 +21,9 @@ import System.Win32.File
 #endif
 
 #ifndef mingw32_HOST_OS
-data LockHandle = LockHandle FilePath Fd
+data LockHandle = LockHandle OsPath Fd
 #else
-data LockHandle = LockHandle FilePath HANDLE
+data LockHandle = LockHandle OsPath HANDLE
 #endif
 
 {- Uses the same exclusive locking that git does.
@@ -33,14 +33,14 @@ data LockHandle = LockHandle FilePath HANDLE
  - a dangling lock can be left if a process is terminated at the wrong
  - time.
  -}
-openLock :: FilePath -> IO LockHandle
+openLock :: OsPath -> IO LockHandle
 openLock lck = openLock' lck `catchNonAsync` lckerr
   where
 	lckerr e = do
 		-- Same error message displayed by git.
 		whenM (doesFileExist lck) $
 			hPutStrLn stderr $ unlines
-				[ "fatal: Unable to create '" ++ lck ++ "': " ++ show e
+				[ "fatal: Unable to create '" ++ fromOsPath lck ++ "': " ++ show e
 				, ""
 				, "If no other git process is currently running, this probably means a"
 				, "git process crashed in this repository earlier. Make sure no other git"
@@ -48,11 +48,11 @@ openLock lck = openLock' lck `catchNonAsync` lckerr
 				]
 		throwM e
 
-openLock' :: FilePath -> IO LockHandle
+openLock' :: OsPath -> IO LockHandle
 openLock' lck = do
 #ifndef mingw32_HOST_OS
 	-- On unix, git simply uses O_EXCL
-	h <- openFdWithMode (toRawFilePath lck) ReadWrite (Just 0O666)
+	h <- openFdWithMode (fromOsPath lck) ReadWrite (Just 0O666)
 		(defaultFileFlags { exclusive = True })
 	setFdOption h CloseOnExec True
 #else
@@ -65,7 +65,7 @@ openLock' lck = do
 	-- So, all that's needed is a way to open the file, that fails
 	-- if the file already exists. Using CreateFile with CREATE_NEW 
 	-- accomplishes that.
-	h <- createFile lck gENERIC_WRITE fILE_SHARE_NONE Nothing
+	h <- createFile (fromOsPath lck) gENERIC_WRITE fILE_SHARE_NONE Nothing
 		cREATE_NEW fILE_ATTRIBUTE_NORMAL Nothing
 #endif
 	return (LockHandle lck h)

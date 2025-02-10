@@ -38,7 +38,7 @@ import Text.Read
  -
  - Also, can generate new metadata, if configured to do so.
  -}
-genMetaData :: Key -> RawFilePath -> Maybe POSIXTime -> Annex ()
+genMetaData :: Key -> OsPath -> Maybe POSIXTime -> Annex ()
 genMetaData key file mmtime = do
 	catKeyFileHEAD file >>= \case
 		Nothing -> noop
@@ -57,8 +57,8 @@ genMetaData key file mmtime = do
 			Nothing -> noop
   where
 	warncopied = warning $ UnquotedString $
-		"Copied metadata from old version of " ++ fromRawFilePath file ++ " to new version. " ++ 
-		"If you don't want this copied metadata, run: git annex metadata --remove-all " ++ fromRawFilePath file
+		"Copied metadata from old version of " ++ fromOsPath file ++ " to new version. " ++ 
+		"If you don't want this copied metadata, run: git annex metadata --remove-all " ++ fromOsPath file
 	-- If the only fields copied were date metadata, and they'll
 	-- be overwritten with the current mtime, no need to warn about
 	-- copying.

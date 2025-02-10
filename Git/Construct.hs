@@ -41,14 +41,12 @@ import qualified Git.Url as Url
 import Utility.UserInfo
 import Utility.Url.Parse
 import qualified Utility.RawFilePath as R
-
-import qualified Data.ByteString as B
-import qualified System.FilePath.ByteString as P
+import qualified Utility.OsString as OS
 
 {- Finds the git repository used for the cwd, which may be in a parent
  - directory. -}
 fromCwd :: IO (Maybe Repo)
-fromCwd = R.getCurrentDirectory >>= seekUp
+fromCwd = R.getCurrentDirectory >>= seekUp . toOsPath
   where
 	seekUp dir = do
 		r <- checkForRepo dir
@@ -59,31 +57,32 @@ fromCwd = R.getCurrentDirectory >>= seekUp
 			Just loc -> pure $ Just $ newFrom loc
 
 {- Local Repo constructor, accepts a relative or absolute path. -}
-fromPath :: RawFilePath -> IO Repo
+fromPath :: OsPath -> IO Repo
 fromPath dir
 	-- When dir == "foo/.git", git looks for "foo/.git/.git",
 	-- and failing that, uses "foo" as the repository.
-	| (P.pathSeparator `B.cons` ".git") `B.isSuffixOf` canondir =
-		ifM (doesDirectoryExist $ fromRawFilePath dir </> ".git")
+	| (pathSeparator `OS.cons` dotgit) `OS.isSuffixOf` canondir =
+		ifM (doesDirectoryExist $ dir </> dotgit)
 			( ret dir
-			, ret (P.takeDirectory canondir)
+			, ret (takeDirectory canondir)
 			)
-	| otherwise = ifM (doesDirectoryExist (fromRawFilePath dir))
+	| otherwise = ifM (doesDirectoryExist dir)
 		( checkGitDirFile dir >>= maybe (ret dir) (pure . newFrom)
 		-- git falls back to dir.git when dir doesn't
 		-- exist, as long as dir didn't end with a
 		-- path separator
 		, if dir == canondir
-			then ret (dir <> ".git")
+			then ret (dir <> dotgit)
 			else ret dir
 		)
   where
+	dotgit = literalOsPath ".git"
 	ret = pure . newFrom . LocalUnknown
-	canondir = P.dropTrailingPathSeparator dir
+	canondir = dropTrailingPathSeparator dir
 
 {- Local Repo constructor, requires an absolute path to the repo be
  - specified. -}
-fromAbsPath :: RawFilePath -> IO Repo
+fromAbsPath :: OsPath -> IO Repo
 fromAbsPath dir
 	| absoluteGitPath dir = fromPath dir
 	| otherwise =
@@ -107,7 +106,7 @@ fromUrl url
 fromUrl' :: String -> IO Repo
 fromUrl' url
 	| "file://" `isPrefixOf` url = case parseURIPortable url of
-		Just u -> fromAbsPath $ toRawFilePath $ unEscapeString $ uriPath u
+		Just u -> fromAbsPath $ toOsPath $ unEscapeString $ uriPath u
 		Nothing -> pure $ newFrom $ UnparseableUrl url
 	| otherwise = case parseURIPortable url of
 		Just u -> pure $ newFrom $ Url u
@@ -129,7 +128,7 @@ localToUrl reference r
 				[ s
 				, "//"
 				, auth
-				, fromRawFilePath (repoPath r)
+				, fromOsPath (repoPath r)
 				]
 			in r { location = Url $ fromJust $ parseURIPortable absurl }
 		_ -> r
@@ -176,43 +175,43 @@ fromRemoteLocation s knownurl repo = gen $ parseRemoteLocation s knownurl repo
 fromRemotePath :: FilePath -> Repo -> IO Repo
 fromRemotePath dir repo = do
 	dir' <- expandTilde dir
-	fromPath $ repoPath repo P.</> toRawFilePath dir'
+	fromPath $ repoPath repo </> dir'
 
 {- Git remotes can have a directory that is specified relative
  - to the user's home directory, or that contains tilde expansions.
  - This converts such a directory to an absolute path.
  - Note that it has to run on the system where the remote is.
  -}
-repoAbsPath :: RawFilePath -> IO RawFilePath
+repoAbsPath :: OsPath -> IO OsPath
 repoAbsPath d = do
-	d' <- expandTilde (fromRawFilePath d)
+	d' <- expandTilde (fromOsPath d)
 	h <- myHomeDir
-	return $ toRawFilePath $ h </> d'
+	return $ toOsPath h </> d'
 
-expandTilde :: FilePath -> IO FilePath
+expandTilde :: FilePath -> IO OsPath
 #ifdef mingw32_HOST_OS
-expandTilde = return
+expandTilde = return . toOsPath
 #else
 expandTilde p = expandt True p
 	-- If unable to expand a tilde, eg due to a user not existing,
 	-- use the path as given.
-	`catchNonAsync` (const (return p))
+	`catchNonAsync` (const (return (toOsPath p)))
   where
-	expandt _ [] = return ""
+	expandt _ [] = return $ literalOsPath ""
 	expandt _ ('/':cs) = do
 		v <- expandt True cs
-		return ('/':v)
+		return $ literalOsPath "/" <> v
 	expandt True ('~':'/':cs) = do
 		h <- myHomeDir
-		return $ h </> cs
-	expandt True "~" = myHomeDir
+		return $ toOsPath h </> toOsPath cs
+	expandt True "~" = toOsPath <$> myHomeDir
 	expandt True ('~':cs) = do
 		let (name, rest) = findname "" cs
 		u <- getUserEntryForName name
-		return $ homeDirectory u </> rest
+		return $ toOsPath (homeDirectory u) </> toOsPath rest
 	expandt _ (c:cs) = do
 		v <- expandt False cs
-		return (c:v)
+		return $ toOsPath [c] <> v
 	findname n [] = (n, "")
 	findname n (c:cs)
 		| c == '/' = (n, cs)
@@ -221,11 +220,11 @@ expandTilde p = expandt True p
 
 {- Checks if a git repository exists in a directory. Does not find
  - git repositories in parent directories. -}
-checkForRepo :: RawFilePath -> IO (Maybe RepoLocation)
+checkForRepo :: OsPath -> IO (Maybe RepoLocation)
 checkForRepo dir = 
 	check isRepo $
 		check (checkGitDirFile dir) $
-			check (checkdir (isBareRepo dir')) $
+			check (checkdir (isBareRepo dir)) $
 				return Nothing
   where
 	check test cont = maybe cont (return . Just) =<< test
@@ -234,23 +233,22 @@ checkForRepo dir =
 		, return Nothing
 		)
 	isRepo = checkdir $ 
-		doesFileExist (dir' </> ".git" </> "config")
+		doesFileExist (dir </> literalOsPath ".git" </> literalOsPath "config")
 			<||>
 		-- A git-worktree lacks .git/config, but has .git/gitdir.
 		-- (Normally the .git is a file, not a symlink, but it can
 		-- be converted to a symlink and git will still work;
 		-- this handles that case.)
-		doesFileExist (dir' </>  ".git" </> "gitdir")
-	dir' = fromRawFilePath dir
+		doesFileExist (dir </>  literalOsPath ".git" </> literalOsPath "gitdir")
 
-isBareRepo :: FilePath -> IO Bool
-isBareRepo dir = doesFileExist (dir </> "config")
-	<&&> doesDirectoryExist (dir </> "objects")
+isBareRepo :: OsPath -> IO Bool
+isBareRepo dir = doesFileExist (dir </> literalOsPath "config")
+	<&&> doesDirectoryExist (dir </> literalOsPath "objects")
 
 -- Check for a .git file.
-checkGitDirFile :: RawFilePath -> IO (Maybe RepoLocation)
+checkGitDirFile :: OsPath -> IO (Maybe RepoLocation)
 checkGitDirFile dir = adjustGitDirFile' $ Local 
-	{ gitdir = dir P.</> ".git"
+	{ gitdir = dir </> literalOsPath ".git"
 	, worktree = Just dir
 	}
 
@@ -264,15 +262,13 @@ adjustGitDirFile loc = fromMaybe loc <$> adjustGitDirFile' loc
 adjustGitDirFile' :: RepoLocation -> IO (Maybe RepoLocation)
 adjustGitDirFile' loc@(Local {}) = do
 	let gd = gitdir loc
-	c <- firstLine <$> catchDefaultIO "" (readFile (fromRawFilePath gd))
+	c <- firstLine <$> catchDefaultIO "" (readFile (fromOsPath gd))
 	if gitdirprefix `isPrefixOf` c
 		then do
-			top <- fromRawFilePath . P.takeDirectory <$> absPath gd
+			top <- takeDirectory <$> absPath gd
 			return $ Just $ loc
-				{ gitdir = absPathFrom 
-					(toRawFilePath top)
-					(toRawFilePath 
-						(drop (length gitdirprefix) c))
+				{ gitdir = absPathFrom top $ 
+					toOsPath $ drop (length gitdirprefix) c
 				}
 		else return Nothing
  where

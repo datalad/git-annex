@@ -104,7 +104,7 @@ setFileMode p m = do
 	P.setFileMode p' m
 
 {- Using renamePath rather than the rename provided in unix-compat
- - because of this bug https://github.com/jacobstanley/unix-compat/issues/56-}
+ - because of this bug https://github.com/jacobstanley/unix-compat/issues/56 -}
 rename :: RawFilePath -> RawFilePath -> IO ()
 rename a b = D.renamePath (fromRawFilePath a) (fromRawFilePath b)
 

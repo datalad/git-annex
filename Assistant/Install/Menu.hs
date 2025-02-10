@@ -5,31 +5,25 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE CPP #-}
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Assistant.Install.Menu where
 
+import Common
 import Utility.FreeDesktop
-import Utility.FileSystemEncoding
-import Utility.Path
 
-import System.IO
-import Utility.SystemDirectory
-#ifndef darwin_HOST_OS
-import System.FilePath
-#endif
-
-installMenu :: FilePath -> FilePath -> FilePath -> FilePath -> IO ()
+installMenu :: String -> OsPath -> OsPath -> OsPath -> IO ()
 #ifdef darwin_HOST_OS
 installMenu _command _menufile _iconsrcdir _icondir = return ()
 #else
 installMenu command menufile iconsrcdir icondir = do
 	writeDesktopMenuFile (fdoDesktopMenu command) menufile
-	installIcon (iconsrcdir </> "logo.svg") $
-		iconFilePath (iconBaseName ++ ".svg") "scalable" icondir
-	installIcon (iconsrcdir </> "logo_16x16.png") $
-		iconFilePath (iconBaseName ++ ".png") "16x16" icondir
+	installIcon (iconsrcdir </> literalOsPath "logo.svg") $
+		iconFilePath (toOsPath (iconBaseName ++ ".svg")) "scalable" icondir
+	installIcon (iconsrcdir </> literalOsPath "logo_16x16.png") $
+		iconFilePath (toOsPath (iconBaseName ++ ".png")) "16x16" icondir
 #endif
 
 {- The command can be either just "git-annex", or the full path to use
@@ -43,11 +37,11 @@ fdoDesktopMenu command = genDesktopEntry
 	(Just iconBaseName)
 	["Network", "FileTransfer"]
 
-installIcon :: FilePath -> FilePath -> IO ()
+installIcon :: OsPath -> OsPath -> IO ()
 installIcon src dest = do
-	createDirectoryIfMissing True (fromRawFilePath (parentDir (toRawFilePath dest)))
-	withBinaryFile src ReadMode $ \hin ->
-		withBinaryFile dest WriteMode $ \hout ->
+	createDirectoryIfMissing True (parentDir dest)
+	withBinaryFile (fromOsPath src) ReadMode $ \hin ->
+		withBinaryFile (fromOsPath dest) WriteMode $ \hout ->
 			hGetContents hin >>= hPutStr hout
 
 iconBaseName :: String

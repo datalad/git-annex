@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module P2P.Auth where
 
 import Annex.Common
@@ -35,8 +37,8 @@ storeP2PAuthToken t = do
 		let d = unlines $ map (T.unpack . fromAuthToken) (t:ts)
 		writeCreds d p2pAuthCredsFile
 
-p2pAuthCredsFile :: FilePath
-p2pAuthCredsFile = "p2pauth"
+p2pAuthCredsFile :: OsPath
+p2pAuthCredsFile = literalOsPath "p2pauth"
 
 -- | Loads the AuthToken to use when connecting with a given P2P address.
 --
@@ -59,8 +61,9 @@ storeP2PRemoteAuthToken addr t = writeCreds
 	(T.unpack $ fromAuthToken t)
 	(addressCredsFile addr)
 
-addressCredsFile :: P2PAddress -> FilePath
+addressCredsFile :: P2PAddress -> OsPath
 -- We can omit the port and just use the onion address for the creds file,
 -- because any given tor hidden service runs on a single port and has a
 -- unique onion address.
-addressCredsFile (TorAnnex (OnionAddress onionaddr) _port) = onionaddr
+addressCredsFile (TorAnnex (OnionAddress onionaddr) _port) =
+	toOsPath onionaddr

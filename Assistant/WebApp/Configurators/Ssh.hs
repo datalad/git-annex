@@ -76,7 +76,7 @@ mkSshData s = SshData
 	, sshDirectory = fromMaybe "" $ inputDirectory s
 	, sshRepoName = genSshRepoName
 		(T.unpack $ fromJust $ inputHostname s)
-		(maybe "" T.unpack $ inputDirectory s)
+		(toOsPath (maybe "" T.unpack $ inputDirectory s))
 	, sshPort = inputPort s
 	, needsPubKey = False
 	, sshCapabilities = [] -- untested
@@ -101,7 +101,7 @@ sshInputAForm hostnamefield d = normalize <$> gen
 		<*> aopt check_username (bfs "User name") (Just $ inputUsername d)
 		<*> areq (selectFieldList authmethods) (bfs "Authenticate with") (Just $ inputAuthMethod d)
 		<*> aopt passwordField (bfs "Password") Nothing
-		<*> aopt textField (bfs "Directory") (Just $ Just $ fromMaybe (T.pack gitAnnexAssistantDefaultDir) $ inputDirectory d)
+		<*> aopt textField (bfs "Directory") (Just $ Just $ fromMaybe (T.pack $ fromOsPath gitAnnexAssistantDefaultDir) $ inputDirectory d)
 		<*> areq intField (bfs "Port") (Just $ inputPort d)
 	
 	authmethods :: [(Text, AuthMethod)]
@@ -389,13 +389,13 @@ sshAuthTranscript sshinput opts sshhost cmd input = case inputAuthMethod sshinpu
 		v <- getCachedCred login
 		liftIO $ case v of
 			Nothing -> go [passwordprompts 0] Nothing
-			Just pass -> withTmpFile (toOsPath "ssh") $ \passfile h -> do
+			Just pass -> withTmpFile (literalOsPath "ssh") $ \passfile h -> do
 				hClose h
-				writeFileProtected (fromOsPath passfile) pass
+				writeFileProtected passfile pass
 				environ <- getEnvironment
 				let environ' = addEntries
-					[ ("SSH_ASKPASS", program)
-					, (sshAskPassEnv, fromRawFilePath $ fromOsPath passfile)
+					[ ("SSH_ASKPASS", fromOsPath program)
+					, (sshAskPassEnv, fromOsPath passfile)
 					, ("DISPLAY", ":0")
 					] environ
 				go [passwordprompts 1] (Just environ')
@@ -531,7 +531,7 @@ prepSsh' needsinit origsshdata sshdata keypair a
 			]
 		, if needsinit then Just (wrapCommand "git annex init") else Nothing
 		, if needsPubKey origsshdata
-			then addAuthorizedKeysCommand (hasCapability origsshdata GitAnnexShellCapable) remotedir . sshPubKey <$> keypair
+			then addAuthorizedKeysCommand (hasCapability origsshdata GitAnnexShellCapable) (toOsPath remotedir) . sshPubKey <$> keypair
 			else Nothing
 		]
 	rsynconly = onlyCapability origsshdata RsyncCapable
@@ -602,7 +602,7 @@ postAddRsyncNetR = do
 |]
 	go sshinput = do
 		let reponame = genSshRepoName "rsync.net" 
-			(maybe "" T.unpack $ inputDirectory sshinput)
+			(toOsPath (maybe "" T.unpack $ inputDirectory sshinput))
 		
 		prepRsyncNet sshinput reponame $ \sshdata -> inpage $ 
 			checkExistingGCrypt sshdata $ do

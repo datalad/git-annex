@@ -154,12 +154,12 @@ batchCommandStart a = a >>= \case
 -- to handle them.
 --
 -- File matching options are checked, and non-matching files skipped.
-batchFiles :: BatchFormat -> ((SeekInput, RawFilePath) -> CommandStart) -> Annex ()
+batchFiles :: BatchFormat -> ((SeekInput, OsPath) -> CommandStart) -> Annex ()
 batchFiles fmt a = batchFilesKeys fmt $ \(si, v) -> case v of
 	Right f -> a (si, f)
 	Left _k -> return Nothing
 
-batchFilesKeys :: BatchFormat -> ((SeekInput, Either Key RawFilePath) -> CommandStart) -> Annex ()
+batchFilesKeys :: BatchFormat -> ((SeekInput, Either Key OsPath) -> CommandStart) -> Annex ()
 batchFilesKeys fmt a = do
 	matcher <- getMatcher
 	go $ \si v -> case v of
@@ -177,7 +177,7 @@ batchFilesKeys fmt a = do
 		-- CmdLine.Seek uses git ls-files.
 		BatchFormat _ (BatchKeys False) -> 
 			Right . Right
-				<$$> liftIO . relPathCwdToFile . toRawFilePath
+				<$$> liftIO . relPathCwdToFile . toOsPath
 		BatchFormat _ (BatchKeys True) -> \i ->
 			pure $ case deserializeKey i of
 				Just k -> Right (Left k)

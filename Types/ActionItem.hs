@@ -18,14 +18,14 @@ import Types.UUID
 import Types.FileMatcher
 import Git.FilePath
 import Git.Quote (StringContainingQuotedPath(..))
-import Utility.FileSystemEncoding
+import Utility.OsPath
 
 data ActionItem 
 	= ActionItemAssociatedFile AssociatedFile Key
 	| ActionItemKey Key
 	| ActionItemBranchFilePath BranchFilePath Key
 	| ActionItemFailedTransfer Transfer TransferInfo
-	| ActionItemTreeFile RawFilePath
+	| ActionItemTreeFile OsPath
 	| ActionItemUUID UUID StringContainingQuotedPath
 	-- ^ UUID with a description or name of the repository
 	| ActionItemOther (Maybe StringContainingQuotedPath)
@@ -46,10 +46,10 @@ instance MkActionItem (AssociatedFile, Key) where
 instance MkActionItem (Key, AssociatedFile) where
 	mkActionItem = uncurry $ flip ActionItemAssociatedFile
 
-instance MkActionItem (Key, RawFilePath) where
+instance MkActionItem (Key, OsPath) where
 	mkActionItem (key, file) = ActionItemAssociatedFile (AssociatedFile (Just file)) key
 
-instance MkActionItem (RawFilePath, Key) where
+instance MkActionItem (OsPath, Key) where
 	mkActionItem (file, key) = mkActionItem (key, file)
 
 instance MkActionItem Key where
@@ -97,7 +97,7 @@ actionItemKey (ActionItemUUID _ _) = Nothing
 actionItemKey (ActionItemOther _) = Nothing
 actionItemKey (OnlyActionOn _ ai) = actionItemKey ai
 
-actionItemFile :: ActionItem -> Maybe RawFilePath
+actionItemFile :: ActionItem -> Maybe OsPath
 actionItemFile (ActionItemAssociatedFile (AssociatedFile af) _) = af
 actionItemFile (ActionItemTreeFile f) = Just f
 actionItemFile (ActionItemUUID _ _) = Nothing

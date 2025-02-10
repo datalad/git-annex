@@ -73,4 +73,4 @@ writeVersion ver = catchMaybeIO (F.readFile' f) >>= \case
 		, ""
 		]
 	footer = []
-	f = toOsPath "Build/Version"
+	f = literalOsPath "Build/Version"

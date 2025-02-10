@@ -27,7 +27,7 @@ start :: UnusedMaps -> Int -> CommandStart
 start = startUnused go (other "bad") (other "tmp")
   where
 	go n key = do
-		let file = "unused." <> keyFile key
+		let file = literalOsPath "unused." <> keyFile key
 		starting "addunused"
 			(ActionItemTreeFile file)
 			(SeekInput [show n]) $

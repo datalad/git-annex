@@ -17,7 +17,6 @@ import qualified Git
 import Command.Unused (withUnusedMaps, UnusedMaps(..), startUnused)
 import Annex.NumCopies
 import Annex.Content
-import qualified Utility.RawFilePath as R
 
 cmd :: Command
 cmd = withAnnexOptions [jobsOption, jsonOptions] $
@@ -77,8 +76,8 @@ perform from numcopies mincopies key = case from of
 	pcc = Command.Drop.PreferredContentChecked False
 	ud = Command.Drop.DroppingUnused True
 
-performOther :: (Key -> Git.Repo -> RawFilePath) -> Key -> CommandPerform
+performOther :: (Key -> Git.Repo -> OsPath) -> Key -> CommandPerform
 performOther filespec key = do
 	f <- fromRepo $ filespec key
-	pruneTmpWorkDirBefore f (liftIO . removeWhenExistsWith R.removeLink)
+	pruneTmpWorkDirBefore f (liftIO . removeWhenExistsWith removeFile)
 	next $ return True

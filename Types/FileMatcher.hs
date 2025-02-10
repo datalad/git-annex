@@ -14,7 +14,7 @@ import Types.Mime
 import Types.RepoSize (LiveUpdate)
 import Utility.Matcher (Matcher, Token, MatchDesc)
 import Utility.FileSize
-import Utility.FileSystemEncoding
+import Utility.OsPath
 
 import Control.Monad.IO.Class
 import qualified Data.Map as M
@@ -27,10 +27,10 @@ data MatchInfo
 	| MatchingUserInfo UserProvidedInfo
 
 data FileInfo = FileInfo
-	{ contentFile :: RawFilePath
+	{ contentFile :: OsPath
 	-- ^ path to a file containing the content, for operations
 	-- that examine it
-	, matchFile :: RawFilePath
+	, matchFile :: OsPath
 	-- ^ filepath to match on; may be relative to top of repo or cwd,
 	-- depending on how globs in preferred content expressions
 	-- are intended to be matched
@@ -39,7 +39,7 @@ data FileInfo = FileInfo
 	}
 
 data ProvidedInfo = ProvidedInfo
-	{ providedFilePath :: Maybe RawFilePath
+	{ providedFilePath :: Maybe OsPath
 	-- ^ filepath to match on, should not be accessed from disk.
 	, providedKey :: Maybe Key
 	, providedFileSize :: Maybe FileSize
@@ -48,7 +48,7 @@ data ProvidedInfo = ProvidedInfo
 	, providedLinkType :: Maybe LinkType
 	}
 
-keyMatchInfoWithoutContent :: Key -> RawFilePath -> MatchInfo
+keyMatchInfoWithoutContent :: Key -> OsPath -> MatchInfo
 keyMatchInfoWithoutContent key file = MatchingInfo $ ProvidedInfo
 	{ providedFilePath = Just file
 	, providedKey = Just key
@@ -61,7 +61,7 @@ keyMatchInfoWithoutContent key file = MatchingInfo $ ProvidedInfo
 -- This is used when testing a matcher, with values to match against
 -- provided by the user.
 data UserProvidedInfo = UserProvidedInfo
-	{ userProvidedFilePath :: UserInfo FilePath
+	{ userProvidedFilePath :: UserInfo OsPath
 	, userProvidedKey :: UserInfo Key
 	, userProvidedFileSize :: UserInfo FileSize
 	, userProvidedMimeType :: UserInfo MimeType

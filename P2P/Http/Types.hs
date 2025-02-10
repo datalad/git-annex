@@ -52,7 +52,7 @@ instance APIVersion V0 where protocolVersion _ = P2P.ProtocolVersion 0
 newtype B64Key = B64Key Key
 	deriving (Show)
 
-newtype B64FilePath = B64FilePath RawFilePath
+newtype B64FilePath = B64FilePath OsPath
 	deriving (Show)
 
 associatedFileToB64FilePath :: AssociatedFile -> Maybe B64FilePath
@@ -233,11 +233,11 @@ instance FromHttpApiData (B64UUID t) where
 		Left err -> Left err
 
 instance ToHttpApiData B64FilePath where
-	toUrlPiece (B64FilePath f) = encodeB64Text f
+	toUrlPiece (B64FilePath f) = encodeB64Text (fromOsPath f)
 
 instance FromHttpApiData B64FilePath where
 	parseUrlPiece t = case decodeB64Text t of
-		Right b -> Right (B64FilePath b)
+		Right b -> Right (B64FilePath (toOsPath b))
 		Left err -> Left err
 
 instance ToHttpApiData Offset where

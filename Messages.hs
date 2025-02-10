@@ -190,7 +190,7 @@ endResult False = "failed"
 toplevelMsg :: (Semigroup t, IsString t) => t -> t
 toplevelMsg s = fromString "git-annex: " <> s
 
-toplevelFileProblem :: Bool -> MessageId -> StringContainingQuotedPath -> String -> RawFilePath -> Maybe Key -> SeekInput -> Annex ()
+toplevelFileProblem :: Bool -> MessageId -> StringContainingQuotedPath -> String -> OsPath -> Maybe Key -> SeekInput -> Annex ()
 toplevelFileProblem makeway messageid msg action file mkey si = do
 	maybeShowJSON' $ JSON.start action (Just file) mkey si
 	maybeShowJSON' $ JSON.messageid messageid

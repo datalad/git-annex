@@ -79,10 +79,10 @@ seekDistributedMigrations incremental =
 		-- by multiple jobs.
 		void $ includeCommandAction $ update oldkey newkey
 
-start :: MigrateOptions -> Maybe KeySha -> SeekInput -> RawFilePath -> Key -> CommandStart
+start :: MigrateOptions -> Maybe KeySha -> SeekInput -> OsPath -> Key -> CommandStart
 start o ksha si file key = do
 	forced <- Annex.getRead Annex.force
-	v <- Backend.getBackend (fromRawFilePath file) key
+	v <- Backend.getBackend file key
 	case v of
 		Nothing -> stop
 		Just oldbackend -> do
@@ -118,7 +118,7 @@ start o ksha si file key = do
  - data cannot get corrupted after the fsck but before the new key is
  - generated.
  -}
-perform :: Bool -> MigrateOptions -> RawFilePath -> Key -> MigrationRecord -> Backend -> Backend -> CommandPerform
+perform :: Bool -> MigrateOptions -> OsPath -> Key -> MigrationRecord -> Backend -> Backend -> CommandPerform
 perform onlytweaksize o file oldkey oldkeyrec oldbackend newbackend = go =<< genkey (fastMigrate oldbackend)
   where
 	go Nothing = stop

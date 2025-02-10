@@ -22,11 +22,11 @@ import qualified Database.Keys
  - When in an adjusted branch that may have hidden the file, looks for a
  - pointer to a key in the original branch.
  -}
-lookupKey :: RawFilePath -> Annex (Maybe Key)
+lookupKey :: OsPath -> Annex (Maybe Key)
 lookupKey = lookupKey' catkeyfile
   where
 	catkeyfile file =
-		ifM (liftIO $ doesFileExist $ fromRawFilePath file)
+		ifM (liftIO $ doesFileExist file)
 			( catKeyFile file
 			, catKeyFileHidden file =<< getCurrentBranch
 			)
@@ -35,22 +35,22 @@ lookupKey = lookupKey' catkeyfile
  - changes in the work tree. This means it's slower, but it also has
  - consistently the same behavior for locked files as for unlocked files.
  -}
-lookupKeyStaged :: RawFilePath -> Annex (Maybe Key)
+lookupKeyStaged :: OsPath -> Annex (Maybe Key)
 lookupKeyStaged file = catKeyFile file >>= \case
 	Just k -> return (Just k)
 	Nothing -> catKeyFileHidden file =<< getCurrentBranch
 
 {- Like lookupKey, but does not find keys for hidden files. -}
-lookupKeyNotHidden :: RawFilePath -> Annex (Maybe Key)
+lookupKeyNotHidden :: OsPath -> Annex (Maybe Key)
 lookupKeyNotHidden = lookupKey' catkeyfile
   where
 	catkeyfile file =
-		ifM (liftIO $ doesFileExist $ fromRawFilePath file)
+		ifM (liftIO $ doesFileExist file)
 			( catKeyFile file
 			, return Nothing
 			)
 
-lookupKey' :: (RawFilePath -> Annex (Maybe Key)) -> RawFilePath -> Annex (Maybe Key)
+lookupKey' :: (OsPath -> Annex (Maybe Key)) -> OsPath -> Annex (Maybe Key)
 lookupKey' catkeyfile file = isAnnexLink file >>= \case
 	Just key -> return (Just key)
 	Nothing -> catkeyfile file

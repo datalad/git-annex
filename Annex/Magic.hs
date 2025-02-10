@@ -5,6 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE CPP #-}
 
 module Annex.Magic (
@@ -16,6 +17,7 @@ module Annex.Magic (
 	getMagicMimeEncoding,
 ) where
 
+import Common
 import Types.Mime
 import Control.Monad.IO.Class
 #ifdef WITH_MAGICMIME
@@ -23,7 +25,6 @@ import Magic
 import Utility.Env
 import Control.Concurrent
 import System.IO.Unsafe (unsafePerformIO)
-import Common
 #else
 type Magic = ()
 #endif
@@ -34,16 +35,18 @@ initMagicMime = catchMaybeIO $ do
 	m <- magicOpen [MagicMime]
 	liftIO $ getEnv "GIT_ANNEX_DIR" >>= \case
 		Nothing -> magicLoadDefault m
-		Just d -> magicLoad m
-			(d </> "magic" </> "magic.mgc")
+		Just d -> magicLoad m $ fromOsPath $
+			toOsPath d
+				</> literalOsPath "magic"
+				</> literalOsPath "magic.mgc"
 	return m
 #else
 initMagicMime = return Nothing
 #endif
 
-getMagicMime :: Magic -> FilePath -> IO (Maybe (MimeType, MimeEncoding))
+getMagicMime :: Magic -> OsPath -> IO (Maybe (MimeType, MimeEncoding))
 #ifdef WITH_MAGICMIME
-getMagicMime m f = Just . parse <$> magicConcurrentSafe (magicFile m f)
+getMagicMime m f = Just . parse <$> magicConcurrentSafe (magicFile m (fromOsPath f))
   where
 	parse s = 
 		let (mimetype, rest) = separate (== ';') s
@@ -55,10 +58,10 @@ getMagicMime m f = Just . parse <$> magicConcurrentSafe (magicFile m f)
 getMagicMime _ _ = return Nothing
 #endif
 
-getMagicMimeType :: MonadIO m => Magic -> FilePath -> m (Maybe MimeType)
+getMagicMimeType :: MonadIO m => Magic -> OsPath -> m (Maybe MimeType)
 getMagicMimeType m f = liftIO $ fmap fst <$> getMagicMime m f
 
-getMagicMimeEncoding :: MonadIO m => Magic -> FilePath -> m(Maybe MimeEncoding)
+getMagicMimeEncoding :: MonadIO m => Magic -> OsPath -> m(Maybe MimeEncoding)
 getMagicMimeEncoding m f = liftIO $ fmap snd <$> getMagicMime m f
 
 #ifdef WITH_MAGICMIME

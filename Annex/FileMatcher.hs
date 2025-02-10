@@ -5,6 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE CPP #-}
 
 module Annex.FileMatcher (
@@ -56,14 +57,14 @@ import Data.Either
 import qualified Data.Set as S
 import Control.Monad.Writer
 
-type GetFileMatcher = RawFilePath -> Annex (FileMatcher Annex)
+type GetFileMatcher = OsPath -> Annex (FileMatcher Annex)
 
-checkFileMatcher :: LiveUpdate -> GetFileMatcher -> RawFilePath -> Annex Bool
+checkFileMatcher :: LiveUpdate -> GetFileMatcher -> OsPath -> Annex Bool
 checkFileMatcher lu getmatcher file =
 	checkFileMatcher' lu getmatcher file (return True)
 
 -- | Allows running an action when no matcher is configured for the file.
-checkFileMatcher' :: LiveUpdate -> GetFileMatcher -> RawFilePath -> Annex Bool -> Annex Bool
+checkFileMatcher' :: LiveUpdate -> GetFileMatcher -> OsPath -> Annex Bool -> Annex Bool
 checkFileMatcher' lu getmatcher file notconfigured = do
 	matcher <- getmatcher file
 	checkMatcher matcher Nothing afile lu S.empty notconfigured d
@@ -120,7 +121,7 @@ checkMatcher' (matcher, (MatcherDesc matcherdesc)) mi lu notpresent =
 					fromMaybe mempty descmsg <> UnquotedString s
 				return False
 
-fileMatchInfo :: RawFilePath -> Maybe Key -> Annex MatchInfo
+fileMatchInfo :: OsPath -> Maybe Key -> Annex MatchInfo
 fileMatchInfo file mkey = do
 	matchfile <- getTopFilePath <$> inRepo (toTopFilePath file)
 	return $ MatchingFile FileInfo
@@ -160,7 +161,7 @@ parseToken l t = case syntaxToken t of
 tokenizeMatcher :: String -> [String]
 tokenizeMatcher = filter (not . null) . concatMap splitparens . words
   where
-	splitparens = segmentDelim (`elem` "()")
+	splitparens = segmentDelim (`elem` ("()" :: String))
 
 commonTokens :: LimitBy -> [ParseToken (MatchFiles Annex)]
 commonTokens lb =
@@ -201,7 +202,7 @@ preferredContentTokens pcd =
 	, ValueToken "fullysizebalanced" (usev $ limitFullySizeBalanced (repoUUID pcd) (getGroupMap pcd))
 	] ++ commonTokens LimitAnnexFiles
   where
-	preferreddir = maybe "public" fromProposedAccepted $
+	preferreddir = toOsPath $ maybe "public" fromProposedAccepted $
 		M.lookup preferreddirField =<< (`M.lookup` configMap pcd) =<< repoUUID pcd
 
 preferredContentParser :: [ParseToken (MatchFiles Annex)] -> String -> [ParseResult (MatchFiles Annex)]

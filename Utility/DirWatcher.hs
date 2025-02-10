@@ -22,6 +22,7 @@ module Utility.DirWatcher (
 ) where
 
 import Utility.DirWatcher.Types
+import Utility.OsPath
 
 #if WITH_INOTIFY
 import qualified Utility.DirWatcher.INotify as INotify
@@ -40,7 +41,7 @@ import qualified Utility.DirWatcher.Win32Notify as Win32Notify
 import qualified System.Win32.Notify as Win32Notify
 #endif
 
-type Pruner = FilePath -> Bool
+type Pruner = OsPath -> Bool
 
 canWatch :: Bool
 #if (WITH_INOTIFY || WITH_KQUEUE || WITH_FSEVENTS || WITH_WIN32NOTIFY)
@@ -112,7 +113,7 @@ modifyTracked = error "modifyTracked not defined"
  - to shutdown later. -}
 #if WITH_INOTIFY
 type DirWatcherHandle = INotify.INotify
-watchDir :: FilePath -> Pruner -> Bool -> WatchHooks -> (IO () -> IO ()) -> IO DirWatcherHandle
+watchDir :: OsPath -> Pruner -> Bool -> WatchHooks -> (IO () -> IO ()) -> IO DirWatcherHandle
 watchDir dir prune scanevents hooks runstartup = do
 	i <- INotify.initINotify
 	runstartup $ INotify.watchDir i dir prune scanevents hooks
@@ -120,14 +121,14 @@ watchDir dir prune scanevents hooks runstartup = do
 #else
 #if WITH_KQUEUE
 type DirWatcherHandle = ThreadId
-watchDir :: FilePath -> Pruner -> Bool -> WatchHooks -> (IO Kqueue.Kqueue -> IO Kqueue.Kqueue) -> IO DirWatcherHandle
+watchDir :: OsPath -> Pruner -> Bool -> WatchHooks -> (IO Kqueue.Kqueue -> IO Kqueue.Kqueue) -> IO DirWatcherHandle
 watchDir dir prune _scanevents hooks runstartup = do
 	kq <- runstartup $ Kqueue.initKqueue dir prune
 	forkIO $ Kqueue.runHooks kq hooks
 #else
 #if WITH_FSEVENTS
 type DirWatcherHandle = FSEvents.EventStream
-watchDir :: FilePath -> Pruner -> Bool -> WatchHooks -> (IO FSEvents.EventStream -> IO FSEvents.EventStream) -> IO DirWatcherHandle
+watchDir :: OsPath -> Pruner -> Bool -> WatchHooks -> (IO FSEvents.EventStream -> IO FSEvents.EventStream) -> IO DirWatcherHandle
 watchDir dir prune scanevents hooks runstartup =
 	runstartup $ FSEvents.watchDir dir prune scanevents hooks
 #else

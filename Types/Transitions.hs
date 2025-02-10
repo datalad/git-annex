@@ -7,7 +7,7 @@
 
 module Types.Transitions where
 
-import Utility.RawFilePath
+import Utility.OsPath
 
 import qualified Data.ByteString.Lazy as L
 import Data.ByteString.Builder
@@ -16,4 +16,4 @@ data FileTransition
 	= ChangeFile Builder
 	| PreserveFile
 
-type TransitionCalculator = RawFilePath -> L.ByteString -> FileTransition
+type TransitionCalculator = OsPath -> L.ByteString -> FileTransition

@@ -66,7 +66,6 @@ import Data.Char
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.Map.Strict as M
-import qualified System.FilePath.ByteString as P
 import qualified Data.Set as S
 
 run :: [String] -> IO ()
@@ -146,13 +145,14 @@ list st rmt forpush = do
 		else downloadManifestOrFail rmt
 	l <- forM (inManifest manifest) $ \k -> do
 		b <- downloadGitBundle rmt k
-		heads <- inRepo $ Git.Bundle.listHeads b	
+		let b' = fromOsPath b
+		heads <- inRepo $ Git.Bundle.listHeads b'	
 		-- Get all the objects from the bundle. This is done here
 		-- so that the tracking refs can be updated with what is
 		-- listed, and so what when a full repush is done, all
 		-- objects are available to be pushed.
 		when forpush $
-			inRepo $ Git.Bundle.unbundle b
+			inRepo $ Git.Bundle.unbundle b'
 		-- The bundle may contain tracking refs, or regular refs,
 		-- make sure we're operating on regular refs.
 		return $ map (\(s, r) -> (fromTrackingRef rmt r, s)) heads
@@ -202,7 +202,8 @@ fetch' :: State -> Remote -> Annex ()
 fetch' st rmt = do
 	manifest <- maybe (downloadManifestOrFail rmt) pure (manifestCache st)
 	forM_ (inManifest manifest) $ \k ->
-		downloadGitBundle rmt k >>= inRepo . Git.Bundle.unbundle
+		downloadGitBundle rmt k 
+			>>= inRepo . Git.Bundle.unbundle . fromOsPath
 	-- Newline indicates end of fetch.
 	liftIO $ do
 		putStrLn ""
@@ -496,10 +497,9 @@ resolveSpecialRemoteWebUrl :: String -> Annex (Maybe String)
 resolveSpecialRemoteWebUrl url
 	| "http://" `isPrefixOf` lcurl || "https://" `isPrefixOf` lcurl =
 		Url.withUrlOptionsPromptingCreds $ \uo ->
-			withTmpFile (toOsPath "git-remote-annex") $ \tmp h -> do
+			withTmpFile (literalOsPath "git-remote-annex") $ \tmp h -> do
 				liftIO $ hClose h
-				let tmp' = fromRawFilePath $ fromOsPath tmp
-				Url.download' nullMeterUpdate Nothing url tmp' uo >>= \case
+				Url.download' nullMeterUpdate Nothing url tmp uo >>= \case
 					Left err -> giveup $ url ++ " " ++ err
 					Right () -> liftIO $
 						fmap decodeBS 
@@ -728,9 +728,9 @@ downloadManifest rmt = get mkmain >>= maybe (get mkbak) (pure . Just)
 	-- it needs to re-download it fresh every time, and the object
 	-- file should not be stored locally.
 	gettotmp dl = withOtherTmp $ \othertmp ->
-		withTmpFileIn (toOsPath othertmp) (toOsPath "GITMANIFEST") $ \tmp tmph -> do
+		withTmpFileIn othertmp (literalOsPath "GITMANIFEST") $ \tmp tmph -> do
 			liftIO $ hClose tmph
-			_ <- dl (fromRawFilePath (fromOsPath tmp))
+			_ <- dl tmp
 			b <- liftIO (F.readFile' tmp)
 			case parseManifest b of
 				Right m -> Just <$> verifyManifest rmt m
@@ -778,7 +778,7 @@ uploadManifest rmt manifest = do
 		dropKey' rmt mk
 		put mk
 
-	put mk = withTmpFile (toOsPath "GITMANIFEST") $ \tmp tmph -> do
+	put mk = withTmpFile (literalOsPath "GITMANIFEST") $ \tmp tmph -> do
 		liftIO $ B8.hPut tmph (formatManifest manifest)
 		liftIO $ hClose tmph
 		-- Uploading needs the key to be in the annex objects
@@ -789,13 +789,13 @@ uploadManifest rmt manifest = do
 		-- keys, which it is not.
 		objfile <- calcRepo (gitAnnexLocation mk)
 		modifyContentDir objfile $
-			linkOrCopy mk (fromOsPath tmp) objfile Nothing >>= \case
+			linkOrCopy mk tmp objfile Nothing >>= \case
 				-- Important to set the right perms even
 				-- though the object is only present
 				-- briefly, since sending objects may rely
 				-- on or even copy file perms.
 				Just _ -> do
-					liftIO $ R.setFileMode objfile
+					liftIO $ R.setFileMode (fromOsPath objfile)
 						=<< defaultFileMode
 					freezeContent objfile
 				Nothing -> uploadfailed
@@ -843,9 +843,11 @@ parseManifest b =
  - interrupted before updating the manifest on the remote, or when a race
  - causes the uploaded manigest to be overwritten.
  -}
-lastPushedManifestFile :: UUID -> Git.Repo -> RawFilePath
-lastPushedManifestFile u r = gitAnnexDir r P.</> "git-remote-annex" 
-	P.</> fromUUID u P.</> "manifest"
+lastPushedManifestFile :: UUID -> Git.Repo -> OsPath
+lastPushedManifestFile u r = gitAnnexDir r 
+	</> literalOsPath "git-remote-annex" 
+	</> fromUUID u
+	</> literalOsPath "manifest"
 
 {- Call before uploading anything. The returned manifest has added
  - to it any bundle keys that were in the lastPushedManifestFile
@@ -861,7 +863,7 @@ startPush' rmt manifest = do
 	f <- fromRepo (lastPushedManifestFile (Remote.uuid rmt))
 	oldmanifest <- liftIO $ 
 		fromRight mempty . parseManifest
-			<$> F.readFile' (toOsPath f)
+			<$> F.readFile' f
 				`catchNonAsync` (const (pure mempty))
 	let oldmanifest' = mkManifest [] $
 		S.fromList (inManifest oldmanifest)
@@ -911,7 +913,7 @@ verifyManifest rmt manifest =
 --    and so more things pulled from it, etc.
 -- 3. Git bundle objects are not usually transferred between repositories
 --    except special remotes (although the user can if they want to).
-downloadGitBundle :: Remote -> Key -> Annex FilePath
+downloadGitBundle :: Remote -> Key -> Annex OsPath
 downloadGitBundle rmt k = getKeyExportLocations rmt k >>= \case
 	Nothing -> dlwith $ 
 		download rmt k (AssociatedFile Nothing) stdRetry noNotification
@@ -919,7 +921,7 @@ downloadGitBundle rmt k = getKeyExportLocations rmt k >>= \case
 		anyM getexport locs
   where
 	dlwith a = ifM a
-		( decodeBS <$> calcRepo (gitAnnexLocation k)
+		( calcRepo (gitAnnexLocation k)
 		, giveup $ "Failed to download " ++ serializeKey k
 		)
 
@@ -927,7 +929,7 @@ downloadGitBundle rmt k = getKeyExportLocations rmt k >>= \case
 	getexport' loc =
 		getViaTmp rsp vc k (AssociatedFile Nothing) Nothing $ \tmp -> do
 			v <- Remote.retrieveExport (Remote.exportActions rmt)
-				k loc (decodeBS tmp) nullMeterUpdate
+				k loc tmp nullMeterUpdate
 			return (True, v)
 	rsp = Remote.retrievalSecurityPolicy rmt
 	vc = Remote.RemoteVerify rmt
@@ -952,7 +954,7 @@ checkPresentGitBundle rmt k =
 uploadGitObject :: Remote -> Key -> Annex ()
 uploadGitObject rmt k = getKeyExportLocations rmt k >>= \case
 	Just (loc:_) -> do
-		objfile <- fromRawFilePath <$> calcRepo (gitAnnexLocation k)
+		objfile <- calcRepo (gitAnnexLocation k)
 		Remote.storeExport (Remote.exportActions rmt) objfile k loc nullMeterUpdate
 	_ -> 
 		unlessM (upload rmt k (AssociatedFile Nothing) retry noNotification) $
@@ -977,15 +979,14 @@ generateGitBundle
 	-> Manifest
 	-> Annex (Key, Annex ())
 generateGitBundle rmt bs manifest =
-	withTmpFile (toOsPath "GITBUNDLE") $ \tmp tmph -> do
-		let tmp' = fromOsPath tmp
+	withTmpFile (literalOsPath "GITBUNDLE") $ \tmp tmph -> do
 		liftIO $ hClose tmph
-		inRepo $ Git.Bundle.create (fromRawFilePath tmp') bs
+		inRepo $ Git.Bundle.create (fromOsPath tmp) bs
 		bundlekey <- genGitBundleKey (Remote.uuid rmt)
-			tmp' nullMeterUpdate
+			tmp nullMeterUpdate
 		if (bundlekey `notElem` inManifest manifest)
 			then do
-				unlessM (moveAnnex bundlekey (AssociatedFile Nothing) tmp') $
+				unlessM (moveAnnex bundlekey (AssociatedFile Nothing) tmp) $
 					giveup "Unable to push"
 				return (bundlekey, uploadaction bundlekey)
 			else return (bundlekey, noop)
@@ -1025,7 +1026,7 @@ getKeyExportLocations rmt k = do
 keyExportLocations :: Remote -> Key -> GitConfig -> UUID -> Maybe [ExportLocation]
 keyExportLocations rmt k cfg uuid
 	| exportTree (Remote.config rmt) || importTree (Remote.config rmt) = 
-		Just $ map (\p -> mkExportLocation (".git" P.</> p)) $
+		Just $ map (\p -> mkExportLocation (literalOsPath ".git" </> p)) $
 			concatMap (`annexLocationsBare` k) cfgs
 	| otherwise = Nothing
   where
@@ -1094,7 +1095,7 @@ getRepo = getEnv "GIT_WORK_TREE" >>= \case
 	Nothing -> fixup <$> Git.CurrentRepo.get
   where
 	fixup r@(Repo { location = loc@(Local { worktree = Just _ }) }) =
-		r { location = loc { worktree = Just (P.takeDirectory (gitdir loc)) } }
+		r { location = loc { worktree = Just (takeDirectory (gitdir loc)) } }
 	fixup r = r
 
 -- Records what the git-annex branch was at the beginning of this command.
@@ -1127,11 +1128,11 @@ startAnnexBranch = ifM (null <$> Annex.Branch.siblingBranches)
 -- journal writes to a temporary directory, so that all writes
 -- to the git-annex branch by the action will be discarded.
 specialRemoteFromUrl :: StartAnnexBranch -> Annex a -> Annex a
-specialRemoteFromUrl sab a = withTmpDir (toOsPath "journal") $ \tmpdir -> do
+specialRemoteFromUrl sab a = withTmpDir (literalOsPath "journal") $ \tmpdir -> do
 	Annex.overrideGitConfig $ \c -> 
 		c { annexAlwaysCommit = False }
 	Annex.BranchState.changeState $ \st -> 
-		st { alternateJournal = Just (toRawFilePath tmpdir) }
+		st { alternateJournal = Just tmpdir }
 	a `finally` cleanupInitialization sab tmpdir
 
 -- If the git-annex branch did not exist when this command started,
@@ -1165,16 +1166,15 @@ specialRemoteFromUrl sab a = withTmpDir (toOsPath "journal") $ \tmpdir -> do
 -- involve checking out an adjusted branch. But git clone wants to do its
 -- own checkout. So no initialization is done then, and the git bundle
 -- objects are deleted.
-cleanupInitialization :: StartAnnexBranch -> FilePath -> Annex ()
+cleanupInitialization :: StartAnnexBranch -> OsPath -> Annex ()
 cleanupInitialization sab alternatejournaldir = void $ tryNonAsync $ do
-	liftIO $ mapM_ R.removeLink
-		=<< dirContents (toRawFilePath alternatejournaldir)
+	liftIO $ mapM_ removeFile =<< dirContents alternatejournaldir
 	case sab of
 		AnnexBranchExistedAlready _ -> noop
 		AnnexBranchCreatedEmpty r ->
 			whenM ((r ==) <$> Annex.Branch.getBranch) $ do
 				indexfile <- fromRepo gitAnnexIndex
-				liftIO $ removeWhenExistsWith R.removeLink indexfile
+				liftIO $ removeWhenExistsWith removeFile indexfile
 				-- When cloning failed and this is being
 				-- run as an exception is thrown, HEAD will
 				-- not be set to a valid value, which will
@@ -1202,7 +1202,7 @@ cleanupInitialization sab alternatejournaldir = void $ tryNonAsync $ do
 		forM_ ks $ \k -> case fromKey keyVariety k of
                 	GitBundleKey -> lockContentForRemoval k noop removeAnnex
 			_ -> noop
-		void $ liftIO $ tryIO $ removeDirectory (decodeBS annexobjectdir)
+		void $ liftIO $ tryIO $ removeDirectory annexobjectdir
 
 	notcrippledfilesystem = not <$> probeCrippledFileSystem
 

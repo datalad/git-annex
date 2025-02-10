@@ -19,7 +19,7 @@ import Types.Direction
 import Utility.PID
 import Utility.QuickCheck
 import Utility.Url
-import Utility.FileSystemEncoding
+import Utility.OsPath
 
 import Data.Time.Clock.POSIX
 import Control.Concurrent
@@ -99,7 +99,7 @@ class Transferrable t where
 	descTransfrerrable :: t -> Maybe String
 
 instance Transferrable AssociatedFile where
-	descTransfrerrable (AssociatedFile af) = fromRawFilePath <$> af
+	descTransfrerrable (AssociatedFile af) = fromOsPath <$> af
 
 instance Transferrable URLString where
 	descTransfrerrable = Just

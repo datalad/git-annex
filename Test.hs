@@ -5,6 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE CPP #-}
 
 module Test where
@@ -37,9 +38,9 @@ import qualified Git.Types
 import qualified Git.Ref
 import qualified Git.LsTree
 import qualified Git.FilePath
-import qualified Git.Bundle
 import qualified Annex.Locations
 #ifndef mingw32_HOST_OS
+import qualified Git.Bundle
 import qualified Types.GitConfig
 #endif
 import qualified Types.TrustLevel
@@ -87,6 +88,7 @@ import qualified Utility.Aeson
 import qualified Utility.CopyFile
 import qualified Utility.MoveFile
 import qualified Utility.StatelessOpenPGP
+import qualified Utility.OsString as OS
 import qualified Types.Remote
 #ifndef mingw32_HOST_OS
 import qualified Remote.Helper.Encryptable
@@ -216,7 +218,7 @@ testGitRemote = testRemote False "git" $ \remotename -> do
 
 testDirectoryRemote :: TestTree
 testDirectoryRemote = testRemote True "directory" $ \remotename -> do
-	createDirectory "remotedir"
+	createDirectory (literalOsPath "remotedir")
 	git_annex "initremote"
 		[ remotename
 		, "type=directory"
@@ -437,7 +439,7 @@ test_git_remote_annex exporttree
 	runtest cfg populate = whenM Git.Bundle.versionSupported $ 
 		intmpclonerepo $ do
 			let cfg' = ["type=directory", "encryption=none", "directory=dir"] ++ cfg
-			createDirectory "dir"
+			createDirectory (literalOsPath "dir")
 			git_annex "initremote" ("foo":("uuid=" ++ diruuid):cfg') "initremote"
 			git_annex "get" [] "get failed"
 			() <- populate
@@ -452,7 +454,7 @@ test_git_remote_annex exporttree
 				git_annex "get" [annexedfile] "get from origin special remote"
 	diruuid="89ddefa4-a04c-11ef-87b5-e880882a4f98"
 #else
-test_git_remote_annex exporttree =
+test_git_remote_annex _exporttree =
 	-- git-remote-annex is not currently installed on Windows
 	return ()
 #endif
@@ -461,14 +463,14 @@ test_add_moved :: Assertion
 test_add_moved = intmpclonerepo $ do
 	git_annex "get" [annexedfile] "get failed"
 	annexed_present annexedfile
-	createDirectory subdir
-	Utility.MoveFile.moveFile (toRawFilePath annexedfile) (toRawFilePath subfile)
+	createDirectory (toOsPath subdir)
+	Utility.MoveFile.moveFile (toOsPath annexedfile) subfile
 	git_annex "add" [subdir] "add of moved annexed file"
 	git "mv" [sha1annexedfile, sha1annexedfile ++ ".renamed"] "git mv"
 	git_annex "add" [] "add does not fail on deleted file after move"
   where
 	subdir = "subdir"
-	subfile = subdir </> "file"
+	subfile = toOsPath subdir </> literalOsPath "file"
 
 test_readonly_remote :: Assertion
 test_readonly_remote =
@@ -494,7 +496,7 @@ test_ignore_deleted_files :: Assertion
 test_ignore_deleted_files = intmpclonerepo $ do
 	git_annex "get" [annexedfile] "get"
 	git_annex_expectoutput "find" [] [annexedfile]
-	removeWhenExistsWith R.removeLink (toRawFilePath annexedfile)
+	removeWhenExistsWith removeFile (toOsPath annexedfile)
 	-- A file that has been deleted, but the deletion not staged,
 	-- is a special case; make sure git-annex skips these.
 	git_annex_expectoutput "find" [] []
@@ -563,18 +565,18 @@ test_magic = intmpclonerepo $ do
 #endif
 
 test_import :: Assertion
-test_import = intmpclonerepo $ Utility.Tmp.Dir.withTmpDir (toOsPath (toRawFilePath "importtest")) $ \importdir -> do
-	(toimport1, importf1, imported1) <- mktoimport importdir "import1"
+test_import = intmpclonerepo $ Utility.Tmp.Dir.withTmpDir (literalOsPath "importtest") $ \importdir -> do
+	(toimport1, importf1, imported1) <- mktoimport importdir (literalOsPath "import1")
 	git_annex "import" [toimport1] "import"
 	annexed_present_imported imported1
 	checkdoesnotexist importf1
 
-	(toimport2, importf2, imported2) <- mktoimport importdir "import2"
+	(toimport2, importf2, imported2) <- mktoimport importdir (literalOsPath "import2")
 	git_annex "import" [toimport2] "import of duplicate"
 	annexed_present_imported imported2
 	checkdoesnotexist importf2
 
-	(toimport3, importf3, imported3) <- mktoimport importdir "import3"
+	(toimport3, importf3, imported3) <- mktoimport importdir (literalOsPath "import3")
 	git_annex "import" ["--skip-duplicates", toimport3]
 		"import of duplicate with --skip-duplicates"
 	checkdoesnotexist imported3
@@ -584,19 +586,19 @@ test_import = intmpclonerepo $ Utility.Tmp.Dir.withTmpDir (toOsPath (toRawFilePa
 	checkdoesnotexist imported3
 	checkdoesnotexist importf3
 	
-	(toimport4, importf4, imported4) <- mktoimport importdir "import4"
+	(toimport4, importf4, imported4) <- mktoimport importdir (literalOsPath "import4")
 	git_annex "import" ["--deduplicate", toimport4] "import --deduplicate"
 	checkdoesnotexist imported4
 	checkdoesnotexist importf4
 	
-	(toimport5, importf5, imported5) <- mktoimport importdir "import5"
+	(toimport5, importf5, imported5) <- mktoimport importdir (literalOsPath "import5")
 	git_annex "import" ["--duplicate", toimport5] "import --duplicate"
 	annexed_present_imported imported5
 	checkexists importf5
 	
 	git_annex "drop" ["--force", imported1, imported2, imported5] "drop"
 	annexed_notpresent_imported imported2
-	(toimportdup, importfdup, importeddup) <- mktoimport importdir "importdup"
+	(toimportdup, importfdup, importeddup) <- mktoimport importdir (literalOsPath "importdup")
 	git_annex_shouldfail "import" ["--clean-duplicates", toimportdup] 
 		"import of missing duplicate with --clean-duplicates not allowed"
 	checkdoesnotexist importeddup
@@ -604,9 +606,14 @@ test_import = intmpclonerepo $ Utility.Tmp.Dir.withTmpDir (toOsPath (toRawFilePa
   where
 	mktoimport importdir subdir = do
 		createDirectory (importdir </> subdir)
-		let importf = subdir </> "f"
-		writecontent (importdir </> importf) (content importf)
-		return (importdir </> subdir, importdir </> importf, importf)
+		let importf = subdir </> literalOsPath "f"
+		writecontent (fromOsPath (importdir </> importf))
+			(content (fromOsPath importf))
+		return
+			( fromOsPath (importdir </> subdir)
+			, fromOsPath (importdir </> importf)
+			, fromOsPath importf
+			)
 
 test_reinject :: Assertion
 test_reinject = intmpclonerepo $ do
@@ -880,10 +887,10 @@ test_lock_force = intmpclonerepo $ do
 	git_annex "get" [annexedfile] "get of file"
 	git_annex "unlock" [annexedfile] "unlock"
 	annexeval $ do
-		Just k <- Annex.WorkTree.lookupKey (toRawFilePath annexedfile)
+		Just k <- Annex.WorkTree.lookupKey (toOsPath annexedfile)
 		Database.Keys.removeInodeCaches k
 		Database.Keys.closeDb
-		liftIO . removeWhenExistsWith R.removeLink
+		liftIO . removeWhenExistsWith removeFile
 			=<< Annex.calcRepo' Annex.Locations.gitAnnexKeysDbIndexCache
 	writecontent annexedfile "test_lock_force content"
 	git_annex_shouldfail "lock" [annexedfile] "lock of modified file should not be allowed"
@@ -930,7 +937,7 @@ test_fix = intmpclonerepo $ unlessM (hasUnlockedFiles <$> getTestMode) $ do
 	annexed_present annexedfile
 	git_annex "fix" [annexedfile] "fix of present file"
 	annexed_present annexedfile
-	createDirectory subdir
+	createDirectory (toOsPath subdir)
 	git "mv" [annexedfile, subdir] "git mv"
 	git_annex "fix" [newfile] "fix of moved file"
 	runchecks [checklink, checkunwritable] newfile
@@ -978,7 +985,7 @@ test_fsck_basic = intmpclonerepo $ do
   where
 	corrupt f = do
 		git_annex "get" [f] "get of file"
-		Utility.FileMode.allowWrite (toRawFilePath f)
+		Utility.FileMode.allowWrite (toOsPath f)
 		writecontent f (changedcontent f)
 		ifM (hasUnlockedFiles <$> getTestMode)
 			( git_annex "fsck" []"fsck on unlocked file with changed file content"
@@ -1119,10 +1126,12 @@ test_unused = intmpclonerepo $ do
 		writecontent "unusedfile" "unusedcontent"
 		git_annex "add" ["unusedfile"] "add of unusedfile"
 		unusedfilekey <- getKey backendSHA256E "unusedfile"
-		renameFile "unusedfile" "unusedunstagedfile"
+		renameFile
+			(literalOsPath "unusedfile")
+			(literalOsPath "unusedunstagedfile")
 		git "rm" ["-qf", "unusedfile"] "git rm"
 		checkunused [] "with unstaged link"
-		removeFile "unusedunstagedfile"
+		removeFile (literalOsPath "unusedunstagedfile")
 		checkunused [unusedfilekey] "with renamed link deleted"
 
 	-- unused used to miss symlinks that were deleted or modified
@@ -1141,7 +1150,7 @@ test_unused = intmpclonerepo $ do
 	git_annex "add" ["unusedfile"] "add of unusedfile"
 	git "add" ["unusedfile"] "git add"
 	checkunused [] "with staged file"
-	removeFile "unusedfile"
+	removeFile (literalOsPath "unusedfile")
 	checkunused [] "with staged deleted file"
 
 	-- When an unlocked file is modified, git diff will cause git-annex
@@ -1190,7 +1199,7 @@ test_find = intmpclonerepo $ do
 
 	{- --include=* should match files in subdirectories too,
 	 - and --exclude=* should exclude them. -}
-	createDirectory "dir"
+	createDirectory (literalOsPath "dir")
 	writecontent "dir/subfile" "subfile"
 	git_annex "add" ["dir"] "add of subdir"
 	git_annex_expectoutput "find" ["--include", "*", "--exclude", annexedfile, "--exclude", sha1annexedfile] ["dir/subfile"]
@@ -1258,8 +1267,11 @@ test_concurrent_get_of_dup_key_regression = intmpclonerepo $ do
 	dupfile = annexedfile ++ "2"
 	dupfile2 = annexedfile ++ "3"
 	makedup f = do
-		Utility.CopyFile.copyFileExternal Utility.CopyFile.CopyAllMetaData annexedfile f
-			@? "copying annexed file failed"
+		Utility.CopyFile.copyFileExternal
+			Utility.CopyFile.CopyAllMetaData
+			(toOsPath annexedfile)
+			(toOsPath f)
+				@? "copying annexed file failed"
 		git "add" [f] "git add"
 
 {- Regression test for union merge bug fixed in
@@ -1345,7 +1357,7 @@ test_conflict_resolution =
 	conflictor = "conflictor"
 	variantprefix = conflictor ++ ".variant"
 	checkmerge what d = do
-		l <- getDirectoryContents d
+		l <- map fromOsPath <$> getDirectoryContents (toOsPath d)
 		let v = filter (variantprefix `isPrefixOf`) l
 		length v == 2
 			@? (what ++ " not exactly 2 variant files in: " ++ show l)
@@ -1382,7 +1394,7 @@ test_conflict_resolution_adjusted_branch =
 	conflictor = "conflictor"
 	variantprefix = conflictor ++ ".variant"
 	checkmerge what d = do
-		l <- getDirectoryContents d
+		l <- map fromOsPath <$> getDirectoryContents (toOsPath d)
 		let v = filter (variantprefix `isPrefixOf`) l
 		length v == 2
 			@? (what ++ " not exactly 2 variant files in: " ++ show l)
@@ -1407,7 +1419,7 @@ test_mixed_conflict_resolution = do
 				git_annex "sync" ["--no-content"] "sync in r1"
 			intopdir r2 $ do
 				disconnectOrigin
-				createDirectory conflictor
+				createDirectory (toOsPath conflictor)
 				writecontent subfile "subfile"
 				add_annex conflictor "add conflicter"
 				git_annex "sync" ["--no-content"] "sync in r2"
@@ -1418,19 +1430,19 @@ test_mixed_conflict_resolution = do
 			checkmerge "r1" r1
 			checkmerge "r2" r2
 	conflictor = "conflictor"
-	subfile = conflictor </> "subfile"
+	subfile = fromOsPath (toOsPath conflictor </> literalOsPath "subfile")
 	checkmerge what d = do
-		doesDirectoryExist (d </> conflictor) 
+		doesDirectoryExist (toOsPath d </> toOsPath conflictor) 
 			@? (d ++ " conflictor directory missing")
-		l <- getDirectoryContents d
-		let v = filter (Annex.VariantFile.variantMarker `isInfixOf`) l
+		l <- map fromOsPath <$> getDirectoryContents (toOsPath d)
+		let v = filter (fromOsPath Annex.VariantFile.variantMarker `isInfixOf`) l
 		not (null v)
 			@? (what ++ " conflictor variant file missing in: " ++ show l )
 		length v == 1
 			@? (what ++ " too many variant files in: " ++ show v)
 		intopdir d $ do
 			git_annex "get" (conflictor:v) ("get  in " ++ what)
-			git_annex_expectoutput "find" [conflictor] [fromRawFilePath (Git.FilePath.toInternalGitPath (toRawFilePath subfile))]
+			git_annex_expectoutput "find" [conflictor] [fromOsPath (Git.FilePath.toInternalGitPath (toOsPath subfile))]
 			git_annex_expectoutput "find" v v
 
 {- Check merge conflict resolution when both repos start with an annexed
@@ -1456,7 +1468,7 @@ test_remove_conflict_resolution = do
 				git_annex "unlock" [conflictor] "unlock conflictor"
 				writecontent conflictor "newconflictor"
 			intopdir r1 $
-				removeWhenExistsWith R.removeLink (toRawFilePath conflictor)
+				removeWhenExistsWith removeFile (toOsPath conflictor)
 			let l = if inr1 then [r1, r2, r1] else [r2, r1, r2]
 			forM_ l $ \r -> intopdir r $
 				git_annex "sync" ["--no-content"] "sync"
@@ -1465,7 +1477,7 @@ test_remove_conflict_resolution = do
 	conflictor = "conflictor"
 	variantprefix = conflictor ++ ".variant"
 	checkmerge what d = do
-		l <- getDirectoryContents d
+		l <- map fromOsPath <$> getDirectoryContents (toOsPath d)
 		let v = filter (variantprefix `isPrefixOf`) l
 		not (null v)
 			@? (what ++ " conflictor variant file missing in: " ++ show l )
@@ -1506,14 +1518,15 @@ test_nonannexed_file_conflict_resolution = do
 	nonannexed_content = "nonannexed"
 	variantprefix = conflictor ++ ".variant"
 	checkmerge what d = do
-		l <- getDirectoryContents d
+		l <- map fromOsPath <$> getDirectoryContents (toOsPath d)
 		let v = filter (variantprefix `isPrefixOf`) l
 		not (null v)
 			@? (what ++ " conflictor variant file missing in: " ++ show l )
 		length v == 1
 			@? (what ++ " too many variant files in: " ++ show v)
 		conflictor `elem` l @? (what ++ " conflictor file missing in: " ++ show l)
-		s <- catchMaybeIO (readFile (d </> conflictor))
+		s <- catchMaybeIO $ readFile $ fromOsPath $
+			toOsPath d </> toOsPath conflictor
 		s == Just nonannexed_content
 			@? (what ++ " wrong content for nonannexed file: " ++ show s)
 
@@ -1552,14 +1565,15 @@ test_nonannexed_symlink_conflict_resolution = do
 	symlinktarget = "dummy-target"
 	variantprefix = conflictor ++ ".variant"
 	checkmerge what d = do
-		l <- getDirectoryContents d
+		l <- map fromOsPath <$> getDirectoryContents (toOsPath d)
 		let v = filter (variantprefix `isPrefixOf`) l
 		not (null v)
 			@? (what ++ " conflictor variant file missing in: " ++ show l )
 		length v == 1
 			@? (what ++ " too many variant files in: " ++ show v)
 		conflictor `elem` l @? (what ++ " conflictor file missing in: " ++ show l)
-		s <- catchMaybeIO (R.readSymbolicLink (toRawFilePath (d </> conflictor)))
+		s <- catchMaybeIO $ R.readSymbolicLink $ fromOsPath $
+			toOsPath d </> toOsPath conflictor
 		s == Just (toRawFilePath symlinktarget)
 			@? (what ++ " wrong target for nonannexed symlink: " ++ show s)
 
@@ -1575,13 +1589,13 @@ test_nonannexed_symlink_conflict_resolution = do
 test_uncommitted_conflict_resolution :: Assertion
 test_uncommitted_conflict_resolution = do
 	check conflictor
-	check (conflictor </> "file")
+	check (fromOsPath (toOsPath conflictor </> literalOsPath "file"))
   where
 	check remoteconflictor = withtmpclonerepo $ \r1 ->
 		withtmpclonerepo $ \r2 -> do
 			intopdir r1 $ do
 				disconnectOrigin
-				createDirectoryIfMissing True (fromRawFilePath (parentDir (toRawFilePath remoteconflictor)))
+				createDirectoryIfMissing True (parentDir (toOsPath remoteconflictor))
 				writecontent remoteconflictor annexedcontent
 				add_annex conflictor "add remoteconflicter"
 				git_annex "sync" ["--no-content"] "sync in r1"
@@ -1610,20 +1624,22 @@ test_conflict_resolution_symlink_bit = unlessM (hasUnlockedFiles <$> getTestMode
 					git_annex "sync" ["--no-content"] "sync in r1"
 					check_is_link conflictor "r1"
 				intopdir r2 $ do
-					createDirectory conflictor
-					writecontent (conflictor </> "subfile") "subfile"
+					createDirectory (toOsPath conflictor)
+					writecontent conflictorsubfile "subfile"
 					git_annex "add" [conflictor] "add conflicter"
 					git_annex "sync" ["--no-content"] "sync in r2"
-					check_is_link (conflictor </> "subfile") "r2"
+					check_is_link conflictorsubfile "r2"
 				intopdir r3 $ do
 					writecontent conflictor "conflictor"
 					git_annex "add" [conflictor] "add conflicter"
 					git_annex "sync" ["--no-content"] "sync in r1"
-					check_is_link (conflictor </> "subfile") "r3"
+					check_is_link conflictorsubfile "r3"
   where
 	conflictor = "conflictor"
+	conflictorsubfile = fromOsPath $
+		toOsPath conflictor </> literalOsPath "subfile"
 	check_is_link f what = do
-		git_annex_expectoutput "find" ["--include=*", f] [fromRawFilePath (Git.FilePath.toInternalGitPath (toRawFilePath f))]
+		git_annex_expectoutput "find" ["--include=*", f] [fromOsPath (Git.FilePath.toInternalGitPath (toOsPath f))]
 		l <- annexeval $ Annex.inRepo $ Git.LsTree.lsTreeFiles (Git.LsTree.LsTreeLong False) Git.Ref.headRef [f]
 		all (\i -> Git.Types.toTreeItemType (Git.LsTree.mode i) == Just Git.Types.TreeSymlink) l
 			@? (what ++ " " ++ f ++ " lost symlink bit after merge: " ++ show l)
@@ -1655,7 +1671,7 @@ test_mixed_lock_conflict_resolution =
 	conflictor = "conflictor"
 	variantprefix = conflictor ++ ".variant"
 	checkmerge what d = intopdir d $ do
-		l <- getDirectoryContents "."
+		l <- map fromOsPath <$> getDirectoryContents (literalOsPath ".")
 		let v = filter (variantprefix `isPrefixOf`) l
 		length v == 0
 			@? (what ++ " not exactly 0 variant files in: " ++ show l)
@@ -1688,7 +1704,7 @@ test_adjusted_branch_merge_regression = do
 		git_annex "sync" ["--no-content"] "sync"
 	checkmerge what d = intopdir d $ whensupported $ do
 		git_annex "sync" ["--no-content"] ("sync should not work in " ++ what)
-		l <- getDirectoryContents "."
+		l <- map fromOsPath <$> getDirectoryContents (literalOsPath ".")
 		conflictor `elem` l
 			@? ("conflictor not present after merge in " ++ what)
 	-- Currently this fails on FAT, for unknown reasons not to
@@ -1705,16 +1721,17 @@ test_adjusted_branch_subtree_regression =
 			origbranch <- annexeval origBranch
 			git_annex "upgrade" [] "upgrade"
 			git_annex "adjust" ["--unlock", "--force"] "adjust"
-			createDirectoryIfMissing True "a/b/c"
+			createDirectoryIfMissing True (literalOsPath "a/b/c")
 			writecontent "a/b/c/d" "foo"
 			git_annex "add" ["a/b/c"] "add a/b/c"
 			git_annex "sync" ["--no-content"] "sync"
-			createDirectoryIfMissing True "a/b/x"
+			createDirectoryIfMissing True (literalOsPath "a/b/x")
 			writecontent "a/b/x/y" "foo"
 			git_annex "add" ["a/b/x"] "add a/b/x"
 			git_annex "sync" ["--no-content"] "sync"
 			git "checkout" [origbranch] "git checkout"
-			doesFileExist "a/b/x/y" @? ("a/b/x/y missing from master after adjusted branch sync")
+			doesFileExist (literalOsPath "a/b/x/y")
+				@? ("a/b/x/y missing from master after adjusted branch sync")
 
 test_map :: Assertion
 test_map = intmpclonerepo $ do
@@ -1731,7 +1748,7 @@ test_uninit = intmpclonerepo $ do
 	-- any exit status is accepted; does abnormal exit
 	git_annex'' (const True) (const True) "uninit" [] Nothing "uninit"
 	checkregularfile annexedfile
-	doesDirectoryExist ".git" @? ".git vanished in uninit"
+	doesDirectoryExist (literalOsPath ".git") @? ".git vanished in uninit"
 
 test_uninit_inbranch :: Assertion
 test_uninit_inbranch = intmpclonerepo $ do
@@ -1760,7 +1777,7 @@ test_hook_remote :: Assertion
 test_hook_remote = intmpclonerepo $ do
 #ifndef mingw32_HOST_OS
 	git_annex "initremote" (words "foo type=hook encryption=none hooktype=foo") "initremote"
-	createDirectory dir
+	createDirectory (toOsPath dir)
 	git_config "annex.foo-store-hook" $
 		"cp $ANNEX_FILE " ++ loc
 	git_config "annex.foo-retrieve-hook" $
@@ -1790,7 +1807,7 @@ test_hook_remote = intmpclonerepo $ do
 
 test_directory_remote :: Assertion
 test_directory_remote = intmpclonerepo $ do
-	createDirectory "dir"
+	createDirectory (literalOsPath "dir")
 	git_annex "initremote" (words "foo type=directory encryption=none directory=dir") "initremote"
 	git_annex "get" [annexedfile] "get of file"
 	annexed_present annexedfile
@@ -1806,7 +1823,7 @@ test_directory_remote = intmpclonerepo $ do
 test_rsync_remote :: Assertion
 test_rsync_remote = intmpclonerepo $ do
 #ifndef mingw32_HOST_OS
-	createDirectory "dir"
+	createDirectory (literalOsPath "dir")
 	git_annex "initremote" (words "foo type=rsync encryption=none rsyncurl=dir") "initremote"
 	git_annex "get" [annexedfile] "get of file"
 	annexed_present annexedfile
@@ -1825,9 +1842,9 @@ test_rsync_remote = intmpclonerepo $ do
 test_bup_remote :: Assertion
 test_bup_remote = intmpclonerepo $ when BuildInfo.bup $ do
 	-- bup special remote needs an absolute path
-	dir <- fromRawFilePath <$> absPath (toRawFilePath "dir")
+	dir <- absPath (literalOsPath "dir")
 	createDirectory dir
-	git_annex "initremote" (words $ "foo type=bup encryption=none buprepo="++dir) "initremote"
+	git_annex "initremote" (words $ "foo type=bup encryption=none buprepo="++fromOsPath dir) "initremote"
 	git_annex "get" [annexedfile] "get of file"
 	annexed_present annexedfile
 	git_annex "copy" [annexedfile, "--to", "foo"] "copy --to bup remote"
@@ -1841,8 +1858,8 @@ test_bup_remote = intmpclonerepo $ when BuildInfo.bup $ do
 
 test_borg_remote :: Assertion
 test_borg_remote = when BuildInfo.borg $ do
-	borgdirparent <- fromRawFilePath <$> (absPath . toRawFilePath =<< tmprepodir)
-	let borgdir = borgdirparent </> "borgrepo"
+	borgdirparent <- absPath . toOsPath =<< tmprepodir
+	let borgdir = fromOsPath (borgdirparent </> literalOsPath "borgrepo")
 	intmpclonerepo $ do
 		testProcess "borg" ["init", borgdir, "-e", "none"] Nothing (== True) (const True) "borg init"
 		testProcess "borg" ["create", borgdir++"::backup1", "."] Nothing (== True) (const True) "borg create"
@@ -1894,27 +1911,27 @@ test_gpg_crypto = do
 	testscheme "pubkey"
   where
 	gpgcmd = Utility.Gpg.mkGpgCmd Nothing
-	testscheme scheme = Utility.Tmp.Dir.withTmpDir (toOsPath (toRawFilePath "gpgtmp")) $ \gpgtmp -> do
+	testscheme scheme = Utility.Tmp.Dir.withTmpDir (literalOsPath "gpgtmp") $ \gpgtmp -> do
 		-- Use the system temp directory as gpg temp directory because 
 		-- it needs to be able to store the agent socket there,
 		-- which can be problematic when testing some filesystems.
-		absgpgtmp <- fromRawFilePath <$> absPath (toRawFilePath gpgtmp)
+		absgpgtmp <- absPath gpgtmp
 		res <- testscheme' scheme absgpgtmp
 		-- gpg may still be running and would prevent
 		-- removeDirectoryRecursive from succeeding, so
 		-- force removal of the temp directory.
-		liftIO $ removeDirectoryForCleanup gpgtmp
+		liftIO $ removeDirectoryForCleanup (fromOsPath gpgtmp)
 		return res
 	testscheme' scheme absgpgtmp = intmpclonerepo $ do
 		-- Since gpg uses a unix socket, which is limited to a
 		-- short path, use whichever is shorter of absolute
 		-- or relative path.
-		relgpgtmp <- fromRawFilePath <$> relPathCwdToFile (toRawFilePath absgpgtmp)
-		let gpgtmp = if length relgpgtmp < length absgpgtmp
+		relgpgtmp <- relPathCwdToFile absgpgtmp
+		let gpgtmp = if OS.length relgpgtmp < OS.length absgpgtmp
 			then relgpgtmp 
 			else absgpgtmp
-		void $ Utility.Gpg.testHarness gpgtmp gpgcmd $ \environ -> do
-			createDirectory "dir"
+		void $ Utility.Gpg.testHarness (fromOsPath gpgtmp) gpgcmd $ \environ -> do
+			createDirectory (literalOsPath "dir")
 			let initps =
 				[ "foo"
 				, "type=directory"
@@ -1934,7 +1951,7 @@ test_gpg_crypto = do
 			(c,k) <- annexeval $ do
 				uuid <- Remote.nameToUUID "foo"
 				rs <- Logs.Remote.readRemoteLog
-				Just k <- Annex.WorkTree.lookupKey (toRawFilePath annexedfile)
+				Just k <- Annex.WorkTree.lookupKey (toOsPath annexedfile)
 				return (fromJust $ M.lookup uuid rs, k)
 			let key = if scheme `elem` ["hybrid","pubkey"]
 					then Just $ Utility.Gpg.KeyIds [Utility.Gpg.testKeyId]
@@ -1971,12 +1988,12 @@ test_gpg_crypto = do
 			let encparams = (Types.Remote.ParsedRemoteConfig mempty mempty, dummycfg)
 			cipher <- Crypto.decryptCipher' gpgcmd (Just environ) encparams cip
 			files <- filterM doesFileExist $
-				map ("dir" </>) $ concatMap (serializeKeys cipher) keys
+				map (literalOsPath "dir" </>) $ concatMap (serializeKeys cipher) keys
 			return (not $ null files) <&&> allM (checkFile mvariant) files
 		checkFile mvariant filename =
-			Utility.Gpg.checkEncryptionFile gpgcmd (Just environ) filename $
+			Utility.Gpg.checkEncryptionFile gpgcmd (Just environ) (fromOsPath filename) $
 				if mvariant == Just Types.Crypto.PubKey then ks else Nothing
-		serializeKeys cipher = map fromRawFilePath . NE.toList 
+		serializeKeys cipher = NE.toList 
 			. Annex.Locations.keyPaths
 			. Crypto.encryptKey Types.Crypto.HmacSha1 cipher
 #else
@@ -1985,8 +2002,9 @@ test_gpg_crypto = putStrLn "gpg testing not implemented on Windows"
 
 test_add_subdirs :: Assertion
 test_add_subdirs = intmpclonerepo $ do
-	createDirectory "dir"
-	writecontent ("dir" </> "foo") $ "dir/" ++ content annexedfile
+	createDirectory (literalOsPath "dir")
+	writecontent (fromOsPath (literalOsPath "dir" </> literalOsPath "foo"))
+		("dir/" ++ content annexedfile)
 	git_annex "add" ["dir"] "add of subdir"
 
 	{- Regression test for Windows bug where symlinks were not
@@ -1997,27 +2015,30 @@ test_add_subdirs = intmpclonerepo $ do
 			<$> Annex.CatFile.catObject (Git.Types.Ref (encodeBS "HEAD:dir/foo"))
 		"../.git/annex/" `isPrefixOf` l @? ("symlink from subdir to .git/annex is wrong: " ++ l)
 
-	createDirectory "dir2"
-	writecontent ("dir2" </> "foo") $ content annexedfile
-	setCurrentDirectory "dir"
-	git_annex "add" [".." </> "dir2"] "add of ../subdir"
+	createDirectory (literalOsPath "dir2")
+	writecontent (fromOsPath (literalOsPath "dir2" </> literalOsPath "foo"))
+		(content annexedfile)
+	setCurrentDirectory (literalOsPath "dir")
+	git_annex "add" [fromOsPath (literalOsPath ".." </> literalOsPath "dir2")]
+		"add of ../subdir"
 
 test_addurl :: Assertion
 test_addurl = intmpclonerepo $ do
 	-- file:// only; this test suite should not hit the network
 	let filecmd c ps = git_annex c ("-cannex.security.allowed-url-schemes=file" : ps)
-	f <- fromRawFilePath <$> absPath (toRawFilePath "myurl")
-	let url = replace "\\" "/" ("file:///" ++ dropDrive f)
-	writecontent f "foo"
+	f <- absPath (literalOsPath "myurl")
+	let url = replace "\\" "/" ("file:///" ++ fromOsPath (dropDrive f))
+	writecontent (fromOsPath f) "foo"
 	git_annex_shouldfail "addurl" [url] "addurl should not work on file url"
 	filecmd "addurl" [url] ("addurl on " ++ url)
 	let dest = "addurlurldest"
 	filecmd "addurl" ["--file", dest, url] ("addurl on " ++ url ++ "  with --file")
-	doesFileExist dest @? (dest ++ " missing after addurl --file")
+	doesFileExist (toOsPath dest)
+		@? (dest ++ " missing after addurl --file")
 
 test_export_import :: Assertion
 test_export_import = intmpclonerepo $ do
-	createDirectory "dir"
+	createDirectory (literalOsPath "dir")
 	git_annex "initremote" (words "foo type=directory encryption=none directory=dir exporttree=yes importtree=yes") "initremote"
 	git_annex "get" [] "get of files"
 	annexed_present annexedfile
@@ -2035,7 +2056,7 @@ test_export_import = intmpclonerepo $ do
 	git_annex "merge" ["foo/" ++ origbranch] "git annex merge"
 	annexed_present_imported "import"
 
-	removeWhenExistsWith R.removeLink (toRawFilePath "import")
+	removeWhenExistsWith removeFile (literalOsPath "import")
 	writecontent "import" (content "newimport1")
 	git_annex "add" ["import"] "add of import"
 	commitchanges
@@ -2044,7 +2065,7 @@ test_export_import = intmpclonerepo $ do
 
 	-- verify that export refuses to overwrite modified file
 	writedir "import" (content "newimport2")
-	removeWhenExistsWith R.removeLink (toRawFilePath "import")
+	removeWhenExistsWith removeFile (literalOsPath "import")
 	writecontent "import" (content "newimport3")
 	git_annex "add" ["import"] "add of import"
 	commitchanges
@@ -2054,17 +2075,18 @@ test_export_import = intmpclonerepo $ do
 	-- resolving import conflict
 	git_annex "import" [origbranch, "--from", "foo"] "import from dir"
 	git_shouldfail "merge" ["foo/master", "-mmerge"] "git merge of conflict should exit nonzero"
-	removeWhenExistsWith R.removeLink (toRawFilePath "import")
+	removeWhenExistsWith removeFile (literalOsPath "import")
 	writecontent "import" (content "newimport3")
 	git_annex "add" ["import"] "add of import"
 	commitchanges
 	git_annex "export" [origbranch, "--to", "foo"] "export after import conflict"
 	dircontains "import" (content "newimport3")
   where
-	dircontains f v = 
-		((v==) <$> readFile ("dir" </> f))
-			@? ("did not find expected content of " ++ "dir" </> f)
-	writedir f = writecontent ("dir" </> f)
+	dircontains f v = do
+		let df = fromOsPath (literalOsPath "dir" </> stringToOsPath f)
+		((v==) <$> readFile df)
+			@? ("did not find expected content of " ++ df)
+	writedir f = writecontent (fromOsPath (literalOsPath "dir" </> stringToOsPath f))
 	-- When on an adjusted branch, this updates the master branch
 	-- to match it, which is necessary since the master branch is going
 	-- to be exported.
@@ -2072,12 +2094,12 @@ test_export_import = intmpclonerepo $ do
 
 test_export_import_subdir :: Assertion
 test_export_import_subdir = intmpclonerepo $ do
-	createDirectory "dir"
+	createDirectory (literalOsPath "dir")
 	git_annex "initremote" (words "foo type=directory encryption=none directory=dir exporttree=yes importtree=yes") "initremote"
 	git_annex "get" [] "get of files"
 	annexed_present annexedfile
 
-	createDirectory subdir
+	createDirectory (toOsPath subdir)
 	git "mv" [annexedfile, subannexedfile] "git mv"
 	git "commit" ["-m", "moved"] "git commit"
 	
@@ -2096,12 +2118,14 @@ test_export_import_subdir = intmpclonerepo $ do
 	testimport
 	testexport
   where
-	dircontains f v = 
-		((v==) <$> readFile ("dir" </> f))
-			@? ("did not find expected content of " ++ "dir" </> f)
+	dircontains f v = do
+		let df = fromOsPath (literalOsPath "dir" </> toOsPath f)
+		((v==) <$> readFile df)
+			@? ("did not find expected content of " ++ df)
 	
 	subdir = "subdir"
-	subannexedfile = "subdir" </> annexedfile
+	subannexedfile = fromOsPath $
+		literalOsPath "subdir" </> toOsPath annexedfile
 	
 	testexport = do
 		origbranch <- annexeval origBranch

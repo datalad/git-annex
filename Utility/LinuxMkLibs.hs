@@ -27,10 +27,11 @@ import Utility.Split
 import Utility.FileSystemEncoding
 import Utility.Env
 import Utility.Exception
+import Utility.OsPath
+import Utility.RawFilePath
 
 import Data.Maybe
-import System.FilePath
-import System.Posix.Files
+import System.Posix.Files (isSymbolicLink)
 import Data.Char
 import Control.Monad.IfElse
 import Control.Applicative
@@ -39,28 +40,28 @@ import Prelude
 {- Installs a library. If the library is a symlink to another file,
  - install the file it links to, and update the symlink to be relative. -}
 installLib :: (FilePath -> FilePath -> IO ()) -> FilePath -> FilePath -> IO (Maybe FilePath)
-installLib installfile top lib = ifM (doesFileExist lib)
+installLib installfile top lib = ifM (doesFileExist (toOsPath lib))
 	( do
 		installfile top lib
 		checksymlink lib
-		return $ Just $ fromRawFilePath $ parentDir $ toRawFilePath lib
+		return $ Just $ fromOsPath $ parentDir $ toOsPath lib
 	, return Nothing
 	)
   where
 	checksymlink f = whenM (isSymbolicLink <$> getSymbolicLinkStatus (inTop top f)) $ do
 		l <- readSymbolicLink (inTop top f)
 		let absl = absPathFrom
-			(parentDir (toRawFilePath f))
-			(toRawFilePath l)
-		target <- relPathDirToFile (toRawFilePath (takeDirectory f)) absl
-		installfile top (fromRawFilePath absl)
-		removeWhenExistsWith removeLink (top ++ f)
-		createSymbolicLink (fromRawFilePath target) (inTop top f)
-		checksymlink (fromRawFilePath absl)
+			(parentDir (toOsPath f))
+			(toOsPath l)
+		target <- relPathDirToFile (takeDirectory (toOsPath f)) absl
+		installfile top (fromOsPath absl)
+		removeWhenExistsWith removeLink (toRawFilePath (top ++ f))
+		createSymbolicLink (fromOsPath target) (inTop top f)
+		checksymlink (fromOsPath absl)
 
 -- Note that f is not relative, so cannot use </>
-inTop :: FilePath -> FilePath -> FilePath
-inTop top f = top ++ f
+inTop :: FilePath -> FilePath -> RawFilePath
+inTop top f = toRawFilePath $ top ++ f
 
 {- Parse ldd output, getting all the libraries that the input files
  - link to. Note that some of the libraries may not exist 

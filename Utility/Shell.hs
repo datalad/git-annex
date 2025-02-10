@@ -13,6 +13,7 @@ module Utility.Shell (
 	findShellCommand,
 ) where
 
+import Utility.OsPath
 import Utility.SafeCommand
 #ifdef mingw32_HOST_OS
 import Utility.Path
@@ -35,12 +36,12 @@ shebang = "#!" ++ shellPath
 -- parse it for shebang.
 --
 -- This has no effect on Unix.
-findShellCommand :: FilePath -> IO (FilePath, [CommandParam])
+findShellCommand :: OsPath -> IO (FilePath, [CommandParam])
 findShellCommand f = do
 #ifndef mingw32_HOST_OS
 	defcmd
 #else
-	l <- catchDefaultIO Nothing $ headMaybe . lines <$> readFile f
+	l <- catchDefaultIO Nothing $ headMaybe . lines <$> readFile (fromOsPath f)
 	case l of
 		Just ('#':'!':rest) -> case words rest of
 			[] -> defcmd
@@ -55,4 +56,4 @@ findShellCommand f = do
 		_ -> defcmd
 #endif
   where
-	defcmd = return (f, [])
+	defcmd = return (fromOsPath f, [])

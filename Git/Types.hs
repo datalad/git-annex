@@ -6,8 +6,13 @@
  -}
 
 {-# LANGUAGE OverloadedStrings, TypeSynonymInstances, FlexibleInstances #-}
+{-# LANGUAGE CPP #-}
 
 module Git.Types where
+
+import Utility.SafeCommand
+import Utility.FileSystemEncoding
+import Utility.OsPath
 
 import Network.URI
 import Data.String
@@ -16,8 +21,6 @@ import qualified Data.Map as M
 import qualified Data.ByteString as S
 import qualified Data.List.NonEmpty as NE
 import System.Posix.Types
-import Utility.SafeCommand
-import Utility.FileSystemEncoding
 import qualified Data.Semigroup as Sem
 import Prelude
 
@@ -32,8 +35,8 @@ import Prelude
  - else known about it.
  -}
 data RepoLocation
-	= Local { gitdir :: RawFilePath, worktree :: Maybe RawFilePath }
-	| LocalUnknown RawFilePath
+	= Local { gitdir :: OsPath, worktree :: Maybe OsPath }
+	| LocalUnknown OsPath
 	| Url URI
 	| UnparseableUrl String
 	| Unknown
@@ -104,6 +107,11 @@ instance FromConfigValue S.ByteString where
 
 instance FromConfigValue String where
 	fromConfigValue = decodeBS . fromConfigValue
+
+#ifdef WITH_OSPATH
+instance FromConfigValue OsPath where
+	fromConfigValue v = toOsPath (fromConfigValue v :: S.ByteString)
+#endif
 
 instance Show ConfigValue where
 	show = fromConfigValue

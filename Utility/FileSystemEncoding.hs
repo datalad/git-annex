@@ -157,10 +157,13 @@ truncateFilePath n = toRawFilePath . reverse . go [] n
 	go coll cnt bs
 		| cnt <= 0 = coll
 		| otherwise = case S8.decode bs of
-			Just (c, x) | c /= S8.replacement_char ->
-				let x' = fromIntegral x
-				in if cnt - x' < 0
-					then coll
-					else go (c:coll) (cnt - x') (S8.drop 1 bs)
+			Just (c, x)
+				| c /= S8.replacement_char ->
+					let x' = fromIntegral x
+					in if cnt - x' < 0
+						then coll
+						else go (c:coll) (cnt - x') (S8.drop 1 bs)
+				| otherwise ->
+					go ('_':coll) (cnt - 1) (S8.drop 1 bs)
 			_ -> coll
 #endif

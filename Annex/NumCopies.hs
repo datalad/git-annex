@@ -88,7 +88,7 @@ getMinCopies = fromSourcesOr defaultMinCopies
 
 {- NumCopies and MinCopies value for a file, from any configuration source,
  - including .gitattributes. -}
-getFileNumMinCopies :: RawFilePath -> Annex (NumCopies, MinCopies)
+getFileNumMinCopies :: OsPath -> Annex (NumCopies, MinCopies)
 getFileNumMinCopies f = do
 	fnumc <- getForcedNumCopies
 	fminc <- getForcedMinCopies
@@ -141,7 +141,7 @@ getSafestNumMinCopies afile k =
 	Database.Keys.getAssociatedFilesIncluding afile k
 		>>= getSafestNumMinCopies' afile k
 
-getSafestNumMinCopies' :: AssociatedFile -> Key -> [RawFilePath] -> Annex (NumCopies, MinCopies)
+getSafestNumMinCopies' :: AssociatedFile -> Key -> [OsPath] -> Annex (NumCopies, MinCopies)
 getSafestNumMinCopies' afile k fs = do
 	l <- mapM getFileNumMinCopies fs
 	let l' = zip l fs
@@ -174,13 +174,13 @@ getSafestNumMinCopies' afile k fs = do
 {- This is the globally visible numcopies value for a file. So it does
  - not include local configuration in the git config or command line
  - options. -}
-getGlobalFileNumCopies :: RawFilePath  -> Annex NumCopies
+getGlobalFileNumCopies :: OsPath  -> Annex NumCopies
 getGlobalFileNumCopies f = fromSourcesOr defaultNumCopies
 	[ fst <$> getNumMinCopiesAttr f
 	, getGlobalNumCopies
 	]
 
-getNumMinCopiesAttr :: RawFilePath  -> Annex (Maybe NumCopies, Maybe MinCopies)
+getNumMinCopiesAttr :: OsPath  -> Annex (Maybe NumCopies, Maybe MinCopies)
 getNumMinCopiesAttr file =
 	checkAttrs ["annex.numcopies", "annex.mincopies"] file >>= \case
 		(n:m:[]) -> return
@@ -196,12 +196,12 @@ getNumMinCopiesAttr file =
  - This is good enough for everything except dropping the file, which
  - requires active verification of the copies.
  -}
-numCopiesCheck :: RawFilePath -> Key -> (Int -> Int -> v) -> Annex v
+numCopiesCheck :: OsPath -> Key -> (Int -> Int -> v) -> Annex v
 numCopiesCheck file key vs = do
 	have <- trustExclude UnTrusted =<< Remote.keyLocations key
 	numCopiesCheck' file vs have
 
-numCopiesCheck' :: RawFilePath -> (Int -> Int -> v) -> [UUID] -> Annex v
+numCopiesCheck' :: OsPath -> (Int -> Int -> v) -> [UUID] -> Annex v
 numCopiesCheck' file vs have = do
 	needed <- fst <$> getFileNumMinCopies file
 	let nhave = numCopiesCount have

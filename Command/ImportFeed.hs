@@ -24,7 +24,6 @@ import Data.Time.LocalTime
 import Control.Concurrent.STM
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
-import qualified System.FilePath.ByteString as P
 import qualified Data.ByteString as B
 
 import Command
@@ -158,7 +157,7 @@ getFeed o url st =
 		| scrapeOption o = scrape
 		| otherwise = get
 
-	get = withTmpFile (toOsPath "feed") $ \tmpf h -> do
+	get = withTmpFile (literalOsPath "feed") $ \tmpf h -> do
 		let tmpf' = fromRawFilePath $ fromOsPath tmpf
 		liftIO $ hClose h
 		ifM (downloadFeed url tmpf')
@@ -270,7 +269,7 @@ downloadFeed :: URLString -> FilePath -> Annex Bool
 downloadFeed url f
 	| Url.parseURIRelaxed url == Nothing = giveup "invalid feed url"
 	| otherwise = Url.withUrlOptions $
-		Url.download nullMeterUpdate Nothing url f
+		Url.download nullMeterUpdate Nothing url (toOsPath f)
 
 startDownload :: AddUnlockedMatcher -> ImportFeedOptions -> Cache -> TMVar Bool -> ToDownload -> CommandStart
 startDownload addunlockedmatcher opts cache cv todownload = case location todownload of
@@ -315,15 +314,15 @@ startDownload addunlockedmatcher opts cache cv todownload = case location todown
 		ifM (useYoutubeDl (downloadOptions opts) <&&> youtubeDlSupported linkurl)
 			( startUrlDownload cv todownload linkurl $
 				withTmpWorkDir mediakey $ \workdir -> do
-					dl <- youtubeDl linkurl (fromRawFilePath workdir) nullMeterUpdate
+					dl <- youtubeDl linkurl workdir nullMeterUpdate
 					case dl of
 						Right (Just mediafile) -> do
-							let ext = case takeExtension mediafile of
+							let ext = case fromOsPath (takeExtension mediafile) of
 								[] -> ".m"
 								s -> s
 							runDownload todownload linkurl ext cache cv $ \f ->
 								checkCanAdd (downloadOptions opts) f $ \canadd -> do
-									addWorkTree canadd addunlockedmatcher webUUID mediaurl f mediakey (Just (toRawFilePath mediafile))
+									addWorkTree canadd addunlockedmatcher webUUID mediaurl f mediakey (Just mediafile)
 									return (Just [mediakey])
 						-- youtube-dl didn't support it, so
 						-- download it as if the link were
@@ -352,16 +351,16 @@ startDownload addunlockedmatcher opts cache cv todownload = case location todown
 			)
 
 downloadEnclosure :: AddUnlockedMatcher -> ImportFeedOptions -> Cache -> TMVar Bool -> ToDownload -> URLString -> CommandPerform
-downloadEnclosure addunlockedmatcher opts cache cv todownload url = 
-	runDownload todownload url (takeWhile (/= '?') $ takeExtension url) cache cv $ \f -> do
-		let f' = fromRawFilePath f
+downloadEnclosure addunlockedmatcher opts cache cv todownload url =
+	let extension = takeWhile (/= '?') $ fromOsPath $ takeExtension $ toOsPath url
+	in runDownload todownload url extension cache cv $ \f -> do
 		r <- checkClaimingUrl (downloadOptions opts) url
 		if Remote.uuid r == webUUID || rawOption (downloadOptions opts)
 			then checkRaw (Just url) (downloadOptions opts) (pure Nothing) $ do
 				let dlopts = (downloadOptions opts)
 					-- force using the filename
 					-- chosen here
-					{ fileOption = Just f'
+					{ fileOption = Just (fromOsPath f)
 					-- don't use youtube-dl
 					, rawOption = True
 					}
@@ -385,7 +384,7 @@ downloadEnclosure addunlockedmatcher opts cache cv todownload url =
 							downloadRemoteFile addunlockedmatcher r (downloadOptions opts) url f sz
 					Right (UrlMulti l) -> do
 						kl <- forM l $ \(url', sz, subf) ->
-							let dest = f P.</> toRawFilePath (sanitizeFilePath subf)
+							let dest = f </> toOsPath (sanitizeFilePath (fromOsPath subf))
 							in downloadRemoteFile addunlockedmatcher r (downloadOptions opts) url' dest sz
 						return $ Just $ if all isJust kl
 							then catMaybes kl
@@ -397,7 +396,7 @@ runDownload
 	-> String
 	-> Cache
 	-> TMVar Bool
-	-> (RawFilePath -> Annex (Maybe [Key]))
+	-> (OsPath -> Annex (Maybe [Key]))
 	-> CommandPerform
 runDownload todownload url extension cache cv getter = do
 	dest <- makeunique (1 :: Integer) $
@@ -406,7 +405,7 @@ runDownload todownload url extension cache cv getter = do
 		Nothing -> do
 			recordsuccess
 			next $ return True
-		Just f -> getter (toRawFilePath f) >>= \case
+		Just f -> getter f >>= \case
 			Just ks
 				-- Download problem.
 				| null ks -> do
@@ -440,7 +439,7 @@ runDownload todownload url extension cache cv getter = do
 	 - to be re-downloaded. -}
 	makeunique n file = ifM alreadyexists
 		( ifM forced
-			( lookupKey (toRawFilePath f) >>= \case
+			( lookupKey f >>= \case
 				Just k -> checksameurl k
 				Nothing -> tryanother
 			, tryanother
@@ -449,12 +448,12 @@ runDownload todownload url extension cache cv getter = do
 		)
 	  where
 		f = if n < 2
-			then file
+			then toOsPath file
 			else
-				let (d, base) = splitFileName file
-				in d </> show n ++ "_" ++ base
+				let (d, base) = splitFileName (toOsPath file)
+				in d </> toOsPath (show n ++ "_") <> base
 		tryanother = makeunique (n + 1) file
-		alreadyexists = liftIO $ isJust <$> catchMaybeIO (R.getSymbolicLinkStatus (toRawFilePath f))
+		alreadyexists = liftIO $ isJust <$> catchMaybeIO (R.getSymbolicLinkStatus (fromOsPath f))
 		checksameurl k = ifM (elem url . map fst . map getDownloader <$> getUrls k)
 			( return Nothing
 			, tryanother
@@ -609,10 +608,10 @@ feedProblem url message = ifM (checkFeedBroken url)
  - least 23 hours. -}
 checkFeedBroken :: URLString -> Annex Bool
 checkFeedBroken url = checkFeedBroken' url =<< feedState url
-checkFeedBroken' :: URLString -> RawFilePath -> Annex Bool
+checkFeedBroken' :: URLString -> OsPath -> Annex Bool
 checkFeedBroken' url f = do
 	prev <- maybe Nothing readish
-		<$> liftIO (catchMaybeIO $ readFile (fromRawFilePath f))
+		<$> liftIO (catchMaybeIO $ readFile (fromOsPath f))
 	now <- liftIO getCurrentTime
 	case prev of
 		Nothing -> do
@@ -628,10 +627,9 @@ checkFeedBroken' url f = do
 
 clearFeedProblem :: URLString -> Annex ()
 clearFeedProblem url =
-	void $ liftIO . tryIO . removeFile . fromRawFilePath
-		=<< feedState url
+	void $ liftIO . tryIO . removeFile =<< feedState url
 
-feedState :: URLString -> Annex RawFilePath
+feedState :: URLString -> Annex OsPath
 feedState url = fromRepo $ gitAnnexFeedState $ fromUrl url Nothing False
 
 {- The feed library parses the feed to Text, and does not use the

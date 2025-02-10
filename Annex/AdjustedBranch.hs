@@ -161,7 +161,7 @@ adjustToPointer ti@(TreeItem f _m s) = catKey s >>= \case
 		Database.Keys.addAssociatedFile k f
 		exe <- catchDefaultIO False $
 			(isExecutable . fileMode) <$> 
-				(liftIO . R.getFileStatus
+				(liftIO . R.getFileStatus . fromOsPath
 					=<< calcRepo (gitAnnexLocation k))
 		let mode = fromTreeItemType $ 
 			if exe then TreeExecutable else TreeFile
@@ -171,13 +171,13 @@ adjustToPointer ti@(TreeItem f _m s) = catKey s >>= \case
 adjustToSymlink :: TreeItem -> Annex (Maybe TreeItem)
 adjustToSymlink = adjustToSymlink' gitAnnexLink
 
-adjustToSymlink' :: (RawFilePath -> Key -> Git.Repo -> GitConfig -> IO RawFilePath) -> TreeItem -> Annex (Maybe TreeItem)
+adjustToSymlink' :: (OsPath -> Key -> Git.Repo -> GitConfig -> IO OsPath) -> TreeItem -> Annex (Maybe TreeItem)
 adjustToSymlink' gitannexlink ti@(TreeItem f _m s) = catKey s >>= \case
 	Just k -> do
 		absf <- inRepo $ \r -> absPath $ fromTopFilePath f r
 		linktarget <- calcRepo $ gitannexlink absf k
 		Just . TreeItem f (fromTreeItemType TreeSymlink)
-			<$> hashSymlink linktarget
+			<$> hashSymlink (fromOsPath linktarget)
 	Nothing -> return (Just ti)
 
 -- This is a hidden branch ref, that's used as the basis for the AdjBranch,
@@ -269,7 +269,7 @@ updateAdjustedBranch adj (AdjBranch currbranch) origbranch
 			-- origbranch.
 			_ <- propigateAdjustedCommits' True origbranch adj commitlck
 			
-			origheadfile <- inRepo $ F.readFile' . toOsPath . Git.Ref.headFile
+			origheadfile <- inRepo $ F.readFile' . Git.Ref.headFile
 			origheadsha <- inRepo (Git.Ref.sha currbranch)
 			
 			b <- adjustBranch adj origbranch
@@ -282,7 +282,7 @@ updateAdjustedBranch adj (AdjBranch currbranch) origbranch
 				Just s -> do
 					inRepo $ \r -> do
 						let newheadfile = fromRef' s
-						F.writeFile' (toOsPath (Git.Ref.headFile r)) newheadfile
+						F.writeFile' (Git.Ref.headFile r) newheadfile
 						return (Just newheadfile)
 				_ -> return Nothing
 	
@@ -296,9 +296,9 @@ updateAdjustedBranch adj (AdjBranch currbranch) origbranch
 		unless ok $ case newheadfile of
 			Nothing -> noop
 			Just v -> preventCommits $ \_commitlck -> inRepo $ \r -> do
-				v' <- F.readFile' (toOsPath (Git.Ref.headFile r))
+				v' <- F.readFile' (Git.Ref.headFile r)
 				when (v == v') $
-					F.writeFile' (toOsPath (Git.Ref.headFile r)) origheadfile
+					F.writeFile' (Git.Ref.headFile r) origheadfile
 
 		return ok
 	| otherwise = preventCommits $ \commitlck -> do
@@ -451,7 +451,7 @@ preventCommits = bracket setup cleanup
   where
 	setup = do
 		lck <- fromRepo $ indexFileLock . indexFile
-		liftIO $ Git.LockFile.openLock (fromRawFilePath lck)
+		liftIO $ Git.LockFile.openLock lck
 	cleanup = liftIO . Git.LockFile.closeLock
 
 {- Commits a given adjusted tree, with the provided parent ref.
@@ -631,7 +631,7 @@ reverseAdjustedTree basis adj csha = do
 	  where
 		m = M.fromList $ map (\i@(TreeItem f' _ _) -> (norm f', i)) $
 			map diffTreeToTreeItem changes
-		norm = normalise . fromRawFilePath . getTopFilePath
+		norm = normalise . getTopFilePath
 
 diffTreeToTreeItem :: Git.DiffTree.DiffTreeItem -> TreeItem
 diffTreeToTreeItem dti = TreeItem

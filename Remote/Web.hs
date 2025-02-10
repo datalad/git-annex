@@ -116,7 +116,7 @@ setupInstance _ mu _ c _ = do
 	gitConfigSpecialRemote u c [("web", "true")]
 	return (c, u)
 
-downloadKey :: UrlIncludeExclude -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification
+downloadKey :: UrlIncludeExclude -> Key -> AssociatedFile -> OsPath -> MeterUpdate -> VerifyConfig -> Annex Verification
 downloadKey urlincludeexclude key _af dest p vc = 
 	go =<< getWebUrls' urlincludeexclude key
   where
@@ -175,14 +175,14 @@ downloadKey urlincludeexclude key _af dest p vc =
 		let b = if isCryptographicallySecure db
 			then db
 			else defaultHashBackend
-		generateEquivilantKey b (toRawFilePath dest) >>= \case
+		generateEquivilantKey b dest >>= \case
 			Nothing -> return Nothing
 			Just ek -> do
 				unless (ek `elem` eks) $
 					setEquivilantKey key ek
 				return (Just Verified)
 
-uploadKey :: Key -> AssociatedFile -> Maybe FilePath -> MeterUpdate -> Annex ()
+uploadKey :: Key -> AssociatedFile -> Maybe OsPath -> MeterUpdate -> Annex ()
 uploadKey _ _ _ _ = giveup "upload to web not supported"
 
 dropKey :: UrlIncludeExclude -> Maybe SafeDropProof -> Key -> Annex ()

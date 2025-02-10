@@ -33,7 +33,7 @@ import Crypto
 import Backend (isStableKey)
 import Annex.SpecialRemote.Config
 import Annex.Verify
-import qualified Utility.RawFilePath as R
+import qualified Utility.FileIO as F
 
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
@@ -120,7 +120,7 @@ storeChunks
 	-> ChunkConfig
 	-> EncKey
 	-> Key
-	-> FilePath
+	-> OsPath
 	-> MeterUpdate
 	-> Maybe (Cipher, EncKey)
 	-> encc
@@ -135,7 +135,7 @@ storeChunks u chunkconfig encryptor k f p enc encc storer checker =
 		-- possible without this check.
 		(UnpaddedChunks chunksize) -> ifM (isStableKey k)
 			( do
-				h <- liftIO $ openBinaryFile f ReadMode
+				h <- liftIO $ F.openBinaryFile f ReadMode
 				go chunksize h
 				liftIO $ hClose h
 			, storechunk k (FileContent f) p
@@ -257,7 +257,7 @@ retrieveChunks
 	-> ChunkConfig
 	-> EncKey
 	-> Key
-	-> FilePath
+	-> OsPath
 	-> MeterUpdate
 	-> Maybe (Cipher, EncKey)
 	-> encc
@@ -276,7 +276,7 @@ retrieveChunks retriever u vc chunkconfig encryptor basek dest basep enc encc
   where
 	go pe cks = do
 		let ls = map chunkKeyList cks
-		currsize <- liftIO $ catchMaybeIO $ getFileSize (toRawFilePath dest)
+		currsize <- liftIO $ catchMaybeIO $ getFileSize dest
 		let ls' = maybe ls (setupResume ls) currsize
 		if any null ls'
 			-- dest is already complete
@@ -339,7 +339,7 @@ retrieveChunks retriever u vc chunkconfig encryptor basek dest basep enc encc
 			-- passing the whole file content to the
 			-- incremental verifier though.
 			Nothing -> do
-				retriever (encryptor basek) basep (toRawFilePath dest) iv $
+				retriever (encryptor basek) basep dest iv $
 					retrieved iv Nothing basep
 				return $ case iv of
 					Nothing -> Right iv
@@ -347,13 +347,13 @@ retrieveChunks retriever u vc chunkconfig encryptor basek dest basep enc encc
 
 	opennew = do
 		iv <- startVerifyKeyContentIncrementally vc basek
-		h <- liftIO $ openBinaryFile dest WriteMode
+		h <- liftIO $ F.openBinaryFile dest WriteMode
 		return (h, iv)
 
 	-- Open the file and seek to the start point in order to resume.
 	openresume startpoint = do
 		-- ReadWriteMode allows seeking; AppendMode does not.
-		h <- liftIO $ openBinaryFile dest ReadWriteMode
+		h <- liftIO $ F.openBinaryFile dest ReadWriteMode
 		liftIO $ hSeek h AbsoluteSeek startpoint
 		-- No incremental verification when resuming, since that
 		-- would need to read up to the startpoint.
@@ -398,7 +398,7 @@ retrieveChunks retriever u vc chunkconfig encryptor basek dest basep enc encc
  -}
 writeRetrievedContent
 	:: LensEncParams encc
-	=> FilePath
+	=> OsPath
 	-> Maybe (Cipher, EncKey)
 	-> encc
 	-> Maybe Handle
@@ -409,7 +409,7 @@ writeRetrievedContent
 writeRetrievedContent dest enc encc mh mp content miv = case (enc, mh, content) of
 	(Nothing, Nothing, FileContent f)
 		| f == dest -> noop
-		| otherwise -> liftIO $ moveFile (toRawFilePath f) (toRawFilePath dest)
+		| otherwise -> liftIO $ moveFile f dest
 	(Just (cipher, _), _, ByteContent b) -> do
 		cmd <- gpgCmd <$> Annex.getGitConfig
 		decrypt cmd encc cipher (feedBytes b) $
@@ -419,10 +419,10 @@ writeRetrievedContent dest enc encc mh mp content miv = case (enc, mh, content) 
 		withBytes content $ \b ->
 			decrypt cmd encc cipher (feedBytes b) $
 				readBytes write
-		liftIO $ removeWhenExistsWith R.removeLink (toRawFilePath f)
+		liftIO $ removeWhenExistsWith removeFile f
 	(Nothing, _, FileContent f) -> do
 		withBytes content write
-		liftIO $ removeWhenExistsWith R.removeLink (toRawFilePath f)
+		liftIO $ removeWhenExistsWith removeFile f
 	(Nothing, _, ByteContent b) -> write b
   where
 	write b = case mh of
@@ -437,7 +437,7 @@ writeRetrievedContent dest enc encc mh mp content miv = case (enc, mh, content) 
 				Nothing -> S.hPut h
 			in meteredWrite p writer b
 		Nothing -> L.hPut h b
-	opendest = openBinaryFile dest WriteMode
+	opendest = F.openBinaryFile dest WriteMode
 
 {- Can resume when the chunk's offset is at or before the end of
  - the dest file. -}
@@ -583,4 +583,4 @@ ensureChunksAreLogged _ _ (ChunkKeys _) = return ()
 
 withBytes :: ContentSource -> (L.ByteString -> Annex a) -> Annex a
 withBytes (ByteContent b) a = a b
-withBytes (FileContent f) a = a =<< liftIO (L.readFile f)
+withBytes (FileContent f) a = a =<< liftIO (F.readFile f)

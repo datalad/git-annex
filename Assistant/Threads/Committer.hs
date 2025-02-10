@@ -67,11 +67,10 @@ commitThread = namedThread "Committer" $ do
 	liftAnnex $ do
 		-- Clean up anything left behind by a previous process
 		-- on unclean shutdown.
-		void $ liftIO $ tryIO $ removeDirectoryRecursive
-			(fromRawFilePath lockdowndir)
+		void $ liftIO $ tryIO $ removeDirectoryRecursive lockdowndir
 		void $ createAnnexDirectory lockdowndir
 	waitChangeTime $ \(changes, time) -> do
-		readychanges <- handleAdds (fromRawFilePath lockdowndir) havelsof largefilematcher annexdotfiles delayadd $
+		readychanges <- handleAdds lockdowndir havelsof largefilematcher annexdotfiles delayadd $
 			simplifyChanges changes
 		if shouldCommit False time (length readychanges) readychanges
 			then do
@@ -276,12 +275,12 @@ commitStaged msg = do
  - Any pending adds that are not ready yet are put back into the ChangeChan,
  - where they will be retried later.
  -}
-handleAdds :: FilePath -> Bool -> GetFileMatcher -> Bool -> Maybe Seconds -> [Change] -> Assistant [Change]
+handleAdds :: OsPath -> Bool -> GetFileMatcher -> Bool -> Maybe Seconds -> [Change] -> Assistant [Change]
 handleAdds lockdowndir havelsof largefilematcher annexdotfiles delayadd cs = returnWhen (null incomplete) $ do
 	let (pending, inprocess) = partition isPendingAddChange incomplete
 	let lockdownconfig = LockDownConfig
 		{ lockingFile = False
-		, hardlinkFileTmpDir = Just (toRawFilePath lockdowndir)
+		, hardlinkFileTmpDir = Just lockdowndir
 		, checkWritePerms = True
 		}
 	(postponed, toadd) <- partitionEithers
@@ -307,12 +306,13 @@ handleAdds lockdowndir havelsof largefilematcher annexdotfiles delayadd cs = ret
 		| otherwise = a
 	
 	checkpointerfile change = do
-		let file = toRawFilePath $ changeFile change
+		let file = changeFile change
 		mk <- liftIO $ isPointerFile file
 		case mk of
 			Nothing -> return (Right change)
 			Just key -> do
-				mode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus file
+				mode <- liftIO $ catchMaybeIO $
+					fileMode <$> R.getFileStatus (fromOsPath file)
 				liftAnnex $ stagePointerFile file mode =<< hashPointerFile key
 				return $ Left $ Change
 					(changeTime change)
@@ -328,7 +328,7 @@ handleAdds lockdowndir havelsof largefilematcher annexdotfiles delayadd cs = ret
 				else checkmatcher
 		| otherwise = checkmatcher
 	  where
-		f = toRawFilePath (changeFile change)
+		f = changeFile change
 		checkmatcher = ifM (liftAnnex $ checkFileMatcher NoLiveUpdate largefilematcher f)
 			( return (Left change)
 			, return (Right change)
@@ -336,9 +336,9 @@ handleAdds lockdowndir havelsof largefilematcher annexdotfiles delayadd cs = ret
 
 	addsmall [] = noop
 	addsmall toadd = liftAnnex $ void $ tryIO $
-		forM (map (toRawFilePath . changeFile) toadd) $ \f ->
+		forM (map changeFile toadd) $ \f ->
 			Command.Add.addFile Command.Add.Small f
-				=<< liftIO (R.getSymbolicLinkStatus f)
+				=<< liftIO (R.getSymbolicLinkStatus (fromOsPath f))
 
 	{- Avoid overhead of re-injesting a renamed unlocked file, by
 	 - examining the other Changes to see if a removed file has the
@@ -353,13 +353,13 @@ handleAdds lockdowndir havelsof largefilematcher annexdotfiles delayadd cs = ret
 		delta <- liftAnnex getTSDelta
 		let cfg = LockDownConfig
 			{ lockingFile = False
-			, hardlinkFileTmpDir = Just (toRawFilePath lockdowndir)
+			, hardlinkFileTmpDir = Just lockdowndir
 			, checkWritePerms = True
 			}
 		if M.null m
 			then forM toadd (addannexed' cfg)
 			else forM toadd $ \c -> do
-				mcache <- liftIO $ genInodeCache (toRawFilePath (changeFile c)) delta
+				mcache <- liftIO $ genInodeCache (changeFile c) delta
 				case mcache of
 					Nothing -> addannexed' cfg c
 					Just cache ->
@@ -376,19 +376,19 @@ handleAdds lockdowndir havelsof largefilematcher annexdotfiles delayadd cs = ret
 			(mkey, _mcache) <- liftAnnex $ do
 				showStartMessage (StartMessage "add" (ActionItemOther (Just (QuotedPath (keyFilename ks)))) (SeekInput []))
 				ingest nullMeterUpdate (Just $ LockedDown lockdownconfig ks) Nothing
-			maybe (failedingest change) (done change $ fromRawFilePath $ keyFilename ks) mkey
+			maybe (failedingest change) (done change $ keyFilename ks) mkey
 	addannexed' _ _ = return Nothing
 
 	fastadd :: Change -> Key -> Assistant (Maybe Change)
 	fastadd change key = do
 		let source = keySource $ lockedDown change
 		liftAnnex $ finishIngestUnlocked key source
-		done change (fromRawFilePath $ keyFilename source) key
+		done change (keyFilename source) key
 
 	removedKeysMap :: InodeComparisonType -> [Change] -> Annex (M.Map InodeCacheKey Key)
 	removedKeysMap ct l = do
 		mks <- forM (filter isRmChange l) $ \c ->
-			catKeyFile $ toRawFilePath $ changeFile c
+			catKeyFile $ changeFile c
 		M.fromList . concat <$> mapM mkpairs (catMaybes mks)
 	  where
 		mkpairs k = map (\c -> (inodeCacheToKey ct c, k)) <$>
@@ -401,8 +401,9 @@ handleAdds lockdowndir havelsof largefilematcher annexdotfiles delayadd cs = ret
 
 	done change file key = liftAnnex $ do
 		logStatus NoLiveUpdate key InfoPresent
-		mode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus (toRawFilePath file)
-		stagePointerFile (toRawFilePath file) mode =<< hashPointerFile key
+		mode <- liftIO $ catchMaybeIO $
+			fileMode <$> R.getFileStatus (fromOsPath file)
+		stagePointerFile file mode =<< hashPointerFile key
 		showEndOk
 		return $ Just $ finishedChange change key
 
@@ -410,14 +411,14 @@ handleAdds lockdowndir havelsof largefilematcher annexdotfiles delayadd cs = ret
 	 - and is still a hard link to its contentLocation,
 	 - before ingesting it. -}
 	sanitycheck keysource a = do
-		fs <- liftIO $ R.getSymbolicLinkStatus $ keyFilename keysource
-		ks <- liftIO $ R.getSymbolicLinkStatus $ contentLocation keysource
+		fs <- liftIO $ R.getSymbolicLinkStatus $ fromOsPath $ keyFilename keysource
+		ks <- liftIO $ R.getSymbolicLinkStatus $ fromOsPath $ contentLocation keysource
 		if deviceID ks == deviceID fs && fileID ks == fileID fs
 			then a
 			else do
 				-- remove the hard link
 				when (contentLocation keysource /= keyFilename keysource) $
-					void $ liftIO $ tryIO $ removeFile $ fromRawFilePath $ contentLocation keysource
+					void $ liftIO $ tryIO $ removeFile $ contentLocation keysource
 				return Nothing
 
 	{- Shown an alert while performing an action to add a file or
@@ -430,7 +431,7 @@ handleAdds lockdowndir havelsof largefilematcher annexdotfiles delayadd cs = ret
 	 - the add succeeded.
 	 -}
 	addaction [] a = a
-	addaction toadd a = alertWhile' (addFileAlert $ map changeFile toadd) $
+	addaction toadd a = alertWhile' (addFileAlert $ map (fromOsPath . changeFile) toadd) $
 		(,) 
 			<$> pure True
 			<*> a
@@ -440,7 +441,7 @@ handleAdds lockdowndir havelsof largefilematcher annexdotfiles delayadd cs = ret
  -
  - Check by running lsof on the repository.
  -}
-safeToAdd :: FilePath -> LockDownConfig -> Bool -> Maybe Seconds -> [Change] -> [Change] -> Assistant [Either Change Change]
+safeToAdd :: OsPath -> LockDownConfig -> Bool -> Maybe Seconds -> [Change] -> [Change] -> Assistant [Either Change Change]
 safeToAdd _ _ _ _ [] [] = return []
 safeToAdd lockdowndir lockdownconfig havelsof delayadd pending inprocess = do
 	maybe noop (liftIO . threadDelaySeconds) delayadd
@@ -451,7 +452,8 @@ safeToAdd lockdowndir lockdownconfig havelsof delayadd pending inprocess = do
 			then S.fromList . map fst3 . filter openwrite <$>
 				findopenfiles (map (keySource . lockedDown) inprocess')
 			else pure S.empty
-		let checked = map (check openfiles) inprocess'
+		let openfiles' = S.map toOsPath openfiles
+		let checked = map (check openfiles') inprocess'
 
 		{- If new events are received when files are closed,
 		 - there's no need to retry any changes that cannot
@@ -463,7 +465,7 @@ safeToAdd lockdowndir lockdownconfig havelsof delayadd pending inprocess = do
 			else return checked
   where
 	check openfiles change@(InProcessAddChange { lockedDown = ld })
-		| S.member (fromRawFilePath (contentLocation (keySource ld))) openfiles = Left change
+		| S.member (contentLocation (keySource ld)) openfiles = Left change
 	check _ change = Right change
 
 	mkinprocess (c, Just ld) = Just InProcessAddChange
@@ -478,7 +480,7 @@ safeToAdd lockdowndir lockdownconfig havelsof delayadd pending inprocess = do
 			<> " still has writers, not adding"
 		-- remove the hard link
 		when (contentLocation ks /= keyFilename ks) $
-			void $ liftIO $ tryIO $ removeFile $ fromRawFilePath $ contentLocation ks
+			void $ liftIO $ tryIO $ removeFile $ contentLocation ks
 	canceladd _ = noop
 
 	openwrite (_file, mode, _pid)
@@ -498,9 +500,9 @@ safeToAdd lockdowndir lockdownconfig havelsof delayadd pending inprocess = do
 	findopenfiles keysources = ifM crippledFileSystem
 		( liftIO $ do
 			let segments = segmentXargsUnordered $
-				map (fromRawFilePath . keyFilename) keysources
+				map (fromOsPath . keyFilename) keysources
 			concat <$> forM segments (\fs -> Lsof.query $ "--" : fs)
-		, liftIO $ Lsof.queryDir lockdowndir
+		, liftIO $ Lsof.queryDir (fromOsPath lockdowndir)
 		)
 
 {- After a Change is committed, queue any necessary transfers or drops
@@ -521,5 +523,5 @@ checkChangeContent change@(Change { changeInfo = i }) =
 			handleDrops "file renamed" present k af []
   where
 	f = changeFile change
-	af = AssociatedFile (Just (toRawFilePath f))
+	af = AssociatedFile (Just f)
 checkChangeContent _ = noop

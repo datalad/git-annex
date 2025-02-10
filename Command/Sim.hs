@@ -61,13 +61,13 @@ startsim simfile = startsim' simfile >>= cleanup
 
 startsim' :: Maybe FilePath -> Annex (SimState SimRepo)
 startsim' simfile = do
-	simdir <- fromRawFilePath <$> fromRepo gitAnnexSimDir
+	simdir <- fromRepo gitAnnexSimDir
 	whenM (liftIO $ doesDirectoryExist simdir) $
 		giveup "A sim was previously started. Use `git-annex sim end` to stop it before starting a new one."
 	
 	showLongNote $ UnquotedString "Sim started."
 	rng <- liftIO $ fst . random <$> getStdGen
-	let st = emptySimState rng simdir
+	let st = emptySimState rng (fromOsPath simdir)
 	case simfile of
 		Nothing -> startup simdir st []
 		Just f -> liftIO (readFile f) >>= \c -> 
@@ -77,7 +77,7 @@ startsim' simfile = do
   where
 	startup simdir st cs = do
 		repobyname <- mkGetExistingRepoByName
-		createAnnexDirectory (toRawFilePath simdir)
+		createAnnexDirectory simdir
 		let st' = recordSeed st cs
 		go st' repobyname cs
 
@@ -88,7 +88,7 @@ startsim' simfile = do
 	
 endsim :: CommandSeek
 endsim = do
-	simdir <- fromRawFilePath <$> fromRepo gitAnnexSimDir
+	simdir <- fromRepo gitAnnexSimDir
 	whenM (liftIO $ doesDirectoryExist simdir) $ do
 		liftIO $ removeDirectoryRecursive simdir
 	showLongNote $ UnquotedString "Sim ended."

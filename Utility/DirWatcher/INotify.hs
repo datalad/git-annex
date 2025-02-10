@@ -47,7 +47,7 @@ import Control.Exception (throw)
  - So this will fail if there are too many subdirectories. The
  - errHook is called when this happens.
  -}
-watchDir :: INotify -> FilePath -> (FilePath -> Bool) -> Bool -> WatchHooks -> IO ()
+watchDir :: INotify -> OsPath -> (OsPath -> Bool) -> Bool -> WatchHooks -> IO ()
 watchDir i dir ignored scanevents hooks
 	| ignored dir = noop
 	| otherwise = do
@@ -56,10 +56,10 @@ watchDir i dir ignored scanevents hooks
 		lock <- newLock
 		let handler event = withLock lock (void $ go event)
 		flip catchNonAsync failedwatch $ do
-			void (addWatch i watchevents (toInternalFilePath dir) handler)
+			void (addWatch i watchevents (fromOsPath dir) handler)
 				`catchIO` failedaddwatch
 			withLock lock $
-				mapM_ scan =<< filter (not . dirCruft . toRawFilePath) <$>
+				mapM_ scan =<< filter (`notElem` dirCruft) <$>
 					getDirectoryContents dir
   where
 	recurse d = watchDir i d ignored scanevents hooks
@@ -108,22 +108,21 @@ watchDir i dir ignored scanevents hooks
 							runhook addHook f ms
 				_ -> noop
 	  where
-		f = fromInternalFilePath fi
+		f = toOsPath fi
 
 	-- Closing a file is assumed to mean it's done being written,
 	-- so a new add event is sent.
 	go (Closed { isDirectory = False, maybeFilePath = Just fi }) =
-			checkfiletype Files.isRegularFile addHook $ 
-				fromInternalFilePath fi
+			checkfiletype Files.isRegularFile addHook (toOsPath fi)
 
 	-- When a file or directory is moved in, scan it to add new
 	-- stuff.
-	go (MovedIn { filePath = fi }) = scan $ fromInternalFilePath fi
+	go (MovedIn { filePath = fi }) = scan (toOsPath fi)
 	go (MovedOut { isDirectory = isd, filePath = fi })
 		| isd = runhook delDirHook f Nothing
 		| otherwise = runhook delHook f Nothing
 	  where
-		f = fromInternalFilePath fi
+		f = toOsPath fi
 
 	-- Verify that the deleted item really doesn't exist,
 	-- since there can be spurious deletion events for items
@@ -134,11 +133,11 @@ watchDir i dir ignored scanevents hooks
 		| otherwise = guarded $ runhook delHook f Nothing
 	  where
 		guarded = unlessM (filetype (const True) f)
-		f = fromInternalFilePath fi
+		f = toOsPath fi
 
 	go (Modified { isDirectory = isd, maybeFilePath = Just fi })
 		| isd = noop
-		| otherwise = runhook modifyHook (fromInternalFilePath fi) Nothing
+		| otherwise = runhook modifyHook (toOsPath fi) Nothing
 
 	go _ = noop
 
@@ -150,35 +149,36 @@ watchDir i dir ignored scanevents hooks
 
 	indir f = dir </> f
 
-	getstatus f = catchMaybeIO $ R.getSymbolicLinkStatus $ toRawFilePath $ indir f
+	getstatus f = catchMaybeIO $ R.getSymbolicLinkStatus $ fromOsPath $ indir f
+	
 	checkfiletype check h f = do
 		ms <- getstatus f
 		case ms of
 			Just s
 				| check s -> runhook h f ms
 			_ -> noop
-	filetype t f = catchBoolIO $ t <$> R.getSymbolicLinkStatus (toRawFilePath (indir f))
+	filetype t f = catchBoolIO $ t <$> R.getSymbolicLinkStatus (fromOsPath (indir f))
 
 	failedaddwatch e
 		-- Inotify fails when there are too many watches with a
 		-- disk full error.
 		| isFullError e =
 			case errHook hooks of
-				Nothing -> giveup $ "failed to add inotify watch on directory " ++ dir ++ " (" ++ show e ++ ")"
+				Nothing -> giveup $ "failed to add inotify watch on directory " ++ fromOsPath dir ++ " (" ++ show e ++ ")"
 				Just hook -> tooManyWatches hook dir
 		-- The directory could have been deleted.
 		| isDoesNotExistError e = return ()
 		| otherwise = throw e
 
-	failedwatch e = hPutStrLn stderr $ "failed to add watch on directory " ++ dir ++ " (" ++ show e ++ ")"
+	failedwatch e = hPutStrLn stderr $ "failed to add watch on directory " ++ fromOsPath dir ++ " (" ++ show e ++ ")"
 
-tooManyWatches :: (String -> Maybe FileStatus -> IO ()) -> FilePath -> IO ()
+tooManyWatches :: (String -> Maybe FileStatus -> IO ()) -> OsPath -> IO ()
 tooManyWatches hook dir = do
 	sysctlval <- querySysctl [Param maxwatches] :: IO (Maybe Integer)
 	hook (unlines $ basewarning : maybe withoutsysctl withsysctl sysctlval) Nothing
   where
 	maxwatches = "fs.inotify.max_user_watches"
-	basewarning = "Too many directories to watch! (Not watching " ++ dir ++")"
+	basewarning = "Too many directories to watch! (Not watching " ++ fromOsPath dir ++")"
 	withoutsysctl = ["Increase the value in /proc/sys/fs/inotify/max_user_watches"]
 	withsysctl n = let new = n * 10 in
 		[ "Increase the limit permanently by running:"
@@ -197,9 +197,3 @@ querySysctl ps = getM go ["sysctl", "/sbin/sysctl", "/usr/sbin/sysctl"]
 			Nothing -> return Nothing
 			Just s -> return $ parsesysctl s
 	parsesysctl s = readish =<< lastMaybe (words s)
-
-toInternalFilePath :: FilePath -> RawFilePath
-toInternalFilePath = toRawFilePath
-
-fromInternalFilePath :: RawFilePath -> FilePath
-fromInternalFilePath = fromRawFilePath

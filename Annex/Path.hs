@@ -40,20 +40,20 @@ import qualified Data.Map as M
  - git-annex-shell or git-remote-annex, this finds a git-annex program
  - instead.
  -}
-programPath :: IO FilePath
+programPath :: IO OsPath
 programPath = go =<< getEnv "GIT_ANNEX_DIR"
   where
 	go (Just dir) = do
 		name <- reqgitannex <$> getProgName
-		return (dir </> name)
+		return (toOsPath dir </> toOsPath name)
 	go Nothing = do
 		name <- getProgName
 		exe <- if isgitannex name
 			then getExecutablePath
 			else pure "git-annex"
-		p <- if isAbsolute exe
+		p <- if isAbsolute (toOsPath exe)
 			then return exe
-			else fromMaybe exe <$> readProgramFile
+			else maybe exe fromOsPath <$> readProgramFile
 		maybe cannotFindProgram return =<< searchPath p
 
 	reqgitannex name
@@ -62,15 +62,15 @@ programPath = go =<< getEnv "GIT_ANNEX_DIR"
 	isgitannex = flip M.notMember otherMulticallCommands
 
 {- Returns the path for git-annex that is recorded in the programFile. -}
-readProgramFile :: IO (Maybe FilePath)
+readProgramFile :: IO (Maybe OsPath)
 readProgramFile = catchDefaultIO Nothing $ do
 	programfile <- programFile
-	headMaybe . lines <$> readFile programfile
+	fmap toOsPath . headMaybe . lines <$> readFile (fromOsPath programfile)
 
 cannotFindProgram :: IO a
 cannotFindProgram = do
 	f <- programFile
-	giveup $ "cannot find git-annex program in PATH or in " ++ f
+	giveup $ "cannot find git-annex program in PATH or in " ++ fromOsPath f
 
 {- Runs a git-annex child process.
  -
@@ -88,7 +88,7 @@ gitAnnexChildProcess
 gitAnnexChildProcess subcmd ps f a = do
 	cmd <- liftIO programPath
 	ps' <- gitAnnexChildProcessParams subcmd ps
-	pidLockChildProcess cmd ps' f a
+	pidLockChildProcess (fromOsPath cmd) ps' f a
 
 {- Parameters to pass to a git-annex child process to run a subcommand
  - with some parameters.

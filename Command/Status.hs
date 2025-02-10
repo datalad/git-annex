@@ -66,6 +66,6 @@ displayStatus s = do
 	absf <- fromRepo $ fromTopFilePath (statusFile s)
 	f <- liftIO $ relPathCwdToFile absf
 	qp <- coreQuotePath <$> Annex.getGitConfig
-	unlessM (showFullJSON $ JSONChunk [("status", [c]), ("file", fromRawFilePath f)]) $
+	unlessM (showFullJSON $ JSONChunk [("status", [c]), ("file", fromOsPath f)]) $
 		liftIO $ B8.putStrLn $ quote qp $
 			UnquotedString (c : " ") <> QuotedPath f

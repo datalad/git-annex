@@ -34,7 +34,7 @@ describeUnusedWhenBig = describeUnused' True
  - than the remaining free disk space, or more than 1/10th the total
  - disk space being unused keys all suggest a problem. -}
 describeUnused' :: Bool -> Assistant (Maybe TenseText)
-describeUnused' whenbig = liftAnnex $ go =<< readUnusedLog ""
+describeUnused' whenbig = liftAnnex $ go =<< readUnusedLog (literalOsPath "")
   where
 	go m = do
 		let num = M.size m
@@ -64,13 +64,13 @@ describeUnused' whenbig = liftAnnex $ go =<< readUnusedLog ""
 
 	sumkeysize s k = s + fromMaybe 0 (fromKey keySize k)
 
-	forpath a = inRepo $ liftIO . a . fromRawFilePath . Git.repoPath
+	forpath a = inRepo $ liftIO . a . fromOsPath . Git.repoPath
 
 {- With a duration, expires all unused files that are older.
  - With Nothing, expires *all* unused files. -}
 expireUnused :: Maybe Duration -> Assistant ()
 expireUnused duration = do
-	m <- liftAnnex $ readUnusedLog ""
+	m <- liftAnnex $ readUnusedLog (literalOsPath "")
 	now <- liftIO getPOSIXTime
 	let oldkeys = M.keys $ M.filter (tooold now) m
 	forM_ oldkeys $ \k -> do

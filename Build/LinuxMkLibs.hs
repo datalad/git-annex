@@ -26,11 +26,12 @@ import Utility.Path.AbsRel
 import Utility.FileMode
 import Utility.CopyFile
 import Utility.FileSystemEncoding
+import Utility.SystemDirectory
 
 mklibs :: FilePath -> a -> IO Bool
 mklibs top _installedbins = do
-	fs <- dirContentsRecursive top
-	exes <- filterM checkExe fs
+	fs <- dirContentsRecursive (toRawFilePath top)
+	exes <- filterM checkExe (map fromRawFilePath fs)
 	libs <- runLdd exes
 	
 	glibclibs <- glibcLibs

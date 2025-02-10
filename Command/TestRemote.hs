@@ -87,8 +87,7 @@ start o = starting "testremote" (ActionItemOther (Just (UnquotedString (testRemo
 				showAction "generating test keys"
 				NE.fromList
 					<$> mapM randKey (keySizes basesz fast)
-		fs -> NE.fromList
-			<$> mapM (getReadonlyKey r . toRawFilePath) fs
+		fs -> NE.fromList <$> mapM (getReadonlyKey r . toOsPath) fs
 	let r' = if null (testReadonlyFile o)
 		then r
 		else r { Remote.readonly = True }
@@ -256,15 +255,15 @@ test runannex mkr mkk =
 		get r k
 	, check "fsck downloaded object" fsck
 	, check "retrieveKeyFile resume from 0" $ \r k -> do
-		tmp <- toOsPath <$> prepTmp k
+		tmp <- prepTmp k
 		liftIO $ F.writeFile' tmp mempty
 		lockContentForRemoval k noop removeAnnex
 		get r k
 	, check "fsck downloaded object" fsck
 	, check "retrieveKeyFile resume from 33%" $ \r k -> do
-		loc <- fromRawFilePath <$> Annex.calcRepo (gitAnnexLocation k)
-		tmp <- toOsPath <$> prepTmp k
-		partial <- liftIO $ bracket (openBinaryFile loc ReadMode) hClose $ \h -> do
+		loc <- Annex.calcRepo (gitAnnexLocation k)
+		tmp <- prepTmp k
+		partial <- liftIO $ bracket (F.openBinaryFile loc ReadMode) hClose $ \h -> do
 			sz <- hFileSize h
 			L.hGet h $ fromInteger $ sz `div` 3
 		liftIO $ F.writeFile tmp partial
@@ -272,8 +271,8 @@ test runannex mkr mkk =
 		get r k
 	, check "fsck downloaded object" fsck
 	, check "retrieveKeyFile resume from end" $ \r k -> do
-		loc <- fromRawFilePath <$> Annex.calcRepo (gitAnnexLocation k)
-		tmp <- fromRawFilePath <$> prepTmp k
+		loc <- Annex.calcRepo (gitAnnexLocation k)
+		tmp <- prepTmp k
 		void $ liftIO $ copyFileExternal CopyAllMetaData loc tmp
 		lockContentForRemoval k noop removeAnnex
 		get r k
@@ -303,7 +302,7 @@ test runannex mkr mkk =
 				loc <- Annex.calcRepo (gitAnnexLocation k)
 				verifier k loc
 	get r k = logStatusAfter NoLiveUpdate k $ getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k (AssociatedFile Nothing) Nothing $ \dest ->
-		tryNonAsync (Remote.retrieveKeyFile r k (AssociatedFile Nothing) (fromRawFilePath dest) nullMeterUpdate (RemoteVerify r)) >>= \case
+		tryNonAsync (Remote.retrieveKeyFile r k (AssociatedFile Nothing) dest nullMeterUpdate (RemoteVerify r)) >>= \case
 			Right v -> return (True, v)
 			Left _ -> return (False, UnVerified)
 	store r k = Remote.storeKey r k (AssociatedFile Nothing) Nothing nullMeterUpdate
@@ -342,8 +341,8 @@ testExportTree runannex mkr mkk1 mkk2 =
 	-- renames are not tested because remotes do not need to support them
 	]
   where
-	testexportdirectory = "testremote-export"
-	testexportlocation = mkExportLocation (toRawFilePath (testexportdirectory </> "location"))
+	testexportdirectory = literalOsPath "testremote-export"
+	testexportlocation = mkExportLocation (testexportdirectory </> literalOsPath "location")
 	check desc a = testCase desc $ do
 		let a' = mkr >>= \case
 			Just r -> do
@@ -354,17 +353,17 @@ testExportTree runannex mkr mkk1 mkk2 =
 			Nothing -> return True
 		runannex a' @? "failed"
 	storeexport ea k = do
-		loc <- fromRawFilePath <$> Annex.calcRepo (gitAnnexLocation k)
+		loc <- Annex.calcRepo (gitAnnexLocation k)
 		Remote.storeExport ea loc k testexportlocation nullMeterUpdate
-	retrieveexport ea k = withTmpFile (toOsPath "exported") $ \tmp h -> do
+	retrieveexport ea k = withTmpFile (literalOsPath "exported") $ \tmp h -> do
 		liftIO $ hClose h
-		tryNonAsync (Remote.retrieveExport ea k testexportlocation (fromRawFilePath (fromOsPath tmp)) nullMeterUpdate) >>= \case
+		tryNonAsync (Remote.retrieveExport ea k testexportlocation tmp nullMeterUpdate) >>= \case
 			Left _ -> return False
-			Right v -> verifyKeyContentPostRetrieval RetrievalAllKeysSecure AlwaysVerify v k (fromOsPath tmp)
+			Right v -> verifyKeyContentPostRetrieval RetrievalAllKeysSecure AlwaysVerify v k tmp
 	checkpresentexport ea k = Remote.checkPresentExport ea k testexportlocation
 	removeexport ea k = Remote.removeExport ea k testexportlocation
 	removeexportdirectory ea = case Remote.removeExportDirectory ea of
-		Just a -> a (mkExportDirectory (toRawFilePath testexportdirectory))
+		Just a -> a (mkExportDirectory testexportdirectory)
 		Nothing -> noop
 
 testUnavailable :: RunAnnex -> Annex (Maybe Remote) -> Annex Key -> [TestTree]
@@ -377,14 +376,14 @@ testUnavailable runannex mkr mkk =
 		Remote.checkPresent r k
 	, check (== Right False) "retrieveKeyFile" $ \r k ->
 		logStatusAfter NoLiveUpdate k $ getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k (AssociatedFile Nothing) Nothing $ \dest ->
-			tryNonAsync (Remote.retrieveKeyFile r k (AssociatedFile Nothing) (fromRawFilePath dest) nullMeterUpdate (RemoteVerify r)) >>= \case
+			tryNonAsync (Remote.retrieveKeyFile r k (AssociatedFile Nothing) dest nullMeterUpdate (RemoteVerify r)) >>= \case
 				Right v -> return (True, v)
 				Left _ -> return (False, UnVerified)
 	, check (== Right False) "retrieveKeyFileCheap" $ \r k -> case Remote.retrieveKeyFileCheap r of
 		Nothing -> return False
 		Just a -> logStatusAfter NoLiveUpdate k $ getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k (AssociatedFile Nothing) Nothing $ \dest -> 
 			unVerified $ isRight
-				<$> tryNonAsync (a k (AssociatedFile Nothing) (fromRawFilePath dest))
+				<$> tryNonAsync (a k (AssociatedFile Nothing) dest)
 	]
   where
 	check checkval desc a = testCase desc $ 
@@ -430,24 +429,24 @@ keySizes base fast = filter want
 		| otherwise = sz > 0
 
 randKey :: Int -> Annex Key
-randKey sz = withTmpFile (toOsPath "randkey") $ \f h -> do
+randKey sz = withTmpFile (literalOsPath "randkey") $ \f h -> do
 	gen <- liftIO (newGenIO :: IO SystemRandom)
 	case genBytes sz gen of
 		Left e -> giveup $ "failed to generate random key: " ++ show e
 		Right (rand, _) -> liftIO $ B.hPut h rand
 	liftIO $ hClose h
 	let ks = KeySource
-		{ keyFilename = fromOsPath f
-		, contentLocation = fromOsPath f
+		{ keyFilename = f
+		, contentLocation = f
 		, inodeCache = Nothing
 		}
 	k <- case Types.Backend.genKey Backend.Hash.testKeyBackend of
 		Just a -> a ks nullMeterUpdate
 		Nothing -> giveup "failed to generate random key (backend problem)"
-	_ <- moveAnnex k (AssociatedFile Nothing) (fromOsPath f)
+	_ <- moveAnnex k (AssociatedFile Nothing) f
 	return k
 
-getReadonlyKey :: Remote -> RawFilePath -> Annex Key
+getReadonlyKey :: Remote -> OsPath -> Annex Key
 getReadonlyKey r f = do
 	qp <- coreQuotePath <$> Annex.getGitConfig
 	lookupKey f >>= \case

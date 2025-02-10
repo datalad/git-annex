@@ -44,13 +44,11 @@ import Annex.TransferrerPool
 import Annex.StallDetection
 import Backend (isCryptographicallySecureKey)
 import Types.StallDetection
-import qualified Utility.RawFilePath as R
 
 import Control.Concurrent
 import Control.Concurrent.Async
 import Control.Concurrent.STM hiding (retry)
 import qualified Data.Map.Strict as M
-import qualified System.FilePath.ByteString as P
 import Data.Ord
 
 -- Upload, supporting canceling detected stalls.
@@ -83,7 +81,7 @@ download r key f d witness =
 	go sd = getViaTmp (Remote.retrievalSecurityPolicy r) vc key f Nothing $ \dest ->
 		download' (Remote.uuid r) key f sd d (go' dest) witness
 	go' dest p = verifiedAction $
-		Remote.retrieveKeyFile r key f (fromRawFilePath dest) p vc
+		Remote.retrieveKeyFile r key f dest p vc
 	vc = Remote.RemoteVerify r
 
 -- Download, not supporting canceling detected stalls.
@@ -146,10 +144,10 @@ runTransfer' ignorelock t eventualbackend afile stalldetection retrydecider tran
 					else recordFailedTransfer t info
 				return v
 	
-	prep :: RawFilePath -> Maybe RawFilePath -> Annex () -> ModeSetter -> Annex (Maybe (LockHandle, Maybe LockHandle), Bool)
+	prep :: OsPath -> Maybe OsPath -> Annex () -> ModeSetter -> Annex (Maybe (LockHandle, Maybe LockHandle), Bool)
 #ifndef mingw32_HOST_OS
 	prep lckfile moldlckfile createtfile mode = catchPermissionDenied (const prepfailed) $ do
-		createAnnexDirectory $ P.takeDirectory lckfile
+		createAnnexDirectory $ takeDirectory lckfile
 		tryLockExclusive (Just mode) lckfile >>= \case
 			Nothing -> return (Nothing, True)
 			-- Since the lock file is removed in cleanup,
@@ -163,7 +161,7 @@ runTransfer' ignorelock t eventualbackend afile stalldetection retrydecider tran
 						createtfile
 						return (Just (lockhandle, Nothing), False)
 					Just oldlckfile -> do
-						createAnnexDirectory $ P.takeDirectory oldlckfile
+						createAnnexDirectory $ takeDirectory oldlckfile
 						tryLockExclusive (Just mode) oldlckfile >>= \case
 							Nothing -> do
 								liftIO $ dropLock lockhandle
@@ -183,14 +181,14 @@ runTransfer' ignorelock t eventualbackend afile stalldetection retrydecider tran
 				)
 #else
 	prep lckfile moldlckfile createtfile _mode = catchPermissionDenied (const prepfailed) $ do
-		createAnnexDirectory $ P.takeDirectory lckfile
+		createAnnexDirectory $ takeDirectory lckfile
 		catchMaybeIO (liftIO $ lockExclusive lckfile) >>= \case
 			Just (Just lockhandle) -> case moldlckfile of
 				Nothing -> do
 					createtfile
 					return (Just (lockhandle, Nothing), False)
 				Just oldlckfile -> do
-					createAnnexDirectory $ P.takeDirectory oldlckfile
+					createAnnexDirectory $ takeDirectory oldlckfile
 					catchMaybeIO (liftIO $ lockExclusive oldlckfile) >>= \case
 						Just (Just oldlockhandle) -> do
 							createtfile
@@ -204,10 +202,10 @@ runTransfer' ignorelock t eventualbackend afile stalldetection retrydecider tran
 
 	cleanup _ _ _ Nothing = noop
 	cleanup tfile lckfile moldlckfile (Just (lockhandle, moldlockhandle)) = do
-		void $ tryIO $ R.removeLink tfile
+		void $ tryIO $ removeFile tfile
 #ifndef mingw32_HOST_OS
-		void $ tryIO $ R.removeLink lckfile
-		maybe noop (void . tryIO . R.removeLink) moldlckfile
+		void $ tryIO $ removeFile lckfile
+		maybe noop (void . tryIO . removeFile) moldlckfile
 		maybe noop dropLock moldlockhandle
 		dropLock lockhandle
 #else
@@ -219,7 +217,7 @@ runTransfer' ignorelock t eventualbackend afile stalldetection retrydecider tran
 		maybe noop dropLock moldlockhandle
 		dropLock lockhandle
 		void $ tryIO $ R.removeLink lckfile
-		maybe noop (void . tryIO . R.removeLink) moldlckfile
+		maybe noop (void . tryIO . removeFile) moldlckfile
 #endif
 
 	retry numretries oldinfo metervar run =

@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module CmdLine (
 	dispatch,
 	usage,
@@ -29,6 +31,7 @@ import Annex.Action
 import Annex.Environment
 import Command
 import Types.Messages
+import qualified Utility.OsString as OS
 
 {- Parses input arguments, finds a matching Command, and runs it. -}
 dispatch :: Bool -> Bool -> CmdParams -> [Command] -> [(String, String)] -> IO Git.Repo -> String -> String -> IO ()
@@ -159,17 +162,18 @@ findAddonCommand Nothing = return Nothing
 findAddonCommand (Just subcommandname) =
 	searchPath c >>= \case
 		Nothing -> return Nothing
-		Just p -> return (Just (mkAddonCommand p subcommandname))
+		Just p -> return (Just (mkAddonCommand (fromOsPath p) subcommandname))
   where
 	c = "git-annex-" ++ subcommandname
 
 findAllAddonCommands :: IO [Command]
 findAllAddonCommands = 
 	filter isaddoncommand
-		. map (\p -> mkAddonCommand p (deprefix p))
-		<$> searchPathContents ("git-annex-" `isPrefixOf`)
+		. map go
+		<$> searchPathContents (literalOsPath "git-annex-" `OS.isPrefixOf`)
   where
-	deprefix = replace "git-annex-" "" . takeFileName
+	go p = mkAddonCommand (fromOsPath p) (deprefix p)
+	deprefix = replace "git-annex-" "" . fromOsPath . takeFileName
 	isaddoncommand c
 		-- git-annex-shell
 		| cmdname c == "shell" = False

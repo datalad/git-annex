@@ -94,7 +94,7 @@ stages ToHere = transferStages
 stages (FromRemoteToRemote _ _) = transferStages
 stages (FromAnywhereToRemote _) = transferStages
 
-start :: LiveUpdate -> FromToHereOptions -> RemoveWhen -> SeekInput -> RawFilePath -> Key -> CommandStart
+start :: LiveUpdate -> FromToHereOptions -> RemoveWhen -> SeekInput -> OsPath -> Key -> CommandStart
 start lu fromto removewhen si f k = start' lu fromto removewhen afile si k ai
   where
 	afile = AssociatedFile (Just f)

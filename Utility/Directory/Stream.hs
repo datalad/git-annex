@@ -19,7 +19,6 @@ module Utility.Directory.Stream (
 
 import Control.Monad
 import Control.Concurrent
-import qualified Data.ByteString as B
 import Data.Maybe
 import Prelude
 
@@ -27,12 +26,14 @@ import Prelude
 import qualified System.Win32 as Win32
 import System.FilePath
 #else
+import qualified Data.ByteString as B
 import qualified System.Posix.Directory.ByteString as Posix
 #endif
 
 import Utility.Directory
 import Utility.Exception
 import Utility.FileSystemEncoding
+import Utility.OsPath
 
 #ifndef mingw32_HOST_OS
 data DirectoryHandle = DirectoryHandle IsOpen Posix.DirStream
@@ -117,5 +118,5 @@ isDirectoryPopulated d = bracket (openDirectory d) closeDirectory check
 		case v of
 			Nothing -> return False
 			Just f
-				| not (dirCruft f) -> return True
+				| not (toOsPath f `elem` dirCruft) -> return True
 				| otherwise -> check h

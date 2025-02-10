@@ -7,6 +7,7 @@
  -}
 
 {-# LANGUAGE OverloadedStrings, TypeSynonymInstances #-}
+{-# LANGUAGE CPP #-}
 
 module Git.Quote (
 	unquote,
@@ -71,17 +72,23 @@ instance Quoteable RawFilePath where
 
 	noquote = id
 
+#ifdef WITH_OSPATH
+instance Quoteable OsPath where
+	quote qp f = quote qp (fromOsPath f :: RawFilePath)
+	noquote = fromOsPath
+#endif
+
 -- Allows building up a string that contains paths, which will get quoted.
 -- With OverloadedStrings, strings are passed through without quoting.
 -- Eg: QuotedPath f <> ": not found"
 data StringContainingQuotedPath
 	= UnquotedString String 
 	| UnquotedByteString S.ByteString 
-	| QuotedPath RawFilePath
+	| QuotedPath OsPath
 	| StringContainingQuotedPath :+: StringContainingQuotedPath
 	deriving (Show, Eq)
 
-quotedPaths :: [RawFilePath] -> StringContainingQuotedPath
+quotedPaths :: [OsPath] -> StringContainingQuotedPath
 quotedPaths [] = mempty
 quotedPaths (p:ps) = QuotedPath p <> if null ps
 	then mempty
@@ -90,12 +97,12 @@ quotedPaths (p:ps) = QuotedPath p <> if null ps
 instance Quoteable StringContainingQuotedPath where
 	quote _ (UnquotedString s) = safeOutput (encodeBS s)
 	quote _ (UnquotedByteString s) = safeOutput s
-	quote qp (QuotedPath p) = quote qp p
+	quote qp (QuotedPath p) = quote qp (fromOsPath p :: RawFilePath)
 	quote qp (a :+: b) = quote qp a <> quote qp b
 
 	noquote (UnquotedString s) = encodeBS s
 	noquote (UnquotedByteString s) = s
-	noquote (QuotedPath p) = p
+	noquote (QuotedPath p) = fromOsPath p
 	noquote (a :+: b) = noquote a <> noquote b
 
 instance IsString StringContainingQuotedPath where

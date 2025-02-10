@@ -60,7 +60,7 @@ needsUpgrade v
 		g <- Annex.gitRepo
 		p <- liftIO $ absPath $ Git.repoPath g
 		return $ Just $ unwords
-			[ "Repository", fromRawFilePath p
+			[ "Repository", fromOsPath p
 			, "is at"
 			, if v `elem` supportedVersions 
 				then "supported"
@@ -117,7 +117,7 @@ upgrade automatic destversion = go =<< getVersion
 	-- This avoids complicating the upgrade code by needing to handle
 	-- upgrading a git repo other than the current repo.
 	upgraderemote = do
-		rp <- fromRawFilePath <$> fromRepo Git.repoPath
+		rp <- fromOsPath <$> fromRepo Git.repoPath
 		ok <- gitAnnexChildProcess "upgrade"
 			[ Param "--quiet"
 			, Param "--autoonly"

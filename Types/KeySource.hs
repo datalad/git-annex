@@ -8,7 +8,7 @@
 module Types.KeySource where
 
 import Utility.InodeCache
-import System.FilePath.ByteString (RawFilePath)
+import Utility.OsPath
 
 {- When content is in the process of being ingested into the annex,
  - and a Key generated from it, this data type is used. 
@@ -23,8 +23,8 @@ import System.FilePath.ByteString (RawFilePath)
  - files that may be made while they're in the process of being ingested.
  -}
 data KeySource = KeySource
-	{ keyFilename :: RawFilePath
-	, contentLocation :: RawFilePath
+	{ keyFilename :: OsPath
+	, contentLocation :: OsPath
 	, inodeCache :: Maybe InodeCache
 	}
 	deriving (Show)

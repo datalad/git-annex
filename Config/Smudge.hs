@@ -20,7 +20,6 @@ import Annex.Version
 import qualified Utility.FileIO as F
 
 import qualified Data.ByteString as S
-import qualified System.FilePath.ByteString as P
 
 configureSmudgeFilter :: Annex ()
 configureSmudgeFilter = unlessM (fromRepo Git.repoIsLocalBare) $ do
@@ -47,11 +46,11 @@ configureSmudgeFilter = unlessM (fromRepo Git.repoIsLocalBare) $ do
 	gfs <- readattr gf
 	gittop <- Git.localGitDir <$> gitRepo
 	liftIO $ unless ("filter=annex" `S.isInfixOf` (lfs <> gfs)) $ do
-		createDirectoryUnder [gittop] (P.takeDirectory lf)
-		F.writeFile' (toOsPath lf) $
+		createDirectoryUnder [gittop] (takeDirectory lf)
+		F.writeFile' lf $
 			linesFile' (lfs <> encodeBS ("\n" ++ unlines stdattr))
   where
-	readattr = liftIO . catchDefaultIO mempty . F.readFile' . toOsPath
+	readattr = liftIO . catchDefaultIO mempty . F.readFile'
 
 configureSmudgeFilterProcess :: Annex ()
 configureSmudgeFilterProcess =
@@ -70,8 +69,8 @@ deconfigureSmudgeFilter :: Annex ()
 deconfigureSmudgeFilter = do
 	lf <- Annex.fromRepo Git.attributesLocal
 	ls <- liftIO $ catchDefaultIO [] $ 
-		map decodeBS . fileLines' <$> F.readFile' (toOsPath lf)
-	liftIO $ writeFile (fromRawFilePath lf) $ unlines $
+		map decodeBS . fileLines' <$> F.readFile' lf
+	liftIO $ writeFile (fromOsPath lf) $ unlines $
 		filter (\l -> l `notElem` stdattr && not (null l)) ls
 	unsetConfig (ConfigKey "filter.annex.smudge")
 	unsetConfig (ConfigKey "filter.annex.clean")

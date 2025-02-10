@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE CPP #-}
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Utility.Tmp (
@@ -19,12 +20,10 @@ module Utility.Tmp (
 ) where
 
 import System.IO
-import System.Directory
 import Control.Monad.IO.Class
 import System.IO.Error
 import Data.Char
 import qualified Data.ByteString as B
-import qualified System.FilePath.ByteString as P
 
 import Utility.Exception
 import Utility.FileSystemEncoding
@@ -32,6 +31,7 @@ import Utility.FileMode
 import qualified Utility.RawFilePath as R
 import qualified Utility.FileIO as F
 import Utility.OsPath
+import Utility.SystemDirectory
 
 type Template = OsString
 
@@ -58,14 +58,14 @@ openTmpFileIn dir template = F.openTempFile dir template
 viaTmp :: (MonadMask m, MonadIO m) => (OsPath -> v -> m ()) -> OsPath -> v -> m ()
 viaTmp a file content = bracketIO setup cleanup use
   where
-	(dir, base) = P.splitFileName (fromOsPath file)
-	template = relatedTemplate (base <> ".tmp")
+	(dir, base) = splitFileName file
+	template = relatedTemplate (fromOsPath base <> ".tmp")
 	setup = do
-		createDirectoryIfMissing True (fromRawFilePath dir)
-		openTmpFileIn (toOsPath dir) template
+		createDirectoryIfMissing True dir
+		openTmpFileIn dir template
 	cleanup (tmpfile, h) = do
 		_ <- tryIO $ hClose h
-		tryIO $ R.removeLink (fromOsPath tmpfile)
+		tryIO $ removeFile tmpfile
 	use (tmpfile, h) = do
 		let tmpfile' = fromOsPath tmpfile
 		-- Make mode the same as if the file were created usually,
@@ -83,8 +83,8 @@ viaTmp a file content = bracketIO setup cleanup use
  - (or in "." if there is none) then removes the file. -}
 withTmpFile :: (MonadIO m, MonadMask m) => Template -> (OsPath -> Handle -> m a) -> m a
 withTmpFile template a = do
-	tmpdir <- liftIO $ catchDefaultIO "." getTemporaryDirectory
-	withTmpFileIn (toOsPath (toRawFilePath tmpdir)) template a
+	tmpdir <- liftIO $ catchDefaultIO (literalOsPath ".") getTemporaryDirectory
+	withTmpFileIn tmpdir template a
 
 {- Runs an action with a tmp file located in the specified directory,
  - then removes the file.
@@ -98,7 +98,7 @@ withTmpFileIn tmpdir template a = bracket create remove use
 	create = liftIO $ openTmpFileIn tmpdir template
 	remove (name, h) = liftIO $ do
 		hClose h
-		tryIO $ R.removeLink (fromOsPath name)
+		tryIO $ removeFile name
 	use (name, h) = a name h
 
 {- It's not safe to use a FilePath of an existing file as the template
@@ -111,6 +111,7 @@ relatedTemplate :: RawFilePath -> Template
 relatedTemplate = toOsPath . relatedTemplate'
 
 relatedTemplate' :: RawFilePath -> RawFilePath
+#ifndef mingw32_HOST_OS
 relatedTemplate' f
 	| len > templateAddedLength = 
 		{- Some filesystems like FAT have issues with filenames
@@ -122,6 +123,11 @@ relatedTemplate' f
   where
 	len = B.length f
 	dot = fromIntegral (ord '.')
+#else
+-- Avoids a test suite failure on windows, reason unknown, but
+-- best to keep paths short on windows anyway.
+relatedTemplate' _ = "t"
+#endif
 
 {- When a Template is used to create a temporary file, some random bytes
  - are appended to it. This is how many such bytes can be added, maximum.

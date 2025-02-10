@@ -46,7 +46,7 @@ upgradeWatcherThread urlrenderer = namedThread "UpgradeWatcher" $ do
 			, modifyHook = changed
 			, delDirHook = changed
 			}
-		let dir = fromRawFilePath (parentDir (toRawFilePath flagfile))
+		let dir = parentDir flagfile
 		let depth = length (splitPath dir) + 1
 		let nosubdirs f = length (splitPath f) == depth
 		void $ liftIO $ watchDir dir nosubdirs False hooks (startup mvar)
@@ -57,7 +57,7 @@ upgradeWatcherThread urlrenderer = namedThread "UpgradeWatcher" $ do
 		void $ swapMVar mvar Started
 		return r
 
-changedFile :: UrlRenderer -> MVar WatcherState -> FilePath -> FilePath -> Maybe FileStatus -> Assistant ()
+changedFile :: UrlRenderer -> MVar WatcherState -> OsPath -> OsPath -> Maybe FileStatus -> Assistant ()
 changedFile urlrenderer mvar flagfile file _status
 	| flagfile /= file = noop
 	| otherwise = do

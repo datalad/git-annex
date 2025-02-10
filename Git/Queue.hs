@@ -53,11 +53,11 @@ data Action m
 	 - those will be run before the FlushAction is. -}
 	| FlushAction
 		{ getFlushActionRunner :: FlushActionRunner m
-		, getFlushActionFiles :: [RawFilePath]
+		, getFlushActionFiles :: [OsPath]
 		}
 
 {- The String must be unique for each flush action. -}
-data FlushActionRunner m = FlushActionRunner String (Repo -> [RawFilePath] -> m ())
+data FlushActionRunner m = FlushActionRunner String (Repo -> [OsPath] -> m ())
 
 instance Eq (FlushActionRunner m) where
 	FlushActionRunner s1 _ == FlushActionRunner s2 _ = s1 == s2
@@ -140,7 +140,7 @@ addCommand commonparams subcommand params files q repo =
 {- Adds an flush action to the queue. This can co-exist with anything else
  - that gets added to the queue, and when the queue is eventually flushed,
  - it will be run after the other things in the queue. -}
-addFlushAction :: MonadIO m => FlushActionRunner m -> [RawFilePath] -> Queue m -> Repo -> m (Queue m)
+addFlushAction :: MonadIO m => FlushActionRunner m -> [OsPath] -> Queue m -> Repo -> m (Queue m)
 addFlushAction runner files q repo =
 	updateQueue action (const False) (length files) q repo
   where

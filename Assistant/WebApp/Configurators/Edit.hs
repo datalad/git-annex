@@ -121,7 +121,7 @@ setRepoConfig uuid mremote oldc newc = do
 		Just t
 			| T.null t -> noop
 			| otherwise -> liftAnnex $ do
-				let dir = takeBaseName $ T.unpack t
+				let dir = fromOsPath $ takeBaseName $ toOsPath $ T.unpack t
 				m <- remoteConfigMap
 				case M.lookup uuid m of
 					Nothing -> noop
@@ -246,8 +246,8 @@ checkAssociatedDirectory cfg (Just r) = do
 	case repoGroup cfg of
 		RepoGroupStandard gr -> case associatedDirectory repoconfig gr of
 			Just d -> do
-				top <- fromRawFilePath <$> fromRepo Git.repoPath
-				createWorkTreeDirectory (toRawFilePath (top </> d))
+				top <- fromRepo Git.repoPath
+				createWorkTreeDirectory (top </> toOsPath d)
 			Nothing -> noop
 		_ -> noop
 

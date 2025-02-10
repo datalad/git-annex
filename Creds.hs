@@ -36,18 +36,16 @@ import Types.ProposedAccepted
 import Remote.Helper.Encryptable (remoteCipher, remoteCipher', embedCreds, EncryptionIsSetup, extractCipher)
 import Utility.Env (getEnv)
 import Utility.Base64
-import qualified Utility.RawFilePath as R
 import qualified Utility.FileIO as F
 
 import qualified Data.ByteString.Lazy.Char8 as L8
 import qualified Data.ByteString.Char8 as S8
 import qualified Data.Map as M
-import qualified System.FilePath.ByteString as P
 
 {- A CredPair can be stored in a file, or in the environment, or
  - in a remote's configuration. -}
 data CredPairStorage = CredPairStorage
-	{ credPairFile :: FilePath
+	{ credPairFile :: OsPath
 	, credPairEnvironment :: (String, String)
 	, credPairRemoteField :: RemoteConfigField
 	}
@@ -196,21 +194,21 @@ existsCacheCredPair storage =
 
 {- Stores the creds in a file inside gitAnnexCredsDir that only the user
  - can read. -}
-writeCreds :: Creds -> FilePath -> Annex ()
+writeCreds :: Creds -> OsPath -> Annex ()
 writeCreds creds file = do
 	d <- fromRepo gitAnnexCredsDir
 	createAnnexDirectory d
-	liftIO $ writeFileProtected (d P.</> toRawFilePath file) creds
+	liftIO $ writeFileProtected (d </> file) creds
 
-readCreds :: FilePath -> Annex (Maybe Creds)
+readCreds :: OsPath -> Annex (Maybe Creds)
 readCreds f = do
-	f' <- toOsPath . toRawFilePath <$> credsFile f
+	f' <- credsFile f
 	liftIO $ catchMaybeIO $ decodeBS . S8.unlines . fileLines'
 		<$> F.readFile' f'
 
-credsFile :: FilePath -> Annex FilePath
+credsFile :: OsPath -> Annex OsPath
 credsFile basefile = do
-	d <- fromRawFilePath <$> fromRepo gitAnnexCredsDir
+	d <- fromRepo gitAnnexCredsDir
 	return $ d </> basefile
 
 encodeCredPair :: CredPair -> Creds
@@ -221,10 +219,10 @@ decodeCredPair creds = case lines creds of
 	l:p:[] -> Just (l, p)
 	_ -> Nothing
 
-removeCreds :: FilePath -> Annex ()
+removeCreds :: OsPath -> Annex ()
 removeCreds file = do
 	d <- fromRepo gitAnnexCredsDir
-	liftIO $ removeWhenExistsWith R.removeLink (d P.</> toRawFilePath file)
+	liftIO $ removeWhenExistsWith removeFile (d </> file)
 
 includeCredsInfo :: ParsedRemoteConfig -> CredPairStorage -> [(String, String)] -> Annex [(String, String)]
 includeCredsInfo pc@(ParsedRemoteConfig cm _) storage info = do

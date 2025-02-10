@@ -29,7 +29,7 @@ run o
 	| foregroundDaemonOption o = liftIO runInteractive
 	| otherwise = do
 #ifndef mingw32_HOST_OS
-		git_annex <- liftIO programPath
+		git_annex <- fromOsPath <$> liftIO programPath
 		ps <- gitAnnexDaemonizeParams
 		let logfd = openFdWithMode (toRawFilePath "/dev/null") ReadOnly Nothing defaultFileFlags
 		liftIO $ daemonize git_annex ps logfd Nothing False runNonInteractive

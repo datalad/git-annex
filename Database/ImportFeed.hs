@@ -40,11 +40,9 @@ import Logs.MetaData
 import Types.MetaData
 import Annex.MetaData.StandardFields
 import Annex.LockFile
-import qualified Utility.RawFilePath as R
 
 import Database.Persist.Sql hiding (Key)
 import Database.Persist.TH
-import qualified System.FilePath.ByteString as P
 import qualified Data.ByteString as B
 import qualified Data.Set as S
 
@@ -75,8 +73,8 @@ AnnexBranch
 openDb :: Annex ImportFeedDbHandle
 openDb = do
 	dbdir <- calcRepo' gitAnnexImportFeedDbDir
-	let db = dbdir P.</> "db"
-	isnew <- liftIO $ not <$> R.doesPathExist db
+	let db = dbdir </> literalOsPath "db"
+	isnew <- liftIO $ not <$> doesDirectoryExist db
 	when isnew $
 		initDb db $ void $ 
 			runMigrationSilent migrateImportFeed

@@ -50,6 +50,7 @@ import Utility.IPAddress
 import qualified Utility.RawFilePath as R
 import Utility.Hash (IncrementalVerifier(..))
 import Utility.Url.Parse
+import qualified Utility.FileIO as F
 
 import Network.URI
 import Network.HTTP.Types
@@ -311,8 +312,8 @@ getUrlInfo url uo = case parseURIRelaxed url of
 		=<< curlRestrictedParams r u defport (basecurlparams url')
 
 	existsfile u = do
-		let f = toRawFilePath (unEscapeString (uriPath u))
-		s <- catchMaybeIO $ R.getSymbolicLinkStatus f
+		let f = toOsPath (unEscapeString (uriPath u))
+		s <- catchMaybeIO $ R.getSymbolicLinkStatus (fromOsPath f)
 		case s of
 			Just stat -> do
 				sz <- getFileSize' f stat
@@ -362,10 +363,10 @@ headRequest r = r
  -
  - When the download fails, returns an error message.
  -}
-download :: MeterUpdate -> Maybe IncrementalVerifier -> URLString -> FilePath -> UrlOptions -> IO (Either String ())
+download :: MeterUpdate -> Maybe IncrementalVerifier -> URLString -> OsPath -> UrlOptions -> IO (Either String ())
 download = download' False
 
-download' :: Bool -> MeterUpdate -> Maybe IncrementalVerifier -> URLString -> FilePath -> UrlOptions -> IO (Either String ())
+download' :: Bool -> MeterUpdate -> Maybe IncrementalVerifier -> URLString -> OsPath -> UrlOptions -> IO (Either String ())
 download' nocurlerror meterupdate iv url file uo =
 	catchJust matchHttpException go showhttpexception
 		`catchNonAsync` (dlfailed . show)
@@ -421,8 +422,8 @@ download' nocurlerror meterupdate iv url file uo =
 		-- curl does not create destination file
 		-- if the url happens to be empty, so pre-create.
 		unlessM (doesFileExist file) $
-			writeFile file ""
-		ifM (boolSystem "curl" (curlparams ++ [Param "-o", File file, File rawurl]))
+			F.writeFile file mempty
+		ifM (boolSystem "curl" (curlparams ++ [Param "-o", File (fromOsPath file), File rawurl]))
 			( return $ Right ()
 			, return $ Left "download failed"
 			)
@@ -432,9 +433,9 @@ download' nocurlerror meterupdate iv url file uo =
 
 	downloadfile u = do
 		noverification
-		let src = unEscapeString (uriPath u)
+		let src = toOsPath $ unEscapeString (uriPath u)
 		withMeteredFile src meterupdate $
-			L.writeFile file
+			F.writeFile file
 		return $ Right ()
 
 	-- Conduit does not support ftp, so will throw an exception on a
@@ -461,9 +462,9 @@ download' nocurlerror meterupdate iv url file uo =
  - thrown for reasons other than http status codes will still be thrown
  - as usual.)
  -}
-downloadConduit :: MeterUpdate -> Maybe IncrementalVerifier -> Request -> FilePath -> UrlOptions -> IO ()
+downloadConduit :: MeterUpdate -> Maybe IncrementalVerifier -> Request -> OsPath -> UrlOptions -> IO ()
 downloadConduit meterupdate iv req file uo =
-	catchMaybeIO (getFileSize (toRawFilePath file)) >>= \case
+	catchMaybeIO (getFileSize file) >>= \case
 		Just sz | sz > 0 -> resumedownload sz
 		_ -> join $ runResourceT $ do
 			liftIO $ debug "Utility.Url" (show req')
@@ -566,7 +567,7 @@ sinkResponseFile
 	=> MeterUpdate
 	-> Maybe IncrementalVerifier
 	-> BytesProcessed
-	-> FilePath
+	-> OsPath
 	-> IOMode
 	-> Response (ConduitM () B8.ByteString m ())
 	-> m ()
@@ -577,7 +578,7 @@ sinkResponseFile meterupdate iv initialp file mode resp = do
 			return (const noop)
 		(Just iv', _) -> return (updateIncrementalVerifier iv')
 		(Nothing, _) -> return (const noop)
-	(fr, fh) <- allocate (openBinaryFile file mode) hClose
+	(fr, fh) <- allocate (F.openBinaryFile file mode) hClose
 	runConduit $ responseBody resp .| go ui initialp fh
 	release fr
   where

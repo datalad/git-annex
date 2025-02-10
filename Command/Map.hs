@@ -49,22 +49,22 @@ start = startingNoMessage (ActionItemOther Nothing) $ do
 	trustmap <- trustMapLoad
 		
 	file <- (</>)
-		<$> fromRepo (fromRawFilePath . gitAnnexDir)
-		<*> pure "map.dot"
+		<$> fromRepo gitAnnexDir
+		<*> pure (literalOsPath "map.dot")
 
-	liftIO $ writeFile file (drawMap rs trustmap umap)
+	liftIO $ writeFile (fromOsPath file) (drawMap rs trustmap umap)
 	next $
 		ifM (Annex.getRead Annex.fast)
 			( runViewer file []
 			, runViewer file
-	 			[ ("xdot", [File file])
-				, ("dot", [Param "-Tx11", File file])
+	 			[ ("xdot", [File (fromOsPath file)])
+				, ("dot", [Param "-Tx11", File (fromOsPath file)])
 				]	
 			)
 
-runViewer :: FilePath -> [(String, [CommandParam])] -> Annex Bool
+runViewer :: OsPath -> [(String, [CommandParam])] -> Annex Bool
 runViewer file [] = do
-	showLongNote $ UnquotedString $ "left map in " ++ file
+	showLongNote $ UnquotedString $ "left map in " ++ fromOsPath file
 	return True
 runViewer file ((c, ps):rest) = ifM (liftIO $ inSearchPath c)
 	( do
@@ -244,7 +244,7 @@ tryScan r
 	  where
 		remotecmd = "sh -c " ++ shellEscape
 			(cddir ++ " && " ++ "git config --null --list")
-		dir = fromRawFilePath $ Git.repoPath r
+		dir = fromOsPath $ Git.repoPath r
 		cddir
 			| "/~" `isPrefixOf` dir =
 				let (userhome, reldir) = span (/= '/') (drop 1 dir)

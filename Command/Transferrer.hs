@@ -56,7 +56,7 @@ start = do
 		-- and for retrying, and updating location log,
 		-- and stall canceling.
 		let go p = getViaTmp (Remote.retrievalSecurityPolicy remote) (RemoteVerify remote) key af Nothing $ \t -> do
-			Remote.verifiedAction (Remote.retrieveKeyFile remote key af (fromRawFilePath t) p (RemoteVerify remote))
+			Remote.verifiedAction (Remote.retrieveKeyFile remote key af t p (RemoteVerify remote))
 		in download' (Remote.uuid remote) key af Nothing noRetry go 
 			noNotification
 	runner (AssistantUploadRequest _ key (TransferAssociatedFile af)) remote =
@@ -73,7 +73,7 @@ start = do
 		notifyTransfer Download file $
 			download' (Remote.uuid remote) key file Nothing stdRetry $ \p ->
 				logStatusAfter NoLiveUpdate key $ getViaTmp (Remote.retrievalSecurityPolicy remote) (RemoteVerify remote) key file Nothing $ \t -> do
-					r <- tryNonAsync (Remote.retrieveKeyFile remote key file (fromRawFilePath t) p (RemoteVerify remote)) >>= \case
+					r <- tryNonAsync (Remote.retrieveKeyFile remote key file t p (RemoteVerify remote)) >>= \case
 						Left e -> do
 							warning (UnquotedString (show e))
 							return (False, UnVerified)

@@ -32,11 +32,11 @@ import Git.Types (RefDate)
 import qualified Data.ByteString.Lazy as L
 
 {- Adds to the log, removing any LogLines that are obsoleted. -}
-addLog :: Annex.Branch.RegardingUUID -> RawFilePath -> LogStatus -> LogInfo -> Annex ()
+addLog :: Annex.Branch.RegardingUUID -> OsPath -> LogStatus -> LogInfo -> Annex ()
 addLog ru file logstatus loginfo = 
 	addLog' ru file logstatus loginfo =<< currentVectorClock
 
-addLog' :: Annex.Branch.RegardingUUID -> RawFilePath -> LogStatus -> LogInfo -> CandidateVectorClock -> Annex ()
+addLog' :: Annex.Branch.RegardingUUID -> OsPath -> LogStatus -> LogInfo -> CandidateVectorClock -> Annex ()
 addLog' ru file logstatus loginfo c = 
 	Annex.Branch.changeOrAppend ru file $ \b ->
 		let old = parseLog b
@@ -53,7 +53,7 @@ addLog' ru file logstatus loginfo c =
  - When the log was changed, the onchange action is run (with the journal
  - still locked to prevent any concurrent changes) and True is returned.
  -}
-maybeAddLog :: Annex.Branch.RegardingUUID -> RawFilePath -> LogStatus -> LogInfo -> Annex () -> Annex Bool
+maybeAddLog :: Annex.Branch.RegardingUUID -> OsPath -> LogStatus -> LogInfo -> Annex () -> Annex Bool
 maybeAddLog ru file logstatus loginfo onchange = do
 	c <- currentVectorClock
 	let f = \b ->
@@ -72,15 +72,15 @@ genLine logstatus loginfo c old = LogLine c' logstatus loginfo
 
 {- Reads a log file.
  - Note that the LogLines returned may be in any order. -}
-readLog :: RawFilePath -> Annex [LogLine]
+readLog :: OsPath -> Annex [LogLine]
 readLog = parseLog <$$> Annex.Branch.get
 
 {- Reads a log and returns only the info that is still present. -}
-presentLogInfo :: RawFilePath -> Annex [LogInfo]
+presentLogInfo :: OsPath -> Annex [LogInfo]
 presentLogInfo file = map info . filterPresent <$> readLog file
 
 {- Reads a log and returns only the info that is no longer present. -}
-notPresentLogInfo :: RawFilePath -> Annex [LogInfo]
+notPresentLogInfo :: OsPath -> Annex [LogInfo]
 notPresentLogInfo file = map info . filterNotPresent <$> readLog file
 
 {- Reads a historical version of a log and returns the info that was in
@@ -88,7 +88,7 @@ notPresentLogInfo file = map info . filterNotPresent <$> readLog file
  -
  - The date is formatted as shown in gitrevisions man page.
  -}
-historicalLogInfo :: RefDate -> RawFilePath -> Annex [LogInfo]
+historicalLogInfo :: RefDate -> OsPath -> Annex [LogInfo]
 historicalLogInfo refdate file = parseLogInfo
 	<$> Annex.Branch.getHistorical refdate file
 

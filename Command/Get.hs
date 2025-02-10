@@ -55,7 +55,7 @@ seek o = startConcurrency transferStages $ do
   where
 	ww = WarnUnmatchLsFiles "get"
 
-start :: GetOptions -> Maybe Remote -> SeekInput -> RawFilePath -> Key -> CommandStart
+start :: GetOptions -> Maybe Remote -> SeekInput -> OsPath -> Key -> CommandStart
 start o from si file key = do
 	lu <- prepareLiveUpdate Nothing key AddingKey
 	start' lu (expensivecheck lu) from key afile ai si

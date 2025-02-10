@@ -22,7 +22,7 @@ import Annex.Concurrent.Utility
 
 newtype CheckGitIgnore = CheckGitIgnore Bool
 
-checkIgnored :: CheckGitIgnore -> RawFilePath -> Annex Bool
+checkIgnored :: CheckGitIgnore -> OsPath -> Annex Bool
 checkIgnored (CheckGitIgnore False) _ = pure False
 checkIgnored (CheckGitIgnore True) file =
 	ifM (Annex.getRead Annex.force)

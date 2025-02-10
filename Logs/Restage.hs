@@ -18,7 +18,6 @@ import qualified Utility.FileIO as F
 
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
-import qualified Utility.RawFilePath as R
 
 -- | Log a file whose pointer needs to be restaged in git.
 -- The content of the file may not be a pointer, if it is populated with
@@ -52,13 +51,13 @@ streamRestageLog finalizer processor = do
 	lckf <- fromRepo gitAnnexRestageLock
 	
 	withExclusiveLock lckf $ liftIO $
-		whenM (R.doesPathExist logf) $
-			ifM (R.doesPathExist oldf)
+		whenM (doesPathExist logf) $
+			ifM (doesPathExist oldf)
 				( do
-					h <- F.openFile (toOsPath oldf) AppendMode
-					hPutStr h =<< readFile (fromRawFilePath logf)
+					h <- F.openFile oldf AppendMode
+					hPutStr h =<< readFile (fromOsPath logf)
 					hClose h
-					liftIO $ removeWhenExistsWith R.removeLink logf
+					liftIO $ removeWhenExistsWith removeFile logf
 				, moveFile logf oldf
 				)
 
@@ -67,7 +66,7 @@ streamRestageLog finalizer processor = do
 			Just (f, ic) -> processor f ic
 			Nothing -> noop
 	
-	liftIO $ removeWhenExistsWith R.removeLink oldf
+	liftIO $ removeWhenExistsWith removeFile oldf
 
 -- | Calculate over both the current restage log, and also over the old
 -- one if it had started to be processed but did not get finished due
@@ -86,11 +85,12 @@ calcRestageLog start update = do
 		Nothing -> v
 
 formatRestageLog :: TopFilePath -> InodeCache -> S.ByteString
-formatRestageLog f ic = encodeBS (showInodeCache ic) <> ":" <> getTopFilePath f
+formatRestageLog f ic =
+	encodeBS (showInodeCache ic) <> ":" <> fromOsPath (getTopFilePath f)
 
 parseRestageLog :: String -> Maybe (TopFilePath, InodeCache)
 parseRestageLog l = 
 	let (ics, f) = separate (== ':') l
 	in do
 		ic <- readInodeCache ics
-		return (asTopFilePath (toRawFilePath f), ic)
+		return (asTopFilePath (toOsPath f), ic)

@@ -7,20 +7,17 @@
 
 module Annex.Multicast where
 
+import Common
 import Annex.Path
 import Utility.Env
-import Utility.PartialPrelude
 
 import System.Process
-import System.IO
 import GHC.IO.Handle.FD
-import Control.Applicative
-import Prelude
 
 multicastReceiveEnv :: String
 multicastReceiveEnv = "GIT_ANNEX_MULTICAST_RECEIVE"
 
-multicastCallbackEnv :: IO (FilePath, [(String, String)], Handle)
+multicastCallbackEnv :: IO (OsPath, [(String, String)], Handle)
 multicastCallbackEnv = do
 	gitannex <- programPath
 	-- This will even work on Windows

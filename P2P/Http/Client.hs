@@ -37,6 +37,7 @@ import Annex.Concurrent
 import Utility.Url (BasicAuth(..))
 import Utility.HumanTime
 import Utility.STM
+import qualified Utility.FileIO as F
 import qualified Git.Credential as Git
 
 import Servant hiding (BasicAuthData(..))
@@ -340,7 +341,7 @@ clientPut
 	-> Key
 	-> Maybe Offset
 	-> AssociatedFile
-	-> FilePath
+	-> OsPath
 	-> FileSize
 	-> Annex Bool
 	-- ^ Called after sending the file to check if it's valid.
@@ -358,7 +359,7 @@ clientPut meterupdate k moffset af contentfile contentfilesize validitycheck dat
 			liftIO $ atomically $ takeTMVar checkv
 			validitycheck >>= liftIO . atomically . putTMVar checkresultv
 		checkerthread <- liftIO . async =<< forkState checker
-		v <- liftIO $ withBinaryFile contentfile ReadMode $ \h -> do
+		v <- liftIO $ F.withBinaryFile contentfile ReadMode $ \h -> do
 			when (offset /= 0) $
 				hSeek h AbsoluteSeek offset
 			withClientM (cli (stream h checkv checkresultv)) clientenv return

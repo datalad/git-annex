@@ -47,11 +47,9 @@ import Git.FilePath
 import qualified Git.DiffTree as DiffTree
 import Logs
 import qualified Logs.ContentIdentifier as Log
-import qualified Utility.RawFilePath as R
 
 import Database.Persist.Sql hiding (Key)
 import Database.Persist.TH
-import qualified System.FilePath.ByteString as P
 
 #if MIN_VERSION_persistent_sqlite(2,13,3)
 import Database.RawFilePath
@@ -98,15 +96,15 @@ AnnexBranch
 openDb :: Annex ContentIdentifierHandle
 openDb = do
 	dbdir <- calcRepo' gitAnnexContentIdentifierDbDir
-	let db = dbdir P.</> "db"
-	isnew <- liftIO $ not <$> R.doesPathExist db
+	let db = dbdir </> literalOsPath "db"
+	isnew <- liftIO $ not <$> doesDirectoryExist db
 	if isnew
 		then initDb db $ void $ 
 			runMigrationSilent migrateContentIdentifier
 		-- Migrate from old versions of database, which had buggy
 		-- and suboptimal uniqueness constraints.
 #if MIN_VERSION_persistent_sqlite(2,13,3)
-		else liftIO $ runSqlite' db $ void $
+		else liftIO $ runSqlite' (fromOsPath db) $ void $
 			runMigrationSilent migrateContentIdentifier
 #else
 		else liftIO $ runSqlite (T.pack (fromRawFilePath db)) $ void $

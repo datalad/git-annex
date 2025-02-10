@@ -23,7 +23,6 @@ import qualified Data.List.NonEmpty as NE
 import qualified Data.ByteArray as BA
 import qualified Data.ByteArray.Encoding as BA
 import qualified Data.ByteString as S
-import qualified System.FilePath.ByteString as P
 
 import Common
 import Key
@@ -32,7 +31,7 @@ import Types.Difference
 import Utility.Hash
 import Utility.MD5
 
-type Hasher = Key -> RawFilePath
+type Hasher = Key -> OsPath
 
 -- Number of hash levels to use. 2 is the default.
 newtype HashLevels = HashLevels Int
@@ -51,7 +50,7 @@ configHashLevels d config
 	| hasDifference d (annexDifferences config) = HashLevels 1
 	| otherwise = def
 
-branchHashDir :: GitConfig -> Key -> S.ByteString
+branchHashDir :: GitConfig -> Key -> OsPath
 branchHashDir = hashDirLower . branchHashLevels
 
 {- Two different directory hashes may be used. The mixed case hash
@@ -64,9 +63,10 @@ branchHashDir = hashDirLower . branchHashLevels
 dirHashes :: NE.NonEmpty (HashLevels -> Hasher)
 dirHashes = hashDirLower NE.:| [hashDirMixed]
 
-hashDirs :: HashLevels -> Int -> S.ByteString -> RawFilePath
-hashDirs (HashLevels 1) sz s = P.addTrailingPathSeparator $ S.take sz s
-hashDirs _ sz s = P.addTrailingPathSeparator $ h P.</> t
+hashDirs :: HashLevels -> Int -> S.ByteString -> OsPath
+hashDirs (HashLevels 1) sz s = addTrailingPathSeparator $
+	toOsPath (S.take sz s)
+hashDirs _ sz s = addTrailingPathSeparator $ toOsPath h </> toOsPath t
   where
 	(h, t) = S.splitAt sz s
 

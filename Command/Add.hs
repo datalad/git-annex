@@ -31,7 +31,6 @@ import Utility.InodeCache
 import Annex.InodeSentinal
 import Annex.CheckIgnore
 import qualified Utility.RawFilePath as R
-import qualified System.FilePath.ByteString as P
 
 import System.PosixCompat.Files (fileSize, isSymbolicLink, isRegularFile, modificationTime, fileID, deviceID, fileMode, ownerExecuteMode, intersectFileModes)
 
@@ -140,23 +139,23 @@ seek' o = do
 	dr = dryRunOption o
 
 {- Pass file off to git-add. -}
-startSmall :: Bool -> DryRun -> SeekInput -> RawFilePath -> CommandStart
+startSmall :: Bool -> DryRun -> SeekInput -> OsPath -> CommandStart
 startSmall isdotfile dr si file =
-	liftIO (catchMaybeIO $ R.getSymbolicLinkStatus file) >>= \case
+	liftIO (catchMaybeIO $ R.getSymbolicLinkStatus $ fromOsPath file) >>= \case
 		Just s -> 
 			starting "add" (ActionItemTreeFile file) si $
 				addSmall isdotfile dr file s
 		Nothing -> stop
 
-addSmall :: Bool -> DryRun -> RawFilePath -> FileStatus -> CommandPerform
+addSmall :: Bool -> DryRun -> OsPath -> FileStatus -> CommandPerform
 addSmall isdotfile dr file s = do
 	showNote $ (if isdotfile then "dotfile" else "non-large file")
 		<> "; adding content to git repository"
 	skipWhenDryRun dr $ next $ addFile Small file s
 
-startSmallOverridden :: DryRun -> SeekInput -> RawFilePath -> CommandStart
+startSmallOverridden :: DryRun -> SeekInput -> OsPath -> CommandStart
 startSmallOverridden dr si file = 
-	liftIO (catchMaybeIO $ R.getSymbolicLinkStatus file) >>= \case
+	liftIO (catchMaybeIO $ R.getSymbolicLinkStatus $ fromOsPath file) >>= \case
 		Just s -> starting "add" (ActionItemTreeFile file) si $ do
 			showNote "adding content to git repository"
 			skipWhenDryRun dr $ next $ addFile Small file s
@@ -164,22 +163,23 @@ startSmallOverridden dr si file =
 
 data SmallOrLarge = Small | Large
 
-addFile :: SmallOrLarge -> RawFilePath -> FileStatus -> Annex Bool
+addFile :: SmallOrLarge -> OsPath -> FileStatus -> Annex Bool
 addFile smallorlarge file s = do
+	let file' = fromOsPath file
 	sha <- if isSymbolicLink s
-		then hashBlob =<< liftIO (R.readSymbolicLink file)
+		then hashBlob =<< liftIO (R.readSymbolicLink file')
 		else if isRegularFile s
 			then hashFile file
 			else do
 				qp <- coreQuotePath <$> Annex.getGitConfig
-				giveup $ decodeBS $ quote qp $
-					file <> " is not a regular file"
+				giveup $ decodeBS $ quote qp file
+					<> " is not a regular file"
 	let treetype = if isSymbolicLink s
 		then TreeSymlink
 		else if intersectFileModes ownerExecuteMode (fileMode s) /= 0
 			then TreeExecutable
 			else TreeFile
-	s' <- liftIO $ catchMaybeIO $ R.getSymbolicLinkStatus file
+	s' <- liftIO $ catchMaybeIO $ R.getSymbolicLinkStatus file'
 	if maybe True (changed s) s'
 		then do
 			warning $ QuotedPath file <> " changed while it was being added"
@@ -206,9 +206,9 @@ addFile smallorlarge file s = do
 		isRegularFile a /= isRegularFile b ||
 		isSymbolicLink a /= isSymbolicLink b
 
-start :: DryRun -> SeekInput -> RawFilePath -> AddUnlockedMatcher -> CommandStart
+start :: DryRun -> SeekInput -> OsPath -> AddUnlockedMatcher -> CommandStart
 start dr si file addunlockedmatcher = 
-	liftIO (catchMaybeIO $ R.getSymbolicLinkStatus file) >>= \case
+	liftIO (catchMaybeIO $ R.getSymbolicLinkStatus $ fromOsPath file) >>= \case
 		Nothing -> stop
 		Just s
 			| not (isRegularFile s) && not (isSymbolicLink s) -> stop
@@ -231,11 +231,11 @@ start dr si file addunlockedmatcher =
 		starting "add" (ActionItemTreeFile file) si $
 			addingExistingLink file key $
 				skipWhenDryRun dr $ withOtherTmp $ \tmp -> do
-					let tmpf = tmp P.</> P.takeFileName file
+					let tmpf = tmp </> takeFileName file
 					liftIO $ moveFile file tmpf
-					ifM (isSymbolicLink <$> liftIO (R.getSymbolicLinkStatus tmpf))
+					ifM (isSymbolicLink <$> liftIO (R.getSymbolicLinkStatus $ fromOsPath tmpf))
 						( do
-							liftIO $ R.removeLink tmpf
+							liftIO $ removeFile tmpf
 							addSymlink file key Nothing
 							next $ cleanup key =<< inAnnex key
 						, do
@@ -249,7 +249,7 @@ start dr si file addunlockedmatcher =
 					Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath file)
 					next $ addFile Large file s
 
-perform :: RawFilePath -> AddUnlockedMatcher -> CommandPerform
+perform :: OsPath -> AddUnlockedMatcher -> CommandPerform
 perform file addunlockedmatcher = withOtherTmp $ \tmpdir -> do
 	lockingfile <- not <$> addUnlocked addunlockedmatcher
 		(MatchingFile (FileInfo file file Nothing))
@@ -259,7 +259,7 @@ perform file addunlockedmatcher = withOtherTmp $ \tmpdir -> do
 		, hardlinkFileTmpDir = Just tmpdir
 		, checkWritePerms = True
 		}
-	ld <- lockDown cfg (fromRawFilePath file)
+	ld <- lockDown cfg file
 	let sizer = keySource <$> ld
 	v <- metered Nothing sizer Nothing $ \_meter meterupdate ->
 		ingestAdd meterupdate ld

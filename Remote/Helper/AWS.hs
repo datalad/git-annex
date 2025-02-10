@@ -23,7 +23,7 @@ import Data.Text (Text)
 
 creds :: UUID -> CredPairStorage
 creds u = CredPairStorage
-	{ credPairFile = fromUUID u
+	{ credPairFile = literalOsPath (fromUUID u)
 	, credPairEnvironment = ("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY")
 	, credPairRemoteField = s3credsField
 	}

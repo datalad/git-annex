@@ -49,7 +49,7 @@ addE source sethasext k = do
 	let ext = selectExtension
 		(annexMaxExtensionLength c)
 		(annexMaxExtensions c)
-		(keyFilename source)
+		(fromOsPath (keyFilename source))
 	return $ alterKey k $ \d -> d
 		{ keyName = keyName d <> S.toShort ext
 		, keyVariety = sethasext (keyVariety d)

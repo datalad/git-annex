@@ -21,8 +21,8 @@ import Utility.PID
 import Annex.LockPool
 import Utility.TimeStamp
 import Logs.File
-import qualified Utility.RawFilePath as R
 import qualified Utility.FileIO as F
+import qualified Utility.OsString as OS
 #ifndef mingw32_HOST_OS
 import Annex.Perms
 #endif
@@ -30,9 +30,6 @@ import Annex.Perms
 import Data.Time.Clock
 import Data.Time.Clock.POSIX
 import Control.Concurrent.STM
-import qualified Data.ByteString as B
-import qualified Data.ByteString.Char8 as B8
-import qualified System.FilePath.ByteString as P
 
 describeTransfer :: Git.Quote.QuotePath -> Transfer -> TransferInfo -> String
 describeTransfer qp t info = unwords
@@ -62,20 +59,21 @@ percentComplete t info =
  - appropriate permissions, which should be run after locking the transfer
  - lock file, but before using the callback, and a TVar that can be used to
  - read the number of bytes processed so far. -}
-mkProgressUpdater :: Transfer -> TransferInfo -> RawFilePath -> Annex (MeterUpdate, Annex (), TVar (Maybe BytesProcessed))
+mkProgressUpdater :: Transfer -> TransferInfo -> OsPath -> Annex (MeterUpdate, Annex (), TVar (Maybe BytesProcessed))
 mkProgressUpdater t info tfile = do
-	let createtfile = void $ tryNonAsync $ writeTransferInfoFile info tfile
+	let createtfile = void $ tryNonAsync $
+		writeTransferInfoFile info tfile
 	tvar <- liftIO $ newTVarIO Nothing
 	loggedtvar <- liftIO $ newTVarIO 0
-	return (liftIO . updater (fromRawFilePath tfile) tvar loggedtvar, createtfile, tvar)
+	return (liftIO . updater tvar loggedtvar, createtfile, tvar)
   where
-	updater tfile' tvar loggedtvar new = do
+	updater tvar loggedtvar new = do
 		old <- atomically $ swapTVar tvar (Just new)
 		let oldbytes = maybe 0 fromBytesProcessed old
 		let newbytes = fromBytesProcessed new
 		when (newbytes - oldbytes >= mindelta) $ do
 			let info' = info { bytesComplete = Just newbytes }
-			_ <- tryIO $ updateTransferInfoFile info' tfile'
+			_ <- tryIO $ updateTransferInfoFile info' tfile
 			atomically $ writeTVar loggedtvar newbytes
 
 	{- The minimum change in bytesComplete that is worth
@@ -109,9 +107,9 @@ checkTransfer :: Transfer -> Annex (Maybe TransferInfo)
 checkTransfer t = debugLocks $ do
 	(tfile, lck, moldlck) <- fromRepo $ transferFileAndLockFile t
 	let deletestale = do
-		void $ tryIO $ R.removeLink tfile
-		void $ tryIO $ R.removeLink lck
-		maybe noop (void . tryIO . R.removeLink) moldlck
+		void $ tryIO $ removeFile tfile
+		void $ tryIO $ removeFile lck
+		maybe noop (void . tryIO . removeFile) moldlck
 #ifndef mingw32_HOST_OS
 	v <- getLockStatus lck
 	v' <- case (moldlck, v) of
@@ -198,7 +196,7 @@ clearFailedTransfers u = do
 removeFailedTransfer :: Transfer -> Annex ()
 removeFailedTransfer t = do
 	f <- fromRepo $ failedTransferFile t
-	liftIO $ void $ tryIO $ R.removeLink f
+	liftIO $ void $ tryIO $ removeFile f
 
 recordFailedTransfer :: Transfer -> TransferInfo -> Annex ()
 recordFailedTransfer t info = do
@@ -225,46 +223,47 @@ recordFailedTransfer t info = do
  - At some point in the future, when old git-annex processes are no longer
  - a concern, this complication can be removed.
  -}
-transferFileAndLockFile :: Transfer -> Git.Repo -> (RawFilePath, RawFilePath, Maybe RawFilePath)
+transferFileAndLockFile :: Transfer -> Git.Repo -> (OsPath, OsPath, Maybe OsPath)
 transferFileAndLockFile (Transfer direction u kd) r =
 	case direction of
 		Upload -> (transferfile, uuidlockfile, Nothing)
 		Download -> (transferfile, nouuidlockfile, Just uuidlockfile)
   where
 	td = transferDir direction r
-	fu = B8.filter (/= '/') (fromUUID u)
+	fu = OS.filter (/= unsafeFromChar '/') (fromUUID u)
 	kf = keyFile (mkKey (const kd))
-	lckkf = "lck." <> kf
-	transferfile = td P.</> fu P.</> kf
-	uuidlockfile = td P.</> fu P.</> lckkf
-	nouuidlockfile = td P.</> "lck" P.</> lckkf
+	lckkf = literalOsPath "lck." <> kf
+	transferfile = td </> fu </> kf
+	uuidlockfile = td </> fu </> lckkf
+	nouuidlockfile = td </> literalOsPath "lck" </> lckkf
 
 {- The transfer information file to use to record a failed Transfer -}
-failedTransferFile :: Transfer -> Git.Repo -> RawFilePath
+failedTransferFile :: Transfer -> Git.Repo -> OsPath
 failedTransferFile (Transfer direction u kd) r = 
 	failedTransferDir u direction r
-		P.</> keyFile (mkKey (const kd))
+		</> keyFile (mkKey (const kd))
 
 {- Parses a transfer information filename to a Transfer. -}
-parseTransferFile :: RawFilePath -> Maybe Transfer
+parseTransferFile :: OsPath -> Maybe Transfer
 parseTransferFile file
-	| "lck." `B.isPrefixOf` P.takeFileName file = Nothing
+	| literalOsPath "lck." `OS.isPrefixOf` takeFileName file = Nothing
 	| otherwise = case drop (length bits - 3) bits of
 		[direction, u, key] -> Transfer
-			<$> parseDirection direction
+			<$> parseDirection (fromOsPath direction)
 			<*> pure (toUUID u)
 			<*> fmap (fromKey id) (fileKey key)
 		_ -> Nothing
   where
-	bits = P.splitDirectories file
+	bits = splitDirectories file
 
-writeTransferInfoFile :: TransferInfo -> RawFilePath -> Annex ()
+writeTransferInfoFile :: TransferInfo -> OsPath -> Annex ()
 writeTransferInfoFile info tfile = writeLogFile tfile $ writeTransferInfo info
 
 -- The file keeps whatever permissions it has, so should be used only
 -- after it's been created with the right perms by writeTransferInfoFile.
-updateTransferInfoFile :: TransferInfo -> FilePath -> IO ()
-updateTransferInfoFile info tfile = writeFile tfile $ writeTransferInfo info
+updateTransferInfoFile :: TransferInfo -> OsPath -> IO ()
+updateTransferInfoFile info tfile = 
+	writeFile (fromOsPath tfile) $ writeTransferInfo info
 
 {- File format is a header line containing the startedTime and any
  - bytesComplete value. Followed by a newline and the associatedFile.
@@ -283,12 +282,12 @@ writeTransferInfo info = unlines
 #endif
 	-- comes last; arbitrary content
 	, let AssociatedFile afile = associatedFile info
-	  in maybe "" fromRawFilePath afile
+	  in maybe "" fromOsPath afile
 	]
 
-readTransferInfoFile :: Maybe PID -> RawFilePath -> IO (Maybe TransferInfo)
+readTransferInfoFile :: Maybe PID -> OsPath -> IO (Maybe TransferInfo)
 readTransferInfoFile mpid tfile = catchDefaultIO Nothing $
-	readTransferInfo mpid . decodeBS <$> F.readFile' (toOsPath tfile)
+	readTransferInfo mpid . decodeBS <$> F.readFile' tfile
 
 readTransferInfo :: Maybe PID -> String -> Maybe TransferInfo
 readTransferInfo mpid s = TransferInfo
@@ -301,15 +300,18 @@ readTransferInfo mpid s = TransferInfo
 	<*> pure Nothing
 	<*> pure Nothing
 	<*> bytes
-	<*> pure (AssociatedFile (if null filename then Nothing else Just (toRawFilePath filename)))
+	<*> pure af
 	<*> pure False
   where
+	af = AssociatedFile $
+		if null filename
+			then Nothing
+			else Just (toOsPath filename)
 #ifdef mingw32_HOST_OS
 	(firstliner, otherlines) = separate (== '\n') s
 	(secondliner, rest) = separate (== '\n') otherlines
 	firstline = dropWhileEnd (== '\r') firstliner
 	secondline = dropWhileEnd (== '\r') secondliner
-	secondline = 
 	mpid' = readish secondline
 #else
 	(firstline, rest) = separate (== '\n') s
@@ -327,16 +329,18 @@ readTransferInfo mpid s = TransferInfo
 		else pure Nothing -- not failure
 
 {- The directory holding transfer information files for a given Direction. -}
-transferDir :: Direction -> Git.Repo -> RawFilePath
-transferDir direction r = gitAnnexTransferDir r P.</> formatDirection direction
+transferDir :: Direction -> Git.Repo -> OsPath
+transferDir direction r = 
+	gitAnnexTransferDir r
+		</> toOsPath (formatDirection direction)
 
 {- The directory holding failed transfer information files for a given
  - Direction and UUID -}
-failedTransferDir :: UUID -> Direction -> Git.Repo -> RawFilePath
+failedTransferDir :: UUID -> Direction -> Git.Repo -> OsPath
 failedTransferDir u direction r = gitAnnexTransferDir r
-	P.</> "failed"
-	P.</> formatDirection direction
-	P.</> B8.filter (/= '/') (fromUUID u)
+	</> literalOsPath "failed"
+	</> toOsPath (formatDirection direction)
+	</> OS.filter (/= unsafeFromChar '/') (fromUUID u)
 
 prop_read_write_transferinfo :: TransferInfo -> Bool
 prop_read_write_transferinfo info

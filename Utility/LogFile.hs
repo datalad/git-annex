@@ -35,7 +35,7 @@ rotateLog logfile = go 0
   where
 	go num
 		| num > maxLogs = return ()
-		| otherwise = whenM (doesFileExist currfile) $ do
+		| otherwise = whenM (doesFileExist (toOsPath currfile)) $ do
 			go (num + 1)
 			rename (toRawFilePath currfile) (toRawFilePath nextfile)
 	  where
@@ -50,7 +50,7 @@ rotatedLog logfile n = logfile ++ "." ++ show n
 
 {- Lists most recent logs last. -}
 listLogs :: FilePath -> IO [FilePath]
-listLogs logfile = filterM doesFileExist $ reverse $ 
+listLogs logfile = filterM (doesFileExist . toOsPath) $ reverse $ 
 	logfile : map (rotatedLog logfile) [1..maxLogs]
 
 maxLogs :: Int

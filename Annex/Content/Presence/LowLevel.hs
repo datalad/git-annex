@@ -12,7 +12,7 @@ import Annex.Verify
 import Annex.InodeSentinal
 import Utility.InodeCache
 
-isUnmodifiedLowLevel :: (Key -> [InodeCache] -> Annex ()) -> Key -> RawFilePath -> InodeCache -> [InodeCache] -> Annex Bool
+isUnmodifiedLowLevel :: (Key -> [InodeCache] -> Annex ()) -> Key -> OsPath -> InodeCache -> [InodeCache] -> Annex Bool
 isUnmodifiedLowLevel addinodecaches key f fc ic =
 	isUnmodifiedCheapLowLevel fc ic <||> expensivecheck
   where

@@ -44,7 +44,7 @@ optParser desc = ReKeyOptions
 
 -- Split on the last space, since a FilePath can contain whitespace,
 -- but a Key very rarely does.
-batchParser :: String -> Annex (Either String (RawFilePath, Key))
+batchParser :: String -> Annex (Either String (OsPath, Key))
 batchParser s = case separate (== ' ') (reverse s) of
 	(rk, rf)
 		| null rk || null rf -> return $ Left "Expected: \"file key\""
@@ -52,7 +52,7 @@ batchParser s = case separate (== ' ') (reverse s) of
 			Nothing -> return $ Left "bad key"
 			Just k -> do
 				let f = reverse rf
-				f' <- liftIO $ relPathCwdToFile (toRawFilePath f)
+				f' <- liftIO $ relPathCwdToFile (toOsPath f)
 				return $ Right (f', k)
 
 seek :: ReKeyOptions -> CommandSeek
@@ -65,9 +65,9 @@ seek o = case batchOption o of
 		(reKeyThese o)
   where
 	parsekey (file, skey) =
-		(toRawFilePath file, fromMaybe (giveup "bad key") (deserializeKey skey))
+		(toOsPath file, fromMaybe (giveup "bad key") (deserializeKey skey))
 
-start :: SeekInput -> (RawFilePath, Key) -> CommandStart
+start :: SeekInput -> (OsPath, Key) -> CommandStart
 start si (file, newkey) = lookupKey file >>= \case
 	Just k -> go k
 	Nothing -> stop
@@ -79,7 +79,7 @@ start si (file, newkey) = lookupKey file >>= \case
 
 	ai = ActionItemTreeFile file
 
-perform :: RawFilePath -> Key -> Key -> CommandPerform
+perform :: OsPath -> Key -> Key -> CommandPerform
 perform file oldkey newkey = do
 	ifM (inAnnex oldkey) 
 		( unlessM (linkKey file oldkey newkey) $
@@ -93,7 +93,7 @@ perform file oldkey newkey = do
 
 {- Make a hard link to the old key content (when supported),
  - to avoid wasting disk space. -}
-linkKey :: RawFilePath -> Key -> Key -> Annex Bool
+linkKey :: OsPath -> Key -> Key -> Annex Bool
 linkKey file oldkey newkey = ifM (isJust <$> isAnnexLink file)
 	( linkKey' DefaultVerify oldkey newkey
 	, do
@@ -101,7 +101,7 @@ linkKey file oldkey newkey = ifM (isJust <$> isAnnexLink file)
 		 - it's hard linked to the old key, that link must be broken. -}
 		oldobj <- calcRepo (gitAnnexLocation oldkey)
 		v <- tryNonAsync $ do
-			st <- liftIO $ R.getFileStatus file
+			st <- liftIO $ R.getFileStatus (fromOsPath file)
 			when (linkCount st > 1) $ do
 				freezeContent oldobj
 				replaceWorkTreeFile file $ \tmp -> do
@@ -132,7 +132,7 @@ linkKey' v oldkey newkey =
 		oldobj <- calcRepo (gitAnnexLocation oldkey)
 		isJust <$> linkOrCopy' (return True) newkey oldobj tmp Nothing
 
-cleanup :: RawFilePath -> Key -> (MigrationRecord -> Annex ()) -> CommandCleanup
+cleanup :: OsPath -> Key -> (MigrationRecord -> Annex ()) -> CommandCleanup
 cleanup file newkey a = do
 	newkeyrec <- ifM (isJust <$> isAnnexLink file)
 		( do
@@ -141,7 +141,8 @@ cleanup file newkey a = do
 			stageSymlink file sha
 			return (MigrationRecord sha)
 		, do
-			mode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus file
+			mode <- liftIO $ catchMaybeIO $ 
+				fileMode <$> R.getFileStatus (fromOsPath file)
 			liftIO $ whenM (isJust <$> isPointerFile file) $
 				writePointerFile file newkey mode
 			sha <- hashPointerFile newkey

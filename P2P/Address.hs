@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module P2P.Address where
 
 import qualified Annex
@@ -75,24 +77,24 @@ storeP2PAddress addr = do
 	addrs <- loadP2PAddresses
 	unless (addr `elem` addrs) $ do
 		let s = unlines $ map formatP2PAddress (addr:addrs)
-		let tmpnam = p2pAddressCredsFile ++ ".new"
+		let tmpnam = p2pAddressCredsFile <> literalOsPath ".new"
 		writeCreds s tmpnam
 		tmpf <- credsFile tmpnam
 		destf <- credsFile p2pAddressCredsFile
 		-- This may be run by root, so make the creds file
 		-- and directory have the same owner and group as
 		-- the git repository directory has.
-		st <- liftIO . R.getFileStatus . toRawFilePath
-			=<< Annex.fromRepo repoLocation
-		let fixowner f = R.setOwnerAndGroup (toRawFilePath f) (fileOwner st) (fileGroup st)
+		st <- liftIO . R.getFileStatus . fromOsPath
+			=<< Annex.fromRepo repoPath
+		let fixowner f = R.setOwnerAndGroup (fromOsPath f) (fileOwner st) (fileGroup st)
 		liftIO $ do
 			fixowner tmpf
 			fixowner (takeDirectory tmpf)
 			fixowner (takeDirectory (takeDirectory tmpf))
 			renameFile tmpf destf
 
-p2pAddressCredsFile :: FilePath
-p2pAddressCredsFile = "p2paddrs"
+p2pAddressCredsFile :: OsPath
+p2pAddressCredsFile = literalOsPath "p2paddrs"
 
 torAppName :: AppName
 torAppName = "tor-annex"

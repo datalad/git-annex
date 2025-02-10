@@ -24,8 +24,7 @@ import qualified Git
 import qualified Git.Branch
 import qualified Git.Ref
 import qualified Command.Sync
-
-import qualified System.FilePath.ByteString as P
+import qualified Utility.OsString as OS
 
 {- This thread watches for changes to .git/refs/, and handles incoming
  - pushes. -}
@@ -33,7 +32,7 @@ mergeThread :: NamedThread
 mergeThread = namedThread "Merger" $ do
 	g <- liftAnnex gitRepo
 	let gitd = Git.localGitDir g
-	let dir = gitd P.</> "refs"
+	let dir = gitd </> literalOsPath "refs"
 	liftIO $ createDirectoryUnder [gitd] dir
 	let hook a = Just <$> asIO2 (runHandler a)
 	changehook <- hook onChange
@@ -43,21 +42,21 @@ mergeThread = namedThread "Merger" $ do
 		, modifyHook = changehook
 		, errHook = errhook
 		}
-	void $ liftIO $ watchDir (fromRawFilePath dir) (const False) True hooks id
-	debug ["watching", fromRawFilePath dir]
+	void $ liftIO $ watchDir dir (const False) True hooks id
+	debug ["watching", fromOsPath dir]
 
-type Handler = FilePath -> Assistant ()
+type Handler t = t -> Assistant ()
 
 {- Runs an action handler.
  -
  - Exceptions are ignored, otherwise a whole thread could be crashed.
  -}
-runHandler :: Handler -> FilePath -> Maybe FileStatus -> Assistant ()
+runHandler :: Handler t -> t -> Maybe FileStatus -> Assistant ()
 runHandler handler file _filestatus =
 	either (liftIO . print) (const noop) =<< tryIO <~> handler file
 
 {- Called when there's an error with inotify. -}
-onErr :: Handler
+onErr :: Handler String
 onErr = giveup
 
 {- Called when a new branch ref is written, or a branch ref is modified.
@@ -66,9 +65,9 @@ onErr = giveup
  - ok; it ensures that any changes pushed since the last time the assistant
  - ran are merged in.
  -}
-onChange :: Handler
+onChange :: Handler OsPath
 onChange file
-	| ".lock" `isSuffixOf` file = noop
+	| literalOsPath ".lock" `OS.isSuffixOf` file = noop
 	| isAnnexBranch file = do
 		branchChanged
 		diverged <- liftAnnex Annex.Branch.forceUpdate >>= return . \case
@@ -112,7 +111,7 @@ onChange file
  - to the second branch, which should be merged into it? -}
 isRelatedTo :: Git.Ref -> Git.Ref -> Bool
 isRelatedTo x y
-	| basex /= takeDirectory basex ++ "/" ++ basey = False
+	| basex /= fromOsPath (takeDirectory (toOsPath basex)) ++ "/" ++ basey = False
 	| "/synced/" `isInfixOf` Git.fromRef x = True
 	| "refs/remotes/" `isPrefixOf` Git.fromRef x = True
 	| otherwise = False
@@ -120,12 +119,12 @@ isRelatedTo x y
 	basex = Git.fromRef $ Git.Ref.base x
 	basey = Git.fromRef $ Git.Ref.base y
 
-isAnnexBranch :: FilePath -> Bool
-isAnnexBranch f = n `isSuffixOf` f
+isAnnexBranch :: OsPath -> Bool
+isAnnexBranch f = n `isSuffixOf` fromOsPath f
   where
 	n = '/' : Git.fromRef Annex.Branch.name
 
-fileToBranch :: FilePath -> Git.Ref
-fileToBranch f = Git.Ref $ encodeBS $ "refs" </> base
+fileToBranch :: OsPath -> Git.Ref
+fileToBranch f = Git.Ref $ fromOsPath $ literalOsPath "refs" </> toOsPath base
   where
-	base = Prelude.last $ split "/refs/" f
+	base = Prelude.last $ split "/refs/" (fromOsPath f)

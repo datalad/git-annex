@@ -11,9 +11,7 @@ module Logs where
 
 import Annex.Common
 import Annex.DirHashes
-
-import qualified Data.ByteString as S
-import qualified System.FilePath.ByteString as P
+import qualified Utility.OsString as OS
 
 {- There are several varieties of log file formats. -}
 data LogVariety
@@ -28,7 +26,7 @@ data LogVariety
 
 {- Converts a path from the git-annex branch into one of the varieties
  - of logs used by git-annex, if it's a known path. -}
-getLogVariety :: GitConfig -> RawFilePath -> Maybe LogVariety
+getLogVariety :: GitConfig -> OsPath -> Maybe LogVariety
 getLogVariety config f
 	| f `elem` topLevelOldUUIDBasedLogs = Just OldUUIDBasedLog
 	| f `elem` topLevelNewUUIDBasedLogs = Just NewUUIDBasedLog
@@ -63,7 +61,7 @@ logFilesToCache :: Int
 logFilesToCache = 2
 
 {- All the log files that might contain information about a key. -}
-keyLogFiles :: GitConfig -> Key -> [RawFilePath]
+keyLogFiles :: GitConfig -> Key -> [OsPath]
 keyLogFiles config k = 
 	[ locationLogFile config k
 	, urlLogFile config k
@@ -76,11 +74,11 @@ keyLogFiles config k =
 	] ++ oldurlLogs config k
 
 {- All uuid-based logs stored in the top of the git-annex branch. -}
-topLevelUUIDBasedLogs :: [RawFilePath]
+topLevelUUIDBasedLogs :: [OsPath]
 topLevelUUIDBasedLogs = topLevelNewUUIDBasedLogs ++ topLevelOldUUIDBasedLogs
 
 {- All the old-format uuid-based logs stored in the top of the git-annex branch. -}
-topLevelOldUUIDBasedLogs :: [RawFilePath]
+topLevelOldUUIDBasedLogs :: [OsPath]
 topLevelOldUUIDBasedLogs =
 	[ uuidLog
 	, remoteLog
@@ -95,7 +93,7 @@ topLevelOldUUIDBasedLogs =
 	]
 
 {- All the new-format uuid-based logs stored in the top of the git-annex branch. -}
-topLevelNewUUIDBasedLogs :: [RawFilePath]
+topLevelNewUUIDBasedLogs :: [OsPath]
 topLevelNewUUIDBasedLogs =
 	[ exportLog
 	, proxyLog
@@ -104,7 +102,7 @@ topLevelNewUUIDBasedLogs =
 	]
 
 {- Other top-level logs. -}
-otherTopLevelLogs :: [RawFilePath]
+otherTopLevelLogs :: [OsPath]
 otherTopLevelLogs =
 	[ numcopiesLog
 	, mincopiesLog
@@ -112,188 +110,188 @@ otherTopLevelLogs =
 	, groupPreferredContentLog
 	]
 
-uuidLog :: RawFilePath
-uuidLog = "uuid.log"
+uuidLog :: OsPath
+uuidLog = literalOsPath "uuid.log"
 
-numcopiesLog :: RawFilePath
-numcopiesLog = "numcopies.log"
+numcopiesLog :: OsPath
+numcopiesLog = literalOsPath "numcopies.log"
 
-mincopiesLog :: RawFilePath
-mincopiesLog = "mincopies.log"
+mincopiesLog :: OsPath
+mincopiesLog = literalOsPath "mincopies.log"
 
-configLog :: RawFilePath
-configLog = "config.log"
+configLog :: OsPath
+configLog = literalOsPath "config.log"
 
-remoteLog :: RawFilePath
-remoteLog = "remote.log"
+remoteLog :: OsPath
+remoteLog = literalOsPath "remote.log"
 
-trustLog :: RawFilePath
-trustLog = "trust.log"
+trustLog :: OsPath
+trustLog = literalOsPath "trust.log"
 
-groupLog :: RawFilePath
-groupLog = "group.log"
+groupLog :: OsPath
+groupLog = literalOsPath "group.log"
 
-preferredContentLog :: RawFilePath
-preferredContentLog = "preferred-content.log"
+preferredContentLog :: OsPath
+preferredContentLog = literalOsPath "preferred-content.log"
 
-requiredContentLog :: RawFilePath
-requiredContentLog = "required-content.log"
+requiredContentLog :: OsPath
+requiredContentLog = literalOsPath "required-content.log"
 
-groupPreferredContentLog :: RawFilePath
-groupPreferredContentLog = "group-preferred-content.log"
+groupPreferredContentLog :: OsPath
+groupPreferredContentLog = literalOsPath "group-preferred-content.log"
 
-scheduleLog :: RawFilePath
-scheduleLog = "schedule.log"
+scheduleLog :: OsPath
+scheduleLog = literalOsPath "schedule.log"
 
-activityLog :: RawFilePath
-activityLog = "activity.log"
+activityLog :: OsPath
+activityLog = literalOsPath "activity.log"
 
-differenceLog :: RawFilePath
-differenceLog = "difference.log"
+differenceLog :: OsPath
+differenceLog = literalOsPath "difference.log"
 
-multicastLog :: RawFilePath
-multicastLog = "multicast.log"
+multicastLog :: OsPath
+multicastLog = literalOsPath "multicast.log"
 
-exportLog :: RawFilePath
-exportLog = "export.log"
+exportLog :: OsPath
+exportLog = literalOsPath "export.log"
 
-proxyLog :: RawFilePath
-proxyLog = "proxy.log"
+proxyLog :: OsPath
+proxyLog = literalOsPath "proxy.log"
 
-clusterLog :: RawFilePath
-clusterLog = "cluster.log"
+clusterLog :: OsPath
+clusterLog = literalOsPath "cluster.log"
 
-maxSizeLog :: RawFilePath
-maxSizeLog = "maxsize.log"
+maxSizeLog :: OsPath
+maxSizeLog = literalOsPath "maxsize.log"
 
 {- This is not a log file, it's where exported treeishes get grafted into
  - the git-annex branch. -}
-exportTreeGraftPoint :: RawFilePath
-exportTreeGraftPoint = "export.tree"
+exportTreeGraftPoint :: OsPath
+exportTreeGraftPoint = literalOsPath "export.tree"
 
 {- This is not a log file, it's where migration treeishes get grafted into
  - the git-annex branch. -}
-migrationTreeGraftPoint :: RawFilePath
-migrationTreeGraftPoint = "migrate.tree"
+migrationTreeGraftPoint :: OsPath
+migrationTreeGraftPoint = literalOsPath "migrate.tree"
 
 {- The pathname of the location log file for a given key. -}
-locationLogFile :: GitConfig -> Key -> RawFilePath
+locationLogFile :: GitConfig -> Key -> OsPath
 locationLogFile config key =
-	branchHashDir config key P.</> keyFile key <> locationLogExt
+	branchHashDir config key </> keyFile key <> locationLogExt
 
-locationLogExt :: S.ByteString
-locationLogExt = ".log"
+locationLogExt :: OsPath
+locationLogExt = literalOsPath ".log"
 
 {- The filename of the url log for a given key. -}
-urlLogFile :: GitConfig -> Key -> RawFilePath
+urlLogFile :: GitConfig -> Key -> OsPath
 urlLogFile config key = 
-	branchHashDir config key P.</> keyFile key <> urlLogExt
+	branchHashDir config key </> keyFile key <> urlLogExt
 
 {- Old versions stored the urls elsewhere. -}
-oldurlLogs :: GitConfig -> Key -> [RawFilePath]
+oldurlLogs :: GitConfig -> Key -> [OsPath]
 oldurlLogs config key =
-	[ "remote/web" P.</> hdir P.</> serializeKey' key <> ".log"
-	, "remote/web" P.</> hdir P.</> keyFile key <> ".log"
+	[ literalOsPath "remote/web" </> hdir </> toOsPath (serializeKey'' key) <> literalOsPath ".log"
+	, literalOsPath "remote/web" </> hdir </> keyFile key <> literalOsPath ".log"
 	]
   where
 	hdir = branchHashDir config key
 
-urlLogExt :: S.ByteString
-urlLogExt = ".log.web"
+urlLogExt :: OsPath
+urlLogExt = literalOsPath ".log.web"
 
 {- Does not work on oldurllogs. -}
-isUrlLog :: RawFilePath -> Bool
-isUrlLog file = urlLogExt `S.isSuffixOf` file
+isUrlLog :: OsPath -> Bool
+isUrlLog file = urlLogExt `OS.isSuffixOf` file
 
 {- The filename of the remote state log for a given key. -}
-remoteStateLogFile :: GitConfig -> Key -> RawFilePath
+remoteStateLogFile :: GitConfig -> Key -> OsPath
 remoteStateLogFile config key = 
-	(branchHashDir config key P.</> keyFile key)
+	(branchHashDir config key </> keyFile key)
 		<> remoteStateLogExt
 
-remoteStateLogExt :: S.ByteString
-remoteStateLogExt = ".log.rmt"
+remoteStateLogExt :: OsPath
+remoteStateLogExt = literalOsPath ".log.rmt"
 
-isRemoteStateLog :: RawFilePath -> Bool
-isRemoteStateLog path = remoteStateLogExt `S.isSuffixOf` path
+isRemoteStateLog :: OsPath -> Bool
+isRemoteStateLog path = remoteStateLogExt `OS.isSuffixOf` path
 
 {- The filename of the chunk log for a given key. -}
-chunkLogFile :: GitConfig -> Key -> RawFilePath
+chunkLogFile :: GitConfig -> Key -> OsPath
 chunkLogFile config key = 
-	(branchHashDir config key P.</> keyFile key)
+	(branchHashDir config key </> keyFile key)
 		<> chunkLogExt
 
-chunkLogExt :: S.ByteString
-chunkLogExt = ".log.cnk"
+chunkLogExt :: OsPath
+chunkLogExt = literalOsPath ".log.cnk"
 
 {- The filename of the equivalent keys log for a given key. -}
-equivilantKeysLogFile :: GitConfig -> Key -> RawFilePath
+equivilantKeysLogFile :: GitConfig -> Key -> OsPath
 equivilantKeysLogFile config key = 
-	(branchHashDir config key P.</> keyFile key)
+	(branchHashDir config key </> keyFile key)
 		<> equivilantKeyLogExt
 
-equivilantKeyLogExt :: S.ByteString
-equivilantKeyLogExt = ".log.ek"
+equivilantKeyLogExt :: OsPath
+equivilantKeyLogExt = literalOsPath ".log.ek"
 
-isEquivilantKeyLog :: RawFilePath -> Bool
-isEquivilantKeyLog path = equivilantKeyLogExt `S.isSuffixOf` path
+isEquivilantKeyLog :: OsPath -> Bool
+isEquivilantKeyLog path = equivilantKeyLogExt `OS.isSuffixOf` path
 
 {- The filename of the metadata log for a given key. -}
-metaDataLogFile :: GitConfig -> Key -> RawFilePath
+metaDataLogFile :: GitConfig -> Key -> OsPath
 metaDataLogFile config key =
-	(branchHashDir config key P.</> keyFile key)
+	(branchHashDir config key </> keyFile key)
 		<> metaDataLogExt
 
-metaDataLogExt :: S.ByteString
-metaDataLogExt = ".log.met"
+metaDataLogExt :: OsPath
+metaDataLogExt = literalOsPath ".log.met"
 
-isMetaDataLog :: RawFilePath -> Bool
-isMetaDataLog path = metaDataLogExt `S.isSuffixOf` path
+isMetaDataLog :: OsPath -> Bool
+isMetaDataLog path = metaDataLogExt `OS.isSuffixOf` path
 
 {- The filename of the remote metadata log for a given key. -}
-remoteMetaDataLogFile :: GitConfig -> Key -> RawFilePath
+remoteMetaDataLogFile :: GitConfig -> Key -> OsPath
 remoteMetaDataLogFile config key = 
-	(branchHashDir config key P.</> keyFile key)
+	(branchHashDir config key </> keyFile key)
 		<> remoteMetaDataLogExt
 
-remoteMetaDataLogExt :: S.ByteString
-remoteMetaDataLogExt = ".log.rmet"
+remoteMetaDataLogExt :: OsPath
+remoteMetaDataLogExt = literalOsPath ".log.rmet"
 
-isRemoteMetaDataLog :: RawFilePath -> Bool
-isRemoteMetaDataLog path = remoteMetaDataLogExt `S.isSuffixOf` path
+isRemoteMetaDataLog :: OsPath -> Bool
+isRemoteMetaDataLog path = remoteMetaDataLogExt `OS.isSuffixOf` path
 
 {- The filename of the remote content identifier log for a given key. -}
-remoteContentIdentifierLogFile :: GitConfig -> Key -> RawFilePath
+remoteContentIdentifierLogFile :: GitConfig -> Key -> OsPath
 remoteContentIdentifierLogFile config key =
-	(branchHashDir config key P.</> keyFile key)
+	(branchHashDir config key </> keyFile key)
 		<> remoteContentIdentifierExt
 
-remoteContentIdentifierExt :: S.ByteString
-remoteContentIdentifierExt = ".log.cid"
+remoteContentIdentifierExt :: OsPath
+remoteContentIdentifierExt = literalOsPath ".log.cid"
 
-isRemoteContentIdentifierLog :: RawFilePath -> Bool
-isRemoteContentIdentifierLog path = remoteContentIdentifierExt `S.isSuffixOf` path
+isRemoteContentIdentifierLog :: OsPath -> Bool
+isRemoteContentIdentifierLog path = remoteContentIdentifierExt `OS.isSuffixOf` path
 
 {- From an extension and a log filename, get the key that it's a log for. -}
-extLogFileKey :: S.ByteString -> RawFilePath -> Maybe Key
+extLogFileKey :: OsPath -> OsPath -> Maybe Key
 extLogFileKey expectedext path
 	| ext == expectedext = fileKey base
 	| otherwise = Nothing
   where
-	file = P.takeFileName path
-	(base, ext) = S.splitAt (S.length file - extlen) file
-	extlen = S.length expectedext
+	file = takeFileName path
+	(base, ext) = OS.splitAt (OS.length file - extlen) file
+	extlen = OS.length expectedext
 
 {- Converts a url log file into a key.
  - (Does not work on oldurlLogs.) -}
-urlLogFileKey :: RawFilePath -> Maybe Key
+urlLogFileKey :: OsPath -> Maybe Key
 urlLogFileKey = extLogFileKey urlLogExt
 
 {- Converts a pathname into a key if it's a location log. -}
-locationLogFileKey :: GitConfig -> RawFilePath -> Maybe Key
+locationLogFileKey :: GitConfig -> OsPath -> Maybe Key
 locationLogFileKey config path
-	| length (splitDirectories (fromRawFilePath path)) /= locationLogFileDepth config = Nothing
-	| otherwise = extLogFileKey ".log" path
+	| length (splitDirectories path) /= locationLogFileDepth config = Nothing
+	| otherwise = extLogFileKey (literalOsPath ".log") path
 
 {- Depth of location log files within the git-annex branch.
  -

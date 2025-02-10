@@ -12,38 +12,47 @@ module Git.Objects where
 import Common
 import Git
 import Git.Sha
+import qualified Utility.OsString as OS
 
 import qualified Data.ByteString as B
-import qualified System.FilePath.ByteString as P
+objectsDir :: Repo -> OsPath
+objectsDir r = localGitDir r </> literalOsPath "objects"
 
-objectsDir :: Repo -> RawFilePath
-objectsDir r = localGitDir r P.</> "objects"
+packDir :: Repo -> OsPath
+packDir r = objectsDir r </> literalOsPath "pack"
 
-packDir :: Repo -> RawFilePath
-packDir r = objectsDir r P.</> "pack"
+packIdxFile :: OsPath -> OsPath
+packIdxFile = flip replaceExtension (literalOsPath "idx")
 
-packIdxFile :: RawFilePath -> RawFilePath
-packIdxFile = flip P.replaceExtension "idx"
-
-listPackFiles :: Repo -> IO [RawFilePath]
-listPackFiles r = filter (".pack" `B.isSuffixOf`) 
+listPackFiles :: Repo -> IO [OsPath]
+listPackFiles r = filter (literalOsPath ".pack" `OS.isSuffixOf`) 
 	<$> catchDefaultIO [] (dirContents $ packDir r)
 
 listLooseObjectShas :: Repo -> IO [Sha]
 listLooseObjectShas r = catchDefaultIO [] $
-	mapMaybe (extractSha . encodeBS . concat . reverse . take 2 . reverse . splitDirectories . decodeBS)
-		<$> emptyWhenDoesNotExist (dirContentsRecursiveSkipping (== "pack") True (objectsDir r))
+	mapMaybe conv <$> emptyWhenDoesNotExist
+		(dirContentsRecursiveSkipping ispackdir True (objectsDir r))
+  where
+	conv :: OsPath -> Maybe Sha
+	conv = extractSha 
+		. fromOsPath
+		. OS.concat
+		. reverse
+		. take 2
+		. reverse
+		. splitDirectories
+	ispackdir f = f == literalOsPath "pack"
 
-looseObjectFile :: Repo -> Sha -> RawFilePath
-looseObjectFile r sha = objectsDir r P.</> prefix P.</> rest
+looseObjectFile :: Repo -> Sha -> OsPath
+looseObjectFile r sha = objectsDir r </> toOsPath prefix </> toOsPath rest
   where
 	(prefix, rest) = B.splitAt 2 (fromRef' sha)
 
 listAlternates :: Repo -> IO [FilePath]
 listAlternates r = catchDefaultIO [] $
-	lines <$> readFile (fromRawFilePath alternatesfile)
+	lines <$> readFile (fromOsPath alternatesfile)
   where
-	alternatesfile = objectsDir r P.</> "info" P.</> "alternates"
+	alternatesfile = objectsDir r </> literalOsPath "info" </> literalOsPath "alternates"
 
 {- A repository recently cloned with --shared will have one or more
  - alternates listed, and contain no loose objects or packs. -}

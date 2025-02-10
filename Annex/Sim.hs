@@ -55,8 +55,6 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import qualified Data.UUID as U
 import qualified Data.UUID.V5 as U5
-import qualified Utility.RawFilePath as R
-import qualified System.FilePath.ByteString as P
 
 data SimState t = SimState
 	{ simRepos :: M.Map RepoName UUID
@@ -342,7 +340,7 @@ applySimCommand c@(CommandVisit repo cmdparams) st _ =
 			_ -> return ("sh", ["-c", unwords cmdparams])
 		exitcode <- liftIO $
 			safeSystem' cmd (map Param params)
-				(\p -> p { cwd = Just dir })
+				(\p -> p { cwd = Just (fromOsPath dir) })
 		when (null cmdparams) $
 			showLongNote "Finished visit to simulated repository."
 		if null cmdparams
@@ -431,7 +429,7 @@ applySimCommand' (CommandAddTree repo expr) st _ =
 				<$> inRepo (toTopFilePath f)
 			ifM (checkMatcher matcher (Just k) afile NoLiveUpdate mempty (pure False) (pure False))
 				( let st'' = setPresentKey True (u, repo) k u $ st'
-					{ simFiles = M.insert f k (simFiles st')
+					{ simFiles = M.insert (fromOsPath f) k (simFiles st')
 					}
 				  in go matcher u st'' fs
 				, go matcher u st' fs 
@@ -758,7 +756,7 @@ overFilesRemote r u remote remotepred localpred checkwant handlewanted st =
 		Right (Left (st, map (go remoteu) $ M.toList $ simFiles st))
   where
 	go remoteu (f, k) st' = 
-	  	let af = AssociatedFile $ Just f
+	  	let af = AssociatedFile $ Just $ toOsPath f
 		in liftIO $ runSimRepo u st' $ \st'' rst ->
 			case M.lookup remoteu (simRepoState st'') of
 				Nothing -> return (st'', False)
@@ -814,7 +812,7 @@ simulateDropUnwanted st u dropfromname dropfrom =
 	Right $ Left (st, map go $ M.toList $ simFiles st)
   where
 	go (f, k) st' = liftIO $ runSimRepo u st' $ \st'' rst ->
-		let af = AssociatedFile $ Just f
+		let af = AssociatedFile $ Just $ toOsPath f
 		in if present dropfrom rst k
 			then updateLiveSizeChanges rst $
 				ifM (wantDrop NoLiveUpdate False (Just dropfrom) (Just k) af Nothing)
@@ -1104,7 +1102,7 @@ initNewSimRepos = \st -> go st (M.toList $ simRepoState st)
 	go st ((u, rst):rest) =
 		case simRepo rst of
 			Nothing -> do
-				let d = simRepoDirectory st u
+				let d = fromOsPath $ simRepoDirectory st u
 				sr <- initSimRepo (simRepoName rst) u d st
 				let rst' = rst { simRepo = Just sr }
 				let st' = st
@@ -1114,8 +1112,8 @@ initNewSimRepos = \st -> go st (M.toList $ simRepoState st)
 				go st' rest
 			_ -> go st rest
 
-simRepoDirectory :: SimState t -> UUID -> FilePath
-simRepoDirectory st u = simRootDirectory st </> fromUUID u
+simRepoDirectory :: SimState t -> UUID -> OsPath
+simRepoDirectory st u = toOsPath (simRootDirectory st) </> fromUUID u
 
 initSimRepo :: RepoName -> UUID -> FilePath -> SimState SimRepo -> IO SimRepo
 initSimRepo simreponame u dest st = do
@@ -1126,7 +1124,7 @@ initSimRepo simreponame u dest st = do
 		]
 	unless inited $
 		giveup "git init failed"
-	simrepo <- Git.Construct.fromPath (toRawFilePath dest)
+	simrepo <- Git.Construct.fromPath (toOsPath dest)
 	ast <- Annex.new simrepo
 	((), ast') <- Annex.run ast $ doQuietAction $ do
 		storeUUID u
@@ -1301,15 +1299,14 @@ updateSimRepoState newst sr = do
 	setdesc r u = describeUUID u $ toUUIDDesc $
 		simulatedRepositoryDescription r
 	stageannexedfile f k = do
-		let f' = annexedfilepath f
+		let f' = annexedfilepath (toOsPath f)
 		l <- calcRepo $ gitAnnexLink f' k
-		liftIO $ createDirectoryIfMissing True $
-			takeDirectory $ fromRawFilePath f'
-		addAnnexLink l f'
-	unstageannexedfile f = do
-		liftIO $ removeWhenExistsWith R.removeLink $
-			annexedfilepath f
-	annexedfilepath f = repoPath (simRepoGitRepo sr) P.</> f
+		liftIO $ createDirectoryIfMissing True $ takeDirectory f'
+		addAnnexLink (fromOsPath l) f'
+	unstageannexedfile f =
+		liftIO $ removeWhenExistsWith removeFile $
+			annexedfilepath (toOsPath f)
+	annexedfilepath f = repoPath (simRepoGitRepo sr) </> f
 	getlocations = maybe mempty simLocations
 		. M.lookup (simRepoUUID sr)
 		. simRepoState
@@ -1359,19 +1356,21 @@ suspendSim st = do
 	let st'' = st'
 		{ simRepoState = M.map freeze (simRepoState st')
 		}
-	writeFile (simRootDirectory st'' </> "state") (show st'')
+	let statefile = fromOsPath $ 
+		toOsPath (simRootDirectory st'') </> literalOsPath "state"
+	writeFile statefile (show st'')
   where
 	freeze :: SimRepoState SimRepo -> SimRepoState ()
 	freeze rst = rst { simRepo = Nothing }
 
-restoreSim :: RawFilePath -> IO (Either String (SimState SimRepo))
+restoreSim :: OsPath -> IO (Either String (SimState SimRepo))
 restoreSim rootdir = 
-	tryIO (readFile (fromRawFilePath rootdir </> "state")) >>= \case
+	tryIO (readFile statefile) >>= \case
 		Left err -> return (Left (show err))
 		Right c -> case readMaybe c :: Maybe (SimState ()) of
 			Nothing -> return (Left "unable to parse sim state file")
 			Just st -> do
-				let st' = st { simRootDirectory = fromRawFilePath rootdir }
+				let st' = st { simRootDirectory = fromOsPath rootdir }
 				repostate <- M.fromList
 					<$> mapM (thaw st') (M.toList (simRepoState st))
 				let st'' = st'
@@ -1380,12 +1379,12 @@ restoreSim rootdir =
 					}
 				return (Right st'')
   where
+	statefile = fromOsPath $ rootdir </> literalOsPath "state"
 	thaw st (u, rst) = tryNonAsync (thaw' st u) >>= return . \case
 		Left _ -> (u, rst { simRepo = Nothing })
 		Right r -> (u, rst { simRepo = Just r })
 	thaw' st u = do
-		simrepo <- Git.Construct.fromPath $ toRawFilePath $
-			simRepoDirectory st u
+		simrepo <- Git.Construct.fromPath $ simRepoDirectory st u
 		ast <- Annex.new simrepo
 		return $ SimRepo
 			{ simRepoGitRepo = simrepo

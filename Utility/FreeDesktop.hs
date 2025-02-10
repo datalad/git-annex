@@ -10,6 +10,7 @@
  - License: BSD-2-clause
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Utility.FreeDesktop (
@@ -28,17 +29,10 @@ module Utility.FreeDesktop (
 	userDesktopDir
 ) where
 
-import Utility.Exception
+import Common
 import Utility.UserInfo
-import Utility.Process
 
 import System.Environment
-import System.FilePath
-import System.Directory
-import Data.List
-import Data.Maybe
-import Control.Applicative
-import Prelude
 
 type DesktopEntry = [(Key, Value)]
 
@@ -78,53 +72,53 @@ buildDesktopMenuFile d = unlines ("[Desktop Entry]" : map keyvalue d) ++ "\n"
   where
 	keyvalue (k, v) = k ++ "=" ++ toString v
 
-writeDesktopMenuFile :: DesktopEntry -> String -> IO ()
+writeDesktopMenuFile :: DesktopEntry -> OsPath -> IO ()
 writeDesktopMenuFile d file = do
 	createDirectoryIfMissing True (takeDirectory file)
-	writeFile file $ buildDesktopMenuFile d
+	writeFile (fromOsPath file) $ buildDesktopMenuFile d
 
 {- Path to use for a desktop menu file, in either the systemDataDir or
  - the userDataDir -}
-desktopMenuFilePath :: String -> FilePath -> FilePath
+desktopMenuFilePath :: String -> OsPath -> OsPath
 desktopMenuFilePath basename datadir = 
-	datadir </> "applications" </> desktopfile basename
+	datadir </> literalOsPath "applications" </> desktopfile basename
 
 {- Path to use for a desktop autostart file, in either the systemDataDir
  - or the userDataDir -}
-autoStartPath :: String -> FilePath -> FilePath
+autoStartPath :: String -> OsPath -> OsPath
 autoStartPath basename configdir =
-	configdir </> "autostart" </> desktopfile basename
+	configdir </> literalOsPath "autostart" </> desktopfile basename
 
 {- Base directory to install an icon file, in either the systemDataDir
  - or the userDatadir. -}
-iconDir :: FilePath -> FilePath
-iconDir datadir = datadir </> "icons" </> "hicolor"
+iconDir :: OsPath -> OsPath
+iconDir datadir = datadir </> literalOsPath "icons" </> literalOsPath "hicolor"
 
 {- Filename of an icon, given the iconDir to use.
  -
  - The resolution is something like "48x48" or "scalable". -}
-iconFilePath :: FilePath -> String -> FilePath -> FilePath
+iconFilePath :: OsPath -> String -> OsPath -> OsPath
 iconFilePath file resolution icondir =
-	icondir </> resolution </> "apps" </> file
+	icondir </> toOsPath resolution </> literalOsPath "apps" </> file
 
-desktopfile :: FilePath -> FilePath
-desktopfile f = f ++ ".desktop"
+desktopfile :: FilePath -> OsPath
+desktopfile f = toOsPath $ f ++ ".desktop"
 
 {- Directory used for installation of system wide data files.. -}
-systemDataDir :: FilePath
-systemDataDir = "/usr/share"
+systemDataDir :: OsPath
+systemDataDir = literalOsPath "/usr/share"
 
 {- Directory used for installation of system wide config files. -}
-systemConfigDir :: FilePath
-systemConfigDir = "/etc/xdg"
+systemConfigDir :: OsPath
+systemConfigDir = literalOsPath "/etc/xdg"
 
 {- Directory for user data files. -}
-userDataDir :: IO FilePath
-userDataDir = xdgEnvHome "DATA_HOME" ".local/share"
+userDataDir :: IO OsPath
+userDataDir = toOsPath <$> xdgEnvHome "DATA_HOME" ".local/share"
 
 {- Directory for user config files. -}
-userConfigDir :: IO FilePath
-userConfigDir = xdgEnvHome "CONFIG_HOME" ".config"
+userConfigDir :: IO OsPath
+userConfigDir = toOsPath <$> xdgEnvHome "CONFIG_HOME" ".config"
 
 {- Directory for the user's Desktop, may be localized. 
  -
@@ -142,6 +136,6 @@ userDesktopDir = maybe fallback return =<< (parse <$> xdg_user_dir)
 
 xdgEnvHome :: String -> String -> IO String
 xdgEnvHome envbase homedef = do
-	home <- myHomeDir
-	catchDefaultIO (home </> homedef) $
-		getEnv $ "XDG_" ++ envbase
+	home <- toOsPath <$> myHomeDir
+	catchDefaultIO (fromOsPath $ home </> toOsPath homedef) $
+		getEnv ("XDG_" ++ envbase)

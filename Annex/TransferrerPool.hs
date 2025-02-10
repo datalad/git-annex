@@ -43,7 +43,7 @@ data RunTransferrer = RunTransferrer String [CommandParam] BatchCommandMaker
 
 mkRunTransferrer :: BatchCommandMaker -> Annex RunTransferrer
 mkRunTransferrer batchmaker = RunTransferrer
-	<$> liftIO programPath
+	<$> liftIO (fromOsPath <$> programPath)
 	<*> gitAnnexChildProcessParams "transferrer" []
 	<*> pure batchmaker
 

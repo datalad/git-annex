@@ -10,6 +10,7 @@
 {-# LANGUAGE DeriveFunctor, TemplateHaskell, FlexibleContexts #-}
 {-# LANGUAGE TypeSynonymInstances, FlexibleInstances, RankNTypes #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module P2P.Protocol where
@@ -25,8 +26,9 @@ import Utility.AuthToken
 import Utility.Applicative
 import Utility.PartialPrelude
 import Utility.Metered
-import Utility.FileSystemEncoding
 import Utility.MonotonicClock
+import Utility.OsPath
+import qualified Utility.OsString as OS
 import Git.FilePath
 import Annex.ChangedRefs (ChangedRefs)
 import Types.NumCopies
@@ -37,8 +39,6 @@ import Control.Monad.Free.TH
 import Control.Monad.Catch
 import System.Exit (ExitCode(..))
 import System.IO
-import qualified System.FilePath.ByteString as P
-import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Set as S
 import Data.Char
@@ -224,17 +224,19 @@ instance Proto.Serializable Service where
 instance Proto.Serializable ProtoAssociatedFile where
 	serialize (ProtoAssociatedFile (AssociatedFile Nothing)) = ""
 	serialize (ProtoAssociatedFile (AssociatedFile (Just af))) = 
-		decodeBS $ toInternalGitPath $ encodeBS $ concatMap esc $ fromRawFilePath af
+		fromOsPath $ toInternalGitPath $
+			OS.concat $ map esc $ OS.unpack af
 	  where
-		esc '%' = "%%"
-		esc c 
-			| isSpace c = "%"
-			| otherwise = [c]
+	  	esc c = case OS.toChar c of
+			'%' -> literalOsPath "%%"
+			c' | isSpace c' -> literalOsPath "%"
+			_ -> OS.singleton c
 	
-	deserialize s = case fromInternalGitPath $ toRawFilePath $ deesc [] s of
+	deserialize s = case fromInternalGitPath $ toOsPath $ deesc [] s of
 		f
-			| B.null f -> Just $ ProtoAssociatedFile $ AssociatedFile Nothing
-			| P.isRelative f -> Just $ ProtoAssociatedFile $ 
+			| OS.null f -> Just $ ProtoAssociatedFile $
+				AssociatedFile Nothing
+			| isRelative f -> Just $ ProtoAssociatedFile $ 
 				AssociatedFile $ Just f
 			| otherwise -> Nothing
 	  where
@@ -291,12 +293,12 @@ data LocalF c
 	= TmpContentSize Key (Len -> c)
 	-- ^ Gets size of the temp file where received content may have
 	-- been stored. If not present, returns 0.
-	| FileSize FilePath (Len -> c)
+	| FileSize OsPath (Len -> c)
 	-- ^ Gets size of the content of a file. If not present, returns 0.
 	| ContentSize Key (Maybe Len -> c)
 	-- ^ Gets size of the content of a key, when the full content is
 	-- present.
-	| ReadContent Key AssociatedFile (Maybe FilePath) Offset (L.ByteString -> Proto Validity -> Proto (Maybe [UUID])) (Maybe [UUID] -> c)
+	| ReadContent Key AssociatedFile (Maybe OsPath) Offset (L.ByteString -> Proto Validity -> Proto (Maybe [UUID])) (Maybe [UUID] -> c)
 	-- ^ Reads the content of a key and sends it to the callback.
 	-- Must run the callback, or terminate the protocol connection.
 	--
@@ -321,7 +323,7 @@ data LocalF c
 	-- Note: The ByteString may not contain the entire remaining content
 	-- of the key. Only once the temp file size == Len has the whole
 	-- content been transferred.
-	| StoreContentTo FilePath (Maybe IncrementalVerifier) Offset Len (Proto L.ByteString) (Proto (Maybe Validity)) ((Bool, Verification) -> c)
+	| StoreContentTo OsPath (Maybe IncrementalVerifier) Offset Len (Proto L.ByteString) (Proto (Maybe Validity)) ((Bool, Verification) -> c)
 	-- ^ Like StoreContent, but stores the content to a temp file.
 	| SendContentWith (L.ByteString -> Annex (Maybe Validity -> Annex Bool)) (Proto L.ByteString) (Proto (Maybe Validity)) (Bool -> c)
 	-- ^ Reads content from the Proto L.ByteString and sends it to the
@@ -479,7 +481,7 @@ removeBeforeRemoteEndTime remoteendtime key = do
 		REMOVE_BEFORE remoteendtime key
 	checkSuccessFailurePlus	
 
-get :: FilePath -> Key -> Maybe IncrementalVerifier -> AssociatedFile -> Meter -> MeterUpdate -> Proto (Bool, Verification)
+get :: OsPath -> Key -> Maybe IncrementalVerifier -> AssociatedFile -> Meter -> MeterUpdate -> Proto (Bool, Verification)
 get dest key iv af m p = 
 	receiveContent (Just m) p sizer storer noothermessages $ \offset ->
 		GET offset (ProtoAssociatedFile af) key
@@ -725,7 +727,7 @@ checkCONNECTServerMode service servermode a =
 		(ServeReadOnly, UploadPack) -> a Nothing
 		(ServeReadOnly, ReceivePack) -> a (Just sendReadOnlyError)
 
-sendContent :: Key -> AssociatedFile -> Maybe FilePath -> Offset -> MeterUpdate -> Proto (Maybe [UUID])
+sendContent :: Key -> AssociatedFile -> Maybe OsPath -> Offset -> MeterUpdate -> Proto (Maybe [UUID])
 sendContent key af o offset@(Offset n) p = go =<< local (contentSize key)
   where
 	go (Just (Len totallen)) = do

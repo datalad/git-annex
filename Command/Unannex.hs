@@ -39,12 +39,12 @@ seeker fast = AnnexedFileSeeker
 	, usesLocationLog = False
 	}
 
-start :: Bool -> SeekInput -> RawFilePath -> Key -> CommandStart
+start :: Bool -> SeekInput -> OsPath -> Key -> CommandStart
 start fast si file key = 
 	starting "unannex" (mkActionItem (key, file)) si $
 		perform fast file key
 
-perform :: Bool -> RawFilePath -> Key -> CommandPerform
+perform :: Bool -> OsPath -> Key -> CommandPerform
 perform fast file key = do
 	Annex.Queue.addCommand [] "rm"
 		[ Param "--cached"
@@ -52,7 +52,7 @@ perform fast file key = do
 		, Param "--quiet"
 		, Param "--"
 		]
-		[fromRawFilePath file]
+		[fromOsPath file]
 	isAnnexLink file >>= \case
 		-- If the file is locked, it needs to be replaced with
 		-- the content from the annex. Note that it's possible
@@ -73,9 +73,9 @@ perform fast file key = do
 		maybe noop Database.Keys.removeInodeCache
 			=<< withTSDelta (liftIO . genInodeCache file)
 
-cleanup :: Bool -> RawFilePath -> Key -> CommandCleanup
+cleanup :: Bool -> OsPath -> Key -> CommandCleanup
 cleanup fast file key = do
-	liftIO $ removeFile (fromRawFilePath file)
+	liftIO $ removeFile file
 	src <- calcRepo (gitAnnexLocation key)
 	ifM (pure fast <||> Annex.getRead Annex.fast)
 		( do
@@ -83,7 +83,7 @@ cleanup fast file key = do
 			-- already have other hard links pointing at it. This
 			-- avoids unannexing (and uninit) ending up hard
 			-- linking files together, which would be surprising.
-			s <- liftIO $ R.getFileStatus src
+			s <- liftIO $ R.getFileStatus (fromOsPath src)
 			if linkCount s > 1
 				then copyfrom src
 				else hardlinkfrom src
@@ -91,13 +91,14 @@ cleanup fast file key = do
 		)
   where
 	copyfrom src = 
-		thawContent file `after` liftIO 
-			(copyFileExternal CopyAllMetaData
-				(fromRawFilePath src)
-				(fromRawFilePath file))
+		thawContent file `after`
+			liftIO (copyFileExternal CopyAllMetaData src file)
 	hardlinkfrom src =
 		-- creating a hard link could fall; fall back to copying
-		ifM (liftIO $ catchBoolIO $ R.createLink src file >> return True)
+		ifM (liftIO $ tryhardlink src file)
 			( return True
 			, copyfrom src
 			)
+	tryhardlink src dest = catchBoolIO $ do
+		R.createLink (fromOsPath src) (fromOsPath dest)
+		return True

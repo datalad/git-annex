@@ -12,6 +12,7 @@ module Types.Backend where
 import Types.Key
 import Types.KeySource
 import Utility.Metered
+import Utility.OsPath
 import Utility.FileSystemEncoding
 import Utility.Hash (IncrementalVerifier)
 
@@ -20,7 +21,7 @@ data BackendA a = Backend
 	, genKey :: Maybe (KeySource -> MeterUpdate -> a Key)
 	-- Verifies the content of a key, stored in a file, using a hash.
 	-- This does not need to be cryptographically secure.
-	, verifyKeyContent :: Maybe (Key -> RawFilePath -> a Bool)
+	, verifyKeyContent :: Maybe (Key -> OsPath -> a Bool)
 	-- Incrementally verifies the content of a key, using the same
 	-- hash as verifyKeyContent, but with the content provided
 	-- incrementally a piece at a time, until finalized.

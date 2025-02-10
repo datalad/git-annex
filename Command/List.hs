@@ -82,7 +82,7 @@ getList o
 printHeader :: [(UUID, RemoteName, TrustLevel)] -> Annex ()
 printHeader l = liftIO $ putStrLn $ safeOutput $ lheader $ map (\(_, n, t) -> (n, t)) l
 
-start :: [(UUID, RemoteName, TrustLevel)] -> SeekInput -> RawFilePath -> Key -> CommandStart
+start :: [(UUID, RemoteName, TrustLevel)] -> SeekInput -> OsPath -> Key -> CommandStart
 start l _si file key = do
 	ls <- S.fromList <$> keyLocations key
 	qp <- coreQuotePath <$> Annex.getGitConfig
@@ -100,7 +100,7 @@ lheader remotes = unlines (zipWith formatheader [0..] remotes) ++ pipes (length 
 	trust UnTrusted = " (untrusted)"
 	trust _ = ""
 
-format :: [(TrustLevel, Present)] -> RawFilePath -> StringContainingQuotedPath
+format :: [(TrustLevel, Present)] -> OsPath -> StringContainingQuotedPath
 format remotes file = UnquotedString (thereMap) <> " " <> QuotedPath file
   where 
 	thereMap = concatMap there remotes

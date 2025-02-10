@@ -16,10 +16,10 @@ import BuildFlags
 
 {- The full license info may be included in a file on disk that can
  - be read in and displayed. -}
-licenseFile :: IO (Maybe FilePath)
+licenseFile :: IO (Maybe OsPath)
 licenseFile = do
 	base <- standaloneAppBase
-	return $ (</> "LICENSE") <$> base
+	return $ (</> literalOsPath "LICENSE") <$> base
 
 getAboutR :: Handler Html
 getAboutR = page "About git-annex" (Just About) $ do
@@ -34,7 +34,7 @@ getLicenseR = do
 		Just f -> customPage (Just About) $ do
 			-- no sidebar, just pages of legalese..
 			setTitle "License"
-			license <- liftIO $ readFile f
+			license <- liftIO $ readFile (fromOsPath f)
 			$(widgetFile "documentation/license")
 
 getRepoGroupR :: Handler Html

@@ -15,6 +15,7 @@ module Utility.Lsof (
 import Common
 import BuildInfo
 import Utility.Env.Set
+import qualified Utility.OsString as OS
 
 import System.Posix.Types
 
@@ -30,12 +31,14 @@ data ProcessInfo = ProcessInfo ProcessID CmdLine
  - path where the program was found. Make sure at runtime that lsof is
  - available, and if it's not in PATH, adjust PATH to contain it. -}
 setup :: IO ()
-setup = do
-	let cmd = fromMaybe "lsof" BuildInfo.lsof
-	when (isAbsolute cmd) $ do
-		path <- getSearchPath
-		let path' = takeDirectory cmd : path
-		setEnv "PATH" (intercalate [searchPathSeparator] path') True
+setup = when (isAbsolute cmd) $ do
+	path <- getSearchPath
+	let path' = fromOsPath $ OS.intercalate sep $
+		takeDirectory cmd : path
+	setEnv "PATH" path' True
+  where
+	cmd = toOsPath $ fromMaybe "lsof" BuildInfo.lsof
+	sep = OS.singleton searchPathSeparator
 
 {- Checks each of the files in a directory to find open files.
  - Note that this will find hard links to files elsewhere that are open. -}

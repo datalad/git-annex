@@ -17,7 +17,6 @@ module Utility.FileSize (
 #ifdef mingw32_HOST_OS
 import Control.Exception (bracket)
 import System.IO
-import Utility.FileSystemEncoding
 import qualified Utility.FileIO as F
 import Utility.OsPath
 #else
@@ -25,6 +24,7 @@ import System.PosixCompat.Files (fileSize)
 #endif
 import System.PosixCompat.Files (FileStatus)
 import qualified Utility.RawFilePath as R
+import Utility.OsPath
 
 type FileSize = Integer
 
@@ -34,18 +34,18 @@ type FileSize = Integer
  - FileOffset which maxes out at 2 gb.
  - See https://github.com/jystic/unix-compat/issues/16
  -}
-getFileSize :: R.RawFilePath -> IO FileSize
+getFileSize :: OsPath -> IO FileSize
 #ifndef mingw32_HOST_OS
-getFileSize f = fmap (fromIntegral . fileSize) (R.getFileStatus f)
+getFileSize f = fmap (fromIntegral . fileSize) (R.getFileStatus (fromOsPath f))
 #else
-getFileSize f = bracket (F.openFile (toOsPath f) ReadMode) hClose hFileSize
+getFileSize f = bracket (F.openFile f ReadMode) hClose hFileSize
 #endif
 
 {- Gets the size of the file, when its FileStatus is already known.
  -
  - On windows, uses getFileSize. Otherwise, the FileStatus contains the
  - size, so this does not do any work. -}
-getFileSize' :: R.RawFilePath -> FileStatus -> IO FileSize
+getFileSize' :: OsPath -> FileStatus -> IO FileSize
 #ifndef mingw32_HOST_OS
 getFileSize' _ s = return $ fromIntegral $ fileSize s
 #else

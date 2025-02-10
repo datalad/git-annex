@@ -23,7 +23,6 @@ import Types.Distribution
 import Assistant.Upgrade
 
 import qualified Data.Text as T
-import qualified System.FilePath.ByteString as P
 
 data PrefsForm = PrefsForm
 	{ diskReserve :: Text
@@ -89,7 +88,7 @@ storePrefs p = do
 	unsetConfig (annexConfig "numcopies") -- deprecated
 	setConfig (annexConfig "autoupgrade") (fromAutoUpgrade $ autoUpgrade p)
 	unlessM ((==) <$> pure (autoStart p) <*> inAutoStartFile) $ do
-		here <- fromRawFilePath <$> fromRepo Git.repoPath
+		here <- fromRepo Git.repoPath
 		liftIO $ if autoStart p
 			then addAutoStartFile here
 			else removeAutoStartFile here
@@ -110,5 +109,4 @@ postPreferencesR = page "Preferences" (Just Configuration) $ do
 inAutoStartFile :: Annex Bool
 inAutoStartFile = do
 	here <- liftIO . absPath =<< fromRepo Git.repoPath
-	any (`P.equalFilePath` here) . map toRawFilePath
-		<$> liftIO readAutoStartFile
+	any (`equalFilePath` here) <$> liftIO readAutoStartFile

@@ -16,10 +16,8 @@ import Git.Construct
 import qualified Git.Config
 import Utility.Env
 import Utility.Env.Set
-import qualified Utility.RawFilePath as R
 
 import qualified Data.ByteString as B
-import qualified System.FilePath.ByteString as P
 
 {- Gets the current git repository.
  -
@@ -42,16 +40,16 @@ import qualified System.FilePath.ByteString as P
 get :: IO Repo
 get = do
 	gd <- getpathenv "GIT_DIR"
-	r <- configure gd =<< fromCwd
+	r <- configure (fmap toOsPath gd) =<< fromCwd
 	prefix <- getpathenv "GIT_PREFIX"
 	wt <- maybe (worktree (location r)) Just
 		<$> getpathenvprefix "GIT_WORK_TREE" prefix
 	case wt of
 		Nothing -> relPath r
 		Just d -> do
-			curr <- R.getCurrentDirectory
+			curr <- getCurrentDirectory
 			unless (d `dirContains` curr) $
-				setCurrentDirectory (fromRawFilePath d)
+				setCurrentDirectory d
 			relPath $ addworktree wt r
   where
 	getpathenv s = do
@@ -66,15 +64,15 @@ get = do
 		getpathenv s >>= \case
 			Nothing -> return Nothing
 			Just d
-				| d == "." -> return (Just d)
+				| d == "." -> return (Just (toOsPath d))
 				| otherwise -> Just 
-					<$> absPath (prefix P.</> d)
-	getpathenvprefix s _ = getpathenv s
+					<$> absPath (toOsPath prefix </> toOsPath d)
+	getpathenvprefix s _ = fmap toOsPath <$> getpathenv s
 
 	configure Nothing (Just r) = Git.Config.read r
 	configure (Just d) _ = do
 		absd <- absPath d
-		curr <- R.getCurrentDirectory
+		curr <- getCurrentDirectory
 		loc <- adjustGitDirFile $ Local
 			{ gitdir = absd
 			, worktree = Just curr

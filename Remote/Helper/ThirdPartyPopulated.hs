@@ -14,9 +14,7 @@ import Types.Remote
 import Types.Import
 import Crypto (isEncKey)
 import Utility.Metered
-
-import qualified System.FilePath.ByteString as P
-import qualified Data.ByteString as S
+import qualified Utility.OsString as OS
 
 -- When a remote is thirdPartyPopulated, the files we want are probably
 -- in the .git directory. But, git does not really support .git in paths
@@ -24,22 +22,22 @@ import qualified Data.ByteString as S
 -- And so anything in .git is prevented from being imported.
 -- To work around that, this renames that directory when generating an
 -- ImportLocation.
-mkThirdPartyImportLocation :: RawFilePath -> ImportLocation
+mkThirdPartyImportLocation :: OsPath -> ImportLocation
 mkThirdPartyImportLocation =
-	mkImportLocation . P.joinPath . map esc . P.splitDirectories
+	mkImportLocation . joinPath . map esc . splitDirectories
   where
-	esc ".git" = "dotgit"
 	esc x
-		| "dotgit" `S.isSuffixOf` x = "dot" <> x
+		| x == literalOsPath ".git" = literalOsPath "dotgit"
+		| literalOsPath "dotgit" `OS.isSuffixOf` x = literalOsPath "dot" <> x
 		| otherwise = x
 
-fromThirdPartyImportLocation :: ImportLocation -> RawFilePath
+fromThirdPartyImportLocation :: ImportLocation -> OsPath
 fromThirdPartyImportLocation =
-	P.joinPath . map unesc . P.splitDirectories . fromImportLocation
+	joinPath . map unesc . splitDirectories . fromImportLocation
   where
-	unesc "dotgit" = ".git"
 	unesc x
-		| "dotgit" `S.isSuffixOf` x = S.drop 3 x
+		| x == literalOsPath "dotgit" = literalOsPath ".git"
+		| literalOsPath "dotgit" `OS.isSuffixOf` x = OS.drop 3 x
 		| otherwise = x
 
 -- When a remote is thirdPartyPopulated, and contains a backup of a
@@ -49,7 +47,7 @@ fromThirdPartyImportLocation =
 importKey :: ImportLocation -> ContentIdentifier -> ByteSize -> MeterUpdate -> Annex (Maybe Key)
 importKey loc _cid sz _ = return $ importKey' (fromImportLocation loc) (Just sz)
 
-importKey' :: RawFilePath -> Maybe ByteSize -> Maybe Key
+importKey' :: OsPath -> Maybe ByteSize -> Maybe Key
 importKey' p msz = case fileKey f of
 	Just k
 		-- Annex objects always are in a subdirectory with the same
@@ -62,7 +60,7 @@ importKey' p msz = case fileKey f of
 		-- part of special remotes that don't use that layout. The most
 		-- likely special remote to be in a backup, the directory
 		-- special remote, does use that layout at least.)
-		| lastMaybe (P.splitDirectories (P.dropFileName p)) /= Just f -> Nothing
+		| lastMaybe (splitDirectories (dropFileName p)) /= Just f -> Nothing
 		-- Chunked or encrypted keys used in special remotes are not
 		-- supported.
 		| isChunkKey k || isEncKey k -> Nothing
@@ -82,4 +80,4 @@ importKey' p msz = case fileKey f of
 			_ -> Just k
 	Nothing -> Nothing
   where
-	f = P.takeFileName p
+	f = takeFileName p

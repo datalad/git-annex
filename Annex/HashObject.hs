@@ -28,7 +28,7 @@ hashObjectStop = maybe noop stop =<< Annex.getState Annex.hashobjecthandle
 		liftIO $ freeResourcePool p Git.HashObject.hashObjectStop
 		Annex.changeState $ \s -> s { Annex.hashobjecthandle = Nothing }
 
-hashFile :: RawFilePath -> Annex Sha
+hashFile :: OsPath -> Annex Sha
 hashFile f = withHashObjectHandle $ \h -> 
 	liftIO $ Git.HashObject.hashFile h f
 

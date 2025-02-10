@@ -40,7 +40,7 @@ seek ps = withFilesInGitAnnex ww seeker =<< workTreeItems ww ps
 		, usesLocationLog = False
 		}
 
-start :: SeekInput -> RawFilePath -> Key -> CommandStart
+start :: SeekInput -> OsPath -> Key -> CommandStart
 start si file key = ifM (isJust <$> isAnnexLink file)
 	( starting "unlock" ai si $ perform file key
 	, stop
@@ -48,9 +48,9 @@ start si file key = ifM (isJust <$> isAnnexLink file)
   where
 	ai = mkActionItem (key, AssociatedFile (Just file))
 
-perform :: RawFilePath -> Key -> CommandPerform
+perform :: OsPath -> Key -> CommandPerform
 perform dest key = do
-	destmode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus dest
+	destmode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus (fromOsPath dest)
 	destic <- replaceWorkTreeFile dest $ \tmp -> do
 		ifM (inAnnex key)
 			( do
@@ -64,7 +64,7 @@ perform dest key = do
 		withTSDelta (liftIO . genInodeCache tmp)
 	next $ cleanup dest destic key destmode
 
-cleanup :: RawFilePath -> Maybe InodeCache -> Key -> Maybe FileMode -> CommandCleanup
+cleanup :: OsPath -> Maybe InodeCache -> Key -> Maybe FileMode -> CommandCleanup
 cleanup dest destic key destmode = do
 	stagePointerFile dest destmode =<< hashPointerFile key
 	maybe noop (restagePointerFile (Restage True) dest) destic

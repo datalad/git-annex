@@ -26,13 +26,12 @@ import qualified Data.ByteString.Short as S (toShort)
 import qualified Data.ByteString.Char8 as B8
 import System.Random
 import Control.Concurrent
-import qualified System.FilePath.ByteString as P
 #endif
 
 benchmarkDbs :: CriterionMode -> Integer -> Annex ()
 #ifdef WITH_BENCHMARK
-benchmarkDbs mode n = withTmpDirIn "." (toOsPath "benchmark") $ \tmpdir -> do
-	db <- benchDb (toRawFilePath tmpdir) n
+benchmarkDbs mode n = withTmpDirIn (literalOsPath ".") (literalOsPath "benchmark") $ \tmpdir -> do
+	db <- benchDb tmpdir n
 	liftIO $ runMode mode
 		[ bgroup "keys database"
 			[ getAssociatedFilesHitBench db
@@ -93,7 +92,7 @@ keyN n = mkKey $ \k -> k
 	}
 
 fileN :: Integer -> TopFilePath
-fileN n = asTopFilePath (toRawFilePath ("file" ++ show n))
+fileN n = asTopFilePath (toOsPath ("file" ++ show n))
 
 keyMiss :: Key
 keyMiss = keyN 0 -- 0 is never stored
@@ -103,7 +102,7 @@ fileMiss = fileN 0 -- 0 is never stored
 
 data BenchDb = BenchDb H.DbQueue Integer (MVar Integer)
 
-benchDb :: RawFilePath -> Integer -> Annex BenchDb
+benchDb :: OsPath -> Integer -> Annex BenchDb
 benchDb tmpdir num = do
 	liftIO $ putStrLn $ "setting up database with " ++ show num ++ " items"
 	initDb db SQL.createTables
@@ -115,6 +114,6 @@ benchDb tmpdir num = do
 	mv <- liftIO $ newMVar 1
 	return (BenchDb h num mv)
   where
-	db = tmpdir P.</> toRawFilePath (show num </> "db")
+	db = tmpdir </> toOsPath (show num) </> literalOsPath "db"
 
 #endif /* WITH_BENCHMARK */

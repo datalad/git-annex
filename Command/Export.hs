@@ -78,8 +78,8 @@ optParser _ = ExportOptions
 -- To handle renames which swap files, the exported file is first renamed
 -- to a stable temporary name based on the key.
 exportTempName :: Key -> ExportLocation
-exportTempName ek = mkExportLocation $ toRawFilePath $
-	".git-annex-tmp-content-" ++ serializeKey ek
+exportTempName ek = mkExportLocation $
+	literalOsPath ".git-annex-tmp-content-" <> toOsPath (serializeKey'' ek)
 
 seek :: ExportOptions -> CommandSeek
 seek o = startConcurrency commandStages $ do
@@ -312,12 +312,11 @@ performExport r srcrs db ek af contentsha loc allfilledvar = do
 	sent <- tryNonAsync $ if not (isGitShaKey ek)
 		then tryrenameannexobject $ sendannexobject
 		-- Sending a non-annexed file.
-		else withTmpFile (toOsPath "export") $ \tmp h -> do
+		else withTmpFile (literalOsPath "export") $ \tmp h -> do
 			b <- catObject contentsha
 			liftIO $ L.hPut h b
 			liftIO $ hClose h
-			Remote.action $
-				storer (fromRawFilePath (fromOsPath tmp)) ek loc nullMeterUpdate
+			Remote.action $ storer tmp ek loc nullMeterUpdate
 	let failedsend = liftIO $ modifyMVar_ allfilledvar (pure . const (AllFilled False))
 	case sent of
 		Right True -> next $ cleanupExport r db ek loc True

@@ -17,6 +17,11 @@ module Utility.SafeOutput (
 import Data.Char
 import qualified Data.ByteString as S
 
+#ifdef WITH_OSPATH
+import qualified Utility.OsString as OS
+import Utility.OsPath
+#endif
+
 class SafeOutputtable t where
 	safeOutput :: t -> t
 
@@ -25,6 +30,11 @@ instance SafeOutputtable String where
 
 instance SafeOutputtable S.ByteString where
 	safeOutput = S.filter (safeOutputChar . chr . fromIntegral)
+
+#ifdef WITH_OSPATH
+instance SafeOutputtable OsString where
+	safeOutput = OS.filter (safeOutputChar . toChar)
+#endif
 
 safeOutputChar :: Char -> Bool
 safeOutputChar c

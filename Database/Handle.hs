@@ -23,6 +23,7 @@ import Utility.FileSystemEncoding
 import Utility.Debug
 import Utility.DebugLocks
 import Utility.InodeCache
+import Utility.OsPath
 
 import Database.Persist.Sqlite
 import qualified Database.Sqlite as Sqlite
@@ -41,14 +42,14 @@ import System.IO
 {- A DbHandle is a reference to a worker thread that communicates with
  - the database. It has a MVar which Jobs are submitted to. 
  - There is also an MVar which it will fill when there is a fatal error-}
-data DbHandle = DbHandle RawFilePath (Async ()) (MVar Job) (MVar String)
+data DbHandle = DbHandle OsPath (Async ()) (MVar Job) (MVar String)
 
 {- Name of a table that should exist once the database is initialized. -}
 type TableName = String
 
 {- Opens the database, but does not perform any migrations. Only use
  - once the database is known to exist and have the right tables. -}
-openDb :: RawFilePath -> TableName -> IO DbHandle
+openDb :: OsPath -> TableName -> IO DbHandle
 openDb db tablename = do
 	jobs <- newEmptyMVar
 	errvar <- newEmptyMVar
@@ -135,7 +136,7 @@ data Job
 	| ChangeJob (SqlPersistM ())
 	| CloseJob
 
-workerThread :: RawFilePath -> TableName -> MVar Job -> MVar String -> IO ()
+workerThread :: OsPath -> TableName -> MVar Job -> MVar String -> IO ()
 workerThread db tablename jobs errvar = newconn
   where
 	newconn = do
@@ -174,7 +175,7 @@ workerThread db tablename jobs errvar = newconn
  - retrying only if the database shows signs of being modified by another
  - process at least once each 30 seconds.
  -}
-runSqliteRobustly :: TableName -> RawFilePath -> (SqlPersistM a) -> IO a
+runSqliteRobustly :: TableName -> OsPath -> (SqlPersistM a) -> IO a
 runSqliteRobustly tablename db a = do
 	conn <- opensettle maxretries emptyDatabaseInodeCache
 	go conn maxretries emptyDatabaseInodeCache
@@ -194,9 +195,9 @@ runSqliteRobustly tablename db a = do
 	
 	opensettle retries ic = do
 #if MIN_VERSION_persistent_sqlite(2,13,3)
-		conn <- Sqlite.open' db
+		conn <- Sqlite.open' (fromOsPath db)
 #else
-		conn <- Sqlite.open (T.pack (fromRawFilePath db))
+		conn <- Sqlite.open (T.pack (fromOsPath db))
 #endif
 		settle conn retries ic
 
@@ -237,7 +238,7 @@ withSqlConnRobustly
 		, BaseBackend backend ~ SqlBackend
 		, BackendCompatible SqlBackend backend
 	    )
-	=> RawFilePath
+	=> OsPath
 	-> (LogFunc -> IO backend)
 	-> (backend -> m a)
 	-> m a
@@ -260,7 +261,7 @@ closeRobustly
 		, BaseBackend backend ~ SqlBackend
 		, BackendCompatible SqlBackend backend
 	   )
-	=> RawFilePath
+	=> OsPath
 	-> backend
 	-> IO ()
 closeRobustly db conn = go maxretries emptyDatabaseInodeCache
@@ -294,7 +295,7 @@ retryHelper
 	=> String
 	-> err
 	-> Int
-	-> RawFilePath
+	-> OsPath
 	-> Int
 	-> DatabaseInodeCache
 	-> (Int -> DatabaseInodeCache -> IO a)
@@ -309,9 +310,9 @@ retryHelper action err maxretries db retries ic a = do
 				else giveup (databaseAccessStalledMsg action db err)
 		else a retries' ic
 
-databaseAccessStalledMsg :: Show err => String -> RawFilePath -> err -> String
+databaseAccessStalledMsg :: Show err => String -> OsPath -> err -> String
 databaseAccessStalledMsg action db err =
-	"Repeatedly unable to " ++ action ++ " sqlite database " ++ fromRawFilePath db 
+	"Repeatedly unable to " ++ action ++ " sqlite database " ++ fromOsPath db 
 		++ ": " ++ show err ++ ". "
 		++ "Perhaps another git-annex process is suspended and is "
 		++ "keeping this database locked?"
@@ -321,10 +322,10 @@ data DatabaseInodeCache = DatabaseInodeCache (Maybe InodeCache) (Maybe InodeCach
 emptyDatabaseInodeCache :: DatabaseInodeCache
 emptyDatabaseInodeCache = DatabaseInodeCache Nothing Nothing
 
-getDatabaseInodeCache :: RawFilePath -> IO DatabaseInodeCache
+getDatabaseInodeCache :: OsPath -> IO DatabaseInodeCache
 getDatabaseInodeCache db = DatabaseInodeCache
 	<$> genInodeCache db noTSDelta
-	<*> genInodeCache (db <> "-wal") noTSDelta
+	<*> genInodeCache (db <> literalOsPath "-wal") noTSDelta
 
 isDatabaseModified :: DatabaseInodeCache -> DatabaseInodeCache -> Bool
 isDatabaseModified (DatabaseInodeCache a1 b1) (DatabaseInodeCache a2 b2) = 

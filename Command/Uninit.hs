@@ -73,7 +73,7 @@ checkCanUninit recordok =
 		when (b == Just Annex.Branch.name) $ giveup $
 			"cannot uninit when the " ++ Git.fromRef Annex.Branch.name ++ " branch is checked out"
 		top <- fromRepo Git.repoPath
-		currdir <- liftIO R.getCurrentDirectory
+		currdir <- liftIO getCurrentDirectory
 		whenM ((/=) <$> liftIO (absPath top) <*> liftIO (absPath currdir)) $
 			giveup "can only run uninit from the top of the git repository"
 	
@@ -87,14 +87,14 @@ checkCanUninit recordok =
 
 {- git annex symlinks that are not checked into git could be left by an
  - interrupted add. -}
-startCheckIncomplete :: Annex () -> RawFilePath -> Key -> CommandStart
+startCheckIncomplete :: Annex () -> OsPath -> Key -> CommandStart
 startCheckIncomplete recordnotok file key =
 	starting "uninit check" (mkActionItem (file, key)) (SeekInput []) $ do
 		recordnotok
 		giveup $ unlines err
   where
 	err =
-		[ fromRawFilePath file ++ " points to annexed content, but is not checked into git."
+		[ fromOsPath file ++ " points to annexed content, but is not checked into git."
 		, "Perhaps this was left behind by an interrupted git annex add?"
 		, "Not continuing with uninit; either delete or git annex add the file and retry."
 		]
@@ -109,11 +109,11 @@ removeAnnexDir recordok = do
 		prepareRemoveAnnexDir annexdir
 		if null leftovers
 			then do
-				liftIO $ removeDirectoryRecursive (fromRawFilePath annexdir)
+				liftIO $ removeDirectoryRecursive annexdir
 				next recordok
 			else giveup $ unlines
 				[ "Not fully uninitialized"
-				, "Some annexed data is still left in " ++ fromRawFilePath annexobjectdir
+				, "Some annexed data is still left in " ++ fromOsPath annexobjectdir
 				, "This may include deleted files, or old versions of modified files."
 				, ""
 				, "If you don't care about preserving the data, just delete the"
@@ -134,12 +134,12 @@ removeAnnexDir recordok = do
  -
  - Also closes sqlite databases that might be in the directory,
  - to avoid later failure to write any cached changes to them. -}
-prepareRemoveAnnexDir :: RawFilePath -> Annex ()
+prepareRemoveAnnexDir :: OsPath -> Annex ()
 prepareRemoveAnnexDir annexdir = do
 	Database.Keys.closeDb
 	liftIO $ prepareRemoveAnnexDir' annexdir
 
-prepareRemoveAnnexDir' :: RawFilePath -> IO ()
+prepareRemoveAnnexDir' :: OsPath -> IO ()
 prepareRemoveAnnexDir' annexdir =
 	emptyWhenDoesNotExist (dirTreeRecursiveSkipping (const False) annexdir)
 		>>= mapM_ (void . tryIO . allowWrite)
@@ -159,7 +159,7 @@ removeUnannexed = go []
 		, go (k:c) ks
 		)
 	enoughlinks f = catchBoolIO $ do
-		s <- R.getFileStatus f
+		s <- R.getFileStatus (fromOsPath f)
 		return $ linkCount s > 1
 
 completeUnitialize :: CommandStart

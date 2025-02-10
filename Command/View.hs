@@ -24,8 +24,6 @@ import Logs.View
 import Types.AdjustedBranch
 import Annex.AdjustedBranch.Name
 
-import qualified System.FilePath.ByteString as P
-
 cmd :: Command
 cmd = notBareRepo $
 	command "view" SectionMetaData "enter a view branch"
@@ -120,13 +118,12 @@ checkoutViewBranch view madj mkbranch = do
 		forM_ l (removeemptydir top)
 		liftIO $ void cleanup
 		unlessM (liftIO $ doesDirectoryExist here) $ do
-			showLongNote $ UnquotedString $ cwdmissing (fromRawFilePath top)
+			showLongNote $ UnquotedString $ cwdmissing (fromOsPath top)
 	return ok
   where
 	removeemptydir top d = do
 		p <- inRepo $ toTopFilePath d
-		liftIO $ tryIO $ removeDirectory $
-			fromRawFilePath $ (top P.</> getTopFilePath p)
+		liftIO $ tryIO $ removeDirectory $ top </> getTopFilePath p
 	cwdmissing top = unlines
 		[ "This view does not include the subdirectory you are currently in."
 		, "Perhaps you should:  cd " ++ top

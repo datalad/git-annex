@@ -480,12 +480,12 @@ instance Proto.Serializable URI where
 	deserialize = parseURIPortable
 
 instance Proto.Serializable ExportLocation where
-	serialize = fromRawFilePath . fromExportLocation
-	deserialize = Just . mkExportLocation . toRawFilePath
+	serialize = fromOsPath . fromExportLocation
+	deserialize = Just . mkExportLocation . toOsPath
 
 instance Proto.Serializable ExportDirectory where
-	serialize = fromRawFilePath . fromExportDirectory
-	deserialize = Just . mkExportDirectory . toRawFilePath
+	serialize = fromOsPath . fromExportDirectory
+	deserialize = Just . mkExportDirectory . toOsPath
 
 instance Proto.Serializable ExtensionList where
 	serialize (ExtensionList l) = unwords l

@@ -43,7 +43,7 @@ migrateFromVURLToURL oldkey newbackend _af _
 	| otherwise = return Nothing
 
 -- The Backend must use a cryptographically secure hash.
-generateEquivilantKey :: Backend -> RawFilePath -> Annex (Maybe Key)
+generateEquivilantKey :: Backend -> OsPath -> Annex (Maybe Key)
 generateEquivilantKey b f =
 	case genKey b of
 		Just genkey -> do

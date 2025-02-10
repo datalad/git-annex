@@ -56,11 +56,10 @@ import Git.Log
 import Logs.File
 import Logs
 import Annex.CatFile
+import qualified Utility.OsString as OS
 
-import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import Control.Concurrent.STM
-import System.FilePath.ByteString as P
 
 -- | What to use to record a migration. This should be the same Sha that is
 -- used to as the content of the annexed file in the HEAD branch.
@@ -95,7 +94,7 @@ commitMigration = do
 				n <- readTVar nv
 				let !n' = succ n
 				writeTVar nv n'
-				return (asTopFilePath (encodeBS (show n')))
+				return (asTopFilePath (toOsPath (show n')))
 			let rec h r = liftIO $ sendMkTree h
 				(fromTreeItemType TreeFile)
 				BlobObject
@@ -110,8 +109,8 @@ commitMigration = do
 		n <- liftIO $ atomically $ readTVar nv
 		when (n > 0) $ do
 			treesha <- liftIO $ flip recordTree g $ Tree
-				[ RecordedSubTree (asTopFilePath "old") oldt []
-				, RecordedSubTree (asTopFilePath "new") newt []
+				[ RecordedSubTree (asTopFilePath (literalOsPath "old")) oldt []
+				, RecordedSubTree (asTopFilePath (literalOsPath "new")) newt []
 				]
 			commitsha <- Annex.Branch.rememberTreeish treesha
 				(asTopFilePath migrationTreeGraftPoint)
@@ -129,7 +128,7 @@ streamNewDistributedMigrations incremental a = do
 	(stoppoint, toskip) <- getPerformedMigrations
 	(l, cleanup) <- inRepo $ getGitLog branchsha
 		(if incremental then stoppoint else Nothing)
-		[fromRawFilePath migrationTreeGraftPoint]
+		[fromOsPath migrationTreeGraftPoint]
 		-- Need to follow because migrate.tree is grafted in 
 		-- and then deleted, and normally git log stops when a file
 		-- gets deleted.
@@ -142,7 +141,7 @@ streamNewDistributedMigrations incremental a = do
 	go toskip c
 		| newref c `elem` nullShas = return ()
 		| changed c `elem` toskip = return ()
-		| not ("/new/" `B.isInfixOf` newfile) = return ()
+		| not (literalOsPath "/new/" `OS.isInfixOf` newfile) = return ()
 		| otherwise = 
 			catKey (newref c) >>= \case
 				Nothing -> return ()
@@ -150,10 +149,10 @@ streamNewDistributedMigrations incremental a = do
 					Nothing -> return ()
 					Just oldkey -> a oldkey newkey
 	  where
-		newfile = toRawFilePath (changedfile c)
+		newfile = changedfile c
 		oldfile = migrationTreeGraftPoint 
-			P.</> "old" 
-			P.</> P.takeBaseName (fromInternalGitPath newfile)
+			</> literalOsPath "old" 
+			</> takeBaseName (fromInternalGitPath newfile)
 		oldfileref = branchFileRef (changed c) oldfile
 
 getPerformedMigrations :: Annex (Maybe Sha, [Sha])

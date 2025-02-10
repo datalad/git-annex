@@ -5,6 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
 
 module Annex.YoutubeDl (
@@ -30,7 +31,6 @@ import Utility.Metered
 import Utility.Tmp
 import Messages.Progress
 import Logs.Transfer
-import qualified Utility.RawFilePath as R
 import qualified Utility.FileIO as F
 
 import Network.URI
@@ -72,20 +72,21 @@ youtubeDlNotAllowedMessage = unwords
 -- (This can fail, but youtube-dl is deprecated, and they closed my
 -- issue requesting something like --print-to-file; 
 -- <https://github.com/rg3/youtube-dl/issues/14864>)
-youtubeDl :: URLString -> FilePath -> MeterUpdate -> Annex (Either String (Maybe FilePath))
+youtubeDl :: URLString -> OsPath -> MeterUpdate -> Annex (Either String (Maybe OsPath))
 youtubeDl url workdir p = ifM ipAddressesUnlimited
 	( withUrlOptions $ youtubeDl' url workdir p
 	, return $ Left youtubeDlNotAllowedMessage
 	)
 
-youtubeDl' :: URLString -> FilePath -> MeterUpdate -> UrlOptions -> Annex (Either String (Maybe FilePath))
+youtubeDl' :: URLString -> OsPath -> MeterUpdate -> UrlOptions -> Annex (Either String (Maybe OsPath))
 youtubeDl' url workdir p uo
 	| supportedScheme uo url = do
 		cmd <- youtubeDlCommand
 		ifM (liftIO $ inSearchPath cmd)
 			( runcmd cmd >>= \case
 				Right True -> downloadedfiles cmd >>= \case
-					(f:[]) -> return (Right (Just f))
+					(f:[]) -> return $ 
+						Right (Just (toOsPath f))
 					[] -> return (nofiles cmd)
 					fs -> return (toomanyfiles cmd fs)
 				Right False -> workdirfiles >>= \case
@@ -100,13 +101,13 @@ youtubeDl' url workdir p uo
 	toomanyfiles cmd fs = Left $ cmd ++ " downloaded multiple media files; git-annex is only able to deal with one per url: " ++ show fs
 	downloadedfiles cmd
 		| isytdlp cmd = liftIO $ 
-			(nub . lines <$> readFile filelistfile)
+			(nub . lines <$> readFile (fromOsPath filelistfile))
 				`catchIO` (pure . const [])
-		| otherwise = map fromRawFilePath <$> workdirfiles
-	workdirfiles = liftIO $ filter (/= toRawFilePath filelistfile) 
-		<$> (filterM R.doesPathExist =<< dirContents (toRawFilePath workdir))
+		| otherwise = map fromOsPath <$> workdirfiles
+	workdirfiles = liftIO $ filter (/= filelistfile) 
+		<$> (filterM doesFileExist =<< dirContents workdir)
 	filelistfile = workdir </> filelistfilebase
-	filelistfilebase = "git-annex-file-list-file"
+	filelistfilebase = literalOsPath "git-annex-file-list-file"
 	isytdlp cmd = cmd == "yt-dlp"
 	runcmd cmd = youtubeDlMaxSize workdir >>= \case
 		Left msg -> return (Left msg)
@@ -122,7 +123,7 @@ youtubeDl' url workdir p uo
 				liftIO $ commandMeter'
 					(if isytdlp cmd then parseYtdlpProgress else parseYoutubeDlProgress)
 					oh (Just meter) meterupdate cmd opts
-					(\pr -> pr { cwd = Just workdir })
+					(\pr -> pr { cwd = Just (fromOsPath workdir) })
 			return (Right ok)
 	dlopts cmd = 
 		[ Param url
@@ -145,7 +146,7 @@ youtubeDl' url workdir p uo
 					, Param progressTemplate
 					, Param "--print-to-file"
 					, Param "after_move:filepath"
-					, Param filelistfilebase
+					, Param (fromOsPath filelistfilebase)
 					]
 				else []
 
@@ -153,14 +154,14 @@ youtubeDl' url workdir p uo
 -- large a media file. Factors in other downloads that are in progress,
 -- and any files in the workdir that it may have partially downloaded
 -- before.
-youtubeDlMaxSize :: FilePath -> Annex (Either String [CommandParam])
+youtubeDlMaxSize :: OsPath -> Annex (Either String [CommandParam])
 youtubeDlMaxSize workdir = ifM (Annex.getRead Annex.force)
 	( return $ Right []
-	, liftIO (getDiskFree workdir) >>= \case
+	, liftIO (getDiskFree (fromOsPath workdir)) >>= \case
 		Just have -> do
 			inprogress <- sizeOfDownloadsInProgress (const True)
 			partial <- liftIO $ sum 
-				<$> (mapM getFileSize =<< dirContents (toRawFilePath workdir))
+				<$> (mapM getFileSize =<< dirContents workdir)
 			reserve <- annexDiskReserve <$> Annex.getGitConfig
 			let maxsize = have - reserve - inprogress + partial
 			if maxsize > 0
@@ -175,12 +176,12 @@ youtubeDlMaxSize workdir = ifM (Annex.getRead Annex.force)
 	)
 
 -- Download a media file to a destination, 
-youtubeDlTo :: Key -> URLString -> FilePath -> MeterUpdate -> Annex Bool
+youtubeDlTo :: Key -> URLString -> OsPath -> MeterUpdate -> Annex Bool
 youtubeDlTo key url dest p = do
 	res <- withTmpWorkDir key $ \workdir ->
-		youtubeDl url (fromRawFilePath workdir) p >>= \case
+		youtubeDl url workdir p >>= \case
 			Right (Just mediafile) -> do
-				liftIO $ moveFile (toRawFilePath mediafile) (toRawFilePath dest)
+				liftIO $ moveFile mediafile dest
 				return (Just True)
 			Right Nothing -> return (Just False)
 			Left msg -> do
@@ -225,7 +226,7 @@ youtubeDlCheck' url uo
 -- Ask youtube-dl for the filename of media in an url.
 --
 -- (This is not always identical to the filename it uses when downloading.)
-youtubeDlFileName :: URLString -> Annex (Either String FilePath)
+youtubeDlFileName :: URLString -> Annex (Either String OsPath)
 youtubeDlFileName url = withUrlOptions go
   where
 	go uo
@@ -236,10 +237,10 @@ youtubeDlFileName url = withUrlOptions go
 
 -- Does not check if the url contains htmlOnly; use when that's already
 -- been verified.
-youtubeDlFileNameHtmlOnly :: URLString -> Annex (Either String FilePath)
+youtubeDlFileNameHtmlOnly :: URLString -> Annex (Either String OsPath)
 youtubeDlFileNameHtmlOnly = withUrlOptions . youtubeDlFileNameHtmlOnly'
 
-youtubeDlFileNameHtmlOnly' :: URLString -> UrlOptions -> Annex (Either String FilePath)
+youtubeDlFileNameHtmlOnly' :: URLString -> UrlOptions -> Annex (Either String OsPath)
 youtubeDlFileNameHtmlOnly' url uo
 	| supportedScheme uo url = flip catchIO (pure . Left . show) go
 	| otherwise = return nomedia
@@ -269,7 +270,7 @@ youtubeDlFileNameHtmlOnly' url uo
 		ok <- liftIO $ checkSuccessProcess pid
 		wait errt
 		return $ case (ok, lines output) of
-			(True, (f:_)) | not (null f) -> Right f
+			(True, (f:_)) | not (null f) -> Right (toOsPath f)
 			_ -> nomedia
 	waitproc _ _ _ _ = error "internal"
 
@@ -353,7 +354,7 @@ youtubePlaylist url = do
 		else return $ Left $ "Scraping needs yt-dlp, but git-annex has been configured to use " ++ cmd
 
 youtubePlaylist' :: URLString -> String -> IO (Either String [YoutubePlaylistItem])
-youtubePlaylist' url cmd = withTmpFile (toOsPath (toRawFilePath "yt-dlp")) $ \tmpfile h -> do
+youtubePlaylist' url cmd = withTmpFile (literalOsPath "yt-dlp") $ \tmpfile h -> do
 	hClose h
 	(outerr, ok) <- processTranscript cmd
 		[ "--simulate"
@@ -363,7 +364,7 @@ youtubePlaylist' url cmd = withTmpFile (toOsPath (toRawFilePath "yt-dlp")) $ \tm
 		, "--print-to-file"
 		-- Write json with selected fields.
 		, "%(.{" ++ intercalate "," youtubePlaylistItemFields ++ "})j"
-		, fromRawFilePath (fromOsPath tmpfile)
+		, fromOsPath tmpfile
 		, url
 		]
 		Nothing
@@ -407,5 +408,6 @@ data YoutubePlaylistItem = YoutubePlaylistItem
 instance Aeson.FromJSON YoutubePlaylistItem
   where
 	parseJSON = Aeson.genericParseJSON Aeson.defaultOptions
-		{ Aeson.fieldLabelModifier = drop (length "youtube_") }
-
+		{ Aeson.fieldLabelModifier = 
+			drop (length ("youtube_" :: String))
+		}

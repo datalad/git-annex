@@ -62,7 +62,7 @@ webAppThread
 	-> Maybe (IO Url)
 	-> Maybe HostName
 	-> Maybe PortNumber
-	-> Maybe (Url -> FilePath -> IO ())
+	-> Maybe (Url -> OsPath -> IO ())
 	-> NamedThread
 webAppThread assistantdata urlrenderer noannex cannotrun postfirstrun listenhost listenport onstartup = thread $ liftIO $ do
 	listenhost' <- if isJust listenhost
@@ -89,15 +89,13 @@ webAppThread assistantdata urlrenderer noannex cannotrun postfirstrun listenhost
 		, return app
 		)
 	runWebApp tlssettings listenhost' listenport' app' $ \addr -> if noannex
-		then withTmpFile (toOsPath "webapp.html") $ \tmpfile h -> do
+		then withTmpFile (literalOsPath "webapp.html") $ \tmpfile h -> do
 			hClose h
-			go tlssettings addr webapp (fromRawFilePath (fromOsPath tmpfile)) Nothing
+			go tlssettings addr webapp tmpfile Nothing
 		else do
 			htmlshim <- getAnnex' $ fromRepo gitAnnexHtmlShim
 			urlfile <- getAnnex' $ fromRepo gitAnnexUrlFile
-			go tlssettings addr webapp
-				(fromRawFilePath htmlshim)
-				(Just urlfile)
+			go tlssettings addr webapp htmlshim (Just urlfile)
   where
 	-- The webapp thread does not wait for the startupSanityCheckThread
 	-- to finish, so that the user interface remains responsive while
@@ -105,8 +103,8 @@ webAppThread assistantdata urlrenderer noannex cannotrun postfirstrun listenhost
 	thread = namedThreadUnchecked "WebApp"
 	getreldir
 		| noannex = return Nothing
-		| otherwise = Just <$>
-			(relHome . fromRawFilePath =<< absPath =<< getAnnex' (fromRepo repoPath))
+		| otherwise = Just . fromOsPath <$>
+			(relHome =<< absPath =<< getAnnex' (fromRepo repoPath))
 	go tlssettings addr webapp htmlshim urlfile = do
 		let url = myUrl tlssettings webapp addr
 		maybe noop (`writeFileProtected` url) urlfile
@@ -131,6 +129,8 @@ getTlsSettings = do
 	cert <- fromRepo gitAnnexWebCertificate
 	privkey <- fromRepo gitAnnexWebPrivKey
 	ifM (liftIO $ allM doesFileExist [cert, privkey])
-		( return $ Just $ TLS.tlsSettings cert privkey
+		( return $ Just $ TLS.tlsSettings
+			(fromOsPath cert)
+			(fromOsPath privkey)
 		, return Nothing
 		)

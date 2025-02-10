@@ -68,6 +68,7 @@ import Utility.Url (extractFromResourceT, UserAgent)
 import Annex.Url (getUserAgent, getUrlOptions, withUrlOptions, UrlOptions(..))
 import Utility.Env
 import Annex.Verify
+import qualified Utility.FileIO as F
 
 type BucketName = String
 type BucketObject = String
@@ -349,10 +350,10 @@ store mh r info magic = fileStorer $ \k f p -> withS3HandleOrFail (uuid r) mh $ 
 	when (isIA info && not (isChunkKey k)) $
 		setUrlPresent k (iaPublicUrl info (bucketObject info k))
 
-storeHelper :: S3Info -> S3Handle -> Maybe Magic -> FilePath -> S3.Object -> MeterUpdate -> Annex (Maybe S3Etag, Maybe S3VersionID)
+storeHelper :: S3Info -> S3Handle -> Maybe Magic -> OsPath -> S3.Object -> MeterUpdate -> Annex (Maybe S3Etag, Maybe S3VersionID)
 storeHelper info h magic f object p = liftIO $ case partSize info of
 	Just partsz | partsz > 0 -> do
-		fsz <- getFileSize (toRawFilePath f)
+		fsz <- getFileSize f
 		if fsz > partsz
 			then multipartupload fsz partsz
 			else singlepartupload
@@ -385,7 +386,7 @@ storeHelper info h magic f object p = liftIO $ case partSize info of
 
 		-- Send parts of the file, taking care to stream each part
 		-- w/o buffering in memory, since the parts can be large.
-		etags <- bracketIO (openBinaryFile f ReadMode) hClose $ \fh -> do
+		etags <- bracketIO (F.openBinaryFile f ReadMode) hClose $ \fh -> do
 			let sendparts meter etags partnum = do
 				pos <- liftIO $ hTell fh
 				if pos >= fsz
@@ -420,24 +421,24 @@ retrieve hv r rs c info = fileRetriever' $ \f k p iv -> withS3Handle hv $ \case
 			Left failreason -> do
 				warning (UnquotedString failreason)
 				giveup "cannot download content"
-			Right loc -> retrieveHelper info h loc (fromRawFilePath f) p iv
+			Right loc -> retrieveHelper info h loc f p iv
 	Left S3HandleNeedCreds ->
 		getPublicWebUrls' rs info c k >>= \case
 			Left failreason -> do
 				warning (UnquotedString failreason)
 				giveup "cannot download content"
-			Right us -> unlessM (withUrlOptions $ downloadUrl False k p iv us (fromRawFilePath f)) $
+			Right us -> unlessM (withUrlOptions $ downloadUrl False k p iv us f) $
 				giveup "failed to download content"
 	Left S3HandleAnonymousOldAws -> giveupS3HandleProblem S3HandleAnonymousOldAws (uuid r)
 
-retrieveHelper :: S3Info -> S3Handle -> (Either S3.Object S3VersionID) -> FilePath -> MeterUpdate -> Maybe IncrementalVerifier -> Annex ()
+retrieveHelper :: S3Info -> S3Handle -> (Either S3.Object S3VersionID) -> OsPath -> MeterUpdate -> Maybe IncrementalVerifier -> Annex ()
 retrieveHelper info h loc f p iv = retrieveHelper' h f p iv $
 	case loc of
 		Left o -> S3.getObject (bucket info) o
 		Right (S3VersionID o vid) -> (S3.getObject (bucket info) o)
 			{ S3.goVersionId = Just vid }
 
-retrieveHelper' :: S3Handle -> FilePath -> MeterUpdate -> Maybe IncrementalVerifier -> S3.GetObject -> Annex ()
+retrieveHelper' :: S3Handle -> OsPath -> MeterUpdate -> Maybe IncrementalVerifier -> S3.GetObject -> Annex ()
 retrieveHelper' h f p iv req = liftIO $ runResourceT $ do
 	S3.GetObjectResponse { S3.gorResponse = rsp } <- sendS3Handle h req
 	Url.sinkResponseFile p iv zeroBytesProcessed f WriteMode rsp
@@ -495,10 +496,10 @@ checkKeyHelper' info h o limit = liftIO $ runResourceT $ do
   where
 	req = limit $ S3.headObject (bucket info) o
 
-storeExportS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> Maybe Magic -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex ()
+storeExportS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> Maybe Magic -> OsPath -> Key -> ExportLocation -> MeterUpdate -> Annex ()
 storeExportS3 hv r rs info magic f k loc p = void $ storeExportS3' hv r rs info magic f k loc p
 
-storeExportS3' :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> Maybe Magic -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex (Maybe S3Etag, Maybe S3VersionID)
+storeExportS3' :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> Maybe Magic -> OsPath -> Key -> ExportLocation -> MeterUpdate -> Annex (Maybe S3Etag, Maybe S3VersionID)
 storeExportS3' hv r rs info magic f k loc p = withS3Handle hv $ \case
 	Right h -> go h
 	Left pr -> giveupS3HandleProblem pr (uuid r)
@@ -509,7 +510,7 @@ storeExportS3' hv r rs info magic f k loc p = withS3Handle hv $ \case
 		setS3VersionID info rs k mvid
 		return (metag, mvid)
 
-retrieveExportS3 :: S3HandleVar -> Remote -> S3Info -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Verification
+retrieveExportS3 :: S3HandleVar -> Remote -> S3Info -> Key -> ExportLocation -> OsPath -> MeterUpdate -> Annex Verification
 retrieveExportS3 hv r info k loc f p = verifyKeyContentIncrementally AlwaysVerify k $ \iv ->
 	withS3Handle hv $ \case
 		Right h -> retrieveHelper info h (Left (T.pack exportloc)) f p iv
@@ -700,7 +701,7 @@ mkImportableContentsVersioned = build . groupfiles
 		| otherwise =
 			i : removemostrecent mtime rest
 
-retrieveExportWithContentIdentifierS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> ExportLocation -> [ContentIdentifier] -> FilePath -> Either Key (Annex Key) -> MeterUpdate -> Annex (Key, Verification)
+retrieveExportWithContentIdentifierS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> ExportLocation -> [ContentIdentifier] -> OsPath -> Either Key (Annex Key) -> MeterUpdate -> Annex (Key, Verification)
 retrieveExportWithContentIdentifierS3 hv r rs info loc (cid:_) dest gk p =
 	case gk of
 		Right _mkkey -> do
@@ -744,7 +745,7 @@ rewritePreconditionException a = catchJust (Url.matchStatusCodeException want) a
 --
 -- When the bucket is not versioned, data loss can result.
 -- This is why that configuration requires --force to enable.
-storeExportWithContentIdentifierS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> Maybe Magic -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex ContentIdentifier
+storeExportWithContentIdentifierS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> Maybe Magic -> OsPath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex ContentIdentifier
 storeExportWithContentIdentifierS3 hv r rs info magic src k loc _overwritablecids p
 	| versioning info = go
 	| otherwise = go
@@ -835,7 +836,7 @@ writeUUIDFile c u info h = unless (exportTree c || importTree c) $ do
 			giveup "Cannot reuse this bucket."
 		_ -> void $ liftIO $ runResourceT $ sendS3Handle h mkobject
   where
-	file = T.pack $ uuidFile c
+	file = T.pack $ fromOsPath $ uuidFile c
 	uuidb = L.fromChunks [T.encodeUtf8 $ T.pack $ fromUUID u]
 
 	mkobject = putObject info file (RequestBodyLBS uuidb)
@@ -858,11 +859,11 @@ checkUUIDFile c u info h
 	check (S3.GetObjectMemoryResponse _meta rsp) =
 		responseStatus rsp == ok200 && responseBody rsp == uuidb
 
-	file = T.pack $ uuidFile c
+	file = T.pack $ fromOsPath $ uuidFile c
 	uuidb = L.fromChunks [T.encodeUtf8 $ T.pack $ fromUUID u]
 
-uuidFile :: ParsedRemoteConfig -> FilePath
-uuidFile c = getFilePrefix c ++ "annex-uuid"
+uuidFile :: ParsedRemoteConfig -> OsPath
+uuidFile c = toOsPath (getFilePrefix c) <> literalOsPath "annex-uuid"
 
 tryS3 :: ResourceT IO a -> ResourceT IO (Either S3.S3Error a)
 tryS3 a = (Right <$> a) `catch` (pure . Left)
@@ -1090,16 +1091,16 @@ getBucketObject c = munge . serializeKey
 
 getBucketExportLocation :: ParsedRemoteConfig -> ExportLocation -> BucketObject
 getBucketExportLocation c loc =
-	getFilePrefix c ++ fromRawFilePath (fromExportLocation loc)
+	getFilePrefix c ++ fromOsPath (fromExportLocation loc)
 
 getBucketImportLocation :: ParsedRemoteConfig -> BucketObject -> Maybe ImportLocation
 getBucketImportLocation c obj
 	-- The uuidFile should not be imported.
-	| obj == uuidfile = Nothing
+	| obj == fromOsPath uuidfile = Nothing
 	-- Only import files that are under the fileprefix, when
 	-- one is configured.
 	| prefix `isPrefixOf` obj = Just $ mkImportLocation $
-		toRawFilePath $ drop prefixlen obj
+		toOsPath $ drop prefixlen obj
 	| otherwise = Nothing
   where
 	prefix = getFilePrefix c

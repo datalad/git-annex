@@ -33,7 +33,9 @@ start (_, key) = do
 	ifM (inAnnex key)
 		( fieldTransfer Upload key $ \_p ->
 			sendAnnex key Nothing rollback $ \f _sz -> 
-				liftIO $ rsyncServerSend (map Param opts) f
+				liftIO $ rsyncServerSend
+					(map Param opts)
+					(fromOsPath f)
 		, do
 			warning "requested key is not present"
 			liftIO exitFailure
