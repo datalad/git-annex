@@ -161,7 +161,7 @@ tryLock lockfile = do
 			removeWhenExistsWith removeFile tmp
 			return Nothing
 		let tooklock st = return $ Just $ LockHandle abslockfile st sidelock
-		linkToLock sidelock tmp' (fromOsPath abslockfile) >>= \case
+		linkToLock sidelock tmp abslockfile >>= \case
 			Just lckst -> do
 				removeWhenExistsWith removeFile tmp
 				tooklock lckst
@@ -190,36 +190,38 @@ tryLock lockfile = do
 --
 -- However, not all filesystems support hard links. So, first probe
 -- to see if they are supported. If not, use open with O_EXCL.
-linkToLock :: SideLockHandle -> RawFilePath -> RawFilePath -> IO (Maybe FileStatus)
+linkToLock :: SideLockHandle -> OsPath -> OsPath -> IO (Maybe FileStatus)
 linkToLock Nothing _ _ = return Nothing
 linkToLock (Just _) src dest = do
-	let probe = src <> ".lnk"
-	v <- tryIO $ createLink src probe
-	removeWhenExistsWith removeLink probe
+	let probe = src <> literalOsPath ".lnk"
+	v <- tryIO $ createLink src' (fromOsPath probe)
+	removeWhenExistsWith removeFile probe
 	case v of
 		Right _ -> do
-			_ <- tryIO $ createLink src dest
+			_ <- tryIO $ createLink src' dest'
 			ifM (catchBoolIO checklinked)
-				( ifM (catchBoolIO $ not <$> checkInsaneLustre (toOsPath dest))
-					( catchMaybeIO $ getFileStatus dest
+				( ifM (catchBoolIO $ not <$> checkInsaneLustre dest)
+					( catchMaybeIO $ getFileStatus dest'
 					, return Nothing
 					)
 				, return Nothing
 				)
 		Left _ -> catchMaybeIO $ do
 			let setup = do
-				fd <- openFdWithMode dest WriteOnly
+				fd <- openFdWithMode dest' WriteOnly
 					(Just $ combineModes readModes)
 					(defaultFileFlags {exclusive = True})
 				fdToHandle fd
 			let cleanup = hClose
-			let go h = readFile (fromRawFilePath src) >>= hPutStr h
+			let go h = readFile (fromOsPath src) >>= hPutStr h
 			bracket setup cleanup go
-			getFileStatus dest
+			getFileStatus dest'
   where
+	src' = fromOsPath src
+	dest' = fromOsPath dest
 	checklinked = do
-		x <- getSymbolicLinkStatus src
-		y <- getSymbolicLinkStatus dest
+		x <- getSymbolicLinkStatus src'
+		y <- getSymbolicLinkStatus dest'
 		return $ and
 			[ deviceID x == deviceID y
 			, fileID x == fileID y
