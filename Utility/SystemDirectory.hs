@@ -40,68 +40,67 @@ import System.Directory.OsPath
 import qualified System.Directory as X
 import Data.Time.Clock (UTCTime)
 import Utility.OsPath
-import Utility.FileSystemEncoding
 
 createDirectory :: OsPath -> IO ()
-createDirectory = X.createDirectory . fromRawFilePath
+createDirectory = X.createDirectory . fromOsPath
 
 createDirectoryIfMissing :: Bool -> OsPath -> IO ()
-createDirectoryIfMissing b = X.createDirectoryIfMissing b . fromRawFilePath
+createDirectoryIfMissing b = X.createDirectoryIfMissing b . fromOsPath
 
 removeDirectory :: OsPath -> IO ()
-removeDirectory = X.removeDirectory . fromRawFilePath
+removeDirectory = X.removeDirectory . fromOsPath
 
 removeDirectoryRecursive :: OsPath -> IO ()
-removeDirectoryRecursive = X.removeDirectoryRecursive . fromRawFilePath
+removeDirectoryRecursive = X.removeDirectoryRecursive . fromOsPath
 
 removePathForcibly :: OsPath -> IO ()
-removePathForcibly = X.removePathForcibly . fromRawFilePath
+removePathForcibly = X.removePathForcibly . fromOsPath
 
 renameDirectory :: OsPath -> OsPath -> IO ()
-renameDirectory a b = X.renameDirectory (fromRawFilePath a) (fromRawFilePath b)
+renameDirectory a b = X.renameDirectory (fromOsPath a) (fromOsPath b)
 
 listDirectory :: OsPath -> IO [OsPath]
-listDirectory p = map toRawFilePath <$> X.listDirectory (fromRawFilePath p)
+listDirectory p = map toOsPath <$> X.listDirectory (fromOsPath p)
 
 getDirectoryContents :: OsPath -> IO [OsPath]
-getDirectoryContents p = map toRawFilePath <$> X.getDirectoryContents (fromRawFilePath p)
+getDirectoryContents p = map toOsPath <$> X.getDirectoryContents (fromOsPath p)
 
 getCurrentDirectory :: IO OsPath
-getCurrentDirectory = toRawFilePath <$> X.getCurrentDirectory
+getCurrentDirectory = toOsPath <$> X.getCurrentDirectory
 
 setCurrentDirectory :: OsPath -> IO ()
-setCurrentDirectory = X.setCurrentDirectory . fromRawFilePath
+setCurrentDirectory = X.setCurrentDirectory . fromOsPath
 
 withCurrentDirectory :: OsPath -> IO a -> IO a
-withCurrentDirectory = X.withCurrentDirectory . fromRawFilePath
+withCurrentDirectory = X.withCurrentDirectory . fromOsPath
 
 getTemporaryDirectory :: IO OsPath
-getTemporaryDirectory = toRawFilePath <$> X.getTemporaryDirectory
+getTemporaryDirectory = toOsPath <$> X.getTemporaryDirectory
 
 removeFile :: OsPath -> IO ()
-removeFile = X.removeFile . fromRawFilePath
+removeFile = X.removeFile . fromOsPath
 
 renameFile :: OsPath -> OsPath -> IO ()
-renameFile a b = X.renameFile (fromRawFilePath a) (fromRawFilePath b)
+renameFile a b = X.renameFile (fromOsPath a) (fromOsPath b)
 
 renamePath :: OsPath -> OsPath -> IO ()
-renamePath a b = X.renamePath (fromRawFilePath a) (fromRawFilePath b)
+renamePath a b = X.renamePath (fromOsPath a) (fromOsPath b)
 
 copyFile :: OsPath -> OsPath -> IO ()
-copyFile a b = X.copyFile (fromRawFilePath a) (fromRawFilePath b)
+copyFile a b = X.copyFile (fromOsPath a) (fromOsPath b)
 
 canonicalizePath :: OsPath -> IO OsPath
-canonicalizePath p = toRawFilePath <$> X.canonicalizePath (fromRawFilePath p)
+canonicalizePath p = toOsPath <$> X.canonicalizePath (fromOsPath p)
 
 doesPathExist :: OsPath -> IO Bool
-doesPathExist = X.doesPathExist . fromRawFilePath
+doesPathExist = X.doesPathExist . fromOsPath
 
 doesFileExist :: OsPath -> IO Bool
-doesFileExist = X.doesFileExist . fromRawFilePath
+doesFileExist = X.doesFileExist . fromOsPath
 
 doesDirectoryExist :: OsPath -> IO Bool
-doesDirectoryExist = X.doesDirectoryExist . fromRawFilePath
+doesDirectoryExist = X.doesDirectoryExist . fromOsPath
 
 getModificationTime :: OsPath -> IO UTCTime
-getModificationTime = X.getModificationTime . fromRawFilePath
+getModificationTime = X.getModificationTime . fromOsPath
 #endif
