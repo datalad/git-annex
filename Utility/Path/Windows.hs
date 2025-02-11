@@ -14,6 +14,7 @@ module Utility.Path.Windows (
 
 import Utility.Path
 import Utility.OsPath
+import qualified Utility.OsString as OS
 import Utility.SystemDirectory
 import Utility.FileSystemEncoding
 
@@ -38,9 +39,15 @@ convertToWindowsNativeNamespace f
 		-- will not be resolved once it's converted.
 		cwd <- getCurrentDirectory
 		let p = simplifyPath (combine cwd (toOsPath f))
+		-- If the input path is absolute but does not include a drive,
+		-- add the drive from the cwd, because a path in the native
+		-- namespace must include a drive.
+		let p' = if OS.null (takeDrive p)
+			then joinDrive (takeDrive cwd) p
+			else p
 		-- Normalize slashes.
-		let p' = encodeBS $ WinPath.normalise $ fromOsPath p
-		return (win32_file_namespace <> p')
+		let p'' = encodeBS $ WinPath.normalise $ fromOsPath p'
+		return (win32_file_namespace <> p'')
   where
 	win32_dev_namespace = "\\\\.\\"
 	win32_file_namespace = "\\\\?\\"
