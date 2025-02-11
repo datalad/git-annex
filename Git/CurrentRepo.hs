@@ -16,8 +16,7 @@ import Git.Construct
 import qualified Git.Config
 import Utility.Env
 import Utility.Env.Set
-
-import qualified Data.ByteString as B
+import qualified Utility.OsString as OS
 
 {- Gets the current git repository.
  -
@@ -40,7 +39,7 @@ import qualified Data.ByteString as B
 get :: IO Repo
 get = do
 	gd <- getpathenv "GIT_DIR"
-	r <- configure (fmap toOsPath gd) =<< fromCwd
+	r <- configure gd =<< fromCwd
 	prefix <- getpathenv "GIT_PREFIX"
 	wt <- maybe (worktree (location r)) Just
 		<$> getpathenvprefix "GIT_WORK_TREE" prefix
@@ -57,17 +56,17 @@ get = do
 		case v of
 			Just d -> do
 				unsetEnv s
-				return (Just (toRawFilePath d))
+				return (Just (toOsPath d))
 			Nothing -> return Nothing
 	
-	getpathenvprefix s (Just prefix) | not (B.null prefix) =
+	getpathenvprefix s (Just prefix) | not (OS.null prefix) =
 		getpathenv s >>= \case
 			Nothing -> return Nothing
 			Just d
-				| d == "." -> return (Just (toOsPath d))
+				| d == literalOsPath "." -> return (Just d)
 				| otherwise -> Just 
-					<$> absPath (toOsPath prefix </> toOsPath d)
-	getpathenvprefix s _ = fmap toOsPath <$> getpathenv s
+					<$> absPath (prefix </> d)
+	getpathenvprefix s _ = getpathenv s
 
 	configure Nothing (Just r) = Git.Config.read r
 	configure (Just d) _ = do
