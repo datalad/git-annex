@@ -387,7 +387,7 @@ getViaTmp rsp v key af sz action =
 getViaTmpFromDisk :: RetrievalSecurityPolicy -> VerifyConfig -> Key -> AssociatedFile -> (OsPath -> Annex (Bool, Verification)) -> Annex Bool
 getViaTmpFromDisk rsp v key af action = checkallowed $ do
 	tmpfile <- prepTmp key
-	resuming <- liftIO $ R.doesPathExist $ fromOsPath tmpfile
+	resuming <- liftIO $ doesPathExist tmpfile
 	(ok, verification) <- action tmpfile
 	-- When the temp file already had content, we don't know if
 	-- that content is good or not, so only trust if it the action
@@ -521,7 +521,7 @@ moveAnnex key af src = ifM (checkSecureHashes' key)
 	, return False
 	)
   where
-	storeobject dest = ifM (liftIO $ R.doesPathExist $ fromOsPath dest)
+	storeobject dest = ifM (liftIO $ doesPathExist dest)
 		( alreadyhave
 		, adjustedBranchRefresh af $ modifyContentDir dest $ do
 			liftIO $ moveFile src dest
@@ -842,7 +842,7 @@ listKeys' keyloc want = do
 	present _ | inanywhere = pure True
 	present d = presentInAnnex d
 
-	presentInAnnex = R.doesPathExist . fromOsPath . contentfile
+	presentInAnnex = doesPathExist . contentfile
 	contentfile d = d </> takeFileName d
 
 {- Things to do to record changes to content when shutting down.

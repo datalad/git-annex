@@ -292,7 +292,7 @@ enumSocketFiles :: Annex [OsPath]
 enumSocketFiles = liftIO . go =<< sshCacheDir
   where
 	go Nothing = return []
-	go (Just dir) = filterM (R.doesPathExist . fromOsPath . socket2lock)
+	go (Just dir) = filterM (doesPathExist . socket2lock)
 		=<< filter (not . isLock)
 		<$> catchDefaultIO [] (dirContents dir)
 

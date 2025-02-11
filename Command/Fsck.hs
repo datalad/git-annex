@@ -271,7 +271,7 @@ fixObjectLocation key = do
 	idealloc <- calcRepo (gitAnnexLocation' (const (pure True)) key)
 	if loc == idealloc
 		then return True
-		else ifM (liftIO $ R.doesPathExist $ fromOsPath loc)
+		else ifM (liftIO $ doesPathExist loc)
 			( moveobjdir loc idealloc
 				`catchNonAsync` \_e -> return True
 			, return True
@@ -439,7 +439,7 @@ checkKeySize :: Key -> KeyStatus -> ActionItem -> Annex Bool
 checkKeySize _ KeyUnlockedThin _ = return True
 checkKeySize key _ ai = do
 	file <- calcRepo $ gitAnnexLocation key
-	ifM (liftIO $ R.doesPathExist (fromOsPath file))
+	ifM (liftIO $ doesPathExist file)
 		( checkKeySizeOr badContent key file ai
 		, return True
 		)
@@ -504,7 +504,7 @@ checkKeyUpgrade _ _ _ (AssociatedFile Nothing) =
 checkBackend :: Key -> KeyStatus -> AssociatedFile -> Annex Bool
 checkBackend key keystatus afile = do
 	content <- calcRepo (gitAnnexLocation key)
-	ifM (liftIO $ R.doesPathExist (fromOsPath content))
+	ifM (liftIO $ doesPathExist content)
 		( ifM (pure (isKeyUnlockedThin keystatus) <&&> (not <$> isUnmodified key content))
 			( nocheck
 			, do

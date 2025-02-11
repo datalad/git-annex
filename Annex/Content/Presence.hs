@@ -33,7 +33,6 @@ import Types.RepoVersion
 import qualified Database.Keys
 import Annex.InodeSentinal
 import Utility.InodeCache
-import qualified Utility.RawFilePath as R
 import qualified Git
 import Config
 
@@ -43,7 +42,7 @@ import Annex.Perms
 
 {- Checks if a given key's content is currently present. -}
 inAnnex :: Key -> Annex Bool
-inAnnex key = inAnnexCheck key $ liftIO . R.doesPathExist . fromOsPath
+inAnnex key = inAnnexCheck key $ liftIO . doesPathExist
 
 {- Runs an arbitrary check on a key's content. -}
 inAnnexCheck :: Key -> (OsPath -> Annex Bool) -> Annex Bool
