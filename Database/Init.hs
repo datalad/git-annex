@@ -37,9 +37,9 @@ initDb db migration = do
 	let tmpdb' = fromOsPath tmpdb
 	createAnnexDirectory tmpdbdir
 #if MIN_VERSION_persistent_sqlite(2,13,3)
-	liftIO $ runSqliteInfo' tmpdb' (enableWAL tmpdb') migration
+	liftIO $ runSqliteInfo' tmpdb' (enableWAL tmpdb) migration
 #else
-	liftIO $ runSqliteInfo (enableWAL tmpdb') migration
+	liftIO $ runSqliteInfo (enableWAL tmpdb) migration
 #endif
 	setAnnexDirPerm tmpdbdir
 	-- Work around sqlite bug that prevents it from honoring
@@ -58,6 +58,6 @@ initDb db migration = do
  -
  - Note that once WAL mode is enabled, it will persist whenever the
  - database is opened. -}
-enableWAL :: RawFilePath -> SqliteConnectionInfo
+enableWAL :: OsPath -> SqliteConnectionInfo
 enableWAL db = over walEnabled (const True) $ 
-	mkSqliteConnectionInfo (T.pack (fromRawFilePath db))
+	mkSqliteConnectionInfo (T.pack (fromOsPath db))
