@@ -5,10 +5,11 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Build.LinuxMkLibs (mklibs) where
 
 import Data.Maybe
-import System.FilePath
 import Control.Monad
 import Data.List
 import System.Posix.Files
@@ -18,6 +19,7 @@ import qualified System.Info
 import Prelude
 
 import Utility.LinuxMkLibs
+import Utility.OsPath
 import Utility.Directory
 import Utility.Process
 import Utility.Monad
@@ -25,18 +27,18 @@ import Utility.Path
 import Utility.Path.AbsRel
 import Utility.FileMode
 import Utility.CopyFile
-import Utility.FileSystemEncoding
 import Utility.SystemDirectory
+import qualified Utility.OsString as OS
 
-mklibs :: FilePath -> a -> IO Bool
+mklibs :: OsPath -> a -> IO Bool
 mklibs top _installedbins = do
-	fs <- dirContentsRecursive (toRawFilePath top)
-	exes <- filterM checkExe (map fromRawFilePath fs)
+	fs <- dirContentsRecursive top
+	exes <- filterM checkExe fs
 	libs <- runLdd exes
 	
 	glibclibs <- glibcLibs
 	let libs' = nub $ libs ++ glibclibs
-	let (linkers, otherlibs) = partition ("ld-linux" `isInfixOf`) libs'
+	let (linkers, otherlibs) = partition (literalOsPath "ld-linux" `OS.isInfixOf`) libs'
 	libdirs <- nub . catMaybes <$> mapM (installLib installFile top) otherlibs
 	libdirs' <- consolidateUsrLib top libdirs
 
@@ -45,8 +47,10 @@ mklibs top _installedbins = do
 
 	-- Various files used by runshell to set up env vars used by the
 	-- linker shims.
-	writeFile (top </> "libdirs") (unlines libdirs')
-	writeFile (top </> "gconvdir") (fromRawFilePath $ parentDir $ toRawFilePath $ Prelude.head gconvlibs)
+	writeFile (fromOsPath (top </> literalOsPath "libdirs"))
+		(unlines (map fromOsPath libdirs'))
+	writeFile (fromOsPath (top </> literalOsPath "gconvdir"))
+		(fromOsPath (parentDir $ Prelude.head gconvlibs))
 	
 	mapM_ (installLib installFile top) linkers
 	let linker = Prelude.head linkers
@@ -60,9 +64,9 @@ mklibs top _installedbins = do
 	-- fails, a minor optimisation will not happen, but there will be
 	-- no bad results.
 	hwcaplibdir d = not $ or
-		[ "lib" == takeFileName d
+		[ literalOsPath "lib" == takeFileName d
 		-- eg, "lib/x86_64-linux-gnu"
-		, "-linux-" `isInfixOf` takeFileName d
+		, literalOsPath "-linux-" `OS.isInfixOf` takeFileName d
 		]
 
 {- If there are two libdirs that are the same except one is in
@@ -71,17 +75,17 @@ mklibs top _installedbins = do
  - needs to look in, and so reduces the number of failed stats
  - and improves startup time.
  -}
-consolidateUsrLib :: FilePath -> [FilePath] -> IO [FilePath]
+consolidateUsrLib :: OsPath -> [OsPath] -> IO [OsPath]
 consolidateUsrLib top libdirs = go [] libdirs
   where
 	go c [] = return c
-	go c (x:rest) = case filter (\d -> ("/usr" ++ d) == x) libdirs of
+	go c (x:rest) = case filter (\d -> (literalOsPath "/usr" <> d) == x) libdirs of
 		(d:_) -> do
 			fs <- getDirectoryContents (inTop top x)
 			forM_ fs $ \f -> do
 				let src = inTop top (x </> f)
 				let dst = inTop top (d </> f)
-				unless (dirCruft (toRawFilePath f)) $
+				unless (f `elem` dirCruft) $
 					unlessM (doesDirectoryExist src) $
 						renameFile src dst
 			symlinkHwCapDirs top d
@@ -96,17 +100,17 @@ consolidateUsrLib top libdirs = go [] libdirs
  - to the libdir. This way, the linker will find a library the first place
  - it happens to look for it.
  -}
-symlinkHwCapDirs :: FilePath -> FilePath -> IO ()
+symlinkHwCapDirs :: OsPath -> OsPath -> IO ()
 symlinkHwCapDirs top libdir = forM_ hwcapdirs $ \d ->
-	unlessM (doesDirectoryExist (top ++ libdir </> d)) $ do
-		createDirectoryIfMissing True (top ++ libdir </> takeDirectory d)
+	unlessM (doesDirectoryExist (top <> libdir </> d)) $ do
+		createDirectoryIfMissing True (top <> libdir </> takeDirectory d)
 		link <- relPathDirToFile
-			(toRawFilePath (top ++ takeDirectory (libdir </> d)))
-			(toRawFilePath (top ++ libdir))
-		let link' = case fromRawFilePath link of
+			(top <> takeDirectory (libdir </> d))
+			(top <> libdir)
+		let link' = case fromOsPath link of
 			"" -> "."
 			l -> l
-		createSymbolicLink link' (top ++ libdir </> d)
+		createSymbolicLink link' (fromOsPath (top <> libdir </> d))
   where
 	hwcapdirs = case System.Info.arch of
 		"x86_64" -> 
@@ -145,50 +149,48 @@ symlinkHwCapDirs top libdir = forM_ hwcapdirs $ \d ->
  - The linker is symlinked to a file with the same basename as the binary,
  - since that looks better in ps than "ld-linux.so".
  -}
-installLinkerShim :: FilePath -> FilePath -> FilePath -> IO ()
+installLinkerShim :: OsPath -> OsPath -> OsPath -> IO ()
 installLinkerShim top linker exe = do
 	createDirectoryIfMissing True (top </> shimdir)
 	createDirectoryIfMissing True (top </> exedir)
-	ifM (isSymbolicLink <$> getSymbolicLinkStatus exe)
+	ifM (isSymbolicLink <$> getSymbolicLinkStatus (fromOsPath exe))
 		( do
-			sl <- readSymbolicLink exe
-			removeWhenExistsWith removeLink exe
-			removeWhenExistsWith removeLink exedest
+			sl <- toOsPath <$> readSymbolicLink (fromOsPath exe)
+			removeWhenExistsWith removeFile exe
+			removeWhenExistsWith removeFile exedest
 			-- Assume that for a symlink, the destination
 			-- will also be shimmed.
-			let sl' = ".." </> takeFileName sl </> takeFileName sl
-			createSymbolicLink sl' exedest
+			let sl' = literalOsPath ".." </> takeFileName sl </> takeFileName sl
+			createSymbolicLink (fromOsPath sl') (fromOsPath exedest)
 		, renameFile exe exedest
 		)
-	link <- relPathDirToFile
-		(toRawFilePath (top </> exedir))
-		(toRawFilePath (top ++ linker))
+	link <- relPathDirToFile (top </> exedir) (top <> linker)
 	unlessM (doesFileExist (top </> exelink)) $
-		createSymbolicLink (fromRawFilePath link) (top </> exelink)
-	writeFile exe $ unlines
+		createSymbolicLink (fromOsPath link) (fromOsPath (top </> exelink))
+	writeFile (fromOsPath exe) $ unlines
 		[ "#!/bin/sh"
-		, "exec \"$GIT_ANNEX_DIR/" ++ exelink ++ "\" --library-path \"$GIT_ANNEX_LD_LIBRARY_PATH\" \"$GIT_ANNEX_DIR/shimmed/" ++ base ++ "/" ++ base ++ "\" \"$@\""
+		, "exec \"$GIT_ANNEX_DIR/" ++ fromOsPath exelink ++ "\" --library-path \"$GIT_ANNEX_LD_LIBRARY_PATH\" \"$GIT_ANNEX_DIR/shimmed/" ++ fromOsPath base ++ "/" ++ fromOsPath base ++ "\" \"$@\""
 		]
-	modifyFileMode (toRawFilePath exe) $ addModes executeModes
+	modifyFileMode exe $ addModes executeModes
   where
 	base = takeFileName exe
-	shimdir = "shimmed" </> base
-	exedir = "exe"
+	shimdir = literalOsPath "shimmed" </> base
+	exedir = literalOsPath "exe"
 	exedest = top </> shimdir </> base
 	exelink = exedir </> base
 
-installFile :: FilePath -> FilePath -> IO ()
+installFile :: OsPath -> OsPath -> IO ()
 installFile top f = do
 	createDirectoryIfMissing True destdir
 	void $ copyFileExternal CopyTimeStamps f destdir
   where
-	destdir = inTop top $ fromRawFilePath $ parentDir $ toRawFilePath f
+	destdir = inTop top $ parentDir f
 
-checkExe :: FilePath -> IO Bool
+checkExe :: OsPath -> IO Bool
 checkExe f
-	| ".so" `isSuffixOf` f = return False
-	| otherwise = ifM (isExecutable . fileMode <$> getFileStatus f)
-		( checkFileExe <$> readProcess "file" ["-L", f]
+	| literalOsPath ".so" `OS.isSuffixOf` f = return False
+	| otherwise = ifM (isExecutable . fileMode <$> getFileStatus (fromOsPath f))
+		( checkFileExe <$> readProcess "file" ["-L", fromOsPath f]
 		, return False
 		)
 
