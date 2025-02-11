@@ -22,8 +22,10 @@ module Utility.Tmp (
 import System.IO
 import Control.Monad.IO.Class
 import System.IO.Error
+#ifndef mingw32_HOST_OS
 import Data.Char
 import qualified Data.ByteString as B
+#endif
 
 import Utility.Exception
 import Utility.FileSystemEncoding
