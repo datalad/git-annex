@@ -1,0 +1,54 @@
+### Please describe the problem.
+
+I have a repository that contains thousands (30000) of unlocked files. I see the problem that 
+git keeps refreshing its index despite the modified time did not change compared to the git index.
+I think this should not happen. It significantly slows down (delay of ~10s in my case, but
+potentially worse for Windows or NFS file systems) any git operation, and this includes
+the display of a bash prompt that shows git information (via PROMPT_COMMAND env var.) and bash
+completion after things like `git add`, therefore it is quite annoying. 
+
+### What steps will reproduce the problem?
+
+I have set up a repository to reproduce the problem. However, it works as expected. I am looking for
+ideas on how to find the problem with my repository.
+
+```
+git init .
+git annex init 
+git annex config --set annex.addunlocked include="py_env/*"
+python -m venv py_env
+. py_env/bin/activate
+pip install datalad   # some package with dependencies that creates many files in py_env
+git annex add py_env
+git status
+git status
+git status
+...
+```
+
+The only strange thing that I have found is that git annex will forward all `__init__.py` files to the smudge/clean-filter (pipes to filter-process), but only those! It does not do this for all other files in `py_env`, as you can check with
+
+```sh
+strace git status 2>&1 | grep "^write.*pathname="
+```
+
+this shows only the `__init__.py` files, despite `find py_env` shows many more files in there and they are skipped. I think that git skips files during `git status` if the mtime and the ctime are the same. But they are always the same, as can be checked by comparing
+
+```sh
+git ls-files --debug "(any file that shows up in strace)"
+stat -c $'ctime: %.9Z\nmtime: %.9Y' "(same file)"
+```
+
+I do not know how to debug further and are grateful for suggestions!
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 10.20250115-ga55e1da1aa0eb07b418e899cc200027e082eb82a
+git version 2.47.1
+Rocky Linux
+
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+

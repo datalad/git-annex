@@ -19,6 +19,7 @@ import Prelude
 
 import Utility.PartialPrelude
 import Utility.Directory
+import Utility.SystemDirectory
 import Utility.Process
 import Utility.Monad
 import Utility.SafeCommand
