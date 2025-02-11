@@ -106,7 +106,7 @@ openDb :: Annex RepoSizeHandle
 openDb = lockDbWhile permerr $ do
 	dbdir <- calcRepo' gitAnnexRepoSizeDbDir
 	let db = dbdir </> literalOsPath "db"
-	unlessM (liftIO $ doesDirectoryExist db) $ do
+	unlessM (liftIO $ doesFileExist db) $ do
 		initDb db $ void $
 			runMigrationSilent migrateRepoSizes
 	h <- liftIO $ H.openDb db "repo_sizes"

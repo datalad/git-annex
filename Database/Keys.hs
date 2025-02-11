@@ -129,7 +129,7 @@ openDb forwrite _ = do
 	catchPermissionDenied permerr $ withExclusiveLock lck $ do
 		dbdir <- calcRepo' gitAnnexKeysDbDir
 		let db = dbdir </> literalOsPath "db"
-		dbexists <- liftIO $ doesDirectoryExist db
+		dbexists <- liftIO $ doesFileExist db
 		case dbexists of
 			True -> open db False
 			False -> do

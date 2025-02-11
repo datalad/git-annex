@@ -97,7 +97,7 @@ openDb :: UUID -> Annex ExportHandle
 openDb u = do
 	dbdir <- calcRepo' (gitAnnexExportDbDir u)
 	let db = dbdir </> literalOsPath "db"
-	unlessM (liftIO $ doesDirectoryExist db) $ do
+	unlessM (liftIO $ doesFileExist db) $ do
 		initDb db $ void $
 			runMigrationSilent migrateExport
 	h <- liftIO $ H.openDbQueue db "exported"

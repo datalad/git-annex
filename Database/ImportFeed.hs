@@ -74,7 +74,7 @@ openDb :: Annex ImportFeedDbHandle
 openDb = do
 	dbdir <- calcRepo' gitAnnexImportFeedDbDir
 	let db = dbdir </> literalOsPath "db"
-	isnew <- liftIO $ not <$> doesDirectoryExist db
+	isnew <- liftIO $ not <$> doesFileExist db
 	when isnew $
 		initDb db $ void $ 
 			runMigrationSilent migrateImportFeed

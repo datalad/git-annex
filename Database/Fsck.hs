@@ -71,7 +71,7 @@ openDb :: UUID -> Annex FsckHandle
 openDb u = do
 	dbdir <- calcRepo' (gitAnnexFsckDbDir u)
 	let db = dbdir </> literalOsPath "db"
-	unlessM (liftIO $ doesDirectoryExist db) $ do
+	unlessM (liftIO $ doesFileExist db) $ do
 		initDb db $ void $
 			runMigrationSilent migrateFsck
 	lockFileCached =<< calcRepo' (gitAnnexFsckDbLock u)
