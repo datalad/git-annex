@@ -58,7 +58,7 @@ fromTopFilePath p repo = combine (repoPath repo) (getTopFilePath p)
 toTopFilePath :: OsPath -> Git.Repo -> IO TopFilePath
 toTopFilePath file repo = TopFilePath <$> relPathDirToFile (repoPath repo) file
 
-{- The input RawFilePath must already be relative to the top of the git
+{- The input path must already be relative to the top of the git
  - repository -}
 asTopFilePath :: OsPath -> TopFilePath
 asTopFilePath file = TopFilePath file
