@@ -40,13 +40,12 @@ import Git.FilePath
 import qualified Git.Url as Url
 import Utility.UserInfo
 import Utility.Url.Parse
-import qualified Utility.RawFilePath as R
 import qualified Utility.OsString as OS
 
 {- Finds the git repository used for the cwd, which may be in a parent
  - directory. -}
 fromCwd :: IO (Maybe Repo)
-fromCwd = R.getCurrentDirectory >>= seekUp . toOsPath
+fromCwd = getCurrentDirectory >>= seekUp
   where
 	seekUp dir = do
 		r <- checkForRepo dir

@@ -22,12 +22,8 @@ module Utility.RawFilePath (
 	readSymbolicLink,
 	createSymbolicLink,
 	createLink,
-	removeLink,
 	getFileStatus,
 	getSymbolicLinkStatus,
-	doesPathExist,
-	getCurrentDirectory,
-	createDirectory,
 	setFileMode,
 	setOwnerAndGroup,
 	rename,
@@ -38,18 +34,6 @@ module Utility.RawFilePath (
 #ifndef mingw32_HOST_OS
 import Utility.FileSystemEncoding (RawFilePath)
 import System.Posix.Files.ByteString
-import qualified System.Posix.Directory.ByteString as D
-
--- | Checks if a file or directory exists. Note that a dangling symlink
--- will be false.
-doesPathExist :: RawFilePath -> IO Bool
-doesPathExist = fileExist
-
-getCurrentDirectory :: IO RawFilePath
-getCurrentDirectory = D.getWorkingDirectory
-
-createDirectory :: RawFilePath -> IO ()
-createDirectory p = D.createDirectory p 0o777
 
 #else
 import System.PosixCompat (FileStatus, FileMode)
@@ -88,15 +72,6 @@ getFileStatus p = P.getFileStatus . fromRawFilePath
 getSymbolicLinkStatus :: RawFilePath -> IO FileStatus
 getSymbolicLinkStatus p = P.getSymbolicLinkStatus . fromRawFilePath
 	=<< convertToWindowsNativeNamespace p
-
-doesPathExist :: RawFilePath -> IO Bool
-doesPathExist = D.doesPathExist . fromRawFilePath
-
-getCurrentDirectory :: IO RawFilePath
-getCurrentDirectory = toRawFilePath <$> D.getCurrentDirectory
-
-createDirectory :: RawFilePath -> IO ()
-createDirectory = D.createDirectory . fromRawFilePath
 
 setFileMode :: RawFilePath -> FileMode -> IO () 
 setFileMode p m = do

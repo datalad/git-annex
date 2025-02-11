@@ -39,7 +39,6 @@ import Annex.Concurrent.Utility
 import Types.Concurrency
 import Git.Env
 import Git.Ssh
-import qualified Utility.RawFilePath as R
 import qualified Utility.OsString as OS
 import Annex.Perms
 #ifndef mingw32_HOST_OS
