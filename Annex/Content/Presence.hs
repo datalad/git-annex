@@ -116,7 +116,7 @@ inAnnexSafe key = inAnnex' (fromMaybe True) (Just False) go key
 					Nothing -> return is_locked
 					Just lockhandle -> do
 						dropLock lockhandle
-						void $ tryIO $ removeWhenExistsWith R.removeLink lockfile
+						void $ tryIO $ removeWhenExistsWith removeFile lockfile
 						return is_unlocked
 			, return is_missing
 			)

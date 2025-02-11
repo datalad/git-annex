@@ -116,12 +116,10 @@ makeAnnexLink = makeGitLink
 makeGitLink :: LinkTarget -> OsPath -> Annex ()
 makeGitLink linktarget file = ifM (coreSymlinks <$> Annex.getGitConfig)
 	( liftIO $ do
-		void $ tryIO $ R.removeLink file'
-		R.createSymbolicLink linktarget file'
+		void $ tryIO $ removeFile file
+		R.createSymbolicLink linktarget (fromOsPath file)
 	, liftIO $ F.writeFile' file linktarget
 	)
-  where
-	file' = fromOsPath file
 
 {- Creates a link on disk, and additionally stages it in git. -}
 addAnnexLink :: LinkTarget -> OsPath -> Annex ()

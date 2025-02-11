@@ -120,7 +120,7 @@ lockDown' cfg file = tryNonAsync $ ifM crippledFileSystem
 				relatedTemplate $ fromOsPath $
 					literalOsPath "ingest-" <> takeFileName file
 			hClose h
-			removeWhenExistsWith R.removeLink (fromOsPath tmpfile)
+			removeWhenExistsWith removeFile tmpfile
 			withhardlink' delta tmpfile
 				`catchIO` const (nohardlink' delta)
 

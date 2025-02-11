@@ -216,7 +216,7 @@ runTransfer' ignorelock t eventualbackend afile stalldetection retrydecider tran
 		 -}
 		maybe noop dropLock moldlockhandle
 		dropLock lockhandle
-		void $ tryIO $ R.removeLink lckfile
+		void $ tryIO $ removeFile lckfile
 		maybe noop (void . tryIO . removeFile) moldlckfile
 #endif
 

@@ -61,7 +61,7 @@ cleanupOtherTmp = do
 		tmpdir <- fromRepo gitAnnexTmpOtherDir
 		void $ liftIO $ tryIO $ removeDirectoryRecursive tmpdir
 		oldtmp <- fromRepo gitAnnexTmpOtherDirOld
-		liftIO $ mapM_ (cleanold . fromOsPath)
+		liftIO $ mapM_ cleanold
 			=<< emptyWhenDoesNotExist (dirContentsRecursive oldtmp)
 		-- remove when empty
 		liftIO $ void $ tryIO $ removeDirectory oldtmp
@@ -69,7 +69,7 @@ cleanupOtherTmp = do
 	cleanold f = do
 		now <- liftIO getPOSIXTime
 		let oldenough = now - (60 * 60 * 24 * 7)
-		catchMaybeIO (modificationTime <$> R.getSymbolicLinkStatus f) >>= \case
+		catchMaybeIO (modificationTime <$> R.getSymbolicLinkStatus (fromOsPath f)) >>= \case
 			Just mtime | realToFrac mtime <= oldenough -> 
-				void $ tryIO $ removeWhenExistsWith R.removeLink f
+				void $ tryIO $ removeWhenExistsWith removeFile f
 			_ -> return ()

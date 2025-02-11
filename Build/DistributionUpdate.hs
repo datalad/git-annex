@@ -233,7 +233,7 @@ buildrpms topdir l = do
 		<$> liftIO (getDirectoryContents rpmrepo)
 	forM_ tarrpmarches $ \(tararch, rpmarch) ->
 		forM_ (filter (isstandalonetarball tararch . fst) l) $ \(tarball, v) -> do
-			liftIO $ mapM_ (removeWhenExistsWith (R.removeLink . toRawFilePath))
+			liftIO $ mapM_ (removeWhenExistsWith removeFile)
 				(filter ((rpmarch ++ ".rpm") `isSuffixOf`) oldrpms)
 			void $ liftIO $ boolSystem script 
 				[ Param rpmarch

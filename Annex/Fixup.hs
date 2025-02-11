@@ -112,9 +112,8 @@ fixupUnusualRepos r@(Repo { location = l@(Local { worktree = Just w, gitdir = d 
 
 	replacedotgit = whenM (doesFileExist dotgit) $ do
 		linktarget <- relPathDirToFile w d
-		let dotgit' = fromOsPath dotgit
-		removeWhenExistsWith R.removeLink dotgit'
-		R.createSymbolicLink (fromOsPath linktarget) dotgit'
+		removeWhenExistsWith removeFile dotgit
+		R.createSymbolicLink (fromOsPath linktarget) (fromOsPath dotgit)
 	
 	-- Unsetting a config fails if it's not set, so ignore failure.
 	unsetcoreworktree = void $ Git.Config.unset "core.worktree" r

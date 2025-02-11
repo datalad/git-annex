@@ -34,10 +34,9 @@ populatePointerFile :: Restage -> Key -> OsPath -> OsPath -> Annex (Maybe InodeC
 populatePointerFile restage k obj f = go =<< liftIO (isPointerFile f)
   where
 	go (Just k') | k == k' = do
-		let f' = fromOsPath f
 		destmode <- liftIO $ catchMaybeIO $
-			fileMode <$> R.getFileStatus f'
-		liftIO $ removeWhenExistsWith R.removeLink f'
+			fileMode <$> R.getFileStatus (fromOsPath f)
+		liftIO $ removeWhenExistsWith removeFile f
 		(ic, populated) <- replaceWorkTreeFile f $ \tmp -> do
 			ok <- linkOrCopy k obj tmp destmode >>= \case
 				Just _ -> thawContent tmp >> return True
@@ -55,11 +54,10 @@ populatePointerFile restage k obj f = go =<< liftIO (isPointerFile f)
  - Does not check if the pointer file is modified. -}
 depopulatePointerFile :: Key -> OsPath -> Annex ()
 depopulatePointerFile key file = do
-	let file' = fromOsPath file
-	st <- liftIO $ catchMaybeIO $ R.getFileStatus file'
+	st <- liftIO $ catchMaybeIO $ R.getFileStatus (fromOsPath file)
 	let mode = fmap fileMode st
 	secureErase file
-	liftIO $ removeWhenExistsWith R.removeLink file'
+	liftIO $ removeWhenExistsWith removeFile file
 	ic <- replaceWorkTreeFile file $ \tmp -> do
 		liftIO $ writePointerFile tmp key mode
 #if ! defined(mingw32_HOST_OS)

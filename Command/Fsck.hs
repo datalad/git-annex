@@ -246,7 +246,7 @@ fixLink key file = do
 		| want /= fromInternalGitPath have = do
 			showNote "fixing link"
 			createWorkTreeDirectory (parentDir file)
-			liftIO $ R.removeLink (fromOsPath file)
+			liftIO $ removeFile file
 			addAnnexLink (fromOsPath want) file
 		| otherwise = noop
 
