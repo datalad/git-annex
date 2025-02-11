@@ -42,6 +42,7 @@ import Utility.SafeCommand
 import Utility.Process
 import Utility.Exception
 import Utility.Directory
+import Utility.SystemDirectory
 import Build.BundledPrograms
 
 main = do
