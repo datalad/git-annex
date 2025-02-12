@@ -159,7 +159,7 @@ Flag Production
   Description: Enable production build (slower build; faster binary)
 
 Flag ParallelBuild
-  Description: Enable production build (slower build; faster binary)
+  Description: Enable building in parallel
   Default: False
   Manual: True
 
