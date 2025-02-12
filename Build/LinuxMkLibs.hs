@@ -49,11 +49,15 @@ mklibs top _installedbins = do
 	-- linker shims.
 	writeFile (fromOsPath (top </> literalOsPath "libdirs"))
 		(unlines (map fromOsPath libdirs'))
-	writeFile (fromOsPath (top </> literalOsPath "gconvdir"))
-		(fromOsPath (parentDir $ Prelude.head gconvlibs))
+	writeFile (fromOsPath (top </> literalOsPath "gconvdir")) $
+		case gconvlibs of
+			[] -> ""
+			(p:_) -> fromOsPath (parentDir p)
 	
 	mapM_ (installLib installFile top) linkers
-	let linker = Prelude.head linkers
+	linker <- case linkers of
+		[] -> error "unable to find linker"
+		(l:_) -> return l
 	mapM_ (installLinkerShim top linker) exes
 	
 	return (any hwcaplibdir libdirs)
