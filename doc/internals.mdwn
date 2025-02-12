@@ -68,7 +68,7 @@ internal tracking of information about git-annex repositories and annexed
 objects.
 
 The files stored in this branch are all designed to be auto-merged
-using git's [[union merge driver|git-union-merge]]. So each line
+by simply concacenating them together. So each line
 has a timestamp, to allow the most recent information to be identified.
 
 ### `uuid.log`

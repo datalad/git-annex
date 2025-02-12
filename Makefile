@@ -74,12 +74,6 @@ git-annex-shell: git-annex
 git-remote-annex: git-annex
 	ln -sf git-annex git-remote-annex
 
-# These are not built normally.
-git-union-merge.1: doc/git-union-merge.mdwn
-	./Build/mdwn2man git-union-merge 1 doc/git-union-merge.mdwn > git-union-merge.1
-git-union-merge:
-	$(GHC) --make -threaded $@
-
 install-mans: mans
 	install -d $(DESTDIR)$(PREFIX)/$(SHAREDIR)/man/man1
 	install -m 0644 man/*.1 $(DESTDIR)$(PREFIX)/$(SHAREDIR)/man/man1
@@ -146,7 +140,7 @@ clean:
 		doc/.ikiwiki html dist tags Build/SysConfig Build/Version \
 		Setup Build/InstallDesktopFile Build/Standalone \
 		Build/DistributionUpdate Build/BuildVersion Build/MakeMans \
-		git-annex-shell git-remote-annex git-union-merge .tasty-rerun-log
+		git-annex-shell git-remote-annex .tasty-rerun-log
 	find . -name \*.o -exec rm {} \;
 	find . -name \*.hi -exec rm {} \;
 
@@ -241,4 +235,4 @@ distributionupdate:
 	ghc -Wall -fno-warn-tabs --make Build/DistributionUpdate -XLambdaCase -XPackageImports
 	./Build/DistributionUpdate
 
-.PHONY: git-annex git-union-merge tags
+.PHONY: git-annex tags
