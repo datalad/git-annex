@@ -15,6 +15,7 @@ import Utility.CopyFile
 import Utility.FileMode
 import Utility.Touch
 import Utility.Hash (IncrementalVerifier(..))
+import qualified Utility.FileIO as F
 import qualified Utility.RawFilePath as R
 
 import Control.Concurrent
@@ -34,7 +35,7 @@ newCopyCoWTried = CopyCoWTried <$> newEmptyMVar
  - The destination file must not exist yet (or may exist but be empty), 
  - or it will fail to make a CoW copy, and will return false.
  -}
-tryCopyCoW :: CopyCoWTried -> FilePath -> FilePath -> MeterUpdate -> IO Bool
+tryCopyCoW :: CopyCoWTried -> OsPath -> OsPath -> MeterUpdate -> IO Bool
 tryCopyCoW (CopyCoWTried copycowtried) src dest meterupdate =
 	-- If multiple threads reach this at the same time, they
 	-- will both try CoW, which is acceptable.
@@ -51,27 +52,25 @@ tryCopyCoW (CopyCoWTried copycowtried) src dest meterupdate =
 				-- CoW is known to work, so delete
 				-- dest if it exists in order to do a fast
 				-- CoW copy.
-				void $ tryIO $ removeFile dest'
+				void $ tryIO $ removeFile dest
 				docopycow
 			, return False
 			)
 		)
   where
-	docopycow = watchFileSize dest' meterupdate $ const $
+	docopycow = watchFileSize dest meterupdate $ const $
 		copyCoW CopyTimeStamps src dest
-	
-	dest' = toOsPath dest
 
 	-- Check if the dest file already exists, which would prevent
 	-- probing CoW. If the file exists but is empty, there's no benefit
 	-- to resuming from it when CoW does not work, so remove it.
 	destfilealreadypopulated = 
-		tryIO (R.getFileStatus (toRawFilePath dest)) >>= \case
+		tryIO (R.getFileStatus (fromOsPath dest)) >>= \case
 			Left _ -> return False
 			Right st -> do
-				sz <- getFileSize' dest' st
+				sz <- getFileSize' dest st
 				if sz == 0
-					then tryIO (removeFile dest') >>= \case
+					then tryIO (removeFile dest) >>= \case
 						Right () -> return False
 						Left _ -> return True
 					else return True
@@ -95,7 +94,7 @@ data CopyMethod = CopiedCoW | Copied
  - (eg when isStableKey is false), and doing this avoids getting a
  - corrupted file in such cases.
  -}
-fileCopier :: CopyCoWTried -> FilePath -> FilePath -> MeterUpdate -> Maybe IncrementalVerifier -> IO CopyMethod
+fileCopier :: CopyCoWTried -> OsPath -> OsPath -> MeterUpdate -> Maybe IncrementalVerifier -> IO CopyMethod
 #ifdef mingw32_HOST_OS
 fileCopier _ src dest meterupdate iv = docopy
 #else
@@ -111,28 +110,26 @@ fileCopier copycowtried src dest meterupdate iv =
 	docopy = do
 		-- The file might have had the write bit removed,
 		-- so make sure we can write to it.
-		void $ tryIO $ allowWrite (toOsPath dest)
+		void $ tryIO $ allowWrite dest
 
-		withBinaryFile src ReadMode $ \hsrc ->
+		F.withBinaryFile src ReadMode $ \hsrc ->
 			fileContentCopier hsrc dest meterupdate iv
 		
 		-- Copy src mode and mtime.
-		mode <- fileMode <$> R.getFileStatus (toRawFilePath src)
-		mtime <- utcTimeToPOSIXSeconds
-			<$> getModificationTime (toOsPath src)
+		mode <- fileMode <$> R.getFileStatus (fromOsPath src)
+		mtime <- utcTimeToPOSIXSeconds <$> getModificationTime src
+		let dest' = fromOsPath dest
 		R.setFileMode dest' mode
 		touch dest' mtime False
 
 		return Copied
-	
-	dest' = toRawFilePath dest
 
 {- Copies content from a handle to a destination file. Does not
  - use copy-on-write, and does not copy file mode and mtime.
  -}
-fileContentCopier :: Handle -> FilePath -> MeterUpdate -> Maybe IncrementalVerifier -> IO ()
+fileContentCopier :: Handle -> OsPath -> MeterUpdate -> Maybe IncrementalVerifier -> IO ()
 fileContentCopier hsrc dest meterupdate iv =
-	withBinaryFile dest ReadWriteMode $ \hdest -> do
+	F.withBinaryFile dest ReadWriteMode $ \hdest -> do
 		sofar <- compareexisting hdest zeroBytesProcessed
 		docopy hdest sofar
   where

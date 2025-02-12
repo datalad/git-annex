@@ -210,7 +210,7 @@ storeKeyM d chunkconfig cow k c m =
 			in byteStorer go k c m
 		NoChunks ->
 			let go _k src p = liftIO $ do
-				void $ fileCopier cow (fromOsPath src) (fromOsPath tmpf) p Nothing
+				void $ fileCopier cow src tmpf p Nothing
 				finalizeStoreGeneric d tmpdir destdir
 			in fileStorer go k c m
 		_ -> 
@@ -251,7 +251,7 @@ retrieveKeyFileM :: OsPath -> ChunkConfig -> CopyCoWTried -> Retriever
 retrieveKeyFileM d (LegacyChunks _) _ = Legacy.retrieve locations' d
 retrieveKeyFileM d NoChunks cow = fileRetriever' $ \dest k p iv -> do
 	src <- liftIO $ getLocation d k
-	void $ liftIO $ fileCopier cow (fromOsPath src) (fromOsPath dest) p iv
+	void $ liftIO $ fileCopier cow src dest p iv
 retrieveKeyFileM d _ _ = byteRetriever $ \k sink ->
 	sink =<< liftIO (F.readFile =<< getLocation d k)
 
@@ -336,14 +336,14 @@ storeExportM d cow src _k loc p = do
   where
 	dest = exportPath d loc
 	go tmp () = void $ liftIO $
-		fileCopier cow (fromOsPath src) (fromOsPath tmp) p Nothing
+		fileCopier cow src tmp p Nothing
 
 retrieveExportM :: OsPath -> CopyCoWTried -> Key -> ExportLocation -> OsPath -> MeterUpdate -> Annex Verification
 retrieveExportM d cow k loc dest p = 
 	verifyKeyContentIncrementally AlwaysVerify k $ \iv -> 
-		void $ liftIO $ fileCopier cow src (fromOsPath dest) p iv
+		void $ liftIO $ fileCopier cow src dest p iv
   where
-	src = fromOsPath $ exportPath d loc
+	src = exportPath d loc
 
 removeExportM :: OsPath -> Key -> ExportLocation -> Annex ()
 removeExportM d _k loc = liftIO $ do
@@ -462,7 +462,7 @@ retrieveExportWithContentIdentifierM ii dir cow loc cids dest gk p =
 
 	go iv = precheck (docopy iv)
 
-	docopy iv = ifM (liftIO $ tryCopyCoW cow (fromOsPath f) (fromOsPath dest) p)
+	docopy iv = ifM (liftIO $ tryCopyCoW cow f dest p)
 		( postcheckcow (liftIO $ maybe noop unableIncrementalVerifier iv)
 		, docopynoncow iv
 		)
@@ -484,7 +484,7 @@ retrieveExportWithContentIdentifierM ii dir cow loc cids dest gk p =
 		let close = hClose
 		bracketIO open close $ \h -> do
 #endif
-			liftIO $ fileContentCopier h (fromOsPath dest) p iv
+			liftIO $ fileContentCopier h dest p iv
 #ifndef mingw32_HOST_OS
 			postchecknoncow dupfd (return ())
 #else
@@ -539,7 +539,7 @@ storeExportWithContentIdentifierM ii dir cow src _k loc overwritablecids p = do
 	withTmpFileIn destdir template $ \tmpf tmph -> do
 		let tmpf' = fromOsPath tmpf
 		liftIO $ hClose tmph
-		void $ liftIO $ fileCopier cow (fromOsPath src) (fromOsPath tmpf) p Nothing
+		void $ liftIO $ fileCopier cow src tmpf p Nothing
 		resetAnnexFilePerm tmpf
 		liftIO (R.getSymbolicLinkStatus tmpf') >>= liftIO . mkContentIdentifier ii tmpf >>= \case
 			Nothing -> giveup "unable to generate content identifier"

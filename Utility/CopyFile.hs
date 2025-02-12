@@ -62,13 +62,13 @@ copyFileExternal meta src dest = do
  - The dest file must not exist yet, or it will fail to make a CoW copy,
  - and will return False.
  -}
-copyCoW :: CopyMetaData -> FilePath -> FilePath -> IO Bool
+copyCoW :: CopyMetaData -> OsPath -> OsPath -> IO Bool
 copyCoW meta src dest
 	| BuildInfo.cp_reflink_supported = do
 		-- When CoW is not supported, cp will complain to stderr,
 		-- so have to discard its stderr.
 		ok <- catchBoolIO $ withNullHandle $ \nullh ->
-			let p = (proc "cp" $ toCommand $ params ++ [File src, File dest])
+			let p = (proc "cp" $ toCommand $ params ++ [File (fromOsPath src), File (fromOsPath dest)])
 				{ std_out = UseHandle nullh
 				, std_err = UseHandle nullh
 				}
@@ -76,7 +76,7 @@ copyCoW meta src dest
 		-- When CoW is not supported, cp creates the destination
 		-- file but leaves it empty.
 		unless ok $
-			void $ tryIO $ removeFile $ toOsPath dest
+			void $ tryIO $ removeFile dest
 		return ok
 	| otherwise = return False
   where
