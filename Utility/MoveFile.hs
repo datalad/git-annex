@@ -21,6 +21,7 @@ import Prelude
 import System.PosixCompat.Files (isDirectory)
 import Control.Monad.IfElse
 import Utility.SafeCommand
+import qualified Utility.RawFilePath as R
 #endif
 
 import Utility.SystemDirectory
@@ -28,7 +29,6 @@ import Utility.Tmp
 import Utility.Exception
 import Utility.Monad
 import Utility.OsPath
-import qualified Utility.RawFilePath as R
 import Author
 
 {- Moves one filename to another.

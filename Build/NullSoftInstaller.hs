@@ -16,7 +16,7 @@
  - A build of libmagic will also be included in the installer, if its files
  - are found in the current directory: 
  -   ./magic.mgc ./libmagic-1.dll ./libgnurx-0.dll
- - To build git-annex to usse libmagic, it has to be built with the
+ - To build git-annex to use libmagic, it has to be built with the
  - magicmime build flag turned on.
  -
  - Copyright 2013-2020 Joey Hess <id@joeyh.name>
@@ -27,7 +27,6 @@
 {-# LANGUAGE OverloadedStrings, FlexibleContexts #-}
 
 import Development.NSIS
-import System.FilePath
 import Control.Monad
 import Control.Applicative
 import Data.String
@@ -42,27 +41,29 @@ import Utility.SafeCommand
 import Utility.Process
 import Utility.Exception
 import Utility.Directory
+import Utility.SystemDirectory
+import Utility.OsPath
 import Build.BundledPrograms
 
 main = do
 	withTmpDir "nsis-build" $ \tmpdir -> do
-		let gitannex = tmpdir </> gitannexprogram
+		let gitannex = fromOsPath $ tmpdir </> toOsPath gitannexprogram
 		mustSucceed "ln" [File "git-annex.exe", File gitannex]
 		magicDLLs' <- installwhenpresent magicDLLs tmpdir
 		magicShare' <- installwhenpresent magicShare tmpdir
-		let license = tmpdir </> licensefile
+		let license = fromOsPath $ tmpdir </> toOsPath licensefile
 		mustSucceed "sh" [Param "-c", Param $ "zcat standalone/licences.gz > '" ++ license ++ "'"]
 		webappscript <- vbsLauncher tmpdir "git-annex-webapp" "git annex webapp"
 		autostartscript <- vbsLauncher tmpdir "git-annex-autostart" "git annex assistant --autostart"
-		let htmlhelp = tmpdir </> "git-annex.html"
+		let htmlhelp = fromOsPath $ tmpdir </> literalOsPath "git-annex.html"
 		writeFile htmlhelp htmlHelpText
-		let gitannexcmd = tmpdir </> "git-annex.cmd"
+		let gitannexcmd = fromOsPath $ tmpdir </> literalOsPath "git-annex.cmd"
 		writeFile gitannexcmd "git annex %*"
 		writeFile nsifile $ makeInstaller
 			gitannex gitannexcmd license htmlhelp (winPrograms ++ magicDLLs') magicShare'
 			[ webappscript, autostartscript ]
 		mustSucceed "makensis" [File nsifile]
-	removeFile nsifile -- left behind if makensis fails
+	removeFile (toOsPath nsifile) -- left behind if makensis fails
   where
 	nsifile = "git-annex.nsi"
 	mustSucceed cmd params = do
@@ -72,19 +73,19 @@ main = do
 			False -> error $ cmd ++ " failed"
 	installwhenpresent fs tmpdir = do
 		fs' <- forM fs $ \f -> do
-			present <- doesFileExist f
+			present <- doesFileExist (toOsPath f)
 			if present
 				then do
-					mustSucceed "ln" [File f, File (tmpdir </> f)]
+					mustSucceed "ln" [File f, File (fromOsPath (tmpdir </> toOsPath f))]
 					return (Just f)
 				else return Nothing
 		return (catMaybes fs')
 
 {- Generates a .vbs launcher which runs a command without any visible DOS
  - box. It expects to be passed the directory where git-annex is installed. -}
-vbsLauncher :: FilePath -> String -> String -> IO String
+vbsLauncher :: OsPath -> String -> String -> IO String
 vbsLauncher tmpdir basename cmd = do
-	let f = tmpdir </> basename ++ ".vbs"
+	let f = fromOsPath $ tmpdir </> toOsPath (basename ++ ".vbs")
 	writeFile f $ unlines
 		[ "Set objshell=CreateObject(\"Wscript.Shell\")"
 		, "objShell.CurrentDirectory = Wscript.Arguments.item(0)"
@@ -207,7 +208,7 @@ makeInstaller gitannex gitannexcmd license htmlhelp extrabins sharefiles launche
 		removefilesFrom "$INSTDIR" [license, uninstaller]
   where
 	addfile f = file [] (str f)
-	removefilesFrom d = mapM_ (\f -> delete [RebootOK] $ fromString $ d ++ "/" ++ takeFileName f)
+	removefilesFrom d = mapM_ (\f -> delete [RebootOK] $ fromString $ d ++ "/" ++ fromOsPath (takeFileName (toOsPath f)))
 
 winPrograms :: [FilePath]
 winPrograms = map (\p -> p ++ ".exe") bundledPrograms

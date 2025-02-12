@@ -43,7 +43,6 @@ import qualified Utility.OsString as OS
 
 #ifdef mingw32_HOST_OS
 import Data.Char
-import Utility.FileSystemEncoding
 #endif
 
 copyright :: Authored t => t
@@ -230,11 +229,11 @@ relPathDirToFileAbs from to
 	numcommon = length common
 #ifdef mingw32_HOST_OS
 	normdrive = map toLower
+		. fromOsPath
 		-- Get just the drive letter, removing any leading
 		-- path separator, which takeDrive leaves on the drive
 		-- letter.
-		. dropWhileEnd (isPathSeparator . fromIntegral . ord)
-		. fromOsPath 
+		. OS.dropWhileEnd isPathSeparator
 		. takeDrive
 #endif
 
@@ -261,7 +260,7 @@ searchPath command
 	indir d = check (d </> command')
 	check f = firstM doesFileExist
 #ifdef mingw32_HOST_OS
-		[f, f <> ".exe"]
+		[f, f <> literalOsPath ".exe"]
 #else
 		[f]
 #endif

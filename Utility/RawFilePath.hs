@@ -60,11 +60,6 @@ createLink a b = do
 	b' <- fromRawFilePath <$> convertToWindowsNativeNamespace b
 	P.createLink a' b'
 
-{- On windows, removeLink is not available, so only remove files,
- - not symbolic links. -}
-removeLink :: RawFilePath -> IO ()
-removeLink = D.removeFile . fromRawFilePath
-
 getFileStatus :: RawFilePath -> IO FileStatus
 getFileStatus p = P.getFileStatus . fromRawFilePath
 	=<< convertToWindowsNativeNamespace p

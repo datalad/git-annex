@@ -105,7 +105,7 @@ startDaemon assistant foreground startdelay cannotrun listenhost listenport star
 			( liftIO $ withNullHandle $ \nullh -> do
 				loghandle <- openLog (fromOsPath logfile)
 				e <- getEnvironment
-				cmd <- programPath
+				cmd <- fromOsPath <$> programPath
 				ps <- getArgs
 				let p = (proc cmd ps)
 					{ env = Just (addEntry flag "1" e)
@@ -116,7 +116,7 @@ startDaemon assistant foreground startdelay cannotrun listenhost listenport star
 				exitcode <- withCreateProcess p $ \_ _ _ pid ->
 					waitForProcess pid
 				exitWith exitcode
-			, start (Utility.Daemon.foreground (Just (fromOsPath pidfile))) $
+			, start (Utility.Daemon.foreground (Just pidfile)) $
 				case startbrowser of
 					Nothing -> Nothing
 					Just a -> Just $ a Nothing Nothing

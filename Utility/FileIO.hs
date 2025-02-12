@@ -37,7 +37,6 @@ import System.File.OsPath
 -- https://github.com/haskell/file-io/issues/39
 import Utility.Path.Windows
 import Utility.OsPath
-import System.OsPath
 import System.IO (IO, Handle, IOMode)
 import Prelude (return)
 import qualified System.File.OsPath as O

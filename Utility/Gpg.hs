@@ -179,7 +179,7 @@ feedRead cmd params passphrase feeder reader = do
 		go (passphrasefd ++ params)
 #else
 	-- store the passphrase in a temp file for gpg
-	withTmpFile (toOsPath "gpg") $ \tmpfile h -> do
+	withTmpFile (literalOsPath "gpg") $ \tmpfile h -> do
 		liftIO $ B.hPutStr h passphrase
 		liftIO $ hClose h
 		let passphrasefile = [Param "--passphrase-file", File (fromOsPath tmpfile)]

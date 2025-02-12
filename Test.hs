@@ -88,9 +88,9 @@ import qualified Utility.Aeson
 import qualified Utility.CopyFile
 import qualified Utility.MoveFile
 import qualified Utility.StatelessOpenPGP
-import qualified Utility.OsString as OS
 import qualified Types.Remote
 #ifndef mingw32_HOST_OS
+import qualified Utility.OsString as OS
 import qualified Remote.Helper.Encryptable
 import qualified Types.Crypto
 import qualified Utility.Gpg

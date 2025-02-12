@@ -480,7 +480,7 @@ retrieveExportWithContentIdentifierM ii dir cow loc cids dest gk p =
 			closeFd dupfd
 		bracketIO open close $ \(h, dupfd) -> do
 #else
-		let open = openBinaryFile f' ReadMode
+		let open = F.openBinaryFile f ReadMode
 		let close = hClose
 		bracketIO open close $ \h -> do
 #endif

@@ -18,12 +18,11 @@ module Utility.FileSize (
 import Control.Exception (bracket)
 import System.IO
 import qualified Utility.FileIO as F
-import Utility.OsPath
 #else
 import System.PosixCompat.Files (fileSize)
+import qualified Utility.RawFilePath as R
 #endif
 import System.PosixCompat.Files (FileStatus)
-import qualified Utility.RawFilePath as R
 import Utility.OsPath
 
 type FileSize = Integer

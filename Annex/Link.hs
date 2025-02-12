@@ -468,12 +468,13 @@ isPointerFile f = catchDefaultIO Nothing $
  - than .git to be used.
  -}
 isLinkToAnnex :: S.ByteString -> Bool
-isLinkToAnnex s = p `OS.isInfixOf` (toOsPath s)
+isLinkToAnnex s = p `OS.isInfixOf` s'
 #ifdef mingw32_HOST_OS
 	-- '/' is used inside pointer files on Windows, not the native '\'
-	|| p' `OS.isInfixOf` s
+	|| p' `OS.isInfixOf` s'
 #endif
   where
+	s' = toOsPath s
 	p = pathSeparator `OS.cons` objectDir
 #ifdef mingw32_HOST_OS
 	p' = toInternalGitPath p

@@ -159,7 +159,7 @@ feedRead cmd subcmd params password emptydirectory feeder reader = do
 		go (Just emptydirectory) (passwordfd ++ params)
 #else
 	-- store the password in a temp file
-	withTmpFile (toOsPath "sop") $ \tmpfile h -> do
+	withTmpFile (literalOsPath "sop") $ \tmpfile h -> do
 		liftIO $ B.hPutStr h password
 		liftIO $ hClose h
 		let passwordfile = [Param $ "--with-password=" ++ fromOsPath tmpfile]

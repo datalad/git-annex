@@ -7,6 +7,7 @@
 
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Utility.Directory.Stream (
@@ -24,7 +25,6 @@ import Prelude
 
 #ifdef mingw32_HOST_OS
 import qualified System.Win32 as Win32
-import System.FilePath
 #else
 import qualified Data.ByteString as B
 import qualified System.Posix.Directory.ByteString as Posix
@@ -50,7 +50,7 @@ openDirectory path = do
 	isopen <- newMVar ()
 	return (DirectoryHandle isopen dirp)
 #else
-	(h, fdat) <- Win32.findFirstFile (fromRawFilePath path </> "*")
+	(h, fdat) <- Win32.findFirstFile (fromOsPath (toOsPath path </> literalOsPath "*"))
 	-- Indicate that the fdat contains a filename that readDirectory
 	-- has not yet returned, by making the MVar be full.
 	-- (There's always at least a "." entry.)

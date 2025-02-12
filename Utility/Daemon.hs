@@ -158,7 +158,7 @@ checkDaemon pidfile = maybe (return Nothing) (check . readish)
   where
 	check Nothing = return Nothing
 	check (Just pid) = do
-		v <- lockShared =<< winLockFile pid (fromOsPath pidfile)
+		v <- lockShared =<< winLockFile pid pidfile
 		case v of
 			Just h -> do
 				dropLock h

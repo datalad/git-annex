@@ -136,5 +136,7 @@ relatedTemplate' _ = "t"
  - of openTempFile, and some extra has been added to make it longer
  - than any likely implementation.
  -}
+#ifndef mingw32_HOST_OS
 templateAddedLength :: Int
 templateAddedLength = 20
+#endif

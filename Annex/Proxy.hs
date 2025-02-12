@@ -36,7 +36,9 @@ import qualified Utility.FileIO as F
 import Utility.OpenFile
 #endif
 
+#ifndef mingw32_HOST_OS
 import Control.Concurrent
+#endif
 import Control.Concurrent.STM
 import Control.Concurrent.Async
 import qualified Data.ByteString as B

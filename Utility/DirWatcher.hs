@@ -134,7 +134,7 @@ watchDir dir prune scanevents hooks runstartup =
 #else
 #if WITH_WIN32NOTIFY
 type DirWatcherHandle = Win32Notify.WatchManager
-watchDir :: FilePath -> Pruner -> Bool -> WatchHooks -> (IO Win32Notify.WatchManager -> IO Win32Notify.WatchManager) -> IO DirWatcherHandle
+watchDir :: OsPath -> Pruner -> Bool -> WatchHooks -> (IO Win32Notify.WatchManager -> IO Win32Notify.WatchManager) -> IO DirWatcherHandle
 watchDir dir prune scanevents hooks runstartup =
 	runstartup $ Win32Notify.watchDir dir prune scanevents hooks
 #else

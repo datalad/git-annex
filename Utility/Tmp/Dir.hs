@@ -32,8 +32,8 @@ withTmpDir :: (MonadMask m, MonadIO m) => Template -> (OsPath -> m a) -> m a
 withTmpDir template a = do
 	topleveltmpdir <- liftIO $
 		catchDefaultIO (literalOsPath ".") getTemporaryDirectory
-	let p = fromOsPath $ topleveltmpdir </> template
 #ifndef mingw32_HOST_OS
+	let p = fromOsPath $ topleveltmpdir </> template
 	-- Use mkdtemp to create a temp directory securely in /tmp.
 	bracket
 		(liftIO $ toOsPath <$> mkdtemp p)
