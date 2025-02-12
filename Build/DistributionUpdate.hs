@@ -11,6 +11,8 @@
  - Also gpg signs the files.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 import Annex.Common
 import Types.Distribution
 import Build.Version (getChangelogVersion, Version)
@@ -22,9 +24,10 @@ import qualified Git.Construct
 import qualified Annex
 import Annex.Content
 import Annex.WorkTree
+import Annex.Action
 import Git.Command
 import qualified Utility.RawFilePath as R
-import Annex.Action
+import qualified Utility.OsString as OS
 
 import Data.Time.Clock
 import Data.Char
@@ -37,16 +40,16 @@ signingKey = "89C809CB"
 
 -- URL to an autobuilt git-annex file, and the place to install
 -- it in the repository.
-autobuilds :: [(URLString, FilePath)]
+autobuilds :: [(URLString, OsPath)]
 autobuilds = 
 	(map linuxarch ["i386", "amd64", "armel", "arm64", "arm64-ancient"]) ++
-	[ (autobuild "x86_64-apple-catalina/git-annex.dmg", "git-annex/OSX/current/10.15_Catalina/git-annex.dmg")
-	, (autobuild "windows/git-annex-installer.exe", "git-annex/windows/current/git-annex-installer.exe")
+	[ (autobuild "x86_64-apple-catalina/git-annex.dmg", literalOsPath "git-annex/OSX/current/10.15_Catalina/git-annex.dmg")
+	, (autobuild "windows/git-annex-installer.exe", literalOsPath "git-annex/windows/current/git-annex-installer.exe")
 	]
   where
 	linuxarch a =
 		( autobuild (a ++ "/git-annex-standalone-" ++ a ++ ".tar.gz")
-		, "git-annex/linux/current/git-annex-standalone-" ++ a ++ ".tar.gz"
+		, literalOsPath "git-annex/linux/current/git-annex-standalone-" <> toOsPath a <> literalOsPath ".tar.gz"
 		)
 	autobuild f = "https://downloads.kitenet.net/git-annex/autobuild/" ++ f
 
@@ -65,9 +68,9 @@ main = do
 	version <- getChangelogVersion
 	repodir <- getRepoDir
 	topdir <- getCurrentDirectory
-	changeWorkingDirectory repodir
+	changeWorkingDirectory (fromOsPath repodir)
 	updated <- catMaybes <$> mapM (getbuild repodir) autobuilds
-	state <- Annex.new =<< Git.Construct.fromPath (toRawFilePath ".")
+	state <- Annex.new =<< Git.Construct.fromPath (literalOsPath ".")
 	ood <- Annex.eval state $ do
 		buildrpms topdir updated
 		is <- makeinfos updated version
@@ -82,13 +85,13 @@ main = do
 -- It's very important that the version matches the build, otherwise
 -- auto-upgrades can loop reatedly. So, check build-version before
 -- and after downloading the file.
-getbuild :: FilePath -> (URLString, FilePath) -> IO (Maybe (FilePath, Version))
+getbuild :: OsPath -> (URLString, OsPath) -> IO (Maybe (OsPath, Version))
 getbuild repodir (url, f) = do
 	bv1 <- getbv
 	let dest = repodir </> f
-	let tmp = dest ++ ".tmp"
+	let tmp = dest <> literalOsPath ".tmp"
 	removeWhenExistsWith removeFile tmp
-	createDirectoryIfMissing True (fromRawFilePath (parentDir (toRawFilePath dest)))
+	createDirectoryIfMissing True (parentDir dest)
 	let oops s = do
 		removeWhenExistsWith removeFile tmp
 		putStrLn $ "*** " ++ s
@@ -113,15 +116,15 @@ getbuild repodir (url, f) = do
 		, oops $ "failed to download " ++ url
 		)
   where
-	bvurl = takeDirectory url ++ "/build-version"
+	bvurl = fromOsPath (takeDirectory (toOsPath url)) ++ "/build-version"
 	getbv = do
 		bv <- catchDefaultIO "" $ readProcess "curl" ["--silent", bvurl]
 		return $ if null bv || any (not . versionchar) bv then Nothing else Just bv
 	versionchar c = isAlphaNum c || c == '.' || c == '-'
 
-makeinfos :: [(FilePath, Version)] -> Version -> Annex [([Char], Maybe GitAnnexDistribution)]
+makeinfos :: [(OsPath, Version)] -> Version -> Annex [(OsPath, Maybe GitAnnexDistribution)]
 makeinfos updated changelogversion = do
-	mapM_ (\f -> inRepo $ runBool [Param "annex", Param "add", File f]) (map fst updated)
+	mapM_ (\f -> inRepo $ runBool [Param "annex", Param "add", File (fromOsPath f)]) (map fst updated)
 	void $ inRepo $ runBool 
 		[ Param "commit"
 		, Param "-a"
@@ -132,12 +135,12 @@ makeinfos updated changelogversion = do
 	now <- liftIO getCurrentTime
 	liftIO $ putStrLn $ "building info files"
 	forM_ updated $ \(f, bv) -> do
-		v <- lookupKey (toRawFilePath f)
+		v <- lookupKey f
 		case v of
 			Nothing -> noop
 			Just k -> whenM (inAnnex k) $ do
-				liftIO $ putStrLn f
-				let infofile = f ++ ".info"
+				liftIO $ putStrLn (fromOsPath f)
+				let infofile = f <> literalOsPath ".info"
 				let d = GitAnnexDistribution
 					{ distributionUrl = mkUrl f
 					, distributionKey = fromKey id k
@@ -145,8 +148,8 @@ makeinfos updated changelogversion = do
 					, distributionReleasedate = now
 					, distributionUrgentUpgrade = Just "6.20180626"
 					}
-				liftIO $ writeFile infofile $ formatInfoFile d
-				void $ inRepo $ runBool [Param "add", File infofile]
+				liftIO $ writeFile (fromOsPath infofile) $ formatInfoFile d
+				void $ inRepo $ runBool [Param "add", File (fromOsPath infofile)]
 				signFile infofile
 				signFile f
 	void $ inRepo $ runBool 
@@ -168,9 +171,9 @@ makeinfos updated changelogversion = do
 		]
 	
 	-- Check for out of date info files.
-	infos <- liftIO $ filter (".info" `isSuffixOf`)
-		<$> emptyWhenDoesNotExist (dirContentsRecursive "git-annex")
-	ds <- liftIO $ forM infos (readish <$$> readFile)
+	infos <- liftIO $ filter (literalOsPath ".info" `OS.isSuffixOf`)
+		<$> emptyWhenDoesNotExist (dirContentsRecursive $ literalOsPath "git-annex")
+	ds <- liftIO $ forM infos (readish <$$> readFile . fromOsPath)
 	let dis = zip infos ds
 	let ood = filter outofdate dis
 	return ood
@@ -180,36 +183,39 @@ makeinfos updated changelogversion = do
 		Just d -> distributionVersion d /= changelogversion
 	descversion = unwords (nub (map snd updated))
 
-getRepoDir :: IO FilePath
+getRepoDir :: IO OsPath
 getRepoDir = do
 	home <- liftIO myHomeDir
-	return $ home </> "lib" </> "downloads"
+	return $ toOsPath home </> literalOsPath "lib" </> literalOsPath "downloads"
 
-mkUrl :: FilePath -> String
-mkUrl f = "https://downloads.kitenet.net/" ++ f
+mkUrl :: OsPath -> String
+mkUrl f = "https://downloads.kitenet.net/" ++ fromOsPath f
 				
-signFile :: FilePath -> Annex ()
+signFile :: OsPath -> Annex ()
 signFile f = do
 	void $ liftIO $ boolSystem "gpg"
 		[ Param "-a"
 		, Param $ "--default-key=" ++ signingKey
 		, Param "--detach-sign"
-		, File f
+		, File (fromOsPath f)
 		]
-	liftIO $ R.rename (toRawFilePath (f ++ ".asc")) (toRawFilePath (f ++ ".sig"))
-	void $ inRepo $ runBool [Param "add", File (f ++ ".sig")]
+	liftIO $ R.rename
+		(fromOsPath (f <> literalOsPath ".asc"))
+		(fromOsPath (f <> literalOsPath ".sig"))
+	void $ inRepo $ runBool [Param "add", File (fromOsPath f ++ ".sig")]
 
 -- clamscan should handle unpacking archives, but did not in my
 -- testing, so do it manually.
-virusFree :: FilePath -> IO Bool
+virusFree :: OsPath -> IO Bool
 virusFree f 
-	| ".tar.gz" `isSuffixOf` f = unpack $ \tmpdir ->
-		boolSystem "tar" [ Param "xf", File f, Param "-C", File tmpdir ]
-	| ".dmg" `isSuffixOf` f = unpack $ \tmpdir -> do
+	| literalOsPath ".tar.gz" `OS.isSuffixOf` f = unpack $ \tmpdir ->
+		boolSystem "tar" [ Param "xf", File (fromOsPath f), Param "-C", File (fromOsPath tmpdir) ]
+	| literalOsPath ".dmg" `OS.isSuffixOf` f = unpack $ \tmpdir -> do
 		-- 7z can extract partitions from a dmg, and then
 		-- run on partitions can extract their files
 		unhfs tmpdir f
-		parts <- filter (".hfs" `isSuffixOf`) <$> getDirectoryContents tmpdir
+		parts <- filter (literalOsPath ".hfs" `OS.isSuffixOf`)
+			<$> getDirectoryContents tmpdir
 		forM_ parts $ unhfs tmpdir
 		return True
 	| otherwise = clamscan f
@@ -217,37 +223,39 @@ virusFree f
 	clamscan f' = boolSystem "clamscan"
 		[ Param "--no-summary"
 		, Param "-r"
-		, Param f'
+		, Param (fromOsPath f')
 		]
 	unpack unpacker = withTmpDir "clamscan" $ \tmpdir -> do
 		unlessM (unpacker tmpdir) $
-			error $ "Failed to unpack " ++ f ++ " for virus scan"
+			error $ "Failed to unpack " ++ fromOsPath f ++ " for virus scan"
 		clamscan tmpdir
-	unhfs dest f' = unlessM (boolSystem "7z" [ Param "x", Param ("-o" ++ dest), File f' ]) $
-		error $ "Failed extracting hfs " ++ f'
+	unhfs dest f' = unlessM (boolSystem "7z" [ Param "x", Param ("-o" ++ fromOsPath dest), File (fromOsPath f') ]) $
+		error $ "Failed extracting hfs " ++ fromOsPath f'
 
-buildrpms :: FilePath -> [(FilePath, Version)] -> Annex ()
+buildrpms :: OsPath -> [(OsPath, Version)] -> Annex ()
 buildrpms topdir l = do
 	liftIO $ createDirectoryIfMissing True rpmrepo
-	oldrpms <- map (rpmrepo </>) . filter (".rpm" `isSuffixOf`)
+	oldrpms <- map (rpmrepo </>) . filter (literalOsPath ".rpm" `OS.isSuffixOf`)
 		<$> liftIO (getDirectoryContents rpmrepo)
 	forM_ tarrpmarches $ \(tararch, rpmarch) ->
 		forM_ (filter (isstandalonetarball tararch . fst) l) $ \(tarball, v) -> do
 			liftIO $ mapM_ (removeWhenExistsWith removeFile)
-				(filter ((rpmarch ++ ".rpm") `isSuffixOf`) oldrpms)
-			void $ liftIO $ boolSystem script 
+				(filter ((toOsPath rpmarch <> literalOsPath ".rpm") `OS.isSuffixOf`) oldrpms)
+			void $ liftIO $ boolSystem (fromOsPath script)
 				[ Param rpmarch
-				, File tarball
+				, File (fromOsPath tarball)
 				, Param v
-				, File rpmrepo
+				, File (fromOsPath rpmrepo)
 				]
-	void $ inRepo $ runBool [Param "annex", Param "get", File rpmrepo]
-	void $ liftIO $ boolSystem "createrepo_c" [File rpmrepo]
-	void $ inRepo $ runBool [Param "annex", Param "add", File rpmrepo]
+	void $ inRepo $ runBool [Param "annex", Param "get", File (fromOsPath rpmrepo)]
+	void $ liftIO $ boolSystem "createrepo_c" [File (fromOsPath rpmrepo)]
+	void $ inRepo $ runBool [Param "annex", Param "add", File (fromOsPath rpmrepo)]
   where
 	isstandalonetarball tararch f =
-		("git-annex-standalone-" ++ tararch ++ ".tar.gz") `isSuffixOf` f
-	script = topdir </> "standalone" </> "rpm" </> "rpmbuild-from-standalone-tarball"
+		toOsPath ("git-annex-standalone-" ++ tararch ++ ".tar.gz") `OS.isSuffixOf` f
+	script = topdir </> literalOsPath "standalone" 
+		</> literalOsPath "rpm" 
+		</> literalOsPath "rpmbuild-from-standalone-tarball"
 	rpmrepo = "git-annex/linux/current/rpms"
 
 -- My .mrconfig is configured to copy new files to archive.org,
