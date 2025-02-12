@@ -13,7 +13,6 @@
 module Utility.OsPath (
 	OsPath,
 	OsString,
-	RawFilePath,
 	literalOsPath,
 	stringToOsPath,
 	toOsPath,
