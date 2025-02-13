@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: comment 13"""
+ date="2025-02-13T16:36:45Z"
+ content="""
+@m.risse earlier you said that it would be bad to 
+	
+> Silently use the old version of "data.grib", creating a mismatch between
+> "data.nc" and "data.grib"
+
+That's what I was getting at when I said:
+
+> But if you already have data.nc file present in a repository, it does not
+> get updated immediately when you update the source "data.grib" file.
+
+So just using files from HEAD for the computation is not sufficient to
+avoid this kind of mismatch. The user will need some workflow to deal with
+it.
+
+Eg, they could recompute data.nc whenever data.grib is updated, and so make a
+commit that updates both files together. But if they're doing that, why does
+the computation need to use files from HEAD? Recomputing data.nc could just as
+well pin the new key of data.grib.
+"""]]
