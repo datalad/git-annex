@@ -48,7 +48,7 @@ jobs:
         run: brew install libmagic pkg-config rsync
 
       - name: Setup Haskell
-        uses: haskell/actions/setup@v2
+        uses: haskell-actions/setup@v2
         with:
           enable-stack: true
           stack-no-global: true
