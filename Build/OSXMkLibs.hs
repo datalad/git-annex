@@ -88,7 +88,8 @@ installLibs appbase installedbins replacement_libs libmap = do
  -}
 otool :: FilePath -> M.Map FilePath FilePath -> [(FilePath, FilePath)] -> LibMap -> IO ([FilePath], [(FilePath, FilePath)], LibMap)
 otool appbase installedbins replacement_libs libmap = do
-	files <- filterM doesFileExist =<< dirContentsRecursive appbase
+	files <- filterM doesFileExist 
+		=<< (map fromRawFilePath <$> dirContentsRecursive (toRawFilePath appbase))
 	process [] files replacement_libs libmap
   where
 	want s = 

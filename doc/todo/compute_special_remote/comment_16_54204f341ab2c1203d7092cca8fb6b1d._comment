@@ -1,0 +1,34 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: crossing repository boundaries"""
+ date="2025-02-13T17:01:52Z"
+ content="""
+It could be argued that git-annex should recurse into submodules.
+Oddly, I don't remember that anyone has ever tried to make that argument.
+If they did it was a long time ago. It may be that datalad has relieved
+enough of the pressure in that area that it's not bothering many people.
+
+Anyway, I wouldn't want to tie compute special remotes to changing
+git-annex in that way, but I also wouldn't want to rule out adding
+useful stuff to git-annex just because it breaches the submodule boundary
+in a way that's new to git-annex.
+
+Thinking about a command like this:
+
+	git-annex addcomputed foo --to ffmpeg-cut \
+	    --input source=submodule/input.mov \
+	    --value starttime=15:00 \
+	    --value endtime=30:00
+
+That would need to look inside the submodule to find the input key.
+
+When getting the key later, it can't rely on the tree still containing the
+same submodules at the same locations. `git mv submodule foo` would break
+the computation. 
+
+I think that can be dealt with by having it fall back to checking location
+logs of all submodules, to find the submodule that knows about a key.
+
+Deleting a submodule would still break the computation, and that seems
+difficult to avoid. Seems acceptable.
+"""]]

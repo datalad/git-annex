@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 17"""
+ date="2025-02-13T20:10:52Z"
+ content="""
+I've written up a draft interface for programs used by a compute special
+remote: [[design/compute_special_remote_interface]]
+"""]]
