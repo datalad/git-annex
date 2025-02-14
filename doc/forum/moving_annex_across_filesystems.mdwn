@@ -24,3 +24,20 @@ I believe that's because rm won't fail to remove files if they are readonly when
 Anyways - what's the proper way of doing this? I know I could `git clone` the repository and `git get` everything, but that would create another repository with a new UUID. That's duplication I do not want.
 
 Thanks for the advice! -- [[anarcat]]
+
+Update, years later...  The problem with cloning is that it pollutes the history of the git repository, with all that location information duplicated for a repo that is effectively, immediately forgotten.
+
+That said, it's quite nice to use git itself to move the repository, as it provides a more reliable way to do this:
+
+    cd /srv
+    git clone ~/Photos
+    cd Photos
+    git annex get
+
+As long as you don't `git-annex-sync`, you don't send the UUID back and I guess it's *possible* to `git-annex-reinit` to recycle the UUID, but I'm not sure it helps with the extra metadata created.
+
+In some cases, however, this is actually what you want: you *are* creating a new repository, even if you're removing the old one. I've found that the actual, safest way to do those transfers is to clone, as sometimes `mv(1)` can fail halfway and then you have an inconsistent copy and you need to restart from scratch.
+
+Furthermore, while it has been stated elsewhere ([[forum/best_way_to_move_a_git_annex_repo_trought_file_system]], [[forum/Relocating_annex_directory]]) that a git-annex "repository is just a collection of files in a directory", I would argue it's not *quite* true. A git-annex repository is quite peculiar: it has hidden files, readonly files and directories, and can have symbolic links. And while those might seem perfectly normal to a seasoned UNIX programmer or system administrator, they trigger a bunch of special edge cases that might confuse a lot of people (like broken links, permission denied errors when removing folders, etc).
+
+The idea that git-annex is "just a normal folder" is nice in theory, but it breaks down in some edge cases, and I think it's important for people to be aware of that, especially when doing special operations like this.
