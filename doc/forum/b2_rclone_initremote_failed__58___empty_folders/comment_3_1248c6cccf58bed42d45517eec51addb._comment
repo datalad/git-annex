@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="datamanager"
+ avatar="http://cdn.libravatar.org/avatar/7d4ca7c5e571d4740ef072b83a746c12"
+ subject="comment 3"
+ date="2025-02-15T21:46:32Z"
+ content="""
+Is there a workaround in the meantime? I'm attempting to create a new remote, with a brand new backblaze bucket. I'm sure I've done this before, but maybe at that time I used [git-annex-remote-rclone](https://github.com/git-annex-remote-rclone/git-annex-remote-rclone)
+"""]]
