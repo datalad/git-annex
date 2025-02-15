@@ -1,0 +1,43 @@
+### Please describe the problem.
+
+When trying to operate one of my repositories I'm getting this error:
+
+[[!format sh """
+git-annex: thread blocked indefinitely in an MVar operation
+error: external filter 'git-annex filter-process' failed
+"""]]
+
+
+### What steps will reproduce the problem?
+
+Any of the git-annex commands I've tried, such as fsck.
+
+
+### What version of git-annex are you using? On what operating system?
+
+I was running 10.20230126-3 on Debian Bookworm, but I've tried upgrading to 10.20241202-1~bpo12+1 from bookworm-backports in the hope that'd fix it.
+
+### Please provide any additional information below.
+
+I've enabled debugging, and this appears to be the relevant lines (running git annex status):
+
+[[!format sh """
+...
+[2025-02-15 23:26:58.262822935] (Database.Handle) commitDb start
+[2025-02-15 23:26:58.676202887] (Database.Handle) commitDb failed: SQLite3 returned ErrorNotFound while attempting to perform step: database disk image is malformed
+[2025-02-15 23:26:58.776543627] (Database.Handle) commitDb start
+[2025-02-15 23:26:59.110186761] (Database.Handle) commitDb BlockedIndefinitelyOnMVar
+[2025-02-15 23:26:59.110415878] (Utility.Process) process [30460] done ExitSuccess
+[2025-02-15 23:26:59.1104987] (Utility.Process) process [30459] done ExitSuccess
+git-annex: sqlite worker thread crashed: user error (SQLite3 returned ErrorNotFound while attempting to perform step: database disk image is malformed(after successful open))
+error: external filter 'git-annex filter-process' failed
+...
+"""]]
+
+The only SQLite3 database I can find is in .git/annex/keysdb . I can open that using sqlite3 and select from the tables with no error messages. Is there another file it is trying to access?
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I've been happily using git-annex for many many years, first time I've encountered an issue like this.
+
+
