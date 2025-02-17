@@ -15,7 +15,7 @@ import System.OSX.FSEvents
 import qualified System.Posix.Files as Files
 import Data.Bits ((.&.))
 
-watchDir :: FilePath -> (FilePath -> Bool) -> Bool -> WatchHooks -> IO EventStream
+watchDir :: OsPath -> (OsPath -> Bool) -> Bool -> WatchHooks -> IO EventStream
 watchDir dir ignored scanevents hooks = do
 	unlessM fileLevelEventsSupported $
 		giveup "Need at least OSX 10.7.0 for file-level FSEvents"
@@ -23,7 +23,7 @@ watchDir dir ignored scanevents hooks = do
 	eventStreamCreate [dir] 1.0 True True True dispatch
   where
 	dispatch evt
-		| ignoredPath ignored (eventPath evt) = noop
+		| ignoredPath ignored (toOsPath (eventPath evt)) = noop
 		| otherwise = do
 			{- More than one flag may be set, if events occurred
 			 - close together. 
@@ -45,8 +45,8 @@ watchDir dir ignored scanevents hooks = do
 			 - received for both its old and its new name. -}
 			when (hasflag eventFlagItemRenamed) $
 				if hasflag eventFlagItemIsDir
-					then ifM (doesDirectoryExist $ eventPath evt)
-						( scan $ eventPath evt
+					then ifM (doesDirectoryExist $ toOsPath $ eventPath evt)
+						( scan $ toOsPath $ eventPath evt
 						, runhook delDirHook Nothing
 						)
 					else maybe (runhook delHook Nothing) handleadd
@@ -61,7 +61,7 @@ watchDir dir ignored scanevents hooks = do
 				runhook modifyHook ms
 	  where
 		hasflag f = eventFlags evt .&. f /= 0
-		runhook h s = maybe noop (\a -> a (eventPath evt) s) (h hooks)
+		runhook h s = maybe noop (\a -> a (toOsPath (eventPath evt)) s) (h hooks)
 		handleadd s
 			| Files.isSymbolicLink s = runhook addSymlinkHook $ Just s
 			| Files.isRegularFile s = runhook addHook $ Just s
@@ -70,13 +70,13 @@ watchDir dir ignored scanevents hooks = do
 	scan d = unless (ignoredPath ignored d) $
 		-- Do not follow symlinks when scanning.
 		-- This mirrors the inotify startup scan behavior.
-		mapM_ (go . fromRawFilePath) =<< emptyWhenDoesNotExist
-			(dirContentsRecursiveSkipping (const False) False (toRawFilePath d))
+		mapM_ go =<< emptyWhenDoesNotExist
+			(dirContentsRecursiveSkipping (const False) False d)
 	  where		
 		go f
 			| ignoredPath ignored f = noop
 			| otherwise = do
-				ms <- getstatus f
+				ms <- getstatus (fromOsPath f)
 				case ms of
 					Nothing -> noop
 					Just s
@@ -94,5 +94,5 @@ watchDir dir ignored scanevents hooks = do
 	getstatus = catchMaybeIO . R.getSymbolicLinkStatus . toRawFilePath
 
 {- Check each component of the path to see if it's ignored. -}
-ignoredPath :: (FilePath -> Bool) -> FilePath -> Bool
+ignoredPath :: (OsPath -> Bool) -> OsPath -> Bool
 ignoredPath ignored = any ignored . map dropTrailingPathSeparator . splitPath
