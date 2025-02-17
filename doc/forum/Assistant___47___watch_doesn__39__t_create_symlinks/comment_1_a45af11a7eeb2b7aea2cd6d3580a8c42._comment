@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="sharad"
+ avatar="http://cdn.libravatar.org/avatar/0d6c19d5c8f500413f056f94c8c0f308"
+ subject="Faced same issue for long time"
+ date="2025-02-17T19:30:27Z"
+ content="""
+
+
+Found that 
+
+git annex lock .
+
+
+fix it 
+
+
+I guess when copied it kept in unlocked state which may be nothing but absence of symlink (layman term)
+So by this logic when I tried 
+git annex lock .
+it fixed this problem.
+
+Not sure if here are any option/config to control this that
+when file first copies it should be directly put into locked state.
+
+
+Thanks
+
+
+
+
+
+"""]]
