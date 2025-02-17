@@ -55,6 +55,7 @@ import Utility.HumanTime
 import Utility.SimpleProtocol as Proto
 import Utility.ThreadScheduler
 import Utility.SafeOutput
+import qualified Utility.FileIO as F
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString as S
@@ -121,8 +122,8 @@ zeroBytesProcessed = BytesProcessed 0
 
 {- Sends the content of a file to an action, updating the meter as it's
  - consumed. -}
-withMeteredFile :: FilePath -> MeterUpdate -> (L.ByteString -> IO a) -> IO a
-withMeteredFile f meterupdate a = withBinaryFile f ReadMode $ \h ->
+withMeteredFile :: OsPath -> MeterUpdate -> (L.ByteString -> IO a) -> IO a
+withMeteredFile f meterupdate a = F.withBinaryFile f ReadMode $ \h ->
 	hGetContentsMetered h meterupdate >>= a
 
 {- Calls the action repeatedly with chunks from the lazy ByteString.
@@ -140,8 +141,8 @@ meteredWrite' meterupdate a = go zeroBytesProcessed . L.toChunks
 		meterupdate sofar'
 		go sofar' cs
 
-meteredWriteFile :: MeterUpdate -> FilePath -> L.ByteString -> IO ()
-meteredWriteFile meterupdate f b = withBinaryFile f WriteMode $ \h ->
+meteredWriteFile :: MeterUpdate -> OsPath -> L.ByteString -> IO ()
+meteredWriteFile meterupdate f b = F.withBinaryFile f WriteMode $ \h ->
 	meteredWrite meterupdate (S.hPut h) b
 
 {- Applies an offset to a MeterUpdate. This can be useful when
@@ -227,7 +228,7 @@ defaultChunkSize = 32 * k - chunkOverhead
  -}
 watchFileSize
 	:: (MonadIO m, MonadMask m)
-	=> RawFilePath
+	=> OsPath
 	-> MeterUpdate
 	-> (MeterUpdate -> m a)
 	-> m a

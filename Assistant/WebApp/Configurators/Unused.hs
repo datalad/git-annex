@@ -51,7 +51,7 @@ postConfigUnusedR = page "Unused files" (Just Configuration) $ do
 			redirect ConfigurationR
 		_ -> do
 			munuseddesc <- liftAssistant describeUnused
-			ts <- liftAnnex $ dateUnusedLog ""
+			ts <- liftAnnex $ dateUnusedLog (literalOsPath "")
 			mlastchecked <- case ts of
 				Nothing -> pure Nothing
 				Just t -> Just <$> liftIO (durationSince t)

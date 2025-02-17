@@ -8,6 +8,7 @@
  -}
 
 {-# LANGUAGE FlexibleInstances, TypeSynonymInstances #-}
+{-# LANGUAGE CPP #-}
 
 module Utility.Aeson (
 	module X,
@@ -32,6 +33,9 @@ import qualified Data.Vector
 import Prelude
 
 import Utility.FileSystemEncoding
+#ifdef WITH_OSPATH
+import Utility.OsPath
+#endif
 
 -- | Use this instead of Data.Aeson.encode to make sure that the
 -- below String instance is used.
@@ -59,6 +63,11 @@ instance ToJSON' String where
 -- implementation.
 instance ToJSON' S.ByteString where
 	toJSON' = toJSON . packByteString
+
+#ifdef WITH_OSPATH
+instance ToJSON' OsPath where
+	toJSON' p = toJSON' (fromOsPath p :: S.ByteString)
+#endif
 
 -- | Pack a String to Text, correctly handling the filesystem encoding.
 --

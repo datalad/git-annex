@@ -221,7 +221,7 @@ data AnnexState = AnnexState
 	, existinghooks :: M.Map Git.Hook.Hook Bool
 	, workers :: Maybe (TMVar (WorkerPool (AnnexState, AnnexRead)))
 	, cachedcurrentbranch :: (Maybe (Maybe Git.Branch, Maybe Adjustment))
-	, cachedgitenv :: Maybe (AltIndexFile, FilePath, [(String, String)])
+	, cachedgitenv :: Maybe (AltIndexFile, OsPath, [(String, String)])
 	, urloptions :: Maybe UrlOptions
 	, insmudgecleanfilter :: Bool
 	, getvectorclock :: IO CandidateVectorClock
@@ -465,7 +465,7 @@ withCurrentState a = do
  - because the git repo paths are stored relative.
  - Instead, use this.
  -}
-changeDirectory :: FilePath -> Annex ()
+changeDirectory :: OsPath -> Annex ()
 changeDirectory d = do
 	r <- liftIO . Git.adjustPath absPath =<< gitRepo
 	liftIO $ setCurrentDirectory d

@@ -42,9 +42,9 @@ backend = Backend
 keyValue :: KeySource -> MeterUpdate -> Annex Key
 keyValue source _ = do
 	let f = contentLocation source
-	stat <- liftIO $ R.getFileStatus f
+	stat <- liftIO $ R.getFileStatus (fromOsPath f)
 	sz <- liftIO $ getFileSize' f stat
-	relf <- fromRawFilePath . getTopFilePath
+	relf <- fromOsPath . getTopFilePath
 		<$> inRepo (toTopFilePath $ keyFilename source)
 	return $ mkKey $ \k -> k
 		{ keyName = genKeyName relf

@@ -59,7 +59,7 @@ seekBatch matcher fmt = batchInput fmt parse (commandAction . go)
 		let (keyname, file) = separate (== ' ') s
 		if not (null keyname) && not (null file)
 			then do
-				file' <- liftIO $ relPathCwdToFile (toRawFilePath file)
+				file' <- liftIO $ relPathCwdToFile (toOsPath file)
 				return $ Right (file', keyOpt keyname)
 			else return $
 				Left "Expected pairs of key and filename"
@@ -75,11 +75,10 @@ start matcher force (si, (keyname, file)) = do
 		inbackend <- inAnnex key
 		unless inbackend $ giveup $
 			"key ("++ keyname ++") is not present in backend (use --force to override this sanity check)"
+	let file' = toOsPath file
 	let ai = mkActionItem (key, file')
 	starting "fromkey" ai si $
 		perform matcher key file'
-  where
-	file' = toRawFilePath file
 
 -- From user input to a Key.
 -- User can input either a serialized key, or an url.
@@ -99,9 +98,9 @@ keyOpt' s = case parseURIPortable s of
 		Just k -> Right k
 		Nothing -> Left $ "bad key/url " ++ s
 
-perform :: AddUnlockedMatcher -> Key -> RawFilePath -> CommandPerform
+perform :: AddUnlockedMatcher -> Key -> OsPath -> CommandPerform
 perform matcher key file = lookupKeyNotHidden file >>= \case
-	Nothing -> ifM (liftIO $ doesFileExist (fromRawFilePath file))
+	Nothing -> ifM (liftIO $ doesFileExist file)
 		( hasothercontent
 		, do
 			contentpresent <- inAnnex key
@@ -123,7 +122,7 @@ perform matcher key file = lookupKeyNotHidden file >>= \case
 						else writepointer
 				, do
 					link <- calcRepo $ gitAnnexLink file key
-					addAnnexLink link file
+					addAnnexLink (fromOsPath link) file
 				)
 			next $ return True
 		)

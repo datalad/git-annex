@@ -18,10 +18,11 @@ import Utility.SafeCommand
 import Utility.Directory
 import Utility.Exception
 import Utility.Monad
-import Utility.FileSystemEncoding
 import Utility.SystemDirectory
+import Utility.OsPath
 import qualified Utility.RawFilePath as R
 import Utility.PartialPrelude
+import qualified Utility.OsString as OS
 
 import System.IO
 import Data.List
@@ -29,8 +30,6 @@ import Data.Maybe
 import Control.Monad
 import Control.Monad.IfElse
 import qualified Data.Map as M
-import qualified Data.ByteString as S
-import System.FilePath.ByteString
 import Control.Applicative
 import Prelude
 
@@ -109,28 +108,29 @@ fixupUnusualRepos r@(Repo { location = l@(Local { worktree = Just w, gitdir = d 
 		, return r
 		)
   where
-	dotgit = w </> ".git"
+	dotgit = w </> literalOsPath ".git"
 
-	replacedotgit = whenM (doesFileExist (fromRawFilePath dotgit)) $ do
+	replacedotgit = whenM (doesFileExist dotgit) $ do
 		linktarget <- relPathDirToFile w d
-		removeWhenExistsWith R.removeLink dotgit
-		R.createSymbolicLink linktarget dotgit
+		removeWhenExistsWith removeFile dotgit
+		R.createSymbolicLink (fromOsPath linktarget) (fromOsPath dotgit)
 	
 	-- Unsetting a config fails if it's not set, so ignore failure.
 	unsetcoreworktree = void $ Git.Config.unset "core.worktree" r
 	
-	worktreefixup =
+	worktreefixup = do
 		-- git-worktree sets up a "commondir" file that contains
 		-- the path to the main git directory.
 		-- Using --separate-git-dir does not.
-		catchDefaultIO Nothing (headMaybe . lines <$> readFile (fromRawFilePath (d </> "commondir"))) >>= \case
+		let commondirfile = fromOsPath (d </> literalOsPath "commondir")
+		catchDefaultIO Nothing (headMaybe . lines <$> readFile commondirfile) >>= \case
 			Just gd -> do
 				-- Make the worktree's git directory
 				-- contain an annex symlink to the main
 				-- repository's annex directory.
-				let linktarget = toRawFilePath gd </> "annex"
-				R.createSymbolicLink linktarget
-					(dotgit </> "annex")
+				let linktarget = toOsPath gd </> literalOsPath "annex"
+				R.createSymbolicLink (fromOsPath linktarget) $
+					fromOsPath $ dotgit </> literalOsPath "annex"
 			Nothing -> return ()
 
 	-- Repo adjusted, so that symlinks to objects that get checked
@@ -143,7 +143,7 @@ fixupUnusualRepos r _ = return r
 
 needsSubmoduleFixup :: Repo -> Bool
 needsSubmoduleFixup (Repo { location = (Local { worktree = Just _, gitdir = d }) }) =
-	(".git" </> "modules") `S.isInfixOf` d
+	(literalOsPath ".git" </> literalOsPath "modules") `OS.isInfixOf` d
 needsSubmoduleFixup _ = False
 
 needsGitLinkFixup :: Repo -> IO Bool
@@ -151,6 +151,6 @@ needsGitLinkFixup (Repo { location = (Local { worktree = Just wt, gitdir = d }) 
 	-- Optimization: Avoid statting .git in the common case; only
 	-- when the gitdir is not in the usual place inside the worktree
 	-- might .git be a file.
-	| wt </> ".git" == d = return False
-	| otherwise = doesFileExist (fromRawFilePath (wt </> ".git"))
+	| wt </> literalOsPath ".git" == d = return False
+	| otherwise = doesFileExist (wt </> literalOsPath ".git")
 needsGitLinkFixup _ = return False

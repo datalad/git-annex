@@ -36,12 +36,13 @@ import qualified Utility.FileIO as F
 import Utility.OpenFile
 #endif
 
+#ifndef mingw32_HOST_OS
 import Control.Concurrent
+#endif
 import Control.Concurrent.STM
 import Control.Concurrent.Async
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
-import qualified System.FilePath.ByteString as P
 import qualified Data.Map as M
 import qualified Data.Set as S
 #ifndef mingw32_HOST_OS
@@ -177,8 +178,8 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv oclosedv mexportdb = go
 	-- independently. Also, this key is not getting added into the
 	-- local annex objects.
 	withproxytmpfile k a = withOtherTmp $ \othertmpdir ->
-		withTmpDirIn (fromRawFilePath othertmpdir) (toOsPath "proxy") $ \tmpdir ->
-			a (toRawFilePath tmpdir P.</> keyFile k)
+		withTmpDirIn othertmpdir (literalOsPath "proxy") $ \tmpdir ->
+			a (tmpdir </> keyFile k)
 			
 	proxyput af k = do
 		liftIO $ sendmessage $ PUT_FROM (Offset 0)
@@ -188,14 +189,14 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv oclosedv mexportdb = go
 				-- the client, to avoid bad content
 				-- being stored in the special remote.
 				iv <- startVerifyKeyContentIncrementally Remote.AlwaysVerify k
-				h <- liftIO $ F.openFile (toOsPath tmpfile) WriteMode
-				let nuketmp = liftIO $ removeWhenExistsWith removeFile (fromRawFilePath tmpfile)
+				h <- liftIO $ F.openFile tmpfile WriteMode
+				let nuketmp = liftIO $ removeWhenExistsWith removeFile tmpfile
 				gotall <- liftIO $ receivetofile iv h len
 				liftIO $ hClose h
 				verified <- if gotall
 					then fst <$> finishVerifyKeyContentIncrementally' True iv
 					else pure False
-				let store = tryNonAsync (storeput k af (decodeBS tmpfile)) >>= \case
+				let store = tryNonAsync (storeput k af tmpfile) >>= \case
 					Right () -> liftIO $ sendmessage SUCCESS
 					Left err -> liftIO $ propagateerror err
 				if protoversion > ProtocolVersion 1
@@ -262,8 +263,8 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv oclosedv mexportdb = go
 		storetofile iv h (n - fromIntegral (B.length b)) bs
 
 	proxyget offset af k = withproxytmpfile k $ \tmpfile -> do
-		let retrieve = tryNonAsync $ Remote.retrieveKeyFile r k af
-			(fromRawFilePath tmpfile) nullMeterUpdate vc
+		let retrieve = tryNonAsync $ Remote.retrieveKeyFile
+			r k af tmpfile nullMeterUpdate vc
 #ifndef mingw32_HOST_OS
 		ordered <- Remote.retrieveKeyFileInOrder r
 #else
@@ -298,7 +299,7 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv oclosedv mexportdb = go
 		sendlen offset size
 		waitforfile
 		x <- tryNonAsync $ do
-			h <- openFileBeingWritten f
+			h <- openFileBeingWritten (fromOsPath f)
 			hSeek h AbsoluteSeek offset
 			senddata' h (getcontents size)
 		case x of
@@ -350,7 +351,7 @@ proxySpecialRemote protoversion r ihdl ohdl owaitv oclosedv mexportdb = go
 	senddata (Offset offset) f = do
 		size <- fromIntegral <$> getFileSize f
 		sendlen offset size
-		withBinaryFile (fromRawFilePath f) ReadMode $ \h -> do
+		F.withBinaryFile f ReadMode $ \h -> do
 			hSeek h AbsoluteSeek offset
 			senddata' h L.hGetContents
 

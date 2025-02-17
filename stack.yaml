@@ -11,10 +11,10 @@ flags:
     benchmark: true
     crypton: true
     servant: true
-    ospath: false
+    ospath: true
 packages:
 - '.'
-resolver: lts-23.2
+resolver: nightly-2025-01-20
 extra-deps:
 - filepath-bytestring-1.5.2.0.2
 - aws-0.24.4

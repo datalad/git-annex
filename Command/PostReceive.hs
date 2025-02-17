@@ -9,6 +9,7 @@
 
 module Command.PostReceive where
 
+import Common
 import Command
 import qualified Annex
 import Annex.UpdateInstead
@@ -107,12 +108,11 @@ fixPostReceiveHookEnv :: Annex ()
 fixPostReceiveHookEnv = do
 	g <- Annex.gitRepo
 	case location g of
-		Local { gitdir = ".", worktree = Just "." } ->
+		l@(Local {}) | gitdir l == literalOsPath "." && worktree l == Just (literalOsPath ".") ->
 			Annex.adjustGitRepo $ \g' -> pure $ g'
 				{ location = case location g' of
 					loc@(Local {}) -> loc 
-						{ worktree = Just ".." }
+						{ worktree = Just (literalOsPath "..") }
 					loc -> loc
 				}
 		_ -> noop
-

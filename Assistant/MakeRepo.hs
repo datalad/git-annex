@@ -28,7 +28,7 @@ import Config
 
 {- Makes a new git repository. Or, if a git repository already
  - exists, returns False. -}
-makeRepo :: FilePath -> Bool -> IO Bool
+makeRepo :: OsPath -> Bool -> IO Bool
 makeRepo path bare = ifM (probeRepoExists path)
 	( return False
 	, do
@@ -41,19 +41,19 @@ makeRepo path bare = ifM (probeRepoExists path)
   where
 	baseparams = [Param "init", Param "--quiet"]
 	params
-		| bare = baseparams ++ [Param "--bare", File path]
-		| otherwise = baseparams ++ [File path]
+		| bare = baseparams ++ [Param "--bare", File (fromOsPath path)]
+		| otherwise = baseparams ++ [File (fromOsPath path)]
 
 {- Runs an action in the git repository in the specified directory. -}
-inDir :: FilePath -> Annex a -> IO a
+inDir :: OsPath -> Annex a -> IO a
 inDir dir a = do
 	state <- Annex.new
 		=<< Git.Config.read
-		=<< Git.Construct.fromPath (toRawFilePath dir)
+		=<< Git.Construct.fromPath dir
 	Annex.eval state $ a `finally` quiesce True
 
 {- Creates a new repository, and returns its UUID. -}
-initRepo :: Bool -> Bool -> FilePath -> Maybe String -> Maybe StandardGroup -> IO UUID
+initRepo :: Bool -> Bool -> OsPath -> Maybe String -> Maybe StandardGroup -> IO UUID
 initRepo True primary_assistant_repo dir desc mgroup = inDir dir $ do
 	initRepo' desc mgroup
 	{- Initialize the master branch, so things that expect
@@ -94,6 +94,6 @@ initRepo' desc mgroup = unlessM isInitialized $ do
 	Annex.Branch.commit =<< Annex.Branch.commitMessage
 
 {- Checks if a git repo exists at a location. -}
-probeRepoExists :: FilePath -> IO Bool
+probeRepoExists :: OsPath -> IO Bool
 probeRepoExists dir = isJust <$>
-	catchDefaultIO Nothing (Git.Construct.checkForRepo (encodeBS dir))
+	catchDefaultIO Nothing (Git.Construct.checkForRepo dir)

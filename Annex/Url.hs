@@ -174,13 +174,13 @@ checkBoth url expected_size uo =
 		Right r -> return r
 		Left err -> warning (UnquotedString err) >> return False
 
-download :: MeterUpdate -> Maybe IncrementalVerifier -> U.URLString -> FilePath -> U.UrlOptions -> Annex Bool
+download :: MeterUpdate -> Maybe IncrementalVerifier -> U.URLString -> OsPath -> U.UrlOptions -> Annex Bool
 download meterupdate iv url file uo =
 	liftIO (U.download meterupdate iv url file uo) >>= \case
 		Right () -> return True
 		Left err -> warning (UnquotedString err) >> return False
 
-download' :: MeterUpdate -> Maybe IncrementalVerifier -> U.URLString -> FilePath -> U.UrlOptions -> Annex (Either String ())
+download' :: MeterUpdate -> Maybe IncrementalVerifier -> U.URLString -> OsPath -> U.UrlOptions -> Annex (Either String ())
 download' meterupdate iv url file uo =
 	liftIO (U.download meterupdate iv url file uo)
 

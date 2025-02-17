@@ -14,7 +14,8 @@ module Utility.OpenFd where
 
 import System.Posix.IO.ByteString
 import System.Posix.Types
-import System.FilePath.ByteString (RawFilePath)
+
+import Utility.RawFilePath
 
 openFdWithMode :: RawFilePath -> OpenMode -> Maybe FileMode -> OpenFileFlags -> IO Fd
 #if MIN_VERSION_unix(2,8,0)

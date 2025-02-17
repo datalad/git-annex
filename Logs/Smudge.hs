@@ -21,7 +21,7 @@ smudgeLog k f = do
 	logf <- fromRepo gitAnnexSmudgeLog
 	lckf <- fromRepo gitAnnexSmudgeLock
 	appendLogFile logf lckf $ L.fromStrict $
-		serializeKey' k <> " " <> getTopFilePath f
+		serializeKey' k <> " " <> fromOsPath (getTopFilePath f)
 
 -- | Streams all smudged files, and then empties the log at the end.
 --
@@ -43,4 +43,4 @@ streamSmudged a = do
 		let (ks, f) = separate (== ' ') l
 		in do
 			k <- deserializeKey ks
-			return (k, asTopFilePath (toRawFilePath f))
+			return (k, asTopFilePath (toOsPath f))

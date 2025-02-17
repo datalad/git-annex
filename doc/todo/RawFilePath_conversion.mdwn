@@ -1,75 +1,50 @@
 For a long time (since 2019) git-annex has been progressively converting from
-FilePath to RawFilePath (aka ByteString).
+FilePath to RawFilePath. And more recently, to OsPath.
+
+[[!meta title="OsPath conversion"]]
 
 The reason is mostly performance, also a simpler representation of
 filepaths that doesn't need encoding hacks to support non-UTF8 values.
 
-Some commands like `git-annex find` use RawFilePath end-to-end. 
-But this conversion is not yet complete. This is a todo to keep track of the
-status.
+Some commands like `git-annex find` have been converted end-to-end
+with good performance results. And OsPath is used very widly now. 
+But this conversion is not yet complete. This is a todo to keep track
+of the status.
+
+* The OsPath build flag makes git-annex build with OsPath. Otherwise,
+  it builds with RawFilePath. The plan is to make that build flag the
+  default where it is not already as time goes on. And then eventually
+  remove the build flag and simplify code in git-annex to not need to
+  support two different build methods.
 
 * unix has modules that operate on RawFilePath but no OSPath versions yet.
   See https://github.com/haskell/unix/issues/240
-* filepath-1.4.100 implements support for OSPath. It is bundled with
-  ghc-9.6.1 and above. Will need to switch from filepath-bytestring to
-  this, and to avoid a lot of ifdefs, probably only after git-annex no
-  longers supports building with older ghc versions. This will entail
-  replacing all the RawFilePath with OsPath, which should be pretty
-  mechanical, with only some wrapper functions in Utility.FileIO and
-  Utility.RawFilePath needing to be changed.
+  However, this is not really a performance problem, because converting
+  from an OsPath to a RawFilePath in order to use such a function
+  is the same amount of work as calling a native OsPath version of the
+  function would be, because passing a ShortByteString into the FFI entails
+  making a copy of it.
 
-  Work on this is underway, in the `ospath` branch.
+* filepath-bytestring is used when not building with OsPath. It's also
+  in Setup-Depends. In order to stop needing to maintain that library,
+  the goal is to eliminate it from dependencies. This may need to wait
+  until the OsPath build flag is removed and OsPath is always used.
+
+* Git.LsFiles has several `pipeNullSplit'` calls that have toOsPath
+  mapped over the results. That adds an additional copy, so the lazy
+  ByteString is converted to strict,
+  and then to ShortByteString, with a copy each time. This is in the
+  critical path for large git repos, and might be a noticable slowdown.
+  There is currently no easy way to go direct from a lazy ByteString to a
+  ShortByteString, although it would certianly be possible to write low
+  level code to do it efficiently. Alternatively, it would be possible to
+  read a strict ByteString direct from a handle, like hGetLine does
+  (although in this case it would need to stop at the terminating 0 byte)
+  and unsafePerformIO to stream to a list would avoid needing to rewrite
+  this code to not use a list.
+
+* OsPath has by now been pushed about as far as it will go, but here and
+  there use of FilePath remains in odd corners. These are unlikely to cause
+  any noticiable performance impact.
 
 [[!tag confirmed]]
-
-----
-
-The following patch can be useful to find points where conversions are
-done. Especially useful to identify cases where a value is converted
-`FilePath -> RawFilePath -> FilePath`.
-
-    diff --git a/Utility/FileSystemEncoding.hs b/Utility/FileSystemEncoding.hs
-    index 2a1dc81bc1..03e6986f6e 100644
-    --- a/Utility/FileSystemEncoding.hs
-    +++ b/Utility/FileSystemEncoding.hs
-    @@ -84,6 +84,9 @@ encodeBL = L.fromStrict . encodeBS
-     encodeBL = L8.fromString
-     #endif
-     
-    +debugConversions :: String -> IO ()
-    +debugConversions s = hPutStrLn stderr ("conversion: " ++ s)
-    +
-     decodeBS :: S.ByteString -> FilePath
-     #ifndef mingw32_HOST_OS
-     -- This does the same thing as System.FilePath.ByteString.decodeFilePath,
-    @@ -92,6 +95,7 @@ decodeBS :: S.ByteString -> FilePath
-     -- something other than a unix filepath.
-     {-# NOINLINE decodeBS #-}
-     decodeBS b = unsafePerformIO $ do
-    +	debugConversions (show b)
-     	enc <- Encoding.getFileSystemEncoding
-     	S.useAsCStringLen b (GHC.peekCStringLen enc)
-     #else
-    @@ -106,17 +110,19 @@ encodeBS :: FilePath -> S.ByteString
-     -- something other than a unix filepath.
-     {-# NOINLINE encodeBS #-}
-     encodeBS f = unsafePerformIO $ do
-    +	debugConversions f
-     	enc <- Encoding.getFileSystemEncoding
-    -	GHC.newCStringLen enc f >>= unsafePackMallocCStringLen
-    +	b <- GHC.newCStringLen enc f >>= unsafePackMallocCStringLen
-    +	return b
-     #else
-     encodeBS = S8.fromString
-     #endif
-     
-     fromRawFilePath :: RawFilePath -> FilePath
-    -fromRawFilePath = decodeFilePath
-    +fromRawFilePath = decodeBS -- decodeFilePath
-     
-     toRawFilePath :: FilePath -> RawFilePath
-    -toRawFilePath = encodeFilePath
-    +toRawFilePath = encodeBS -- encodeFilePath
-     
-     {- Truncates a FilePath to the given number of bytes (or less),
-      - as represented on disk.

@@ -58,13 +58,13 @@ preserveTimestamps oldl newl = M.intersection (M.unionWith oldts oldl newl) newl
   where
 	oldts _old@(_, ts) _new@(int, _) = (int, ts)
 
-updateUnusedLog :: RawFilePath -> UnusedMap -> Annex ()
+updateUnusedLog :: OsPath -> UnusedMap -> Annex ()
 updateUnusedLog prefix m = do
 	oldl <- readUnusedLog prefix
 	newl <- preserveTimestamps oldl . flip map2log m <$> liftIO getPOSIXTime
 	writeUnusedLog prefix newl
 
-writeUnusedLog :: RawFilePath -> UnusedLog -> Annex ()
+writeUnusedLog :: OsPath -> UnusedLog -> Annex ()
 writeUnusedLog prefix l = do
 	logfile <- fromRepo $ gitAnnexUnusedLog prefix
 	writeLogFile logfile $ unlines $ map format $ M.toList l
@@ -72,12 +72,12 @@ writeUnusedLog prefix l = do
 	format (k, (i, Just t)) = show i ++ " " ++ serializeKey k ++ " " ++ show t
 	format (k, (i, Nothing)) = show i ++ " " ++ serializeKey k
 
-readUnusedLog :: RawFilePath -> Annex UnusedLog
+readUnusedLog :: OsPath -> Annex UnusedLog
 readUnusedLog prefix = do
 	f <- fromRepo (gitAnnexUnusedLog prefix)
-	ifM (liftIO $ doesFileExist (fromRawFilePath f))
+	ifM (liftIO $ doesFileExist f)
 		( M.fromList . mapMaybe (parse . decodeBS) . fileLines'
-			<$> liftIO (F.readFile' (toOsPath f))
+			<$> liftIO (F.readFile' f)
 		, return M.empty
 		)
   where
@@ -90,13 +90,13 @@ readUnusedLog prefix = do
 		skey = reverse rskey
 		ts = reverse rts
 
-readUnusedMap :: RawFilePath -> Annex UnusedMap
+readUnusedMap :: OsPath -> Annex UnusedMap
 readUnusedMap = log2map <$$> readUnusedLog
 
-dateUnusedLog :: RawFilePath -> Annex (Maybe UTCTime)
+dateUnusedLog :: OsPath -> Annex (Maybe UTCTime)
 dateUnusedLog prefix = do
 	f <- fromRepo $ gitAnnexUnusedLog prefix
-	liftIO $ catchMaybeIO $ getModificationTime $ fromRawFilePath f
+	liftIO $ catchMaybeIO $ getModificationTime f
 
 {- Set of unused keys. This is cached for speed. -}
 unusedKeys :: Annex (S.Set Key)
@@ -104,7 +104,7 @@ unusedKeys = maybe (setUnusedKeys =<< unusedKeys') return
 	=<< Annex.getState Annex.unusedkeys
 
 unusedKeys' :: Annex [Key]
-unusedKeys' = M.keys <$> readUnusedLog ""
+unusedKeys' = M.keys <$> readUnusedLog (literalOsPath "")
 
 setUnusedKeys :: [Key] -> Annex (S.Set Key)
 setUnusedKeys ks = do

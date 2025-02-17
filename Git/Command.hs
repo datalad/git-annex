@@ -24,10 +24,10 @@ gitCommandLine params r@(Repo { location = l@(Local { } ) }) =
   where
 	setdir
 		| gitEnvOverridesGitDir r = []
-		| otherwise = [Param $ "--git-dir=" ++ fromRawFilePath (gitdir l)]
+		| otherwise = [Param $ "--git-dir=" ++ fromOsPath (gitdir l)]
 	settree = case worktree l of
 		Nothing -> []
-		Just t -> [Param $ "--work-tree=" ++ fromRawFilePath t]
+		Just t -> [Param $ "--work-tree=" ++ fromOsPath t]
 gitCommandLine _ repo = assertLocal repo $ error "internal"
 
 {- Runs git in the specified repo. -}
@@ -123,9 +123,12 @@ pipeNullSplit params repo = do
  - convenience.
  -}
 pipeNullSplit' :: [CommandParam] -> Repo -> IO ([S.ByteString], IO Bool)
-pipeNullSplit' params repo = do
+pipeNullSplit' = pipeNullSplit'' id
+
+pipeNullSplit'' :: (S.ByteString -> t) -> [CommandParam] -> Repo -> IO ([t], IO Bool)
+pipeNullSplit'' f params repo = do
 	(s, cleanup) <- pipeNullSplit params repo
-	return (map L.toStrict s, cleanup)
+	return (map (f . L.toStrict) s, cleanup)
 
 pipeNullSplitStrict :: [CommandParam] -> Repo -> IO [S.ByteString]
 pipeNullSplitStrict params repo = do

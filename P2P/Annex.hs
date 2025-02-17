@@ -18,13 +18,14 @@ import Annex.Common
 import Annex.Content
 import Annex.Transfer
 import Annex.ChangedRefs
+import Annex.Verify
 import P2P.Protocol
 import P2P.IO
 import Logs.Location
 import Types.NumCopies
 import Utility.Metered
 import Utility.MonotonicClock
-import Annex.Verify
+import qualified Utility.FileIO as F
 
 import Control.Monad.Free
 import Control.Concurrent.STM
@@ -46,7 +47,7 @@ runLocal runst runner a = case a of
 		size <- liftIO $ catchDefaultIO 0 $ getFileSize tmp
 		runner (next (Len size))
 	FileSize f next -> do
-		size <- liftIO $ catchDefaultIO 0 $ getFileSize (toRawFilePath f)
+		size <- liftIO $ catchDefaultIO 0 $ getFileSize f
 		runner (next (Len size))
 	ContentSize k next -> do
 		let getsize = liftIO . catchMaybeIO . getFileSize
@@ -81,7 +82,7 @@ runLocal runst runner a = case a of
 			let runtransfer ti = 
 				Right <$> transfer download' k af Nothing (\p ->
 					logStatusAfter NoLiveUpdate k $ getViaTmp rsp DefaultVerify k af Nothing $ \tmp ->
-						storefile (fromRawFilePath tmp) o l getb iv validitycheck p ti)
+						storefile tmp o l getb iv validitycheck p ti)
 			let fallback = return $ Left $
 				ProtoFailureMessage "transfer already in progress, or unable to take transfer lock"
 			checktransfer runtransfer fallback
@@ -194,13 +195,13 @@ runLocal runst runner a = case a of
 		v <- runner getb
 		case v of
 			Right b -> do
-				liftIO $ withBinaryFile dest ReadWriteMode $ \h -> do
+				liftIO $ F.withBinaryFile dest ReadWriteMode $ \h -> do
 					p' <- resumeVerifyFromOffset o incrementalverifier p h
 					meteredWrite p' (writeVerifyChunk incrementalverifier h) b
 				indicatetransferred ti
 
 				rightsize <- do
-					sz <- liftIO $ getFileSize (toRawFilePath dest)
+					sz <- liftIO $ getFileSize dest
 					return (toInteger sz == l + o)
 					
 				runner validitycheck >>= \case
@@ -210,7 +211,7 @@ runLocal runst runner a = case a of
 								Nothing -> return (True, UnVerified)
 								Just True -> return (True, Verified)
 								Just False -> do
-									verificationOfContentFailed (toRawFilePath dest)
+									verificationOfContentFailed dest
 									return (False, UnVerified)
 							| otherwise -> return (False, UnVerified)
 						Nothing -> return (rightsize, UnVerified)
@@ -232,7 +233,7 @@ runLocal runst runner a = case a of
 	
 	sinkfile f (Offset o) checkchanged sender p ti = bracket setup cleanup go
 	  where
-		setup = liftIO $ openBinaryFile f ReadMode
+		setup = liftIO $ F.openBinaryFile f ReadMode
 		cleanup = liftIO . hClose
 		go h = do
 			let p' = offsetMeterUpdate p (toBytesProcessed o)

@@ -14,7 +14,6 @@ import qualified Data.ByteString as S
 import qualified Data.ByteString.Char8 as S8
 import qualified Data.List.NonEmpty as NE
 import Data.Char
-import qualified System.FilePath.ByteString as P
 import Control.Concurrent.Async
 
 import Common
@@ -76,7 +75,7 @@ read' repo = go repo
 		params = addparams ++ explicitrepoparams
 			++ ["config", "--null", "--list"]
 		p = (proc "git" params)
-			{ cwd = Just (fromRawFilePath d)
+			{ cwd = Just (fromOsPath d)
 			, env = gitEnv repo
 			, std_out = CreatePipe 
 			}
@@ -99,7 +98,7 @@ read' repo = go repo
 global :: IO (Maybe Repo)
 global = do
 	home <- myHomeDir
-	ifM (doesFileExist $ home </> ".gitconfig")
+	ifM (doesFileExist $ toOsPath home </> literalOsPath ".gitconfig")
 		( Just <$> withCreateProcess p go
 		, return Nothing
 		)
@@ -153,22 +152,22 @@ store' k v repo = repo
  -}
 updateLocation :: Repo -> IO Repo
 updateLocation r@(Repo { location = LocalUnknown d }) = case isBare r of
-	Just True -> ifM (doesDirectoryExist (fromRawFilePath dotgit))
+	Just True -> ifM (doesDirectoryExist dotgit)
 		( updateLocation' r $ Local dotgit Nothing
 		, updateLocation' r $ Local d Nothing
 		)
 	Just False -> mknonbare
 	{- core.bare not in config, probably because safe.directory
 	 - did not allow reading the config -}
-	Nothing -> ifM (Git.Construct.isBareRepo (fromRawFilePath d))
+	Nothing -> ifM (Git.Construct.isBareRepo d)
 		( mkbare
 		, mknonbare
 		)
   where
-	dotgit = d P.</> ".git"
+	dotgit = d </> literalOsPath ".git"
 	-- git treats eg ~/foo as a bare git repository located in
 	-- ~/foo/.git if ~/foo/.git/config has core.bare=true
-	mkbare = ifM (doesDirectoryExist (fromRawFilePath dotgit))
+	mkbare = ifM (doesDirectoryExist dotgit)
 		( updateLocation' r $ Local dotgit Nothing
 		, updateLocation' r $ Local d Nothing
 		)
@@ -184,7 +183,7 @@ updateLocation' r l@(Local {}) = do
 		Just (ConfigValue d) -> do
 			{- core.worktree is relative to the gitdir -}
 			top <- absPath (gitdir l)
-			let p = absPathFrom top d
+			let p = absPathFrom top (toOsPath d)
 			return $ l { worktree = Just p }
 		Just NoConfigValue -> return l
 	return $ r { location = l' }
@@ -337,7 +336,7 @@ checkRepoConfigInaccessible r
 		-- Cannot use gitCommandLine here because specifying --git-dir
 		-- will bypass the git security check.
 		let p = (proc "git" ["config", "--local", "--list"])
-			{ cwd = Just (fromRawFilePath (repoPath r))
+			{ cwd = Just (fromOsPath (repoPath r))
 			, env = gitEnv r
 			}
 		(out, ok) <- processTranscript' p Nothing

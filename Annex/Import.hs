@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE CPP #-}
 
 module Annex.Import (
 	ImportTreeConfig(..),
@@ -68,9 +69,10 @@ import Backend.Utilities
 import Control.Concurrent.STM
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
-import qualified System.FilePath.Posix.ByteString as Posix
-import qualified System.FilePath.ByteString as P
 import qualified Data.ByteArray.Encoding as BA
+#ifdef mingw32_HOST_OS
+import qualified System.FilePath.Posix as Posix
+#endif
 
 {- Configures how to build an import tree. -}
 data ImportTreeConfig
@@ -154,7 +156,7 @@ recordImportTree remote importtreeconfig addunlockedmatcher imported = do
 				let subtreeref = Ref $
 					fromRef' finaltree
 						<> ":"
-						<> getTopFilePath dir
+						<> fromOsPath (getTopFilePath dir)
 				in fromMaybe emptyTree
 					<$> inRepo (Git.Ref.tree subtreeref)
 		updateexportdb importedtree
@@ -349,11 +351,11 @@ mkImportTreeItem maddunlockedmatcher msubdir loc v = case v of
 	lf = fromImportLocation loc
 	treepath = asTopFilePath lf
 	topf = asTopFilePath $
-		maybe lf (\sd -> getTopFilePath sd P.</> lf) msubdir
+		maybe lf (\sd -> getTopFilePath sd </> lf) msubdir
 	mklink k = do
 		relf <- fromRepo $ fromTopFilePath topf
 		symlink <- calcRepo $ gitAnnexLink relf k
-		linksha <- hashSymlink symlink
+		linksha <- hashSymlink (fromOsPath symlink)
 		return $ TreeItem treepath (fromTreeItemType TreeSymlink) linksha
 	mkpointer k = TreeItem treepath (fromTreeItemType TreeFile)
 		<$> hashPointerFile k
@@ -429,7 +431,12 @@ buildImportTreesGeneric converttree basetree msubdir importable@(ImportableConte
 		-- Full directory prefix where the sub tree is located.
 		let fullprefix = asTopFilePath $ case msubdir of
 			Nothing -> subdir
-			Just d -> getTopFilePath d Posix.</> subdir
+			Just d ->
+#ifdef mingw32_HOST_OS
+				toOsPath $ fromOsPath (getTopFilePath d) Posix.</> fromOsPath subdir
+#else
+				getTopFilePath d </> subdir
+#endif
 		Tree ts <- converttree (Just fullprefix) $
 			map (\(p, i) -> (mkImportLocation p, i))
 				(importableContentsSubTree c)
@@ -853,7 +860,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 			let af = AssociatedFile (Just f)
 			let downloader p' tmpfile = do
 				_ <- Remote.retrieveExportWithContentIdentifier
-					ia loc [cid] (fromRawFilePath tmpfile)
+					ia loc [cid] tmpfile
 					(Left k)
 					(combineMeterUpdate p' p)
 				ok <- moveAnnex k af tmpfile
@@ -871,7 +878,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 	doimportsmall cidmap loc cid sz p = do
 		let downloader tmpfile = do
 			(k, _) <- Remote.retrieveExportWithContentIdentifier
-				ia loc [cid] (fromRawFilePath tmpfile)
+				ia loc [cid] tmpfile
 				(Right (mkkey tmpfile))
 				p
 			case keyGitSha k of
@@ -894,7 +901,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 		let af = AssociatedFile (Just f)
 		let downloader tmpfile p = do
 			(k, _) <- Remote.retrieveExportWithContentIdentifier
-				ia loc [cid] (fromRawFilePath tmpfile)
+				ia loc [cid] tmpfile
 				(Right (mkkey tmpfile))
 				p
 			case keyGitSha k of
@@ -950,7 +957,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 		case importtreeconfig of
 			ImportTree -> fromImportLocation loc
 			ImportSubTree subdir _ ->
-				getTopFilePath subdir P.</> fromImportLocation loc
+				getTopFilePath subdir </> fromImportLocation loc
 
 	getcidkey cidmap db cid = liftIO $
 		-- Avoiding querying the database when it's empty speeds up
@@ -1091,7 +1098,11 @@ getImportableContents r importtreeconfig ci matcher = do
 			isknown <||> (matches <&&> notignored)
 	  where
 		-- Checks, from least to most expensive.
-		ingitdir = ".git" `elem` Posix.splitDirectories (fromImportLocation loc)
+#ifdef mingw32_HOST_OS
+		ingitdir = ".git" `elem` Posix.splitDirectories (fromOsPath (fromImportLocation loc))
+#else
+		ingitdir = literalOsPath ".git" `elem` splitDirectories (fromImportLocation loc)
+#endif
 		matches = matchesImportLocation matcher loc sz
 		isknown = isKnownImportLocation dbhandle loc
 		notignored = notIgnoredImportLocation importtreeconfig ci loc
@@ -1120,6 +1131,6 @@ notIgnoredImportLocation importtreeconfig ci loc = not <$> checkIgnored ci f
   where
 	f = case importtreeconfig of
 		ImportSubTree dir _ ->
-			getTopFilePath dir P.</> fromImportLocation loc
+			getTopFilePath dir </> fromImportLocation loc
 		ImportTree ->
 			fromImportLocation loc

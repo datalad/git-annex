@@ -110,7 +110,7 @@ data SyncOptions = SyncOptions
 	, pushOption :: Bool
 	, contentOption :: Maybe Bool
 	, noContentOption :: Maybe Bool
-	, contentOfOption :: [FilePath]
+	, contentOfOption :: [OsPath]
 	, cleanupOption :: Bool
 	, keyOptions :: Maybe KeyOptions
 	, resolveMergeOverride :: Bool
@@ -201,7 +201,7 @@ optParser mode desc = SyncOptions
 			<> short 'g'
 			<> help "do not transfer annexed file contents"
 			)))
-	<*> many (strOption
+	<*> many (stringToOsPath <$> strOption
 		( long "content-of"
 		<> short 'C'
 		<> help "transfer contents of annexed files in a given location"
@@ -248,7 +248,7 @@ instance DeferredParseClass SyncOptions where
 		<*> pure (pushOption v)
 		<*> pure (contentOption v)
 		<*> pure (noContentOption v)
-		<*> liftIO (mapM (fromRawFilePath <$$> absPath . toRawFilePath) (contentOfOption v))
+		<*> liftIO (mapM absPath (contentOfOption v))
 		<*> pure (cleanupOption v)
 		<*> pure (keyOptions v)
 		<*> pure (resolveMergeOverride v)
@@ -340,7 +340,7 @@ seek' o = startConcurrency transferStages $ do
  - of the repo. This also means that sync always acts on all files in the
  - repository, not just on a subdirectory. -}
 prepMerge :: Annex ()
-prepMerge = Annex.changeDirectory . fromRawFilePath =<< fromRepo Git.repoPath
+prepMerge = Annex.changeDirectory =<< fromRepo Git.repoPath
 
 mergeConfig :: Bool -> Annex [Git.Merge.MergeConfig]
 mergeConfig mergeunrelated = do
@@ -681,7 +681,7 @@ pushRemote o remote (Just branch, _) = do
 		Nothing -> return True
 		Just wt -> ifM needemulation
 			( gitAnnexChildProcess "post-receive" []
-				(\cp -> cp { cwd = Just (fromRawFilePath wt) })
+				(\cp -> cp { cwd = Just (fromOsPath wt) })
 				(\_ _ _ pid -> waitForProcess pid >>= return . \case
 					ExitSuccess -> True
 					_ -> False
@@ -820,11 +820,13 @@ seekSyncContent o rs currbranch = do
 			)
 		_ -> case currbranch of
                 	(Just origbranch, Just adj) | adjustmentHidesFiles adj -> do
-				l <- workTreeItems' (AllowHidden True) ww (contentOfOption o)
+				l <- workTreeItems' (AllowHidden True) ww 
+					(map fromOsPath (contentOfOption o))
 				seekincludinghidden origbranch mvar l (const noop)
 				pure Nothing
 			_ -> do
-				l <- workTreeItems ww (contentOfOption o)
+				l <- workTreeItems ww
+					(map fromOsPath (contentOfOption o))
 				seekworktree mvar l (const noop)
 				pure Nothing
 	waitForAllRunningCommandActions
@@ -1013,7 +1015,7 @@ seekExportContent' o rs (mcurrbranch, madj)
 			mtree <- inRepo $ Git.Ref.tree b
 			let addsubdir = case snd (splitRemoteAnnexTrackingBranchSubdir b) of
 				Just subdir -> \cb -> Git.Ref $
-					Git.fromRef' cb  <> ":" <> getTopFilePath subdir
+					Git.fromRef' cb  <> ":" <> fromOsPath (getTopFilePath subdir)
 				Nothing -> id
 			mcurrtree <- maybe (pure Nothing)
 				(inRepo . Git.Ref.tree . addsubdir)

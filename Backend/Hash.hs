@@ -127,7 +127,7 @@ keyValueE hash source meterupdate =
 	keyValue hash source meterupdate
 		>>= addE source (const $ hashKeyVariety hash (HasExt True))
 
-checkKeyChecksum :: (Key -> String -> Bool) -> Hash -> Key -> RawFilePath -> Annex Bool
+checkKeyChecksum :: (Key -> String -> Bool) -> Hash -> Key -> OsPath -> Annex Bool
 checkKeyChecksum issame hash key file = catchIOErrorType HardwareFault hwfault $ do
 	showAction (UnquotedString descChecksum)
 	issame key 
@@ -205,9 +205,9 @@ trivialMigrate' oldkey newbackend afile maxextlen maxexts
 	oldvariety = fromKey keyVariety oldkey
 	newvariety = backendVariety newbackend
 
-hashFile :: Hash -> RawFilePath -> MeterUpdate -> Annex String
+hashFile :: Hash -> OsPath -> MeterUpdate -> Annex String
 hashFile hash file meterupdate = 
-	liftIO $ withMeteredFile (fromRawFilePath file) meterupdate $ \b -> do
+	liftIO $ withMeteredFile file meterupdate $ \b -> do
 		let h = (fst $ hasher hash) b
 		-- Force full evaluation of hash so whole file is read
 		-- before returning.

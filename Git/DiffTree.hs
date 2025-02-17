@@ -18,7 +18,6 @@ module Git.DiffTree (
 	parseDiffRaw,
 ) where
 
-import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Attoparsec.ByteString.Lazy as A
 import qualified Data.Attoparsec.ByteString.Char8 as A8
@@ -31,6 +30,7 @@ import Git.FilePath
 import Git.DiffTreeItem
 import qualified Git.Quote
 import qualified Git.Ref
+import qualified Utility.OsString as OS
 import Utility.Attoparsec
 
 {- Checks if the DiffTreeItem modifies a file with a given name
@@ -38,7 +38,7 @@ import Utility.Attoparsec
 isDiffOf :: DiffTreeItem -> TopFilePath -> Bool
 isDiffOf diff f = 
 	let f' = getTopFilePath f
-	in if B.null f'
+	in if OS.null f'
 		then True -- top of repo contains all
 		else f' `dirContains` getTopFilePath (file diff)
 
@@ -133,6 +133,6 @@ parserDiffRaw f = DiffTreeItem
 	<*> (maybe (fail "bad dstsha") return . extractSha =<< nextword)
 	<* A8.char ' '
 	<*> A.takeByteString
-	<*> pure (asTopFilePath $ fromInternalGitPath $ Git.Quote.unquote f)
+	<*> pure (asTopFilePath $ fromInternalGitPath $ toOsPath $ Git.Quote.unquote f)
   where
 	nextword = A8.takeTill (== ' ')

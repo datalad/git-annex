@@ -15,7 +15,6 @@ import Data.Char
 import Data.Time.Clock.POSIX
 import Data.Time
 import qualified Data.ByteString.Char8 as B8
-import qualified System.FilePath.ByteString as P
 import Control.Concurrent.Async
 
 import Command
@@ -34,6 +33,7 @@ import Git.CatFile
 import Types.TrustLevel
 import Utility.DataUnits
 import Utility.HumanTime
+import qualified Utility.FileIO as F
 
 data LogChange = Added | Removed
 
@@ -282,15 +282,15 @@ getKeyLog key os = do
 	top <- fromRepo Git.repoPath
 	p <- liftIO $ relPathCwdToFile top
 	config <- Annex.getGitConfig
-	let logfile = p P.</> locationLogFile config key
-	getGitLogAnnex [fromRawFilePath logfile] (Param "--remove-empty" : os)
+	let logfile = p </> locationLogFile config key
+	getGitLogAnnex [logfile] (Param "--remove-empty" : os)
 
-getGitLogAnnex :: [FilePath] -> [CommandParam] -> Annex ([LoggedFileChange Key], IO Bool)
+getGitLogAnnex :: [OsPath] -> [CommandParam] -> Annex ([LoggedFileChange Key], IO Bool)
 getGitLogAnnex fs os = do
 	config <- Annex.getGitConfig
 	let fileselector = \_sha f ->
-		locationLogFileKey config (toRawFilePath f)
-	inRepo $ getGitLog Annex.Branch.fullname Nothing fs os fileselector
+		locationLogFileKey config f
+	inRepo $ getGitLog Annex.Branch.fullname Nothing (map fromOsPath fs) os fileselector
 
 showTimeStamp :: TimeZone -> String -> POSIXTime -> String
 showTimeStamp zone format = formatTime defaultTimeLocale format
@@ -320,11 +320,11 @@ sizeHistoryInfo mu o = do
 	-- and to the trust log.
 	getlog = do
 		config <- Annex.getGitConfig
-		let fileselector = \_sha f -> let f' = toRawFilePath f in
-			case locationLogFileKey config f' of
+		let fileselector = \_sha f ->
+			case locationLogFileKey config f of
 				Just k -> Just (Right k)
 				Nothing
-					| f' == trustLog -> Just (Left ())
+					| f == trustLog -> Just (Left ())
 					| otherwise -> Nothing
 		inRepo $ getGitLog Annex.Branch.fullname Nothing []
 			[ Param "--date-order"
@@ -409,10 +409,10 @@ sizeHistoryInfo mu o = do
 	displaystart uuidmap zone
 		| gnuplotOption o = do
 			file <- (</>)
-				<$> fromRepo (fromRawFilePath . gitAnnexDir)
-				<*> pure "gnuplot"
-			liftIO $ putStrLn $ "Generating gnuplot script in " ++ file
-			h <- liftIO $ openFile file WriteMode
+				<$> fromRepo gitAnnexDir
+				<*> pure (literalOsPath "gnuplot")
+			liftIO $ putStrLn $ "Generating gnuplot script in " ++ fromOsPath file
+			h <- liftIO $ F.openFile file WriteMode
 			liftIO $ mapM_ (hPutStrLn h)
 				[ "set datafile separator ','"
 				, "set timefmt \"%Y-%m-%dT%H:%M:%S\""
@@ -442,7 +442,7 @@ sizeHistoryInfo mu o = do
 				hFlush h
 				putStrLn $ "Running gnuplot..."
 				void $ liftIO $ boolSystem "gnuplot"
-					[Param "-p", File file]
+					[Param "-p", File (fromOsPath file)]
 			return (dispst h endaction)
 		| sizesOption o = do
 			liftIO $ putStrLn uuidmapheader

@@ -26,11 +26,10 @@ import Annex.Perms
 import Annex.LockPool
 
 import qualified Data.Map as M
-import qualified System.FilePath.ByteString as P
 
 {- Create a specified lock file, and takes a shared lock, which is retained
  - in the cache. -}
-lockFileCached :: RawFilePath -> Annex ()
+lockFileCached :: OsPath -> Annex ()
 lockFileCached file = go =<< fromLockCache file
   where
 	go (Just _) = noop -- already locked
@@ -43,7 +42,7 @@ lockFileCached file = go =<< fromLockCache file
 #endif
 		changeLockCache $ M.insert file lockhandle
 
-unlockFile :: RawFilePath -> Annex ()
+unlockFile :: OsPath -> Annex ()
 unlockFile file = maybe noop go =<< fromLockCache file
   where
 	go lockhandle = do
@@ -53,7 +52,7 @@ unlockFile file = maybe noop go =<< fromLockCache file
 getLockCache :: Annex LockCache
 getLockCache = getState lockcache
 
-fromLockCache :: RawFilePath -> Annex (Maybe LockHandle)
+fromLockCache :: OsPath -> Annex (Maybe LockHandle)
 fromLockCache file = M.lookup file <$> getLockCache
 
 changeLockCache :: (LockCache -> LockCache) -> Annex ()
@@ -63,9 +62,9 @@ changeLockCache a = do
 
 {- Runs an action with a shared lock held. If an exclusive lock is held,
  - blocks until it becomes free. -}
-withSharedLock :: RawFilePath -> Annex a -> Annex a
+withSharedLock :: OsPath -> Annex a -> Annex a
 withSharedLock lockfile a = debugLocks $ do
-	createAnnexDirectory $ P.takeDirectory lockfile
+	createAnnexDirectory $ takeDirectory lockfile
 	mode <- annexFileMode
 	bracket (lock mode lockfile) (liftIO . dropLock) (const a)
   where
@@ -77,16 +76,16 @@ withSharedLock lockfile a = debugLocks $ do
 
 {- Runs an action with an exclusive lock held. If the lock is already
  - held, blocks until it becomes free. -}
-withExclusiveLock :: RawFilePath -> Annex a -> Annex a
+withExclusiveLock :: OsPath -> Annex a -> Annex a
 withExclusiveLock lockfile a = bracket
 	(takeExclusiveLock lockfile)
 	(liftIO . dropLock)
 	(const a)
 
 {- Takes an exclusive lock, blocking until it's free. -}
-takeExclusiveLock :: RawFilePath -> Annex LockHandle
+takeExclusiveLock :: OsPath -> Annex LockHandle
 takeExclusiveLock lockfile = debugLocks $ do
-	createAnnexDirectory $ P.takeDirectory lockfile
+	createAnnexDirectory $ takeDirectory lockfile
 	mode <- annexFileMode
 	lock mode lockfile
   where
@@ -98,9 +97,9 @@ takeExclusiveLock lockfile = debugLocks $ do
 
 {- Tries to take an exclusive lock and run an action. If the lock is
  - already held, returns Nothing. -}
-tryExclusiveLock :: RawFilePath -> Annex a -> Annex (Maybe a)
+tryExclusiveLock :: OsPath -> Annex a -> Annex (Maybe a)
 tryExclusiveLock lockfile a = debugLocks $ do
-	createAnnexDirectory $ P.takeDirectory lockfile
+	createAnnexDirectory $ takeDirectory lockfile
 	mode <- annexFileMode
 	bracket (lock mode lockfile) (liftIO . unlock) go
   where
@@ -118,7 +117,7 @@ tryExclusiveLock lockfile a = debugLocks $ do
  - Does not create the lock directory or lock file if it does not exist,
  - taking an exclusive lock will create them.
  -}
-trySharedLock :: RawFilePath -> Annex (Maybe LockHandle)
+trySharedLock :: OsPath -> Annex (Maybe LockHandle)
 trySharedLock lockfile = debugLocks $
 #ifndef mingw32_HOST_OS
 	tryLockShared Nothing lockfile

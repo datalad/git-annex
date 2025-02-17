@@ -78,7 +78,7 @@ deleteCurrentRepository = dangerPage $ do
 			sanityVerifierAForm $ SanityVerifier magicphrase
 	case result of
 		FormSuccess _ -> liftH $ do
-			dir <- liftAnnex $ fromRawFilePath <$> fromRepo Git.repoPath
+			dir <- liftAnnex $ fromRepo Git.repoPath
 			liftIO $ removeAutoStartFile dir
 
 			{- Disable syncing to this repository, and all
@@ -89,9 +89,8 @@ deleteCurrentRepository = dangerPage $ do
 				rs <- syncRemotes <$> getDaemonStatus
 				mapM_ (\r -> changeSyncable (Just r) False) rs
 
-			liftAnnex $ prepareRemoveAnnexDir (toRawFilePath dir)
-			liftIO $ removeDirectoryRecursive . fromRawFilePath
-				=<< absPath (toRawFilePath dir)
+			liftAnnex $ prepareRemoveAnnexDir dir
+			liftIO $ removeDirectoryRecursive =<< absPath dir
 			
 			redirect ShutdownConfirmedR
 		_ -> $(widgetFile "configurators/delete/currentrepository")

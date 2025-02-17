@@ -25,6 +25,7 @@ import Utility.Tuple
 
 #ifdef mingw32_HOST_OS
 import qualified System.FilePath.Posix as Posix
+import qualified Utility.OsString as OS
 #endif
 
 import Data.Char
@@ -102,7 +103,7 @@ rsyncUrlIsShell s
 rsyncUrlIsPath :: String -> Bool
 rsyncUrlIsPath s
 #ifdef mingw32_HOST_OS
-	| not (null (takeDrive s)) = True
+	| not (OS.null (takeDrive (toOsPath s))) = True
 #endif
 	| rsyncUrlIsShell s = False
 	| otherwise = ':' `notElem` s
@@ -174,15 +175,15 @@ filterRsyncSafeOptions = fst3 . getOpt Permute
 #ifdef mingw32_HOST_OS
 toMSYS2Path :: FilePath -> FilePath
 toMSYS2Path p
-	| null drive = recombine parts
-	| otherwise = recombine $ "/" : driveletter drive : parts
+	| OS.null drive = recombine parts
+	| otherwise = recombine $ "/" : driveletter (fromOsPath drive) : parts
   where
-	(drive, p') = splitDrive p
-	parts = splitDirectories p'
+	(drive, p') = splitDrive (toOsPath p)
+	parts = map fromOsPath $ splitDirectories p'
 	driveletter = map toLower . takeWhile (/= ':')
 	recombine = fixtrailing . Posix.joinPath
 	fixtrailing s
-		| hasTrailingPathSeparator p = Posix.addTrailingPathSeparator s
+		| hasTrailingPathSeparator (toOsPath p) = Posix.addTrailingPathSeparator s
 		| otherwise = s
 #endif
 

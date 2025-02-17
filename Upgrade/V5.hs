@@ -33,7 +33,6 @@ import Git.Ref
 import Utility.InodeCache
 import Utility.DottedVersion
 import Annex.AdjustedBranch
-import qualified Utility.RawFilePath as R
 import qualified Utility.FileIO as F
 
 upgrade :: Bool -> Annex UpgradeResult
@@ -130,7 +129,7 @@ upgradeDirectWorkTree = do
 				stagePointerFile f Nothing =<< hashPointerFile k
 				ifM (isJust <$> getAnnexLinkTarget f)
 					( writepointer f k
-					, fromdirect (fromRawFilePath f) k
+					, fromdirect f k
 					)
 				Database.Keys.addAssociatedFile k
 					=<< inRepo (toTopFilePath f)
@@ -138,14 +137,13 @@ upgradeDirectWorkTree = do
 
 	fromdirect f k = ifM (Direct.goodContent k f)
 		( do
-			let f' = toRawFilePath f
 			-- If linkToAnnex fails for some reason, the work tree
 			-- file still has the content; the annex object file
 			-- is just not populated with it. Since the work tree
 			-- file is recorded as an associated file, things will
 			-- still work that way, it's just not ideal.
-			ic <- withTSDelta (liftIO . genInodeCache f')
-			void $ Content.linkToAnnex k f' ic
+			ic <- withTSDelta (liftIO . genInodeCache f)
+			void $ Content.linkToAnnex k f ic
 		, unlessM (Content.inAnnex k) $ do
 			-- Worktree file was deleted or modified;
 			-- if there are no other copies of the content
@@ -157,8 +155,8 @@ upgradeDirectWorkTree = do
 		)
 	
 	writepointer f k = liftIO $ do
-		removeWhenExistsWith R.removeLink f
-		F.writeFile' (toOsPath f) (formatPointer k)
+		removeWhenExistsWith removeFile f
+		F.writeFile' f (formatPointer k)
 
 {- Remove all direct mode bookkeeping files. -}
 removeDirectCruft :: Annex ()

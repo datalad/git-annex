@@ -181,7 +181,7 @@ runActivity urlrenderer activity nowt = do
 
 runActivity' :: UrlRenderer -> ScheduledActivity -> Assistant ()
 runActivity' urlrenderer (ScheduledSelfFsck _ d) = do
-	program <- liftIO programPath
+	program <- fromOsPath <$> liftIO programPath
 	g <- liftAnnex gitRepo
 	fsckresults <- showFscking urlrenderer Nothing $ tryNonAsync $ do
 		void $ batchCommand program (Param "fsck" : annexFsckParams d)
@@ -196,7 +196,7 @@ runActivity' urlrenderer (ScheduledRemoteFsck u s d) = dispatch =<< liftAnnex (r
 	dispatch Nothing = debug ["skipping remote fsck of uuid without a configured remote", fromUUID u, fromSchedule s]
 	dispatch (Just rmt) = void $ case Remote.remoteFsck rmt of
 		Nothing -> go rmt $ do
-			program <- programPath
+			program <- fromOsPath <$> programPath
 			void $ batchCommand program $ 
 				[ Param "fsck"
 				-- avoid downloading files

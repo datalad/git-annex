@@ -22,11 +22,11 @@ upgrade = do
 	showAction "v0 to v1"
 
 	-- do the reorganisation of the key files
-	olddir <- fromRawFilePath <$> fromRepo gitAnnexDir
+	olddir <- fromRepo gitAnnexDir
 	keys <- getKeysPresent0 olddir
 	forM_ keys $ \k ->
 		moveAnnex k (AssociatedFile Nothing)
-			(toRawFilePath $ olddir </> keyFile0 k)
+			(olddir </> toOsPath (keyFile0 k))
 
 	-- update the symlinks to the key files
 	-- No longer needed here; V1.upgrade does the same thing
@@ -39,20 +39,18 @@ keyFile0 :: Key -> FilePath
 keyFile0 = Upgrade.V1.keyFile1
 fileKey0 :: FilePath -> Key
 fileKey0 = Upgrade.V1.fileKey1
-lookupKey0 :: FilePath -> Annex (Maybe (Key, Backend))
-lookupKey0 = Upgrade.V1.lookupKey1
 
-getKeysPresent0 :: FilePath -> Annex [Key]
+getKeysPresent0 :: OsPath -> Annex [Key]
 getKeysPresent0 dir = ifM (liftIO $ doesDirectoryExist dir)
-	( liftIO $ map fileKey0
+	( liftIO $ map (fileKey0 . fromOsPath)
 		<$> (filterM present =<< getDirectoryContents dir)
 	, return []
 	)
   where
 	present d = do
 		result <- tryIO $
-			R.getFileStatus $ toRawFilePath $
-				dir ++ "/" ++ takeFileName d
+			R.getFileStatus $ fromOsPath $
+				dir <> literalOsPath "/" <> takeFileName d
 		case result of
 			Right s -> return $ isRegularFile s
 			Left _ -> return False

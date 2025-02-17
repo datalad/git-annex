@@ -38,26 +38,26 @@ transferWatcherThread = namedThread "TransferWatcher" $ do
 		, modifyHook = modifyhook
 		, errHook = errhook
 		}
-	void $ liftIO $ watchDir (fromRawFilePath dir) (const False) True hooks id
+	void $ liftIO $ watchDir dir (const False) True hooks id
 	debug ["watching for transfers"]
 
-type Handler = FilePath -> Assistant ()
+type Handler t = t -> Assistant ()
 
 {- Runs an action handler.
  -
  - Exceptions are ignored, otherwise a whole thread could be crashed.
  -}
-runHandler :: Handler -> FilePath -> Maybe FileStatus -> Assistant ()
+runHandler :: Handler t -> t -> Maybe FileStatus -> Assistant ()
 runHandler handler file _filestatus =
 	either (liftIO . print) (const noop) =<< tryIO <~> handler file
 
 {- Called when there's an error with inotify. -}
-onErr :: Handler
+onErr :: Handler String
 onErr = giveup
 
 {- Called when a new transfer information file is written. -}
-onAdd :: Handler
-onAdd file = case parseTransferFile (toRawFilePath file) of
+onAdd :: Handler OsPath
+onAdd file = case parseTransferFile file of
 	Nothing -> noop
 	Just t -> go t =<< liftAnnex (checkTransfer t)
   where
@@ -72,10 +72,10 @@ onAdd file = case parseTransferFile (toRawFilePath file) of
  -
  - The only thing that should change in the transfer info is the
  - bytesComplete, so that's the only thing updated in the DaemonStatus. -}
-onModify :: Handler
-onModify file = case parseTransferFile (toRawFilePath file) of
+onModify :: Handler OsPath
+onModify file = case parseTransferFile file of
 	Nothing -> noop
-	Just t -> go t =<< liftIO (readTransferInfoFile Nothing (toRawFilePath file))
+	Just t -> go t =<< liftIO (readTransferInfoFile Nothing file)
   where
 	go _ Nothing = noop
 	go t (Just newinfo) = alterTransferInfo t $
@@ -87,8 +87,8 @@ watchesTransferSize :: Bool
 watchesTransferSize = modifyTracked
 
 {- Called when a transfer information file is removed. -}
-onDel :: Handler
-onDel file = case parseTransferFile (toRawFilePath file) of
+onDel :: Handler OsPath
+onDel file = case parseTransferFile file of
 	Nothing -> noop
 	Just t -> do
 		debug [ "transfer finishing:", show t]

@@ -28,7 +28,6 @@ import Config
 import Annex.Perms
 import Utility.InodeCache
 import Annex.InodeSentinal
-import qualified Utility.RawFilePath as R
 import qualified Utility.FileIO as F
 
 setIndirect :: Annex ()
@@ -79,27 +78,27 @@ switchHEADBack = maybe noop switch =<< inRepo Git.Branch.currentUnsafe
 			Nothing -> inRepo $ Git.Branch.checkout orighead
 
 {- Absolute FilePaths of Files in the tree that are associated with a key. -}
-associatedFiles :: Key -> Annex [FilePath]
+associatedFiles :: Key -> Annex [OsPath]
 associatedFiles key = do
 	files <- associatedFilesRelative key
-	top <- fromRawFilePath <$> fromRepo Git.repoPath
+	top <- fromRepo Git.repoPath
 	return $ map (top </>) files
 
 {- List of files in the tree that are associated with a key, relative to
  - the top of the repo. -}
-associatedFilesRelative :: Key -> Annex [FilePath] 
+associatedFilesRelative :: Key -> Annex [OsPath] 
 associatedFilesRelative key = do
 	mapping <- calcRepo (gitAnnexMapping key)
-	liftIO $ catchDefaultIO [] $ F.withFile (toOsPath mapping) ReadMode $ \h ->
+	liftIO $ catchDefaultIO [] $ F.withFile mapping ReadMode $ \h ->
 		-- Read strictly to ensure the file is closed promptly
-		lines <$> hGetContentsStrict h
+		map toOsPath . lines <$> hGetContentsStrict h
 
 {- Removes the list of associated files. -}
 removeAssociatedFiles :: Key -> Annex ()
 removeAssociatedFiles key = do
 	mapping <- calcRepo $ gitAnnexMapping key
 	modifyContentDir mapping $
-		liftIO $ removeWhenExistsWith R.removeLink mapping
+		liftIO $ removeWhenExistsWith removeFile mapping
 
 {- Checks if a file in the tree, associated with a key, has not been modified.
  -
@@ -107,10 +106,8 @@ removeAssociatedFiles key = do
  - expensive checksum, this relies on a cache that contains the file's
  - expected mtime and inode.
  -}
-goodContent :: Key -> FilePath -> Annex Bool
-goodContent key file =
-	sameInodeCache (toRawFilePath file)
-		=<< recordedInodeCache key
+goodContent :: Key -> OsPath -> Annex Bool
+goodContent key file = sameInodeCache file =<< recordedInodeCache key
 
 {- Gets the recorded inode cache for a key. 
  -
@@ -120,26 +117,25 @@ recordedInodeCache :: Key -> Annex [InodeCache]
 recordedInodeCache key = withInodeCacheFile key $ \f ->
 	liftIO $ catchDefaultIO [] $
 		mapMaybe (readInodeCache . decodeBS) . fileLines'
-			<$> F.readFile' (toOsPath f)
+			<$> F.readFile' f
 
 {- Removes an inode cache. -}
 removeInodeCache :: Key -> Annex ()
 removeInodeCache key = withInodeCacheFile key $ \f ->
-	modifyContentDir f $
-		liftIO $ removeWhenExistsWith R.removeLink f
+	modifyContentDir f $ liftIO $ removeWhenExistsWith removeFile f
 
-withInodeCacheFile :: Key -> (RawFilePath -> Annex a) -> Annex a
+withInodeCacheFile :: Key -> (OsPath -> Annex a) -> Annex a
 withInodeCacheFile key a = a =<< calcRepo (gitAnnexInodeCache key)
 
 {- File that maps from a key to the file(s) in the git repository. -}
-gitAnnexMapping :: Key -> Git.Repo -> GitConfig -> IO RawFilePath
+gitAnnexMapping :: Key -> Git.Repo -> GitConfig -> IO OsPath
 gitAnnexMapping key r c = do
 	loc <- gitAnnexLocation key r c
-	return $ loc <> ".map"
+	return $ loc <> literalOsPath ".map"
 
 {- File that caches information about a key's content, used to determine
  - if a file has changed. -}
-gitAnnexInodeCache :: Key -> Git.Repo -> GitConfig -> IO RawFilePath
+gitAnnexInodeCache :: Key -> Git.Repo -> GitConfig -> IO OsPath
 gitAnnexInodeCache key r c = do
 	loc <- gitAnnexLocation key r c
-	return $ loc <> ".cache"
+	return $ loc <> literalOsPath ".cache"

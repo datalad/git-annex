@@ -39,7 +39,7 @@ optParser :: Parser ExamineOptions
 optParser = ExamineOptions
 	<$> optional parseFormatOption
 	<*> (fmap (DeferredParse . tobackend) <$> migrateopt)
-	<*> (AssociatedFile <$> fileopt)
+	<*> (AssociatedFile . fmap stringToOsPath <$> fileopt)
   where
 	fileopt = optional $ strOption
 		( long "filename" <> metavar paramFile
@@ -59,8 +59,8 @@ run o _ input = do
 	let objectpointer = formatPointer k
 	isterminal <- liftIO $ checkIsTerminal stdout
 	showFormatted isterminal (format o) (serializeKey' k) $
-		[ ("objectpath", fromRawFilePath objectpath)
-		, ("objectpointer", fromRawFilePath objectpointer)
+		[ ("objectpath", fromOsPath objectpath)
+		, ("objectpointer", decodeBS objectpointer)
 		] ++ formatVars k af
 	return True
   where
@@ -71,7 +71,7 @@ run o _ input = do
 	ik = fromMaybe (giveup "bad key") (deserializeKey' ikb)
 	af = if B.null ifb'
 		then associatedFile o
-		else AssociatedFile (Just ifb')
+		else AssociatedFile (Just (toOsPath ifb'))
 
 	getkey = case migrateToBackend o of
 		Nothing -> pure ik

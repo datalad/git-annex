@@ -73,6 +73,6 @@ getRestartThreadR name = do
 getLogR :: Handler Html
 getLogR = page "Logs" Nothing $ do
 	logfile <- liftAnnex $ fromRepo gitAnnexDaemonLogFile
-	logs <- liftIO $ listLogs (fromRawFilePath logfile)
+	logs <- liftIO $ listLogs (fromOsPath logfile)
 	logcontent <- liftIO $ concat <$> mapM readFile logs
 	$(widgetFile "control/log")

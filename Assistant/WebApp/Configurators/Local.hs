@@ -81,24 +81,24 @@ checkRepositoryPath :: Text -> IO (Either (SomeMessage WebApp) (Maybe Text))
 checkRepositoryPath p = do
 	home <- myHomeDir
 	let basepath = expandTilde home $ T.unpack p
-	path <- fromRawFilePath <$> absPath (toRawFilePath basepath)
-	let parent = fromRawFilePath $ parentDir (toRawFilePath path)
+	path <- absPath basepath
+	let parent = parentDir path
 	problems <- catMaybes <$> mapM runcheck
-		[ (return $ path == "/", "Enter the full path to use for the repository.")
-		, (return $ all isSpace basepath, "A blank path? Seems unlikely.")
+		[ (return $ path == literalOsPath "/", "Enter the full path to use for the repository.")
+		, (return $ all isSpace (fromOsPath basepath :: FilePath), "A blank path? Seems unlikely.")
 		, (doesFileExist path, "A file already exists with that name.")
-		, (return $ path == home, "Sorry, using git-annex for your whole home directory is not currently supported.")
+		, (return $ fromOsPath path == home, "Sorry, using git-annex for your whole home directory is not currently supported.")
 		, (not <$> doesDirectoryExist parent, "Parent directory does not exist.")
 		, (not <$> canWrite path, "Cannot write a repository there.")
 		]
 	return $ 
 		case headMaybe problems of
-			Nothing -> Right $ Just $ T.pack basepath
+			Nothing -> Right $ Just $ T.pack $ fromOsPath basepath
 			Just prob -> Left prob
   where
 	runcheck (chk, msg) = ifM chk ( return $ Just msg, return Nothing )
-	expandTilde home ('~':'/':path) = home </> path
-	expandTilde _ path = path
+	expandTilde home ('~':'/':path) = toOsPath home </> toOsPath path
+	expandTilde _ path = toOsPath path
 
 {- On first run, if run in the home directory, default to putting it in
  - ~/Desktop/annex, when a Desktop directory exists, and ~/annex otherwise.
@@ -110,12 +110,12 @@ checkRepositoryPath p = do
  - the user probably wants to put it there. Unless that directory
  - contains a git-annex file, in which case the user has probably
  - browsed to a directory with git-annex and run it from there. -}
-defaultRepositoryPath :: Bool -> IO FilePath
+defaultRepositoryPath :: Bool -> IO OsPath
 defaultRepositoryPath firstrun = do
 #ifndef mingw32_HOST_OS
 	home <- myHomeDir
 	currdir <- liftIO getCurrentDirectory
-	if home == currdir && firstrun
+	if toOsPath home == currdir && firstrun
 		then inhome
 		else ifM (legit currdir <&&> canWrite currdir)
 			( return currdir
@@ -130,29 +130,29 @@ defaultRepositoryPath firstrun = do
   where
 	inhome = ifM osAndroid
 		( do
-			home <- myHomeDir
-			let storageshared = home </> "storage" </> "shared"
+			home <- toOsPath <$> myHomeDir
+			let storageshared = home </> literalOsPath "storage" </> literalOsPath "shared"
 			ifM (doesDirectoryExist storageshared)
 				( relHome $ storageshared </> gitAnnexAssistantDefaultDir
-				, return $ "~" </> gitAnnexAssistantDefaultDir
+				, return $ literalOsPath "~" </> gitAnnexAssistantDefaultDir
 				)
 		, do
-			desktop <- userDesktopDir
+			desktop <- toOsPath <$> userDesktopDir
 			ifM (doesDirectoryExist desktop <&&> canWrite desktop)
 				( relHome $ desktop </> gitAnnexAssistantDefaultDir
-				, return $ "~" </> gitAnnexAssistantDefaultDir
+				, return $ literalOsPath "~" </> gitAnnexAssistantDefaultDir
 				)
 		)
 #ifndef mingw32_HOST_OS
 	-- Avoid using eg, standalone build's git-annex.linux/ directory
 	-- when run from there.
-	legit d = not <$> doesFileExist (d </> "git-annex")
+	legit d = not <$> doesFileExist (d </> literalOsPath "git-annex")
 #endif
 
-newRepositoryForm :: FilePath -> Hamlet.Html -> MkMForm RepositoryPath
+newRepositoryForm :: OsPath -> Hamlet.Html -> MkMForm RepositoryPath
 newRepositoryForm defpath msg = do
 	(pathRes, pathView) <- mreq (repositoryPathField True) (bfs "")
-		(Just $ T.pack $ addTrailingPathSeparator defpath)
+		(Just $ T.pack $ fromOsPath $ addTrailingPathSeparator defpath)
 	let (err, errmsg) = case pathRes of
 		FormMissing -> (False, "")
 		FormFailure l -> (True, concatMap T.unpack l)
@@ -174,17 +174,17 @@ postFirstRepositoryR = page "Getting started" (Just Configuration) $ do
 	((res, form), enctype) <- liftH $ runFormPostNoToken $ newRepositoryForm path
 	case res of
 		FormSuccess (RepositoryPath p) -> liftH $
-			startFullAssistant (T.unpack p) ClientGroup Nothing
+			startFullAssistant (toOsPath $ T.unpack p) ClientGroup Nothing
 		_ -> $(widgetFile "configurators/newrepository/first")
 
 getAndroidCameraRepositoryR :: Handler ()
 getAndroidCameraRepositoryR = do
 	home <- liftIO myHomeDir
-	let dcim = home </> "storage" </> "dcim"
+	let dcim = toOsPath home </> literalOsPath "storage" </> literalOsPath "dcim"
 	startFullAssistant dcim SourceGroup $ Just addignore	
   where
 	addignore = do
-		liftIO $ unlessM (doesFileExist ".gitignore") $
+		liftIO $ unlessM (doesFileExist $ literalOsPath ".gitignore") $
 			writeFile ".gitignore" ".thumbnails"
 		void $ inRepo $
 			Git.Command.runBool [Param "add", File ".gitignore"]
@@ -195,20 +195,21 @@ getNewRepositoryR :: Handler Html
 getNewRepositoryR = postNewRepositoryR
 postNewRepositoryR :: Handler Html
 postNewRepositoryR = page "Add another repository" (Just Configuration) $ do
-	home <- liftIO myHomeDir
+	home <- toOsPath <$> liftIO myHomeDir
 	((res, form), enctype) <- liftH $ runFormPostNoToken $ newRepositoryForm home
 	case res of
 		FormSuccess (RepositoryPath p) -> do
-			let path = T.unpack p
+			let path = toOsPath (T.unpack p)
 			isnew <- liftIO $ makeRepo path False
 			u <- liftIO $ initRepo isnew True path Nothing (Just ClientGroup)
 			liftIO $ addAutoStartFile path
 			liftIO $ startAssistant path
-			askcombine u path
+			askcombine u (fromOsPath path)
 		_ -> $(widgetFile "configurators/newrepository")
   where
 	askcombine newrepouuid newrepopath = do
-		newrepo <- liftIO $ relHome newrepopath
+		newrepo' <- liftIO $ relHome (toOsPath newrepopath)
+		let newrepo = fromOsPath newrepo' :: FilePath
 		mainrepo <- fromJust . relDir <$> liftH getYesod
 		$(widgetFile "configurators/newrepository/combine")
 
@@ -222,17 +223,18 @@ immediateSyncRemote r = do
 
 getCombineRepositoryR :: FilePath -> UUID -> Handler Html
 getCombineRepositoryR newrepopath newrepouuid = do
-	liftAssistant . immediateSyncRemote =<< combineRepos newrepopath remotename
+	liftAssistant . immediateSyncRemote
+		=<< combineRepos (toOsPath newrepopath) remotename
 	redirect $ EditRepositoryR $ RepoUUID newrepouuid
   where
-	remotename = takeFileName newrepopath
+	remotename = fromOsPath $ takeFileName $ toOsPath newrepopath
 
 selectDriveForm :: [RemovableDrive] -> Hamlet.Html -> MkMForm RemovableDrive
 selectDriveForm drives = renderBootstrap3 bootstrapFormLayout $ RemovableDrive
 	<$> pure Nothing
 	<*> areq (selectFieldList pairs `withNote` onlywritable) (bfs "Select drive:") Nothing
 	<*> areq textField (bfs "Use this directory on the drive:")
-		(Just $ T.pack gitAnnexAssistantDefaultDir)
+		(Just $ T.pack $ fromOsPath gitAnnexAssistantDefaultDir)
   where
 	pairs = zip (map describe drives) (map mountPoint drives)
 	describe drive = case diskFree drive of
@@ -246,9 +248,9 @@ selectDriveForm drives = renderBootstrap3 bootstrapFormLayout $ RemovableDrive
 				]
 	onlywritable = [whamlet|This list only includes drives you can write to.|]
 
-removableDriveRepository :: RemovableDrive -> FilePath
+removableDriveRepository :: RemovableDrive -> OsPath
 removableDriveRepository drive =
-	T.unpack (mountPoint drive) </> T.unpack (driveRepoPath drive)
+	toOsPath (T.unpack (mountPoint drive)) </> toOsPath (T.unpack (driveRepoPath drive))
 
 {- Adding a removable drive. -}
 getAddDriveR :: Handler Html
@@ -257,7 +259,7 @@ postAddDriveR :: Handler Html
 postAddDriveR = page "Add a removable drive" (Just Configuration) $ do
 	removabledrives <- liftIO driveList
 	writabledrives <- liftIO $
-		filterM (canWrite . T.unpack . mountPoint) removabledrives
+		filterM (canWrite . toOsPath . T.unpack . mountPoint) removabledrives
 	((res, form), enctype) <- liftH $ runFormPostNoToken $
 		selectDriveForm (sort writabledrives)
 	case res of
@@ -277,7 +279,7 @@ getConfirmAddDriveR drive = ifM (liftIO $ probeRepoExists dir)
 		mu <- liftIO $ probeUUID dir
 		case mu of
 			Nothing -> maybe askcombine isknownuuid
-				=<< liftAnnex (probeGCryptRemoteUUID dir)
+				=<< liftAnnex (probeGCryptRemoteUUID $ fromOsPath dir)
 			Just driveuuid -> isknownuuid driveuuid
 	, newrepo
 	)
@@ -317,19 +319,19 @@ getFinishAddDriveR drive = go
   where
 	go (RepoKey keyid) = whenGcryptInstalled $ makewith $ const $ do
 		r <- liftAnnex $ addRemote $
-			makeGCryptRemote remotename dir keyid
+			makeGCryptRemote remotename (fromOsPath dir) keyid
 		return (Types.Remote.uuid r, r)
-	go NoRepoKey = checkGCryptRepoEncryption dir makeunencrypted makeunencrypted $ do
-		mu <- liftAnnex $ probeGCryptRemoteUUID dir
+	go NoRepoKey = checkGCryptRepoEncryption (fromOsPath dir) makeunencrypted makeunencrypted $ do
+		mu <- liftAnnex $ probeGCryptRemoteUUID (fromOsPath dir)
 		case mu of
 			Just u -> enableexistinggcryptremote u
 			Nothing -> giveup "The drive contains a gcrypt repository that is not a git-annex special remote. This is not supported."
 	enableexistinggcryptremote u = do
-		remotename' <- liftAnnex $ getGCryptRemoteName u dir
+		remotename' <- liftAnnex $ getGCryptRemoteName u (fromOsPath dir)
 		makewith $ const $ do
 			r <- liftAnnex $ addRemote $
 				enableSpecialRemote remotename' GCrypt.remote Nothing $ M.fromList
-					[(Proposed "gitrepo", Proposed dir)]
+					[(Proposed "gitrepo", Proposed (fromOsPath dir))]
 			return (u, r)
 	{- Making a new unencrypted repo, or combining with an existing one. -}
 	makeunencrypted = makewith $ \isnew -> (,)
@@ -347,21 +349,19 @@ getFinishAddDriveR drive = go
 			liftAnnex $ defaultStandardGroup u TransferGroup
 		liftAssistant $ immediateSyncRemote r
 		redirect $ EditNewRepositoryR u
-	mountpoint = T.unpack (mountPoint drive)
+	mountpoint = toOsPath $ T.unpack (mountPoint drive)
 	dir = removableDriveRepository drive
-	remotename = takeFileName mountpoint
+	remotename = fromOsPath $ takeFileName mountpoint
 
 {- Each repository is made a remote of the other.
  - Next call syncRemote to get them in sync. -}
-combineRepos :: FilePath -> String -> Handler Remote
+combineRepos :: OsPath -> String -> Handler Remote
 combineRepos dir name = liftAnnex $ do
 	hostname <- fromMaybe "host" <$> liftIO getHostname
-	mylocation <- fromRepo Git.repoLocation
-	mypath <- liftIO $ fromRawFilePath <$> relPathDirToFile
-		(toRawFilePath dir)
-		(toRawFilePath mylocation)
-	liftIO $ inDir dir $ void $ makeGitRemote hostname mypath
-	addRemote $ makeGitRemote name dir
+	mylocation <- fromRepo Git.repoPath
+	mypath <- liftIO $ relPathDirToFile dir mylocation
+	liftIO $ inDir dir $ void $ makeGitRemote hostname (fromOsPath mypath)
+	addRemote $ makeGitRemote name (fromOsPath dir)
 
 getEnableDirectoryR :: UUID -> Handler Html
 getEnableDirectoryR uuid = page "Enable a repository" (Just Configuration) $ do
@@ -396,12 +396,12 @@ genRemovableDrive :: FilePath -> IO RemovableDrive
 genRemovableDrive dir = RemovableDrive
 	<$> getDiskFree dir
 	<*> pure (T.pack dir)
-	<*> pure (T.pack gitAnnexAssistantDefaultDir)
+	<*> pure (T.pack $ fromOsPath gitAnnexAssistantDefaultDir)
 
 {- Bootstraps from first run mode to a fully running assistant in a
  - repository, by running the postFirstRun callback, which returns the
  - url to the new webapp. -}
-startFullAssistant :: FilePath -> StandardGroup -> Maybe (Annex ())-> Handler ()
+startFullAssistant :: OsPath -> StandardGroup -> Maybe (Annex ())-> Handler ()
 startFullAssistant path repogroup setup = do
 	webapp <- getYesod
 	url <- liftIO $ do
@@ -417,17 +417,17 @@ startFullAssistant path repogroup setup = do
  -
  - The directory may be in the process of being created; if so
  - the parent directory is checked instead. -}
-canWrite :: FilePath -> IO Bool		
+canWrite :: OsPath -> IO Bool		
 canWrite dir = do
 	tocheck <- ifM (doesDirectoryExist dir)
 		( return dir
-		, return $ fromRawFilePath $ parentDir $ toRawFilePath dir
+		, return $ parentDir dir
 		)
-	catchBoolIO $ R.fileAccess (toRawFilePath tocheck) False True False
+	catchBoolIO $ R.fileAccess (fromOsPath tocheck) False True False
 
 {- Gets the UUID of the git repo at a location, which may not exist, or
  - not be a git-annex repo. -}
-probeUUID :: FilePath -> IO (Maybe UUID)
+probeUUID :: OsPath -> IO (Maybe UUID)
 probeUUID dir = catchDefaultIO Nothing $ inDir dir $ do
 	u <- getUUID
 	return $ if u == NoUUID then Nothing else Just u

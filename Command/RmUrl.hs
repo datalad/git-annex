@@ -32,29 +32,28 @@ seek :: RmUrlOptions -> CommandSeek
 seek o = case batchOption o of
 	Batch fmt -> batchOnly Nothing (rmThese o) $
 		batchInput fmt batchParser (batchCommandAction . start)
-	NoBatch -> withPairs (commandAction . start) (rmThese o)
+	NoBatch -> withPairs (commandAction . start . conv) (rmThese o)
+  where
+	conv (si, (f, u)) = (si, (toOsPath f, u))
 
--- Split on the last space, since a FilePath can contain whitespace,
+-- Split on the last space, since a OsPath can contain whitespace,
 -- but a url should not.
-batchParser :: String -> Annex (Either String (FilePath, URLString))
+batchParser :: String -> Annex (Either String (OsPath, URLString))
 batchParser s = case separate (== ' ') (reverse s) of
 	(ru, rf)
 		| null ru || null rf -> return $ Left "Expected: \"file url\""
 		| otherwise -> do
-			let f = reverse rf
-			f' <- liftIO $ fromRawFilePath
-				<$> relPathCwdToFile (toRawFilePath f)
+			let f = toOsPath (reverse rf)
+			f' <- liftIO $ relPathCwdToFile f
 			return $ Right (f', reverse ru)
 
-start :: (SeekInput, (FilePath, URLString)) -> CommandStart
-start (si, (file, url)) = lookupKeyStaged file' >>= \case
+start :: (SeekInput, (OsPath, URLString)) -> CommandStart
+start (si, (file, url)) = lookupKeyStaged file >>= \case
 	Nothing -> stop
 	Just key -> do
-		let ai = mkActionItem (key, AssociatedFile (Just file'))
+		let ai = mkActionItem (key, AssociatedFile (Just file))
 		starting "rmurl" ai si $
 			next $ cleanup url key
-  where
-	file' = toRawFilePath file
 
 cleanup :: String -> Key -> CommandCleanup
 cleanup url key = do

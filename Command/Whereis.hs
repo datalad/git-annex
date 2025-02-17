@@ -67,7 +67,7 @@ seek o = do
   where
 	ww = WarnUnmatchLsFiles "whereis"
 
-start :: WhereisOptions -> M.Map UUID Remote -> SeekInput -> RawFilePath -> Key -> CommandStart
+start :: WhereisOptions -> M.Map UUID Remote -> SeekInput -> OsPath -> Key -> CommandStart
 start o remotemap si file key = 
 	startKeys o remotemap (si, key, mkActionItem (key, afile))
   where

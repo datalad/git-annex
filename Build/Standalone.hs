@@ -7,12 +7,12 @@
 
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Main where
 
 import System.Environment (getArgs)
 import Control.Monad.IfElse
-import System.FilePath
 import System.Posix.Files
 import Control.Monad
 import qualified Data.ByteString.Lazy as L
@@ -20,11 +20,11 @@ import qualified Data.Map as M
 
 import Utility.SafeCommand
 import Utility.Process
+import Utility.OsPath
 import Utility.Path
 import Utility.Path.AbsRel
 import Utility.Directory
 import Utility.Env
-import Utility.FileSystemEncoding
 import Utility.SystemDirectory
 import Build.BundledPrograms
 #ifdef darwin_HOST_OS
@@ -37,48 +37,46 @@ import Build.LinuxMkLibs (mklibs)
 import Utility.FileMode
 #endif
 
-progDir :: FilePath -> FilePath
+progDir :: OsPath -> OsPath
 #ifdef darwin_HOST_OS
 progDir topdir = topdir
 #else
-progDir topdir = topdir </> "bin"
+progDir topdir = topdir </> literalOsPath "bin"
 #endif
 
-extraProgDir :: FilePath -> FilePath
+extraProgDir :: OsPath -> OsPath
 extraProgDir topdir = topdir </> "extra"
 
-installProg :: FilePath -> FilePath -> IO (FilePath, FilePath)
-installProg dir prog = searchPath prog >>= go
+installProg :: OsPath -> OsPath -> IO (OsPath, OsPath)
+installProg dir prog = searchPath (fromOsPath prog) >>= go
   where
-	go Nothing = error $ "cannot find " ++ prog ++ " in PATH"
+	go Nothing = error $ "cannot find " ++ fromOsPath prog ++ " in PATH"
 	go (Just f) = do
 		let dest = dir </> takeFileName f
-		unlessM (boolSystem "install" [File f, File dest]) $
-			error $ "install failed for " ++ prog
+		unlessM (boolSystem "install" [File (fromOsPath f), File (fromOsPath dest)]) $
+			error $ "install failed for " ++ fromOsPath prog
 		return (dest, f)
 
-installBundledPrograms :: FilePath -> IO (M.Map FilePath FilePath)
+installBundledPrograms :: OsPath -> IO (M.Map OsPath OsPath)
 installBundledPrograms topdir = M.fromList . concat <$> mapM go
-	[ (progDir topdir, preferredBundledPrograms)
-	, (extraProgDir topdir, extraBundledPrograms)
+	[ (progDir topdir, map toOsPath preferredBundledPrograms)
+	, (extraProgDir topdir, map toOsPath extraBundledPrograms)
 	]
   where
 	go (dir, progs) = do
 		createDirectoryIfMissing True dir
 		forM progs $ installProg dir
 
-installGitLibs :: FilePath -> IO ()
+installGitLibs :: OsPath -> IO ()
 installGitLibs topdir = do
 	-- install git-core programs; these are run by the git command
 	createDirectoryIfMissing True gitcoredestdir
 	execpath <- getgitpath "exec-path"
-	cfs <- dirContents (toRawFilePath execpath)
+	cfs <- dirContents execpath
 	forM_ cfs $ \f -> do
-		let f' = fromRawFilePath f
-		destf <- ((gitcoredestdir </>) . fromRawFilePath)
-			<$> relPathDirToFile
-				(toRawFilePath execpath)
-				f
+		let f' = fromOsPath f
+		destf <- (gitcoredestdir </>)
+			<$> relPathDirToFile execpath f
 		createDirectoryIfMissing True (takeDirectory destf)
 		issymlink <- isSymbolicLink <$> getSymbolicLinkStatus f'
 		if issymlink
@@ -93,99 +91,98 @@ installGitLibs topdir = do
 				-- Other git-core files symlink to a file
 				-- beside them in the directory. Those
 				-- links can be copied as-is.
-				linktarget <- readSymbolicLink f'
+				linktarget <- toOsPath <$> readSymbolicLink f'
 				if takeFileName linktarget == linktarget
-					then cp f' destf
+					then cp f destf
 					else do
 						let linktarget' = progDir topdir </> takeFileName linktarget
 						unlessM (doesFileExist linktarget') $ do
 							createDirectoryIfMissing True (takeDirectory linktarget')
-							L.readFile f' >>= L.writeFile linktarget'
-						removeWhenExistsWith removeLink destf
+							L.readFile f' >>= L.writeFile (fromOsPath linktarget')
+						removeWhenExistsWith removeFile destf
 						rellinktarget <- relPathDirToFile
-							(toRawFilePath (takeDirectory destf))
-							(toRawFilePath linktarget')
-						createSymbolicLink (fromRawFilePath rellinktarget) destf
-			else cp f' destf
+							(takeDirectory destf)
+							(linktarget')
+						createSymbolicLink (fromOsPath rellinktarget) (fromOsPath destf)
+			else cp f destf
 	
 	-- install git's template files
 	-- git does not have an option to get the path of these,
 	-- but they're architecture independent files, so are located
 	-- next to the --man-path, in eg /usr/share/git-core
 	manpath <- getgitpath "man-path"
-	let templatepath = manpath </> ".." </> "git-core" </> "templates"
-	tfs <- dirContents (toRawFilePath templatepath)
+	let templatepath = manpath </> literalOsPath ".." </> literalOsPath "git-core" </> literalOsPath "templates"
+	tfs <- dirContents templatepath
 	forM_ tfs $ \f -> do
-		destf <- ((templatedestdir </>) . fromRawFilePath)
-			<$> relPathDirToFile
-				(toRawFilePath templatepath)
-				f
+		destf <- (templatedestdir </>)
+			<$> relPathDirToFile templatepath f
 		createDirectoryIfMissing True (takeDirectory destf)
-		cp (fromRawFilePath f) destf
+		cp f destf
   where
-	gitcoredestdir = topdir </> "git-core"
-	templatedestdir = topdir </> "templates"
+	gitcoredestdir = topdir </> literalOsPath "git-core"
+	templatedestdir = topdir </> literalOsPath "templates"
 
 	getgitpath v = do
 		let opt = "--" ++ v
 		ls <- lines <$> readProcess "git" [opt]
 		case ls of
 			[] -> error $ "git " ++ opt ++ "did not output a location"
-			(p:_) -> return p
+			(p:_) -> return (toOsPath p)
 
-cp :: FilePath -> FilePath -> IO ()
+cp :: OsPath -> OsPath -> IO ()
 cp src dest = do
-	removeWhenExistsWith removeLink dest
-	unlessM (boolSystem "cp" [Param "-a", File src, File dest]) $
+	removeWhenExistsWith removeFile dest
+	unlessM (boolSystem "cp" [Param "-a", File (fromOsPath src), File (fromOsPath dest)]) $
 		error "cp failed"
 
-installMagic :: FilePath -> IO ()
+installMagic :: OsPath -> IO ()
 #ifdef darwin_HOST_OS
 installMagic topdir = getEnv "OSX_MAGIC_FILE" >>= \case
 	Nothing -> hPutStrLn stderr "OSX_MAGIC_FILE not set; not including it"
 	Just f -> do
-		let mdir = topdir </> "magic"
+		let mdir = topdir </> literalOsPath "magic"
 		createDirectoryIfMissing True mdir
-		unlessM (boolSystem "cp" [File f, File (mdir </> "magic.mgc")]) $
+		unlessM (boolSystem "cp" [File f, File (fromOsPath (mdir </> literalOsPath "magic.mgc"))]) $
 			error "cp failed"
 #else
 installMagic topdir = do
-	let mdir = topdir </> "magic"
+	let mdir = topdir </> literalOsPath "magic"
 	createDirectoryIfMissing True mdir
-	unlessM (boolSystem "cp" [File "/usr/share/file/magic.mgc", File (mdir </> "magic.mgc")]) $
+	unlessM (boolSystem "cp" [File "/usr/share/file/magic.mgc", File (fromOsPath (mdir </> literalOsPath "magic.mgc"))]) $
 		error "cp failed"
 #endif
 
-installLocales :: FilePath -> IO ()
+installLocales :: OsPath -> IO ()
 #ifdef darwin_HOST_OS
 installLocales _ = return ()
 #else
-installLocales topdir = cp "/usr/share/i18n" (topdir </> "i18n")
+installLocales topdir =
+	cp (literalOsPath "/usr/share/i18n") (topdir </> "i18n")
 #endif
 
-installSkel :: FilePath -> FilePath -> IO ()
+installSkel :: OsPath -> OsPath -> IO ()
 #ifdef darwin_HOST_OS
 installSkel _topdir basedir = do
 	whenM (doesDirectoryExist basedir) $
 		removeDirectoryRecursive basedir
 	createDirectoryIfMissing True (takeDirectory basedir)
-	unlessM (boolSystem "cp" [Param "-R", File "standalone/osx/git-annex.app", File basedir]) $
+	unlessM (boolSystem "cp" [Param "-R", File "standalone/osx/git-annex.app", File (fromOsPath basedir)]) $
 		error "cp failed"
 #else
 installSkel topdir _basedir = do
 	whenM (doesDirectoryExist topdir) $
 		removeDirectoryRecursive topdir
 	createDirectoryIfMissing True (takeDirectory topdir)
-	unlessM (boolSystem "cp" [Param "-R", File "standalone/linux/skel", File topdir]) $
+	unlessM (boolSystem "cp" [Param "-R", File "standalone/linux/skel", File (fromOsPath topdir)]) $
 		error "cp failed"
 #endif
 
-installSkelRest :: FilePath -> FilePath -> Bool -> IO ()
+installSkelRest :: OsPath -> OsPath -> Bool -> IO ()
 #ifdef darwin_HOST_OS
 installSkelRest _topdir basedir _hwcaplibs = do
 	plist <- lines <$> readFile "standalone/osx/Info.plist.template"
 	version <- getVersion
-	writeFile (basedir </> "Contents" </> "Info.plist")
+	writeFile (fromOsPath (basedir </> literalOsPath "Contents" </> literalOsPath "Info.plist"))
 		(unlines (map (expandversion version) plist))
   where
 	expandversion v l = replace "GIT_ANNEX_VERSION" v l
@@ -195,10 +192,10 @@ installSkelRest topdir _basedir hwcaplibs = do
 	-- GIT_ANNEX_PACKAGE_INSTALL can be set by a distributor and
 	-- runshell will be modified
 	gapi <- getEnv "GIT_ANNEX_PACKAGE_INSTALL"
-	writeFile (topdir </> "runshell")
+	writeFile (fromOsPath (topdir </> literalOsPath "runshell"))
 		(unlines (map (expandrunshell gapi) runshell))
 	modifyFileMode
-		(toRawFilePath (topdir </> "runshell"))
+		(topdir </> literalOsPath "runshell")
 		(addModes executeModes)
   where
 	expandrunshell (Just gapi) l@"GIT_ANNEX_PACKAGE_INSTALL=" = l ++ gapi
@@ -211,25 +208,25 @@ installSkelRest topdir _basedir hwcaplibs = do
 	expandrunshell _ l = l
 #endif
 
-installGitAnnex :: FilePath -> IO ()
+installGitAnnex :: OsPath -> IO ()
 #ifdef darwin_HOST_OS
 installGitAnnex topdir = go topdir
 #else
-installGitAnnex topdir = go (topdir </> "bin")
+installGitAnnex topdir = go (topdir </> literalOsPath "bin")
 #endif
   where
 	go bindir = do
 		createDirectoryIfMissing True bindir
-		unlessM (boolSystem "cp" [File "git-annex", File bindir]) $
+		unlessM (boolSystem "cp" [File "git-annex", File (fromOsPath bindir)]) $
 			error "cp failed"
-		unlessM (boolSystem "strip" [File (bindir </> "git-annex")]) $
+		unlessM (boolSystem "strip" [File (fromOsPath (bindir </> literalOsPath "git-annex"))]) $
 			error "strip failed"
-		createSymbolicLink "git-annex" (bindir </> "git-annex-shell")
-		createSymbolicLink "git-annex" (bindir </> "git-remote-tor-annex")
-		createSymbolicLink "git-annex" (bindir </> "git-remote-annex")
+		createSymbolicLink "git-annex" (fromOsPath (bindir </> literalOsPath "git-annex-shell"))
+		createSymbolicLink "git-annex" (fromOsPath (bindir </> literalOsPath "git-remote-tor-annex"))
+		createSymbolicLink "git-annex" (fromOsPath (bindir </> literalOsPath "git-remote-annex"))
 
 main :: IO ()
-main = getArgs >>= go
+main = getArgs >>= go . map toOsPath
   where
 	go (topdir:basedir:[]) = do
 		installSkel topdir basedir

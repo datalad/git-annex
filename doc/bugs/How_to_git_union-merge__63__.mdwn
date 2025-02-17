@@ -22,3 +22,5 @@ Tried with (on a Manjaro box):
 git-annex rules and is a marvelous tool.
 
 I wanted to try the union merging to resolve merge conflicts on non-annexed files. It's not ideal, but might be better than repeated `git annex assist|sync` eventually adding the merge conflict markers `<<<<<<<<<` and the like to the files, breaking things like `.gitattributes` syntax which in turn has more devastating lockup consequences...
+
+> removed it, [[done]] --[[Joey]]

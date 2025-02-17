@@ -21,11 +21,12 @@ import Control.Concurrent
 
 import Utility.Path.Windows
 import Utility.FileSystemEncoding
+import Utility.OsPath
 #if MIN_VERSION_Win32(2,13,4)
 import Common (tryNonAsync)
 #endif
 
-type LockFile = RawFilePath
+type LockFile = OsPath
 
 type LockHandle = HANDLE
 
@@ -60,7 +61,7 @@ lockExclusive = openLock fILE_SHARE_NONE
  -}
 openLock :: ShareMode -> LockFile -> IO (Maybe LockHandle)
 openLock sharemode f = do
-	f' <- convertToWindowsNativeNamespace f
+	f' <- convertToWindowsNativeNamespace (fromOsPath f)
 #if MIN_VERSION_Win32(2,13,4)
 	r <- tryNonAsync $ createFile_NoRetry (fromRawFilePath f') gENERIC_READ sharemode 
 		Nothing oPEN_ALWAYS fILE_ATTRIBUTE_NORMAL

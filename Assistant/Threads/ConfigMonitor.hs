@@ -44,7 +44,7 @@ configMonitorThread = namedThread "ConfigMonitor" $ loop =<< getConfigs
 		when (old /= new) $ do
 			let changedconfigs = new `S.difference` old
 			debug $ "reloading config" : 
-				map (fromRawFilePath . fst)
+				map (fromOsPath . fst)
 				(S.toList changedconfigs)
 			reloadConfigs new
 			{- Record a commit to get this config
@@ -54,10 +54,10 @@ configMonitorThread = namedThread "ConfigMonitor" $ loop =<< getConfigs
 		loop new
 
 {- Config files, and their checksums. -}
-type Configs = S.Set (RawFilePath, Sha)
+type Configs = S.Set (OsPath, Sha)
 
 {- All git-annex's config files, and actions to run when they change. -}
-configFilesActions :: [(RawFilePath, Assistant ())]
+configFilesActions :: [(OsPath, Assistant ())]
 configFilesActions =
 	[ (uuidLog, void $ liftAnnex uuidDescMapLoad)
 	, (remoteLog, void $ liftAnnex remotesChanged)
@@ -91,5 +91,5 @@ getConfigs :: Assistant Configs
 getConfigs = S.fromList . map extract
 	<$> liftAnnex (inRepo $ LsTree.lsTreeFiles (LsTree.LsTreeLong False) Annex.Branch.fullname files)
   where
-	files = map (fromRawFilePath . fst) configFilesActions
+	files = map (fromOsPath . fst) configFilesActions
 	extract treeitem = (getTopFilePath $ LsTree.file treeitem, LsTree.sha treeitem)

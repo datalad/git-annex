@@ -72,7 +72,7 @@ storeChunks key tmp dest storer recorder finalizer = do
 	when (null stored) $
 		giveup "no chunks were stored"
   where
-	basef = tmp ++ fromRawFilePath (keyFile key)
+	basef = tmp ++ fromOsPath (keyFile key)
 	tmpdests = map (basef ++ ) chunkStream
 
 {- Given a list of destinations to use, chunks the data according to the

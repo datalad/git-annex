@@ -30,7 +30,7 @@ optParser :: CmdParamsDesc -> Parser TransferKeyOptions
 optParser desc  = TransferKeyOptions
 	<$> cmdParams desc
 	<*> parseFromToOptions
-	<*> (AssociatedFile <$> optional (strOption
+	<*> (AssociatedFile . fmap stringToOsPath <$> optional (strOption
 		( long "file" <> metavar paramFile
 		<> help "the associated file"
 		)))
@@ -64,7 +64,7 @@ fromPerform :: Key -> AssociatedFile -> Remote -> CommandPerform
 fromPerform key af remote = go Upload af $
 	download' (uuid remote) key af Nothing stdRetry $ \p ->
 		logStatusAfter NoLiveUpdate key $ getViaTmp (retrievalSecurityPolicy remote) vc key af Nothing $ \t ->
-			tryNonAsync (Remote.retrieveKeyFile remote key af (fromRawFilePath t) p vc) >>= \case
+			tryNonAsync (Remote.retrieveKeyFile remote key af t p vc) >>= \case
 				Right v -> return (True, v)	
 				Left e -> do
 					warning (UnquotedString (show e))

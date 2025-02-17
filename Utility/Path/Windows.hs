@@ -13,12 +13,13 @@ module Utility.Path.Windows (
 ) where
 
 import Utility.Path
+import Utility.OsPath
+import qualified Utility.OsString as OS
+import Utility.SystemDirectory
 import Utility.FileSystemEncoding
 
-import System.FilePath.ByteString (combine)
 import qualified Data.ByteString as B
-import qualified System.FilePath.Windows.ByteString as P
-import System.Directory (getCurrentDirectory)
+import qualified System.FilePath.Windows as WinPath
 
 {- Convert a filepath to use Windows's native namespace.
  - This avoids filesystem length limits.
@@ -36,11 +37,17 @@ convertToWindowsNativeNamespace f
 	| otherwise = do
 		-- Make absolute because any '.' and '..' in the path
 		-- will not be resolved once it's converted.
-		cwd <- toRawFilePath <$> getCurrentDirectory
-		let p = simplifyPath (combine cwd f)
+		cwd <- getCurrentDirectory
+		let p = simplifyPath (combine cwd (toOsPath f))
+		-- If the input path is absolute but does not include a drive,
+		-- add the drive from the cwd, because a path in the native
+		-- namespace must include a drive.
+		let p' = if OS.null (takeDrive p)
+			then joinDrive (takeDrive cwd) p
+			else p
 		-- Normalize slashes.
-		let p' = P.normalise p
-		return (win32_file_namespace <> p')
+		let p'' = encodeBS $ WinPath.normalise $ fromOsPath p'
+		return (win32_file_namespace <> p'')
   where
 	win32_dev_namespace = "\\\\.\\"
 	win32_file_namespace = "\\\\?\\"

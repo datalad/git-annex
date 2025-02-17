@@ -15,14 +15,14 @@ import Data.Time.Clock
 import Control.Concurrent.STM
 
 {- Handlers call this when they made a change that needs to get committed. -}
-madeChange :: FilePath -> ChangeInfo -> Assistant (Maybe Change)
+madeChange :: OsPath -> ChangeInfo -> Assistant (Maybe Change)
 madeChange f t = Just <$> (Change <$> liftIO getCurrentTime <*> pure f <*> pure t)
 
 noChange :: Assistant (Maybe Change)
 noChange = return Nothing
 
 {- Indicates an add needs to be done, but has not started yet. -}
-pendingAddChange :: FilePath -> Assistant (Maybe Change)
+pendingAddChange :: OsPath -> Assistant (Maybe Change)
 pendingAddChange f = Just <$> (PendingAddChange <$> liftIO getCurrentTime <*> pure f)
 
 {- Gets all unhandled changes.

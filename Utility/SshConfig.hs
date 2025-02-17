@@ -5,6 +5,8 @@
  - License: BSD-2-clause
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Utility.SshConfig (
 	SshConfig(..),
 	Comment(..),
@@ -134,21 +136,21 @@ modifyUserSshConfig modifier = changeUserSshConfig $
 changeUserSshConfig :: (String -> String) -> IO ()
 changeUserSshConfig modifier = do
 	sshdir <- sshDir
-	let configfile = sshdir </> "config"
+	let configfile = sshdir </> literalOsPath "config"
 	whenM (doesFileExist configfile) $ do
 		c <- decodeBS . S8.unlines . fileLines'
-			<$> F.readFile' (toOsPath (toRawFilePath configfile))
+			<$> F.readFile' configfile
 		let c' = modifier c
 		when (c /= c') $ do
 			-- If it's a symlink, replace the file it
 			-- points to.
 			f <- catchDefaultIO configfile (canonicalizePath configfile)
-			viaTmp writeSshConfig (toOsPath (toRawFilePath f)) c'
+			viaTmp writeSshConfig f c'
 
 writeSshConfig :: OsPath -> String -> IO ()
 writeSshConfig f s = do
 	F.writeFile' f (linesFile' (encodeBS s))
-	setSshConfigMode (fromOsPath f)
+	setSshConfigMode f
 
 {- Ensure that the ssh config file lacks any group or other write bits, 
  - since ssh is paranoid about not working if other users can write
@@ -157,11 +159,11 @@ writeSshConfig f s = do
  - If the chmod fails, ignore the failure, as it might be a filesystem like
  - Android's that does not support file modes.
  -}
-setSshConfigMode :: RawFilePath -> IO ()
+setSshConfigMode :: OsPath -> IO ()
 setSshConfigMode f = void $ tryIO $ modifyFileMode f $
 	removeModes [groupWriteMode, otherWriteMode]
 
-sshDir :: IO FilePath
+sshDir :: IO OsPath
 sshDir = do
 	home <- myHomeDir
-	return $ home </> ".ssh"
+	return $ toOsPath home </> literalOsPath ".ssh"

@@ -118,7 +118,7 @@ enableInteractiveBranchAccess = changeState $ \s -> s
 	, journalIgnorable = False
 	}
 
-setCache :: RawFilePath -> L.ByteString -> Annex ()
+setCache :: OsPath -> L.ByteString -> Annex ()
 setCache file content = changeState $ \s -> s
 	{ cachedFileContents = add (cachedFileContents s) }
   where
@@ -126,7 +126,7 @@ setCache file content = changeState $ \s -> s
 		| length l < logFilesToCache = (file, content) : l
 		| otherwise = (file, content) : Prelude.init l
 
-getCache :: RawFilePath -> BranchState -> Maybe L.ByteString
+getCache :: OsPath -> BranchState -> Maybe L.ByteString
 getCache file state = go (cachedFileContents state)
   where
 	go [] = Nothing
@@ -134,7 +134,7 @@ getCache file state = go (cachedFileContents state)
 		| f == file && not (needInteractiveAccess state) = Just c
 		| otherwise = go rest
 
-invalidateCache :: RawFilePath -> Annex ()
+invalidateCache :: OsPath -> Annex ()
 invalidateCache f = changeState $ \s -> s
 	{ cachedFileContents = filter (\(f', _) -> f' /= f) 
 		(cachedFileContents s)

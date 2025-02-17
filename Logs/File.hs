@@ -34,16 +34,16 @@ import qualified Data.ByteString.Lazy.Char8 as L8
 -- | Writes content to a file, replacing the file atomically, and
 -- making the new file have whatever permissions the git repository is
 -- configured to use. Creates the parent directory when necessary.
-writeLogFile :: RawFilePath -> String -> Annex ()
-writeLogFile f c = createDirWhenNeeded f $ viaTmp writelog (toOsPath f) c
+writeLogFile :: OsPath -> String -> Annex ()
+writeLogFile f c = createDirWhenNeeded f $ viaTmp writelog f c
   where
 	writelog tmp c' = do
-		liftIO $ writeFile (fromRawFilePath (fromOsPath tmp)) c'
-		setAnnexFilePerm (fromOsPath tmp)
+		liftIO $ writeFile (fromOsPath tmp) c'
+		setAnnexFilePerm tmp
 
 -- | Runs the action with a handle connected to a temp file.
 -- The temp file replaces the log file once the action succeeds.
-withLogHandle :: RawFilePath -> (Handle -> Annex a) -> Annex a
+withLogHandle :: OsPath -> (Handle -> Annex a) -> Annex a
 withLogHandle f a = do
 	createAnnexDirectory (parentDir f)
 	replaceGitAnnexDirFile f $ \tmp ->
@@ -51,16 +51,16 @@ withLogHandle f a = do
   where
 	setup tmp = do
 		setAnnexFilePerm tmp
-		liftIO $ F.openFile (toOsPath tmp) WriteMode
+		liftIO $ F.openFile tmp WriteMode
 	cleanup h = liftIO $ hClose h
 
 -- | Appends a line to a log file, first locking it to prevent
 -- concurrent writers.
-appendLogFile :: RawFilePath -> RawFilePath -> L.ByteString -> Annex ()
+appendLogFile :: OsPath -> OsPath -> L.ByteString -> Annex ()
 appendLogFile f lck c = 
 	createDirWhenNeeded f $
 		withExclusiveLock lck $ do
-			liftIO $ F.withFile (toOsPath f) AppendMode $
+			liftIO $ F.withFile f AppendMode $
 				\h -> L8.hPutStrLn h c
 			setAnnexFilePerm f
 
@@ -72,25 +72,24 @@ appendLogFile f lck c =
 --
 -- The file is locked to prevent concurrent writers, and it is written
 -- atomically.
-modifyLogFile :: RawFilePath -> RawFilePath -> ([L.ByteString] -> [L.ByteString]) -> Annex ()
+modifyLogFile :: OsPath -> OsPath -> ([L.ByteString] -> [L.ByteString]) -> Annex ()
 modifyLogFile f lck modf = withExclusiveLock lck $ do
 	ls <- liftIO $ fromMaybe []
-		<$> tryWhenExists (fileLines <$> F.readFile f')
+		<$> tryWhenExists (fileLines <$> F.readFile f)
 	let ls' = modf ls
 	when (ls' /= ls) $
 		createDirWhenNeeded f $
-			viaTmp writelog f' (L8.unlines ls')
+			viaTmp writelog f (L8.unlines ls')
   where
-	f' = toOsPath f
 	writelog lf b = do
 		liftIO $ F.writeFile lf b
-		setAnnexFilePerm (fromOsPath lf)
+		setAnnexFilePerm lf
 
 -- | Checks the content of a log file to see if any line matches.
-checkLogFile :: RawFilePath -> RawFilePath -> (L.ByteString -> Bool) -> Annex Bool
+checkLogFile :: OsPath -> OsPath -> (L.ByteString -> Bool) -> Annex Bool
 checkLogFile f lck matchf = withSharedLock lck $ bracket setup cleanup go
   where
-	setup = liftIO $ tryWhenExists $ F.openFile (toOsPath f) ReadMode
+	setup = liftIO $ tryWhenExists $ F.openFile f ReadMode
 	cleanup Nothing = noop
 	cleanup (Just h) = liftIO $ hClose h
 	go Nothing = return False
@@ -99,15 +98,15 @@ checkLogFile f lck matchf = withSharedLock lck $ bracket setup cleanup go
 		return r
 
 -- | Folds a function over lines of a log file to calculate a value.
-calcLogFile :: RawFilePath -> RawFilePath -> t -> (L.ByteString -> t -> t) -> Annex t
+calcLogFile :: OsPath -> OsPath -> t -> (L.ByteString -> t -> t) -> Annex t
 calcLogFile f lck start update =
 	withSharedLock lck $ calcLogFileUnsafe f start update
 
 -- | Unsafe version that does not do locking.
-calcLogFileUnsafe :: RawFilePath -> t -> (L.ByteString -> t -> t) -> Annex t
+calcLogFileUnsafe :: OsPath -> t -> (L.ByteString -> t -> t) -> Annex t
 calcLogFileUnsafe f start update = bracket setup cleanup go
   where
-	setup = liftIO $ tryWhenExists $ F.openFile (toOsPath f) ReadMode
+	setup = liftIO $ tryWhenExists $ F.openFile f ReadMode
 	cleanup Nothing = noop
 	cleanup (Just h) = liftIO $ hClose h
 	go Nothing = return start
@@ -129,19 +128,19 @@ calcLogFileUnsafe f start update = bracket setup cleanup go
 -- 
 -- Locking is used to prevent writes to to the log file while this
 -- is running.
-streamLogFile :: RawFilePath -> RawFilePath -> Annex () -> (String -> Annex ()) -> Annex ()
+streamLogFile :: OsPath -> OsPath -> Annex () -> (String -> Annex ()) -> Annex ()
 streamLogFile f lck finalizer processor = 
 	withExclusiveLock lck $ do
 		streamLogFileUnsafe f finalizer processor
-		liftIO $ F.writeFile' (toOsPath f) mempty
+		liftIO $ F.writeFile' f mempty
 		setAnnexFilePerm f
 
 -- Unsafe version that does not do locking, and does not empty the file
 -- at the end.
-streamLogFileUnsafe :: RawFilePath -> Annex () -> (String -> Annex ()) -> Annex ()
+streamLogFileUnsafe :: OsPath -> Annex () -> (String -> Annex ()) -> Annex ()
 streamLogFileUnsafe f finalizer processor = bracketOnError setup cleanup go
   where
-	setup = liftIO $ tryWhenExists $ F.openFile (toOsPath f) ReadMode 
+	setup = liftIO $ tryWhenExists $ F.openFile f ReadMode 
 	cleanup Nothing = noop
 	cleanup (Just h) = liftIO $ hClose h
 	go Nothing = finalizer
@@ -150,7 +149,7 @@ streamLogFileUnsafe f finalizer processor = bracketOnError setup cleanup go
 		liftIO $ hClose h
 		finalizer
 
-createDirWhenNeeded :: RawFilePath -> Annex () -> Annex ()
+createDirWhenNeeded :: OsPath -> Annex () -> Annex ()
 createDirWhenNeeded f a = a `catchNonAsync` \_e -> do
 	-- Most of the time, the directory will exist, so this is only
 	-- done if writing the file fails.

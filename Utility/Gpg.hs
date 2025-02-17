@@ -179,10 +179,10 @@ feedRead cmd params passphrase feeder reader = do
 		go (passphrasefd ++ params)
 #else
 	-- store the passphrase in a temp file for gpg
-	withTmpFile (toOsPath "gpg") $ \tmpfile h -> do
+	withTmpFile (literalOsPath "gpg") $ \tmpfile h -> do
 		liftIO $ B.hPutStr h passphrase
 		liftIO $ hClose h
-		let passphrasefile = [Param "--passphrase-file", File (fromRawFilePath (fromOsPath tmpfile))]
+		let passphrasefile = [Param "--passphrase-file", File (fromOsPath tmpfile)]
 		go $ passphrasefile ++ params
 #endif
   where
@@ -416,9 +416,9 @@ testHarness tmpdir cmd a = ifM (inSearchPath (unGpgCmd cmd))
 	setup = do
 		subdir <- makenewdir (1 :: Integer)
 		origenviron <- getEnvironment
-		let environ = addEntry var subdir origenviron
+		let environ = addEntry var (fromOsPath subdir) origenviron
 		-- gpg is picky about permissions on its home dir
-		liftIO $ void $ tryIO $ modifyFileMode (toRawFilePath subdir) $
+		liftIO $ void $ tryIO $ modifyFileMode subdir $
 			removeModes $ otherGroupModes
 		-- For some reason, recent gpg needs a trustdb to be set up.
 		_ <- pipeStrict' cmd [Param "--trust-model", Param "auto", Param "--update-trustdb"] (Just environ) mempty
@@ -441,7 +441,7 @@ testHarness tmpdir cmd a = ifM (inSearchPath (unGpgCmd cmd))
 	go Nothing = return Nothing
 
         makenewdir n = do
-		let subdir = tmpdir </> show n
+		let subdir = toOsPath tmpdir </> toOsPath (show n)
 		catchIOErrorType AlreadyExists (const $ makenewdir $ n + 1) $ do
 			createDirectory subdir
 			return subdir

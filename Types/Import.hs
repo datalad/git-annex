@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE DeriveGeneric, DeriveFunctor #-}
+{-# LANGUAGE CPP #-}
 
 module Types.Import where
 
@@ -13,21 +14,27 @@ import qualified Data.ByteString as S
 import Data.Char
 import Control.DeepSeq
 import GHC.Generics
+#ifdef WITH_OSPATH
+import qualified System.OsPath.Posix as Posix
+import System.OsString.Internal.Types
+#else
 import qualified System.FilePath.Posix.ByteString as Posix
+#endif
 
 import Types.Export
 import Utility.QuickCheck
 import Utility.FileSystemEncoding
+import Utility.OsPath
 
 {- Location of content on a remote that can be imported. 
  - This is just an alias to ExportLocation, because both are referring to a
  - location on the remote. -}
 type ImportLocation = ExportLocation
 
-mkImportLocation :: RawFilePath -> ImportLocation
+mkImportLocation :: OsPath -> ImportLocation
 mkImportLocation = mkExportLocation
 
-fromImportLocation :: ImportLocation -> RawFilePath
+fromImportLocation :: ImportLocation -> OsPath
 fromImportLocation = fromExportLocation
 
 {- An identifier for content stored on a remote that has been imported into
@@ -87,7 +94,7 @@ data ImportableContentsChunkable m info
  - of the main tree. Nested subtrees are not allowed. -}
 data ImportableContentsChunk m info = ImportableContentsChunk
 	{ importableContentsSubDir :: ImportChunkSubDir
-	, importableContentsSubTree :: [(RawFilePath, info)]
+	, importableContentsSubTree :: [(OsPath, info)]
 	-- ^ locations are relative to importableContentsSubDir
 	, importableContentsNextChunk :: m (Maybe (ImportableContentsChunk m info))
 	-- ^ Continuation to get the next chunk.
@@ -95,11 +102,17 @@ data ImportableContentsChunk m info = ImportableContentsChunk
 	}
 	deriving (Functor)
 
-newtype ImportChunkSubDir = ImportChunkSubDir { importChunkSubDir :: RawFilePath }
+newtype ImportChunkSubDir = ImportChunkSubDir { importChunkSubDir :: OsPath }
 
 importableContentsChunkFullLocation
 	:: ImportChunkSubDir
-	-> RawFilePath
+	-> OsPath
 	-> ImportLocation
 importableContentsChunkFullLocation (ImportChunkSubDir root) loc =
+#ifdef WITH_OSPATH
+	mkImportLocation $ toOsPath $ getPosixString $ Posix.combine 
+		(PosixString $ fromOsPath root)
+		(PosixString $ fromOsPath loc)
+#else
 	mkImportLocation $ Posix.combine root loc
+#endif

@@ -57,7 +57,7 @@ start _os = do
 			Nothing -> giveup "Need user-id parameter."
 			Just userid -> go userid
 		else starting "enable-tor" ai si $ do
-			gitannex <- liftIO programPath
+			gitannex <- fromOsPath <$> liftIO programPath
 			let ps = [Param (cmdname cmd), Param (show curruserid)]
 			sucommand <- liftIO $ mkSuCommand gitannex ps
 			cleanenv <- liftIO $ cleanStandaloneEnvironment
@@ -145,6 +145,6 @@ checkHiddenService = bracket setup cleanup go
 
 	haslistener sockfile = catchBoolIO $ do
 		soc <- S.socket S.AF_UNIX S.Stream S.defaultProtocol
-		S.connect soc (S.SockAddrUnix sockfile)
+		S.connect soc (S.SockAddrUnix $ fromOsPath sockfile)
 		S.close soc
 		return True

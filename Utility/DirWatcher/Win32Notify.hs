@@ -14,15 +14,15 @@ import qualified Utility.RawFilePath as R
 import System.Win32.Notify
 import System.PosixCompat.Files (isRegularFile)
 
-watchDir :: FilePath -> (FilePath -> Bool) -> Bool -> WatchHooks -> IO WatchManager
+watchDir :: OsPath -> (OsPath -> Bool) -> Bool -> WatchHooks -> IO WatchManager
 watchDir dir ignored scanevents hooks = do
 	scan dir
 	wm <- initWatchManager
-	void $ watchDirectory wm dir True [Create, Delete, Modify, Move] dispatch
+	void $ watchDirectory wm (fromOsPath dir) True [Create, Delete, Modify, Move] dispatch
 	return wm
   where
 	dispatch evt
-		| ignoredPath ignored (filePath evt) = noop
+		| ignoredPath ignored (toOsPath (filePath evt)) = noop
 		| otherwise = case evt of
 			(Deleted _ _)
 				| isDirectory evt -> runhook delDirHook Nothing
@@ -40,11 +40,11 @@ watchDir dir ignored scanevents hooks = do
 					runhook addHook Nothing
 					runhook modifyHook Nothing
 	  where
-		runhook h s = maybe noop (\a -> a (filePath evt) s) (h hooks)
+		runhook h s = maybe noop (\a -> a (toOsPath (filePath evt)) s) (h hooks)
 
 	scan d = unless (ignoredPath ignored d) $
-		mapM_ (go . fromRawFilePath) =<< emptyWhenDoesNotExist
-			(dirContentsRecursiveSkipping (const False) False (toRawFilePath d))
+		mapM_ go =<< emptyWhenDoesNotExist
+			(dirContentsRecursiveSkipping (const False) False d)
 	  where		
 		go f
 			| ignoredPath ignored f = noop
@@ -61,8 +61,8 @@ watchDir dir ignored scanevents hooks = do
 		  where
 			runhook h s = maybe noop (\a -> a f s) (h hooks)
 		
-	getstatus = catchMaybeIO . R.getFileStatus . toRawFilePath
+	getstatus = catchMaybeIO . R.getFileStatus . fromOsPath
 
 {- Check each component of the path to see if it's ignored. -}
-ignoredPath :: (FilePath -> Bool) -> FilePath -> Bool
+ignoredPath :: (OsPath -> Bool) -> OsPath -> Bool
 ignoredPath ignored = any ignored . map dropTrailingPathSeparator . splitPath

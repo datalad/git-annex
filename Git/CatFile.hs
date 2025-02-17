@@ -99,11 +99,11 @@ catFileMetaDataStop :: CatFileMetaDataHandle -> IO ()
 catFileMetaDataStop = CoProcess.stop . checkFileProcess
 
 {- Reads a file from a specified branch. -}
-catFile :: CatFileHandle -> Branch -> RawFilePath -> IO L.ByteString
+catFile :: CatFileHandle -> Branch -> OsPath -> IO L.ByteString
 catFile h branch file = catObject h $
 	Git.Ref.branchFileRef branch file
 
-catFileDetails :: CatFileHandle -> Branch -> RawFilePath -> IO (Maybe (L.ByteString, Sha, ObjectType))
+catFileDetails :: CatFileHandle -> Branch -> OsPath -> IO (Maybe (L.ByteString, Sha, ObjectType))
 catFileDetails h branch file = catObjectDetails h $ 
 	Git.Ref.branchFileRef branch file
 

@@ -14,14 +14,14 @@ import Git
 import Git.Sha
 import Git.Command
 import Git.Types
-import qualified Utility.CoProcess as CoProcess
 import Utility.Tmp
+import qualified Utility.CoProcess as CoProcess
+import qualified Utility.OsString as OS
 
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Char8 as S8
 import qualified Data.ByteString.Lazy as L
 import Data.ByteString.Builder
-import Data.Char
 
 data HashObjectHandle = HashObjectHandle CoProcess.CoProcessHandle Repo [CommandParam]
 
@@ -40,7 +40,7 @@ hashObjectStop :: HashObjectHandle -> IO ()
 hashObjectStop (HashObjectHandle h _ _) = CoProcess.stop h
 
 {- Injects a file into git, returning the Sha of the object. -}
-hashFile :: HashObjectHandle -> RawFilePath -> IO Sha
+hashFile :: HashObjectHandle -> OsPath -> IO Sha
 hashFile hdl@(HashObjectHandle h _ _) file = do
 	-- git hash-object chdirs to the top of the repository on
 	-- start, so if the filename is relative, it will
@@ -48,24 +48,24 @@ hashFile hdl@(HashObjectHandle h _ _) file = do
 	-- So, make the filename absolute, which will work now
 	-- and also if git's behavior later changes.
 	file' <- absPath file
-	if newline `S.elem` file' || carriagereturn `S.elem` file
+	if newline `OS.elem` file' || carriagereturn `OS.elem` file
 		then hashFile' hdl file
-		else CoProcess.query h (send file') receive
+		else CoProcess.query h (send (fromOsPath file')) receive
   where
 	send file' to = S8.hPutStrLn to file'
 	receive from = getSha "hash-object" $ S8.hGetLine from
-	newline = fromIntegral (ord '\n')
+	newline = unsafeFromChar '\n'
 	-- git strips carriage return from the end of a line, out of some
 	-- misplaced desire to support windows, so also use the newline
 	-- fallback for those.
-	carriagereturn = fromIntegral (ord '\r')
+	carriagereturn = unsafeFromChar '\r'
 
 {- Runs git hash-object once per call, rather than using a running
  - one, so is slower. But, is able to handle newlines in the filepath,
  - which --stdin-paths cannot. -}
-hashFile' :: HashObjectHandle -> RawFilePath -> IO Sha
+hashFile' :: HashObjectHandle -> OsPath -> IO Sha
 hashFile' (HashObjectHandle _ repo ps) file = getSha "hash-object" $
-	pipeReadStrict (ps ++ [File (fromRawFilePath file)]) repo
+	pipeReadStrict (ps ++ [File (fromOsPath file)]) repo
 
 class HashableBlob t where
 	hashableBlobToHandle :: Handle -> t -> IO ()
@@ -82,10 +82,10 @@ instance HashableBlob Builder where
 {- Injects a blob into git. Unfortunately, the current git-hash-object
  - interface does not allow batch hashing without using temp files. -}
 hashBlob :: HashableBlob b => HashObjectHandle -> b -> IO Sha
-hashBlob h b = withTmpFile (toOsPath "hash") $ \tmp tmph -> do
+hashBlob h b = withTmpFile (literalOsPath "hash") $ \tmp tmph -> do
 	hashableBlobToHandle tmph b
 	hClose tmph
-	hashFile h (fromOsPath tmp)
+	hashFile h tmp
 
 {- Injects some content into git, returning its Sha.
  - 

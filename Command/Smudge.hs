@@ -44,7 +44,7 @@ cmd = noCommit $ noMessages $
 		paramFile (seek <$$> optParser)
 
 data SmudgeOptions = UpdateOption | SmudgeOptions
-	{ smudgeFile :: FilePath
+	{ smudgeFile :: OsPath
 	, cleanOption :: Bool
 	}
 
@@ -52,14 +52,14 @@ optParser :: CmdParamsDesc -> Parser SmudgeOptions
 optParser desc = smudgeoptions <|> updateoption
   where
 	smudgeoptions = SmudgeOptions
-		<$> argument str ( metavar desc )
+		<$> (stringToOsPath <$> argument str ( metavar desc ))
 		<*> switch ( long "clean" <> help "clean filter" )
 	updateoption = flag' UpdateOption
 		( long "update" <> help "populate annexed worktree files" )
 
 seek :: SmudgeOptions -> CommandSeek
 seek (SmudgeOptions f False) = commandAction (smudge f)
-seek (SmudgeOptions f True) = commandAction (clean (toRawFilePath f))
+seek (SmudgeOptions f True) = commandAction (clean f)
 seek UpdateOption = commandAction update
 
 -- Smudge filter is fed git file content, and if it's a pointer to an
@@ -73,7 +73,7 @@ seek UpdateOption = commandAction update
 -- * To support annex.thin
 -- * Because git currently buffers the whole object received from the
 --   smudge filter in memory, which is a problem with large files.
-smudge :: FilePath -> CommandStart
+smudge :: OsPath -> CommandStart
 smudge file = do
 	b <- liftIO $ L.hGetContents stdin
 	smudge' file b
@@ -81,18 +81,18 @@ smudge file = do
 	stop
 
 -- Handles everything except the IO of the file content.
-smudge' :: FilePath -> L.ByteString -> Annex ()
+smudge' :: OsPath -> L.ByteString -> Annex ()
 smudge' file b = case parseLinkTargetOrPointerLazy b of
 	Nothing -> noop
 	Just k -> do
-		topfile <- inRepo (toTopFilePath (toRawFilePath file))
+		topfile <- inRepo (toTopFilePath file)
 		Database.Keys.addAssociatedFile k topfile
 		void $ smudgeLog k topfile
 
 -- Clean filter is fed file content on stdin, decides if a file
 -- should be stored in the annex, and outputs a pointer to its
 -- injested content if so. Otherwise, the original content.
-clean :: RawFilePath -> CommandStart
+clean :: OsPath -> CommandStart
 clean file = do
 	Annex.BranchState.disableUpdate -- optimisation
 	b <- liftIO $ L.hGetContents stdin
@@ -116,7 +116,7 @@ clean file = do
 
 -- Handles everything except the IO of the file content.
 clean'
-	:: RawFilePath
+	:: OsPath
 	-> Either InvalidAppendedPointerFile (Maybe Key)
 	-- ^ If the content provided by git is an annex pointer,
 	-- this is the key it points to.
@@ -188,7 +188,7 @@ clean' file mk passthrough discardreststdin emitpointer =
 		emitpointer
 			=<< postingest
 			=<< (\ld -> ingest' preferredbackend nullMeterUpdate ld Nothing norestage)
-			=<< lockDown cfg (fromRawFilePath file)
+			=<< lockDown cfg file
 
 	postingest (Just k, _) = do
 		logStatus NoLiveUpdate k InfoPresent
@@ -203,7 +203,7 @@ clean' file mk passthrough discardreststdin emitpointer =
 
 -- git diff can run the clean filter on files outside the
 -- repository; can't annex those
-fileOutsideRepo :: RawFilePath -> Annex Bool
+fileOutsideRepo :: OsPath -> Annex Bool
 fileOutsideRepo file = do
         repopath <- liftIO . absPath =<< fromRepo Git.repoPath
 	filepath <- liftIO $ absPath file
@@ -232,7 +232,7 @@ inSmudgeCleanFilter = bracket setup cleanup . const
 -- in the index, and has the same content, leave it in git.
 -- This handles cases such as renaming a file followed by git add,
 -- which the user naturally expects to behave the same as git mv.
-shouldAnnex :: RawFilePath -> Maybe (Sha, FileSize, ObjectType) -> Maybe Key -> Annex Bool
+shouldAnnex :: OsPath -> Maybe (Sha, FileSize, ObjectType) -> Maybe Key -> Annex Bool
 shouldAnnex file indexmeta moldkey = do
 	ifM (annexGitAddToAnnex <$> Annex.getGitConfig)
 		( checkunchanged $ checkmatcher checkwasannexed
@@ -299,7 +299,7 @@ shouldAnnex file indexmeta moldkey = do
 -- This also handles the case where a copy of a pointer file is made,
 -- then git-annex gets the content, and later git add is run on
 -- the pointer copy. It will then be populated with the content.
-getMoveRaceRecovery :: Key -> RawFilePath -> Annex ()
+getMoveRaceRecovery :: Key -> OsPath -> Annex ()
 getMoveRaceRecovery k file = void $ tryNonAsync $
 	whenM (inAnnex k) $ do
 		obj <- calcRepo (gitAnnexLocation k)

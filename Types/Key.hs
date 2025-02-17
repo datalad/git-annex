@@ -28,6 +28,8 @@ module Types.Key (
 	parseKeyVariety,
 ) where
 
+import Utility.OsPath
+
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Short as S (ShortByteString, toShort, fromShort)
 import qualified Data.ByteString.Char8 as S8
@@ -36,7 +38,6 @@ import Data.ByteString.Builder
 import Data.ByteString.Builder.Extra
 import qualified Data.Attoparsec.ByteString as A
 import qualified Data.Attoparsec.ByteString.Char8 as A8
-import Utility.FileSystemEncoding
 import Data.List
 import Data.Char
 import System.Posix.Types
@@ -202,8 +203,8 @@ splitKeyNameExtension' :: S.ByteString -> (S.ByteString, S.ByteString)
 splitKeyNameExtension' keyname = S8.span (/= '.') keyname
 
 {- A filename may be associated with a Key. -}
-newtype AssociatedFile = AssociatedFile (Maybe RawFilePath)
-	deriving (Show, Read, Eq, Ord)
+newtype AssociatedFile = AssociatedFile (Maybe OsPath)
+	deriving (Show, Eq, Ord)
 
 {- There are several different varieties of keys. -}
 data KeyVariety

@@ -23,15 +23,14 @@ import Data.Time.Clock.POSIX
 import System.PosixCompat.Files (modificationTime)
 import qualified Data.Map as M
 import qualified Data.Set as S
-import qualified System.FilePath.ByteString as P
 
 repoCheap :: Git.Repo -> Bool
 repoCheap = not . Git.repoIsUrl
 
-localpathCalc :: Git.Repo -> Maybe FilePath
+localpathCalc :: Git.Repo -> Maybe OsPath
 localpathCalc r
 	| not (Git.repoIsLocal r) && not (Git.repoIsLocalUnknown r) = Nothing
-	| otherwise = Just $ fromRawFilePath $ Git.repoPath r
+	| otherwise = Just $ Git.repoPath r
 
 {- Checks relatively inexpensively if a repository is available for use. -}
 repoAvail :: Git.Repo -> Annex Availability
@@ -63,8 +62,11 @@ guardUsable r fallback a
 gitRepoInfo :: Remote -> Annex [(String, String)]
 gitRepoInfo r = do
 	d <- fromRepo Git.localGitDir
-	mtimes <- liftIO $ mapM (\p -> modificationTime <$> R.getFileStatus p)
-		=<< emptyWhenDoesNotExist (dirContentsRecursive (d P.</> "refs" P.</> "remotes" P.</> encodeBS (Remote.name r)))
+	let refsdir = d </> literalOsPath "refs" 
+		</> literalOsPath "remotes" 
+		</> toOsPath (Remote.name r)
+	mtimes <- liftIO $ mapM (\p -> modificationTime <$> R.getFileStatus (fromOsPath p))
+		=<< emptyWhenDoesNotExist (dirContentsRecursive refsdir)
 	let lastsynctime = case mtimes of
 		[] -> "never"
 		_ -> show $ posixSecondsToUTCTime $ realToFrac $ maximum mtimes

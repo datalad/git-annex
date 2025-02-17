@@ -72,7 +72,7 @@ getPrepareWormholePairR pairingwith = do
 
 enableTor :: Handler ()
 enableTor = do
-	gitannex <- liftIO programPath
+	gitannex <- fromOsPath <$> liftIO programPath
 	(transcript, ok) <- liftIO $ processTranscript gitannex ["enable-tor"] Nothing
 	if ok
 		-- Reload remotedameon so it's serving the tor hidden
@@ -173,7 +173,7 @@ getFinishLocalPairR = postFinishLocalPairR
 postFinishLocalPairR :: PairMsg -> Handler Html
 #ifdef WITH_PAIRING
 postFinishLocalPairR msg = promptSecret (Just msg) $ \_ secret -> do
-	repodir <- liftH $ fromRawFilePath . repoPath <$> liftAnnex gitRepo
+	repodir <- liftH $ repoPath <$> liftAnnex gitRepo
 	liftIO $ setup repodir
 	startLocalPairing PairAck (cleanup repodir) alert uuid "" secret
   where

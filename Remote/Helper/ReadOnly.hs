@@ -44,7 +44,7 @@ adjustReadOnly r
 		}
 	| otherwise = r
 
-readonlyStoreKey :: Key -> AssociatedFile -> Maybe FilePath -> MeterUpdate -> Annex ()
+readonlyStoreKey :: Key -> AssociatedFile -> Maybe OsPath -> MeterUpdate -> Annex ()
 readonlyStoreKey _ _ _ _ = readonlyFail
 
 readonlyRemoveKey :: Maybe SafeDropProof -> Key -> Annex ()
@@ -53,7 +53,7 @@ readonlyRemoveKey _ _ = readonlyFail
 readonlyStorer :: Storer
 readonlyStorer _ _ _ = readonlyFail
 
-readonlyStoreExport :: FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex ()
+readonlyStoreExport :: OsPath -> Key -> ExportLocation -> MeterUpdate -> Annex ()
 readonlyStoreExport _ _ _ _ = readonlyFail
 
 readonlyRemoveExport :: Key -> ExportLocation -> Annex ()
@@ -62,7 +62,7 @@ readonlyRemoveExport _ _ = readonlyFail
 readonlyRemoveExportDirectory :: ExportDirectory -> Annex ()
 readonlyRemoveExportDirectory _ = readonlyFail
 
-readonlyStoreExportWithContentIdentifier :: FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex ContentIdentifier
+readonlyStoreExportWithContentIdentifier :: OsPath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex ContentIdentifier
 readonlyStoreExportWithContentIdentifier _ _ _ _ _ = readonlyFail
 
 readonlyRemoveExportWithContentIdentifier :: Key -> ExportLocation -> [ContentIdentifier] -> Annex ()

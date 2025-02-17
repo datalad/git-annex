@@ -30,12 +30,13 @@ import System.PosixCompat.Files (fileMode)
  -
  - Returns an InodeCache if it populated the pointer file.
  -}
-populatePointerFile :: Restage -> Key -> RawFilePath -> RawFilePath -> Annex (Maybe InodeCache)
+populatePointerFile :: Restage -> Key -> OsPath -> OsPath -> Annex (Maybe InodeCache)
 populatePointerFile restage k obj f = go =<< liftIO (isPointerFile f)
   where
 	go (Just k') | k == k' = do
-		destmode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus f
-		liftIO $ removeWhenExistsWith R.removeLink f
+		destmode <- liftIO $ catchMaybeIO $
+			fileMode <$> R.getFileStatus (fromOsPath f)
+		liftIO $ removeWhenExistsWith removeFile f
 		(ic, populated) <- replaceWorkTreeFile f $ \tmp -> do
 			ok <- linkOrCopy k obj tmp destmode >>= \case
 				Just _ -> thawContent tmp >> return True
@@ -47,23 +48,23 @@ populatePointerFile restage k obj f = go =<< liftIO (isPointerFile f)
 			then return ic
 			else return Nothing
 	go _ = return Nothing
-	
+
 {- Removes the content from a pointer file, replacing it with a pointer.
  -
  - Does not check if the pointer file is modified. -}
-depopulatePointerFile :: Key -> RawFilePath -> Annex ()
+depopulatePointerFile :: Key -> OsPath -> Annex ()
 depopulatePointerFile key file = do
-	st <- liftIO $ catchMaybeIO $ R.getFileStatus file
+	st <- liftIO $ catchMaybeIO $ R.getFileStatus (fromOsPath file)
 	let mode = fmap fileMode st
 	secureErase file
-	liftIO $ removeWhenExistsWith R.removeLink file
+	liftIO $ removeWhenExistsWith removeFile file
 	ic <- replaceWorkTreeFile file $ \tmp -> do
 		liftIO $ writePointerFile tmp key mode
 #if ! defined(mingw32_HOST_OS)
 		-- Don't advance mtime; this avoids unnecessary re-smudging
 		-- by git in some cases.
 		liftIO $ maybe noop
-			(\t -> touch tmp t False)
+			(\t -> touch (fromOsPath tmp) t False)
 			(fmap Posix.modificationTimeHiRes st)
 #endif
 		withTSDelta (liftIO . genInodeCache tmp)

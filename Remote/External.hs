@@ -237,9 +237,10 @@ checkExportSupported' external = go `catchNonAsync` (const (return False))
 
 storeKeyM :: External -> Storer
 storeKeyM external = fileStorer $ \k f p ->
-	either giveup return =<< go k f p
+	either giveup return =<< go k p
+		(\sk -> TRANSFER Upload sk (fromOsPath f))
   where
-	go k f p = handleRequestKey external (\sk -> TRANSFER Upload sk f) k (Just p) $ \resp ->
+	go k p mkreq = handleRequestKey external mkreq k (Just p) $ \resp ->
 		case resp of
 			TRANSFER_SUCCESS Upload k' | k == k' ->
 				result (Right ())
@@ -251,7 +252,7 @@ retrieveKeyFileM :: External -> Retriever
 retrieveKeyFileM external = fileRetriever $ \d k p ->
 	either giveup return =<< watchFileSize d p (go d k)
   where
-	go d k p = handleRequestKey external (\sk -> TRANSFER Download sk (fromRawFilePath d)) k (Just p) $ \resp ->
+	go d k p = handleRequestKey external (\sk -> TRANSFER Download sk (fromOsPath d)) k (Just p) $ \resp ->
 		case resp of
 			TRANSFER_SUCCESS Download k'
 				| k == k' -> result $ Right ()
@@ -293,7 +294,7 @@ whereisKeyM external k = handleRequestKey external WHEREIS k Nothing $ \resp -> 
 	UNSUPPORTED_REQUEST -> result []
 	_ -> Nothing
 
-storeExportM :: External -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex ()
+storeExportM :: External -> OsPath -> Key -> ExportLocation -> MeterUpdate -> Annex ()
 storeExportM external f k loc p = either giveup return =<< go
   where
 	go = handleRequestExport external loc req k (Just p) $ \resp -> case resp of
@@ -303,12 +304,12 @@ storeExportM external f k loc p = either giveup return =<< go
 		UNSUPPORTED_REQUEST -> 
 			result $ Left "TRANSFEREXPORT not implemented by external special remote"
 		_ -> Nothing
-	req sk = TRANSFEREXPORT Upload sk f
+	req sk = TRANSFEREXPORT Upload sk (fromOsPath f)
 
-retrieveExportM :: External -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Verification
+retrieveExportM :: External -> Key -> ExportLocation -> OsPath -> MeterUpdate -> Annex Verification
 retrieveExportM external k loc dest p = do
 	verifyKeyContentIncrementally AlwaysVerify k $ \iv ->
-		tailVerify iv (toRawFilePath dest) $
+		tailVerify iv dest $
 			either giveup return =<< go
   where
 	go = handleRequestExport external loc req k (Just p) $ \resp -> case resp of
@@ -319,7 +320,7 @@ retrieveExportM external k loc dest p = do
 		UNSUPPORTED_REQUEST ->
 			result $ Left "TRANSFEREXPORT not implemented by external special remote"
 		_ -> Nothing
-	req sk = TRANSFEREXPORT Download sk dest
+	req sk = TRANSFEREXPORT Download sk (fromOsPath dest)
 
 checkPresentExportM :: External -> Key -> ExportLocation -> Annex Bool
 checkPresentExportM external k loc = either giveup id <$> go
@@ -429,9 +430,9 @@ handleRequest' st external req mp responsehandler
 	handleRemoteRequest (PROGRESS bytesprocessed) =
 		maybe noop (\a -> liftIO $ a bytesprocessed) mp
 	handleRemoteRequest (DIRHASH k) = 
-		send $ VALUE $ fromRawFilePath $ hashDirMixed def k
+		send $ VALUE $ fromOsPath $ hashDirMixed def k
 	handleRemoteRequest (DIRHASH_LOWER k) = 
-		send $ VALUE $ fromRawFilePath $ hashDirLower def k
+		send $ VALUE $ fromOsPath $ hashDirLower def k
 	handleRemoteRequest (SETCONFIG setting value) =
 		liftIO $ atomically $ do
 			ParsedRemoteConfig m c <- takeTMVar (externalConfig st)
@@ -480,7 +481,7 @@ handleRequest' st external req mp responsehandler
 		Just u -> send $ VALUE $ fromUUID u
 		Nothing -> senderror "cannot send GETUUID here"
 	handleRemoteRequest GETGITDIR = 
-		send . VALUE . fromRawFilePath =<< fromRepo Git.localGitDir
+		send . VALUE . fromOsPath =<< fromRepo Git.localGitDir
 	handleRemoteRequest GETGITREMOTENAME =
 		case externalRemoteName external of
 			Just n -> send $ VALUE n
@@ -526,7 +527,7 @@ handleRequest' st external req mp responsehandler
 	senderror = sendMessage st . ERROR 
 
 	credstorage setting u = CredPairStorage
-		{ credPairFile = base
+		{ credPairFile = toOsPath base
 		, credPairEnvironment = (base ++ "login", base ++ "password")
 		, credPairRemoteField = Accepted setting
 		}
@@ -824,19 +825,19 @@ checkUrlM :: External -> URLString -> Annex UrlContents
 checkUrlM external url = 
 	handleRequest external (CHECKURL url) Nothing $ \req -> case req of
 		CHECKURL_CONTENTS sz f -> result $ UrlContents sz $
-			if null f then Nothing else Just f
+			if null f then Nothing else Just (toOsPath f)
 		CHECKURL_MULTI l -> result $ UrlMulti $ map mkmulti l
 		CHECKURL_FAILURE errmsg -> Just $ giveup $
 			respErrorMessage "CHECKURL" errmsg
 		UNSUPPORTED_REQUEST -> giveup "CHECKURL not implemented by external special remote"
 		_ -> Nothing
   where
-	mkmulti (u, s, f) = (u, s, f)
+	mkmulti (u, s, f) = (u, s, toOsPath f)
 
 retrieveUrl :: Retriever
 retrieveUrl = fileRetriever' $ \f k p iv -> do
 	us <- getWebUrls k
-	unlessM (withUrlOptions $ downloadUrl True k p iv us (fromRawFilePath f)) $
+	unlessM (withUrlOptions $ downloadUrl True k p iv us f) $
 		giveup "failed to download content"
 
 checkKeyUrl :: CheckPresent

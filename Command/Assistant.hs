@@ -79,11 +79,11 @@ autoStart o = do
 	dirs <- liftIO readAutoStartFile
 	when (null dirs) $ do
 		f <- autoStartFile
-		giveup $ "Nothing listed in " ++ f
-	program <- programPath
+		giveup $ "Nothing listed in " ++ fromOsPath f
+	program <- fromOsPath <$> programPath
 	haveionice <- pure BuildInfo.ionice <&&> inSearchPath "ionice"
 	pids <- forM dirs $ \d -> do
-		putStrLn $ "git-annex autostart in " ++ d
+		putStrLn $ "git-annex autostart in " ++ fromOsPath d
 		mpid <- catchMaybeIO $ go haveionice program d
 		if foregroundDaemonOption (daemonOptions o)
 			then return mpid
@@ -128,9 +128,9 @@ autoStart o = do
 autoStop :: IO ()
 autoStop = do
 	dirs <- liftIO readAutoStartFile
-	program <- programPath
+	program <- fromOsPath <$> programPath
 	forM_ dirs $ \d -> do
-		putStrLn $ "git-annex autostop in " ++ d
+		putStrLn $ "git-annex autostop in " ++ fromOsPath d
 		tryIO (setCurrentDirectory d) >>= \case
 			Right () -> ifM (boolSystem program [Param "assistant", Param "--stop"])
 				( putStrLn "ok"

@@ -9,10 +9,10 @@
 
 module Assistant.Types.Changes where
 
+import Common
 import Types.KeySource
 import Types.Key
 import Utility.TList
-import Utility.FileSystemEncoding
 import Annex.Ingest
 
 import Control.Concurrent.STM
@@ -34,12 +34,12 @@ newChangePool = atomically newTList
 data Change
 	= Change 
 		{ changeTime :: UTCTime
-		, _changeFile :: FilePath
+		, _changeFile :: OsPath
 		, changeInfo :: ChangeInfo
 		}
 	| PendingAddChange
 		{ changeTime ::UTCTime
-		, _changeFile :: FilePath
+		, _changeFile :: OsPath
 		}
 	| InProcessAddChange
 		{ changeTime ::UTCTime
@@ -55,10 +55,10 @@ changeInfoKey (AddKeyChange k) = Just k
 changeInfoKey (LinkChange (Just k)) = Just k
 changeInfoKey _ = Nothing
 
-changeFile :: Change -> FilePath
+changeFile :: Change -> OsPath
 changeFile (Change _ f _) = f
 changeFile (PendingAddChange _ f) = f
-changeFile (InProcessAddChange _ ld) = fromRawFilePath $ keyFilename $ keySource ld
+changeFile (InProcessAddChange _ ld) = keyFilename $ keySource ld
 
 isPendingAddChange :: Change -> Bool
 isPendingAddChange (PendingAddChange {}) = True

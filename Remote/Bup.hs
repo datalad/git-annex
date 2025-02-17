@@ -12,7 +12,6 @@ module Remote.Bup (remote) where
 import qualified Data.Map as M
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
-import qualified System.FilePath.ByteString as P
 import Data.ByteString.Lazy.UTF8 (fromString)
 import Control.Concurrent.Async
 
@@ -96,12 +95,12 @@ gen r u rc gc rs = do
 		, getRepo = return r
 		, gitconfig = gc
 		, localpath = if bupLocal buprepo && not (null buprepo)
-			then Just buprepo
+			then Just (toOsPath buprepo)
 			else Nothing
 		, remotetype = remote
 		, availability = if null buprepo
 			then pure LocallyAvailable
-			else checkPathAvailability (bupLocal buprepo) buprepo
+			else checkPathAvailability (bupLocal buprepo) (toOsPath buprepo)
 		, readonly = False
 		, appendonly = False
 		, untrustworthy = False
@@ -270,7 +269,7 @@ onBupRemote r runner command params = do
 	(sshcmd, sshparams) <- Ssh.toRepo NoConsumeStdin r c remotecmd
 	liftIO $ runner sshcmd sshparams
   where
-	path = fromRawFilePath $ Git.repoPath r
+	path = fromOsPath $ Git.repoPath r
 	base = fromMaybe path (stripPrefix "/~/" path)
 	dir = shellEscape base
 
@@ -299,11 +298,11 @@ bup2GitRemote :: BupRepo -> IO Git.Repo
 bup2GitRemote "" = do
 	-- bup -r "" operates on ~/.bup
 	h <- myHomeDir
-	Git.Construct.fromPath $ toRawFilePath $ h </> ".bup"
+	Git.Construct.fromPath $ toOsPath h </> literalOsPath ".bup"
 bup2GitRemote r
 	| bupLocal r = 
 		if "/" `isPrefixOf` r
-			then Git.Construct.fromPath (toRawFilePath r)
+			then Git.Construct.fromPath (toOsPath r)
 			else giveup "please specify an absolute path"
 	| otherwise = Git.Construct.fromUrl $ "ssh://" ++ host ++ slash dir
   where
@@ -335,10 +334,10 @@ bupLocal = notElem ':'
 lockBup :: Bool -> Remote -> Annex a -> Annex a
 lockBup writer r a = do
 	dir <- fromRepo gitAnnexRemotesDir
-	unlessM (liftIO $ doesDirectoryExist (fromRawFilePath dir)) $
+	unlessM (liftIO $ doesDirectoryExist dir) $
 		createAnnexDirectory dir
 	let remoteid = fromUUID (uuid r)
-	let lck = dir P.</> remoteid <> ".lck"
+	let lck = dir </> remoteid <> literalOsPath ".lck"
 	if writer
 		then withExclusiveLock lck a
 		else withSharedLock lck a

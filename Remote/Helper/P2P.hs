@@ -36,9 +36,9 @@ type ProtoConnRunner c = forall a. P2P.Proto a -> ClosableConnection c -> Annex 
 -- the pool when done.
 type WithConn a c = (ClosableConnection c -> Annex (ClosableConnection c, a)) -> Annex a
 
-store :: UUID -> RemoteGitConfig -> ProtoRunner (Maybe [UUID]) -> Key -> AssociatedFile -> Maybe FilePath -> MeterUpdate -> Annex ()
+store :: UUID -> RemoteGitConfig -> ProtoRunner (Maybe [UUID]) -> Key -> AssociatedFile -> Maybe OsPath -> MeterUpdate -> Annex ()
 store remoteuuid gc runner k af o p = do
-	let sizer = KeySizer k (fmap (toRawFilePath . fst3) <$> prepSendAnnex k o)
+	let sizer = KeySizer k (fmap fst3 <$> prepSendAnnex k o)
 	let bwlimit = remoteAnnexBwLimitUpload gc <|> remoteAnnexBwLimit gc
 	metered (Just p) sizer bwlimit $ \_ p' ->
 		runner (P2P.put k af p') >>= \case
@@ -53,7 +53,7 @@ storeFanout lu k logstatus remoteuuid us =
 		when (u /= remoteuuid) $
 			logChange lu k u logstatus
 
-retrieve :: RemoteGitConfig -> (ProtoRunner (Bool, Verification)) -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification
+retrieve :: RemoteGitConfig -> (ProtoRunner (Bool, Verification)) -> Key -> AssociatedFile -> OsPath -> MeterUpdate -> VerifyConfig -> Annex Verification
 retrieve gc runner k af dest p verifyconfig = do
 	iv <- startVerifyKeyContentIncrementally verifyconfig k
 	let bwlimit = remoteAnnexBwLimitDownload gc <|> remoteAnnexBwLimit gc

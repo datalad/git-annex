@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Assistant.Ssh where
 
 import Annex.Common
@@ -18,6 +20,7 @@ import Git.Remote
 import Utility.SshHost
 import Utility.Process.Transcript
 import qualified Utility.FileIO as F
+import qualified Utility.OsString as OS
 
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -94,14 +97,14 @@ genSshUrl sshdata = case sshRepoUrl sshdata of
 {- Reverses genSshUrl -}
 parseSshUrl :: String -> Maybe SshData
 parseSshUrl u
-	| "ssh://" `isPrefixOf` u = fromssh (drop (length "ssh://") u)
+	| "ssh://" `isPrefixOf` u = fromssh (drop (length ("ssh://" :: String)) u)
 	| otherwise = fromrsync u
   where
 	mkdata (userhost, dir) = Just $ SshData
 		{ sshHostName = T.pack host
 		, sshUserName = if null user then Nothing else Just $ T.pack user
 		, sshDirectory = T.pack dir
-		, sshRepoName = genSshRepoName host dir
+		, sshRepoName = genSshRepoName host (toOsPath dir)
 		-- dummy values, cannot determine from url
 		, sshPort = 22
 		, needsPubKey = True
@@ -118,10 +121,10 @@ parseSshUrl u
 	fromssh = mkdata . break (== '/')
 
 {- Generates a git remote name, like host_dir or host -}
-genSshRepoName :: String -> FilePath -> String
+genSshRepoName :: String -> OsPath -> String
 genSshRepoName host dir
-	| null dir = makeLegalName host
-	| otherwise = makeLegalName $ host ++ "_" ++ dir
+	| OS.null dir = makeLegalName host
+	| otherwise = makeLegalName $ host ++ "_" ++ fromOsPath dir
 
 {- The output of ssh, including both stdout and stderr. -}
 sshTranscript :: [String] -> SshHost -> String -> (Maybe String) -> IO (String, Bool)
@@ -149,17 +152,17 @@ validateSshPubKey pubkey
 	  where
 		(ssh, keytype) = separate (== '-') prefix
 
-addAuthorizedKeys :: Bool -> FilePath -> SshPubKey -> IO Bool
+addAuthorizedKeys :: Bool -> OsPath -> SshPubKey -> IO Bool
 addAuthorizedKeys gitannexshellonly dir pubkey = boolSystem "sh"
 	[ Param "-c" , Param $ addAuthorizedKeysCommand gitannexshellonly dir pubkey ]
 
 {- Should only be used within the same process that added the line;
  - the layout of the line is not kepy stable across versions. -}
-removeAuthorizedKeys :: Bool -> FilePath -> SshPubKey -> IO ()
+removeAuthorizedKeys :: Bool -> OsPath -> SshPubKey -> IO ()
 removeAuthorizedKeys gitannexshellonly dir pubkey = do
 	let keyline = authorizedKeysLine gitannexshellonly dir pubkey
 	sshdir <- sshDir
-	let keyfile = toOsPath $ toRawFilePath $ sshdir </> "authorized_keys"
+	let keyfile = sshdir </> literalOsPath "authorized_keys"
 	tryWhenExists (map decodeBS . fileLines' <$> F.readFile' keyfile) >>= \case
 		Just ls -> viaTmp writeSshConfig keyfile $
 			unlines $ filter (/= keyline) ls
@@ -171,7 +174,7 @@ removeAuthorizedKeys gitannexshellonly dir pubkey = do
  - The ~/.ssh/git-annex-shell wrapper script is created if not already
  - present.
  -}
-addAuthorizedKeysCommand :: Bool -> FilePath -> SshPubKey -> String
+addAuthorizedKeysCommand :: Bool -> OsPath -> SshPubKey -> String
 addAuthorizedKeysCommand gitannexshellonly dir pubkey = intercalate "&&"
 	[ "mkdir -p ~/.ssh"
 	, intercalate "; "
@@ -202,27 +205,27 @@ addAuthorizedKeysCommand gitannexshellonly dir pubkey = intercalate "&&"
 		]
 	runshell var = "exec git-annex-shell -c \"" ++ var ++ "\""
 
-authorizedKeysLine :: Bool -> FilePath -> SshPubKey -> String
+authorizedKeysLine :: Bool -> OsPath -> SshPubKey -> String
 authorizedKeysLine gitannexshellonly dir pubkey
 	| gitannexshellonly = limitcommand ++ pubkey
 	{- TODO: Locking down rsync is difficult, requiring a rather
 	 - long perl script. -}
 	| otherwise = pubkey
   where
-	limitcommand = "command=\"env GIT_ANNEX_SHELL_DIRECTORY="++shellEscape dir++" ~/.ssh/git-annex-shell\",no-agent-forwarding,no-port-forwarding,no-X11-forwarding,no-pty "
+	limitcommand = "command=\"env GIT_ANNEX_SHELL_DIRECTORY="++shellEscape (fromOsPath dir)++" ~/.ssh/git-annex-shell\",no-agent-forwarding,no-port-forwarding,no-X11-forwarding,no-pty "
 
 {- Generates a ssh key pair. -}
 genSshKeyPair :: IO SshKeyPair
-genSshKeyPair = withTmpDir (toOsPath (toRawFilePath "git-annex-keygen")) $ \dir -> do
+genSshKeyPair = withTmpDir (literalOsPath "git-annex-keygen") $ \dir -> do
 	ok <- boolSystem "ssh-keygen"
 		[ Param "-P", Param "" -- no password
-		, Param "-f", File $ dir </> "key"
+		, Param "-f", File $ fromOsPath (dir </> literalOsPath "key")
 		]
 	unless ok $
 		giveup "ssh-keygen failed"
 	SshKeyPair
-		<$> readFile (dir </> "key.pub")
-		<*> readFile (dir </> "key")
+		<$> readFile (fromOsPath (dir </> literalOsPath "key.pub"))
+		<*> readFile (fromOsPath (dir </> literalOsPath "key"))
 
 {- Installs a ssh key pair, and sets up ssh config with a mangled hostname
  - that will enable use of the key. This way we avoid changing the user's
@@ -245,25 +248,28 @@ genSshKeyPair = withTmpDir (toOsPath (toRawFilePath "git-annex-keygen")) $ \dir 
 installSshKeyPair :: SshKeyPair -> SshData -> IO SshData
 installSshKeyPair sshkeypair sshdata = do
 	sshdir <- sshDir
-	createDirectoryIfMissing True $ fromRawFilePath $
-		parentDir $ toRawFilePath $ sshdir </> sshPrivKeyFile sshdata
+	createDirectoryIfMissing True $
+		parentDir $ sshdir </> sshPrivKeyFile sshdata
 
 	unlessM (doesFileExist $ sshdir </> sshPrivKeyFile sshdata) $
-		writeFileProtected (toRawFilePath (sshdir </> sshPrivKeyFile sshdata)) (sshPrivKey sshkeypair)
+		writeFileProtected (sshdir </> sshPrivKeyFile sshdata)
+			(sshPrivKey sshkeypair)
 	unlessM (doesFileExist $ sshdir </> sshPubKeyFile sshdata) $
-		writeFile (sshdir </> sshPubKeyFile sshdata) (sshPubKey sshkeypair)
+		writeFile (fromOsPath (sshdir </> sshPubKeyFile sshdata))
+			(sshPubKey sshkeypair)
 
 	setSshConfig sshdata
-		[ ("IdentityFile", "~/.ssh/" ++ sshPrivKeyFile sshdata)
+		[ ("IdentityFile", "~/.ssh/" ++ fromOsPath (sshPrivKeyFile sshdata))
 		, ("IdentitiesOnly", "yes")
 		, ("StrictHostKeyChecking", "yes")
 		]
 
-sshPrivKeyFile :: SshData -> FilePath
-sshPrivKeyFile sshdata = "git-annex" </> "key." ++ mangleSshHostName sshdata
+sshPrivKeyFile :: SshData -> OsPath
+sshPrivKeyFile sshdata = literalOsPath "git-annex" 
+	</> literalOsPath "key." <> toOsPath (mangleSshHostName sshdata)
 
-sshPubKeyFile :: SshData -> FilePath
-sshPubKeyFile sshdata = sshPrivKeyFile sshdata ++ ".pub"
+sshPubKeyFile :: SshData -> OsPath
+sshPubKeyFile sshdata = sshPrivKeyFile sshdata <> literalOsPath ".pub"
 
 {- Generates an installs a new ssh key pair if one is not already
  - installed. Returns the modified SshData that will use the key pair,
@@ -271,8 +277,8 @@ sshPubKeyFile sshdata = sshPrivKeyFile sshdata ++ ".pub"
 setupSshKeyPair :: SshData -> IO (SshData, SshKeyPair)
 setupSshKeyPair sshdata = do
 	sshdir <- sshDir
-	mprivkey <- catchMaybeIO $ readFile (sshdir </> sshPrivKeyFile sshdata)
-	mpubkey <- catchMaybeIO $ readFile (sshdir </> sshPubKeyFile sshdata)
+	mprivkey <- catchMaybeIO $ readFile (fromOsPath (sshdir </> sshPrivKeyFile sshdata))
+	mpubkey <- catchMaybeIO $ readFile (fromOsPath (sshdir </> sshPubKeyFile sshdata))
 	keypair <- case (mprivkey, mpubkey) of
 		(Just privkey, Just pubkey) -> return $ SshKeyPair
 			{ sshPubKey = pubkey
@@ -324,7 +330,7 @@ setSshConfig :: SshData -> [(String, String)] -> IO SshData
 setSshConfig sshdata config = do
 	sshdir <- sshDir
 	createDirectoryIfMissing True sshdir
-	let configfile = sshdir </> "config"
+	let configfile = fromOsPath (sshdir </> literalOsPath "config")
 	unlessM (catchBoolIO $ isInfixOf mangledhost <$> readFile configfile) $ do
 		appendFile configfile $ unlines $
 			[ ""
@@ -332,7 +338,7 @@ setSshConfig sshdata config = do
 			, "Host " ++ mangledhost
 			] ++ map (\(k, v) -> "\t" ++ k ++ " " ++ v)
 				(settings ++ config)
-		setSshConfigMode (toRawFilePath configfile)
+		setSshConfigMode (toOsPath configfile)
 
 	return $ sshdata
 		{ sshHostName = T.pack mangledhost
@@ -403,7 +409,7 @@ unMangleSshHostName h = case splitc '-' h of
 knownHost :: Text -> IO Bool
 knownHost hostname = do
 	sshdir <- sshDir
-	ifM (doesFileExist $ sshdir </> "known_hosts")
+	ifM (doesFileExist $ sshdir </> literalOsPath "known_hosts")
 		( not . null <$> checkhost
 		, return False
 		)

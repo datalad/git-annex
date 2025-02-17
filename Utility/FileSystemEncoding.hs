@@ -23,7 +23,6 @@ module Utility.FileSystemEncoding (
 
 import qualified GHC.IO.Encoding as Encoding
 import System.IO
-import System.FilePath.ByteString (RawFilePath, encodeFilePath, decodeFilePath)
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
 #ifdef mingw32_HOST_OS
@@ -36,6 +35,9 @@ import Data.ByteString.Unsafe (unsafePackMallocCStringLen)
 import Data.Char
 import Data.List
 #endif
+
+-- | A literal file path
+type RawFilePath = S.ByteString
 
 {- Makes all subsequent Handles that are opened, as well as stdio Handles,
  - use the filesystem encoding, instead of the encoding of the current
@@ -90,9 +92,7 @@ encodeBL = L8.fromString
 decodeBS :: S.ByteString -> FilePath
 #ifndef mingw32_HOST_OS
 -- This does the same thing as System.FilePath.ByteString.decodeFilePath,
--- with an identical implementation. However, older versions of that library
--- truncated at NUL, which this must not do, because it may end up used on
--- something other than a unix filepath.
+-- with an identical implementation.
 {-# NOINLINE decodeBS #-}
 decodeBS b = unsafePerformIO $ do
 	enc <- Encoding.getFileSystemEncoding
@@ -104,9 +104,7 @@ decodeBS = S8.toString
 encodeBS :: FilePath -> S.ByteString
 #ifndef mingw32_HOST_OS
 -- This does the same thing as System.FilePath.ByteString.encodeFilePath,
--- with an identical implementation. However, older versions of that library
--- truncated at NUL, which this must not do, because it may end up used on
--- something other than a unix filepath.
+-- with an identical implementation.
 {-# NOINLINE encodeBS #-}
 encodeBS f = unsafePerformIO $ do
 	enc <- Encoding.getFileSystemEncoding
@@ -116,10 +114,10 @@ encodeBS = S8.fromString
 #endif
 
 fromRawFilePath :: RawFilePath -> FilePath
-fromRawFilePath = decodeFilePath
+fromRawFilePath = decodeBS
 
 toRawFilePath :: FilePath -> RawFilePath
-toRawFilePath = encodeFilePath
+toRawFilePath = encodeBS
 
 {- Truncates a FilePath to the given number of bytes (or less),
  - as represented on disk.

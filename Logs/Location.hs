@@ -124,7 +124,7 @@ parseLoggedLocationsWithoutClusters l =
 	map (toUUID . fromLogInfo . info)
 		(filterPresent (parseLog l))
 
-getLoggedLocations :: (RawFilePath -> Annex [LogInfo]) -> Key -> Annex [UUID]
+getLoggedLocations :: (OsPath -> Annex [LogInfo]) -> Key -> Annex [UUID]
 getLoggedLocations getter key = do
 	config <- Annex.getGitConfig
 	locs <- map (toUUID . fromLogInfo) <$> getter (locationLogFile config key)
@@ -301,8 +301,8 @@ overLocationLogsJournal v branchsha keyaction mclusters =
 	changedlocs _ _ _ Nothing = pure (S.empty, S.empty)
 
 overLocationLogsHelper
-	:: ((RawFilePath -> Maybe Key) -> (Annex (FileContents Key b) -> Annex v) -> Annex a)
-	-> ((Maybe L.ByteString -> [UUID]) -> Key -> RawFilePath -> Maybe (L.ByteString, Maybe b) -> Annex u)
+	:: ((OsPath -> Maybe Key) -> (Annex (FileContents Key b) -> Annex v) -> Annex a)
+	-> ((Maybe L.ByteString -> [UUID]) -> Key -> OsPath -> Maybe (L.ByteString, Maybe b) -> Annex u)
 	-> Bool
 	-> v
 	-> (Annex (FileContents Key b) -> Annex v -> Annex v)

@@ -20,6 +20,7 @@ import Types.NumCopies
 import qualified Annex
 import qualified Git
 import qualified Git.Types as Git
+import qualified Git.Config
 import qualified Git.Url
 import qualified Git.Remote
 import qualified Git.GCrypt
@@ -36,12 +37,12 @@ import Annex.Ssh
 import Annex.UUID
 import Crypto
 import Backend.Hash
+import Logs.Remote
+import Logs.RemoteState
 import Utility.Hash
 import Utility.SshHost
 import Utility.Url
-import Logs.Remote
-import Logs.RemoteState
-import qualified Git.Config
+import qualified Utility.FileIO as F
 
 import qualified Network.GitLFS as LFS
 import Control.Concurrent.STM
@@ -380,7 +381,7 @@ extractKeySize k
 	| isEncKey k = Nothing
 	| otherwise = fromKey keySize k
 
-mkUploadRequest :: RemoteStateHandle -> Key -> FilePath -> Annex (LFS.TransferRequest, LFS.SHA256, Integer)
+mkUploadRequest :: RemoteStateHandle -> Key -> OsPath -> Annex (LFS.TransferRequest, LFS.SHA256, Integer)
 mkUploadRequest rs k content = case (extractKeySha256 k, extractKeySize k) of
 	(Just sha256, Just size) ->
 		ret sha256 size
@@ -390,11 +391,11 @@ mkUploadRequest rs k content = case (extractKeySha256 k, extractKeySize k) of
 		ret sha256 size
 	_ -> do
 		sha256 <- calcsha256
-		size <- liftIO $ getFileSize (toRawFilePath content)
+		size <- liftIO $ getFileSize content
 		rememberboth sha256 size
 		ret sha256 size
   where
-	calcsha256 = liftIO $ T.pack . show . sha2_256 <$> L.readFile content
+	calcsha256 = liftIO $ T.pack . show . sha2_256 <$> F.readFile content
 	ret sha256 size = do
 		let obj = LFS.TransferRequestObject
 			{ LFS.req_oid = sha256
@@ -497,7 +498,7 @@ retrieve rs h = fileRetriever' $ \dest k p iv -> getLFSEndpoint LFS.RequestDownl
 				Nothing -> giveup "unable to parse git-lfs server download url"
 				Just req -> do
 					uo <- getUrlOptions
-					liftIO $ downloadConduit p iv req (fromRawFilePath dest) uo
+					liftIO $ downloadConduit p iv req dest uo
 
 -- Since git-lfs does not support removing content, nothing needs to be
 -- done to lock content in the remote, except for checking that the content

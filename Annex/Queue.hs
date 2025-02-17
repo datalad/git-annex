@@ -31,7 +31,7 @@ addCommand commonparams command params files = do
 	store =<< flushWhenFull =<<
 		(Git.Queue.addCommand commonparams command params files q =<< gitRepo)
 
-addFlushAction :: Git.Queue.FlushActionRunner Annex -> [RawFilePath] -> Annex ()
+addFlushAction :: Git.Queue.FlushActionRunner Annex -> [OsPath] -> Annex ()
 addFlushAction runner files = do
 	q <- get
 	store =<< flushWhenFull =<<

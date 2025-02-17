@@ -13,15 +13,12 @@ module Utility.Shell (
 	findShellCommand,
 ) where
 
+import Utility.OsPath
 import Utility.SafeCommand
 #ifdef mingw32_HOST_OS
 import Utility.Path
 import Utility.Exception
 import Utility.PartialPrelude
-#endif
-
-#ifdef mingw32_HOST_OS
-import System.FilePath
 #endif
 
 shellPath :: FilePath
@@ -35,24 +32,24 @@ shebang = "#!" ++ shellPath
 -- parse it for shebang.
 --
 -- This has no effect on Unix.
-findShellCommand :: FilePath -> IO (FilePath, [CommandParam])
+findShellCommand :: OsPath -> IO (FilePath, [CommandParam])
 findShellCommand f = do
 #ifndef mingw32_HOST_OS
 	defcmd
 #else
-	l <- catchDefaultIO Nothing $ headMaybe . lines <$> readFile f
+	l <- catchDefaultIO Nothing $ headMaybe . lines <$> readFile (fromOsPath f)
 	case l of
 		Just ('#':'!':rest) -> case words rest of
 			[] -> defcmd
 			(c:ps) -> do
-				let ps' = map Param ps ++ [File f]
+				let ps' = map Param ps ++ [File (fromOsPath f)]
 				-- If the command is not inSearchPath,
 				-- take the base of it, and run eg "sh"
 				-- which in some cases on windows will work
 				-- despite it not being inSearchPath.
 				ok <- inSearchPath c
-				return (if ok then c else takeFileName c, ps')
+				return (if ok then c else fromOsPath (takeFileName (toOsPath c)), ps')
 		_ -> defcmd
 #endif
   where
-	defcmd = return (f, [])
+	defcmd = return (fromOsPath f, [])

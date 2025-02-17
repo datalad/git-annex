@@ -55,7 +55,7 @@ instance MeterSize KeySource where
  - This allows uploads of keys without size to still have progress
  - displayed.
  -}
-data KeySizer = KeySizer Key (Annex (Maybe RawFilePath))
+data KeySizer = KeySizer Key (Annex (Maybe OsPath))
 
 instance MeterSize KeySizer where
 	getMeterSize (KeySizer k getsrcfile) = case fromKey keySize k of
@@ -171,7 +171,7 @@ metered' st setclear othermeterupdate msize bwlimit showoutput a = go st
 	minratelimit = min consoleratelimit jsonratelimit
 		
 {- Poll file size to display meter. -}
-meteredFile :: RawFilePath -> Maybe MeterUpdate -> Key -> (MeterUpdate -> Annex a) -> Annex a
+meteredFile :: OsPath -> Maybe MeterUpdate -> Key -> (MeterUpdate -> Annex a) -> Annex a
 meteredFile file combinemeterupdate key a = 
 	metered combinemeterupdate key Nothing $ \_ p ->
 		watchFileSize file p a

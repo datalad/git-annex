@@ -130,7 +130,7 @@ getExportExcluded :: UUID -> Annex [Git.Tree.TreeItem]
 getExportExcluded u = do
 	logf <- fromRepo $ gitAnnexExportExcludeLog u
 	liftIO $ catchDefaultIO [] $ exportExcludedParser
-		<$> F.readFile (toOsPath logf)
+		<$> F.readFile logf
   where
 
 exportExcludedParser :: L.ByteString -> [Git.Tree.TreeItem]

@@ -21,11 +21,12 @@ import Utility.Tmp
 import Logs
 import Messages.Progress
 import qualified Utility.FileIO as F
+import qualified Utility.OsString as OS
 
-olddir :: Git.Repo -> FilePath
+olddir :: Git.Repo -> OsPath
 olddir g
-	| Git.repoIsLocalBare g = ""
-	| otherwise = ".git-annex"
+	| Git.repoIsLocalBare g = literalOsPath ""
+	| otherwise = literalOsPath ".git-annex"
 
 {- .git-annex/ moved to a git-annex branch.
  - 
@@ -54,14 +55,14 @@ upgrade = do
 	e <- liftIO $ doesDirectoryExist old
 	when e $ do
 		config <- Annex.getGitConfig
-		mapM_ (\(k, f) -> inject f $ fromRawFilePath $ locationLogFile config k) =<< locationLogs
+		mapM_ (\(k, f) -> inject f $ locationLogFile config k) =<< locationLogs
 		mapM_ (\f -> inject f f) =<< logFiles old
 
 	saveState False
 	showProgressDots
 
 	when e $ do
-		inRepo $ Git.Command.run [Param "rm", Param "-r", Param "-f", Param "-q", File old]
+		inRepo $ Git.Command.run [Param "rm", Param "-r", Param "-f", Param "-q", File (fromOsPath old)]
 		unless bare $ inRepo gitAttributesUnWrite
 	showProgressDots
 
@@ -69,29 +70,29 @@ upgrade = do
 
 	return UpgradeSuccess
 
-locationLogs :: Annex [(Key, FilePath)]
+locationLogs :: Annex [(Key, OsPath)]
 locationLogs = do
 	config <- Annex.getGitConfig
 	dir <- fromRepo gitStateDir
 	liftIO $ do
-		levela <- dirContents (toRawFilePath dir)
+		levela <- dirContents dir
 		levelb <- mapM tryDirContents levela
 		files <- mapM tryDirContents (concat levelb)
 		return $ mapMaybe (islogfile config) (concat files)
   where
 	tryDirContents d = catchDefaultIO [] $ dirContents d
-	islogfile config f = maybe Nothing (\k -> Just (k, fromRawFilePath f)) $
+	islogfile config f = maybe Nothing (\k -> Just (k, f)) $
 			locationLogFileKey config f
 
-inject :: FilePath -> FilePath -> Annex ()
+inject :: OsPath -> OsPath -> Annex ()
 inject source dest = do
 	old <- fromRepo olddir
-	new <- liftIO (readFile $ old </> source)
-	Annex.Branch.change (Annex.Branch.RegardingUUID []) (toRawFilePath dest) $ \prev -> 
+	new <- liftIO (readFile $ fromOsPath $ old </> source)
+	Annex.Branch.change (Annex.Branch.RegardingUUID []) dest $ \prev -> 
 		encodeBL $ unlines $ nub $ lines (decodeBL prev) ++ lines new
 
-logFiles :: FilePath -> Annex [FilePath]
-logFiles dir = return . filter (".log" `isSuffixOf`)
+logFiles :: OsPath -> Annex [OsPath]
+logFiles dir = return . filter (literalOsPath ".log" `OS.isSuffixOf`)
 		<=< liftIO $ getDirectoryContents dir
 
 push :: Annex ()
@@ -130,25 +131,22 @@ push = do
 {- Old .gitattributes contents, not needed anymore. -}
 attrLines :: [String]
 attrLines =
-	[ stateDir </> "*.log merge=union"
-	, stateDir </> "*/*/*.log merge=union"
+	[ fromOsPath $ stateDir </> literalOsPath "*.log merge=union"
+	, fromOsPath $ stateDir </> literalOsPath "*/*/*.log merge=union"
 	]
 
 gitAttributesUnWrite :: Git.Repo -> IO ()
 gitAttributesUnWrite repo = do
 	let attributes = Git.attributes repo
-	let attributes' = fromRawFilePath attributes
-	whenM (doesFileExist attributes') $ do
+	whenM (doesFileExist attributes) $ do
 		c <- map decodeBS . fileLines'
-			<$> F.readFile' (toOsPath attributes)
-		liftIO $ viaTmp (writeFile . fromRawFilePath . fromOsPath)
-			(toOsPath attributes) 
+			<$> F.readFile' attributes
+		liftIO $ viaTmp (writeFile . fromOsPath) attributes 
 			(unlines $ filter (`notElem` attrLines) c)
-		Git.Command.run [Param "add", File attributes'] repo
+		Git.Command.run [Param "add", File (fromOsPath attributes)] repo
 
-stateDir :: FilePath
-stateDir = addTrailingPathSeparator ".git-annex"
+stateDir :: OsPath
+stateDir = addTrailingPathSeparator (literalOsPath ".git-annex")
 
-gitStateDir :: Git.Repo -> FilePath
-gitStateDir repo = addTrailingPathSeparator $
-	fromRawFilePath (Git.repoPath repo) </> stateDir
+gitStateDir :: Git.Repo -> OsPath
+gitStateDir repo = addTrailingPathSeparator $ Git.repoPath repo </> stateDir

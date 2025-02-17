@@ -70,7 +70,7 @@ newtype Armoring = Armoring Bool
  - The directory does not really have to be empty, it just needs to be one
  - that should not contain any files with names starting with "@".
  -}
-newtype EmptyDirectory = EmptyDirectory FilePath
+newtype EmptyDirectory = EmptyDirectory OsPath
 
 {- Encrypt using symmetric encryption with the specified password. -}
 encryptSymmetric
@@ -112,7 +112,7 @@ decryptSymmetric sopcmd password emptydirectory feeder reader =
 {- Test a value round-trips through symmetric encryption and decryption. -}
 test_encrypt_decrypt_Symmetric :: SOPCmd -> SOPCmd -> Password -> Armoring -> B.ByteString -> IO Bool
 test_encrypt_decrypt_Symmetric a b password armoring v = catchBoolIO $
-	withTmpDir (toOsPath "test") $ \d -> do
+	withTmpDir (literalOsPath "test") $ \d -> do
 		let ed = EmptyDirectory d
 		enc <- encryptSymmetric a password ed Nothing armoring
 			(`B.hPutStr` v) B.hGetContents
@@ -159,10 +159,10 @@ feedRead cmd subcmd params password emptydirectory feeder reader = do
 		go (Just emptydirectory) (passwordfd ++ params)
 #else
 	-- store the password in a temp file
-	withTmpFile (toOsPath "sop") $ \tmpfile h -> do
+	withTmpFile (literalOsPath "sop") $ \tmpfile h -> do
 		liftIO $ B.hPutStr h password
 		liftIO $ hClose h
-		let passwordfile = [Param $ "--with-password=" ++ fromRawFilePath (fromOsPath tmpfile)]
+		let passwordfile = [Param $ "--with-password=" ++ fromOsPath tmpfile]
 		-- Don't need to pass emptydirectory since @FD is not used,
 		-- and so tmpfile also does not need to be made absolute.
 		case emptydirectory of
@@ -188,7 +188,7 @@ feedRead' (SOPCmd cmd) subcmd params med feeder reader = do
 		, std_out = CreatePipe
 		, std_err = Inherit
 		, cwd = case med of
-			Just (EmptyDirectory d) -> Just d
+			Just (EmptyDirectory d) -> Just (fromOsPath d)
 			Nothing -> Nothing
 		}
 	copyright =<< bracket (setup p) cleanup (go p)

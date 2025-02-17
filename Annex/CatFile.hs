@@ -45,11 +45,11 @@ import Types.AdjustedBranch
 import Types.CatFileHandles
 import Utility.ResourcePool
 
-catFile :: Git.Branch -> RawFilePath -> Annex L.ByteString
+catFile :: Git.Branch -> OsPath -> Annex L.ByteString
 catFile branch file = withCatFileHandle $ \h -> 
 	liftIO $ Git.CatFile.catFile h branch file
 
-catFileDetails :: Git.Branch -> RawFilePath -> Annex (Maybe (L.ByteString, Sha, ObjectType))
+catFileDetails :: Git.Branch -> OsPath -> Annex (Maybe (L.ByteString, Sha, ObjectType))
 catFileDetails branch file = withCatFileHandle $ \h -> 
 	liftIO $ Git.CatFile.catFileDetails h branch file
 
@@ -167,8 +167,8 @@ catKey' ref sz
 catKey' _ _ = return Nothing
 
 {- Gets a symlink target. -}
-catSymLinkTarget :: Sha -> Annex RawFilePath
-catSymLinkTarget sha = fromInternalGitPath . L.toStrict <$> get
+catSymLinkTarget :: Sha -> Annex OsPath
+catSymLinkTarget sha = fromInternalGitPath . toOsPath . L.toStrict <$> get
   where
 	-- Avoid buffering the whole file content, which might be large.
 	-- 8192 is enough if it really is a symlink.
@@ -195,25 +195,25 @@ catSymLinkTarget sha = fromInternalGitPath . L.toStrict <$> get
  -
  - So, this gets info from the index, unless running as a daemon.
  -}
-catKeyFile :: RawFilePath -> Annex (Maybe Key)
+catKeyFile :: OsPath -> Annex (Maybe Key)
 catKeyFile f = ifM (Annex.getState Annex.daemon)
 	( catKeyFileHEAD f
 	, maybe (pure Nothing) catKey =<< inRepo (Git.Ref.fileRef f)
 	)
 
-catKeyFileHEAD :: RawFilePath -> Annex (Maybe Key)
+catKeyFileHEAD :: OsPath -> Annex (Maybe Key)
 catKeyFileHEAD f = maybe (pure Nothing) catKey
 	=<< inRepo (Git.Ref.fileFromRef Git.Ref.headRef f)
 
 {- Look in the original branch from whence an adjusted branch is based
  - to find the file. But only when the adjustment hides some files. -}
-catKeyFileHidden :: RawFilePath -> CurrBranch -> Annex (Maybe Key) 
+catKeyFileHidden :: OsPath -> CurrBranch -> Annex (Maybe Key) 
 catKeyFileHidden = hiddenCat catKey
 
-catObjectMetaDataHidden :: RawFilePath -> CurrBranch -> Annex (Maybe (Sha, Integer, ObjectType))
+catObjectMetaDataHidden :: OsPath -> CurrBranch -> Annex (Maybe (Sha, Integer, ObjectType))
 catObjectMetaDataHidden = hiddenCat catObjectMetaData
 
-hiddenCat :: (Ref -> Annex (Maybe a)) -> RawFilePath -> CurrBranch -> Annex (Maybe a)
+hiddenCat :: (Ref -> Annex (Maybe a)) -> OsPath -> CurrBranch -> Annex (Maybe a)
 hiddenCat a f (Just origbranch, Just adj)
 	| adjustmentHidesFiles adj = 
 		maybe (pure Nothing) a

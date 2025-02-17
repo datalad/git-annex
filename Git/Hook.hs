@@ -21,10 +21,8 @@ import qualified Utility.RawFilePath as R
 import System.PosixCompat.Files (fileMode)
 #endif
 
-import qualified System.FilePath.ByteString as P
-
 data Hook = Hook
-	{ hookName :: RawFilePath
+	{ hookName :: OsPath
 	, hookScript :: String
 	, hookOldScripts :: [String]
 	}
@@ -33,8 +31,8 @@ data Hook = Hook
 instance Eq Hook where
 	a == b = hookName a == hookName b
 
-hookFile :: Hook -> Repo -> RawFilePath
-hookFile h r = localGitDir r P.</> "hooks" P.</> hookName h
+hookFile :: Hook -> Repo -> OsPath
+hookFile h r = localGitDir r </> literalOsPath "hooks" </> hookName h
 
 {- Writes a hook. Returns False if the hook already exists with a different
  - content. Upgrades old scripts.
@@ -50,7 +48,7 @@ hookFile h r = localGitDir r P.</> "hooks" P.</> hookName h
  - is run with a bundled bash, so should start with #!/bin/sh
  -}
 hookWrite :: Hook -> Repo -> IO Bool
-hookWrite h r = ifM (doesFileExist (fromRawFilePath f))
+hookWrite h r = ifM (doesFileExist f)
 	( expectedContent h r >>= \case
 		UnexpectedContent -> return False
 		ExpectedContent -> return True
@@ -65,7 +63,7 @@ hookWrite h r = ifM (doesFileExist (fromRawFilePath f))
 		-- Hook scripts on Windows could use CRLF endings, but
 		-- they typically use unix newlines, which does work there
 		-- and makes the repository more portable.
-		viaTmp F.writeFile' (toOsPath f) (encodeBS (hookScript h))
+		viaTmp F.writeFile' f (encodeBS (hookScript h))
 		void $ tryIO $ modifyFileMode f (addModes executeModes)
 		return True
 
@@ -81,7 +79,7 @@ hookUnWrite h r = ifM (doesFileExist f)
 	, return True
 	)
   where
-	f = fromRawFilePath $ hookFile h r
+	f = hookFile h r
 
 data ExpectedContent = UnexpectedContent | ExpectedContent | OldExpectedContent
 
@@ -91,7 +89,7 @@ expectedContent h r = do
 	-- and so a hook file that has CRLF will be treated the same as one
 	-- that has LF. That is intentional, since users may have a reason
 	-- to prefer one or the other.
-	content <- readFile $ fromRawFilePath $ hookFile h r
+	content <- readFile $ fromOsPath $ hookFile h r
 	return $ if content == hookScript h
 		then ExpectedContent
 		else if any (content ==) (hookOldScripts h)
@@ -103,13 +101,13 @@ hookExists h r = do
 	let f = hookFile h r
 	catchBoolIO $
 #ifndef mingw32_HOST_OS
-		isExecutable . fileMode <$> R.getFileStatus f
+		isExecutable . fileMode <$> R.getFileStatus (fromOsPath f)
 #else
-		doesFileExist (fromRawFilePath f)
+		doesFileExist f
 #endif
 
 runHook :: (FilePath -> [CommandParam] -> IO a) -> Hook -> [CommandParam] -> Repo -> IO a
 runHook runner h ps r = do
-	let f = fromRawFilePath $ hookFile h r
+	let f = hookFile h r
 	(c, cps) <- findShellCommand f
 	runner c (cps ++ ps)

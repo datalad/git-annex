@@ -33,12 +33,10 @@ import Annex.Locations
 import Utility.Exception
 import Annex.Common
 import Annex.LockFile
-import qualified Utility.RawFilePath as R
 
 import Database.Persist.Sql hiding (Key)
 import Database.Persist.TH
 import Data.Time.Clock
-import qualified System.FilePath.ByteString as P
 
 data FsckHandle = FsckHandle H.DbQueue UUID
 
@@ -66,14 +64,14 @@ newPass u = do
 	go = do
 		removedb =<< calcRepo' (gitAnnexFsckDbDir u)
 		removedb =<< calcRepo' (gitAnnexFsckDbDirOld u)
-	removedb = liftIO . void . tryIO . removeDirectoryRecursive . fromRawFilePath
+	removedb = liftIO . void . tryIO . removeDirectoryRecursive
 
 {- Opens the database, creating it if it doesn't exist yet. -}
 openDb :: UUID -> Annex FsckHandle
 openDb u = do
 	dbdir <- calcRepo' (gitAnnexFsckDbDir u)
-	let db = dbdir P.</> "db"
-	unlessM (liftIO $ R.doesPathExist db) $ do
+	let db = dbdir </> literalOsPath "db"
+	unlessM (liftIO $ doesFileExist db) $ do
 		initDb db $ void $
 			runMigrationSilent migrateFsck
 	lockFileCached =<< calcRepo' (gitAnnexFsckDbLock u)

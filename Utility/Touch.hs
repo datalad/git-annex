@@ -14,9 +14,10 @@ module Utility.Touch (
 
 #if ! defined(mingw32_HOST_OS)
 
-import System.FilePath.ByteString (RawFilePath)
 import System.Posix.Files.ByteString
 import Data.Time.Clock.POSIX
+
+import Utility.RawFilePath
 
 {- Changes the access and modification times of an existing file.
    Can follow symlinks, or not. -}

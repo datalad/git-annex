@@ -25,15 +25,15 @@ import Utility.Applicative
 import Utility.FileMode
 import Utility.LockFile.LockStatus
 import Utility.OpenFd
+import Utility.OsPath
 
 import System.IO
 import System.Posix.Types
 import System.Posix.IO.ByteString
 import System.Posix.Files.ByteString
-import System.FilePath.ByteString (RawFilePath)
 import Data.Maybe
 
-type LockFile = RawFilePath
+type LockFile = OsPath
 
 newtype LockHandle = LockHandle Fd
 
@@ -76,7 +76,7 @@ tryLock lockreq mode lockfile = uninterruptibleMask_ $ do
 openLockFile :: LockRequest -> Maybe ModeSetter -> LockFile -> IO Fd
 openLockFile lockreq filemode lockfile = do
 	l <- applyModeSetter filemode lockfile $ \filemode' ->
-		openFdWithMode lockfile openfor filemode' defaultFileFlags
+		openFdWithMode (fromOsPath lockfile) openfor filemode' defaultFileFlags
 	setFdOption l CloseOnExec True
 	return l
   where
@@ -120,7 +120,7 @@ dropLock (LockHandle fd) = closeFd fd
 -- else.
 checkSaneLock :: LockFile -> LockHandle -> IO Bool
 checkSaneLock lockfile (LockHandle fd) =
-	go =<< catchMaybeIO (getFileStatus lockfile)
+	go =<< catchMaybeIO (getFileStatus (fromOsPath lockfile))
   where
 	go Nothing = return False
 	go (Just st) = do

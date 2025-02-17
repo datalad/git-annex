@@ -28,7 +28,8 @@ myseek o = do
 	Command.Sync.prepMerge
 
 	Command.Add.seek Command.Add.AddOptions
-		{ Command.Add.addThese = Command.Sync.contentOfOption o
+		{ Command.Add.addThese = map fromOsPath $ 
+			Command.Sync.contentOfOption o
 		, Command.Add.batchOption = NoBatch
 		, Command.Add.updateOnly = False
 		, Command.Add.largeFilesOverride = Nothing

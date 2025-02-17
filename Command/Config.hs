@@ -152,7 +152,7 @@ seek (ShowOrigin ck@(ConfigKey name) forfile) = commandAction $
 		| decodeBS name `elem` annexAttrs =
 			case forfile of
 				Just file -> do
-					v <- checkAttr (decodeBS name) (toRawFilePath file)
+					v <- checkAttr (decodeBS name) (toOsPath file)
 					if null v
 						then cont
 						else showval "gitattributes" v		

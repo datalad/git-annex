@@ -21,10 +21,11 @@ import Utility.Shell
 import qualified Data.Map as M
 
 preCommitHook :: Git.Hook
-preCommitHook = Git.Hook "pre-commit" (mkHookScript "git annex pre-commit .") []
+preCommitHook = Git.Hook (literalOsPath "pre-commit")
+	(mkHookScript "git annex pre-commit .") []
 
 postReceiveHook :: Git.Hook
-postReceiveHook = Git.Hook "post-receive"
+postReceiveHook = Git.Hook (literalOsPath "post-receive")
 	-- Only run git-annex post-receive when git-annex supports it,
 	-- to avoid failing if the repository with this hook is used
 	-- with an older version of git-annex.
@@ -34,10 +35,10 @@ postReceiveHook = Git.Hook "post-receive"
 	]
 
 postCheckoutHook :: Git.Hook
-postCheckoutHook = Git.Hook "post-checkout" smudgeHook []
+postCheckoutHook = Git.Hook (literalOsPath "post-checkout") smudgeHook []
 
 postMergeHook :: Git.Hook
-postMergeHook = Git.Hook "post-merge" smudgeHook []
+postMergeHook = Git.Hook (literalOsPath "post-merge") smudgeHook []
 
 -- Older versions of git-annex didn't support this command, but neither did
 -- they support v7 repositories.
@@ -45,28 +46,28 @@ smudgeHook :: String
 smudgeHook = mkHookScript "git annex smudge --update"
 
 preCommitAnnexHook :: Git.Hook
-preCommitAnnexHook = Git.Hook "pre-commit-annex" "" []
+preCommitAnnexHook = Git.Hook (literalOsPath "pre-commit-annex") "" []
 
 postUpdateAnnexHook :: Git.Hook
-postUpdateAnnexHook = Git.Hook "post-update-annex" "" []
+postUpdateAnnexHook = Git.Hook (literalOsPath "post-update-annex") "" []
 
 preInitAnnexHook :: Git.Hook
-preInitAnnexHook = Git.Hook "pre-init-annex" "" []
+preInitAnnexHook = Git.Hook (literalOsPath "pre-init-annex") "" []
 
 freezeContentAnnexHook :: Git.Hook
-freezeContentAnnexHook = Git.Hook "freezecontent-annex" "" []
+freezeContentAnnexHook = Git.Hook (literalOsPath "freezecontent-annex") "" []
 
 thawContentAnnexHook :: Git.Hook
-thawContentAnnexHook = Git.Hook "thawcontent-annex" "" []
+thawContentAnnexHook = Git.Hook (literalOsPath "thawcontent-annex") "" []
 
 secureEraseAnnexHook :: Git.Hook
-secureEraseAnnexHook = Git.Hook "secure-erase-annex" "" []
+secureEraseAnnexHook = Git.Hook (literalOsPath "secure-erase-annex") "" []
 
 commitMessageAnnexHook :: Git.Hook
-commitMessageAnnexHook = Git.Hook "commitmessage-annex" "" []
+commitMessageAnnexHook = Git.Hook (literalOsPath "commitmessage-annex") "" []
 
 httpHeadersAnnexHook :: Git.Hook
-httpHeadersAnnexHook = Git.Hook "http-headers-annex" "" []
+httpHeadersAnnexHook = Git.Hook (literalOsPath "http-headers-annex") "" []
 
 mkHookScript :: String -> String
 mkHookScript s = unlines
@@ -87,8 +88,8 @@ hookWarning :: Git.Hook -> String -> Annex ()
 hookWarning h msg = do
 	r <- gitRepo
 	warning $ UnquotedString $
-		fromRawFilePath (Git.hookName h) ++ 
-			" hook (" ++ fromRawFilePath (Git.hookFile h r) ++ ") " ++ msg
+		fromOsPath (Git.hookName h) ++ 
+			" hook (" ++ fromOsPath (Git.hookFile h r) ++ ") " ++ msg
 
 {- To avoid checking if the hook exists every time, the existing hooks
  - are cached. -}
@@ -121,7 +122,7 @@ runAnnexHook' hook commandcfg = ifM (doesAnnexHookExist hook)
 		( return Nothing
 		, do
 			h <- fromRepo (Git.hookFile hook)
-			commandfailed (fromRawFilePath h)
+			commandfailed (fromOsPath h)
 		)
 	runcommandcfg = commandcfg <$> Annex.getGitConfig >>= \case
 		Nothing -> return Nothing
@@ -132,18 +133,19 @@ runAnnexHook' hook commandcfg = ifM (doesAnnexHookExist hook)
 				)
 	commandfailed c = return $ Just c
 
-runAnnexPathHook :: String -> Git.Hook -> (GitConfig -> Maybe String) -> RawFilePath -> Annex Bool
+runAnnexPathHook :: String -> Git.Hook -> (GitConfig -> Maybe String) -> OsPath -> Annex Bool
 runAnnexPathHook pathtoken hook commandcfg p = ifM (doesAnnexHookExist hook)
 	( runhook
 	, runcommandcfg
 	)
   where
-	runhook = inRepo $ Git.runHook boolSystem hook [ File (fromRawFilePath p) ]
+	runhook = inRepo $ Git.runHook boolSystem hook [ File p' ]
 	runcommandcfg = commandcfg <$> Annex.getGitConfig >>= \case
 		Nothing -> return True
 		Just basecmd -> liftIO $
 			boolSystem "sh" [Param "-c", Param $ gencmd basecmd]
-	gencmd = massReplace [ (pathtoken, shellEscape (fromRawFilePath p)) ]
+	gencmd = massReplace [ (pathtoken, shellEscape p') ]
+	p' = fromOsPath p
 
 outputOfAnnexHook :: Git.Hook -> (GitConfig -> Maybe String) -> Annex (Maybe String)
 outputOfAnnexHook hook commandcfg = ifM (doesAnnexHookExist hook)

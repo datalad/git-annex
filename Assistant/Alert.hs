@@ -395,7 +395,7 @@ fileAlert msg files = (activityAlert Nothing shortfiles)
 	maxfilesshown = 10
 
 	(!somefiles, !counter) = splitcounter (dedupadjacent files)
-	!shortfiles = map (fromString . shortFile . takeFileName) somefiles
+	!shortfiles = map (fromString . shortFile . fromOsPath . takeFileName . toOsPath) somefiles
 
 	renderer alert = tenseWords $ msg : alertData alert ++ showcounter
 	  where

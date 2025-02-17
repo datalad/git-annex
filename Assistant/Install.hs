@@ -5,6 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE CPP #-}
 
 module Assistant.Install where
@@ -31,8 +32,8 @@ import Utility.Android
 import System.PosixCompat.Files (ownerExecuteMode)
 import qualified Data.ByteString.Char8 as S8
 
-standaloneAppBase :: IO (Maybe FilePath)
-standaloneAppBase = getEnv "GIT_ANNEX_APP_BASE"
+standaloneAppBase :: IO (Maybe OsPath)
+standaloneAppBase = fmap toOsPath <$> getEnv "GIT_ANNEX_APP_BASE"
 
 {- The standalone app does not have an installation process.
  - So when it's run, it needs to set up autostarting of the assistant
@@ -51,13 +52,12 @@ ensureInstalled = ifM (isJust <$> getEnv "GIT_ANNEX_PACKAGE_INSTALL")
 	, go =<< standaloneAppBase
 	)
   where
-	go Nothing = installFileManagerHooks "git-annex"
+	go Nothing = installFileManagerHooks (literalOsPath "git-annex")
 	go (Just base) = do
-		let program = base </> "git-annex"
+		let program = base </> literalOsPath "git-annex"
 		programfile <- programFile
-		createDirectoryIfMissing True $
-			fromRawFilePath (parentDir (toRawFilePath programfile))
-		writeFile programfile program
+		createDirectoryIfMissing True (parentDir programfile)
+		writeFile (fromOsPath programfile) (fromOsPath program)
 
 #ifdef darwin_HOST_OS
 		autostartfile <- userAutoStart osxAutoStartLabel
@@ -67,24 +67,24 @@ ensureInstalled = ifM (isJust <$> getEnv "GIT_ANNEX_PACKAGE_INSTALL")
 			( do
 				-- Integration with the Termux:Boot app.
 				home <- myHomeDir
-				let bootfile = home </> ".termux" </> "boot" </> "git-annex"
+				let bootfile = toOsPath home </> literalOsPath ".termux" </> literalOsPath "boot" </> literalOsPath "git-annex"
 				unlessM (doesFileExist bootfile) $ do
 					createDirectoryIfMissing True (takeDirectory bootfile)
-					writeFile bootfile "git-annex assistant --autostart"
+					writeFile (fromOsPath bootfile) "git-annex assistant --autostart"
 			, do
 				menufile <- desktopMenuFilePath "git-annex" <$> userDataDir
 				icondir <- iconDir <$> userDataDir
-				installMenu program menufile base icondir
+				installMenu (fromOsPath program) menufile base icondir
 				autostartfile <- autoStartPath "git-annex" <$> userConfigDir
-				installAutoStart program autostartfile
+				installAutoStart (fromOsPath program) autostartfile
 			)
 #endif
 
 		sshdir <- sshDir
-		let runshell var = "exec " ++ base </> "runshell " ++ var
+		let runshell var = "exec " ++ fromOsPath (base </> literalOsPath "runshell ") ++ var
 		let rungitannexshell var = runshell $ "git-annex-shell -c \"" ++ var ++ "\""
 
-		installWrapper (toRawFilePath (sshdir </> "git-annex-shell")) $
+		installWrapper (sshdir </> literalOsPath "git-annex-shell") $
 			[ shebang
 			, "set -e"
 			, "if [ \"x$SSH_ORIGINAL_COMMAND\" != \"x\" ]; then"
@@ -93,7 +93,7 @@ ensureInstalled = ifM (isJust <$> getEnv "GIT_ANNEX_PACKAGE_INSTALL")
 			,   rungitannexshell "$@"
 			, "fi"
 			]
-		installWrapper (toRawFilePath (sshdir </> "git-annex-wrapper")) $
+		installWrapper (sshdir </> literalOsPath "git-annex-wrapper") $
 			[ shebang
 			, "set -e"
 			, runshell "\"$@\""
@@ -101,47 +101,46 @@ ensureInstalled = ifM (isJust <$> getEnv "GIT_ANNEX_PACKAGE_INSTALL")
 
 		installFileManagerHooks program
 
-installWrapper :: RawFilePath -> [String] -> IO ()
+installWrapper :: OsPath -> [String] -> IO ()
 installWrapper file content = do
 	let content' = map encodeBS content
-	curr <- catchDefaultIO [] $ fileLines' <$> F.readFile' (toOsPath file)
+	curr <- catchDefaultIO [] $ fileLines' <$> F.readFile' file
 	when (curr /= content') $ do
-		createDirectoryIfMissing True (fromRawFilePath (parentDir file))
-		viaTmp F.writeFile' (toOsPath file) $
-			linesFile' (S8.unlines content')
+		createDirectoryIfMissing True (parentDir file)
+		viaTmp F.writeFile' file $ linesFile' (S8.unlines content')
 		modifyFileMode file $ addModes [ownerExecuteMode]
 
-installFileManagerHooks :: FilePath -> IO ()
+installFileManagerHooks :: OsPath -> IO ()
 #ifdef linux_HOST_OS
 installFileManagerHooks program = unlessM osAndroid $ do
 	let actions = ["get", "drop", "undo"]
 
 	-- Gnome
-	nautilusScriptdir <- (\d -> d </> "nautilus" </> "scripts") <$> userDataDir
+	nautilusScriptdir <- (\d -> d </> literalOsPath "nautilus" </> literalOsPath "scripts") <$> userDataDir
 	createDirectoryIfMissing True nautilusScriptdir
 	forM_ actions $
 		genNautilusScript nautilusScriptdir
 
 	-- KDE
 	userdata <- userDataDir
-	let kdeServiceMenusdir = userdata </> "kservices5" </> "ServiceMenus"
+	let kdeServiceMenusdir = userdata </> literalOsPath "kservices5" </> literalOsPath "ServiceMenus"
 	createDirectoryIfMissing True kdeServiceMenusdir
-	writeFile (kdeServiceMenusdir </> "git-annex.desktop")
+	writeFile (fromOsPath (kdeServiceMenusdir </> literalOsPath "git-annex.desktop"))
 		(kdeDesktopFile actions)
   where
 	genNautilusScript scriptdir action =
-		installscript (toRawFilePath (scriptdir </> scriptname action)) $ unlines
+		installscript (scriptdir </> toOsPath (scriptname action)) $ unlines
 			[ shebang
 			, autoaddedcomment
-			, "exec " ++ program ++ " " ++ action ++ " --notify-start --notify-finish -- \"$@\""
+			, "exec " ++ fromOsPath program ++ " " ++ action ++ " --notify-start --notify-finish -- \"$@\""
 			]
 	scriptname action = "git-annex " ++ action
 	installscript f c = whenM (safetoinstallscript f) $ do
-		writeFile (fromRawFilePath f) c
+		writeFile (fromOsPath f) c
 		modifyFileMode f $ addModes [ownerExecuteMode]
 	safetoinstallscript f = catchDefaultIO True $
 		elem (encodeBS autoaddedcomment) . fileLines'
-			<$> F.readFile' (toOsPath f)
+			<$> F.readFile' f
 	autoaddedcomment = "# " ++ autoaddedmsg ++ " (To disable, chmod 600 this file.)"
 	autoaddedmsg = "Automatically added by git-annex, do not edit."
 
@@ -167,7 +166,7 @@ installFileManagerHooks program = unlessM osAndroid $ do
 		, "Icon=git-annex"
 		, unwords
 			[ "Exec=sh -c 'cd \"$(dirname \"$1\")\" &&"
-			, program
+			, fromOsPath program
 			, command
 			, "--notify-start --notify-finish -- \"$1\"'"
 			, "false" -- this becomes $0 in sh, so unused

@@ -5,11 +5,14 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE TypeSynonymInstances, FlexibleInstances, GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE CPP #-}
 
 module Types.UUID where
 
 import qualified Data.ByteString as B
+import qualified Data.ByteString.Short as SB
 import qualified Data.Text as T
 import qualified Data.Map as M
 import qualified Data.UUID as U
@@ -19,8 +22,8 @@ import Data.ByteString.Builder
 import Control.DeepSeq
 import qualified Data.Semigroup as Sem
 
+import Common
 import Git.Types (ConfigValue(..))
-import Utility.FileSystemEncoding
 import Utility.QuickCheck
 import Utility.Aeson
 import qualified Utility.SimpleProtocol as Proto
@@ -53,6 +56,25 @@ instance ToUUID B.ByteString where
 	toUUID b
 		| B.null b = NoUUID
 		| otherwise = UUID b
+
+instance FromUUID SB.ShortByteString where
+	fromUUID (UUID u) = SB.toShort u
+	fromUUID NoUUID = SB.empty
+
+instance ToUUID SB.ShortByteString where
+	toUUID b
+		| SB.null b = NoUUID
+		| otherwise = UUID (SB.fromShort b)
+
+#ifdef WITH_OSPATH
+-- OsPath is a ShortByteString internally, so this is the most
+-- efficient conversion.
+instance FromUUID OsPath where
+	fromUUID s = toOsPath (fromUUID s :: SB.ShortByteString)
+
+instance ToUUID OsPath where
+	toUUID s = toUUID (fromOsPath s :: SB.ShortByteString)
+#endif
 
 instance FromUUID String where
 	fromUUID s = decodeBS (fromUUID s)

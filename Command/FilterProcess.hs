@@ -36,7 +36,7 @@ seek _ = liftIO longRunningFilterProcessHandshake >>= \case
 			go
 		Nothing -> return ()
 
-smudge :: FilePath -> Annex ()
+smudge :: OsPath -> Annex ()
 smudge file = do
 	{- The whole git file content is necessarily buffered in memory,
 	 - because we have to consume everything git is sending before
@@ -49,7 +49,7 @@ smudge file = do
 	 - See Command.Smudge.smudge for details of how this works. -}
 	liftIO $ respondFilterRequest b
 
-clean :: FilePath -> Annex ()
+clean :: OsPath -> Annex ()
 clean file = do
 	{- We have to consume everything git is sending before we can
 	 - respond to it. But it can be an arbitrarily large file,
@@ -82,7 +82,7 @@ clean file = do
 	-- read from the file. It may be less expensive to incrementally
 	-- hash the content provided by git, but Backend does not currently
 	-- have an interface to do so.
-	Command.Smudge.clean' (toRawFilePath file)
+	Command.Smudge.clean' file
 		(parseLinkTargetOrPointer' b)
 		passthrough
 		discardreststdin

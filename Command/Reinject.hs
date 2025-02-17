@@ -57,26 +57,26 @@ startSrcDest :: (SeekInput, (String, String)) -> CommandStart
 startSrcDest (si, (src, dest))
 	| src == dest = stop
 	| otherwise = starting "reinject" ai si $ notAnnexed src' $
-		lookupKey (toRawFilePath dest) >>= \case
+		lookupKey (toOsPath dest) >>= \case
 			Just key -> ifM (verifyKeyContent key src')
 				( perform src' key
 				, do
 					qp <- coreQuotePath <$> Annex.getGitConfig
 					giveup $ decodeBS $ quote qp $ QuotedPath src'
 						<> " does not have expected content of "
-						<> QuotedPath (toRawFilePath dest)
+						<> QuotedPath (toOsPath dest)
 				)
 			Nothing -> do
 				qp <- coreQuotePath <$> Annex.getGitConfig
 				giveup $ decodeBS $ quote qp $ QuotedPath src'
 					<> " is not an annexed file"
   where
-	src' = toRawFilePath src
+	src' = toOsPath src
 	ai = ActionItemOther (Just (QuotedPath src'))
 
 startGuessKeys :: FilePath -> CommandStart
 startGuessKeys src = starting "reinject" ai si $ notAnnexed src' $
-	case fileKey (toRawFilePath (takeFileName src)) of
+	case fileKey (takeFileName src') of
 		Just key -> ifM (verifyKeyContent key src')
 			( perform src' key
 			, do
@@ -88,7 +88,7 @@ startGuessKeys src = starting "reinject" ai si $ notAnnexed src' $
 			warning "Not named like an object file; skipping"
 			next $ return True
   where
-	src' = toRawFilePath src
+	src' = toOsPath src
 	ai = ActionItemOther (Just (QuotedPath src'))
 	si = SeekInput [src]
 
@@ -102,12 +102,12 @@ startKnown src = starting "reinject" ai si $ notAnnexed src' $ do
 			next $ return True
 		)
   where
-	src' = toRawFilePath src
+	src' = toOsPath src
 	ks = KeySource src' src' Nothing
 	ai = ActionItemOther (Just (QuotedPath src'))
 	si = SeekInput [src]
 
-notAnnexed :: RawFilePath -> CommandPerform -> CommandPerform
+notAnnexed :: OsPath -> CommandPerform -> CommandPerform
 notAnnexed src a = 
 	ifM (fromRepo Git.repoIsLocalBare)
 		( a
@@ -120,7 +120,7 @@ notAnnexed src a =
 			Nothing -> a
 		)
 
-perform :: RawFilePath -> Key -> CommandPerform
+perform :: OsPath -> Key -> CommandPerform
 perform src key = do
 	maybeAddJSONField "key" (serializeKey key)
 	ifM move

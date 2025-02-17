@@ -39,4 +39,4 @@ start (_, key) = fieldTransfer Download key $ \_p -> do
 	go tmp = unVerified $ do
 		opts <- filterRsyncSafeOptions . maybe [] words
 			<$> getField "RsyncOptions"
-		liftIO $ rsyncServerReceive (map Param opts) (fromRawFilePath tmp)
+		liftIO $ rsyncServerReceive (map Param opts) (fromOsPath tmp)

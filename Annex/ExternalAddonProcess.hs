@@ -85,9 +85,9 @@ startExternalAddonProcess basecmd ps pid = do
 
 	runerr (Just cmd) =
 		return $ Left $ ProgramFailure $
-			"Cannot run " ++ cmd ++ " -- Make sure it's executable and that its dependencies are installed."
+			"Cannot run " ++ fromOsPath cmd ++ " -- Make sure it's executable and that its dependencies are installed."
 	runerr Nothing = do
-		path <- intercalate ":" <$> getSearchPath
+		path <- intercalate ":" . map fromOsPath <$> getSearchPath
 		return $ Left $ ProgramNotInstalled $
 			"Cannot run " ++ basecmd ++ " -- It is not installed in PATH (" ++ path ++ ")"
 

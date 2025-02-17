@@ -119,7 +119,7 @@ check fileprefix msg a c = do
 	maybeAddJSONField
 		((if null fileprefix then "unused" else fileprefix) ++ "-list")
 		(M.fromList $ map (\(n,  k) -> (T.pack (show n), serializeKey k)) unusedlist)
-	updateUnusedLog (toRawFilePath fileprefix) (M.fromList unusedlist)
+	updateUnusedLog (toOsPath fileprefix) (M.fromList unusedlist)
 	return $ c + length l
 
 number :: Int -> [a] -> [(Int, a)]
@@ -194,7 +194,7 @@ excludeReferenced refspec ks = runbloomfilter withKeysReferencedM ks
 
 {- Given an initial value, accumulates the value over each key
  - referenced by files in the working tree. -}
-withKeysReferenced :: v -> (Key -> RawFilePath -> v -> Annex v) -> Annex v
+withKeysReferenced :: v -> (Key -> OsPath -> v -> Annex v) -> Annex v
 withKeysReferenced initial = withKeysReferenced' Nothing initial
 
 {- Runs an action on each referenced key in the working tree. -}
@@ -204,10 +204,10 @@ withKeysReferencedM a = withKeysReferenced' Nothing () calla
 	calla k _ _ = a k
 
 {- Folds an action over keys and files referenced in a particular directory. -}
-withKeysFilesReferencedIn :: FilePath -> v -> (Key -> RawFilePath -> v -> Annex v) -> Annex v
+withKeysFilesReferencedIn :: OsPath -> v -> (Key -> OsPath -> v -> Annex v) -> Annex v
 withKeysFilesReferencedIn = withKeysReferenced' . Just
 
-withKeysReferenced' :: Maybe FilePath -> v -> (Key -> RawFilePath -> v -> Annex v) -> Annex v
+withKeysReferenced' :: Maybe OsPath -> v -> (Key -> OsPath -> v -> Annex v) -> Annex v
 withKeysReferenced' mdir initial a = do
 	(files, clean) <- getfiles
 	r <- go initial files
@@ -221,7 +221,7 @@ withKeysReferenced' mdir initial a = do
 				top <- fromRepo Git.repoPath
 				inRepo $ LsFiles.allFiles [] [top]
 			)
-		Just dir -> inRepo $ LsFiles.inRepo [] [toRawFilePath dir]
+		Just dir -> inRepo $ LsFiles.inRepo [] [dir]
 	go v [] = return v
 	go v (f:fs) = do
 		mk <- lookupKey f
@@ -308,9 +308,9 @@ data UnusedMaps = UnusedMaps
 
 withUnusedMaps :: (UnusedMaps -> Int -> CommandStart) -> CmdParams -> CommandSeek
 withUnusedMaps a params = do
-	unused <- readUnusedMap ""
-	unusedbad <- readUnusedMap "bad"
-	unusedtmp <- readUnusedMap "tmp"
+	unused <- readUnusedMap (literalOsPath "")
+	unusedbad <- readUnusedMap (literalOsPath "bad")
+	unusedtmp <- readUnusedMap (literalOsPath "tmp")
 	let m = unused `M.union` unusedbad `M.union` unusedtmp
 	let unusedmaps = UnusedMaps unused unusedbad unusedtmp
 	commandActions $ map (a unusedmaps) $ concatMap (unusedSpec m) params

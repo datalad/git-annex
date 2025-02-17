@@ -176,11 +176,11 @@ retrieve hv cc = fileRetriever' $ \d k p iv ->
 		LegacyChunks _ -> do
 			-- Not doing incremental verification for chunks.
 			liftIO $ maybe noop unableIncrementalVerifier iv
-			retrieveLegacyChunked (fromRawFilePath d) k p dav
+			retrieveLegacyChunked (fromOsPath d) k p dav
 		_ -> liftIO $ goDAV dav $
-			retrieveHelper (keyLocation k) (fromRawFilePath d) p iv
+			retrieveHelper (keyLocation k) d p iv
 
-retrieveHelper :: DavLocation -> FilePath -> MeterUpdate -> Maybe IncrementalVerifier -> DAVT IO ()
+retrieveHelper :: DavLocation -> OsPath -> MeterUpdate -> Maybe IncrementalVerifier -> DAVT IO ()
 retrieveHelper loc d p iv = do
 	debugDav $ "retrieve " ++ loc
 	inLocation loc $
@@ -213,14 +213,14 @@ checkKey hv chunkconfig k = withDavHandle hv $ \dav ->
 				existsDAV (keyLocation k)
 			either giveup return v
 
-storeExportDav :: DavHandleVar -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex ()
+storeExportDav :: DavHandleVar -> OsPath -> Key -> ExportLocation -> MeterUpdate -> Annex ()
 storeExportDav hdl f k loc p = case exportLocation loc of
 	Right dest -> withDavHandle hdl $ \h -> runExport h $ \dav -> do
 		reqbody <- liftIO $ httpBodyStorer f p
 		storeHelper dav (exportTmpLocation loc k) dest reqbody
 	Left err -> giveup err
 
-retrieveExportDav :: DavHandleVar -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Verification
+retrieveExportDav :: DavHandleVar -> Key -> ExportLocation -> OsPath -> MeterUpdate -> Annex Verification
 retrieveExportDav hdl  k loc d p = case exportLocation loc of
 	Right src -> verifyKeyContentIncrementally AlwaysVerify k  $ \iv ->
 		withDavHandle hdl $ \h -> runExport h $ \_dav ->
@@ -247,7 +247,7 @@ removeExportDav hdl _k loc = case exportLocation loc of
 
 removeExportDirectoryDav :: DavHandleVar -> ExportDirectory -> Annex ()
 removeExportDirectoryDav hdl dir = withDavHandle hdl $ \h -> runExport h $ \_dav -> do
-	let d = fromRawFilePath $ fromExportDirectory dir
+	let d = fromOsPath $ fromExportDirectory dir
 	debugDav $ "delContent " ++ d
 	inLocation d delContentM
 
@@ -481,7 +481,7 @@ storeLegacyChunked annexrunner chunksize k dav b =
 	finalizer tmp' dest' = goDAV dav $ 
 		finalizeStore dav tmp' (fromJust $ locationParent dest')
 
-	tmp = addTrailingPathSeparator $ keyTmpLocation k
+	tmp = fromOsPath $ addTrailingPathSeparator $ toOsPath $ keyTmpLocation k
 	dest = keyLocation k
 
 retrieveLegacyChunked :: FilePath -> Key -> MeterUpdate -> DavHandle -> Annex ()

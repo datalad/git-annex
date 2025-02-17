@@ -122,8 +122,8 @@ parseRemoteLocation s knownurl repo = go
 #ifdef mingw32_HOST_OS
 	-- git on Windows will write a path to .git/config with "drive:",
 	-- which is not to be confused with a "host:"
-	dosstyle = hasDrive
-	dospath = fromRawFilePath . fromInternalGitPath . toRawFilePath
+	dosstyle = hasDrive . toOsPath
+	dospath = fromOsPath . fromInternalGitPath . toOsPath
 #endif
 
 insteadOfUrl :: String -> S.ByteString -> RepoFullConfig -> Maybe String
