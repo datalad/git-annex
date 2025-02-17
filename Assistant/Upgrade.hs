@@ -182,7 +182,7 @@ upgradeToDistribution newdir cleanup distributionfile = do
 				]
 			sanitycheck newdir
 		let deleteold = do
-			deleteFromManifest $ toOsPath olddir </> literalOsPath "Contents" </> literalOsPath "MacOS"
+			deleteFromManifest $ olddir </> literalOsPath "Contents" </> literalOsPath "MacOS"
 			makeorigsymlink olddir
 		return (newdir </> literalOsPath "Contents" </> literalOsPath "MacOS" </> literalOsPath "git-annex", deleteold)
 #else
