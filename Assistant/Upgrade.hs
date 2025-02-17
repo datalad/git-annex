@@ -168,13 +168,13 @@ upgradeToDistribution newdir cleanup distributionfile = do
 		olddir <- oldVersionLocation
 		withTmpDirIn (parentDir newdir) (literalOsPath "git-annex.upgrade") $ \tmpdir -> do
 			void $ boolSystem "hdiutil"
-				[ Param "attach", File distributionfile
+				[ Param "attach", File (fromOsPath distributionfile)
 				, Param "-mountpoint", File (fromOsPath tmpdir)
 				]
 			void $ boolSystem "cp"
 				[ Param "-R"
 				, File $ fromOsPath $ tmpdir </> toOsPath installBase </> literalOsPath "Contents"
-				, File $ newdir
+				, File (fromOsPath newdir)
 				]
 			void $ boolSystem "hdiutil"
 				[ Param "eject"
