@@ -556,9 +556,9 @@ test_magic = intmpclonerepo $ do
 		"git-annex add with mimeencoding in largefiles"
 	git_annex "sync" ["--no-content"]
 		"git-annex sync"
-	(isJust <$> annexeval (Annex.CatFile.catKeyFile (encodeBS "binary")))
+	(isJust <$> annexeval (Annex.CatFile.catKeyFile (literalOsPath "binary")))
 		@? "binary file not added to annex despite mimeencoding config"
-	(isNothing <$> annexeval (Annex.CatFile.catKeyFile (encodeBS "text")))
+	(isNothing <$> annexeval (Annex.CatFile.catKeyFile (literalOsPath "text")))
 		@? "non-binary file got added to annex despite mimeencoding config"
 #else
 	return ()
