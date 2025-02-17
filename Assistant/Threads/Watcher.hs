@@ -165,7 +165,7 @@ ignored = ig . takeFileName
 		| f == literalOsPath ".gitignore" = True
 		| f == literalOsPath ".gitattributes" = True
 #ifdef darwin_HOST_OS
-		| f == literlosPath ".DS_Store" = True
+		| f == literalOsPath ".DS_Store" = True
 #endif
 		| otherwise = False
 

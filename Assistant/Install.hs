@@ -61,7 +61,7 @@ ensureInstalled = ifM (isJust <$> getEnv "GIT_ANNEX_PACKAGE_INSTALL")
 
 #ifdef darwin_HOST_OS
 		autostartfile <- userAutoStart osxAutoStartLabel
-		installAutoStart program autostartfile
+		installAutoStart (fromOsPath program) autostartfile
 #else
 		ifM osAndroid
 			( do
