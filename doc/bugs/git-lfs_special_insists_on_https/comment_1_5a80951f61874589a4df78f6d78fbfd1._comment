@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-02-18T16:23:23Z"
+ content="""
+LFS uses http basic auth, so using it over http probably allows
+any man in the middle to take over your storage.
+
+With that rationalle, <https://hackage.haskell.org/package/git-lfs>
+hardcodes a https url at LFS server discovery time. And I don't think it
+would be secure for it to do anything else by default; people do clone
+git over http and it would be a security hole if LFS then exposed their
+password.
+
+In your case, you're using a nonstandard http port, and it's continuing
+to use that same port for https. That seems unlikely to work in almost any
+situation. Perhaps a http url should only be upgraded to https when
+it's using a standard port. Or perhaps the nonstandard port should be
+replaced with the standard https port. I felt that the latter was less
+likely to result in security issues, and was more consistent, so I've gone
+with that approach. That change is in version 1.2.4 of 
+<https://hackage.haskell.org/package/git-lfs>.
+
+git-lfs has git configs `lfs.url` and `remote.<name>.lfsurl` 
+that allow the user to specify the API endpoint to use. The special
+remote's url= parameter is the git repository url, not the API endpoint.
+So I think that to handle your use case, it makes sense to add an optional
+apiurl= parameter to the special remote, which corresponds to those git
+configs.
+
+Unfortunately, adding apiurl= needed a new version 1.2.5 of
+<https://hackage.haskell.org/package/git-lfs>, so it will only
+be available in builds of git-annex that use that version of the library.
+Which will take a while to reach all builds.
+"""]]

@@ -7,6 +7,7 @@
 
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE CPP #-}
 
 module Remote.GitLFS (remote, gen, configKnownUrl) where
 
@@ -66,6 +67,8 @@ remote = specialRemoteType $ RemoteType
 	, configParser = mkRemoteConfigParser
 		[ optionalStringParser urlField
 			(FieldDesc "url of git-lfs repository")
+		, optionalStringParser apiUrlField
+			(FieldDesc "url of LFS API endpoint")
 		]
 	, setup = mySetup
 	, exportSupported = exportUnsupported
@@ -75,6 +78,9 @@ remote = specialRemoteType $ RemoteType
 
 urlField :: RemoteConfigField
 urlField = Accepted "url"
+
+apiUrlField :: RemoteConfigField
+apiUrlField = Accepted "apiurl"
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u rc gc rs = do
@@ -87,7 +93,7 @@ gen r u rc gc rs = do
 			liftIO $ Git.GCrypt.encryptedRemote g r
 		else pure r
 	sem <- liftIO $ MSemN.new 1
-	h <- liftIO $ newTVarIO $ LFSHandle Nothing Nothing sem r' gc
+	h <- liftIO $ newTVarIO $ LFSHandle Nothing Nothing sem r' gc c
 	cst <- remoteCost gc c expensiveRemoteCost
 	let specialcfg = (specialRemoteCfg c)
 		-- chunking would not improve git-lfs
@@ -219,6 +225,7 @@ data LFSHandle = LFSHandle
 	, getEndPointLock :: MSemN.MSemN Int 
 	, remoteRepo :: Git.Repo
 	, remoteGitConfig :: RemoteGitConfig
+	, remoteConfigs :: ParsedRemoteConfig
 	}
 
 -- Only let one thread at a time do endpoint discovery.
@@ -230,10 +237,24 @@ withEndPointLock h = bracket_
 	l = getEndPointLock h
 
 discoverLFSEndpoint :: LFS.TransferRequestOperation -> LFSHandle -> Annex (Maybe LFS.Endpoint)
-discoverLFSEndpoint tro h
-	| Git.repoIsSsh r = gossh
-	| Git.repoIsHttp r = gohttp
-	| otherwise = unsupportedurischeme
+discoverLFSEndpoint tro h =
+	case fmap fromProposedAccepted $ M.lookup apiUrlField (unparsedRemoteConfig (remoteConfigs h)) of
+		Just apiurl | not (null apiurl) -> case parseURIRelaxed apiurl of
+			Nothing -> unsupportedurischeme
+#if MIN_VERSION_git_lfs(1,2,5)
+			Just apiuri -> case LFS.mkEndpoint apiuri of
+				Just endpoint -> checkhttpauth endpoint
+				Nothing -> unsupportedurischeme
+#else
+#warning Building with old version of git-lfs, apiurl= will not be supported
+			Just _ -> do
+				warning $ "Unable to use configured apiurl because this git-annex is not built with version 1.2.5 of the haskell git-lfs library."
+				return Nothing
+#endif
+		_
+			| Git.repoIsSsh r -> gossh
+			| Git.repoIsHttp r -> gohttp
+			| otherwise -> unsupportedurischeme
   where
   	r = remoteRepo h
 	lfsrepouri = case Git.location r of
@@ -278,31 +299,33 @@ discoverLFSEndpoint tro h
 						warning "unexpected response from git-lfs remote when doing ssh endpoint discovery"
 						return Nothing
 					Just endpoint -> return (Just endpoint)
-	
+
+	gohttp = case LFS.guessEndpoint lfsrepouri of
+		Nothing -> unsupportedurischeme
+		Just endpoint -> checkhttpauth endpoint
+
 	-- The endpoint may or may not need http basic authentication,
 	-- which involves using git-credential to prompt for the password.
 	--
 	-- To determine if it does, make a download or upload request to
 	-- it, not including any objects in the request, and see if
 	-- the server requests authentication.
-	gohttp = case LFS.guessEndpoint lfsrepouri of
-		Nothing -> unsupportedurischeme
-		Just endpoint -> do
-			let testreq = LFS.startTransferRequest endpoint transfernothing
-			flip catchNonAsync (const (returnendpoint endpoint)) $ do
-				resp <- makeSmallAPIRequest testreq
-				if needauth (responseStatus resp)
-					then do
-						cred <- prompt $ inRepo $ Git.getUrlCredential (show lfsrepouri)
-						let endpoint' = addbasicauth (Git.credentialBasicAuth cred) endpoint
-						let testreq' = LFS.startTransferRequest endpoint' transfernothing
-						flip catchNonAsync (const (returnendpoint endpoint')) $ do
-							resp' <- makeSmallAPIRequest testreq'
-							inRepo $ if needauth (responseStatus resp')
-								then Git.rejectUrlCredential cred
-								else Git.approveUrlCredential cred
-							returnendpoint endpoint'
-					else returnendpoint endpoint
+	checkhttpauth endpoint = do
+		let testreq = LFS.startTransferRequest endpoint transfernothing
+		flip catchNonAsync (const (returnendpoint endpoint)) $ do
+			resp <- makeSmallAPIRequest testreq
+			if needauth (responseStatus resp)
+				then do
+					cred <- prompt $ inRepo $ Git.getUrlCredential (show lfsrepouri)
+					let endpoint' = addbasicauth (Git.credentialBasicAuth cred) endpoint
+					let testreq' = LFS.startTransferRequest endpoint' transfernothing
+					flip catchNonAsync (const (returnendpoint endpoint')) $ do
+						resp' <- makeSmallAPIRequest testreq'
+						inRepo $ if needauth (responseStatus resp')
+							then Git.rejectUrlCredential cred
+							else Git.approveUrlCredential cred
+						returnendpoint endpoint'
+				else returnendpoint endpoint
 	  where
 	  	transfernothing = LFS.TransferRequest
 			{ LFS.req_operation = tro
@@ -314,10 +337,10 @@ discoverLFSEndpoint tro h
 
 		needauth status = status == unauthorized401
 
-		addbasicauth (Just ba) endpoint =
-			LFS.modifyEndpointRequest endpoint $
+		addbasicauth (Just ba) endpoint' =
+			LFS.modifyEndpointRequest endpoint' $
 				applyBasicAuth' ba
-		addbasicauth Nothing endpoint = endpoint
+		addbasicauth Nothing endpoint' = endpoint'
 
 -- The endpoint is cached for later use.
 getLFSEndpoint :: LFS.TransferRequestOperation -> TVar LFSHandle -> Annex (Maybe LFS.Endpoint)
