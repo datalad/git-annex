@@ -10,37 +10,27 @@ When an compute special remote is initremoted, a program is specified:
 That causes `git-annex-compute-foo` to be run to get files from that
 compute special remote.
 
-The environment variable `ANNEX_COMPUTE_KEY` is the key that the program
-is requested to compute.
+The user adds an annexed file that is computed by the program by running
+a command like this:
 
-The program is run in a temporary directory, which will be cleaned up after it
-exits. When it generates the content of a key, it should write it to a file
-with the same name as the key, in that directory. Then it should
-output the key in a line to stdout.
+    git-annex addcomputed --to foo \
+        --input raw=file.raw --value passes=10 \
+        --output photo=file.jpeg
 
-While usually this will be the requested key, the program can output any
-number of other keys as well, all of which will be stored in the git-annex
-repository when getting files from the compute special remote. When a
-computation generates several files, this allows running it a single time
-to get them all.
+That command and later `git-annex get` of a computed file both
+run the program the same way.
 
-The program is passed environment variables to provide inputs to the
-computation. These are all prefixed with `"ANNEX_COMPUTE_"`.
+The program is passed inputs to the computation via environment variables,
+which are all prefixed with `"ANNEX_COMPUTE_"`.
 
-The names are taken from the `git-annex addcomputed` command that was used to
-add a computed file to the repository.
+In the example above, the program will be passed this environment:
 
-For example, this command:
-
-    git-annex addcomputed file.gen --to foo \
-        --input raw=file.raw --value passes=10
-
-Will result in this environment:
-
-	ANNEX_COMPUTE_KEY=SHA256--...
-    ANNEX_COMPUTE_raw=file.in
     ANNEX_COMPUTE_INPUT_raw=/path/.git/annex/objects/..
-    ANNEX_COMPUTE_passes=10
+    ANNEX_COMPUTE_VALUE_passes=10
+
+Default values that are provided to `git-annex initremote` will also be set
+in the environment. Eg `git-annex initremote myremote type=compute
+program=foo passes=9` will set `ANNEX_COMPUTE_VALUE_passes=9` by default.
 
 For security, the program should avoid exposing values from `ANNEX_COMPUTE_*`
 variables to the shell unprotected, or otherwise executing them.
@@ -48,33 +38,67 @@ variables to the shell unprotected, or otherwise executing them.
 The program will also inherit other environment variables
 that were set when git-annex was run, like PATH.
 
+The program is run in a temporary directory, which will be cleaned up after
+it exits. It writes the files that it computes to that directory.
+
+Before starting the main computation, the program must output a list of the
+files that it will compute, in the form "COMPUTING Id filename".
+Here "Id" is a short identifier for a particular file, which the
+user specifies when running `git-annex addcomputed`.
+
+In the example above, the program is expected to output something like:
+
+    COMPUTING photo out.jpeg
+    COMPUTING sidecar otherfile
+
+If possible, the program should write the content of the file it is
+generating directly to the file listed in COMPUTING, rather than writing to
+somewhere else and renaming it at the end. If git-annex sees that the file
+corresponding to the key it requested be computed is growing, it will use
+its file size when displaying progress to the user.
+
+The program can also output lines to stdout to indicate its current
+progress.
+
+    PROGRESS 50%
+
 Anything that the program outputs to stderr will be displayed to the user.
 This stderr should be used for error messages, and possibly computation
-output, but not for progress displays, since git-annex has its own progress
-displays.
-
-If possible, the program should write the content of the key it is
-generating directly to the file, rather than writing to somewhere else and
-renaming it at the end. If git-annex sees that the file corresponding to
-the key it requested be computed is growing, it will use the file size when
-displaying progress to the user.
-
-Alternatively, if the program outputs a number on a line to stdout, this is
-taken to be the number of bytes of the requested key that have been computed
-so far. Or, the program can output a percentage eg "50%" on a line to stdout
-to indicate what percent of the computation has been performed so far.
+output, but not for progress displays.
 
 If the program exits nonzero, nothing it computed will be stored in the 
 git-annex repository.
+
+The program should also support listing the inputs and outputs
+that it supports.
+
+This allows `git-annex addcomputed` and `git-annex initremote` to list
+inputs and outputs, and also lets them reject invalid inputs and outputs.
+
+In this mode, it is run with "list" as a parameter. 
+It should output lines, in the form:
+
+    INPUT Name Description
+    VALUE Name Description
+    OUTPUT Id Description
+
+Use "INPUT" when an annexed file is an input to the computation, 
+and "VALUE" for all other input values.
 
 An example `git-annex-compute-foo` shell script follows:
 
     #!/bin/sh
 	set -e
-    if [ -z "$ANNEX_COMPUTE_passes" || -z "$ANNEX_COMPUTE_INPUT_raw" ]; then
+    if [ "$1" = list ]; then
+        echo "INPUT raw A photo in RAW format"
+        echo "VALUE passes Number of passes"
+        echo "OUTPUT photo Computed JPEG"
+        exit 0
+    fi
+    if [ -z "$ANNEX_COMPUTE_INPUT_raw" || -z "$ANNEX_COMPUTE_VALUE_passes" ]; then
         echo "Missing expected inputs" >&2
         exit 1
     fi
-    frobnicate --passes="$ANNEX_COMPUTE_passes" \
-		<"$ANNEX_COMPUTE_INPUT_raw" >"$ANNEX_COMPUTE_KEY"
-    echo "$ANNEX_COMPUTE_KEY"
+    echo "COMPUTING photo out.jpeg"
+    frobnicate --passes="$ANNEX_COMPUTE_VALUE_passes" \
+		<"$ANNEX_COMPUTE_INPUT_raw" >out.jpeg
