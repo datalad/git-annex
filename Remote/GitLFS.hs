@@ -68,7 +68,7 @@ remote = specialRemoteType $ RemoteType
 		[ optionalStringParser urlField
 			(FieldDesc "url of git-lfs repository")
 		, optionalStringParser apiUrlField
-			(FieldDesc "url of LFS API endpoint")
+			(FieldDesc "url of LFS API endpoint (when not specified derives from url)")
 		]
 	, setup = mySetup
 	, exportSupported = exportUnsupported
