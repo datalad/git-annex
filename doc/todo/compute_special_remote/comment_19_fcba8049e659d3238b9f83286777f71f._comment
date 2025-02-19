@@ -28,6 +28,10 @@ Preferring getting them from the same compute special remote when possible,
 and when not, using the lowest cost remote that works, same as `git-annx
 get` does.
 
+Or this could be a configuration of the compute special remote. Maybe some
+would want to always get source files, and others would want to never get
+source files?
+
 ----
 
 A related problem is that, `foo` might be fairly small, but `bar` very
