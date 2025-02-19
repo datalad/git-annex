@@ -5,15 +5,12 @@ compute programs.
 
 When an compute special remote is initremoted, a program is specified:
 
-    git-annex initremote myremote type=compute program=foo
-
-That causes `git-annex-compute-foo` to be run to get files from that
-compute special remote.
+    git-annex initremote myremote type=compute program=git-annex-compute-foo
 
 The user adds an annexed file that is computed by the program by running
 a command like this:
 
-    git-annex addcomputed --to foo \
+    git-annex addcomputed --with myremote \
         --input raw=file.raw --value passes=10 \
         --output photo=file.jpeg
 
@@ -36,7 +33,8 @@ For security, the program should avoid exposing values from `ANNEX_COMPUTE_*`
 variables to the shell unprotected, or otherwise executing them.
 
 The program will also inherit other environment variables
-that were set when git-annex was run, like PATH.
+that were set when git-annex was run, like PATH. (`ANNEX_COMPUTE_*`
+environment variables are not inherited.)
 
 The program is run in a temporary directory, which will be cleaned up after
 it exits. It writes the files that it computes to that directory.
@@ -52,7 +50,7 @@ In the example above, the program is expected to output something like:
     COMPUTING sidecar otherfile
 
 If possible, the program should write the content of the file it is
-generating directly to the file listed in COMPUTING, rather than writing to
+computing directly to the file listed in COMPUTING, rather than writing to
 somewhere else and renaming it at the end. If git-annex sees that the file
 corresponding to the key it requested be computed is growing, it will use
 its file size when displaying progress to the user.
@@ -69,36 +67,35 @@ output, but not for progress displays.
 If the program exits nonzero, nothing it computed will be stored in the 
 git-annex repository.
 
-The program should also support listing the inputs and outputs
-that it supports.
+The program must also support listing the inputs and outputs that it
+supports. This allows `git-annex addcomputed` and `git-annex initremote` to
+list inputs and outputs, and also lets them reject invalid inputs and
+outputs.
 
-This allows `git-annex addcomputed` and `git-annex initremote` to list
-inputs and outputs, and also lets them reject invalid inputs and outputs.
-
-In this mode, it is run with "list" as a parameter. 
+In this mode, the program is run a paramter "list". 
 It should output lines, in the form:
 
-    INPUT Name Description
-    VALUE Name Description
+    INPUT[?] Name Description
+    VALUE[?] Name Description
     OUTPUT Id Description
 
-Use "INPUT" when an annexed file is an input to the computation, 
-and "VALUE" for all other input values.
+Use "INPUT" when a file is an input to the computation, 
+and "VALUE" for all other input values. Use "INPUT?" and "VALUE?"
+for optional inputs and values.
 
 An example `git-annex-compute-foo` shell script follows:
 
     #!/bin/sh
-	set -e
+    set -e
     if [ "$1" = list ]; then
         echo "INPUT raw A photo in RAW format"
-        echo "VALUE passes Number of passes"
+        echo "VALUE? passes Number of passes"
         echo "OUTPUT photo Computed JPEG"
         exit 0
     fi
-    if [ -z "$ANNEX_COMPUTE_INPUT_raw" || -z "$ANNEX_COMPUTE_VALUE_passes" ]; then
-        echo "Missing expected inputs" >&2
-        exit 1
+    if [ -z "$ANNEX_COMPUTE_VALUE_passes" ]; then
+        ANNEX_COMPUTE_VALUE_passes=1
     fi
     echo "COMPUTING photo out.jpeg"
     frobnicate --passes="$ANNEX_COMPUTE_VALUE_passes" \
-		<"$ANNEX_COMPUTE_INPUT_raw" >out.jpeg
+        <"$ANNEX_COMPUTE_INPUT_raw" >out.jpeg
