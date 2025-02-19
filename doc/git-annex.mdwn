@@ -186,6 +186,18 @@ content from the key-value store.
   
   See [[git-annex-undo]](1) for details.
 
+* `addcomputed`
+
+  Adds computed files to the repository.
+
+  See [[git-annex-addcomputed]](1) for details.
+
+* `recompute`
+
+  Recomputes computed files.
+
+  See [[git-annex-recompute]](1) for details.
+
 * `multicast`
 
   Multicast file distribution.

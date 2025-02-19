@@ -52,7 +52,7 @@ want to use `git annex renameremote`.
 
 	git annex initremote mys3 type=S3 --whatelse
 
-  For a machine-readable list of the parameters, use this with --json.
+  For a machine-readable list of the parameters, use this with `--json`.
 
 * `--fast`
 
