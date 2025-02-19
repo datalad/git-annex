@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="Spencer"
+ avatar="http://cdn.libravatar.org/avatar/2e0829f36a68480155e09d0883794a55"
+ subject="Confused"
+ date="2025-02-19T23:22:46Z"
+ content="""
+I am confused by what you mean by \"keep the overview over a git annex repository\" and \"are complete locally\" (do you mean \"are completely local\"?)
+
+It appears you are requesting an alternative representation of the working tree with folders collapsed if the locations for all contained annexed files are the same. However what that representation means is confusing: \"this folder (not file) has copies in these locations\". Folders are not synced across remotes: file content is. `annex list` is meant to see exactly what file content exists where and if that content is trusted (`X`) or untrusted (`x`). What if there are non-annexed files in that folder? The collapsed view almost seems to indicate that maybe these files exist in those locations, too.
+
+This also does not appear to have much to do with `git annex info`.
+
+If you are overwhelmed by the information density, time with the git-annex will help you understand why what it reports is important. Also if terminal history clutter adds to your information overwhelm, you can use `command | less` to use a terminal pager to help parse longer form information.
+"""]]
