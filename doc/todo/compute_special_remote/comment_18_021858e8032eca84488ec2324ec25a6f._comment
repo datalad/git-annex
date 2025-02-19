@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 18"""
+ date="2025-02-19T18:29:58Z"
+ content="""
+I've started a `compute` branch which so far has documentation for
+the [compute special remote](http://source.git-annex.branchable.com/?p=source.git;a=blob;f=doc/special_remotes/compute.mdwn;hb=refs/heads/compute),
+[git-annex addcomputed](http://source.git-annex.branchable.com/?p=source.git;a=blob;f=doc/git-annex-addcomputed.mdwn;hb=refs/heads/compute), 
+and
+[git-annex recompute](http://source.git-annex.branchable.com/?p=source.git;a=blob;f=doc/git-annex-recompute.mdwn;hb=refs/heads/compute)
+
+I am pretty happy with how this design is shaping up.
+"""]]
