@@ -930,6 +930,7 @@ Executable git-annex
     Remote.BitTorrent
     Remote.Borg
     Remote.Bup
+    Remote.Compute
     Remote.Ddar
     Remote.Directory
     Remote.Directory.LegacyChunked

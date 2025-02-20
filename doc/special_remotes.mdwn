@@ -11,6 +11,7 @@ the content of files.
 * [[Amazon_Glacier|glacier]]
 * [[bittorrent]]
 * [[bup]]
+* [[compute]]
 * [[ddar]]
 * [[directory]]
 * [[gcrypt]] (encrypted git repositories!)

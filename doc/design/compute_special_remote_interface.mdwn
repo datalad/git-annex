@@ -51,12 +51,16 @@ In the example above, the program is expected to output something like:
 
 If possible, the program should write the content of the file it is
 computing directly to the file listed in COMPUTING, rather than writing to
-somewhere else and renaming it at the end. If git-annex sees that the file
-corresponding to the key it requested be computed is growing, it will use
-its file size when displaying progress to the user.
+somewhere else and renaming it at the end. Except, when the program writes
+the file it computes out of order, it should write to a file somewhere else
+and rename it at the end.
+
+If git-annex sees that the file corresponding to the key it requested be
+computed is growing, it will use its file size when displaying progress to
+the user.
 
 The program can also output lines to stdout to indicate its current
-progress.
+progress:
 
     PROGRESS 50%
 
@@ -67,23 +71,23 @@ output, but not for progress displays.
 If the program exits nonzero, nothing it computed will be stored in the 
 git-annex repository.
 
-The program must also support listing the inputs and outputs that it
+When run with the "interface" parameter, the program must describe its
+interface. This is a list of the inputs and outputs that it
 supports. This allows `git-annex addcomputed` and `git-annex initremote` to
 list inputs and outputs, and also lets them reject invalid inputs and
 outputs.
 
-In this mode, the program is run with a "list" parameter. 
-It should output lines, in the form:
+The output is lines, in the form:
 
-    INPUT[?] Name Description
-    VALUE[?] Name Description
+    INPUT[?] Id Description
+    VALUE[?] Id Description
     OUTPUT Id Description
 
 Use "INPUT" when a file is an input to the computation, 
 and "VALUE" for all other input values. Use "INPUT?" and "VALUE?"
 for optional inputs and values.
 
-The program can also optionally output a "REPRODUCIBLE" line.
+The interface can also optionally include a "REPRODUCIBLE" line.
 That indicates that the results of its computations are
 expected to be bit-for-bit reproducible.
 That makes `git-annex addcomputed` behave as if the `--reproducible`
@@ -93,7 +97,7 @@ An example `git-annex-compute-foo` shell script follows:
 
     #!/bin/sh
     set -e
-    if [ "$1" = list ]; then
+    if [ "$1" = interface ]; then
         echo "INPUT raw A photo in RAW format"
         echo "VALUE? passes Number of passes"
         echo "OUTPUT photo Computed JPEG"
