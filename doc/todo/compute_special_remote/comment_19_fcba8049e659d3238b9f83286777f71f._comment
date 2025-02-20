@@ -1,0 +1,69 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""open questions"""
+ date="2025-02-19T18:39:41Z"
+ content="""
+One thing that I am unsure about is what should happen if `git-annex get foo`
+needs the content of file `bar`, which is not present. Should it get `bar` from
+a remote? Or should it fail to get `foo`? 
+
+Consider that, in the case of `git-annex get foo --from computeremote`, the
+user has asked it to get a file from that particular remote, not from
+whatever remote contains `bar`.
+
+If the same compute remote can also compute `bar`, it seems quite reasonable
+for `git-annex get foo --from computeremote` to also compute bar. (This is
+similar to a single computation that generates two output files, in which
+case getting one of them will get both of them.)
+
+And it seems reasonable for `git-annex get foo` with no specified remote
+to also get or compute bar, from whereever.
+
+But, there is no way at the level of a special remote to tell the
+difference between those two commands.
+
+Maybe the right answer is to define getting a file from a compute
+special remote as including getting its inputs from other remotes.
+Preferring getting them from the same compute special remote when possible,
+and when not, using the lowest cost remote that works, same as `git-annx
+get` does.
+
+Or this could be a configuration of the compute special remote. Maybe some
+would want to always get source files, and others would want to never get
+source files?
+
+----
+
+A related problem is that, `foo` might be fairly small, but `bar` very
+large. So getting a small object can require getting or generating other
+large objects. Getting `bar` might fail because there is not enough space
+to meet annex.diskreserve. Or the user might just be surprised that so much
+disk space was eaten up. But dropping `bar` after computing `foo` also
+doesn't seem like a good idea; the user might want to hang onto their copy
+now that they have it, or perhaps move it to some faster remote.
+
+Maybe preferred content is the solution? After computing `foo` with `bar`,
+keep the copy of `bar` if the local repository wants it, drop it otherwise.
+
+----
+
+Progress display is also going to be complicated for this. There is no
+way in the special remote interface to display the progress for `bar`
+while getting `foo`.
+
+Probably the thing to do would be to add together the sizes of both files,
+and display a combined progress meter.
+It would be ok to not say when it's getting the input file.
+This will need a way to set the size for a progress display to larger
+than the size of the key.
+
+----
+
+.... All 3 problems above go away if it doesn't automatically get input files
+before computations and the computations instead just fail with an error
+saying the input file is not present. 
+
+But then consider the case where you just want every file in the repository.
+`git-annex get .` failing to compute some files because their input files
+happen to come after them in the directory listing is not good.
+"""]]
