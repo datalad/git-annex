@@ -301,7 +301,7 @@ test runannex mkr mkk =
 			Just verifier -> do
 				loc <- Annex.calcRepo (gitAnnexLocation k)
 				verifier k loc
-	get r k = logStatusAfter NoLiveUpdate k $ getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k (AssociatedFile Nothing) Nothing $ \dest ->
+	get r k = logStatusAfter NoLiveUpdate k $ getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k Nothing $ \dest ->
 		tryNonAsync (Remote.retrieveKeyFile r k (AssociatedFile Nothing) dest nullMeterUpdate (RemoteVerify r)) >>= \case
 			Right v -> return (True, v)
 			Left _ -> return (False, UnVerified)
@@ -375,13 +375,13 @@ testUnavailable runannex mkr mkk =
 	, check (`notElem` [Right True, Right False]) "checkPresent" $ \r k ->
 		Remote.checkPresent r k
 	, check (== Right False) "retrieveKeyFile" $ \r k ->
-		logStatusAfter NoLiveUpdate k $ getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k (AssociatedFile Nothing) Nothing $ \dest ->
+		logStatusAfter NoLiveUpdate k $ getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k Nothing $ \dest ->
 			tryNonAsync (Remote.retrieveKeyFile r k (AssociatedFile Nothing) dest nullMeterUpdate (RemoteVerify r)) >>= \case
 				Right v -> return (True, v)
 				Left _ -> return (False, UnVerified)
 	, check (== Right False) "retrieveKeyFileCheap" $ \r k -> case Remote.retrieveKeyFileCheap r of
 		Nothing -> return False
-		Just a -> logStatusAfter NoLiveUpdate k $ getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k (AssociatedFile Nothing) Nothing $ \dest -> 
+		Just a -> logStatusAfter NoLiveUpdate k $ getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k Nothing $ \dest -> 
 			unVerified $ isRight
 				<$> tryNonAsync (a k (AssociatedFile Nothing) dest)
 	]
@@ -443,7 +443,7 @@ randKey sz = withTmpFile (literalOsPath "randkey") $ \f h -> do
 	k <- case Types.Backend.genKey Backend.Hash.testKeyBackend of
 		Just a -> a ks nullMeterUpdate
 		Nothing -> giveup "failed to generate random key (backend problem)"
-	_ <- moveAnnex k (AssociatedFile Nothing) f
+	_ <- moveAnnex k f
 	return k
 
 getReadonlyKey :: Remote -> OsPath -> Annex Key

@@ -128,7 +128,7 @@ linkKey file oldkey newkey = ifM (isJust <$> isAnnexLink file)
  - and vulnerable to corruption. -}
 linkKey' :: VerifyConfig -> Key -> Key -> Annex Bool
 linkKey' v oldkey newkey =
-	getViaTmpFromDisk RetrievalAllKeysSecure v newkey (AssociatedFile Nothing) $ \tmp -> unVerified $ do
+	getViaTmpFromDisk RetrievalAllKeysSecure v newkey $ \tmp -> unVerified $ do
 		oldobj <- calcRepo (gitAnnexLocation oldkey)
 		isJust <$> linkOrCopy' (return True) newkey oldobj tmp Nothing
 

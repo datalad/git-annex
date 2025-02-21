@@ -55,7 +55,7 @@ start = do
 		-- so caller is responsible for doing notification
 		-- and for retrying, and updating location log,
 		-- and stall canceling.
-		let go p = getViaTmp (Remote.retrievalSecurityPolicy remote) (RemoteVerify remote) key af Nothing $ \t -> do
+		let go p = getViaTmp (Remote.retrievalSecurityPolicy remote) (RemoteVerify remote) key Nothing $ \t -> do
 			Remote.verifiedAction (Remote.retrieveKeyFile remote key af t p (RemoteVerify remote))
 		in download' (Remote.uuid remote) key af Nothing noRetry go 
 			noNotification
@@ -72,7 +72,7 @@ start = do
 	runner (AssistantDownloadRequest _ key (TransferAssociatedFile file)) remote =
 		notifyTransfer Download file $
 			download' (Remote.uuid remote) key file Nothing stdRetry $ \p ->
-				logStatusAfter NoLiveUpdate key $ getViaTmp (Remote.retrievalSecurityPolicy remote) (RemoteVerify remote) key file Nothing $ \t -> do
+				logStatusAfter NoLiveUpdate key $ getViaTmp (Remote.retrievalSecurityPolicy remote) (RemoteVerify remote) key Nothing $ \t -> do
 					r <- tryNonAsync (Remote.retrieveKeyFile remote key file t p (RemoteVerify remote)) >>= \case
 						Left e -> do
 							warning (UnquotedString (show e))

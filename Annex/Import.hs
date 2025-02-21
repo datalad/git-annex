@@ -863,7 +863,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 					ia loc [cid] tmpfile
 					(Left k)
 					(combineMeterUpdate p' p)
-				ok <- moveAnnex k af tmpfile
+				ok <- moveAnnex k tmpfile
 				when ok $
 					logStatus NoLiveUpdate k InfoPresent
 				return (Just (k, ok))
@@ -906,7 +906,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 				p
 			case keyGitSha k of
 				Nothing -> do
-					ok <- moveAnnex k af tmpfile
+					ok <- moveAnnex k tmpfile
 					when ok $ do
 						recordcidkey cidmap cid k
 						logStatus NoLiveUpdate k InfoPresent

@@ -129,7 +129,7 @@ perform src key = do
 		)
   where
 	move = checkDiskSpaceToGet key Nothing False $
-		moveAnnex key (AssociatedFile Nothing) src
+		moveAnnex key src
 
 cleanup :: Key -> CommandCleanup
 cleanup key = do

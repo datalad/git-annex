@@ -25,8 +25,7 @@ upgrade = do
 	olddir <- fromRepo gitAnnexDir
 	keys <- getKeysPresent0 olddir
 	forM_ keys $ \k ->
-		moveAnnex k (AssociatedFile Nothing)
-			(olddir </> toOsPath (keyFile0 k))
+		moveAnnex k (olddir </> toOsPath (keyFile0 k))
 
 	-- update the symlinks to the key files
 	-- No longer needed here; V1.upgrade does the same thing
