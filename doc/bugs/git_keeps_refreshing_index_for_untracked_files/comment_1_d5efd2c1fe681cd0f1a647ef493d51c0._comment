@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="lell"
+ avatar="http://cdn.libravatar.org/avatar/4c4138a71d069e290240a3a12367fabe"
+ subject="comment 1"
+ date="2025-02-20T11:00:05Z"
+ content="""
+It could be that the problem occurs if 0-byte files are annexed in unlocked form. At least all files in the strace output are 0 bytes long and the problem goes away when these are added to git and not git annex....
+"""]]

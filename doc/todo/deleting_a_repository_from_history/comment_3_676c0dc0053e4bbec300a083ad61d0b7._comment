@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Spencer"
+ avatar="http://cdn.libravatar.org/avatar/2e0829f36a68480155e09d0883794a55"
+ subject="For Those Who Stumble Here"
+ date="2025-02-19T23:08:41Z"
+ content="""
+In my testing, I have found `git annex forget --drop-dead --force` problematic because if **ever** the two repositories speak to one another (thru e.g. fetch) again, the very alive remote for one marked dead in the other will be eradicated.
+
+Luckily I've learned that **you don't have to fetch from one remote to another to still issue \"informed\" annex commands** which is critical. In other words, I didn't appreciate how annex learns of file content in remotes dynamically, I thought it was fairly dependent on merging in the `git-annex` branch to learn about files. Instead you can confidently treat `fetch`, `pull`, `push` commands as all *exclusively* for the merging of two sibling repos (and their histories, settings, remotes, etc).
+
+For these kinds of (\"friend\"?) remotes (unrelated remotes), I think you'll want to remove the fetch refspec entirely and add `annex-sync=false` if you want to keep the relationship around, otherwise **never run `sync`** until you remove unrelated remotes.
+"""]]
