@@ -745,7 +745,7 @@ keyFile :: Key -> OsPath
 keyFile k = 
 	let b = serializeKey'' k
 	in toOsPath $ if SB.any (`elem` needesc) b
-		then SB.concat $ map esc (SB.unpack b)
+		then mconcat $ map esc (SB.unpack b)
 		else b
   where
 	esc w = case chr (fromIntegral w) of
@@ -753,7 +753,7 @@ keyFile k =
 		'%' -> "&s"
 		':' -> "&c"
 		'/' -> "%"
-		_ -> SB.singleton w
+		_ -> SB.pack [w]
 
 	needesc = map (fromIntegral . ord) ['&', '%', ':', '/']
 
