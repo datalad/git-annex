@@ -1,0 +1,65 @@
+### Please describe the problem.
+
+In the context of exploring [solution for drawing a map of the clones](https://github.com/con/ceptualization/issues/1) I was reminded about `annex map` which I actually forgot about even if knew.
+
+Immediate attempt to try on a local repo for the use case depicted in [aforementioned post](https://github.com/con/ceptualization/issues/1) I got an infinite loop of 
+
+```
+map origin (sshing...) 
+ok
+map origin (sshing...) 
+ok
+...
+```
+
+where `origin` and related (bare) repo are
+
+```
+[remote "origin"]
+	url = sensored:/inbox/BIDS/Wager/Wager/1076_spacetop
+	fetch = +refs/heads/*:refs/remotes/origin/*
+	annex-uuid = 590b4fd0-0142-4e9d-8964-d1158c242c6a
+[remote "rolando-exchange"]
+	url = sensored:/inbox/BIDS/Wager/Wager/1076_spacetop.git
+	annex-uuid = 40795e62-527c-4d26-ae8c-af42a6e2da5a
+	fetch = +refs/heads/*:refs/remotes/rolando-exchange/*
+```
+
+Rerunning with `--debug` showed that it seems to grow target path via referencing itself via `../1076_spacetop.git/` (
+
+```
+[2025-02-21 10:17:41.722571271] (Utility.Process) process [290220] read: ssh ["sensored","-S",".git/annex/ssh/sensored","-o","ControlMaster=auto","-o","ControlPersist=yes","-n","-T","sh -c 'if ! cd '\"'\"'/inbox/BIDS/Wager/Wager/1076_spacetop.git/../1076_spacetop.git/../1076_spacetop.git/../1076_spacetop.git/../1076_spacetop.git/../1076_spacetop.git/../1076_spacetop.git/../1076_spacetop.git/../1076_spacetop.git/../1076_spacetop.git/../1076_spacetop.git/../1076_spacetop.git/../1076_spacetop.git/../1076_spacetop.git/../1076_spacetop.git/../1076_spacetop.git'\"'\"' 2>/dev/null; then cd '\"'\"'/inbox/BIDS/Wager/Wager/1076_spacetop.git/../1076_spacetop.git/../1076_spacetop.git/../1076_spacetop.git/../1076_spacetop.git/../1076_spacetop.git/../1076_spacetop.git/../1076_spacetop.git/../1076_spacetop.git/../1076_spacetop.git/../1076_spacetop.git/../1076_spacetop.git/../1076_spacetop.git/../1076_spacetop.git/../1076_spacetop.git/../1076_spacetop.git'\"'\"'.git; fi && git config --null --list'"]
+
+```
+
+and on `origin` remote I have
+
+```
+> git -C /inbox/BIDS/Wager/Wager/1076_spacetop/ remote show spacetop-rolando-exchange
+* remote spacetop-rolando-exchange
+  Fetch URL: ../1076_spacetop.git/
+  Push  URL: ../1076_spacetop.git/
+  HEAD branch: master
+  Remote branches:
+    deface-bidsonym-1 new (next fetch will store in remotes/spacetop-rolando-exchange)
+    git-annex         tracked
+    master            tracked
+    try-redo-intended new (next fetch will store in remotes/spacetop-rolando-exchange)
+    unredacted-master tracked
+  Local refs configured for 'git push':
+    git-annex pushes to git-annex (local out of date)
+    master    pushes to master    (local out of date)
+
+```
+
+
+### What steps will reproduce the problem?
+
+run `git annex map` in my situation
+
+### What version of git-annex are you using? On what operating system?
+
+10.20241202
+
+[[!meta author=yoh]]
+[[!tag projects/openneuro]]
