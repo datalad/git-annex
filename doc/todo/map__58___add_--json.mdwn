@@ -1,0 +1,8 @@
+In the context of exploring [solution for drawing a map of the clones](https://github.com/con/ceptualization/issues/1) I was reminded about `annex map` which I actually forgot about even if knew.
+
+I think that if there was a `--json` flag with help of which I could obtain a more readily machine accessible data (not graphviz custom format) -- I, or someone else, could provide alternative renderings (e.g. mermaid) or extend upon.
+
+Please let me know on how feasible that would be, and any other thoughts you have in relation to the [aforementioned idea](https://github.com/con/ceptualization/issues/1) so I would know how to proceed.
+
+[[!meta author=yoh]]
+[[!tag projects/openneuro]]
