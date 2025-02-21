@@ -87,11 +87,6 @@ Use "INPUT" when a file is an input to the computation,
 and "VALUE" for all other input values. Use "INPUT?" and "VALUE?"
 for optional inputs and values.
 
-Note that the Name and Id both have to be legal git-annex metadata field
-names. And should be lower cased. The user is allowed to use any case
-for the names when providing inputs and values to `git-annex addcomputed`
-though.
-
 The interface can also optionally include a "REPRODUCIBLE" line.
 That indicates that the results of its computations are
 expected to be bit-for-bit reproducible.
