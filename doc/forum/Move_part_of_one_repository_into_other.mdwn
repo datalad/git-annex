@@ -1,0 +1,15 @@
+I have two sets of git annex repositories:
+
+A: Contains a tree of some files and then a *huge* chunk of files  
+B: Already contains a ton of files
+
+Both repository sets have their own set of repos on different machines that are connected to another.
+
+I now want the huge chunk of content in A to be in B instead of A but the rest of the content should remain in A.
+
+On git side, I think basically what this boils down to is that I want to move the git sub-tree to the other repo which ought to be possible by simply `git add`ing them. I might want to get fancy and cherry-pick the commit from the other repo in a way that keeps it but moves the content to another subdirectory but that's the simple part. 
+
+On the git-annex side, I want all the keys that were exclusively referenced in this set of files to be marked as dead and dropped from remotes which contain them. I effectively want to remove those keys from git-annex' consideration.  
+The keys should be added to B. They should start out with a blank location tracking state as B should not know about A's repositories. They should however retain any other metadata they previously had in A.
+
+How could I achieve this?
