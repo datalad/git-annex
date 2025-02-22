@@ -1,6 +1,6 @@
 I have two sets of git annex repositories:
 
-A: Contains a tree of some files and then a *huge* chunk of files
+A: Contains a tree of some files and then a *huge* chunk of files  
 B: Contains already has a ton of files
 
 Both repository sets have their own set of repos on different machines that are connected to another.
