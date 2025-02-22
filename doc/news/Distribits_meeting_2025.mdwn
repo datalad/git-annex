@@ -1,0 +1,12 @@
+We are happy to announce that the call for participation for Distribits
+2025 is now online at <https://distribits.live/>
+
+This meeting is organized by the folks behind git-annex and DataLad. We aim
+to bring together enthusiasts of tools and workflows in the domain of
+distributed data.
+
+We are looking forward to October 2025 and to meeting people from everywhere,
+online and in Düsseldorf.
+
+Registration is open now and until May 1st. Please consider submitting a
+talk if you are doing something interesting or unusual with git-annex.
