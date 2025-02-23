@@ -1,0 +1,11 @@
+I have some repositories in group backup and some in client. I was surprised that I had to add the backup repositiries to group archive as well for the client groupwanted expression work as intended.
+
+So shouldn't the client expression read
+
+    (include=* and ((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1 or copies=backup:1)))) or approxlackingcopies=1
+
+instead of just
+
+    (include=* and ((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1)))) or approxlackingcopies=1
+
+?
