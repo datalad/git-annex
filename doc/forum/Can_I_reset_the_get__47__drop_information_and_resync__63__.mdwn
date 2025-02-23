@@ -1,0 +1,1 @@
+Some wanted/required files are missing in some repositories and don't get synced. I think I did not drop these files but this doesn't matter right now. Can I reset the information which files got dropped or getted (hope it's clear what mean) and just tell annex to (re-)distribute the files according groupwanted/wanted/required?
