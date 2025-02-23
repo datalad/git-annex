@@ -1,4 +1,4 @@
-I have some repositories in group backup and some in client. I was surprised that I had to add the backup repositories to group archive as well for the client groupwanted expression work as intended.
+I have some repositories in group backup and some in client. I was surprised that I had to add the backup repositories to group archive as well for the client groupwanted expression work to as intended.
 
 So shouldn't the client expression read
 
