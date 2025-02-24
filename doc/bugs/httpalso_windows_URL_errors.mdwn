@@ -1,0 +1,37 @@
+### Please describe the problem.
+
+We use `httpalso` for public read-only access to an ssh writable remote storing many datasets (this uses datalad ria-store, but that's a detail here).
+That works flawlessly on linux, but a windows user recently reported that they couldn't download the data.
+As I had some linux "deploy" tests on that dataset (mainly `datalad install` and `fsck --fast` from special remotes), I managed after wrestling with windows actions setup to run an equivalent on windows and I am able to reproduce the bug.
+As I don't have a windows VM that was the simplest and more long-term way to ensure that works.
+
+It seems `httpalso` on Windows malforms the path in the URLs, see the troubleshooting actions job here https://github.com/courtois-neuromod/algonauts_2025.competitors/actions/runs/13502500268/job/37724172008
+
+The path in the URL is `/users/cneuromod/ria-conp/5d2/0a1ae-3571-4de8-94c8-8ddb416cd3b0/annex/objects/xw%5CXV%5C/MD5E-s105090--c62dbfef65f486c626c10f778ebbe4f2.nii.gz/MD5E-s105090--c62dbfef65f486c626c10f778ebbe4f2.nii.gz` where `xw%5CXV%5C` should be something like `xw/XV` so some conversion of the windows backslash to posix might not be working.
+ 
+(`httpalso` also fallbacks to an URL assuming all objects are flat in `annex/objects`, but that obviously fails as this is not stored that way in the remote.)
+
+### What steps will reproduce the problem?
+
+`git-annex get` a file from a `httpalso`  special remote on a windows machine.
+The dataset https://github.com/courtois-neuromod/algonauts_2025.competitors can be used for troubleshooting as this is fully public (git+annex). 
+
+### What version of git-annex are you using? On what operating system?
+
+`10.20250115` on windows
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
+Yes, our whole data management relies on git-annex and datalad! Thanks for that amazing tool! 
