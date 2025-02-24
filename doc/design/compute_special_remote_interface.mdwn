@@ -8,61 +8,68 @@ When an compute special remote is initremoted, a program is specified:
     git-annex initremote myremote type=compute program=git-annex-compute-foo
 
 The user adds an annexed file that is computed by the program by running
-a command like this:
+a command like one of these:
 
-    git-annex addcomputed --to myremote \
-        --input raw=file.raw --value passes=10 \
-        --output photo=file.jpeg
+    git-annex addcomputed --to=myremote -- convert file.raw file.jpeg passes=10
+    git-annex addcomputed --to=myremote -- compress in out --level=9
+    git-annex addcomputed --to=myremote -- clip foo 2:01-3:00 combine with bar to baz
 
-That command and later `git-annex get` of a computed file both
-run the program the same way.
+Whatever values the user passes to `git-annex addcomputed` are passed on to
+the program, followed by any values that the user provided to 
+`git-annex initremote`.
 
-The program is passed inputs to the computation via environment variables,
-which are all prefixed with `"ANNEX_COMPUTE_"`.
+To simplify the program's option parsing, any value that the user provides
+that is in the form "foo=bar" will also result in an environment variable
+being set, eg `ANNEX_COMPUTE_passes=10` or `ANNEX_COMPUTE_--level=9`.
 
-In the example above, the program will be passed this environment:
-
-    ANNEX_COMPUTE_INPUT_raw=/path/.git/annex/objects/..
-    ANNEX_COMPUTE_VALUE_passes=10
-
-Default values that are provided to `git-annex initremote` will also be set
-in the environment. Eg `git-annex initremote myremote type=compute
-program=foo passes=9` will set `ANNEX_COMPUTE_VALUE_passes=9` by default.
-
-For security, the program should avoid exposing values from `ANNEX_COMPUTE_*`
-variables to the shell unprotected, or otherwise executing them.
-
-The program will also inherit other environment variables
-that were set when git-annex was run, like PATH. (`ANNEX_COMPUTE_*`
-environment variables are not inherited.)
+For security, the program should avoid exposing user input to the shell
+unprotected, or otherwise executing it.
 
 The program is run in a temporary directory, which will be cleaned up after
-it exits. It writes the files that it computes to that directory.
+it exits.
 
-Before starting the main computation, the program must output a list of the
-files that it will compute, in the form "COMPUTING Id filename".
-Here "Id" is a short identifier for a particular file, which the
-user specifies when running `git-annex addcomputed`.
+The content of any annexed file in the repository can be an input
+to the computation. The program requests an input by writing a line to
+stdout:
 
-In the example above, the program is expected to output something like:
+    INPUT file.raw
 
-    COMPUTING photo out.jpeg
-    COMPUTING sidecar otherfile
+Then it can read a line from stdin, which will be the path to the content
+(eg a `.git/annex/objects/` path).
 
-If possible, the program should write the content of the file it is
-computing directly to the file listed in COMPUTING, rather than writing to
-somewhere else and renaming it at the end. Except, when the program writes
-the file it computes out of order, it should write to a file somewhere else
+If the program needs multiple input files, it should output multiple
+`INPUT` lines at once, and then read multiple paths from stdin. This
+allows retrival of the inputs to potentially run in parallel.
+
+If an input file is not available, the program's stdin will be closed
+without a path being written to it. So when reading from stdin fails, 
+the program should exit.
+
+The program computes one or more output files. For each output file that it
+will compute, the program should write a line to stdout:
+
+    OUTPUT file.jpeg
+
+The filename of the output file is both the filename in the program's
+temporary directory, and also the filename that will be added to the
+git-annex repository by `git-annex compute`.
+
+If git-annex sees that an output file is growing, it will use its file size
+when displaying progress to the user. So if possible, the program should
+write the content to the file it is computing directly, rather than writing
+to somewhere else and renaming it at the end. But, if the program seeks
+around and writes out of order, it should write to a file somewhere else
 and rename it at the end.
-
-If git-annex sees that the file corresponding to the key it requested be
-computed is growing, it will use its file size when displaying progress to
-the user.
 
 The program can also output lines to stdout to indicate its current
 progress:
 
     PROGRESS 50%
+
+The program can optionally also output a "REPRODUCIBLE" line. That
+indicates that the results of its computations are expected to be
+bit-for-bit reproducible. That makes `git-annex addcomputed` behave as if
+the `--reproducible` option is set.
 
 Anything that the program outputs to stderr will be displayed to the user.
 This stderr should be used for error messages, and possibly computation
@@ -71,42 +78,19 @@ output, but not for progress displays.
 If the program exits nonzero, nothing it computed will be stored in the 
 git-annex repository.
 
-When run with the "interface" parameter, the program must describe its
-interface. This is a list of the inputs and outputs that it
-supports. This allows `git-annex addcomputed` and `git-annex initremote` to
-list inputs and outputs, and also lets them reject invalid inputs and
-outputs.
-
-The output is lines, in the form:
-
-    INPUT[?] Name Description
-    VALUE[?] Name Description
-    OUTPUT Id Description
-
-Use "INPUT" when a file is an input to the computation, 
-and "VALUE" for all other input values. Use "INPUT?" and "VALUE?"
-for optional inputs and values.
-
-The interface can also optionally include a "REPRODUCIBLE" line.
-That indicates that the results of its computations are
-expected to be bit-for-bit reproducible.
-That makes `git-annex addcomputed` behave as if the `--reproducible`
-option is set.
-
 An example `git-annex-compute-foo` shell script follows:
 
     #!/bin/sh
     set -e
-    if [ "$1" = interface ]; then
-        echo "INPUT raw A photo in RAW format"
-        echo "VALUE? passes Number of passes"
-        echo "OUTPUT photo Computed JPEG"
-        echo "REPRODUCIBLE"
-        exit 0
+    if [ "$1" != "convert" ]; then
+        echo "Usage: convert input output [passes=n]" >&2
+        exit 1
     fi
-    if [ -z "$ANNEX_COMPUTE_VALUE_passes" ]; then
-        ANNEX_COMPUTE_VALUE_passes=1
+    if [ -z "$ANNEX_COMPUTE_passes" ];
+        ANNEX_COMPUTE_passes=1
     fi
-    echo "COMPUTING photo out.jpeg"
-    frobnicate --passes="$ANNEX_COMPUTE_VALUE_passes" \
-        <"$ANNEX_COMPUTE_INPUT_raw" >out.jpeg
+    echo "INPUT "$2"
+    read input
+    echo "OUTPUT $3"
+    echo REPRODUCIBLE
+    frobnicate --passes="$ANNEX_COMPUTE_passes" <"$input" >"$3"
