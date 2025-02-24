@@ -118,7 +118,7 @@ computeConfigParser _ = return $ RemoteConfigParser
 	-- to the input params.
 	, remoteConfigRestPassthrough = Just
 		( const True
-		, []
+		, [("*", FieldDesc "all other parameters are passed to compute program")]
 		)
 	}
 
