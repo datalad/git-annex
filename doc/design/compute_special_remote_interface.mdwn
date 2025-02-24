@@ -14,8 +14,8 @@ a command like one of these:
     git-annex addcomputed --to=myremote -- compress in out --level=9
     git-annex addcomputed --to=myremote -- clip foo 2:01-3:00 combine with bar to baz
 
-Whatever values the user passes to `git-annex addcomputed` are passed on to
-the program, followed by any values that the user provided to 
+Whatever values the user passes to `git-annex addcomputed` are passed to
+the program in `ARGV`, followed by any values that the user provided to 
 `git-annex initremote`.
 
 To simplify the program's option parsing, any value that the user provides
@@ -45,8 +45,15 @@ If an input file is not available, the program's stdin will be closed
 without a path being written to it. So when reading from stdin fails, 
 the program should exit.
 
-The program computes one or more output files. For each output file that it
-will compute, the program should write a line to stdout:
+When `git-annex addcomputed --fast` is being used to add a computation
+to the git-annex repository without actually performing it, the 
+response to each "INPUT" will be an empty line rather than the path to 
+an input file. In that case, the program should proceed with the rest of
+its output to stdout (eg "OUTPUT" and "REPRODUCIBLE"), but should not
+perform any computation.
+
+For each output file that it will compute, the program should write a
+line to stdout:
 
     OUTPUT file.jpeg
 
@@ -93,4 +100,6 @@ An example `git-annex-compute-foo` shell script follows:
     read input
     echo "OUTPUT $3"
     echo REPRODUCIBLE
-    frobnicate --passes="$ANNEX_COMPUTE_passes" <"$input" >"$3"
+    if [ -n "$input" ]; then
+       frobnicate --passes="$ANNEX_COMPUTE_passes" <"$input" >"$3"
+    fi
