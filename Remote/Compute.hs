@@ -257,9 +257,9 @@ parseComputeState k b =
 		in go c' rest
 
 {- A compute: url for a given output file of a computation. -}
-computeStateUrl :: ComputeState -> OsPath -> URLString
-computeStateUrl st p = 
-	"annex-compute:" ++ fromOsPath p ++ "?" 
+computeStateUrl :: Remote -> ComputeState -> OsPath -> URLString
+computeStateUrl r st p = 
+	"annex-compute:" ++ fromUUID (uuid r) ++ "/" ++ fromOsPath p ++ "?" 
 		++ decodeBS (formatComputeState' Nothing st')
   where
 	-- Omit computeOutputs, so this gives the same result whether

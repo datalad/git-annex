@@ -147,7 +147,7 @@ perform o r program = do
 		| otherwise = ingestwith $
 			ingestAdd' nullMeterUpdate (Just ld) (Just stateurlk)
 	  where
-	  	stateurl = Remote.Compute.computeStateUrl state outputfile
+	  	stateurl = Remote.Compute.computeStateUrl r state outputfile
 		stateurlk = fromUrl stateurl Nothing True
 		outputfile' = tmpdir </> outputfile
 		ld = LockedDown ldc $ KeySource
