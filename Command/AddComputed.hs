@@ -88,6 +88,7 @@ perform o r program = do
 	repopath <- fromRepo Git.repoPath
 	subdir <- liftIO $ relPathDirToFile repopath (literalOsPath ".")
 	let state = Remote.Compute.ComputeState
+		-- TODO add inherited initremote parameters
 		{ Remote.Compute.computeParams = computeParams o
 		, Remote.Compute.computeInputs = mempty
 		, Remote.Compute.computeOutputs = mempty
