@@ -1,0 +1,95 @@
+### Please describe the problem.
+
+When setting arguments for yt-dlp though `annex.youtube-dl-options`,
+there doesn't seem to be a way to pass arguments that contain spaces.
+
+For example, I'd like to pass these arguments to yt-dlp: `--ppa "Merger+ffmpeg: -metadata:s:v:0 handler_name= -bitexact"`
+
+### What steps will reproduce the problem?
+
+[[!format sh """
+$ git config 'annex.youtube-dl-options' '--ppa "Merger+ffmpeg: -metadata:s:v:0 handler_name= -bitexact"'
+$ git -c 'annex.security.allowed-ip-addresses=all' annex addurl --debug --no-raw 'https://www.youtube.com/watch?v=...'
+"""
+]]
+
+Observe that git annex tries to run yt-dlp with the following arguments:
+
+`["--ppa","\"Merger+ffmpeg:","-metadata:s:v:0","handler_name=","-bitexact\"",...]`
+
+instead of the expected:
+
+`["--ppa","Merger+ffmpeg: -metadata:s:v:0 handler_name= -bitexact",...]`
+
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 10.20230926-g4ac2758ba589562e427a66437b9fdcd5172357e1
+OS: Arch Linux
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+$ git -c 'annex.security.allowed-ip-addresses=all' annex addurl --debug --no-raw 'https://www.youtube.com/watch?v=SUBjhViTLkc'
+[2025-02-25 19:59:58.414615162] (Utility.Process) process [1753238] read: git ["--git-dir=../../.git","--work-tree=../..","--literal-pathspecs","-c","annex.debug=true","show-ref","git-annex"]
+[2025-02-25 19:59:58.415898944] (Utility.Process) process [1753238] done ExitSuccess
+[2025-02-25 19:59:58.416303507] (Utility.Process) process [1753239] read: git ["--git-dir=../../.git","--work-tree=../..","--literal-pathspecs","-c","annex.debug=true","show-ref","--hash","refs/heads/git-annex"]
+[2025-02-25 19:59:58.417687901] (Utility.Process) process [1753239] done ExitSuccess
+[2025-02-25 19:59:58.418868643] (Utility.Process) process [1753240] chat: git ["--git-dir=../../.git","--work-tree=../..","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch"]
+addurl https://www.youtube.com/watch?v=SUBjhViTLkc [2025-02-25 19:59:58.440089439] (Utility.Url) Request {
+  host                 = "www.youtube.com"
+  port                 = 443
+  secure               = True
+  requestHeaders       = [("Accept-Encoding",""),("User-Agent","git-annex/10.20230926-g4ac2758ba589562e427a66437b9fdcd5172357e1")]
+  path                 = "/watch"
+  queryString          = "?v=SUBjhViTLkc"
+  method               = "HEAD"
+  proxy                = Nothing
+  rawBody              = False
+  redirectCount        = 10
+  responseTimeout      = ResponseTimeoutDefault
+  requestVersion       = HTTP/1.1
+  proxySecureMode      = ProxySecureWithConnect
+}
+
+[2025-02-25 19:59:59.355890186] (Utility.Process) process [1753242] read: git ["--git-dir=../../.git","--work-tree=../..","--literal-pathspecs","-c","annex.debug=true","symbolic-ref","-q","HEAD"]
+[2025-02-25 19:59:59.357185374] (Utility.Process) process [1753242] done ExitSuccess
+[2025-02-25 19:59:59.357432029] (Utility.Process) process [1753243] read: git ["--git-dir=../../.git","--work-tree=../..","--literal-pathspecs","-c","annex.debug=true","show-ref","refs/heads/master"]
+[2025-02-25 19:59:59.358927257] (Utility.Process) process [1753243] done ExitSuccess
+[2025-02-25 19:59:59.359545264] (Utility.Process) process [1753244] chat: git ["--git-dir=../../.git","--work-tree=../..","--literal-pathspecs","-c","annex.debug=true","check-attr","-z","--stdin","annex.backend","annex.largefiles","annex.numcopies","annex.mincopies","--"]
+
+[2025-02-25 19:59:59.362120984] (Utility.Url) Request {
+  host                 = "www.youtube.com"
+  port                 = 443
+  secure               = True
+  requestHeaders       = [("Accept-Encoding","identity"),("User-Agent","git-annex/10.20230926-g4ac2758ba589562e427a66437b9fdcd5172357e1")]
+  path                 = "/watch"
+  queryString          = "?v=SUBjhViTLkc"
+  method               = "GET"
+  proxy                = Nothing
+  rawBody              = False
+  redirectCount        = 10
+  responseTimeout      = ResponseTimeoutDefault
+  requestVersion       = HTTP/1.1
+  proxySecureMode      = ProxySecureWithConnect
+}
+
+[2025-02-25 20:00:00.311641851] (Utility.Process) process [1753245] read: yt-dlp ["--ppa","\"Merger+ffmpeg:","-metadata:s:v:0","handler_name=","-bitexact\"","https://www.youtube.com/watch?v=SUBjhViTLkc","--get-filename","--no-warnings","--no-playlist"]
+[2025-02-25 20:00:00.594102346] (Utility.Process) process [1753245] done ExitFailure 2
+
+  Unable to use youtube-dl or a special remote and --no-raw was specified: no media in url
+failed
+[2025-02-25 20:00:00.594927375] (Utility.Process) process [1753240] done ExitSuccess
+[2025-02-25 20:00:00.59528691] (Utility.Process) process [1753244] done ExitSuccess
+addurl: 1 failed
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+So far I've been using it to store .deb packages in my ansible repo.
+
+Recently, I've been trying to figure out a workflow for managing my media collection with it.
+Other than a few rough edges around non-raw `addurl`, it's been great!
