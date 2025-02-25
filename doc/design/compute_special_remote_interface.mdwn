@@ -92,16 +92,17 @@ An example `git-annex-compute-foo` shell script follows:
     #!/bin/sh
     set -e
     if [ "$1" != "convert" ]; then
-        echo "Usage: convert input output [passes=n]" >&2
-        exit 1
+    	echo "Usage: convert input output [passes=n]" >&2
+     	exit 1
     fi
     if [ -z "$ANNEX_COMPUTE_passes" ]; then
-        ANNEX_COMPUTE_passes=1
+    	ANNEX_COMPUTE_passes=1
     fi
     echo "INPUT $2"
     read input
     echo "OUTPUT $3"
     echo REPRODUCIBLE
     if [ -n "$input" ]; then
-       frobnicate --passes="$ANNEX_COMPUTE_passes" <"$input" >"$3"
+        mkdir -p "$(dirname "$3")"
+        frobnicate --passes="$ANNEX_COMPUTE_passes" <"$input" >"$3"
     fi
