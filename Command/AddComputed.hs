@@ -21,6 +21,7 @@ import Types.RemoteConfig
 import Types.KeySource
 import Messages.Progress
 import Logs.Location
+import Utility.Metered
 import Utility.MonotonicClock
 import Backend.URL (fromUrl)
 
@@ -136,23 +137,29 @@ perform o r program = do
 			logChange NoLiveUpdate k (Remote.uuid r) InfoPresent
 	
 	addfile fast state tmpdir outputfile
-		| fast || not isreproducible = do
-			let stateurl = Remote.Compute.computeStateUrl state outputfile
-			let k = fromUrl stateurl Nothing isreproducible
-			addSymlink outputfile k Nothing
-			return k
-		| otherwise = do
-			let outputfile' = tmpdir </> outputfile
-			let ld = LockedDown ldc $ KeySource
+		| fast = do
+			addSymlink outputfile stateurlk Nothing
+			return stateurlk
+		| isreproducible = do
+			sz <- liftIO $ getFileSize outputfile'
+			metered Nothing sz Nothing $ \_ p ->
+				ingestwith $ ingestAdd p (Just ld)
+		| otherwise = ingestwith $
+			ingestAdd' nullMeterUpdate (Just ld) (Just stateurlk)
+	  where
+	  	stateurl = Remote.Compute.computeStateUrl state outputfile
+		stateurlk = fromUrl stateurl Nothing True
+		outputfile' = tmpdir </> outputfile
+		ld = LockedDown ldc $ KeySource
 				{ keyFilename = outputfile
 				, contentLocation = outputfile'
 				, inodeCache = Nothing
 				}
-			sz <- liftIO $ getFileSize outputfile'
-			metered Nothing sz Nothing $ \_ p ->
-				ingestAdd p (Just ld) >>= \case
-					Nothing -> giveup "key generation failed"
-					Just k -> return k
+		ingestwith a = a >>= \case
+			Nothing -> giveup "key generation failed"
+			Just k -> do
+				logStatus NoLiveUpdate k InfoPresent
+				return k
 
 	ldc = LockDownConfig
 		{ lockingFile = True
