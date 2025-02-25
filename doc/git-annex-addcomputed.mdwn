@@ -54,7 +54,7 @@ Some examples of how this might look:
 * `--fast`
 
   Adds computed files to the repository, without generating their content
-  yet. 
+  yet.
 
 * `--unreproducible`, `-u`
 

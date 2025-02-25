@@ -12,6 +12,7 @@ module Remote.Compute (
 	ComputeState(..),
 	setComputeState,
 	getComputeStates,
+	computeStateUrl,
 	ComputeProgram,
 	getComputeProgram,
 	runComputeProgram,
@@ -36,6 +37,7 @@ import Utility.Metered
 import Utility.TimeStamp
 import Utility.Env
 import Utility.Tmp.Dir
+import Utility.Url
 import qualified Git
 import qualified Utility.SimpleProtocol as Proto
 
@@ -190,7 +192,10 @@ data ComputeState = ComputeState
  - and computeOutputs are sorted in ascending order for stability.
  -}
 formatComputeState :: Key -> ComputeState -> B.ByteString
-formatComputeState k st = renderQuery False $ concat
+formatComputeState k = formatComputeState' (Just k)
+
+formatComputeState' :: Maybe Key -> ComputeState -> B.ByteString
+formatComputeState' mk st = renderQuery False $ concat
 	[ map formatparam (computeParams st)
 	, map formatinput (M.toAscList (computeInputs st))
 	, mapMaybe formatoutput (M.toAscList (computeOutputs st))
@@ -202,7 +207,7 @@ formatComputeState k st = renderQuery False $ concat
 		("i" <> fromOsPath file, Just (serializeKey' key))
 	formatoutput (file, (Just key)) = Just $
 		("o" <> fromOsPath file,
-			if key == k
+			if Just key == mk
 				then Nothing
 				else Just (serializeKey' key)
 		)
@@ -250,6 +255,17 @@ parseComputeState k b =
 					}
 			_ -> Nothing
 		in go c' rest
+
+{- A compute: url for a given output file of a computation. -}
+computeStateUrl :: ComputeState -> OsPath -> URLString
+computeStateUrl st p = 
+	"annex-compute:" ++ fromOsPath p ++ "?" 
+		++ decodeBS (formatComputeState' Nothing st')
+  where
+	-- Omit computeOutputs, so this gives the same result whether
+	-- it's called on a ComputeState with the computeOutputs 
+	-- Keys populated or not.
+	st' = st { computeOutputs = mempty }
 
 {- The per remote metadata is used to store ComputeState. This allows
  - recording multiple ComputeStates that generate the same key.

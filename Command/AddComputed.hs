@@ -20,8 +20,9 @@ import Annex.Ingest
 import Types.RemoteConfig
 import Types.KeySource
 import Messages.Progress
-import Utility.MonotonicClock
 import Logs.Location
+import Utility.MonotonicClock
+import Backend.URL (fromUrl)
 
 import qualified Data.Map as M
 import Data.Time.Clock
@@ -42,19 +43,19 @@ optParser :: CmdParamsDesc -> Parser AddComputedOptions
 optParser desc = AddComputedOptions
 	<$> cmdParams desc
 	<*> (mkParseRemoteOption <$> parseToOption)
-	<*> (fromMaybe Unreproducible <$> parseReproducible)
+	<*> (fromMaybe (Reproducible False) <$> parseReproducible)
 
-data Reproducible = Reproducible | Unreproducible
+newtype Reproducible = Reproducible { isReproducible :: Bool }
 
 parseReproducible :: Parser (Maybe Reproducible)
 parseReproducible = r <|> unr
   where
-	r  = flag Nothing (Just Reproducible)
+	r  = flag Nothing (Just (Reproducible True))
 		( long "reproducible"
 		<> short 'r'
 		<> help "computation is fully reproducible"
 		)
-	unr = flag Nothing (Just Unreproducible)
+	unr = flag Nothing (Just (Reproducible False))
 		( long "unreproducible"
 		<> short 'u'
 		<> help "computation is not fully reproducible"
@@ -90,17 +91,14 @@ perform o r program = do
 		, Remote.Compute.computeInputs = mempty
 		, Remote.Compute.computeOutputs = mempty
 		, Remote.Compute.computeSubdir = subdir
-		, Remote.Compute.computeReproducible = 
-			case reproducible o of
-				Reproducible -> True
-				Unreproducible -> False
+		, Remote.Compute.computeReproducible = isreproducible
 		}
 	fast <- Annex.getRead Annex.fast
 	starttime <- liftIO currentMonotonicTimestamp
 	Remote.Compute.runComputeProgram program state
 		(Remote.Compute.ImmutableState False)
 		(getinputcontent fast)
-		(go starttime)
+		(go starttime fast)
 	next $ return True
   where
 	getinputcontent fast p = catKeyFile p >>= \case
@@ -117,7 +115,7 @@ perform o r program = do
 			, giveup $ "The computation needs an input file which does not exist: " ++ fromOsPath p
 			)
 	
-	go starttime state tmpdir = do
+	go starttime fast state tmpdir = do
 		endtime <- liftIO currentMonotonicTimestamp
 		let ts = calcduration starttime endtime
 		let outputs = Remote.Compute.computeOutputs state
@@ -125,7 +123,7 @@ perform o r program = do
 			giveup "The computation succeeded, but it did not generate any files."
 		oks <- forM (M.keys outputs) $ \outputfile -> do
 			showAction $ "adding " <> QuotedPath outputfile
-			k <- catchNonAsync (addfile tmpdir outputfile)
+			k <- catchNonAsync (addfile fast state tmpdir outputfile)
 				(\err -> giveup $ "Failed to ingest output file " ++ fromOsPath outputfile ++ ": " ++ show err)
 			return (outputfile, Just k)
 		let state' = state
@@ -137,24 +135,32 @@ perform o r program = do
 				k ts state'
 			logChange NoLiveUpdate k (Remote.uuid r) InfoPresent
 	
-	addfile tmpdir outputfile = do
-		let outputfile' = tmpdir </> outputfile
-		let ld = LockedDown ldc $ KeySource
-			{ keyFilename = outputfile
-			, contentLocation = outputfile'
-			, inodeCache = Nothing
-			}
-		sz <- liftIO $ getFileSize outputfile'
-		metered Nothing sz Nothing $ \_ p ->
-			ingestAdd p (Just ld) >>= \case
-				Nothing -> giveup "key generation failed"
-				Just k -> return k
+	addfile fast state tmpdir outputfile
+		| fast || not isreproducible = do
+			let stateurl = Remote.Compute.computeStateUrl state outputfile
+			let k = fromUrl stateurl Nothing isreproducible
+			addSymlink outputfile k Nothing
+			return k
+		| otherwise = do
+			let outputfile' = tmpdir </> outputfile
+			let ld = LockedDown ldc $ KeySource
+				{ keyFilename = outputfile
+				, contentLocation = outputfile'
+				, inodeCache = Nothing
+				}
+			sz <- liftIO $ getFileSize outputfile'
+			metered Nothing sz Nothing $ \_ p ->
+				ingestAdd p (Just ld) >>= \case
+					Nothing -> giveup "key generation failed"
+					Just k -> return k
 
 	ldc = LockDownConfig
 		{ lockingFile = True
 		, hardlinkFileTmpDir = Nothing
 		, checkWritePerms = True
 		}
-
+	
 	calcduration (MonotonicTimestamp starttime) (MonotonicTimestamp endtime) =
 		fromIntegral (endtime - starttime) :: NominalDiffTime
+	
+	isreproducible = isReproducible (reproducible o)
