@@ -26,7 +26,9 @@ For security, the program should avoid exposing user input to the shell
 unprotected, or otherwise executing it.
 
 The program is run in a temporary directory, which will be cleaned up after
-it exits.
+it exits. Note that it may be run in a subdirectory of its temporary
+directory. Eg, when `git-annex addcomputed` is run in a `foo/bar/`
+subdirectory of the git repository.
 
 The content of any annexed file in the repository can be an input
 to the computation. The program requests an input by writing a line to
@@ -93,10 +95,10 @@ An example `git-annex-compute-foo` shell script follows:
         echo "Usage: convert input output [passes=n]" >&2
         exit 1
     fi
-    if [ -z "$ANNEX_COMPUTE_passes" ];
+    if [ -z "$ANNEX_COMPUTE_passes" ]; then
         ANNEX_COMPUTE_passes=1
     fi
-    echo "INPUT "$2"
+    echo "INPUT $2"
     read input
     echo "OUTPUT $3"
     echo REPRODUCIBLE

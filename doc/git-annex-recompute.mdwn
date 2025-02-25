@@ -22,12 +22,12 @@ in the repository.
 
   Recompute files even when their input files have not changed.
 
-* `--unreproducible`
+* `--unreproducible`, `-u`
 
   Convert files that were added with `git-annex addcomputed --reproducible`
   to be as if they were added without that option.
 
-* `--reproducible`
+* `--reproducible`, `-r`
 
   Convert files that were added with `git-annex addcomputed --unreproducible`
   to be as if they were added with `--reproducible`.

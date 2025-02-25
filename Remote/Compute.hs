@@ -12,8 +12,10 @@ module Remote.Compute (
 	ComputeState(..),
 	setComputeState,
 	getComputeStates,
+	ComputeProgram,
 	getComputeProgram,
 	runComputeProgram,
+	ImmutableState(..),
 ) where
 
 import Annex.Common
@@ -33,6 +35,7 @@ import Logs.MetaData
 import Utility.Metered
 import Utility.TimeStamp
 import Utility.Env
+import Utility.Tmp.Dir
 import qualified Git
 import qualified Utility.SimpleProtocol as Proto
 
@@ -166,8 +169,9 @@ instance Proto.Serializable PercentFloat where
 
 data ComputeState = ComputeState
 	{ computeParams :: [String]
-	, computeInputs :: M.Map FilePath Key
-	, computeOutputs :: M.Map FilePath (Maybe Key)
+	, computeInputs :: M.Map OsPath Key
+	, computeOutputs :: M.Map OsPath (Maybe Key)
+	, computeSubdir :: OsPath
 	, computeReproducible :: Bool
 	}
 	deriving (Show, Eq)
@@ -175,12 +179,12 @@ data ComputeState = ComputeState
 {- Formats a ComputeState as an URL query string.
  -
  - Prefixes computeParams with 'p', computeInputs with 'i',
- - and computeOutput with 'o'.
+ - and computeOutput with 'o'. Uses "d" for computeSubdir.
  -
  - When the passed Key is an output, rather than duplicate it
  - in the query string, that output has no value.
  -
- - Example: "psomefile&pdestfile&pbaz&isomefile=WORM--foo&odestfile="
+ - Example: "psomefile&pdestfile&pbaz&isomefile=WORM--foo&odestfile=&d=subdir"
  -
  - The computeParams are in the order they were given. The computeInputs
  - and computeOutputs are sorted in ascending order for stability.
@@ -190,13 +194,14 @@ formatComputeState k st = renderQuery False $ concat
 	[ map formatparam (computeParams st)
 	, map formatinput (M.toAscList (computeInputs st))
 	, mapMaybe formatoutput (M.toAscList (computeOutputs st))
+	, [("d", Just (fromOsPath (computeSubdir st)))]
 	]
   where
 	formatparam p = ("p" <> encodeBS p, Nothing)
 	formatinput (file, key) =
-		("i" <> toRawFilePath file, Just (serializeKey' key))
+		("i" <> fromOsPath file, Just (serializeKey' key))
 	formatoutput (file, (Just key)) = Just $
-		("o" <> toRawFilePath file,
+		("o" <> fromOsPath file,
 			if key == k
 				then Nothing
 				else Just (serializeKey' key)
@@ -208,7 +213,7 @@ parseComputeState k b =
 	let st = go emptycomputestate (parseQuery b)
 	in if st == emptycomputestate then Nothing else Just st
   where
-	emptycomputestate = ComputeState mempty mempty mempty False
+	emptycomputestate = ComputeState mempty mempty mempty "." False
 	go :: ComputeState -> [QueryItem] -> ComputeState
 	go c [] = c { computeParams = reverse (computeParams c) }
 	go c ((f, v):rest) = 
@@ -220,7 +225,7 @@ parseComputeState k b =
 				key <- deserializeKey' =<< v
 				Just $ c
 					{ computeInputs = 
-						M.insert i key
+						M.insert (toOsPath i) key
 							(computeInputs c)
 					}
 			('o':o) -> case v of
@@ -228,13 +233,20 @@ parseComputeState k b =
 					key <- deserializeKey' kv
 					Just $ c
 						{ computeOutputs =
-							M.insert o (Just key)
+							M.insert (toOsPath o)
+								(Just key)
 								(computeOutputs c)
 						}
 				Nothing -> Just $ c
 					{ computeOutputs = 
-						M.insert o (Just k)
+						M.insert (toOsPath o)
+							(Just k)
 							(computeOutputs c)
+					}
+			('d':[]) -> do
+				subdir <- v
+				Just $ c
+					{ computeSubdir = toOsPath subdir
 					}
 			_ -> Nothing
 		in go c' rest
@@ -288,14 +300,14 @@ runComputeProgram
 	-> (ComputeState -> OsPath -> Annex v)
 	-> Annex v
 runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate) getinputcontent cont =
-	withOtherTmp $ \tmpdir -> 
-		go tmpdir 
-			`finally` liftIO (removeDirectoryRecursive tmpdir)
+	withOtherTmp $ \othertmpdir ->
+		withTmpDirIn othertmpdir "compute" go
   where
 	go tmpdir = do
 		environ <- computeProgramEnvironment state
+		subdir <- liftIO $ getsubdir tmpdir
 		let pr = (proc program (computeParams state))
-			 { cwd = Just (fromOsPath tmpdir)
+			 { cwd = Just (fromOsPath subdir)
 			 , std_in = CreatePipe
 			 , std_out = CreatePipe
 			 , env = Just environ
@@ -303,16 +315,26 @@ runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate)
 		state' <- bracket
 			(liftIO $ createProcess pr)
 			(liftIO . cleanupProcess)
-			(getinput state tmpdir)
-		cont state' tmpdir
+			(getinput state tmpdir subdir)
+		cont state' subdir
+		
+	getsubdir tmpdir = do
+		let subdir = tmpdir </> computeSubdir state
+		ifM (dirContains <$> absPath tmpdir <*> absPath subdir)
+			( do
+				createDirectoryIfMissing True subdir
+				return subdir
+			-- Ignore unsafe value in state.
+			, return tmpdir
+			)
 	
-	getinput state' tmpdir p = 
+	getinput state' tmpdir subdir p = 
 		liftIO (hGetLineUntilExitOrEOF (processHandle p) (stdoutHandle p)) >>= \case
 			Just l
-				| null l -> getinput state' tmpdir p
+				| null l -> getinput state' tmpdir subdir p
 				| otherwise -> do
-					state'' <- parseoutput p state' l
-					getinput state'' tmpdir p
+					state'' <- parseoutput p tmpdir subdir state' l
+					getinput state'' tmpdir subdir p
 			Nothing -> do
 				liftIO $ hClose (stdoutHandle p)
 				liftIO $ hClose (stdinHandle p)
@@ -320,28 +342,36 @@ runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate)
 					giveup $ program ++ " exited unsuccessfully"
 				return state'
 	
-	parseoutput p state' l = case Proto.parseMessage l of
-		Just (ProcessInput f) ->
-			let knowninput = M.member f (computeInputs state')
-			in checkimmutable knowninput l $ do
-				(k, mp) <- getinputcontent (toOsPath f)
+	parseoutput p tmpdir subdir state' l = case Proto.parseMessage l of
+		Just (ProcessInput f) -> do
+			let f' = toOsPath f
+			let knowninput = M.member f' (computeInputs state')
+			checksafefile tmpdir subdir f' "input"
+			checkimmutable knowninput l $ do
+				(k, mp) <- getinputcontent f'
+				mp' <- liftIO $ maybe (pure Nothing)
+					(Just <$$> relPathDirToFile subdir)
+					mp
 				liftIO $ hPutStrLn (stdinHandle p) $
-					maybe "" fromOsPath mp
+					maybe "" fromOsPath mp'
+				liftIO $ hFlush (stdinHandle p)
 				return $ if knowninput
 					then state'
 					else state'
 						{ computeInputs = 
-							M.insert f k
+							M.insert f' k
 								(computeInputs state')
 						}
-		Just (ProcessOutput f) ->
-			let knownoutput = M.member f (computeOutputs state')
-			in checkimmutable knownoutput l $ 
+		Just (ProcessOutput f) -> do
+			let f' = toOsPath f
+			checksafefile tmpdir subdir f' "output"
+			let knownoutput = M.member f' (computeOutputs state')
+			checkimmutable knownoutput l $ 
 				return $ if knownoutput
 					then state'
 					else state'
 						{ computeOutputs = 
-							M.insert f Nothing
+							M.insert f' Nothing
 								(computeOutputs state')
 						}
 		Just (ProcessProgress percent) -> do
@@ -351,6 +381,14 @@ runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate)
 			return $ state' { computeReproducible = True }
 		Nothing -> giveup $
 			program ++ " output included an unparseable line: \"" ++ l ++ "\""
+
+	checksafefile tmpdir subdir f fileaction = do
+		let err problem = giveup $
+			program ++ " tried to " ++ fileaction ++ " a file that is " ++ problem ++ ": " ++ fromOsPath f
+		unlessM (liftIO $ dirContains <$> absPath tmpdir <*> absPath (subdir </> f)) $
+			err "outside the git repository"
+		when (any (\p -> dropTrailingPathSeparator p == literalOsPath ".git") (splitPath f)) $
+			err "inside the .git directory"
 
 	checkimmutable True _ a = a
 	checkimmutable False l a
@@ -385,7 +423,7 @@ computeKey rs (ComputeProgram program) k af dest p vc = do
 			[] -> Nothing
 
 	go keyfile state tmpdir = do
-		let keyfile' = tmpdir </> toOsPath keyfile
+		let keyfile' = tmpdir </> keyfile
 		unlessM (liftIO $ doesFileExist keyfile') $
 			giveup $ program ++ " exited sucessfully, but failed to write the computed file"
 		catchNonAsync (liftIO $ moveFile keyfile' dest)
@@ -395,7 +433,7 @@ computeKey rs (ComputeProgram program) k af dest p vc = do
 		forM_ (M.toList $ computeOutputs state) $ \case
 			(file, (Just key)) ->
 				when (k /= key) $ do
-					let file' = tmpdir </> toOsPath file
+					let file' = tmpdir </> file
 					whenM (liftIO $ doesFileExist file') $
 						whenM (verifyKeyContentPostRetrieval RetrievalAllKeysSecure vc verification k file') $
 							void $ tryNonAsync $ moveAnnex k file'

@@ -33,6 +33,8 @@ Some examples of how this might look:
     git-annex addcomputed --to=y -- compress foo --level=9
     git-annex addcomputed --to=z -- clip foo 2:01-3:00 combine with bar to baz
 
+
+
 # OPTIONS
 
 * `--to=remote`
@@ -54,7 +56,7 @@ Some examples of how this might look:
   Adds computed files to the repository, without generating their content
   yet. 
 
-* `--unreproducible`
+* `--unreproducible`, `-u`
 
   Indicate that the computation is not expected to be fully reproducible.
   It can vary, in ways that produce files that equivilant enough to
