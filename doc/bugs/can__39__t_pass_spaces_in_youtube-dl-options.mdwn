@@ -25,6 +25,7 @@ instead of the expected:
 ### What version of git-annex are you using? On what operating system?
 
 git-annex version: 10.20230926-g4ac2758ba589562e427a66437b9fdcd5172357e1
+
 OS: Arch Linux
 
 ### Please provide any additional information below.
