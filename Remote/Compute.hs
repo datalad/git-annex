@@ -179,7 +179,7 @@ data ComputeState = ComputeState
 {- Formats a ComputeState as an URL query string.
  -
  - Prefixes computeParams with 'p', computeInputs with 'i',
- - and computeOutput with 'o'. Uses "d" for computeSubdir.
+ - and computeOutputs with 'o'. Uses "d" for computeSubdir.
  -
  - When the passed Key is an output, rather than duplicate it
  - in the query string, that output has no value.

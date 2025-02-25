@@ -654,6 +654,7 @@ Executable git-annex
     CmdLine.Usage
     Command
     Command.Add
+    Command.AddComputed
     Command.AddUnused
     Command.AddUrl
     Command.Adjust
