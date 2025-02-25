@@ -53,8 +53,11 @@ Some examples of how this might look:
 
 * `--fast`
 
-  Adds computed files to the repository, without generating their content
-  yet.
+  Adds computed files to the repository, without doing any work yet to
+  compute their content.
+
+  This implies `--unreproducible`, because even if the compute remote
+  produces reproducible output, it's not available.
 
 * `--unreproducible`, `-u`
 
@@ -70,7 +73,7 @@ Some examples of how this might look:
   Indicate that the computation is expected to be fully reproducible.
 
   This is the default when the compute remote indicates that it produces
-  reproducible output.
+  reproducible output (except when using `--fast`).
 
   If a computation turns out not to be fully reproducible, then getting
   the file from the compute remote will later fail with a checksum

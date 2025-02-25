@@ -37,14 +37,14 @@ cmd = notBareRepo $
 data AddComputedOptions = AddComputedOptions
 	{ computeParams :: CmdParams
 	, computeRemote :: DeferredParse Remote
-	, reproducible :: Reproducible
+	, reproducible :: Maybe Reproducible
 	}
 
 optParser :: CmdParamsDesc -> Parser AddComputedOptions
 optParser desc = AddComputedOptions
 	<$> cmdParams desc
 	<*> (mkParseRemoteOption <$> parseToOption)
-	<*> (fromMaybe (Reproducible False) <$> parseReproducible)
+	<*> parseReproducible
 
 newtype Reproducible = Reproducible { isReproducible :: Bool }
 
@@ -92,7 +92,7 @@ perform o r program = do
 		, Remote.Compute.computeInputs = mempty
 		, Remote.Compute.computeOutputs = mempty
 		, Remote.Compute.computeSubdir = subdir
-		, Remote.Compute.computeReproducible = isreproducible
+		, Remote.Compute.computeReproducible = False
 		}
 	fast <- Annex.getRead Annex.fast
 	starttime <- liftIO currentMonotonicTimestamp
@@ -140,7 +140,7 @@ perform o r program = do
 		| fast = do
 			addSymlink outputfile stateurlk Nothing
 			return stateurlk
-		| isreproducible = do
+		| isreproducible state = do
 			sz <- liftIO $ getFileSize outputfile'
 			metered Nothing sz Nothing $ \_ p ->
 				ingestwith $ ingestAdd p (Just ld)
@@ -170,4 +170,6 @@ perform o r program = do
 	calcduration (MonotonicTimestamp starttime) (MonotonicTimestamp endtime) =
 		fromIntegral (endtime - starttime) :: NominalDiffTime
 	
-	isreproducible = isReproducible (reproducible o)
+	isreproducible state = case reproducible o of
+		Just v -> isReproducible v
+		Nothing -> Remote.Compute.computeReproducible state
