@@ -27,8 +27,8 @@ unprotected, or otherwise executing it.
 
 The program is run in a temporary directory, which will be cleaned up after
 it exits. Note that it may be run in a subdirectory of its temporary
-directory. Eg, when `git-annex addcomputed` is run in a `foo/bar/`
-subdirectory of the git repository.
+directory. This is done when `git-annex addcomputed` was run in a subdirectory
+of the git repository.
 
 The content of any annexed file in the repository can be an input
 to the computation. The program requests an input by writing a line to
@@ -40,8 +40,8 @@ Then it can read a line from stdin, which will be the path to the content
 (eg a `.git/annex/objects/` path).
 
 If the program needs multiple input files, it should output multiple
-`INPUT` lines at once, and then read multiple paths from stdin. This
-allows retrival of the inputs to potentially run in parallel.
+`INPUT` lines first, and then read multiple paths from stdin. This
+allows retrieval of the inputs to potentially run in parallel.
 
 If an input file is not available, the program's stdin will be closed
 without a path being written to it. So when reading from stdin fails, 
