@@ -2,6 +2,10 @@ While other remotes store the contents of annexed files somewhere,
 this special remote uses a program to compute the contents of annexed
 files.
 
+To add a file to a compute special remote, use the [[git-annex-addcomputed]]
+command. Once a file has been added to a compute special remote, commands
+like `git-annex get` will use it to compute the content of the file.
+
 To enable an instance of this special remote:
 
     # git-annex initremote myremote type=compute program=git-annex-compute-foo
@@ -11,16 +15,11 @@ program to use to compute the contents of annexed files. It must start with
 "git-annex-compute-". The program needs to be installed somewhere in the
 `PATH`.
 
-To add a file to a compute special remote, use the [[git-annex-addcomputed]]
-command. Once a file has been added to a compute special remote, commands
-like `git-annex get` will use it to compute the content of the file.
+All other "field=value" parameters passed to `initremote` will be passed
+to the program when running [[git-annex-addcomputed]]. Note that when the
+program takes a dashed option, it can be provided after "--":
 
-You can provide other parameters to `initremote`, in order to provide
-default configuration values to use when adding files with
-[[git-annex-addcomputed]]. To see a list of all the configuration values
-supported by a given program, pass `--whatelse` to `initremote`:
-
-    # git-annex initremote myremote type=compute program=git-annex-compute-foo --whatelse
+    # git-annex initremote myremote type=compute program=git-annex-compute-foo -- --level=9
 
 ## compute programs
 

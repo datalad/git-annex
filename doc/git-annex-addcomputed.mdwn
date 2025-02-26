@@ -33,7 +33,9 @@ Some examples of how this might look:
     git-annex addcomputed --to=y -- compress foo --level=9
     git-annex addcomputed --to=z -- clip foo 2:01-3:00 combine with bar to baz
 
-
+Note that parameters that were passed to `git-annex initremote` 
+when setting up the compute special remote will be appended to the end of
+the parameters provided to `git-annex addcomputed`.
 
 # OPTIONS
 
@@ -87,6 +89,8 @@ Some examples of how this might look:
 [[git-annex]](1)
 
 [[git-annex-recompute]](1)
+
+[[git-annex-initremote]](1)
 
 # AUTHOR
 

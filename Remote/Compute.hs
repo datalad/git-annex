@@ -17,6 +17,7 @@ module Remote.Compute (
 	getComputeProgram,
 	runComputeProgram,
 	ImmutableState(..),
+	defaultComputeParams,
 ) where
 
 import Annex.Common
@@ -126,6 +127,11 @@ computeConfigParser _ = return $ RemoteConfigParser
 		, [("*", FieldDesc "all other parameters are passed to compute program")]
 		)
 	}
+
+defaultComputeParams :: Remote -> [String]
+defaultComputeParams = map mk . M.toList . getRemoteConfigPassedThrough . config
+  where
+	mk (f, v) = fromProposedAccepted f ++ '=' : v
 
 newtype ComputeProgram = ComputeProgram String
 	deriving (Show)
