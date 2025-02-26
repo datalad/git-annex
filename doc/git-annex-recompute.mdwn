@@ -1,6 +1,6 @@
 # NAME
 
-git-annex recompute - update computed files
+git-annex recompute - recompute computed files
 
 # SYNOPSIS
 
@@ -9,18 +9,24 @@ git-annex recompute [path ...]`
 # DESCRIPTION
 
 This updates computed files that were added with
-[[git-annex-addcomputed]](1).
+[[git-annex-addcomputed]](1). 
+
+When the output of the computation is different, the updated computed
+file is staged in the repository.
 
 By default, this only recomputes files whose input files have changed.
-The new contents of the input files are used to re-run the computation,
-and when the output is different, the updated computed file is staged
-in the repository.
+The new contents of the input files are used to re-run the computation.
 
 # OPTIONS
 
-* `--unchanged`
+* `--original`
 
-  Recompute files even when their input files have not changed.
+  Use the original content of input files.
+
+* `--others`
+
+  When recomputing one file also generates new versions of other files,
+  stage those other files in the repository too.
 
 * `--unreproducible`, `-u`
 
@@ -32,13 +38,19 @@ in the repository.
   Convert files that were added with `git-annex addcomputed --unreproducible`
   to be as if they were added with `--reproducible`.
 
+* `--remote=name`
+
+  Only recompute files that were computed by this compute remote.
+
+  When this option is not used, all computed files are recomputed using
+  whatever compute remote was originally used to add them. In cases where
+  a file can be computed by multiple remotes, the one with the lowest
+  configured cost will be used.
+
 * matching options
 
   The [[git-annex-matching-options]](1) can be used to control what
   files to recompute.
-
-  For example, to only recompute files that are computed by the "photoconv"
-  compute remote, use `--in=photoconv`
 
 *  Also the [[git-annex-common-options]](1) can be used.
 

@@ -728,6 +728,7 @@ Executable git-annex
     Command.Proxy
     Command.Pull
     Command.Push
+    Command.Recompute
     Command.ReKey
     Command.ReadPresentKey
     Command.RecvKey

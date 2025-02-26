@@ -134,6 +134,7 @@ import qualified Command.UpdateProxy
 import qualified Command.MaxSize
 import qualified Command.Sim
 import qualified Command.AddComputed
+import qualified Command.Recompute
 import qualified Command.Version
 import qualified Command.RemoteDaemon
 #ifdef WITH_ASSISTANT
@@ -267,6 +268,7 @@ cmds testoptparser testrunner mkbenchmarkgenerator = map addGitAnnexCommonOption
 	, Command.MaxSize.cmd
 	, Command.Sim.cmd
 	, Command.AddComputed.cmd
+	, Command.Recompute.cmd
 	, Command.Version.cmd
 	, Command.RemoteDaemon.cmd
 #ifdef WITH_ASSISTANT

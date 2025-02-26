@@ -17,7 +17,6 @@ import qualified Types.Remote as Remote
 import Annex.CatFile
 import Annex.Content.Presence
 import Annex.Ingest
-import Types.RemoteConfig
 import Types.KeySource
 import Messages.Progress
 import Logs.Location
@@ -68,23 +67,20 @@ seek o = startConcurrency commandStages (seek' o)
 seek' :: AddComputedOptions -> CommandSeek
 seek' o = do
 	r <- getParsed (computeRemote o)
-	unless (Remote.typename (Remote.remotetype r) == Remote.typename Remote.Compute.remote) $
+	unless (Remote.Compute.isComputeRemote r) $
 		giveup "That is not a compute remote."
 
-	let rc = unparsedRemoteConfig (Remote.config r)
-	case Remote.Compute.getComputeProgram rc of
-		Left err -> giveup $ 
-			"Problem with the configuration of the compute remote: " ++ err
-		Right program -> commandAction $ start o r program
+	commandAction $ start o r
 
-start :: AddComputedOptions -> Remote -> Remote.Compute.ComputeProgram -> CommandStart
-start o r program = starting "addcomputed" ai si $ perform o r program
+start :: AddComputedOptions -> Remote -> CommandStart
+start o r = starting "addcomputed" ai si $ perform o r
   where
 	ai = ActionItemUUID (Remote.uuid r) (UnquotedString (Remote.name r))
 	si = SeekInput (computeParams o)
 
-perform :: AddComputedOptions -> Remote -> Remote.Compute.ComputeProgram -> CommandPerform
-perform o r program = do
+perform :: AddComputedOptions -> Remote -> CommandPerform
+perform o r = do
+	program <- Remote.Compute.getComputeProgram r
 	repopath <- fromRepo Git.repoPath
 	subdir <- liftIO $ relPathDirToFile repopath (literalOsPath ".")
 	let state = Remote.Compute.ComputeState
@@ -100,24 +96,10 @@ perform o r program = do
 	showOutput
 	Remote.Compute.runComputeProgram program state
 		(Remote.Compute.ImmutableState False)
-		(getinputcontent fast)
+		(getInputContent fast)
 		(go starttime fast)
 	next $ return True
   where
-	getinputcontent fast p = catKeyFile p >>= \case
-		Just inputkey -> do
-			obj <- calcRepo (gitAnnexLocation inputkey)
-			if fast
-				then return (inputkey, Nothing)
-				else ifM (inAnnex inputkey)
-					( return (inputkey, Just obj)
-					, giveup $ "The computation needs the content of a file which is not present: " ++ fromOsPath p
-					)
-		Nothing -> ifM (liftIO $ doesFileExist p)
-			( giveup $ "The computation needs an input file that is not an annexed file: " ++ fromOsPath p 
-			, giveup $ "The computation needs an input file which does not exist: " ++ fromOsPath p
-			)
-	
 	go starttime fast state tmpdir = do
 		endtime <- liftIO currentMonotonicTimestamp
 		let ts = calcduration starttime endtime
@@ -175,3 +157,18 @@ perform o r program = do
 	isreproducible state = case reproducible o of
 		Just v -> isReproducible v
 		Nothing -> Remote.Compute.computeReproducible state
+	
+getInputContent :: Bool -> OsPath -> Annex (Key, Maybe OsPath)
+getInputContent fast p = catKeyFile p >>= \case
+	Just inputkey -> do
+		obj <- calcRepo (gitAnnexLocation inputkey)
+		if fast
+			then return (inputkey, Nothing)
+			else ifM (inAnnex inputkey)
+				( return (inputkey, Just obj)
+				, giveup $ "The computation needs the content of a file which is not present: " ++ fromOsPath p
+				)
+	Nothing -> ifM (liftIO $ doesFileExist p)
+		( giveup $ "The computation needs an input file that is not an annexed file: " ++ fromOsPath p 
+		, giveup $ "The computation needs an input file which does not exist: " ++ fromOsPath p
+		)

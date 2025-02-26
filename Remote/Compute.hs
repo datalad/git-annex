@@ -9,14 +9,16 @@
 
 module Remote.Compute (
 	remote,
+	isComputeRemote,
 	ComputeState(..),
 	setComputeState,
-	getComputeStates,
+	getComputeState,
 	computeStateUrl,
 	ComputeProgram,
 	getComputeProgram,
 	runComputeProgram,
 	ImmutableState(..),
+	computationBehaviorChangeError,
 	defaultComputeParams,
 ) where
 
@@ -63,8 +65,11 @@ remote = RemoteType
 	, thirdPartyPopulated = False
 	}
 
+isComputeRemote :: Remote -> Bool
+isComputeRemote r = typename (remotetype r) == typename remote
+
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
-gen r u rc gc rs = case getComputeProgram rc of
+gen r u rc gc rs = case getComputeProgram' rc of
 	Left _err -> return Nothing
 	Right program -> do
 		c <- parsedRemoteConfig remote rc
@@ -107,7 +112,7 @@ gen r u rc gc rs = case getComputeProgram rc of
 
 setupInstance :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
 setupInstance _ mu _ c _ = do
-	ComputeProgram program <- either giveup return (getComputeProgram c)
+	ComputeProgram program <- either giveup return $ getComputeProgram' c
 	unlessM (liftIO $ inSearchPath program) $
 		giveup $ "Cannot find " ++ program ++ " in PATH"
 	u <- maybe (liftIO genUUID) return mu
@@ -136,8 +141,15 @@ defaultComputeParams = map mk . M.toList . getRemoteConfigPassedThrough . config
 newtype ComputeProgram = ComputeProgram String
 	deriving (Show)
 
-getComputeProgram :: RemoteConfig -> Either String ComputeProgram
-getComputeProgram c = case fromProposedAccepted <$> M.lookup programField c of
+getComputeProgram :: Remote -> Annex ComputeProgram
+getComputeProgram r = 
+	case getComputeProgram' (unparsedRemoteConfig (config r)) of
+		Right program -> return program
+		Left err -> giveup $ 
+			"Problem with the configuration of compute remote " ++ name r ++ ": " ++ err
+
+getComputeProgram' :: RemoteConfig -> Either String ComputeProgram
+getComputeProgram' c = case fromProposedAccepted <$> M.lookup programField c of
 	Just program
 		| safetyPrefix `isPrefixOf` program ->
 			Right (ComputeProgram program)
@@ -285,8 +297,15 @@ setComputeState rs k ts st = addRemoteMetaData k rs $ MetaData $ M.singleton
 	(mkMetaFieldUnchecked $ T.pack ('t':show (truncateResolution 1 ts)))
 	(S.singleton (MetaValue (CurrentlySet True) (formatComputeState k st)))
 
-getComputeStates :: RemoteStateHandle -> Key -> Annex [(NominalDiffTime, ComputeState)]
-getComputeStates rs k = do
+{- When multiple ComputeStates have been recorded for the same key,
+ - this returns one that is probably less expensive to compute,
+ - based on the original time it took to compute it. -}
+getComputeState:: RemoteStateHandle -> Key -> Annex (Maybe ComputeState)
+getComputeState rs k = headMaybe . map snd . sortOn fst
+	<$> getComputeStatesUnsorted rs k
+
+getComputeStatesUnsorted :: RemoteStateHandle -> Key -> Annex [(NominalDiffTime, ComputeState)]
+getComputeStatesUnsorted rs k = do
 	RemoteMetaData _ (MetaData m) <- getCurrentRemoteMetaData rs k
 	return $ go [] (M.toList m)
   where
@@ -369,7 +388,7 @@ runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate)
 			let f' = toOsPath f
 			let knowninput = M.member f' (computeInputs state')
 			checksafefile tmpdir subdir f' "input"
-			checkimmutable knowninput l $ do
+			checkimmutable knowninput "inputting" f' $ do
 				(k, mp) <- getinputcontent f'
 				mp' <- liftIO $ maybe (pure Nothing)
 					(Just <$$> relPathDirToFile subdir)
@@ -388,7 +407,7 @@ runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate)
 			let f' = toOsPath f
 			checksafefile tmpdir subdir f' "output"
 			let knownoutput = M.member f' (computeOutputs state')
-			checkimmutable knownoutput l $ 
+			checkimmutable knownoutput "outputting" f' $ 
 				return $ if knownoutput
 					then state'
 					else state'
@@ -412,25 +431,31 @@ runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate)
 		when (any (\p -> dropTrailingPathSeparator p == literalOsPath ".git") (splitPath f)) $
 			err "inside the .git directory"
 
-	checkimmutable True _ a = a
-	checkimmutable False l a
+	checkimmutable True _ _ a = a
+	checkimmutable False requestdesc p a
 		| not immutablestate = a
-		| otherwise = giveup $
-			program ++ " is not behaving the same way it used to, now outputting: \"" ++ l ++ "\""
+		| otherwise = computationBehaviorChangeError (ComputeProgram program) requestdesc p
+
+computationBehaviorChangeError :: ComputeProgram -> String -> OsPath -> Annex a
+computationBehaviorChangeError (ComputeProgram program) requestdesc p =
+	giveup $ program ++ " is not behaving the same way it used to, now " ++ requestdesc ++ ": " ++ fromOsPath p
 
 computeKey :: RemoteStateHandle -> ComputeProgram -> Key -> AssociatedFile -> OsPath -> MeterUpdate -> VerifyConfig -> Annex Verification
-computeKey rs (ComputeProgram program) k af dest p vc = do
-	states <- map snd . sortOn fst -- least expensive probably
-		<$> getComputeStates rs k
-	case mapMaybe computeskey states of
-		((keyfile, state):_) -> runComputeProgram
-			(ComputeProgram program)
-			state
-			(ImmutableState True)
-			(getinputcontent state)
-			(go keyfile)
-		[] -> giveup "Missing compute state"
+computeKey rs (ComputeProgram program) k af dest p vc =
+	getComputeState rs k >>= \case
+		Just state -> 
+			case computeskey state of
+				Just keyfile -> runComputeProgram
+					(ComputeProgram program)
+					state
+					(ImmutableState True)
+					(getinputcontent state)
+					(go keyfile)
+				Nothing -> missingstate
+		Nothing -> missingstate
   where
+	missingstate = giveup "Missing compute state"
+
 	getinputcontent state f =
 		case M.lookup (fromOsPath f) (computeInputs state) of
 			Just inputkey -> do
@@ -441,7 +466,7 @@ computeKey rs (ComputeProgram program) k af dest p vc = do
 
 	computeskey state = 
 		case M.keys $ M.filter (== Just k) (computeOutputs state) of
-			(keyfile : _) -> Just (keyfile, state)
+			(keyfile : _) -> Just keyfile
 			[] -> Nothing
 
 	go keyfile state tmpdir = do
@@ -470,7 +495,7 @@ computeKey rs (ComputeProgram program) k af dest p vc = do
 -- Make sure that the compute state exists.
 checkKey :: RemoteStateHandle -> Key -> Annex Bool
 checkKey rs k = do
-	states <- getComputeStates rs k
+	states <- getComputeStatesUnsorted rs k
 	if null states
 		then giveup "Missing compute state"
 		else return True

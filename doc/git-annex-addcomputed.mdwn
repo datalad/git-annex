@@ -78,9 +78,9 @@ the parameters provided to `git-annex addcomputed`.
   reproducible output (except when using `--fast`).
 
   If a computation turns out not to be fully reproducible, then getting
-  the file from the compute remote will later fail with a checksum
-  verification error. One thing that can be done then is to use 
-  `git-annex recompute --unreproducible`.
+  a computed file from the compute remote will later fail with a
+  checksum verification error. One thing that can be done then is to use 
+  `git-annex recompute --original --unreproducible`.
 
 *  Also the [[git-annex-common-options]](1) can be used.
 
