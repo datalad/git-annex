@@ -41,6 +41,7 @@ import Utility.TimeStamp
 import Utility.Env
 import Utility.Tmp.Dir
 import Utility.Url
+import Utility.MonotonicClock
 import qualified Git
 import qualified Utility.SimpleProtocol as Proto
 
@@ -338,7 +339,7 @@ runComputeProgram
 	-> ComputeState
 	-> ImmutableState
 	-> (OsPath -> Annex (Key, Maybe OsPath))
-	-> (ComputeState -> OsPath -> Annex v)
+	-> (ComputeState -> OsPath -> NominalDiffTime -> Annex v)
 	-> Annex v
 runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate) getinputcontent cont =
 	withOtherTmp $ \othertmpdir ->
@@ -353,11 +354,13 @@ runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate)
 			 , std_out = CreatePipe
 			 , env = Just environ
 			 }
+		starttime <- liftIO currentMonotonicTimestamp
 		state' <- bracket
 			(liftIO $ createProcess pr)
 			(liftIO . cleanupProcess)
 			(getinput state tmpdir subdir)
-		cont state' subdir
+		endtime <- liftIO currentMonotonicTimestamp
+		cont state' subdir (calcduration starttime endtime)
 		
 	getsubdir tmpdir = do
 		let subdir = tmpdir </> computeSubdir state
@@ -435,6 +438,9 @@ runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate)
 	checkimmutable False requestdesc p a
 		| not immutablestate = a
 		| otherwise = computationBehaviorChangeError (ComputeProgram program) requestdesc p
+	
+	calcduration (MonotonicTimestamp starttime) (MonotonicTimestamp endtime) =
+		fromIntegral (endtime - starttime) :: NominalDiffTime
 
 computationBehaviorChangeError :: ComputeProgram -> String -> OsPath -> Annex a
 computationBehaviorChangeError (ComputeProgram program) requestdesc p =
@@ -469,7 +475,7 @@ computeKey rs (ComputeProgram program) k af dest p vc =
 			(keyfile : _) -> Just keyfile
 			[] -> Nothing
 
-	go keyfile state tmpdir = do
+	go keyfile state tmpdir ts = do
 		let keyfile' = tmpdir </> keyfile
 		unlessM (liftIO $ doesFileExist keyfile') $
 			giveup $ program ++ " exited sucessfully, but failed to write the computed file"

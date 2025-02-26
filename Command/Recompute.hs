@@ -10,26 +10,21 @@
 module Command.Recompute where
 
 import Command
-import qualified Git
 import qualified Annex
 import qualified Remote.Compute
 import qualified Remote
 import qualified Types.Remote as Remote
 import Annex.CatFile
-import Annex.Content.Presence
 import Annex.Ingest
 import Git.FilePath
-import Types.RemoteConfig
 import Types.KeySource
 import Messages.Progress
 import Logs.Location
 import Utility.Metered
-import Utility.MonotonicClock
 import Backend.URL (fromUrl)
 import Command.AddComputed (Reproducible(..), parseReproducible, getInputContent)
 
 import qualified Data.Map as M
-import Data.Time.Clock
 
 cmd :: Command
 cmd = notBareRepo $ 
@@ -127,12 +122,11 @@ perform o r file key oldstate = do
 		, Remote.Compute.computeOutputs = mempty
 		}
 	fast <- Annex.getRead Annex.fast
-	starttime <- liftIO currentMonotonicTimestamp
 	showOutput
 	Remote.Compute.runComputeProgram program recomputestate
 		(Remote.Compute.ImmutableState False)
 		(getinputcontent program fast)
-		(go starttime fast)
+		(go fast)
 	next $ return True
   where
 	getinputcontent program fast p
@@ -143,9 +137,7 @@ perform o r file key oldstate = do
 					"requesting a new input file" p
 		| otherwise = getInputContent fast p
 	
-	go starttime fast state tmpdir = do
-		endtime <- liftIO currentMonotonicTimestamp
-		let ts = calcduration starttime endtime
+	go fast state tmpdir ts = do
 		let outputs = Remote.Compute.computeOutputs state
 		when (M.null outputs) $
 			giveup "The computation succeeded, but it did not generate any files."
@@ -193,9 +185,6 @@ perform o r file key oldstate = do
 		, hardlinkFileTmpDir = Nothing
 		, checkWritePerms = True
 		}
-	
-	calcduration (MonotonicTimestamp starttime) (MonotonicTimestamp endtime) =
-		fromIntegral (endtime - starttime) :: NominalDiffTime
 	
 	isreproducible state = case reproducible o of
 		Just v -> isReproducible v
