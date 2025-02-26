@@ -108,6 +108,8 @@ start' o r si file key =
 			-- explains the problem.
 			Nothing -> True
 
+-- TODO When reproducible is not set, preserve the
+-- reproducible/unreproducible of the input key.
 perform :: RecomputeOptions -> Remote -> OsPath -> Key -> Remote.Compute.ComputeState -> CommandPerform
 perform o r file key oldstate = do
 	program <- Remote.Compute.getComputeProgram r
