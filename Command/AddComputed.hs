@@ -97,6 +97,7 @@ perform o r program = do
 		}
 	fast <- Annex.getRead Annex.fast
 	starttime <- liftIO currentMonotonicTimestamp
+	showOutput
 	Remote.Compute.runComputeProgram program state
 		(Remote.Compute.ImmutableState False)
 		(getinputcontent fast)
