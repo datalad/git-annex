@@ -14,6 +14,7 @@ import qualified Git
 import qualified Annex
 import qualified Remote.Compute
 import qualified Types.Remote as Remote
+import Backend
 import Annex.CatFile
 import Annex.Content.Presence
 import Annex.Ingest
@@ -24,6 +25,7 @@ import Utility.Metered
 import Backend.URL (fromUrl)
 
 import qualified Data.Map as M
+import Data.Time.Clock
 
 cmd :: Command
 cmd = notBareRepo $ 
@@ -94,73 +96,97 @@ perform o r = do
 	Remote.Compute.runComputeProgram program state
 		(Remote.Compute.ImmutableState False)
 		(getInputContent fast)
-		(go fast)
+		(addComputed "adding" True r (reproducible o) (const True) fast)
 	next $ return True
+
+addComputed :: StringContainingQuotedPath -> Bool -> Remote -> Maybe Reproducible -> (OsPath -> Bool) -> Bool -> Remote.Compute.ComputeState -> OsPath -> NominalDiffTime -> Annex ()
+addComputed addaction stagefiles r reproducibleconfig wantfile fast state tmpdir ts = do
+	let outputs = Remote.Compute.computeOutputs state
+	when (M.null outputs) $
+		giveup "The computation succeeded, but it did not generate any files."
+	oks <- forM (M.keys outputs) $ \outputfile -> do
+		showAction $ addaction <> " " <> QuotedPath outputfile
+		k <- catchNonAsync (addfile outputfile)
+			(\err -> giveup $ "Failed to ingest output file " ++ fromOsPath outputfile ++ ": " ++ show err)
+		return (outputfile, Just k)
+	let state' = state
+		{ Remote.Compute.computeOutputs = M.fromList oks
+		}
+	forM_ (mapMaybe snd oks) $ \k -> do
+		Remote.Compute.setComputeState
+			(Remote.remoteStateHandle r)
+			k ts state'
+		logChange NoLiveUpdate k (Remote.uuid r) InfoPresent
   where
-	go fast state tmpdir ts = do
-		let outputs = Remote.Compute.computeOutputs state
-		when (M.null outputs) $
-			giveup "The computation succeeded, but it did not generate any files."
-		oks <- forM (M.keys outputs) $ \outputfile -> do
-			showAction $ "adding " <> QuotedPath outputfile
-			k <- catchNonAsync (addfile fast state tmpdir outputfile)
-				(\err -> giveup $ "Failed to ingest output file " ++ fromOsPath outputfile ++ ": " ++ show err)
-			return (outputfile, Just k)
-		let state' = state
-			{ Remote.Compute.computeOutputs = M.fromList oks
-			}
-		forM_ (mapMaybe snd oks) $ \k -> do
-			Remote.Compute.setComputeState
-				(Remote.remoteStateHandle r)
-				k ts state'
-			logChange NoLiveUpdate k (Remote.uuid r) InfoPresent
-	
-	addfile fast state tmpdir outputfile
+	addfile outputfile
 		| fast = do
-			addSymlink outputfile stateurlk Nothing
+			when (wantfile outputfile) $
+				if stagefiles
+					then addSymlink outputfile stateurlk Nothing
+					else makelink stateurlk
 			return stateurlk
-		| isreproducible state = do
+		| isreproducible = do
 			sz <- liftIO $ getFileSize outputfile'
 			metered Nothing sz Nothing $ \_ p ->
-				ingestwith $ ingestAdd p (Just ld)
-		| otherwise = ingestwith $
-			ingestAdd' nullMeterUpdate (Just ld) (Just stateurlk)
+				if wantfile outputfile
+					then ingesthelper p Nothing
+					else genkey p
+		| otherwise =
+			if wantfile outputfile
+				then ingesthelper nullMeterUpdate
+					(Just stateurlk)
+				else return stateurlk
 	  where
 	  	stateurl = Remote.Compute.computeStateUrl r state outputfile
 		stateurlk = fromUrl stateurl Nothing True
 		outputfile' = tmpdir </> outputfile
-		ld = LockedDown ldc $ KeySource
-				{ keyFilename = outputfile
-				, contentLocation = outputfile'
-				, inodeCache = Nothing
-				}
+		ld = LockedDown ldc ks
+		ks = KeySource
+			{ keyFilename = outputfile
+			, contentLocation = outputfile'
+			, inodeCache = Nothing
+			}
 		ingestwith a = a >>= \case
-			Nothing -> giveup "key generation failed"
+			Nothing -> giveup "ingestion failed"
 			Just k -> do
 				logStatus NoLiveUpdate k InfoPresent
 				return k
-
+		genkey p = do
+			backend <- chooseBackend outputfile
+			fst <$> genKey ks p backend
+		makelink k = void $ makeLink outputfile k Nothing
+		ingesthelper p mk
+			| stagefiles = ingestwith $
+				ingestAdd' p (Just ld) mk
+			| otherwise = ingestwith $ do
+				mk' <- fst <$> ingest p (Just ld) mk
+				maybe noop makelink mk'
+				return mk'
+	
 	ldc = LockDownConfig
 		{ lockingFile = True
 		, hardlinkFileTmpDir = Nothing
 		, checkWritePerms = True
 		}
 	
-	isreproducible state = case reproducible o of
+	isreproducible = case reproducibleconfig of
 		Just v -> isReproducible v
 		Nothing -> Remote.Compute.computeReproducible state
 	
 getInputContent :: Bool -> OsPath -> Annex (Key, Maybe OsPath)
 getInputContent fast p = catKeyFile p >>= \case
-	Just inputkey -> do
-		obj <- calcRepo (gitAnnexLocation inputkey)
-		if fast
-			then return (inputkey, Nothing)
-			else ifM (inAnnex inputkey)
-				( return (inputkey, Just obj)
-				, giveup $ "The computation needs the content of a file which is not present: " ++ fromOsPath p
-				)
+	Just inputkey -> getInputContent' fast inputkey (fromOsPath p)
 	Nothing -> ifM (liftIO $ doesFileExist p)
 		( giveup $ "The computation needs an input file that is not an annexed file: " ++ fromOsPath p 
 		, giveup $ "The computation needs an input file which does not exist: " ++ fromOsPath p
 		)
+
+getInputContent' :: Bool -> Key -> String -> Annex (Key, Maybe OsPath)
+getInputContent' fast inputkey filedesc = do
+	obj <- calcRepo (gitAnnexLocation inputkey)
+	if fast
+		then return (inputkey, Nothing)
+		else ifM (inAnnex inputkey)
+			( return (inputkey, Just obj)
+			, giveup $ "The computation needs the content of a file which is not present: " ++ filedesc
+			)

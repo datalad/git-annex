@@ -11,11 +11,11 @@ git-annex recompute [path ...]`
 This updates computed files that were added with
 [[git-annex-addcomputed]](1). 
 
-When the output of the computation is different, the updated computed
-file is staged in the repository.
-
 By default, this only recomputes files whose input files have changed.
 The new contents of the input files are used to re-run the computation.
+
+When the output of the computation is different, the computed file is
+updated with the new content.
 
 # OPTIONS
 
@@ -26,7 +26,7 @@ The new contents of the input files are used to re-run the computation.
 * `--others`
 
   When recomputing one file also generates new versions of other files,
-  stage those other files in the repository too.
+  update those other files too.
 
 * `--unreproducible`, `-u`
 
