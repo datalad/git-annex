@@ -30,7 +30,6 @@ import Annex.SpecialRemote.Config
 import Logs.Remote
 import Logs.EquivilantKeys
 import Backend
-import Backend.VURL.Utilities (recordVurlKey)
 
 import qualified Data.Map as M
 
@@ -170,10 +169,7 @@ downloadKey urlincludeexclude key _af dest p vc =
 	
 	recordvurlkey eks = do
 		b <- hashBackend
-		ifM (recordVurlKey b dest key eks)
-			( return (Just Verified)
-			, return Nothing
-			)
+		updateEquivilantKeys b dest key eks
 
 uploadKey :: Key -> AssociatedFile -> Maybe OsPath -> MeterUpdate -> Annex ()
 uploadKey _ _ _ _ = giveup "upload to web not supported"
