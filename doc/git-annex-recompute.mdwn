@@ -23,11 +23,6 @@ updated with the new content.
 
   Use the original content of input files.
 
-* `--others`
-
-  When recomputing one file also generates new versions of other files,
-  update those other files too.
-
 * `--unreproducible`, `-u`
 
   Convert files that were added with `git-annex addcomputed --reproducible`

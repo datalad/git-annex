@@ -96,11 +96,11 @@ perform o r = do
 	Remote.Compute.runComputeProgram program state
 		(Remote.Compute.ImmutableState False)
 		(getInputContent fast)
-		(addComputed "adding" True r (reproducible o) (const True) fast)
+		(addComputed "adding" True r (reproducible o) Just fast)
 	next $ return True
 
-addComputed :: StringContainingQuotedPath -> Bool -> Remote -> Maybe Reproducible -> (OsPath -> Bool) -> Bool -> Remote.Compute.ComputeState -> OsPath -> NominalDiffTime -> Annex ()
-addComputed addaction stagefiles r reproducibleconfig wantfile fast state tmpdir ts = do
+addComputed :: StringContainingQuotedPath -> Bool -> Remote -> Maybe Reproducible -> (OsPath -> Maybe OsPath) -> Bool -> Remote.Compute.ComputeState -> OsPath -> NominalDiffTime -> Annex ()
+addComputed addaction stagefiles r reproducibleconfig destfile fast state tmpdir ts = do
 	let outputs = Remote.Compute.computeOutputs state
 	when (M.null outputs) $
 		giveup "The computation succeeded, but it did not generate any files."
@@ -120,29 +120,29 @@ addComputed addaction stagefiles r reproducibleconfig wantfile fast state tmpdir
   where
 	addfile outputfile
 		| fast = do
-			when (wantfile outputfile) $
-				if stagefiles
-					then addSymlink outputfile stateurlk Nothing
-					else makelink stateurlk
+			case destfile outputfile of
+				Nothing -> noop
+				Just f
+					| stagefiles -> addSymlink f stateurlk Nothing
+					| otherwise -> makelink f stateurlk
 			return stateurlk
 		| isreproducible = do
 			sz <- liftIO $ getFileSize outputfile'
 			metered Nothing sz Nothing $ \_ p ->
-				if wantfile outputfile
-					then ingesthelper p Nothing
-					else genkey p
-		| otherwise =
-			if wantfile outputfile
-				then ingesthelper nullMeterUpdate
-					(Just stateurlk)
-				else return stateurlk
+				case destfile outputfile of
+					Just f -> ingesthelper f p Nothing
+					Nothing -> genkey outputfile p
+		| otherwise = case destfile outputfile of
+			Just f -> ingesthelper f nullMeterUpdate
+				(Just stateurlk)
+			Nothing -> return stateurlk
 	  where
 	  	stateurl = Remote.Compute.computeStateUrl r state outputfile
 		stateurlk = fromUrl stateurl Nothing True
 		outputfile' = tmpdir </> outputfile
-		ld = LockedDown ldc ks
-		ks = KeySource
-			{ keyFilename = outputfile
+		ld f = LockedDown ldc (ks f)
+		ks f = KeySource
+			{ keyFilename = f
 			, contentLocation = outputfile'
 			, inodeCache = Nothing
 			}
@@ -151,16 +151,16 @@ addComputed addaction stagefiles r reproducibleconfig wantfile fast state tmpdir
 			Just k -> do
 				logStatus NoLiveUpdate k InfoPresent
 				return k
-		genkey p = do
+		genkey f p = do
 			backend <- chooseBackend outputfile
-			fst <$> genKey ks p backend
-		makelink k = void $ makeLink outputfile k Nothing
-		ingesthelper p mk
+			fst <$> genKey (ks f) p backend
+		makelink f k = void $ makeLink f k Nothing
+		ingesthelper f p mk
 			| stagefiles = ingestwith $
-				ingestAdd' p (Just ld) mk
+				ingestAdd' p (Just (ld f)) mk
 			| otherwise = ingestwith $ do
-				mk' <- fst <$> ingest p (Just ld) mk
-				maybe noop makelink mk'
+				mk' <- fst <$> ingest p (Just (ld f)) mk
+				maybe noop (makelink f) mk'
 				return mk'
 	
 	ldc = LockDownConfig

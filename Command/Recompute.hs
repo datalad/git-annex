@@ -29,7 +29,6 @@ cmd = notBareRepo $
 data RecomputeOptions = RecomputeOptions
 	{ recomputeThese :: CmdParams
 	, originalOption :: Bool
-	, othersOption :: Bool
 	, reproducible :: Maybe Reproducible
 	, computeRemote :: Maybe (DeferredParse Remote)
 	}
@@ -40,10 +39,6 @@ optParser desc = RecomputeOptions
 	<*> switch
 		( long "original"
 		<> help "recompute using original content of input files"
-		)
-	<*> switch
-		( long "others"
-		<> help "stage other files that are recomputed in passing"
 		)
 	<*> parseReproducible
 	<*> optional (mkParseRemoteOption <$> parseRemoteOption)
@@ -111,25 +106,28 @@ start' o r si file key =
 -- TODO When reproducible is not set, preserve the
 -- reproducible/unreproducible of the input key.
 perform :: RecomputeOptions -> Remote -> OsPath -> Key -> Remote.Compute.ComputeState -> CommandPerform
-perform o r file key oldstate = do
+perform o r file key origstate = do
 	program <- Remote.Compute.getComputeProgram r
 	fast <- Annex.getRead Annex.fast
 	showOutput
-	Remote.Compute.runComputeProgram program oldstate
+	Remote.Compute.runComputeProgram program origstate
 		(Remote.Compute.ImmutableState True)
 		(getinputcontent program fast)
-		(addComputed "processing" False r (reproducible o) wantfile fast)
+		(addComputed "processing" False r (reproducible o) destfile fast)
 	next $ return True
   where
 	getinputcontent program fast p
 		| originalOption o =
-			case M.lookup p (Remote.Compute.computeInputs oldstate) of
+			case M.lookup p (Remote.Compute.computeInputs origstate) of
 				Just inputkey -> getInputContent' fast inputkey
 					(fromOsPath p ++ "(key " ++ serializeKey inputkey ++ ")")
 				Nothing -> Remote.Compute.computationBehaviorChangeError program
 					"requesting a new input file" p
 		| otherwise = getInputContent fast p
 	
-	wantfile outputfile
-		| othersOption o = True
-		| otherwise = outputfile == file
+	destfile outputfile
+		| Just outputfile == origfile = Just file
+		| otherwise = Nothing
+	
+	origfile = headMaybe $ M.keys $ M.filter (== Just key)
+		(Remote.Compute.computeOutputs origstate)
