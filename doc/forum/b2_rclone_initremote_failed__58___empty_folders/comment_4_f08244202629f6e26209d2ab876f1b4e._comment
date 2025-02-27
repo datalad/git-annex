@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="dmcardle"
+ avatar="http://cdn.libravatar.org/avatar/b79468a0d03ec3ec7acbae547c4fa994"
+ subject="comment 4"
+ date="2025-02-27T19:02:14Z"
+ content="""
+Hi datamanager, sorry for the delay!
+
+If you're up for it, could you try out a beta build? The [v1.70.0-beta.8618.431386085](https://beta.rclone.org/v1.70.0-beta.8618.431386085/) build includes [PR #7987](https://github.com/rclone/rclone/pull/7987), which removed the offending mkdir operation. It also enabled us to run some unit tests against various backends. There's reason to believe this might work for you because the tests passed against the b2 backend (see results for [2025-02-27-010118](https://pub.rclone.org/integration-tests/2025-02-27-010118/)).
+
+
+"""]]
