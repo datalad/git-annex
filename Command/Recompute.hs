@@ -10,7 +10,6 @@
 module Command.Recompute where
 
 import Command
-import qualified Annex
 import qualified Remote.Compute
 import qualified Remote
 import qualified Types.Remote as Remote
@@ -120,7 +119,7 @@ perform o r file origkey origstate = do
 	go program reproducibleconfig state tmpdir ts = do
 		checkbehaviorchange program state
 		addComputed "processing" False r reproducibleconfig
-			choosebackend destfile state tmpdir ts
+			choosebackend destfile False state tmpdir ts
 
 	checkbehaviorchange program state = do
 		let check s w a b = forM_ (M.keys (w a)) $ \f ->
