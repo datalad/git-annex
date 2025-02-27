@@ -1,5 +1,5 @@
 * VURL keys don't currently have the hash key recorded in the equivilant
-  key log by addcompute or when getting from a compute remote.
+  key log by addcompute
 
 * need progress bars for computations and implement PROGRESS message
 

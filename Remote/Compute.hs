@@ -36,6 +36,7 @@ import Annex.UUID
 import Annex.Content
 import Annex.Tmp
 import Logs.MetaData
+import Logs.EquivilantKeys
 import Utility.Metered
 import Utility.TimeStamp
 import Utility.Env
@@ -44,6 +45,8 @@ import Utility.Url
 import Utility.MonotonicClock
 import qualified Git
 import qualified Utility.SimpleProtocol as Proto
+import Types.Key
+import Backend
 
 import Network.HTTP.Types.URI
 import Data.Time.Clock
@@ -447,7 +450,7 @@ computationBehaviorChangeError (ComputeProgram program) requestdesc p =
 	giveup $ program ++ " is not behaving the same way it used to, now " ++ requestdesc ++ ": " ++ fromOsPath p
 
 computeKey :: RemoteStateHandle -> ComputeProgram -> Key -> AssociatedFile -> OsPath -> MeterUpdate -> VerifyConfig -> Annex Verification
-computeKey rs (ComputeProgram program) k af dest p vc =
+computeKey rs (ComputeProgram program) k _af dest p vc =
 	getComputeState rs k >>= \case
 		Just state -> 
 			case computeskey state of
@@ -475,28 +478,38 @@ computeKey rs (ComputeProgram program) k af dest p vc =
 			(keyfile : _) -> Just keyfile
 			[] -> Nothing
 
-	go keyfile state tmpdir ts = do
+	go keyfile state tmpdir _ts = do
+		hb <- hashBackend
+		let updatevurl key getobj = 
+			if (fromKey keyVariety key == VURLKey)
+				then do
+					obj <- getobj
+					updateEquivilantKeys hb obj key
+						=<< getEquivilantKeys key
+				else return Nothing
+
 		let keyfile' = tmpdir </> keyfile
 		unlessM (liftIO $ doesFileExist keyfile') $
 			giveup $ program ++ " exited sucessfully, but failed to write the computed file"
 		catchNonAsync (liftIO $ moveFile keyfile' dest)
 			(\err -> giveup $ "failed to move the computed file: " ++ show err)
-		
+		mverification <- updatevurl k (pure dest)
+
 		-- Try to move any other computed object files into the annex.
 		forM_ (M.toList $ computeOutputs state) $ \case
 			(file, (Just key)) ->
 				when (k /= key) $ do
 					let file' = tmpdir </> file
-					whenM (liftIO $ doesFileExist file') $
-						whenM (verifyKeyContentPostRetrieval RetrievalAllKeysSecure vc verification k file') $
-							void $ tryNonAsync $ moveAnnex k file'
+					whenM (liftIO $ doesFileExist file') $ do
+						whenM (verifyKeyContentPostRetrieval RetrievalAllKeysSecure vc MustVerify key file') $ do
+							moved <- moveAnnex key file' `catchNonAsync` const (pure False)
+							when moved $
+								void $ updatevurl key (calcRepo (gitAnnexLocation key))
 			_ -> noop
 
-		return verification
-	
-	-- The program might not be reproducible, so require strong
-	-- verification.
-	verification = MustVerify
+		-- The program might not be reproducible,
+		-- so require strong verification.
+		return $ fromMaybe MustVerify mverification
 
 -- Make sure that the compute state exists.
 checkKey :: RemoteStateHandle -> Key -> Annex Bool
