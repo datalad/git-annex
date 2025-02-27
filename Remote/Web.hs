@@ -30,7 +30,7 @@ import Annex.SpecialRemote.Config
 import Logs.Remote
 import Logs.EquivilantKeys
 import Backend
-import Backend.VURL.Utilities (generateEquivilantKey)
+import Backend.VURL.Utilities (recordVurlKey)
 
 import qualified Data.Map as M
 
@@ -169,18 +169,11 @@ downloadKey urlincludeexclude key _af dest p vc =
 		| otherwise = return (Just v)
 	
 	recordvurlkey eks = do
-		-- Make sure to pick a backend that is cryptographically
-		-- secure.
-		db <- defaultBackend
-		let b = if isCryptographicallySecure db
-			then db
-			else defaultHashBackend
-		generateEquivilantKey b dest >>= \case
-			Nothing -> return Nothing
-			Just ek -> do
-				unless (ek `elem` eks) $
-					setEquivilantKey key ek
-				return (Just Verified)
+		b <- hashBackend
+		ifM (recordVurlKey b dest key eks)
+			( return (Just Verified)
+			, return Nothing
+			)
 
 uploadKey :: Key -> AssociatedFile -> Maybe OsPath -> MeterUpdate -> Annex ()
 uploadKey _ _ _ _ = giveup "upload to web not supported"

@@ -56,3 +56,11 @@ generateEquivilantKey b f =
 		, contentLocation = f
 		, inodeCache = Nothing
 		}
+
+recordVurlKey :: Backend -> OsPath -> Key -> [Key] -> Annex Bool
+recordVurlKey b f key eks = generateEquivilantKey b f >>= \case
+	Nothing -> return False
+	Just ek -> do
+		unless (ek `elem` eks) $
+			setEquivilantKey key ek
+		return True

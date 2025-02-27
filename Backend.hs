@@ -10,13 +10,14 @@
 module Backend (
 	builtinList,
 	defaultBackend,
-	defaultHashBackend,
+	hashBackend,
 	genKey,
 	getBackend,
 	chooseBackend,
 	lookupBackendVariety,
 	lookupBuiltinBackendVariety,
 	maybeLookupBackendVariety,
+	unknownBackendVarietyMessage,
 	isStableKey,
 	isCryptographicallySecureKey,
 	isCryptographicallySecure,
@@ -53,6 +54,15 @@ defaultBackend = maybe cache return =<< Annex.getState Annex.backend
 		return b
 	valid name = not (null name)
 	lookupname = lookupBackendVariety . parseKeyVariety . encodeBS
+
+{- A hashing backend. Takes git config into account, but
+ - guarantees the backend is cryptographically secure. -}
+hashBackend :: Annex Backend
+hashBackend = do
+	db <- defaultBackend
+	return $ if isCryptographicallySecure db
+		then db
+		else defaultHashBackend
 
 {- Generates a key for a file. -}
 genKey :: KeySource -> MeterUpdate -> Backend -> Annex (Key, Backend)
