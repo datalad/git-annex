@@ -14,10 +14,13 @@ import qualified Annex
 import qualified Remote.Compute
 import qualified Remote
 import qualified Types.Remote as Remote
+import Annex.Content
 import Annex.CatFile
 import Git.FilePath
 import Logs.Location
 import Command.AddComputed (Reproducible(..), parseReproducible, getInputContent, getInputContent', addComputed)
+import Backend (maybeLookupBackendVariety, unknownBackendVarietyMessage)
+import Types.Key
 
 import qualified Data.Map as M
 
@@ -62,7 +65,7 @@ seek' o = do
 
 start :: RecomputeOptions -> Maybe Remote -> SeekInput -> OsPath -> Key -> CommandStart
 start o (Just computeremote) si file key = 
-	stopUnless (notElem (Remote.uuid computeremote) <$> loggedLocations key) $
+	stopUnless (elem (Remote.uuid computeremote) <$> loggedLocations key) $
 		start' o computeremote si file key		
 start o Nothing si file key = do
 	rs <- catMaybes <$> (mapM Remote.byUUID =<< loggedLocations key)
@@ -103,31 +106,73 @@ start' o r si file key =
 			-- explains the problem.
 			Nothing -> True
 
--- TODO When reproducible is not set, preserve the
--- reproducible/unreproducible of the input key.
 perform :: RecomputeOptions -> Remote -> OsPath -> Key -> Remote.Compute.ComputeState -> CommandPerform
-perform o r file key origstate = do
+perform o r file origkey origstate = do
 	program <- Remote.Compute.getComputeProgram r
-	fast <- Annex.getRead Annex.fast
+	reproducibleconfig <- getreproducibleconfig
 	showOutput
 	Remote.Compute.runComputeProgram program origstate
-		(Remote.Compute.ImmutableState True)
-		(getinputcontent program fast)
-		(addComputed "processing" False r (reproducible o) destfile fast)
+		(Remote.Compute.ImmutableState False)
+		(getinputcontent program)
+		(go program reproducibleconfig)
 	next $ return True
   where
-	getinputcontent program fast p
+	go program reproducibleconfig state tmpdir ts = do
+		checkbehaviorchange program state
+		addComputed "processing" False r reproducibleconfig
+			choosebackend destfile state tmpdir ts
+
+	checkbehaviorchange program state = do
+		let check s w a b = forM_ (M.keys (w a)) $ \f ->
+			unless (M.member f (w b)) $
+				Remote.Compute.computationBehaviorChangeError program s f
+		
+		check "not using input file"
+			Remote.Compute.computeInputs origstate state
+		check "outputting"
+			Remote.Compute.computeOutputs state origstate
+		check "not outputting"
+			Remote.Compute.computeOutputs origstate state
+
+	getinputcontent program p
 		| originalOption o =
 			case M.lookup p (Remote.Compute.computeInputs origstate) of
-				Just inputkey -> getInputContent' fast inputkey
+				Just inputkey -> getInputContent' False inputkey
 					(fromOsPath p ++ "(key " ++ serializeKey inputkey ++ ")")
 				Nothing -> Remote.Compute.computationBehaviorChangeError program
 					"requesting a new input file" p
-		| otherwise = getInputContent fast p
+		| otherwise = getInputContent False p
 	
 	destfile outputfile
 		| Just outputfile == origfile = Just file
 		| otherwise = Nothing
 	
-	origfile = headMaybe $ M.keys $ M.filter (== Just key)
+	origfile = headMaybe $ M.keys $ M.filter (== Just origkey)
 		(Remote.Compute.computeOutputs origstate)
+
+	origbackendvariety = fromKey keyVariety origkey
+	
+	getreproducibleconfig = case reproducible o of
+		Just (Reproducible True) -> return (Just (Reproducible True))
+		-- A VURL key is used when the computation was
+		-- unreproducible. So recomputing should too, but that
+		-- will result in the same VURL key. Since moveAnnex
+		-- will prefer the current annex object to a new one,
+		-- delete the annex object first, so that if recomputing
+		-- generates a new version of the file, it replaces
+		-- the old version.
+		v -> case origbackendvariety of
+			VURLKey -> do
+				lockContentForRemoval origkey noop removeAnnex
+				-- in case computation fails or is interupted
+				logStatus NoLiveUpdate origkey InfoMissing
+				return (Just (Reproducible False))
+			_ -> return v
+
+	choosebackend _outputfile
+		-- Use the same backend as was used to compute it before,
+		-- so if the computed file is the same, there will be
+		-- no change.
+		| otherwise = maybeLookupBackendVariety origbackendvariety >>= \case
+			Just b -> return b
+			Nothing -> giveup $ unknownBackendVarietyMessage origbackendvariety

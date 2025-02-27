@@ -1,3 +1,20 @@
+* VURL keys don't currently have the hash key recorded in the equivilant
+  key log by addcompute or when getting from a compute remote.
+
+* need progress bars for computations and implement PROGRESS message
+
+* get input files for a computation (so `git-annex get .` gets every file,
+  even when input files in a directory are processed after computed files)
+
+* autoinit security
+
+* Support non-annexed files as inputs to computations.
+
+* addcomputed should honor annex.addunlocked.
+
+* Perhaps recompute should write a new version of a file as an unlocked
+  file when the file is currently unlocked?
+
 * recompute could ingest keys for other files than the one being
   recomputed, and remember them. Then recomputing those files could just
   use those keys, without re-running a computation. (Better than --others
@@ -17,18 +34,6 @@
 
   Or it could build a DAG and traverse it, but building a DAG of a large
   directory tree has its own problems.
-
-* recompute should use the same key backend for a file that it used before
-  (except when --reproducible/--unreproducible is passed).
-
-* Check recompute's handling of --reproducible and --unreproducible.
-
-* addcomputed should honor annex.addunlocked.
-
-* Perhaps recompute should write a new version of a file as an unlocked
-  file when the file is currently unlocked?
-
-* Support non-annexed files as inputs to computations.
 
 * Should addcomputed honor annex.smallfiles? That would seem to imply
   that recompute should also support recomputing non-annexed files.

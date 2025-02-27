@@ -399,8 +399,8 @@ runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate)
 				liftIO $ hPutStrLn (stdinHandle p) $
 					maybe "" fromOsPath mp'
 				liftIO $ hFlush (stdinHandle p)
-				return $ if knowninput
-					then state'
+				return $ if immutablestate
+					then state
 					else state'
 						{ computeInputs = 
 							M.insert f' k
@@ -411,8 +411,8 @@ runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate)
 			checksafefile tmpdir subdir f' "output"
 			let knownoutput = M.member f' (computeOutputs state')
 			checkimmutable knownoutput "outputting" f' $ 
-				return $ if knownoutput
-					then state'
+				return $ if immutablestate
+					then state
 					else state'
 						{ computeOutputs = 
 							M.insert f' Nothing

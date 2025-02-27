@@ -82,6 +82,10 @@ the parameters provided to `git-annex addcomputed`.
   checksum verification error. One thing that can be done then is to use 
   `git-annex recompute --original --unreproducible`.
 
+* `--backend`
+
+  Specifies which key-value backend to use.
+
 *  Also the [[git-annex-common-options]](1) can be used.
 
 # SEE ALSO

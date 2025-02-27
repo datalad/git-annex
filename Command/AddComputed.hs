@@ -28,7 +28,7 @@ import qualified Data.Map as M
 import Data.Time.Clock
 
 cmd :: Command
-cmd = notBareRepo $ 
+cmd = notBareRepo $ withAnnexOptions [backendOption] $
 	command "addcomputed" SectionCommon "add computed files to annex"
 		(paramRepeating paramExpression)
 		(seek <$$> optParser)
@@ -96,11 +96,22 @@ perform o r = do
 	Remote.Compute.runComputeProgram program state
 		(Remote.Compute.ImmutableState False)
 		(getInputContent fast)
-		(addComputed "adding" True r (reproducible o) Just fast)
+		(addComputed "adding" True r (reproducible o) chooseBackend Just fast)
 	next $ return True
 
-addComputed :: StringContainingQuotedPath -> Bool -> Remote -> Maybe Reproducible -> (OsPath -> Maybe OsPath) -> Bool -> Remote.Compute.ComputeState -> OsPath -> NominalDiffTime -> Annex ()
-addComputed addaction stagefiles r reproducibleconfig destfile fast state tmpdir ts = do
+addComputed
+	:: StringContainingQuotedPath
+	-> Bool
+	-> Remote
+	-> Maybe Reproducible
+	-> (OsPath -> Annex Backend)
+	-> (OsPath -> Maybe OsPath)
+	-> Bool
+	-> Remote.Compute.ComputeState
+	-> OsPath
+	-> NominalDiffTime
+	-> Annex ()
+addComputed addaction stagefiles r reproducibleconfig choosebackend destfile fast state tmpdir ts = do
 	let outputs = Remote.Compute.computeOutputs state
 	when (M.null outputs) $
 		giveup "The computation succeeded, but it did not generate any files."
@@ -146,22 +157,24 @@ addComputed addaction stagefiles r reproducibleconfig destfile fast state tmpdir
 			, contentLocation = outputfile'
 			, inodeCache = Nothing
 			}
+		genkey f p = do
+			backend <- choosebackend outputfile
+			fst <$> genKey (ks f) p backend
+		makelink f k = void $ makeLink f k Nothing
+		ingesthelper f p mk
+			| stagefiles = ingestwith $ do
+				k <- maybe (genkey f p) return mk
+				ingestAdd' p (Just (ld f)) (Just k)
+			| otherwise = ingestwith $ do
+				k <- maybe (genkey f p) return mk
+				mk' <- fst <$> ingest p (Just (ld f)) (Just k)
+				maybe noop (makelink f) mk'
+				return mk'
 		ingestwith a = a >>= \case
 			Nothing -> giveup "ingestion failed"
 			Just k -> do
 				logStatus NoLiveUpdate k InfoPresent
 				return k
-		genkey f p = do
-			backend <- chooseBackend outputfile
-			fst <$> genKey (ks f) p backend
-		makelink f k = void $ makeLink f k Nothing
-		ingesthelper f p mk
-			| stagefiles = ingestwith $
-				ingestAdd' p (Just (ld f)) mk
-			| otherwise = ingestwith $ do
-				mk' <- fst <$> ingest p (Just (ld f)) mk
-				maybe noop (makelink f) mk'
-				return mk'
 	
 	ldc = LockDownConfig
 		{ lockingFile = True
