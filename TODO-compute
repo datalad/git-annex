@@ -3,8 +3,6 @@
 * get input files for a computation (so `git-annex get .` gets every file,
   even when input files in a directory are processed after computed files)
 
-* autoinit security
-
 * addcomputed should honor annex.addunlocked.
 
 * Perhaps recompute should write a new version of a file as an unlocked

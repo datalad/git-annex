@@ -26,13 +26,12 @@ For security, the program should avoid exposing user input to the shell
 unprotected, or otherwise executing it.
 
 The program is run in a temporary directory, which will be cleaned up after
-it exits. Note that it may be run in a subdirectory of its temporary
+it exits. Note that it may be run in a subdirectory of a temporary
 directory. This is done when `git-annex addcomputed` was run in a subdirectory
 of the git repository.
 
-The content of any annexed file in the repository can be an input
-to the computation. The program requests an input by writing a line to
-stdout:
+The content of any file in the repository can be an input to the
+computation. The program requests an input by writing a line to stdout:
 
     INPUT file.raw
 

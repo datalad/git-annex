@@ -23,6 +23,7 @@ module Remote.Compute (
 ) where
 
 import Annex.Common
+import qualified Annex
 import Types.Remote
 import Types.ProposedAccepted
 import Types.MetaData
@@ -118,8 +119,23 @@ gen r u rc gc rs = case getComputeProgram' rc of
 		}
 
 setupInstance :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-setupInstance _ mu _ c _ = do
+setupInstance ss mu _ c _ = do
 	ComputeProgram program <- either giveup return $ getComputeProgram' c
+	case ss of
+		AutoEnable _ -> do
+			l <- maybe [] words 
+				. annexAutoEnableComputePrograms
+				<$> Annex.getGitConfig
+			unless (program `elem` l) $ do
+				let remotename = fromMaybe "(unknown)" (lookupName c)
+				giveup $ unwords
+					[ "Not auto-enabling compute special remote"
+					, remotename
+					, "because its compute program"
+					, program
+					, " is not listed in annex.security.autoenable-compute-programs"
+					]
+		_ -> noop
 	unlessM (liftIO $ inSearchPath program) $
 		giveup $ "Cannot find " ++ program ++ " in PATH"
 	u <- maybe (liftIO genUUID) return mu
