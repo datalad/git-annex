@@ -1,6 +1,3 @@
-* VURL keys don't currently have the hash key recorded in the equivilant
-  key log by addcompute
-
 * need progress bars for computations and implement PROGRESS message
 
 * get input files for a computation (so `git-annex get .` gets every file,

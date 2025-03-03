@@ -482,10 +482,7 @@ computeKey rs (ComputeProgram program) k _af dest p vc =
 		hb <- hashBackend
 		let updatevurl key getobj = 
 			if (fromKey keyVariety key == VURLKey)
-				then do
-					obj <- getobj
-					updateEquivilantKeys hb obj key
-						=<< getEquivilantKeys key
+				then addEquivilantKey hb key =<< getobj
 				else return Nothing
 
 		let keyfile' = tmpdir </> keyfile

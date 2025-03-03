@@ -19,8 +19,10 @@ import Annex.CatFile
 import Annex.Content.Presence
 import Annex.Ingest
 import Types.KeySource
+import Types.Key
 import Messages.Progress
 import Logs.Location
+import Logs.EquivilantKeys
 import Utility.Metered
 import Backend.URL (fromUrl)
 
@@ -174,6 +176,10 @@ addComputed addaction stagefiles r reproducibleconfig choosebackend destfile fas
 			Nothing -> giveup "ingestion failed"
 			Just k -> do
 				logStatus NoLiveUpdate k InfoPresent
+				when (fromKey keyVariety k == VURLKey) $ do
+					hb <- hashBackend
+					void $ addEquivilantKey hb k 
+						=<< calcRepo (gitAnnexLocation k)
 				return k
 	
 	ldc = LockDownConfig

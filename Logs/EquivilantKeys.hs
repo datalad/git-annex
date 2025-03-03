@@ -11,6 +11,7 @@ module Logs.EquivilantKeys (
 	getEquivilantKeys,
 	setEquivilantKey,
 	updateEquivilantKeys,
+	addEquivilantKey,
 	generateEquivilantKey,
 ) where
 
@@ -37,8 +38,6 @@ setEquivilantKey key equivkey = do
 	addLog (Annex.Branch.RegardingUUID []) (equivilantKeysLogFile config key)
 		InfoPresent (LogInfo (serializeKey' equivkey))
 
--- The Backend must use a cryptographically secure hash.
---
 -- This returns Verified when when an equivilant key has been added to the
 -- log (or was already in the log). This is to avoid hashing the object
 -- again later.
@@ -50,6 +49,12 @@ updateEquivilantKeys b obj key eks = generateEquivilantKey b obj >>= \case
 			setEquivilantKey key ek
 		return (Just Verified)
 
+addEquivilantKey :: Backend -> Key -> OsPath -> Annex (Maybe Verification)
+addEquivilantKey b key obj = 
+	updateEquivilantKeys b obj key
+		=<< getEquivilantKeys key
+
+-- The Backend must use a cryptographically secure hash.
 generateEquivilantKey :: Backend -> OsPath -> Annex (Maybe Key)
 generateEquivilantKey b obj =
 	case genKey b of
