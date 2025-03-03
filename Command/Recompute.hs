@@ -79,18 +79,22 @@ start' o r si file key =
 	Remote.Compute.getComputeState
 		(Remote.remoteStateHandle r) key >>= \case
 			Nothing -> stop
-			Just state ->
-				stopUnless (shouldrecompute state) $
-					starting "recompute" ai si $
-						perform o r file key state
+			Just state -> shouldrecompute state >>= \case
+				Nothing -> stop
+				Just mreason -> starting "recompute" ai si $ do
+					maybe noop showNote mreason
+					perform o r file key state
   where
 	ai = mkActionItem (key, file)
 
 	shouldrecompute state
-		| originalOption o = return True
-		| otherwise = 
-			anyM (inputchanged state) $
-				M.toList (Remote.Compute.computeInputs state)
+		| originalOption o = return (Just Nothing)
+		| otherwise = firstM (inputchanged state)
+			(M.toList (Remote.Compute.computeInputs state))
+			>>= return . \case
+				Nothing -> Nothing
+				Just (inputfile, _) -> Just $ Just $
+					QuotedPath inputfile <> " changed"
 
 	inputchanged state (inputfile, inputkey) = do
 		-- Note that the paths from the remote state are not to be
@@ -109,11 +113,13 @@ start' o r si file key =
 					Just (sha, _, _) -> sha /= inputgitsha
 					Nothing -> inputfilemissing
 				Nothing -> return inputfilemissing
-	
-	-- When an input file is missing, go ahead and recompute. This way,
-	-- the user will see the computation fail, with an error message that
-	-- explains the problem.
-	inputfilemissing = True
+	  where
+		-- When an input file is missing, go ahead and recompute.
+		-- This way, the user will see the computation fail,
+		-- with an error message that explains the problem.
+		-- Or, if the input file is only optionally used by the
+		-- computation, it might succeed.
+		inputfilemissing = True
 
 perform :: RecomputeOptions -> Remote -> OsPath -> Key -> Remote.Compute.ComputeState -> CommandPerform
 perform o r file origkey origstate = do
