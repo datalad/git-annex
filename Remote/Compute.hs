@@ -121,21 +121,19 @@ gen r u rc gc rs = case getComputeProgram' rc of
 setupInstance :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
 setupInstance ss mu _ c _ = do
 	ComputeProgram program <- either giveup return $ getComputeProgram' c
+	allowedprograms <- maybe [] words . annexAllowedComputePrograms
+		<$> Annex.getGitConfig
 	case ss of
-		AutoEnable _ -> do
-			l <- maybe [] words 
-				. annexAutoEnableComputePrograms
-				<$> Annex.getGitConfig
-			unless (program `elem` l) $ do
-				let remotename = fromMaybe "(unknown)" (lookupName c)
-				giveup $ unwords
-					[ "Not auto-enabling compute special remote"
-					, remotename
-					, "because its compute program"
-					, program
-					, " is not listed in annex.security.autoenable-compute-programs"
-					]
-		_ -> noop
+		Init -> noop
+		_ -> unless (program `elem` allowedprograms) $ do
+			let remotename = fromMaybe "(unknown)" (lookupName c)
+			giveup $ unwords
+				[ "Not enabling compute special remote"
+				, remotename
+				, "because its compute program"
+				, program
+				, "is not listed in annex.security-allowed-compute-programs"
+				]
 	unlessM (liftIO $ inSearchPath program) $
 		giveup $ "Cannot find " ++ program ++ " in PATH"
 	u <- maybe (liftIO genUUID) return mu

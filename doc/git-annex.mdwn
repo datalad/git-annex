@@ -2201,12 +2201,12 @@ Remotes are configured using these settings in `.git/config`.
 
   Per-remote configuration of annex.security.allow-unverified-downloads.
 
-* `annex.security.autoenable-compute-programs`
+* `annex.security.allowed-compute-programs`
 
   This is a space separated list of compute programs eg
   "git-annex-compute-foo git-annex-compute-bar". Listing a compute
   program here allows compute special remotes that use that program to be
-  autoenabled.
+  enabled by `git-annex enableremote` or autoenabled.
 
 # CONFIGURATION OF ASSISTANT
 

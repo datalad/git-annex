@@ -15,11 +15,10 @@ program to use to compute the contents of annexed files. It must start with
 "git-annex-compute-". The program needs to be installed somewhere in the
 `PATH`.
 
-The `autoenable` parameter can be set to "true" like with other special
-remotes to make git-annex automatically enable this special remote when
-run in a new clone of the repository. However, for security, autoenabling
-is only done when the git config `annex.security.autoenable-compute-programs`
-includes the name of the compute program.
+Any program can be passed to `git-annex initremote`. However, when enabling
+a compute special remote later with `git-annex enableremote` or due to
+"autoenable=true", the program must be listed in the git config
+`annex.security.allowed-compute-programs`.
 
 All other "field=value" parameters passed to `initremote` will be passed
 to the program when running [[git-annex-addcomputed]]. Note that when the

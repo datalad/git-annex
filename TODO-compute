@@ -1,3 +1,6 @@
+* allow git-annex enableremote with program= explicitly specified,
+  without checking annex.security.allowed-compute-programs
+
 * need progress bars for computations and implement PROGRESS message
 
 * get input files for a computation (so `git-annex get .` gets every file,

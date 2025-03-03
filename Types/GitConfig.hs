@@ -146,7 +146,7 @@ data GitConfig = GitConfig
 	, annexAllowedUrlSchemes :: S.Set Scheme
 	, annexAllowedIPAddresses :: String
 	, annexAllowUnverifiedDownloads :: Bool
-	, annexAutoEnableComputePrograms :: Maybe String
+	, annexAllowedComputePrograms :: Maybe String
 	, annexMaxExtensionLength :: Maybe Int
 	, annexMaxExtensions :: Maybe Int
 	, annexJobs :: Concurrency
@@ -262,8 +262,8 @@ extractGitConfig configsource r = GitConfig
 		getmaybe (annexConfig "security.allowed-http-addresses") -- old name
 	, annexAllowUnverifiedDownloads = (== Just "ACKTHPPT") $
 		getmaybe (annexConfig "security.allow-unverified-downloads")
-	, annexAutoEnableComputePrograms =
-		getmaybe (annexConfig "security.autoenable-compute-programs")
+	, annexAllowedComputePrograms =
+		getmaybe (annexConfig "security.allowed-compute-programs")
 	, annexMaxExtensionLength = getmayberead (annexConfig "maxextensionlength")
 	, annexMaxExtensions = getmayberead (annexConfig "maxextensions")
 	, annexJobs = fromMaybe NonConcurrent $ 
