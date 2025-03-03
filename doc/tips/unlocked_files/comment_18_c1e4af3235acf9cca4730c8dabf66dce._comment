@@ -1,0 +1,45 @@
+[[!comment format=mdwn
+ username="czard"
+ avatar="http://cdn.libravatar.org/avatar/52ff2343057d711a2000506267bf91d8"
+ subject="Permission fix"
+ date="2025-03-03T12:08:28Z"
+ content="""
+Hi,
+
+Lots of gratitude for your work on git annex.
+
+I have an annex repo with a default setting to unlock files. When I run `git annex add myfile`, I notice a change related to permission is added to my file in the working tree, which I need to further `git add` in order to get to a clean state. See below. 
+
+Is that expected? I'm wondering if it wouldn't make more sense / be a better experience if `git annex add myfile` would seamlessly handle that permission change and add it to git for unlocked files, so I don't have to run both `git annex add` and `git add` to get to a clean state? 
+
+Thanks.
+
+```
+$ git status
+On branch main
+Untracked files:
+  (use \"git add <file>...\" to include in what will be committed)
+        05 Tapestry.mp3
+
+nothing added to commit but untracked files present (use \"git add\" to track)
+
+$ git annex add .
+add 05 Tapestry.mp3
+ok
+(recording state in git...)
+
+$ git status
+On branch main
+Changes to be committed:
+  (use \"git restore --staged <file>...\" to unstage)
+        new file:   05 Tapestry.mp3
+
+Changes not staged for commit:
+  (use \"git add <file>...\" to update what will be committed)
+  (use \"git restore <file>...\" to discard changes in working directory)
+        modified:   05 Tapestry.mp3
+
+$ git diff
+05 Tapestry.mp3 changed file mode from 100644 to 100755
+```
+"""]]
