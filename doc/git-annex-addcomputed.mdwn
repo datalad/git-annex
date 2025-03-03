@@ -8,8 +8,8 @@ git annex addcomputed `--to=remote -- ...`
 
 # DESCRIPTION
 
-Adds files to the annex that are computed from input files,
-using a compute special remote.
+Adds files to the annex that are computed from input files in the
+repository, using a compute special remote.
 
 Once a file has been added to a compute remote, commands
 like `git-annex get` will use it to compute the content of the file.

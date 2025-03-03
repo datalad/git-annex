@@ -11,6 +11,8 @@ module Command.AddComputed where
 
 import Command
 import qualified Git
+import qualified Git.Types as Git
+import qualified Git.Ref as Git
 import qualified Annex
 import qualified Remote.Compute
 import qualified Types.Remote as Remote
@@ -18,6 +20,7 @@ import Backend
 import Annex.CatFile
 import Annex.Content.Presence
 import Annex.Ingest
+import Annex.GitShaKey
 import Types.KeySource
 import Types.Key
 import Messages.Progress
@@ -192,20 +195,31 @@ addComputed addaction stagefiles r reproducibleconfig choosebackend destfile fas
 		Just v -> isReproducible v
 		Nothing -> Remote.Compute.computeReproducible state
 	
-getInputContent :: Bool -> OsPath -> Annex (Key, Maybe OsPath)
+getInputContent :: Bool -> OsPath -> Annex (Key, Maybe (Either Git.Sha OsPath))
 getInputContent fast p = catKeyFile p >>= \case
-	Just inputkey -> getInputContent' fast inputkey (fromOsPath p)
-	Nothing -> ifM (liftIO $ doesFileExist p)
-		( giveup $ "The computation needs an input file that is not an annexed file: " ++ fromOsPath p 
-		, giveup $ "The computation needs an input file which does not exist: " ++ fromOsPath p
-		)
+	Just inputkey -> getInputContent' fast inputkey filedesc
+	Nothing -> inRepo (Git.fileRef p) >>= \case
+		Just fileref -> catObjectMetaData fileref >>= \case
+			Just (sha, _, t)
+				| t == Git.BlobObject ->
+					getInputContent' fast (gitShaKey sha) filedesc
+				| otherwise ->
+					badinput $ ", not a git " ++ decodeBS (Git.fmtObjectType t)
+			Nothing -> notcheckedin
+		Nothing -> notcheckedin
+  where
+	filedesc = fromOsPath p
+	badinput s = giveup $ "The computation needs an input file " ++ s ++ ": " ++ fromOsPath p
+	notcheckedin = badinput "that is not checked into the git repository"
 
-getInputContent' :: Bool -> Key -> String -> Annex (Key, Maybe OsPath)
-getInputContent' fast inputkey filedesc = do
-	obj <- calcRepo (gitAnnexLocation inputkey)
-	if fast
-		then return (inputkey, Nothing)
-		else ifM (inAnnex inputkey)
-			( return (inputkey, Just obj)
-			, giveup $ "The computation needs the content of a file which is not present: " ++ filedesc
+getInputContent' :: Bool -> Key -> String -> Annex (Key, Maybe (Either Git.Sha OsPath))
+getInputContent' fast inputkey filedesc
+	| fast = return (inputkey, Nothing)
+	| otherwise = case keyGitSha inputkey of
+		Nothing -> ifM (inAnnex inputkey)
+			( do
+				obj <- calcRepo (gitAnnexLocation inputkey)
+				return (inputkey, Just (Right obj))
+			, giveup $ "The computation needs the content of an annexed file which is not present: " ++ filedesc
 			)
+		Just sha -> return (inputkey, Just (Left sha))

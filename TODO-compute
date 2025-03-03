@@ -5,12 +5,12 @@
 
 * autoinit security
 
-* Support non-annexed files as inputs to computations.
-
 * addcomputed should honor annex.addunlocked.
 
 * Perhaps recompute should write a new version of a file as an unlocked
   file when the file is currently unlocked?
+
+* compute on files in submodules
 
 * recompute could ingest keys for other files than the one being
   recomputed, and remember them. Then recomputing those files could just

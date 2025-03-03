@@ -35,6 +35,8 @@ import Annex.SpecialRemote.Config
 import Annex.UUID
 import Annex.Content
 import Annex.Tmp
+import Annex.GitShaKey
+import Annex.CatFile
 import Logs.MetaData
 import Logs.EquivilantKeys
 import Utility.Metered
@@ -43,10 +45,11 @@ import Utility.Env
 import Utility.Tmp.Dir
 import Utility.Url
 import Utility.MonotonicClock
-import qualified Git
-import qualified Utility.SimpleProtocol as Proto
 import Types.Key
 import Backend
+import qualified Git
+import qualified Utility.FileIO as F
+import qualified Utility.SimpleProtocol as Proto
 
 import Network.HTTP.Types.URI
 import Data.Time.Clock
@@ -341,7 +344,7 @@ runComputeProgram
 	:: ComputeProgram
 	-> ComputeState
 	-> ImmutableState
-	-> (OsPath -> Annex (Key, Maybe OsPath))
+	-> (OsPath -> Annex (Key, Maybe (Either Git.Sha OsPath)))
 	-> (ComputeState -> OsPath -> NominalDiffTime -> Annex v)
 	-> Annex v
 runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate) getinputcontent cont =
@@ -395,12 +398,17 @@ runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate)
 			let knowninput = M.member f' (computeInputs state')
 			checksafefile tmpdir subdir f' "input"
 			checkimmutable knowninput "inputting" f' $ do
-				(k, mp) <- getinputcontent f'
-				mp' <- liftIO $ maybe (pure Nothing)
-					(Just <$$> relPathDirToFile subdir)
-					mp
+				(k, inputcontent) <- getinputcontent f'
+				mp <- case inputcontent of
+					Nothing -> pure Nothing
+					Just (Right f'') -> liftIO $
+						Just <$> relPathDirToFile subdir f''
+					Just (Left gitsha) -> do
+						liftIO . F.writeFile (subdir </> f')
+							=<< catObject gitsha
+						return (Just f')
 				liftIO $ hPutStrLn (stdinHandle p) $
-					maybe "" fromOsPath mp'
+					maybe "" fromOsPath mp
 				liftIO $ hFlush (stdinHandle p)
 				return $ if immutablestate
 					then state
@@ -467,10 +475,13 @@ computeKey rs (ComputeProgram program) k _af dest p vc =
 
 	getinputcontent state f =
 		case M.lookup (fromOsPath f) (computeInputs state) of
-			Just inputkey -> do
-				obj <- calcRepo (gitAnnexLocation inputkey)
-				-- XXX get input object when not present
-				return (inputkey, Just obj)
+			Just inputkey -> case keyGitSha inputkey of
+				Nothing -> do
+					obj <- calcRepo (gitAnnexLocation inputkey)
+					-- XXX get input object when not present
+					return (inputkey, Just (Right obj))
+				Just gitsha ->
+					return (inputkey, Just (Left gitsha))
 			Nothing -> error "internal"
 
 	computeskey state = 
