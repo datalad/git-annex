@@ -38,12 +38,12 @@ import qualified Annex
 import Annex.Link
 import Annex.LockFile
 import Annex.Content
-import Annex.Export
 import Annex.RemoteTrackingBranch
 import Annex.HashObject
 import Annex.Transfer
 import Annex.CheckIgnore
 import Annex.CatFile
+import Annex.GitShaKey
 import Annex.VectorClock
 import Annex.SpecialRemote.Config
 import Command

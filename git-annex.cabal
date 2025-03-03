@@ -562,6 +562,7 @@ Executable git-annex
     Annex.FileMatcher
     Annex.Fixup
     Annex.GitOverlay
+    Annex.GitShaKey
     Annex.HashObject
     Annex.Hook
     Annex.Import
