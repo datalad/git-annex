@@ -13,8 +13,10 @@ import Command
 import qualified Remote.Compute
 import qualified Remote
 import qualified Types.Remote as Remote
+import qualified Git.Ref as Git
 import Annex.Content
 import Annex.CatFile
+import Annex.GitShaKey
 import Git.FilePath
 import Logs.Location
 import Command.AddComputed (Reproducible(..), parseReproducible, getInputContent, getInputContent', addComputed)
@@ -93,17 +95,25 @@ start' o r si file key =
 	inputchanged state (inputfile, inputkey) = do
 		-- Note that the paths from the remote state are not to be
 		-- trusted to point to a file in the repository, but using
-		-- the path with catKeyFile will only succeed if it
+		-- the path with git cat-file will only succeed if it
 		-- is checked into the repository.
 		p <- fromRepo $ fromTopFilePath $ asTopFilePath $
 			Remote.Compute.computeSubdir state </> inputfile
-		catKeyFile p >>= return . \case
-			Just k -> k /= inputkey
-			-- When an input file is missing, go ahead and
-			-- recompute. This way, the user will see the
-			-- computation fail, with an error message that
-			-- explains the problem.
-			Nothing -> True
+		case keyGitSha inputkey of
+			Nothing -> 
+				catKeyFile p >>= return . \case
+					Just k -> k /= inputkey
+					Nothing -> inputfilemissing
+			Just inputgitsha -> inRepo (Git.fileRef p) >>= \case
+				Just fileref -> catObjectMetaData fileref >>= return . \case
+					Just (sha, _, _) -> sha /= inputgitsha
+					Nothing -> inputfilemissing
+				Nothing -> return inputfilemissing
+	
+	-- When an input file is missing, go ahead and recompute. This way,
+	-- the user will see the computation fail, with an error message that
+	-- explains the problem.
+	inputfilemissing = True
 
 perform :: RecomputeOptions -> Remote -> OsPath -> Key -> Remote.Compute.ComputeState -> CommandPerform
 perform o r file origkey origstate = do
