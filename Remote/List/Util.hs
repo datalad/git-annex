@@ -39,7 +39,7 @@ keyPossibilities'
 	-> [Remote]
 	-- ^ all remotes
 	-> Annex [Remote]
-keyPossibilities' ii key remotelocations rs = do
+keyPossibilities' ii _key remotelocations rs = do
 	u <- getUUID
 	let locations = filter (/= u) remotelocations
 	let speclocations = map uuid
