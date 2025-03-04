@@ -518,12 +518,10 @@ computeKey rs (ComputeProgram program) k _af dest p vc =
 			Nothing -> error "internal"
 	
 	getinputcontent' f inputkey = do
-		remotelist <- Annex.getState Annex.remotes
-		locs <- loggedLocations inputkey
-		remotes <- keyPossibilities' (IncludeIgnored False) inputkey locs remotelist
+		remotes <- avoidCycles [k] inputkey
+			=<< keyPossibilities inputkey
 		anyM (getinputcontentfrom f inputkey) remotes
 	
-	-- TODO cycle prevention
 	getinputcontentfrom f inputkey r = do
 		showAction $ "getting input " <> QuotedPath f
 			<> " from " <> UnquotedString (name r)
@@ -571,6 +569,50 @@ computeKey rs (ComputeProgram program) k _af dest p vc =
 		-- The program might not be reproducible,
 		-- so require strong verification.
 		return $ fromMaybe MustVerify mverification
+		
+keyPossibilities :: Key -> Annex [Remote]
+keyPossibilities key = do
+	remotelist <- Annex.getState Annex.remotes
+	locs <- loggedLocations key
+	keyPossibilities' (IncludeIgnored False) key locs remotelist
+
+{- Filter out any remotes that, in order to compute the inputkey, would
+ - need to get the outputkey from some remote.
+ -
+ - This only finds cycles of compute special remotes, not any other
+ - similar type of special remote that might have its own input keys.
+ - There are no other such special remotes in git-annex itself, so this
+ - is the best that can be done.
+ -
+ - Note that, in a case where a compute special remote needs the outputkey
+ - to compute the inputkey, but could get the outputkey from either this
+ - remote, or some other, non-compute remote, that is filtered out as a
+ - cycle because it's not possible to prevent that remote getting from this
+ - remote.
+ -}
+avoidCycles :: [Key] -> Key -> [Remote] -> Annex [Remote]
+avoidCycles outputkeys inputkey = filterM go
+  where
+	go r
+		| iscomputeremote r = 
+			getComputeState (remoteStateHandle r) inputkey >>= \case
+				Nothing -> return True
+				Just state
+					| inputsoutput state -> return False
+					| otherwise -> checkdeeper state
+		| otherwise = return True
+	
+	iscomputeremote r = remotetype r == remote
+
+	inputsoutput state = not $ M.null $
+		M.filter (`elem` outputkeys)
+			(computeInputs state)
+	
+	checkdeeper state =
+		flip allM (M.elems (computeInputs state)) $ \inputkey' -> do
+			rs <- keyPossibilities inputkey'
+			rs' <- avoidCycles (inputkey:outputkeys) inputkey' rs
+			return (rs' == rs)
 
 -- Make sure that the compute state exists.
 checkKey :: RemoteStateHandle -> Key -> Annex Bool
