@@ -95,6 +95,7 @@ perform o r = do
 		, Remote.Compute.computeOutputs = mempty
 		, Remote.Compute.computeSubdir = subdir
 		, Remote.Compute.computeReproducible = False
+		, Remote.Compute.computeInputsUnavailable = False
 		}
 	fast <- Annex.getRead Annex.fast
 	Remote.Compute.runComputeProgram program state

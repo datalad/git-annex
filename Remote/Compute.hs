@@ -218,6 +218,7 @@ data ComputeState = ComputeState
 	, computeOutputs :: M.Map OsPath (Maybe Key)
 	, computeSubdir :: OsPath
 	, computeReproducible :: Bool
+	, computeInputsUnavailable :: Bool
 	}
 	deriving (Show, Eq)
 
@@ -261,7 +262,7 @@ parseComputeState k b =
 	let st = go emptycomputestate (parseQuery b)
 	in if st == emptycomputestate then Nothing else Just st
   where
-	emptycomputestate = ComputeState mempty mempty mempty "." False
+	emptycomputestate = ComputeState mempty mempty mempty "." False False
 	go :: ComputeState -> [QueryItem] -> ComputeState
 	go c [] = c { computeParams = reverse (computeParams c) }
 	go c ((f, v):rest) = 
@@ -363,8 +364,8 @@ runComputeProgram
 	-> ComputeState
 	-> ImmutableState
 	-> (OsPath -> Annex (Key, Maybe (Either Git.Sha OsPath)))
-	-- ^ get input file's content, or Nothing when adding a computation
-	-- without actually performing it
+	-- ^ get input file's content, or Nothing the input file's
+	-- content is not available
 	-> (ComputeState -> OsPath -> NominalDiffTime -> Annex v)
 	-> Annex v
 runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate) getinputcontent cont =
@@ -431,9 +432,13 @@ runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate)
 				liftIO $ hPutStrLn (stdinHandle p) $
 					maybe "" fromOsPath mp
 				liftIO $ hFlush (stdinHandle p)
+				let state'' = state'
+					{ computeInputsUnavailable = 
+						isNothing mp || computeInputsUnavailable state'
+					}
 				return $ if immutablestate
-					then state
-					else state'
+					then state''
+					else state''
 						{ computeInputs = 
 							M.insert f' k
 								(computeInputs state')
@@ -444,7 +449,7 @@ runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate)
 			let knownoutput = M.member f' (computeOutputs state')
 			checkimmutable knownoutput "outputting" f' $ 
 				return $ if immutablestate
-					then state
+					then state'
 					else state'
 						{ computeOutputs = 
 							M.insert f' Nothing
@@ -488,7 +493,7 @@ computeKey rs (ComputeProgram program) k _af dest p vc =
 					state
 					(ImmutableState True)
 					(getinputcontent state)
-					(go keyfile)
+					(postcompute keyfile)
 				Nothing -> missingstate
 		Nothing -> missingstate
   where
@@ -503,9 +508,10 @@ computeKey rs (ComputeProgram program) k _af dest p vc =
 						return (inputkey, Just (Right obj))
 					in ifM (inAnnex inputkey)
 						( retkey
-						, do
-							getinputcontent' f inputkey
-							retkey
+						, ifM (getinputcontent' f inputkey)
+							( retkey
+							, return (inputkey, Nothing)
+							)
 						)
 				Just gitsha ->
 					return (inputkey, Just (Left gitsha))
@@ -515,9 +521,7 @@ computeKey rs (ComputeProgram program) k _af dest p vc =
 		remotelist <- Annex.getState Annex.remotes
 		locs <- loggedLocations inputkey
 		remotes <- keyPossibilities' (IncludeIgnored False) inputkey locs remotelist
-		if null remotes
-			then return ()
-			else void $ firstM (getinputcontentfrom f inputkey) remotes
+		anyM (getinputcontentfrom f inputkey) remotes
 	
 	-- TODO cycle prevention
 	getinputcontentfrom f inputkey r = do
@@ -533,7 +537,12 @@ computeKey rs (ComputeProgram program) k _af dest p vc =
 			(keyfile : _) -> Just keyfile
 			[] -> Nothing
 
-	go keyfile state tmpdir _ts = do
+	postcompute keyfile state tmpdir _ts
+		| computeInputsUnavailable state = 
+			giveup "Input file(s) unavailable."
+		| otherwise = postcompute' keyfile state tmpdir
+
+	postcompute' keyfile state tmpdir = do
 		hb <- hashBackend
 		let updatevurl key getobj = 
 			if (fromKey keyVariety key == VURLKey)
