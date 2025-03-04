@@ -374,6 +374,7 @@ runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate)
 			 , std_out = CreatePipe
 			 , env = Just environ
 			 }
+		showOutput
 		starttime <- liftIO currentMonotonicTimestamp
 		state' <- bracket
 			(liftIO $ createProcess pr)

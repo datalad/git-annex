@@ -97,7 +97,6 @@ perform o r = do
 		, Remote.Compute.computeReproducible = False
 		}
 	fast <- Annex.getRead Annex.fast
-	showOutput
 	Remote.Compute.runComputeProgram program state
 		(Remote.Compute.ImmutableState False)
 		(getInputContent fast)
