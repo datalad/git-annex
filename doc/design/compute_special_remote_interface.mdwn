@@ -23,7 +23,9 @@ that is in the form "foo=bar" will also result in an environment variable
 being set, eg `ANNEX_COMPUTE_passes=10` or `ANNEX_COMPUTE_--level=9`.
 
 For security, the program should avoid exposing user input to the shell
-unprotected, or otherwise executing it.
+unprotected, or otherwise executing it. And when running a command, make
+sure that whatever user input is passed to it can result in only safe and
+expected behavior.
 
 The program is run in a temporary directory, which will be cleaned up after
 it exits. Note that it may be run in a subdirectory of a temporary

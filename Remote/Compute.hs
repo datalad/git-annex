@@ -425,10 +425,9 @@ runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate)
 					Nothing -> pure Nothing
 					Just (Right f'') -> liftIO $
 						Just <$> relPathDirToFile subdir f''
-					Just (Left gitsha) -> do
-						liftIO . F.writeFile (subdir </> f')
-							=<< catObject gitsha
-						return (Just f')
+					Just (Left gitsha) ->
+						Just <$> (liftIO . relPathDirToFile subdir 
+							=<< populategitsha gitsha tmpdir)
 				liftIO $ hPutStrLn (stdinHandle p) $
 					maybe "" fromOsPath mp
 				liftIO $ hFlush (stdinHandle p)
@@ -478,6 +477,17 @@ runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate)
 	
 	calcduration (MonotonicTimestamp starttime) (MonotonicTimestamp endtime) =
 		fromIntegral (endtime - starttime) :: NominalDiffTime
+
+	-- Writes to a .git/objects/ file in the tmpdir, rather than
+	-- using the input filename, to avoid exposing the input filename
+	-- to the program as a parameter, which could parse it as a dashed
+	-- option or other special parameter.
+	populategitsha gitsha tmpdir = do
+		let f = tmpdir </> ".git" </> "objects"
+			</> toOsPath (Git.fromRef' gitsha)
+		liftIO $ createDirectoryIfMissing True $ takeDirectory f
+		liftIO . F.writeFile f =<< catObject gitsha
+		return f
 
 computationBehaviorChangeError :: ComputeProgram -> String -> OsPath -> Annex a
 computationBehaviorChangeError (ComputeProgram program) requestdesc p =
