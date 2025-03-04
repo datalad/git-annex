@@ -6,6 +6,8 @@
 * get input files for a computation (so `git-annex get .` gets every file,
   even when input files in a directory are processed after computed files)
 
+  started implementation, but must avoid cycles!
+
 * addcomputed should honor annex.addunlocked.
 
 * Perhaps recompute should write a new version of a file as an unlocked
@@ -37,3 +39,4 @@
   that recompute should also support recomputing non-annexed files.
   Otherwise, adding a file and then recomputing it would vary in
   what the content of the file is, depending on annex.smallfiles setting.
+

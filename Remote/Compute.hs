@@ -32,14 +32,17 @@ import Config
 import Config.Cost
 import Remote.Helper.Special
 import Remote.Helper.ExportImport
+import Remote.List.Util
 import Annex.SpecialRemote.Config
 import Annex.UUID
 import Annex.Content
 import Annex.Tmp
 import Annex.GitShaKey
 import Annex.CatFile
+import qualified Annex.Transfer
 import Logs.MetaData
 import Logs.EquivilantKeys
+import Logs.Location
 import Utility.Metered
 import Utility.TimeStamp
 import Utility.Env
@@ -359,6 +362,8 @@ runComputeProgram
 	-> ComputeState
 	-> ImmutableState
 	-> (OsPath -> Annex (Key, Maybe (Either Git.Sha OsPath)))
+	-- ^ get input file's content, or Nothing when adding a computation
+	-- without actually performing it
 	-> (ComputeState -> OsPath -> NominalDiffTime -> Annex v)
 	-> Annex v
 runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate) getinputcontent cont =
@@ -491,13 +496,34 @@ computeKey rs (ComputeProgram program) k _af dest p vc =
 	getinputcontent state f =
 		case M.lookup (fromOsPath f) (computeInputs state) of
 			Just inputkey -> case keyGitSha inputkey of
-				Nothing -> do
-					obj <- calcRepo (gitAnnexLocation inputkey)
-					-- XXX get input object when not present
-					return (inputkey, Just (Right obj))
+				Nothing -> 
+					let retkey = do
+						obj <- calcRepo (gitAnnexLocation inputkey)
+						return (inputkey, Just (Right obj))
+					in ifM (inAnnex inputkey)
+						( retkey
+						, do
+							getinputcontent' f inputkey
+							retkey
+						)
 				Just gitsha ->
 					return (inputkey, Just (Left gitsha))
 			Nothing -> error "internal"
+	
+	getinputcontent' f inputkey = do
+		remotelist <- Annex.getState Annex.remotes
+		locs <- loggedLocations inputkey
+		rs <- keyPossibilities' (IncludeIgnored False) inputkey locs remotelist
+		if null rs
+			then return ()
+			else void $ firstM (getinputcontentfrom f inputkey) rs
+	
+	-- TODO cycle prevention
+	getinputcontentfrom f inputkey r = do
+		showAction $ "getting input " <> QuotedPath f
+			<> " from " <> UnquotedString (name r)
+		Annex.Transfer.download r inputkey (AssociatedFile (Just f))
+			Annex.Transfer.stdRetry Annex.Transfer.noNotification
 
 	computeskey state = 
 		case M.keys $ M.filter (== Just k) (computeOutputs state) of
