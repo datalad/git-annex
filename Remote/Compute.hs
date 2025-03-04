@@ -131,7 +131,7 @@ setupInstance ss mu _ c _ = do
 		_ -> unless (program `elem` allowedprograms) $ do
 			let remotename = fromMaybe "(unknown)" (lookupName c)
 			giveup $ unwords
-				[ "Not enabling compute special remote"
+				[ "Unable to enable compute special remote"
 				, remotename
 				, "because its compute program"
 				, program
