@@ -39,6 +39,7 @@ import Annex.Content
 import Annex.Tmp
 import Annex.GitShaKey
 import Annex.CatFile
+import Annex.RepoSize.LiveUpdate
 import qualified Annex.Transfer
 import Logs.MetaData
 import Logs.EquivilantKeys
@@ -513,17 +514,19 @@ computeKey rs (ComputeProgram program) k _af dest p vc =
 	getinputcontent' f inputkey = do
 		remotelist <- Annex.getState Annex.remotes
 		locs <- loggedLocations inputkey
-		rs <- keyPossibilities' (IncludeIgnored False) inputkey locs remotelist
-		if null rs
+		remotes <- keyPossibilities' (IncludeIgnored False) inputkey locs remotelist
+		if null remotes
 			then return ()
-			else void $ firstM (getinputcontentfrom f inputkey) rs
+			else void $ firstM (getinputcontentfrom f inputkey) remotes
 	
 	-- TODO cycle prevention
 	getinputcontentfrom f inputkey r = do
 		showAction $ "getting input " <> QuotedPath f
 			<> " from " <> UnquotedString (name r)
-		Annex.Transfer.download r inputkey (AssociatedFile (Just f))
-			Annex.Transfer.stdRetry Annex.Transfer.noNotification
+		lu <- prepareLiveUpdate Nothing inputkey AddingKey
+		logStatusAfter lu inputkey $
+			Annex.Transfer.download r inputkey (AssociatedFile (Just f))
+				Annex.Transfer.stdRetry Annex.Transfer.noNotification
 
 	computeskey state = 
 		case M.keys $ M.filter (== Just k) (computeOutputs state) of
