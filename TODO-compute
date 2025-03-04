@@ -1,3 +1,13 @@
+* would be nice to have a way to see what computations are used by a
+  compute remote for a file. Put it in `whereis` output? But it's not an
+  url. Maybe a separate command? That would also allow querying for eg,
+  what files are inputs for another file.
+
+* "getting input from <file>" message uses the original filename,
+  but that file might have been renamed. Would be more clear to use
+  whatever file in the tree currently points to the key it's getting
+  (what if there is not one?)
+
 * allow git-annex enableremote with program= explicitly specified,
   without checking annex.security.allowed-compute-programs
 
