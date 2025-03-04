@@ -262,7 +262,15 @@ parseComputeState k b =
 	let st = go emptycomputestate (parseQuery b)
 	in if st == emptycomputestate then Nothing else Just st
   where
-	emptycomputestate = ComputeState mempty mempty mempty "." False False
+	emptycomputestate = ComputeState 
+		{ computeParams = mempty
+		, computeInputs = mempty
+		, computeOutputs = mempty
+		, computeSubdir = literalOsPath "."
+		, computeReproducible = False
+		, computeInputsUnavailable = False
+		}
+	
 	go :: ComputeState -> [QueryItem] -> ComputeState
 	go c [] = c { computeParams = reverse (computeParams c) }
 	go c ((f, v):rest) = 
@@ -370,7 +378,7 @@ runComputeProgram
 	-> Annex v
 runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate) getinputcontent cont =
 	withOtherTmp $ \othertmpdir ->
-		withTmpDirIn othertmpdir "compute" go
+		withTmpDirIn othertmpdir (literalOsPath "compute") go
   where
 	go tmpdir = do
 		environ <- computeProgramEnvironment state
@@ -483,7 +491,7 @@ runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate)
 	-- to the program as a parameter, which could parse it as a dashed
 	-- option or other special parameter.
 	populategitsha gitsha tmpdir = do
-		let f = tmpdir </> ".git" </> "objects"
+		let f = tmpdir </> literalOsPath ".git" </> literalOsPath "objects"
 			</> toOsPath (Git.fromRef' gitsha)
 		liftIO $ createDirectoryIfMissing True $ takeDirectory f
 		liftIO . F.writeFile f =<< catObject gitsha
@@ -510,7 +518,7 @@ computeKey rs (ComputeProgram program) k _af dest p vc =
 	missingstate = giveup "Missing compute state"
 
 	getinputcontent state f =
-		case M.lookup (fromOsPath f) (computeInputs state) of
+		case M.lookup f (computeInputs state) of
 			Just inputkey -> case keyGitSha inputkey of
 				Nothing -> 
 					let retkey = do
