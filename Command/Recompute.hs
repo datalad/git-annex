@@ -129,6 +129,7 @@ perform o r file origkey origstate = do
 	Remote.Compute.runComputeProgram program origstate
 		(Remote.Compute.ImmutableState False)
 		(getinputcontent program)
+		Nothing
 		(go program reproducibleconfig)
 	next $ return True
   where

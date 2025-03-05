@@ -101,6 +101,7 @@ perform o r = do
 	Remote.Compute.runComputeProgram program state
 		(Remote.Compute.ImmutableState False)
 		(getInputContent fast)
+		Nothing
 		(addComputed "adding" True r (reproducible o) chooseBackend Just fast)
 	next $ return True
 

@@ -11,8 +11,6 @@
 * allow git-annex enableremote with program= explicitly specified,
   without checking annex.security.allowed-compute-programs
 
-* need progress bars for computations and implement PROGRESS message
-
 * addcomputed should honor annex.addunlocked.
 
 * Perhaps recompute should write a new version of a file as an unlocked
