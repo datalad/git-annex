@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="bpoldrack"
+ avatar="http://cdn.libravatar.org/avatar/8e929a6e60f16f50e7463f88aab26f40"
+ subject="comment 2"
+ date="2025-03-05T14:23:56Z"
+ content="""
+The problem is indeed specific to the combination of NFS and ZFS.
+Not sure how to properly probe for that. But since this is relevant only for copies across ZFS over NFS4.2 mounts, a config option would be OK, I think. It's not that something isn't working w/o it, it's just unnecessarily slow.
+"""]]
