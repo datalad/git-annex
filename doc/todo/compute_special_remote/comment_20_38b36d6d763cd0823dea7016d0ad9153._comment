@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="msz"
+ avatar="http://cdn.libravatar.org/avatar/6e8b88e7c70d86f4cfd27d450958aed4"
+ subject="DataLad exploration of the compute on demand space"
+ date="2025-03-05T13:31:41Z"
+ content="""
+Thank you for the interesting discussion @matrss & @joey, you raise a lot of great points. I will need some time to take that all in, so I don't have any direct comments about the open questions. Meanwhile, I am excited to see the git-annex implementation taking shape.
+
+> Of course, git-annex having its own compute special remote would not preclude other external special remotes that compute. And for that matter, a single external special remote could implement an extension interface.
+
+With that in mind, I would like to share that my colleagues from the DataLad team (Psychoinformatics group) have experimented in parallel with a [datalad-remake](https://github.com/datalad/datalad-remake) special remote (not released yet, but FMPOV already functional). I am not the best person to explain the design decisions (I was more of a user-tester) but these are the key elements (note: I don't think any of these are final):
+
+- Essential parameters for recompute are associated with the files using `datalad-remake://` URLs (note to self: learn more about VURL).
+- You can associate different sets of parameters (different URLs, leading to different computations, e.g. containerized vs native environment) by using a \"label\" parameter; preferred label is chosen via config.
+- The association can be prospective, a'la `git annex addurl --relaxed`.
+- The actual compute instructions and data dependencies are stored in TOML files under `.datalad`, in the same branch as the file to be recomputed.
+- The trust is addressed by requiring the TOML instructions to be added in a gpg-signed git commit. A user-scope config declares the key ids trusted for that purpose.
+- The (re)-computation is done in a git worktree provisioned for the purpose (which means using the past state, not HEAD).
+- Files listed as data dependencies are retrieved with git annex get.
+- This also works if some dependencies are in subdatasets (submodules).
+
+I am looking forward to exploring convergence -- or specialization -- with the git-annex implementation!
+
+The model use case for me personally is fMRI preprocessing, which involves computing and applying spatial transforms on 4D (3D, repeated over time) images. The initial computation is time-consuming, and it produces a large target file (transformed image) as well as several small ancillary files (mostly transformation matrices). Applying these ancillary files to the raw image (which would typically be stored in a subdataset of the dataset which holds the results) is cheap, and can be reproducible in a byte-exact fashion. So I would run the initial computation normally, and then create \"shortcut\" recompute instructions (data dependencies are pretty straightforward in this case), attach them to the target file, and drop its contents. In practice, that would mean trading a few hundred MB for a minute or two of recomputing. I know this is domain-specific, but FTR, I made a demo dataset with a short write-up: [ds005479-remake-demo](https://hub.datalad.org/mslw/ds005479-remake-demo).
+"""]]
