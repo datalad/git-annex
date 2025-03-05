@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/cd1c0b3be1af288012e49197918395f0"
+ subject="comment 1"
+ date="2025-03-05T15:40:44Z"
+ content="""
+If I understand you correctly you mean that you somehow got git-annex' location tracking out-of-sync with the reality of where files are? I.e. `git annex list` shows some files as present in a repository which aren't actually there?
+
+If yes then `git annex fsck` (<https://git-annex.branchable.com/git-annex-fsck/>) should find and correct these issues (or tell you if they are not fixable).
+"""]]
