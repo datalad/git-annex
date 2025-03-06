@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="jerome.charousset@86fd8ed1bf55902989d7e70a11c38cb3a444b72d"
+ nickname="jerome.charousset"
+ avatar="http://cdn.libravatar.org/avatar/4c5d71789f9469db26c261284be0f41c"
+ subject="Special use case for Scientific application"
+ date="2025-03-06T17:02:22Z"
+ content="""
+Hello,
+I'm trying to use of Git-annex for some scientific applications, with a specific use case in mind:
+
+1. One large file is published on Zenodo.org, with a specific and permanent URL for each version (past & future).
+
+2. I annexed the current version with something like : `git annex addurl --file=my-input-file  <the-url-of-the-current-version-on-zenodo> ; git commit ... ; git annex sync`
+
+3. When a newer version is published on Zenodo, I would like to \"upgrade\" the annexed file to the newer version.
+I did some experiment and it seems to work by doing this : `git rm my-input-file ; git annex addurl --file=my-input-file <the-url-of-the-newer-version-on-zenodo> ; git commit ... ; git annex sync `
+
+Does that make sense ? is there any risk ? is there a easier/more direct way to achieve what I want ?
+
+Thanks in advance for your support !
+
+
+"""]]
