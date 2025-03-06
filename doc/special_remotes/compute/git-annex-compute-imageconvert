@@ -15,10 +15,11 @@ echo "INPUT $1"
 read input
 echo "OUTPUT $2"
 
+# Prefixing with ./ makes sure that the output is treated as a
+# filename, rather than a dashed option.
+output="./$2"
+
 if [ -n "$input" ]; then
-	# Prefixing the filenames with "./" makes sure that they are processed
-	# as files, even if they look like dashed options.
-	mkdir -p "$(dirname "./$2")"
-	ln -s "$input" "./$1"
-	convert "./$1" "./$2"
+	mkdir -p "$(dirname "$output")"
+	convert "$input" "$output"
 fi
