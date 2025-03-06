@@ -10,10 +10,8 @@ module Backend.VURL.Utilities where
 import Annex.Common
 import Types.Key
 import Types.Backend
-import Types.KeySource
 import Logs.EquivilantKeys
 import qualified Backend.Hash
-import Utility.Metered
 
 migrateFromURLToVURL :: Key -> Backend -> AssociatedFile -> Bool -> Annex (Maybe Key)
 migrateFromURLToVURL oldkey newbackend _af inannex
@@ -41,18 +39,3 @@ migrateFromVURLToURL oldkey newbackend _af _
 			(keyData oldkey)
 				{ keyVariety = URLKey }
 	| otherwise = return Nothing
-
--- The Backend must use a cryptographically secure hash.
-generateEquivilantKey :: Backend -> OsPath -> Annex (Maybe Key)
-generateEquivilantKey b f =
-	case genKey b of
-		Just genkey -> do
-			showSideAction (UnquotedString Backend.Hash.descChecksum)
-			Just <$> genkey source nullMeterUpdate
-		Nothing -> return Nothing
-  where
-	source = KeySource
-		{ keyFilename = mempty -- avoid adding any extension
-		, contentLocation = f
-		, inodeCache = Nothing
-		}

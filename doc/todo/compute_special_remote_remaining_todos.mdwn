@@ -1,0 +1,69 @@
+This is the remainder of my todo list while I was building the
+compute special remote. --[[Joey]]
+
+* write a tip showing how to use this
+
+* Write some simple compute programs so we have something to start with.
+
+  - convert between images eg jpeg to png
+  - run a command in a singularity container (that is one of the inputs)
+  - run a wasm binary (that is one of the inputs)
+
+* compute on input files in submodules
+
+* annex.diskreserve can be violated if getting a file computes it but also
+  some other output files, which get added to the annex.
+
+* would be nice to have a way to see what computations are used by a
+  compute remote for a file. Put it in `whereis` output? But it's not an
+  url. Maybe a separate command? That would also allow querying for eg,
+  what files are inputs for another file. Or it could be exposed in the
+  Remote interface, and made into a file matching option.
+
+* "getting input from <file>" message uses the original filename,
+  but that file might have been renamed. Would be more clear to use
+  whatever file in the tree currently points to the key it's getting
+  (what if there is not one?)
+
+* allow git-annex enableremote with program= explicitly specified,
+  without checking annex.security.allowed-compute-programs
+
+* addcomputed should honor annex.addunlocked.
+
+  What about recompute? It seems it should either write the new version of
+  the file as an unlocked file when the old version was unlocked, or also
+  honor annex.addunlocked.
+  
+  Problem: Since recompute does not stage the file, it would have to write
+  the content to the working tree. And then the user would need to
+  git-annex add. But then, if the key was a VURL key, it would add it with
+  the default backend instead, and the file would no longer use a computed
+  key. 
+
+  So it, seems that, for this to be done, recompute would need to stage the
+  pointer file.
+
+* recompute could ingest keys for other files than the one being
+  recomputed, and remember them. Then recomputing those files could just
+  use those keys, without re-running a computation. (Better than --others
+  which got removed.)
+
+* `git-annex recompute foo bar baz`, when foo depends on bar which depends
+  on baz, and when baz has changed, will not recompute foo, because bar has
+  not changed. It then recomputes bar. So running the command again is
+  needed to recompute foo. 
+
+  What it could do is, after it recomputes bar, notice that it already
+  considered foo, and revisit foo, and recompute it then. It could either
+  use a bloom filter to remember the files it considered but did not
+  compute, or it could just notice that the command line includes foo
+  (or includes a directory that contains foo), and then foo is not
+  modified.
+
+  Or it could build a DAG and traverse it, but building a DAG of a large
+  directory tree has its own problems.
+
+* Should addcomputed honor annex.smallfiles? That would seem to imply
+  that recompute should also support recomputing non-annexed files.
+  Otherwise, adding a file and then recomputing it would vary in
+  what the content of the file is, depending on annex.smallfiles setting.

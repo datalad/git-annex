@@ -50,7 +50,7 @@ start = do
 						return True
 		| otherwise = notifyTransfer direction af $
 			download' (Remote.uuid remote) key af Nothing stdRetry $ \p ->
-				logStatusAfter NoLiveUpdate key $ getViaTmp (Remote.retrievalSecurityPolicy remote) (RemoteVerify remote) key af Nothing $ \t -> do
+				logStatusAfter NoLiveUpdate key $ getViaTmp (Remote.retrievalSecurityPolicy remote) (RemoteVerify remote) key Nothing $ \t -> do
 					r <- tryNonAsync (Remote.retrieveKeyFile remote key af t p (RemoteVerify remote)) >>= \case
 						Left e -> do
 							warning (UnquotedString (show e))

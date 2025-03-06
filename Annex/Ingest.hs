@@ -198,16 +198,10 @@ ingest' preferredbackend meterupdate (Just (LockedDown cfg source)) mk restage =
 		| otherwise = gounlocked key mcache
 
 	golocked key mcache =
-		tryNonAsync (moveAnnex key naf (contentLocation source)) >>= \case
+		tryNonAsync (moveAnnex key (contentLocation source)) >>= \case
 			Right True -> success key mcache
 			Right False -> giveup "failed to add content to annex"
 			Left e -> restoreFile (keyFilename source) key e
-
-	-- moveAnnex uses the AssociatedFile provided to it to unlock
-	-- locked files when getting a file in an adjusted branch.
-	-- That case does not apply here, where we're adding an unlocked
-	-- file, so provide it nothing.
-	naf = AssociatedFile Nothing
 
 	gounlocked key (Just cache) = do
 		-- Remove temp directory hard link first because
@@ -377,7 +371,7 @@ addAnnexedFile matcher file key mtmp = ifM (addUnlocked matcher mi (isJust mtmp)
 		stagePointerFile file mode =<< hashPointerFile key
 		Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath file)
 		case mtmp of
-			Just tmp -> ifM (moveAnnex key af tmp)
+			Just tmp -> ifM (moveAnnex key tmp)
 				( linkunlocked mode >> return True
 				, writepointer mode >> return False
 				)
@@ -388,11 +382,10 @@ addAnnexedFile matcher file key mtmp = ifM (addUnlocked matcher mi (isJust mtmp)
 	, do
 		addSymlink file key Nothing
 		case mtmp of
-			Just tmp -> moveAnnex key af tmp
+			Just tmp -> moveAnnex key tmp
 			Nothing -> return True
 	)
   where
-	af = AssociatedFile (Just file)
 	mi = case mtmp of
 		Just tmp -> MatchingFile $ FileInfo
 			{ contentFile = tmp

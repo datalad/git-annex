@@ -1,0 +1,103 @@
+# NAME
+
+git-annex addcomputed - adds computed files to the repository
+
+# SYNOPSIS
+
+git annex addcomputed `--to=remote -- ...`
+
+# DESCRIPTION
+
+Adds files to the annex that are computed from input files in the
+repository, using a compute special remote.
+
+Once a file has been added to a compute remote, commands
+like `git-annex get` will use it to compute the content of the file.
+
+The syntax of this command after the `--` is up to the program that
+the compute special remote is set up to run to perform the comuptation.
+
+To see the program's usage, you can run:
+
+    git-annex addcomputed --to=foo
+
+Generally you will provide an input file (or files), and often also an
+output filename, and additional parameters to control the computation.
+
+There can be more than one input file that are combined to compute an
+output file. And multiple output files can be computed at the same time.
+
+Some examples of how this might look:
+
+    git-annex addcomputed --to=x -- convert file.raw file.jpeg passes=10
+    git-annex addcomputed --to=y -- compress foo --level=9
+    git-annex addcomputed --to=z -- clip foo 2:01-3:00 combine with bar to baz
+
+Note that parameters that were passed to `git-annex initremote` 
+when setting up the compute special remote will be appended to the end of
+the parameters provided to `git-annex addcomputed`.
+
+# OPTIONS
+
+* `--to=remote`
+
+  Specify which remote will compute the files. 
+
+  This must be a compute remote. For example, one can be
+  initialized with:
+
+    git-annex initremote photoconv type=compute \
+        program=git-annex-compute-photoconv
+
+  For details about compute remotes, and a list of some
+  of the programs that are available, see
+  <https://git-annex.branchable.com/special_remotes/compute/>
+
+* `--fast`
+
+  Adds computed files to the repository, without doing any work yet to
+  compute their content.
+
+  This implies `--unreproducible`, because even if the compute remote
+  produces reproducible output, it's not available.
+
+* `--unreproducible`, `-u`
+
+  Indicate that the computation is not expected to be fully reproducible.
+  It can vary, in ways that produce files that equivilant enough to
+  be interchangeable, but are not necessarily identical.
+
+  This is the default unless the compute remote indicates that it produces
+  reproducible output.
+
+* `--reproducible`, `-r`
+
+  Indicate that the computation is expected to be fully reproducible.
+
+  This is the default when the compute remote indicates that it produces
+  reproducible output (except when using `--fast`).
+
+  If a computation turns out not to be fully reproducible, then getting
+  a computed file from the compute remote will later fail with a
+  checksum verification error. One thing that can be done then is to use 
+  `git-annex recompute --original --unreproducible`.
+
+* `--backend`
+
+  Specifies which key-value backend to use.
+
+*  Also the [[git-annex-common-options]](1) can be used.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+[[git-annex-recompute]](1)
+
+[[git-annex-initremote]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

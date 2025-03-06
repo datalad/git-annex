@@ -23,14 +23,17 @@ that is in the form "foo=bar" will also result in an environment variable
 being set, eg `ANNEX_COMPUTE_passes=10` or `ANNEX_COMPUTE_--level=9`.
 
 For security, the program should avoid exposing user input to the shell
-unprotected, or otherwise executing it.
+unprotected, or otherwise executing it. And when running a command, make
+sure that whatever user input is passed to it can result in only safe and
+expected behavior.
 
 The program is run in a temporary directory, which will be cleaned up after
-it exits.
+it exits. Note that it may be run in a subdirectory of a temporary
+directory. This is done when `git-annex addcomputed` was run in a subdirectory
+of the git repository.
 
-The content of any annexed file in the repository can be an input
-to the computation. The program requests an input by writing a line to
-stdout:
+The content of any file in the repository can be an input to the
+computation. The program requests an input by writing a line to stdout:
 
     INPUT file.raw
 
@@ -38,8 +41,8 @@ Then it can read a line from stdin, which will be the path to the content
 (eg a `.git/annex/objects/` path).
 
 If the program needs multiple input files, it should output multiple
-`INPUT` lines at once, and then read multiple paths from stdin. This
-allows retrival of the inputs to potentially run in parallel.
+`INPUT` lines first, and then read multiple paths from stdin. This
+allows retrieval of the inputs to potentially run in parallel.
 
 If an input file is not available, the program's stdin will be closed
 without a path being written to it. So when reading from stdin fails, 
@@ -90,16 +93,17 @@ An example `git-annex-compute-foo` shell script follows:
     #!/bin/sh
     set -e
     if [ "$1" != "convert" ]; then
-        echo "Usage: convert input output [passes=n]" >&2
-        exit 1
+    	echo "Usage: convert input output [passes=n]" >&2
+     	exit 1
     fi
-    if [ -z "$ANNEX_COMPUTE_passes" ];
-        ANNEX_COMPUTE_passes=1
+    if [ -z "$ANNEX_COMPUTE_passes" ]; then
+    	ANNEX_COMPUTE_passes=1
     fi
-    echo "INPUT "$2"
+    echo "INPUT $2"
     read input
     echo "OUTPUT $3"
     echo REPRODUCIBLE
     if [ -n "$input" ]; then
-       frobnicate --passes="$ANNEX_COMPUTE_passes" <"$input" >"$3"
+        mkdir -p "$(dirname "$3")"
+        frobnicate --passes="$ANNEX_COMPUTE_passes" <"$input" >"$3"
     fi

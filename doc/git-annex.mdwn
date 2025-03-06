@@ -186,6 +186,18 @@ content from the key-value store.
   
   See [[git-annex-undo]](1) for details.
 
+* `addcomputed`
+
+  Adds computed files to the repository.
+
+  See [[git-annex-addcomputed]](1) for details.
+
+* `recompute`
+
+  Recomputes computed files.
+
+  See [[git-annex-recompute]](1) for details.
+
 * `multicast`
 
   Multicast file distribution.
@@ -1945,6 +1957,11 @@ Remotes are configured using these settings in `.git/config`.
   the location of the borg repository to use. Normally this is automatically
   set up by `git annex initremote`, but you can change it if needed.
 
+* `remote.<name>.annex-compute`
+  
+  Used to identify compute special remotes.
+  Normally this is automatically set up by `git annex initremote`.
+
 * `remote.<name>.annex-ddarrepo`
 
   Used by ddar special remotes, this configures
@@ -2183,6 +2200,13 @@ Remotes are configured using these settings in `.git/config`.
 * `remote.<name>.annex-security-allow-unverified-downloads`
 
   Per-remote configuration of annex.security.allow-unverified-downloads.
+
+* `annex.security.allowed-compute-programs`
+
+  This is a space separated list of compute programs eg
+  "git-annex-compute-foo git-annex-compute-bar". Listing a compute
+  program here allows compute special remotes that use that program to be
+  enabled by `git-annex enableremote` or autoenabled.
 
 # CONFIGURATION OF ASSISTANT
 

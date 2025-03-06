@@ -376,16 +376,16 @@ lockContentUsing contentlocker key fallback a = withContentLockFile key $ \mlock
 {- Runs an action, passing it the temp file to get,
  - and if the action succeeds, verifies the file matches
  - the key and moves the file into the annex as a key's content. -}
-getViaTmp :: RetrievalSecurityPolicy -> VerifyConfig -> Key -> AssociatedFile -> Maybe FileSize -> (OsPath -> Annex (Bool, Verification)) -> Annex Bool
-getViaTmp rsp v key af sz action =
+getViaTmp :: RetrievalSecurityPolicy -> VerifyConfig -> Key -> Maybe FileSize -> (OsPath -> Annex (Bool, Verification)) -> Annex Bool
+getViaTmp rsp v key sz action =
 	checkDiskSpaceToGet key sz False $
-		getViaTmpFromDisk rsp v key af action
+		getViaTmpFromDisk rsp v key action
 
 {- Like getViaTmp, but does not check that there is enough disk space
  - for the incoming key. For use when the key content is already on disk
  - and not being copied into place. -}
-getViaTmpFromDisk :: RetrievalSecurityPolicy -> VerifyConfig -> Key -> AssociatedFile -> (OsPath -> Annex (Bool, Verification)) -> Annex Bool
-getViaTmpFromDisk rsp v key af action = checkallowed $ do
+getViaTmpFromDisk :: RetrievalSecurityPolicy -> VerifyConfig -> Key -> (OsPath -> Annex (Bool, Verification)) -> Annex Bool
+getViaTmpFromDisk rsp v key action = checkallowed $ do
 	tmpfile <- prepTmp key
 	resuming <- liftIO $ doesPathExist tmpfile
 	(ok, verification) <- action tmpfile
@@ -400,7 +400,7 @@ getViaTmpFromDisk rsp v key af action = checkallowed $ do
 		else verification
 	if ok
 		then ifM (verifyKeyContentPostRetrieval rsp v verification' key tmpfile)
-			( pruneTmpWorkDirBefore tmpfile (moveAnnex key af)
+			( pruneTmpWorkDirBefore tmpfile (moveAnnex key)
 			, do
 				verificationOfContentFailed tmpfile
 				return False
@@ -507,8 +507,8 @@ withTmp key action = do
  - accepted into the repository. Will display a warning message in this
  - case. May also throw exceptions in some cases.
  -}
-moveAnnex :: Key -> AssociatedFile -> OsPath -> Annex Bool
-moveAnnex key af src = ifM (checkSecureHashes' key)
+moveAnnex :: Key -> OsPath -> Annex Bool
+moveAnnex key src = ifM (checkSecureHashes' key)
 	( do
 #ifdef mingw32_HOST_OS
 		{- Windows prevents deletion of files that are not
@@ -523,7 +523,7 @@ moveAnnex key af src = ifM (checkSecureHashes' key)
   where
 	storeobject dest = ifM (liftIO $ doesPathExist dest)
 		( alreadyhave
-		, adjustedBranchRefresh af $ modifyContentDir dest $ do
+		, adjustedBranchRefresh $ modifyContentDir dest $ do
 			liftIO $ moveFile src dest
 			-- Freeze the object file now that it is in place.
 			-- Waiting until now to freeze it allows for freeze
@@ -776,7 +776,7 @@ removeAnnex (ContentRemovalLock key) = withObjectLoc key $ \file ->
 	-- it's unmodified.
 	resetpointer file = unlessM (liftIO $ isSymbolicLink <$> R.getSymbolicLinkStatus (fromOsPath file)) $
 		ifM (isUnmodified key file)
-			( adjustedBranchRefresh (AssociatedFile (Just file)) $
+			( adjustedBranchRefresh $ 
 				depopulatePointerFile key file
 			-- Modified file, so leave it alone.
 			-- If it was a hard link to the annex object,

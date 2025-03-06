@@ -26,6 +26,7 @@ import Types.Remote
 import Types.Export
 import Annex.Export
 import Annex.Content
+import Annex.GitShaKey
 import Annex.Transfer
 import Annex.CatFile
 import Annex.FileMatcher

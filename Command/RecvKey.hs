@@ -28,7 +28,7 @@ start :: (SeekInput, Key) -> CommandStart
 start (_, key) = fieldTransfer Download key $ \_p -> do
 	-- This matches the retrievalSecurityPolicy of Remote.Git
 	let rsp = RetrievalAllKeysSecure
-	ifM (getViaTmp rsp DefaultVerify key (AssociatedFile Nothing) Nothing go)
+	ifM (getViaTmp rsp DefaultVerify key Nothing go)
 		( do
 			logStatus NoLiveUpdate key InfoPresent
 			_ <- quiesce True

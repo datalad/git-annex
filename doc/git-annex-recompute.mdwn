@@ -1,0 +1,69 @@
+# NAME
+
+git-annex recompute - recompute computed files
+
+# SYNOPSIS
+
+git-annex recompute [path ...]`
+
+# DESCRIPTION
+
+This updates computed files that were added with
+[[git-annex-addcomputed]](1). 
+
+By default, this only recomputes files whose input files have changed.
+The new contents of the input files are used to re-run the computation.
+
+When the output of the computation is different, the computed file is
+updated with the new content. The updated file is written to the worktree,
+but is not staged, in order to avoid overwriting any staged changes.
+
+# OPTIONS
+
+* `--original`
+
+  Re-run the computation with the original input files.
+
+* `--remote=name`
+
+  Only recompute files that were computed by this compute remote.
+
+  When this option is not used, all computed files are recomputed using
+  whatever compute remote was originally used to add them. (In cases where
+  a file can be computed by multiple remotes, the one with the lowest
+  configured cost is used.)
+
+* `--unreproducible`, `-u`
+
+  Indicate that the computation is not expected to be fully reproducible.
+  It can vary, in ways that produce files that equivilant enough to
+  be interchangeable, but are not necessarily identical.
+
+  This is the default unless the compute remote indicates that it produces
+  reproducible output.
+
+* `--reproducible`, `-r`
+
+  Indicate that the computation is expected to be fully reproducible.
+
+  This is the default when the compute remote indicates that it produces
+  reproducible output.
+
+* matching options
+
+  The [[git-annex-matching-options]](1) can be used to control what
+  files to recompute.
+
+*  Also the [[git-annex-common-options]](1) can be used.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+[[git-annex-addcomputed]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

@@ -562,6 +562,7 @@ Executable git-annex
     Annex.FileMatcher
     Annex.Fixup
     Annex.GitOverlay
+    Annex.GitShaKey
     Annex.HashObject
     Annex.Hook
     Annex.Import
@@ -654,6 +655,7 @@ Executable git-annex
     CmdLine.Usage
     Command
     Command.Add
+    Command.AddComputed
     Command.AddUnused
     Command.AddUrl
     Command.Adjust
@@ -727,6 +729,7 @@ Executable git-annex
     Command.Proxy
     Command.Pull
     Command.Push
+    Command.Recompute
     Command.ReKey
     Command.ReadPresentKey
     Command.RecvKey
@@ -930,6 +933,7 @@ Executable git-annex
     Remote.BitTorrent
     Remote.Borg
     Remote.Bup
+    Remote.Compute
     Remote.Ddar
     Remote.Directory
     Remote.Directory.LegacyChunked

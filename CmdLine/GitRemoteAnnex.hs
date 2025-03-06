@@ -927,7 +927,7 @@ downloadGitBundle rmt k = getKeyExportLocations rmt k >>= \case
 
 	getexport loc = catchNonAsync (getexport' loc) (const (pure False))
 	getexport' loc =
-		getViaTmp rsp vc k (AssociatedFile Nothing) Nothing $ \tmp -> do
+		getViaTmp rsp vc k Nothing $ \tmp -> do
 			v <- Remote.retrieveExport (Remote.exportActions rmt)
 				k loc tmp nullMeterUpdate
 			return (True, v)
@@ -986,7 +986,7 @@ generateGitBundle rmt bs manifest =
 			tmp nullMeterUpdate
 		if (bundlekey `notElem` inManifest manifest)
 			then do
-				unlessM (moveAnnex bundlekey (AssociatedFile Nothing) tmp) $
+				unlessM (moveAnnex bundlekey tmp) $
 					giveup "Unable to push"
 				return (bundlekey, uploadaction bundlekey)
 			else return (bundlekey, noop)

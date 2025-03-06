@@ -319,21 +319,10 @@ remoteFromUUID u = ifM ((==) u <$> getUUID)
 		remotesChanged
 		findinmap
 
-{- Filters a list of remotes to ones that have the listed uuids. -}
-remotesWithUUID :: [Remote] -> [UUID] -> [Remote]
-remotesWithUUID rs us = filter (\r -> uuid r `elem` us) rs
-
-{- Filters a list of remotes to ones that do not have the listed uuids. -}
-remotesWithoutUUID :: [Remote] -> [UUID] -> [Remote]
-remotesWithoutUUID rs us = filter (\r -> uuid r `notElem` us) rs
-
 {- List of repository UUIDs that the location log indicates may have a key.
  - Dead repositories are excluded. -}
 keyLocations :: Key -> Annex [UUID]
 keyLocations key = trustExclude DeadTrusted =<< loggedLocations key
-
-{- Whether to include remotes that have annex-ignore set. -}
-newtype IncludeIgnored = IncludeIgnored Bool
 
 {- Cost ordered lists of remotes that the location log indicates
  - may have a key.
@@ -342,33 +331,16 @@ newtype IncludeIgnored = IncludeIgnored Bool
  -}
 keyPossibilities :: IncludeIgnored -> Key -> Annex [Remote]
 keyPossibilities ii key = do
-	u <- getUUID
-	-- uuids of all remotes that are recorded to have the key
-	locations <- filter (/= u) <$> keyLocations key
-	speclocations <- map uuid
-		. filter (remoteAnnexSpeculatePresent . gitconfig)
-		<$> remoteList
-	-- there are unlikely to be many speclocations, so building a Set
-	-- is not worth the expense
-	let locations' = speclocations ++ filter (`notElem` speclocations) locations
-	fst <$> remoteLocations ii locations' []
+	locations <- keyLocations key
+	keyPossibilities' ii key locations =<< remoteList
 
 {- Given a list of locations of a key, and a list of all
  - trusted repositories, generates a cost-ordered list of
  - remotes that contain the key, and a list of trusted locations of the key.
  -}
 remoteLocations :: IncludeIgnored -> [UUID] -> [UUID] -> Annex ([Remote], [UUID])
-remoteLocations (IncludeIgnored ii) locations trusted = do
-	let validtrustedlocations = nub locations `intersect` trusted
-
-	-- remotes that match uuids that have the key
-	allremotes <- remoteList 
-		>>= if not ii
-			then filterM (not <$$> liftIO . getDynamicConfig . remoteAnnexIgnore . gitconfig)
-			else return
-	let validremotes = remotesWithUUID allremotes locations
-
-	return (sortBy (comparing cost) validremotes, validtrustedlocations)
+remoteLocations ii locations trusted = 
+	remoteLocations' ii locations trusted =<< remoteList
 
 {- Displays known locations of a key and helps the user take action
  - to make them accessible. -}

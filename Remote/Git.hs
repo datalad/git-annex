@@ -682,7 +682,7 @@ copyToRemote' repo r st@(State connpool duc _ _ _) key af o meterupdate
 				let checksuccess = liftIO checkio >>= \case
 					Just err -> giveup err
 					Nothing -> return True
-				logStatusAfter NoLiveUpdate key $ Annex.Content.getViaTmp rsp verify key af (Just sz) $ \dest ->
+				logStatusAfter NoLiveUpdate key $ Annex.Content.getViaTmp rsp verify key (Just sz) $ \dest ->
 					metered (Just (combineMeterUpdate meterupdate p)) key bwlimit $ \_ p' -> 
 						copier object dest key p' checksuccess verify
 			)

@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: DataLad exploration of the compute on demand space"""
+ date="2025-03-06T17:39:04Z"
+ content="""
+Thanks for explaining the design points of datalad-remake. Some
+different design choices than I have made, but mostly they strike me as
+implementing what is easier/possible from outside git-annex. 
+
+Eg, storing the compute inputs under `.datalad` in the branch is fine --
+and might even be useful if you want to make a branch that changes
+something in there -- but of course in the git-annex implementation it
+stores the equvilant thing in the git-annex branch.
+
+I do hope I'm not closing off the design space from such differences
+by dropping a compute special remote right into git-annex. But I also
+expect that having a standard and easy way for at least simple
+computations will lead to a lot of contributions as others use it.
+
+Your fMRI case seems like one that my compute remote could handle well
+and easily.
+"""]]

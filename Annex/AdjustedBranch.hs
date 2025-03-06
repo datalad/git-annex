@@ -308,16 +308,12 @@ updateAdjustedBranch adj (AdjBranch currbranch) origbranch
 		-- adjustment is stable.
 		return True
 
-{- Passed an action that, if it succeeds may get or drop the Key associated
- - with the file. When the adjusted branch needs to be refreshed to reflect
+{- Passed an action that, if it succeeds may get or drop a key.
+ - When the adjusted branch needs to be refreshed to reflect
  - those changes, it's handled here.
- -
- - Note that the AssociatedFile must be verified by this to point to the
- - Key. In some cases, the value was provided by the user and might not
- - really be an associated file.
  -}
-adjustedBranchRefresh :: AssociatedFile -> Annex a -> Annex a
-adjustedBranchRefresh _af a = do
+adjustedBranchRefresh :: Annex a -> Annex a
+adjustedBranchRefresh a = do
 	r <- a
 	go
 	return r
