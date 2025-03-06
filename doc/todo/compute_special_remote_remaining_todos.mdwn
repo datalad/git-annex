@@ -1,3 +1,19 @@
+This is the remainder of my todo list while I was building the
+compute special remote. --[[Joey]]
+
+* write a tip showing how to use this
+
+* Write some simple compute programs so we have something to start with.
+
+  - convert between images eg jpeg to png
+  - run a command in a singularity container (that is one of the inputs)
+  - run a wasm binary (that is one of the inputs)
+
+* compute on input files in submodules
+
+* annex.diskreserve can be violated if getting a file computes it but also
+  some other output files, which get added to the annex.
+
 * would be nice to have a way to see what computations are used by a
   compute remote for a file. Put it in `whereis` output? But it's not an
   url. Maybe a separate command? That would also allow querying for eg,
@@ -26,8 +42,6 @@
 
   So it, seems that, for this to be done, recompute would need to stage the
   pointer file.
-
-* compute on files in submodules
 
 * recompute could ingest keys for other files than the one being
   recomputed, and remember them. Then recomputing those files could just

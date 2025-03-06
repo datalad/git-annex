@@ -1,0 +1,69 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 22"""
+ date="2025-03-06T17:54:50Z"
+ content="""
+I've merged the compute special remote now.
+See [[special_remotes/compute]], [[git-annex-addcomputed]]
+and [[git-annex-recompute]].
+
+I have opened [[todo/compute_special_remote_remaining_todos]] with
+some various ways that I want to improve it further. Including, notably,
+computing on inputs from submodules, which is not currently supported at
+all.
+
+----
+
+Here I'll go down mih's original and quite useful design criteria and see
+how the compute special remote applies to them:
+
+### Generate annex keys (that have never existed)
+
+`git-annex addcomputed --fast`
+
+### Re-generate annex keys
+
+`git-annex addcomputed` optionally with the --reproducible option,
+followed by a later `git-annex get`
+
+Another thing that fits under this heading is when one of the original
+input files has gotten modified, and you want to compute a new version of
+the output file from it, using the same method as was used to compute it
+before. That's `git-annex recompute $output_file`
+
+### Worktree provisioning?
+
+This is the main thing I didn't implement. Given that git-annex is working
+with large files and needs to support various filesystems and OS's that
+lack hardlinks and softlinks, it's hard to do this inexpensively.
+
+Also, it turned out to make sense for the compute program to request
+the input files it needs, since this lets git-annex learn what the input
+files are, so it can make them available when regenerating a computed file
+later. And so the protocol just has git-annex respond with the path to
+the content of the file.
+
+### Request one key, receive many
+
+This is supported. (So is using multiple inputs to produce one (or more)
+outputs.)
+
+### Instruction deposition
+
+`git-annex addcomputed`
+
+### Storage redundancy tests
+
+It did make sense to have it automatically `git-annex get` the inputs.
+Well, I think it makes sense in most cases, this may become a tunable
+setting of the compute special remote.
+
+### Trust
+
+Handled by requiring the user install a `git-annex-compute-foo` command
+in PATH, and provide the name of the command to `initremote`.
+
+And for later `enableremote` or `autoenable=true`, it will only
+allow programs that are listed in the annex.security.allowed-compute-programs
+git config.
+"""]]
