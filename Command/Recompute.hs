@@ -15,6 +15,7 @@ import qualified Remote
 import qualified Types.Remote as Remote
 import qualified Git.Ref as Git
 import Annex.Content
+import Annex.UUID
 import Annex.CatFile
 import Annex.GitShaKey
 import Git.FilePath
@@ -131,12 +132,13 @@ perform o r file origkey origstate = do
 		(getinputcontent program)
 		Nothing
 		(go program reproducibleconfig)
-	next $ return True
+	next cleanup
   where
-	go program reproducibleconfig state tmpdir ts = do
-		checkbehaviorchange program state
-		addComputed "processing" False r reproducibleconfig
-			choosebackend destfile False state tmpdir ts
+	go program reproducibleconfig result tmpdir ts = do
+		checkbehaviorchange program
+			(Remote.Compute.computeState result)
+		addComputed Nothing False r reproducibleconfig
+			choosebackend destfile False result tmpdir ts
 
 	checkbehaviorchange program state = do
 		let check s w a b = forM_ (M.keys (w a)) $ \f ->
@@ -168,6 +170,10 @@ perform o r file origkey origstate = do
 
 	origbackendvariety = fromKey keyVariety origkey
 	
+	recomputingvurl = case origbackendvariety of
+		VURLKey -> True
+		_ -> False
+
 	getreproducibleconfig = case reproducible o of
 		Just (Reproducible True) -> return (Just (Reproducible True))
 		-- A VURL key is used when the computation was
@@ -177,13 +183,22 @@ perform o r file origkey origstate = do
 		-- delete the annex object first, so that if recomputing
 		-- generates a new version of the file, it replaces
 		-- the old version.
-		v -> case origbackendvariety of
-			VURLKey -> do
+		v -> if recomputingvurl
+			then do
 				lockContentForRemoval origkey noop removeAnnex
-				-- in case computation fails or is interupted
-				logStatus NoLiveUpdate origkey InfoMissing
 				return (Just (Reproducible False))
-			_ -> return v
+			else return v
+	
+	cleanup = do
+		case reproducible o of
+			Just (Reproducible True) -> noop
+			-- in case computation failed, update
+			-- location log for removal done earlier
+			_ -> when recomputingvurl $ do
+				u <- getUUID
+				unlessM (elem u <$> loggedLocations origkey) $
+					logStatus NoLiveUpdate origkey InfoMissing
+		return True
 
 	choosebackend _outputfile
 		-- Use the same backend as was used to compute it before,

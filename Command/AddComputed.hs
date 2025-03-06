@@ -20,6 +20,7 @@ import Backend
 import Annex.CatFile
 import Annex.Content.Presence
 import Annex.Ingest
+import Annex.UUID
 import Annex.GitShaKey
 import Types.KeySource
 import Types.Key
@@ -94,35 +95,35 @@ perform o r = do
 		, Remote.Compute.computeInputs = mempty
 		, Remote.Compute.computeOutputs = mempty
 		, Remote.Compute.computeSubdir = subdir
-		, Remote.Compute.computeReproducible = False
-		, Remote.Compute.computeInputsUnavailable = False
 		}
 	fast <- Annex.getRead Annex.fast
 	Remote.Compute.runComputeProgram program state
 		(Remote.Compute.ImmutableState False)
 		(getInputContent fast)
 		Nothing
-		(addComputed "adding" True r (reproducible o) chooseBackend Just fast)
+		(addComputed (Just "adding") True r (reproducible o) chooseBackend Just fast)
 	next $ return True
 
 addComputed
-	:: StringContainingQuotedPath
+	:: Maybe StringContainingQuotedPath
 	-> Bool
 	-> Remote
 	-> Maybe Reproducible
 	-> (OsPath -> Annex Backend)
 	-> (OsPath -> Maybe OsPath)
 	-> Bool
-	-> Remote.Compute.ComputeState
+	-> Remote.Compute.ComputeProgramResult
 	-> OsPath
 	-> NominalDiffTime
 	-> Annex ()
-addComputed addaction stagefiles r reproducibleconfig choosebackend destfile fast state tmpdir ts = do
-	let outputs = Remote.Compute.computeOutputs state
+addComputed maddaction stagefiles r reproducibleconfig choosebackend destfile fast result tmpdir ts = do
 	when (M.null outputs) $
 		giveup "The computation succeeded, but it did not generate any files."
 	oks <- forM (M.keys outputs) $ \outputfile -> do
-		showAction $ addaction <> " " <> QuotedPath outputfile
+		case maddaction of
+			Just addaction -> showAction $
+				addaction <> " " <> QuotedPath outputfile
+			Nothing -> noop
 		k <- catchNonAsync (addfile outputfile)
 			(\err -> giveup $ "Failed to ingest output file " ++ fromOsPath outputfile ++ ": " ++ show err)
 		return (outputfile, Just k)
@@ -133,8 +134,15 @@ addComputed addaction stagefiles r reproducibleconfig choosebackend destfile fas
 		Remote.Compute.setComputeState
 			(Remote.remoteStateHandle r)
 			k ts state'
-		logChange NoLiveUpdate k (Remote.uuid r) InfoPresent
+
+		let u = Remote.uuid r
+		unlessM (elem u <$> loggedLocations k) $
+			logChange NoLiveUpdate k u InfoPresent
   where
+	state = Remote.Compute.computeState result
+	
+	outputs = Remote.Compute.computeOutputs state
+	
 	addfile outputfile
 		| fast = do
 			case destfile outputfile of
@@ -179,7 +187,9 @@ addComputed addaction stagefiles r reproducibleconfig choosebackend destfile fas
 		ingestwith a = a >>= \case
 			Nothing -> giveup "ingestion failed"
 			Just k -> do
-				logStatus NoLiveUpdate k InfoPresent
+				u <- getUUID
+				unlessM (elem u <$> loggedLocations k) $
+					logStatus NoLiveUpdate k InfoPresent
 				when (fromKey keyVariety k == VURLKey) $ do
 					hb <- hashBackend
 					void $ addEquivilantKey hb k 
@@ -194,7 +204,7 @@ addComputed addaction stagefiles r reproducibleconfig choosebackend destfile fas
 	
 	isreproducible = case reproducibleconfig of
 		Just v -> isReproducible v
-		Nothing -> Remote.Compute.computeReproducible state
+		Nothing -> Remote.Compute.computeReproducible result
 	
 getInputContent :: Bool -> OsPath -> Annex (Key, Maybe (Either Git.Sha OsPath))
 getInputContent fast p = catKeyFile p >>= \case

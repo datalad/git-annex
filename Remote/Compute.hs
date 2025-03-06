@@ -18,6 +18,7 @@ module Remote.Compute (
 	getComputeProgram,
 	runComputeProgram,
 	ImmutableState(..),
+	ComputeProgramResult(..),
 	computationBehaviorChangeError,
 	defaultComputeParams,
 ) where
@@ -222,8 +223,6 @@ data ComputeState = ComputeState
 	, computeInputs :: M.Map OsPath Key
 	, computeOutputs :: M.Map OsPath (Maybe Key)
 	, computeSubdir :: OsPath
-	, computeReproducible :: Bool
-	, computeInputsUnavailable :: Bool
 	}
 	deriving (Show, Eq)
 
@@ -272,8 +271,6 @@ parseComputeState k b =
 		, computeInputs = mempty
 		, computeOutputs = mempty
 		, computeSubdir = literalOsPath "."
-		, computeReproducible = False
-		, computeInputsUnavailable = False
 		}
 	
 	go :: ComputeState -> [QueryItem] -> ComputeState
@@ -330,16 +327,23 @@ computeStateUrl r st p =
  - The metadata fields are numbers (prefixed with "t" to make them legal
  - field names), which are estimates of how long it might take to run
  - the computation (in seconds).
+ -
+ - Avoids redundantly recording a ComputeState when the per remote metadata
+ - already contains it.
  -}
 setComputeState :: RemoteStateHandle -> Key -> NominalDiffTime -> ComputeState -> Annex ()
-setComputeState rs k ts st = addRemoteMetaData k rs $ MetaData $ M.singleton
-	(mkMetaFieldUnchecked $ T.pack ('t':show (truncateResolution 1 ts)))
-	(S.singleton (MetaValue (CurrentlySet True) (formatComputeState k st)))
+setComputeState rs k ts st = do
+	l <- map snd <$> getComputeStatesUnsorted rs k
+	unless (st `elem` l) go
+  where
+	go = addRemoteMetaData k rs $ MetaData $ M.singleton
+		(mkMetaFieldUnchecked $ T.pack ('t':show (truncateResolution 1 ts)))
+		(S.singleton (MetaValue (CurrentlySet True) (formatComputeState k st)))
 
 {- When multiple ComputeStates have been recorded for the same key,
  - this returns one that is probably less expensive to compute,
  - based on the original time it took to compute it. -}
-getComputeState:: RemoteStateHandle -> Key -> Annex (Maybe ComputeState)
+getComputeState :: RemoteStateHandle -> Key -> Annex (Maybe ComputeState)
 getComputeState rs k = headMaybe . map snd . sortOn fst
 	<$> getComputeStatesUnsorted rs k
 
@@ -372,6 +376,12 @@ computeProgramEnvironment st = do
 
 newtype ImmutableState = ImmutableState Bool
 
+data ComputeProgramResult = ComputeProgramResult
+	{ computeState :: ComputeState
+	, computeInputsUnavailable :: Bool
+	, computeReproducible :: Bool
+	}
+
 runComputeProgram
 	:: ComputeProgram
 	-> ComputeState
@@ -381,7 +391,7 @@ runComputeProgram
 	-- content is not available
 	-> Maybe (Key, MeterUpdate)
 	-- ^ update meter for this key
-	-> (ComputeState -> OsPath -> NominalDiffTime -> Annex v)
+	-> (ComputeProgramResult -> OsPath -> NominalDiffTime -> Annex v)
 	-> Annex v
 runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate) getinputcontent meterkey cont =
 	withOtherTmp $ \othertmpdir ->
@@ -398,12 +408,13 @@ runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate)
 			 }
 		showOutput
 		starttime <- liftIO currentMonotonicTimestamp
-		state' <- withmeterfile $ \meterfile -> bracket
+		let startresult = ComputeProgramResult state False False
+		result <- withmeterfile $ \meterfile -> bracket
 			(liftIO $ createProcess pr)
 			(liftIO . cleanupProcess)
-			(getinput tmpdir subdir state meterfile)
+			(getinput tmpdir subdir startresult meterfile)
 		endtime <- liftIO currentMonotonicTimestamp
-		cont state' subdir (calcduration starttime endtime)
+		cont result subdir (calcduration starttime endtime)
 		
 	getsubdir tmpdir = do
 		let subdir = tmpdir </> computeSubdir state
@@ -415,24 +426,25 @@ runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate)
 			, return tmpdir
 			)
 	
-	getinput tmpdir subdir state' meterfile p = 
+	getinput tmpdir subdir result meterfile p = 
 		liftIO (hGetLineUntilExitOrEOF (processHandle p) (stdoutHandle p)) >>= \case
 			Just l
-				| null l -> getinput tmpdir subdir state' meterfile p
+				| null l -> getinput tmpdir subdir result meterfile p
 				| otherwise -> do
-					state'' <- parseoutput p tmpdir subdir state' meterfile l
-					getinput tmpdir subdir state'' meterfile p
+					result' <- parseoutput p tmpdir subdir result meterfile l
+					getinput tmpdir subdir result' meterfile p
 			Nothing -> do
 				liftIO $ hClose (stdoutHandle p)
 				liftIO $ hClose (stdinHandle p)
 				unlessM (liftIO $ checkSuccessProcess (processHandle p)) $
 					giveup $ program ++ " exited unsuccessfully"
-				return state'
+				return result
 	
-	parseoutput p tmpdir subdir state' meterfile l = case Proto.parseMessage l of
+	parseoutput p tmpdir subdir result meterfile l = case Proto.parseMessage l of
 		Just (ProcessInput f) -> do
 			let f' = toOsPath f
-			let knowninput = M.member f' (computeInputs state')
+			let knowninput = M.member f'
+				(computeInputs (computeState result))
 			checksafefile tmpdir subdir f' "input"
 			checkimmutable knowninput "inputting" f' $ do
 				(k, inputcontent) <- getinputcontent f'
@@ -446,21 +458,21 @@ runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate)
 				liftIO $ hPutStrLn (stdinHandle p) $
 					maybe "" fromOsPath mp
 				liftIO $ hFlush (stdinHandle p)
-				let state'' = state'
+				let result' = result
 					{ computeInputsUnavailable = 
-						isNothing mp || computeInputsUnavailable state'
+						isNothing mp || computeInputsUnavailable result
 					}
 				return $ if immutablestate
-					then state''
-					else state''
+					then result'
+					else modresultstate result' $ \s -> s
 						{ computeInputs = 
 							M.insert f' k
-								(computeInputs state')
+								(computeInputs s)
 						}
 		Just (ProcessOutput f) -> do
 			let f' = toOsPath f
 			checksafefile tmpdir subdir f' "output"
-			knownoutput <- case M.lookup f' (computeOutputs state') of
+			knownoutput <- case M.lookup f' (computeOutputs $ computeState result) of
 				Nothing -> return False
 				Just mk -> do
 					when (mk == fmap fst meterkey) $
@@ -468,19 +480,22 @@ runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate)
 					return True
 			checkimmutable knownoutput "outputting" f' $ 
 				return $ if immutablestate
-					then state'
-					else state'
+					then result
+					else modresultstate result $ \s -> s
 						{ computeOutputs = 
 							M.insert f' Nothing
-								(computeOutputs state')
-						}
+								(computeOutputs s)
+							}
 		Just (ProcessProgress percent) -> do
 			liftIO $ updatepercent percent
-			return state'
+			return result
 		Just ProcessReproducible ->
-			return $ state' { computeReproducible = True }
+			return $ result { computeReproducible = True }
 		Nothing -> giveup $
 			program ++ " output an unparseable line: \"" ++ l ++ "\""
+
+	modresultstate result f = 
+		result { computeState = f (computeState result) }
 
 	checksafefile tmpdir subdir f fileaction = do
 		let err problem = giveup $
@@ -596,10 +611,11 @@ computeKey rs (ComputeProgram program) k _af dest meterupdate vc =
 			(keyfile : _) -> Just keyfile
 			[] -> Nothing
 
-	postcompute keyfile state tmpdir _ts
-		| computeInputsUnavailable state = 
+	postcompute keyfile result tmpdir _ts
+		| computeInputsUnavailable result = 
 			giveup "Input file(s) unavailable."
-		| otherwise = postcompute' keyfile state tmpdir
+		| otherwise =
+			postcompute' keyfile (computeState result) tmpdir
 
 	postcompute' keyfile state tmpdir = do
 		hb <- hashBackend
