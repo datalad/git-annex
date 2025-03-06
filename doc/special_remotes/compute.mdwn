@@ -32,6 +32,9 @@ To write programs used by the compute special remote, see the
 [[design/compute_special_remote_interface]].
 
 Have you written a generally useful (and secure) compute program?
-List it here!
+List it here with an example!
 
-* ...
+* [[compute/git-annex-compute-imageconvert]] --
+  Uses imagemagick to convert between image formats
+
+  `git-annex addcomputed --to=imageconvert foo.jpeg foo.gif`

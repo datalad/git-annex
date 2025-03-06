@@ -14,6 +14,10 @@ Files: doc/special_remotes/external/*
 Copyright: © 2013 Joey Hess <id@joeyh.name>
 License: GPL-3+
 
+Files: doc/special_remotes/compute/git-annex-compute-imageconvert
+Copyright: © 2025 Joey Hess <id@joeyh.name>
+License: GPL-3+
+
 Files: doc/design/external_backend_protocol/git-annex-backend-XFOO
 Copyright: © 2020 Joey Hess <id@joeyh.name>
 License: GPL-3+
