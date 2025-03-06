@@ -100,8 +100,11 @@ An example `git-annex-compute-foo` shell script follows:
     echo "INPUT $2"
     read input
     echo "OUTPUT $3"
+    # Prefixing with ./ makes sure that the output is treated as a
+    # filename, rather than a dashed option.
+    output="./$3"
     echo REPRODUCIBLE
     if [ -n "$input" ]; then
-        mkdir -p "$(dirname "$3")"
-        frobnicate --passes="$ANNEX_COMPUTE_passes" <"$input" >"$3"
+        mkdir -p "$(dirname "$output")"
+        frobnicate --passes="$ANNEX_COMPUTE_passes" <"$input" >"$output"
     fi
