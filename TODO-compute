@@ -1,7 +1,8 @@
 * would be nice to have a way to see what computations are used by a
   compute remote for a file. Put it in `whereis` output? But it's not an
   url. Maybe a separate command? That would also allow querying for eg,
-  what files are inputs for another file.
+  what files are inputs for another file. Or it could be exposed in the
+  Remote interface, and made into a file matching option.
 
 * "getting input from <file>" message uses the original filename,
   but that file might have been renamed. Would be more clear to use
@@ -15,6 +16,15 @@
 
 * Perhaps recompute should write a new version of a file as an unlocked
   file when the file is currently unlocked?
+
+  Problem: Since recompute does not stage the file, it would have to write
+  the content to the working tree. And then the user would need to
+  git-annex add. But then, if the key was a VURL key, it would add it with
+  the default backend instead, and the file would no longer use a computed
+  key. 
+
+  So it, seems that, for this to be done, recompute would need to stage the
+  pointer file.
 
 * compute on files in submodules
 
@@ -42,4 +52,3 @@
   that recompute should also support recomputing non-annexed files.
   Otherwise, adding a file and then recomputing it would vary in
   what the content of the file is, depending on annex.smallfiles setting.
-
