@@ -1,5 +1,3 @@
-**draft**
-
 The [[special_remotes/compute]] special remote uses this interface to run
 compute programs.
 
