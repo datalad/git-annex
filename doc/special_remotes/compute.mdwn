@@ -34,12 +34,12 @@ To write programs used by the compute special remote, see the
 Have you written a generally useful (and secure) compute program?
 List it here with an example!
 
-* [[compute/git-annex-compute-imageconvert]] --
+* [[compute/git-annex-compute-imageconvert]]  
   Uses imagemagick to convert between image formats
 
   `git-annex addcomputed --to=imageconvert foo.jpeg foo.gif`
 
-* [[compute/git-annex-compute-wasmedge]]
+* [[compute/git-annex-compute-wasmedge]]  
   Uses [wasmedge](https://WasmEdge.org/) to run WASM programs that are
   checked into the git-annex repository, to compute other files in the
   repository.
