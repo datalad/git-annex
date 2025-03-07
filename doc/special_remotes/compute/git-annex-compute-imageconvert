@@ -17,5 +17,5 @@ echo "OUTPUT $2"
 read output
 
 if [ -n "$input" ]; then
-	convert "$input" "$output"
+	convert "$input" "$output" >&2
 fi

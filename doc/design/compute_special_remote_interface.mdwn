@@ -110,5 +110,5 @@ An example `git-annex-compute-foo` shell script follows:
     echo REPRODUCIBLE
 
     if [ -n "$input" ]; then
-        frobnicate --passes="$ANNEX_COMPUTE_passes" <"$input" >"$output"
+        frobnicate --passes="$ANNEX_COMPUTE_passes" -i "$input" -o "$output" >&2
     fi
