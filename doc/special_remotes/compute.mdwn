@@ -42,6 +42,4 @@ List it here with an example!
 * [[compute/git-annex-compute-wasmedge]]  
   Uses [wasmedge](https://WasmEdge.org/) to run WASM programs that are
   checked into the git-annex repository, to compute other files in the
-  repository.
-
-  [[examples|compute/git-annex-compute-wasmedge-examples]]
+  repository. [[Examples here|compute/git-annex-compute-wasmedge-examples]]
