@@ -43,5 +43,5 @@ if [ -n "$wasm" ]; then
 	# Use --force-interpreter to avoid wasmedge running AOT native
 	# instructions, which is insecure if the WASM binary comes from
 	# an untrusted source.
-	wasmedge --dir /:$PWD --force-interpreter -- "$wasm" "$@" >&2
+	wasmedge --dir "/:`pwd`" --force-interpreter -- "$wasm" "$@" >&2
 fi
