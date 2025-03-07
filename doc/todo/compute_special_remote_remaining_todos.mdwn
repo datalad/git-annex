@@ -1,11 +1,6 @@
 This is the remainder of my todo list while I was building the
 compute special remote. --[[Joey]]
 
-* **important** output of the program can contain escape sequences,
-  which could be a security problem. Eg, it could rebind a key to run a
-  command. So it seems the output needs to be passed through something to
-  sanitize it.
-
 * write a tip showing how to use this
 
 * Write some simple compute programs so we have something to start with.
