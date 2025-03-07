@@ -16,14 +16,14 @@ Whatever values the user passes to `git-annex addcomputed` are passed to
 the program in `ARGV`, followed by any values that the user provided to 
 `git-annex initremote`.
 
-To simplify the program's option parsing, any value that the user provides
-that is in the form "foo=bar" will also result in an environment variable
-being set, eg `ANNEX_COMPUTE_passes=10` or `ANNEX_COMPUTE_--level=9`.
-
 For security, the program should avoid exposing user input to the shell
 unprotected, or otherwise executing it. And when running a command, make
 sure that whatever user input is passed to it can result in only safe and
 expected behavior.
+
+To simplify the program's option parsing, any value that the user provides
+that is in the form "foo=bar" will also result in an environment variable
+being set, eg `ANNEX_COMPUTE_passes=10` or `ANNEX_COMPUTE_--level=9`.
 
 The program is run in a temporary directory, which will be cleaned up after
 it exits. Note that it may be run in a subdirectory of a temporary
@@ -57,6 +57,12 @@ For each output file that it will compute, the program should write a
 line to stdout:
 
     OUTPUT file.jpeg
+
+Then it can read a line from stdin. This will be a sanitized version of the
+output filename. It's important to use that sanitized version to avoid path
+traversal attacks, as well as problems like filenames that look like
+dashed options. If there is a path traversal attack, the program's stdin will
+be closed without a path being written to it.
 
 The filename of the output file is both the filename in the program's
 temporary directory, and also the filename that will be added to the
@@ -100,10 +106,9 @@ An example `git-annex-compute-foo` shell script follows:
     echo "INPUT $2"
     read input
     echo "OUTPUT $3"
-    # Prefixing with ./ makes sure that the output is treated as a
-    # filename, rather than a dashed option.
-    output="./$3"
+    read output
     echo REPRODUCIBLE
+
     if [ -n "$input" ]; then
         mkdir -p "$(dirname "$output")"
         frobnicate --passes="$ANNEX_COMPUTE_passes" <"$input" >"$output"

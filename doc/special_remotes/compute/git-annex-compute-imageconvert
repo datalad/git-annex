@@ -1,5 +1,5 @@
 #!/bin/sh
-# git-annex compute special remote program that uses imagemagic's convert
+# git-annex compute remote program that uses imagemagic's convert
 # to convert one type of image format into another. Eg, jpeg to gif.
 # 
 # Copyright 2025 Joey Hess; licenced under the GNU GPL version 3 or higher.
@@ -14,10 +14,7 @@ fi
 echo "INPUT $1"
 read input
 echo "OUTPUT $2"
-
-# Prefixing with ./ makes sure that the output is treated as a
-# filename, rather than a dashed option.
-output="./$2"
+read output
 
 if [ -n "$input" ]; then
 	mkdir -p "$(dirname "$output")"

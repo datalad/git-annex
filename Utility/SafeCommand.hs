@@ -10,6 +10,7 @@
 module Utility.SafeCommand (
 	CommandParam(..),
 	toCommand,
+	toCommand',
 	boolSystem,
 	boolSystem',
 	boolSystemEnv,

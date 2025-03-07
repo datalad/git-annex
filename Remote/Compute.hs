@@ -472,6 +472,10 @@ runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate)
 		Just (ProcessOutput f) -> do
 			let f' = toOsPath f
 			checksafefile tmpdir subdir f' "output"
+			-- Modify filename so eg "-foo" becomes "./-foo"
+			liftIO $ hPutStrLn (stdinHandle p) $
+				toCommand' (File f)
+			liftIO $ hFlush (stdinHandle p)
 			knownoutput <- case M.lookup f' (computeOutputs $ computeState result) of
 				Nothing -> return False
 				Just mk -> do
