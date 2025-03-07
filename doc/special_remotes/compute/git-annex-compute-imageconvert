@@ -17,6 +17,5 @@ echo "OUTPUT $2"
 read output
 
 if [ -n "$input" ]; then
-	mkdir -p "$(dirname "$output")"
 	convert "$input" "$output"
 fi

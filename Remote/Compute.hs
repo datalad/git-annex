@@ -476,6 +476,11 @@ runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate)
 			liftIO $ hPutStrLn (stdinHandle p) $
 				toCommand' (File f)
 			liftIO $ hFlush (stdinHandle p)
+			-- If the output file is in a subdirectory, make
+			-- the directories so the compute program doesn't
+			-- need to.
+			liftIO $ createDirectoryIfMissing True $ 
+				takeDirectory (subdir </> f')
 			knownoutput <- case M.lookup f' (computeOutputs $ computeState result) of
 				Nothing -> return False
 				Just mk -> do
