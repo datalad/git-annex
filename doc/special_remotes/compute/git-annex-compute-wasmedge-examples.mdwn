@@ -1,0 +1,52 @@
+[[git-annex-compute-wasmedge]] uses [WasmEdge](https://wasmedge.org/) 
+to run WASM programs, that are checked into the git-annex repository,
+to [[compute]] other files in the repository.
+
+The WASM programs are limited to sandboxed file IO, and cannot access the
+network.
+
+The first parameter is the WASM file to run. It is followed by any other
+input files that it should have access to. Then by "--", and a list of all
+output files that the program computes. Finally, there can be another "--"
+that is followed by any ARGV to pass to the WASM program.
+
+An example is:
+
+	git-annex initremote wasmedge type=compute program=git-annex-compute-wasmedge
+    git-annex addcomputed --to=wasmedge -- concat.wasm foo bar -- baz -- baz
+
+To use that, you will need to write a concat.wasm program that combines
+together files foo and bar, and writes the result to a file named baz.
+
+----
+
+Here's another example, using an existing WASM build of python, from
+this article <https://wasmlabs.dev/articles/python-wasm32-wasi/>.
+
+Download it and add it to your git-annex repository:
+
+	wget https://github.com/vmware-labs/webassembly-language-runtimes/releases/download/python%2F3.11.1%2B20230127-c8036b4/python-aio-3.11.1.zip
+	unzip python-aio-3.11.1.zip
+	rm python-aio-3.11.1.zip bin/python-3.11.1-wasmedge.wasm
+	
+	git-annex add bin/python-3.11.1.wasm usr/local/lib/python3.11*
+
+Notice that the wasm binary needs a few other files that constitute the
+python runtime. Those files have to be provided as inputs when using it.
+
+Here's how to use it to compute a file:
+
+	git-annex initremote wasmedge type=compute program=git-annex-compute-wasmedge
+	git-annex addcomputed --fast --to wasmedge -- bin/python-3.11.1.wasm \
+        usr/local/lib/python311.zip usr/local/lib/python3.11/lib-dynload/.empty \
+        usr/local/lib/python3.11/os.py \
+        -- foo -- -c 'with open("foo", "w") as f: f.write("hello wasm world\n")'
+
+Of course, you can replace the python code with something more interesting.
+Add additional input files, read them, do whatever.
+
+While this makes a nice easy example, python built this way is quite slow, and
+it would be hard to use other python libraries with it.
+It would probably be better to use
+<https://wasmer.io/posts/py2wasm-a-python-to-wasm-compiler>
+to convert a python program into a WASM binary.

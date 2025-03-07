@@ -1,0 +1,47 @@
+#!/bin/sh
+# git-annex compute remote program that uses wasmedge to run WASM binaries
+# from the git-annex repository.
+# 
+# Copyright 2025 Joey Hess; licenced under the GNU GPL version 3 or higher.
+set -e
+
+if [ -z "$1" ]; then
+	echo "Usage: file.wasm [inputs] -- [outputs] -- [options]"
+	echo "Example: concat.wasm foo bar -- baz --"
+fi
+
+stage=1
+wasm=""
+while [ -n "$1" ]; do
+	if [ "$1" = "--" ]; then
+		stage=$((stage+1))
+		shift 1
+	else
+		if [ "$stage" = 1 ]; then
+			echo "INPUT $1"
+			read input
+			if [ -n "$input" ]; then
+				p="./$1"
+				mkdir -p "$(dirname "$p")"
+				ln $(realpath "$input") "$p"
+				if [ -z "$wasm" ]; then
+					wasm="$p"
+				fi
+			fi
+			shift 1
+		elif [ "$stage" = 2 ]; then
+			echo "OUTPUT $1"
+			read output
+			shift 1
+		else
+			break
+		fi
+	fi
+done
+
+if [ -n "$wasm" ]; then
+	# Use --force-interpreter to avoid wasmedge running AOT native
+	# instructions, which is insecure if the WASM binary comes from
+	# an untrusted source.
+	wasmedge --dir /:$PWD --force-interpreter -- "$wasm" "$@" >&2
+fi

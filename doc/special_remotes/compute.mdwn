@@ -38,3 +38,10 @@ List it here with an example!
   Uses imagemagick to convert between image formats
 
   `git-annex addcomputed --to=imageconvert foo.jpeg foo.gif`
+
+* [[compute/git-annex-compute-wasmedge]]
+  Uses [wasmedge](https://WasmEdge.org/) to run WASM programs that are
+  checked into the git-annex repository, to compute other files in the
+  repository.
+
+  [[examples|compute/git-annex-compute-wasmedge-examples]]
