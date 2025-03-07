@@ -23,7 +23,7 @@ while [ -n "$1" ]; do
 			if [ -n "$input" ]; then
 				p="./$1"
 				mkdir -p "$(dirname "$p")"
-				ln $(realpath "$input") "$p"
+				ln -s $(realpath "$input") "$p"
 				if [ -z "$wasm" ]; then
 					wasm="$p"
 				fi
