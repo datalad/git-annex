@@ -1,0 +1,135 @@
+### Please describe the problem.
+
+I have spotted that `git annex drop` was at time quite slow.  I thought it was testing the remote(s) but ended up being not that: e.g.
+
+`git annex drop --debug sub-440958/sub-440958_ses-20190213T115547_behavior+ecephys+image+ogen.nwb`
+
+has
+
+```
+[2025-03-06 17:17:27.142370501] (Utility.Process) process [3058825] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch"]
+[2025-03-06 17:17:27.147619069] (Annex.Perms) thawing content directory .git/annex/objects/Q2/6g/SHA256E-s458941350881--40f2a2dd11d2f5f5572b32f654d0c92557f2a390fe1434e70caecd44fd3225c9.nwb
+[2025-03-06 17:17:27.147915521] (Annex.Perms) freezing content directory .git/annex/objects/Q2/6g/SHA256E-s458941350881--40f2a2dd11d2f5f5572b32f654d0c92557f2a390fe1434e70caecd44fd3225c9.nwb
+[2025-03-06 17:17:27.196116156] (Utility.Url) Request {
+  host                 = "dandiarchive.s3.amazonaws.com"
+  port                 = 443
+  secure               = True
+  requestHeaders       = [("Accept-Encoding",""),("User-Agent","git-annex/10.20250115+git160-g93fb1ba536-1~ndall+1")]
+  path                 = "/blobs/227/91d/22791d80-26dc-4495-b4c0-651fe10e3298"
+  queryString          = "?versionId=mnU_QOZwfaLCY7kSeUX_lcNGHUjjbeU2"
+  method               = "HEAD"
+  proxy                = Nothing
+  rawBody              = False
+  redirectCount        = 10
+  responseTimeout      = ResponseTimeoutDefault
+  requestVersion       = HTTP/1.1
+  proxySecureMode      = ProxySecureWithConnect
+}
+
+[2025-03-06 17:17:27.388964083] (Command.Drop) Dropping from here proof: Just (SafeDropProof (NumCopies 1) (MinCopies 1) [RecentlyVerifiedCopy UUID "00000000-0000-0000-0000-000000000001"] Nothing (Just (ContentRemovalLock (MkKey {keyData = Key {keyName = "40f2a2dd11d2f5f5572b32f654d0c92557f2a390fe1434e70caecd44fd3225c9.nwb", keyVariety = SHA2Key (HashSize 256) (HasExt True), keySize = Just 458941350881, keyMtime = Nothing, keyChunkSize = Nothing, keyChunkNum = Nothing}, keySerialization = "SHA256E-s458941350881--40f2a2dd11d2f5f5572b32f654d0c92557f2a390fe1434e70caecd44fd3225c9.nwb"}))))
+[2025-03-06 17:17:27.389404507] (Annex.Perms) thawing content directory .git/annex/objects/Q2/6g/SHA256E-s458941350881--40f2a2dd11d2f5f5572b32f654d0c92557f2a390fe1434e70caecd44fd3225c9.nwb
+[2025-03-06 17:19:16.06748192] (Annex.Perms) thawing content directory .git/annex/objects/Q2/6g/SHA256E-s458941350881--40f2a2dd11d2f5f5572b32f654d0c92557f2a390fe1434e70caecd44fd3225c9.nwb
+[2025-03-06 17:19:16.068644724] (Annex.Branch) read a22/51b/SHA256E-s458941350881--40f2a2dd11d2f5f5572b32f654d0c92557f2a390fe1434e70caecd44fd3225c9.nwb.log
+[2025-03-06 17:19:16.070244398] (Annex.Branch) set a22/51b/SHA256E-s458941350881--40f2a2dd11d2f5f5572b32f654d0c92557f2a390fe1434e70caecd44fd3225c9.nwb.log
+
+```
+
+so 
+- it has actually 3 (not two) log lines on thawing and 1st one comes even before testing remote URL.
+- it takes almost two minutes between 2nd and 3rd thawing lines (without any output inbetween)
+
+repository is quite light in number of files (not size though)
+
+```
+annexed files in working tree: 174
+size of annexed files in working tree: 65.7 terabytes
+```
+
+and could be cloned from https://github.com/dandisets/000363 .
+
+Interestingly, looking at other not yet dropped files there -- those folders are not even write-protected! (actual key files are):
+
+```
+dandi@drogon:/mnt/backup/dandi/dandisets/000363$ git annex find --in here sub-440* | while read f; do ccd=$(readlink -f "$f"|xargs dirname); ls -ld "$ccd"; done
+drwxr-sr-x 1 dandi dandi 182 Mar  3 23:21 /mnt/backup/dandi/dandisets/000363/.git/annex/objects/v7/W1/SHA256E-s446084260431--0c66c1f84686ab5838353fe42630c35d5b9c255e3ebf92a82d1d1adfa8a7fedf.nwb
+drwxr-sr-x 1 dandi dandi 182 Mar  3 23:24 /mnt/backup/dandi/dandisets/000363/.git/annex/objects/G7/zQ/SHA256E-s440859400651--7364c08d63b04a92b8cbe82a506733ff4e7ba36e78060ca1aa06b32111622a78.nwb
+drwxr-sr-x 1 dandi dandi 176 Mar  3 23:25 /mnt/backup/dandi/dandisets/000363/.git/annex/objects/6J/wk/SHA256E-s159195870--66243f8b55567671400b14da186518293a76d406f0b1c979cc9d97ecb254d9ae.nwb
+drwxr-sr-x 1 dandi dandi 182 Mar  3 23:25 /mnt/backup/dandi/dandisets/000363/.git/annex/objects/6K/V6/SHA256E-s480007274147--da636994efc2d9c53f4f2261d04dd0f98f56d6626088bf77aa393a0090d8fb63.nwb
+drwxr-sr-x 1 dandi dandi 182 Mar  3 23:25 /mnt/backup/dandi/dandisets/000363/.git/annex/objects/jP/mJ/SHA256E-s296110873457--68d9d40d3d356183b3d2a433fabffc5ed19d04f2057e2121d7b7c9c5372ebe44.nwb
+drwxr-sr-x 1 dandi dandi 182 Mar  3 23:21 /mnt/backup/dandi/dandisets/000363/.git/annex/objects/51/pP/SHA256E-s372184652945--5bdbb5e06e77c714d0c2460a961bf95753623618e1e5c83073fb7f0a3cb8f0b8.nwb
+drwxr-sr-x 1 dandi dandi 182 Mar  3 23:25 /mnt/backup/dandi/dandisets/000363/.git/annex/objects/02/mz/SHA256E-s359721690048--7e90fae4aa4808f2c4d85361dd57a8e188bf349b9c88993e74beb6f54719ae8e.nwb
+drwxr-sr-x 1 dandi dandi 182 Mar  3 23:25 /mnt/backup/dandi/dandisets/000363/.git/annex/objects/QM/j4/SHA256E-s274399228635--8833b0c1024b4130e9ce389a76c0241cd0cf3c4a7ded74d23b2fd151aaffe311.nwb
+```
+
+and repo is not 'shared' AFAIK
+
+```
+dandi@drogon:/mnt/backup/dandi/dandisets/000363$ grep share .git/config
+dandi@drogon:/mnt/backup/dandi/dandisets/000363$ 
+
+```
+
+
+### What version of git-annex are you using? On what operating system?
+
+detected with earlier version but was investigating further with "bleeding edge"
+
+```
+dandi@drogon:/mnt/backup/dandi/dandisets/000363$ git annex version
+git-annex version: 10.20250115+git160-g93fb1ba536-1~ndall+1
+build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Servant Benchmark Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22.1 bloomfilter-2.0.1.0 cryptonite-0.29 DAV-1.3.4 feed-1.3.2.1 ghc-9.0.2 http-client-0.7.13.1 persistent-sqlite-2.13.1.0 torrent-10000.1.1 uuid-1.3.15 yesod-1.6.2.1
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL GITBUNDLE GITMANIFEST VURL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg rclone hook external
+operating system: linux x86_64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
+local repository version: 10
+
+```
+
+I do not think custom threeze/thaw configured here 
+
+```
+dandi@drogon:/mnt/backup/dandi/dandisets/000363$ git config -l | grep annex
+alias.annexdiff=!GIT_EXTERNAL_DIFF='git-annex diffdriver -- git-annex-diff-wrapper --' git diff
+annex.stalldetection=1KB/120s
+annex.autoupgraderepository=false
+annex.uuid=1ce3e7b7-edf2-4907-ad29-610e9a46315f
+annex.version=10
+filter.annex.smudge=git-annex smudge -- %f
+filter.annex.clean=git-annex smudge --clean -- %f
+filter.annex.process=git-annex filter-process
+remote.dandi-dandisets-dropbox.annex-externaltype=rclone
+remote.dandi-dandisets-dropbox.annex-uuid=727f466f-60c3-4778-90b2-b2332856c2f8
+remote.dandi-dandisets-dropbox.annex-cost=200.0
+remote.dandi-dandisets-dropbox.annex-availability=GloballyAvailable
+remote.github.annex-ignore=true
+remote.dandiapi.annex-web=true
+remote.dandiapi.annex-uuid=00000000-0000-0000-0000-000000000001
+remote.dandiapi.annex-config-uuid=f80ff5ab-efbc-4b0b-aaf7-bfbed92e4c29
+
+```
+
+file system is BTRFS and quite "busy" but I would not expect 2 minutes on chmod call there... unclear why 3 log lines as well
+
+Seems to be chronic but not all the time -- seems one run had it go fast albeit with 3 log lines as well
+
+```
+dandi@drogon:/mnt/backup/dandi/dandisets/000363$ grep 'thawing content directory' .duct/logs/2025.03.*
+.duct/logs/2025.03.04T09.19.20-178850_stderr:[2025-03-04 09:19:20.914767806] (Annex.Perms) thawing content directory .git/annex/objects/zg/F6/SHA256E-s424900914587--0f859aca43eaf7fb3a12de068b667ffd1b836d8edcd7574547c1e8782cd1f04e.nwb
+.duct/logs/2025.03.04T09.19.20-178850_stderr:[2025-03-04 09:19:21.187113505] (Annex.Perms) thawing content directory .git/annex/objects/zg/F6/SHA256E-s424900914587--0f859aca43eaf7fb3a12de068b667ffd1b836d8edcd7574547c1e8782cd1f04e.nwb
+.duct/logs/2025.03.04T09.19.20-178850_stderr:[2025-03-04 09:22:28.320213649] (Annex.Perms) thawing content directory .git/annex/objects/zg/F6/SHA256E-s424900914587--0f859aca43eaf7fb3a12de068b667ffd1b836d8edcd7574547c1e8782cd1f04e.nwb
+.duct/logs/2025.03.06T17.08.02-3042067_stderr:[2025-03-06 17:08:03.059666572] (Annex.Perms) thawing content directory .git/annex/objects/M2/5j/SHA256E-s296808899160--b2c4f356904a6a034ef8630a34508950958cfda4bf7969662f1a1ee3ad682cfc.nwb
+.duct/logs/2025.03.06T17.08.02-3042067_stderr:[2025-03-06 17:08:03.356505174] (Annex.Perms) thawing content directory .git/annex/objects/M2/5j/SHA256E-s296808899160--b2c4f356904a6a034ef8630a34508950958cfda4bf7969662f1a1ee3ad682cfc.nwb
+.duct/logs/2025.03.06T17.08.02-3042067_stderr:[2025-03-06 17:09:25.985686417] (Annex.Perms) thawing content directory .git/annex/objects/M2/5j/SHA256E-s296808899160--b2c4f356904a6a034ef8630a34508950958cfda4bf7969662f1a1ee3ad682cfc.nwb
+.duct/logs/2025.03.06T17.17.16-3058713_stderr:[2025-03-06 17:17:16.437911131] (Annex.Perms) thawing content directory .git/annex/objects/Zx/gm/SHA256E-s190766322--419f317867cae557e0cf72460d981dafed54eb5a2136fecf25e7650db3bec944.nwb
+.duct/logs/2025.03.06T17.17.16-3058713_stderr:[2025-03-06 17:17:16.693636236] (Annex.Perms) thawing content directory .git/annex/objects/Zx/gm/SHA256E-s190766322--419f317867cae557e0cf72460d981dafed54eb5a2136fecf25e7650db3bec944.nwb
+.duct/logs/2025.03.06T17.17.16-3058713_stderr:[2025-03-06 17:17:16.804165428] (Annex.Perms) thawing content directory .git/annex/objects/Zx/gm/SHA256E-s190766322--419f317867cae557e0cf72460d981dafed54eb5a2136fecf25e7650db3bec944.nwb
+.duct/logs/2025.03.06T17.17.26-3058787_stderr:[2025-03-06 17:17:27.147619069] (Annex.Perms) thawing content directory .git/annex/objects/Q2/6g/SHA256E-s458941350881--40f2a2dd11d2f5f5572b32f654d0c92557f2a390fe1434e70caecd44fd3225c9.nwb
+.duct/logs/2025.03.06T17.17.26-3058787_stderr:[2025-03-06 17:17:27.389404507] (Annex.Perms) thawing content directory .git/annex/objects/Q2/6g/SHA256E-s458941350881--40f2a2dd11d2f5f5572b32f654d0c92557f2a390fe1434e70caecd44fd3225c9.nwb
+.duct/logs/2025.03.06T17.17.26-3058787_stderr:[2025-03-06 17:19:16.06748192] (Annex.Perms) thawing content directory .git/annex/objects/Q2/6g/SHA256E-s458941350881--40f2a2dd11d2f5f5572b32f654d0c92557f2a390fe1434e70caecd44fd3225c9.nwb
+```
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]
