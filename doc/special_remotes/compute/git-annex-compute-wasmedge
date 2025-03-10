@@ -6,8 +6,9 @@
 set -e
 
 if [ -z "$1" ]; then
-	echo "Usage: file.wasm [inputs] -- [outputs] -- [options]"
-	echo "Example: concat.wasm foo bar -- baz --"
+	echo "Usage: file.wasm [inputs] -- [outputs] -- [options]" >&2
+	echo "Example: concat.wasm foo bar -- baz --" >&2
+	exit 1
 fi
 
 stage=1
