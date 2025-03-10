@@ -14,7 +14,7 @@ Files: doc/special_remotes/external/*
 Copyright: © 2013 Joey Hess <id@joeyh.name>
 License: GPL-3+
 
-Files: doc/special_remotes/compute/git-annex-compute-imageconvert doc/special_remotes/compute/git-annex-compute-wasmedge
+Files: doc/special_remotes/compute/git-annex-compute-imageconvert doc/special_remotes/compute/git-annex-compute-wasmedge doc/special_remotes/compute/git-annex-compute-singularity
 Copyright: © 2025 Joey Hess <id@joeyh.name>
 License: GPL-3+
 

@@ -52,6 +52,7 @@ import Utility.Env
 import Utility.Tmp.Dir
 import Utility.Url
 import Utility.MonotonicClock
+import Utility.CopyFile
 import Types.Key
 import Backend
 import qualified Git
@@ -201,6 +202,7 @@ data ProcessCommand
 	= ProcessInput FilePath
 	| ProcessOutput FilePath
 	| ProcessReproducible
+	| ProcessSandbox
 	| ProcessProgress PercentFloat
 	deriving (Show, Eq)
 
@@ -208,6 +210,7 @@ instance Proto.Receivable ProcessCommand where
 	parseCommand "INPUT" = Proto.parse1 ProcessInput
 	parseCommand "OUTPUT" = Proto.parse1 ProcessOutput
 	parseCommand "REPRODUCIBLE" = Proto.parse0 ProcessReproducible
+	parseCommand "SANDBOX" = Proto.parse0 ProcessSandbox
 	parseCommand "PROGRESS" = Proto.parse1 ProcessProgress
 	parseCommand _ = Proto.parseFail
 
@@ -382,6 +385,7 @@ data ComputeProgramResult = ComputeProgramResult
 	{ computeState :: ComputeState
 	, computeInputsUnavailable :: Bool
 	, computeReproducible :: Bool
+	, computeSandbox :: Bool
 	}
 
 runComputeProgram
@@ -410,7 +414,7 @@ runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate)
 			 }
 		showOutput
 		starttime <- liftIO currentMonotonicTimestamp
-		let startresult = ComputeProgramResult state False False
+		let startresult = ComputeProgramResult state False False False
 		result <- withmeterfile $ \meterfile -> bracket
 			(liftIO $ createProcess pr)
 			(liftIO . cleanupProcess)
@@ -457,13 +461,17 @@ runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate)
 			checksafefile tmpdir subdir f' "input"
 			checkimmutable knowninput "inputting" f' $ do
 				(k, inputcontent) <- getinputcontent f'
+				let mkrel a = Just <$> 
+					(a >>= liftIO . relPathDirToFile subdir)
 				mp <- case inputcontent of
 					Nothing -> pure Nothing
-					Just (Right f'') -> liftIO $
-						Just <$> relPathDirToFile subdir f''
-					Just (Left gitsha) ->
-						Just <$> (liftIO . relPathDirToFile subdir 
-							=<< populategitsha gitsha tmpdir)
+					Just (Right obj)
+						| computeSandbox result -> 
+							mkrel $ populatesandbox obj tmpdir
+						| otherwise ->
+							mkrel $ pure obj
+					Just (Left gitsha) -> 
+						mkrel $ populategitsha gitsha tmpdir
 				sendresponse p $
 					maybe "" fromOsPath mp
 				let result' = result
@@ -506,6 +514,14 @@ runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate)
 			return result
 		Just ProcessReproducible ->
 			return $ result { computeReproducible = True }
+		Just ProcessSandbox -> do
+			sandboxpath <- liftIO $ fromOsPath <$>
+				relPathDirToFile subdir tmpdir
+			sendresponse p $
+				if null sandboxpath
+					then "."
+					else sandboxpath
+			return $ result { computeSandbox = True }
 		Nothing -> giveup $
 			program ++ " output an unparseable line: \"" ++ l ++ "\""
 
@@ -546,10 +562,21 @@ runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate)
 	-- to the program as a parameter, which could parse it as a dashed
 	-- option or other special parameter.
 	populategitsha gitsha tmpdir = do
-		let f = tmpdir </> literalOsPath ".git" </> literalOsPath "objects"
+		let f = tmpdir </> literalOsPath ".git"
+			</> literalOsPath "objects"
 			</> toOsPath (Git.fromRef' gitsha)
 		liftIO $ createDirectoryIfMissing True $ takeDirectory f
 		liftIO . F.writeFile f =<< catObject gitsha
+		return f
+
+	populatesandbox annexobj tmpdir = do
+		let f = tmpdir </> literalOsPath ".git"
+			</> literalOsPath "annex"
+			</> literalOsPath "objects"
+			</> takeFileName annexobj
+		liftIO $ createDirectoryIfMissing True $ takeDirectory f
+		liftIO $ unlessM (createLinkOrCopy annexobj f) $
+			giveup "Unable to populate compute sandbox directory"
 		return f
 
 	withmeterfile a = case meterkey of

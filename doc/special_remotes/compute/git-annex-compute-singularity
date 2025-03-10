@@ -1,0 +1,94 @@
+#!/bin/bash
+# git-annex compute remote program that runs singularity containers
+# from the git-annex repository.
+# 
+# Copyright 2025 Joey Hess; licenced under the GNU GPL version 3 or higher.
+set -e
+
+if [ -z "$1" ]; then
+	echo "Usage: container [singularity options] [inputs] -- [outputs] -- [command params]" >&2
+	exit 1
+fi
+
+nocompat_opt=""
+fakeroot_opt=""
+container=""
+binddir="`pwd`"
+rundir="`pwd`"
+
+run_singularity () {
+	# Network access is disabled (with --net --network=none), to
+	# prevent an untrusted singularity image from phoning home and/or
+	# attacking the local network.
+	#
+	# --oci is used to get process namespacing
+	singularity run --net --network=none --oci \
+		--bind="$binddir" --pwd="$rundir" \
+		$nocompat_opt $fakeroot_opt \
+		"$container" "$@"
+}
+
+# Avoid any security problems with harmful terminal escape sequences.
+strip_escape () {
+	sed 's/[\x1B]//g'
+}
+
+if [ -z "$ANNEX_COMPUTE_passthrough" ]; then
+	stage=1
+	while [ -n "$1" ]; do
+		if [ "$1" = "--" ]; then
+			stage=$((stage+1))
+			shift 1
+		else
+			if [ "$stage" = 1 ]; then
+				case "$1" in
+					"--no-compat")
+						nocompat_opt="--no-compat"
+						;;
+					"--fakeroot")
+						fakeroot_opt="--fakeroot"
+						;;
+					*)
+						echo "INPUT $1"
+						read input
+						if [ -n "$input" ]; then
+							p="./$1"
+							mkdir -p "$(dirname "$p")"
+							ln "$(realpath "$input")" "$p"
+							if [ -z "$container" ]; then
+								container="$p"
+							fi
+						fi
+				esac
+				shift 1
+			elif [ "$stage" = 2 ]; then
+				echo "OUTPUT $1"
+				read output
+				shift 1
+			else
+				break
+			fi
+		fi
+	done
+	run_singularity	"$@" </dev/null 2>&1 | strip_escape >&2
+else
+	# Tell git-annex that the program will be running sandboxed,
+	# it will tell us where the top of the sandbox is, and that's the
+	# directory to bind into singularity.
+	echo "SANDBOX"
+	read pathtotop
+	binddir="$(realpath "$pathtotop")"
+	echo "INPUT $pathtotop/$ANNEX_COMPUTE_passthrough"
+	read input
+	if [ -n "$input" ]; then
+		container="./$ANNEX_COMPUTE_passthrough"
+		mkdir -p "$(dirname "$container")"
+		ln "$(realpath "$input")" "$container"
+	else
+		echo "Unfortunately, addcomputed --fast cannot be used with git-annex-compute-singularity --passthrough=" >&2
+		exit 1
+	fi
+	# stdio is passed through to the git-annex-compute- command inside
+	# singularity
+	run_singularity "$@" 2> >( strip_escape 1>&2 )
+fi

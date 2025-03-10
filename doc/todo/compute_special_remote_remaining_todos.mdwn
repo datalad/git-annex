@@ -1,6 +1,11 @@
 This is the remainder of my todo list while I was building the
 compute special remote. --[[Joey]]
 
+* git-annex-compute-singularity with passthrough= cannot be used
+  by `git-annex addcomputed --fast` because the singularity image is not
+  available to run. Maybe make a varity of INPUT that is provided also
+  in --fast mode to solve this?
+
 * write a tip showing how to use this
 
 * Write some simple compute programs so we have something to start with.

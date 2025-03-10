@@ -1,0 +1,70 @@
+[[git-annex-compute-singularity]] uses [Singularity](https://sylabs.io/)
+to run a container, which is checked into the git-annex repository,
+to [[compute]] other files in the repository.
+
+This can be used in two different ways. One is to run an arbitrary command
+inside the singularity container. That is very flexible, but the syntax is
+slighly awkward since you have to provide the input and output filenames,
+as well as the command. The other way to use it is to have a singularity
+container that contains and runs another `git-annex-compute-` command.
+
+## running an arbitrary command
+
+An example of running an arbitrary command is:
+
+	git-annex initremote singularity type=compute program=git-annex-compute-singularity
+    singularity build debian.sif docker://debian
+    git-annex add debian.sif
+    git-annex addcomputed --to=singularity -- debian.sif foo bar -- baz -- sh -c 'cat foo bar > baz'
+
+Here the first filename passed to `git-annex addcomputed` must be the
+singularity container image to use. It is followed by the input files to
+make available inside the container, followed by "--" and then the output
+files. Finally, "--" separates the output files from the parameters
+to pass into the container.
+
+## passing through to a git-annex-compute- command inside a singularity container
+
+    git-annex initremote foo type=compute program=git-annex-compute-singularity passthrough=imageconvert.sif 
+    git-annex addcomputed --to=foo foo.jpeg foo.gif
+
+This example uses a container `imageconvert.sif` that runs
+[[git-annex-compute-imageconvert]]. This allows using `git-annex addcomputed`
+with the same syntax that compute program usually uses.
+
+Note that the container file given to `passthrough=` is relative to the top
+of the git repository.
+
+To create that `imageconvert.sif` container:
+
+    cat > imageconvert.def <<EOF
+    Bootstrap: docker
+    From: debian
+    
+    %post
+        apt-get -y update
+        apt-get -y install imagemagick wget
+        wget https://git-annex.branchable.com/special_remotes/compute/git-annex-compute-imageconvert -O /go
+        chmod +x /go
+    
+    %runscript
+        /go "$@"
+    EOF
+    sudo singularity build imageconvert.sif imageconvert.def
+
+## singularity options
+
+`singularity run` is used to start the default command in the container.
+The command will find the input files in its current directory, and can
+write the output files to the same directory.
+
+Singularity is run with the `--oci` option, to get process namespacing
+and a generally secure sandboxed environment. Networks access is also
+disabled in the container.
+
+A few singularity options can be provided, to control how the container is
+run. The goal is to only allow options that keep it secure. See singularity's
+documentation for details about these options.
+
+* `--no-compat`
+* `--fakeroot`

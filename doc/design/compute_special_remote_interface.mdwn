@@ -88,6 +88,14 @@ indicates that the results of its computations are expected to be
 bit-for-bit reproducible. That makes `git-annex addcomputed` behave as if
 the `--reproducible` option is set.
 
+The program can also output a "SANDBOX" line, and then read a line from
+stdin that will be the path to the directory it should sandbox to (which
+corresponds to the top of the git repository, so may be above its working
+directory). Any "INPUT" lines that come after "SANDBOX" will have input
+files be provided via paths that are inside the sandbox directory. Usually
+that is done by making hard links, but it will fall back to copying annexed
+files if the filesystem does not support hard links.
+
 Anything that the program outputs to stderr will be displayed to the user.
 This stderr should be used for error messages, and possibly computation
 output, but not for progress displays.
