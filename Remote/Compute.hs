@@ -56,6 +56,7 @@ import Types.Key
 import Backend
 import qualified Git
 import qualified Utility.FileIO as F
+import qualified Utility.RawFilePath as R
 import qualified Utility.SimpleProtocol as Proto
 
 import Network.HTTP.Types.URI
@@ -63,6 +64,7 @@ import Data.Time.Clock
 import Text.Read
 import Control.Concurrent.STM
 import Control.Concurrent.Async
+import System.PosixCompat.Files (isRegularFile)
 import qualified Data.Map as M
 import qualified Data.Set as S
 import qualified Data.ByteString as B
@@ -414,6 +416,7 @@ runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate)
 			(liftIO . cleanupProcess)
 			(getinput tmpdir subdir startresult meterfile)
 		endtime <- liftIO currentMonotonicTimestamp
+		liftIO $ checkoutputs result subdir
 		cont result subdir (calcduration starttime endtime)
 		
 	getsubdir tmpdir = do
@@ -513,6 +516,19 @@ runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate)
 			err "outside the git repository"
 		when (any (\p -> dropTrailingPathSeparator p == literalOsPath ".git") (splitPath f)) $
 			err "inside the .git directory"
+
+	-- Disallow any output files that are not regular files.
+	-- This supports compute programs that run code in a sandboxed
+	-- environment, which might let it eg make a symlink or device
+	-- file that when read as an output file would expose data that
+	-- the sandboxed code was not allowed to access itself.
+	checkoutputs result subdir = 
+		forM_ (M.keys $ computeOutputs $ computeState result) $ \f ->
+			let f' = subdir </> f
+			in tryIO (R.getSymbolicLinkStatus (fromOsPath f')) >>= \case
+				Right st | not (isRegularFile st) ->
+					giveup $ program ++ " output file " ++ fromOsPath f ++ " is not a regular file, refusing to use it"
+				_ -> noop
 
 	checkimmutable True _ _ a = a
 	checkimmutable False requestdesc p a
