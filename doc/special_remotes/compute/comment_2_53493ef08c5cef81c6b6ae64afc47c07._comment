@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: Any way to annotate what are input files?"""
+ date="2025-03-10T20:42:26Z"
+ content="""
+git-annex does know what both the input and the output files are.
+It learns this by running the compute program and seeing what INPUT and OUTPUT
+lines it emits.
+
+I considered having some `--input=` option, but decided that it was more
+flexible to have a more freeform command line, which the compute program
+parses.
+"""]]
