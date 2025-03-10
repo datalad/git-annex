@@ -434,6 +434,7 @@ runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate)
 			Just l
 				| null l -> getinput tmpdir subdir result meterfile p
 				| otherwise -> do
+					fastDebug "Compute" ("< " ++ l)
 					result' <- parseoutput p tmpdir subdir result meterfile l
 					getinput tmpdir subdir result' meterfile p
 			Nothing -> do
@@ -443,6 +444,11 @@ runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate)
 					giveup $ program ++ " exited unsuccessfully"
 				return result
 	
+	sendresponse p s = do
+		fastDebug "Compute" ("> " ++ s)
+		liftIO $ hPutStrLn (stdinHandle p) s
+		liftIO $ hFlush (stdinHandle p)
+
 	parseoutput p tmpdir subdir result meterfile l = case Proto.parseMessage l of
 		Just (ProcessInput f) -> do
 			let f' = toOsPath f
@@ -458,9 +464,8 @@ runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate)
 					Just (Left gitsha) ->
 						Just <$> (liftIO . relPathDirToFile subdir 
 							=<< populategitsha gitsha tmpdir)
-				liftIO $ hPutStrLn (stdinHandle p) $
+				sendresponse p $
 					maybe "" fromOsPath mp
-				liftIO $ hFlush (stdinHandle p)
 				let result' = result
 					{ computeInputsUnavailable = 
 						isNothing mp || computeInputsUnavailable result
@@ -476,9 +481,7 @@ runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate)
 			let f' = toOsPath f
 			checksafefile tmpdir subdir f' "output"
 			-- Modify filename so eg "-foo" becomes "./-foo"
-			liftIO $ hPutStrLn (stdinHandle p) $
-				toCommand' (File f)
-			liftIO $ hFlush (stdinHandle p)
+			sendresponse p $ toCommand' (File f)
 			-- If the output file is in a subdirectory, make
 			-- the directories so the compute program doesn't
 			-- need to.
