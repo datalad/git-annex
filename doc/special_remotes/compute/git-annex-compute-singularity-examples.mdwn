@@ -68,3 +68,13 @@ documentation for details about these options.
 
 * `--no-compat`
 * `--fakeroot`
+    
+For example, passing the --fakeroot option:
+
+    git-annex addcomputed --to=singularity -- --fakeroot debian.sif foo bar -- baz -- sh -c 'cat foo bar > baz'
+    
+Since singularity happens to also accept `--fakeroot=1` and
+`--no-compat=1`, it's also possible to set these options by
+default in initremote:
+
+    git-annex initremote foo type=compute program=git-annex-compute-singularity passthrough=imageconvert.sif -- --fakeroot=1
