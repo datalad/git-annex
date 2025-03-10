@@ -65,8 +65,11 @@ dashed options. If there is a path traversal attack, the program's stdin will
 be closed without a path being written to it.
 
 The filename of the output file is both the filename in the program's
-temporary directory, and also the filename that will be added to the
-git-annex repository by `git-annex compute`.
+temporary directory that it should write to, and also the filename that will
+be added to the git-annex repository by `git-annex compute`.
+
+The program must write a regular file to the output file. Symlinks
+or other special files will not be accepted as output files.
 
 If git-annex sees that an output file is growing, it will use its file size
 when displaying progress to the user. So if possible, the program should
