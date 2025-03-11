@@ -756,9 +756,7 @@ avoidCycles outputkeys inputkey = filterM go
 checkKey :: RemoteStateHandle -> Key -> Annex Bool
 checkKey rs k = do
 	states <- getComputeStatesUnsorted rs k
-	if null states
-		then giveup "Missing compute state"
-		else return True
+	return (not (null states))
 
 -- Unsetting the compute state will prevent computing the key.
 dropKey :: RemoteStateHandle -> Maybe SafeDropProof -> Key -> Annex ()
