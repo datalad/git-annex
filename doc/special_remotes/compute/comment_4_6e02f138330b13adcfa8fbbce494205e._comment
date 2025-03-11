@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="just thinking out loud"
+ date="2025-03-11T15:15:15Z"
+ content="""
+> it was more flexible to have a more freeform command line, which the compute program parses
+
+agree. And there could be some generic \"helper\" (or a number of them) which would then provide desired CLI interfacing over arbitrary command, smth like (mimicing [datalad-run](https://docs.datalad.org/en/stable/generated/man/datalad-run.html) interface here):
+
+```
+git-annex addcomputed --to=runcmd -i foo.jpeg -o foo.gif 
+```
+
+as long as we can pass options like that or after `--`, e.g. 
+
+```
+git-annex addcomputed --to=runcmd -- -i foo.jpeg -o foo.gif -- convert {inputs} {outputs}`
+```
+
+which would then 
+- ensure no stdout from `convert`
+- follow the *compute special remote interface* to let git-annex know what inputs/outputs were
+
+
+"""]]
