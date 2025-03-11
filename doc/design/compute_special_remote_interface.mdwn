@@ -29,7 +29,7 @@ avoid exposing user input to the shell unprotected, or otherwise executing
 it. (Except when the program is explicitly running user input in some form
 of sandbox.)
 
-## interface
+## program parameters and environment
 
 Whatever values the user passes to `git-annex addcomputed` are passed to
 the program in `ARGV`, followed by any values that the user provided to 
