@@ -152,14 +152,14 @@ perform o r file origkey origstate = do
 		check "not outputting"
 			Remote.Compute.computeOutputs origstate state
 
-	getinputcontent program p
+	getinputcontent program p required
 		| originalOption o =
 			case M.lookup p (Remote.Compute.computeInputs origstate) of
-				Just inputkey -> getInputContent' False inputkey
+				Just inputkey -> getInputContent' False inputkey required
 					(fromOsPath p ++ "(key " ++ serializeKey inputkey ++ ")")
 				Nothing -> Remote.Compute.computationBehaviorChangeError program
 					"requesting a new input file" p
-		| otherwise = getInputContent False p
+		| otherwise = getInputContent False p required
 	
 	destfile outputfile
 		| Just outputfile == origfile = Just file

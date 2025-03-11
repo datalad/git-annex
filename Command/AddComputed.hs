@@ -206,14 +206,14 @@ addComputed maddaction stagefiles r reproducibleconfig choosebackend destfile fa
 		Just v -> isReproducible v
 		Nothing -> Remote.Compute.computeReproducible result
 	
-getInputContent :: Bool -> OsPath -> Annex (Key, Maybe (Either Git.Sha OsPath))
-getInputContent fast p = catKeyFile p >>= \case
-	Just inputkey -> getInputContent' fast inputkey filedesc
+getInputContent :: Bool -> OsPath -> Bool -> Annex (Key, Maybe (Either Git.Sha OsPath))
+getInputContent fast p required = catKeyFile p >>= \case
+	Just inputkey -> getInputContent' fast inputkey required filedesc
 	Nothing -> inRepo (Git.fileRef p) >>= \case
 		Just fileref -> catObjectMetaData fileref >>= \case
 			Just (sha, _, t)
 				| t == Git.BlobObject ->
-					getInputContent' fast (gitShaKey sha) filedesc
+					getInputContent' fast (gitShaKey sha) required filedesc
 				| otherwise ->
 					badinput $ ", not a git " ++ decodeBS (Git.fmtObjectType t)
 			Nothing -> notcheckedin
@@ -223,9 +223,9 @@ getInputContent fast p = catKeyFile p >>= \case
 	badinput s = giveup $ "The computation needs an input file " ++ s ++ ": " ++ fromOsPath p
 	notcheckedin = badinput "that is not checked into the git repository"
 
-getInputContent' :: Bool -> Key -> String -> Annex (Key, Maybe (Either Git.Sha OsPath))
-getInputContent' fast inputkey filedesc
-	| fast = return (inputkey, Nothing)
+getInputContent' :: Bool -> Key -> Bool -> String -> Annex (Key, Maybe (Either Git.Sha OsPath))
+getInputContent' fast inputkey required filedesc
+	| fast && not required = return (inputkey, Nothing)
 	| otherwise = case keyGitSha inputkey of
 		Nothing -> ifM (inAnnex inputkey)
 			( do

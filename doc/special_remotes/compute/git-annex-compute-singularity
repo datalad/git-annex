@@ -78,17 +78,13 @@ else
 	echo "SANDBOX"
 	read pathtotop
 	binddir="$(realpath "$pathtotop")"
-	echo "INPUT $pathtotop/$ANNEX_COMPUTE_passthrough"
-	read input
-	if [ -n "$input" ]; then
-		container="./$ANNEX_COMPUTE_passthrough"
-		mkdir -p "$(dirname "$container")"
-		ln "$(realpath "$input")" "$container"
-	else
-		echo "Unfortunately, addcomputed --fast cannot be used with git-annex-compute-singularity --passthrough=" >&2
+	echo "INPUT-REQUIRED $pathtotop/$ANNEX_COMPUTE_passthrough"
+	read container
+	if [ -z "$container" ]; then
+		echo "Cannot proceed without container $ANNEX_COMPUTE_passthrough" >&2
 		exit 1
 	fi
 	# stdio is passed through to the git-annex-compute- command inside
-	# singularity
+	# the container
 	run_singularity "$@" 2> >( strip_escape 1>&2 )
 fi

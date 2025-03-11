@@ -73,12 +73,13 @@ If an input file is not available, the program's stdin will be closed
 without a path being written to it. So when reading from stdin fails, 
 the program should exit.
 
-When `git-annex addcomputed --fast` is being used to add a computation
-to the git-annex repository without actually performing it, the 
-response to eaach `INPUT` will be an empty line rather than the path to 
-an input file. In that case, the program should proceed with the rest of
-its output to stdout (eg `OUTPUT` and `REPRODUCIBLE`), but should not
-perform any computation.
+When `git-annex addcomputed --fast` is being used to add a computation to
+the git-annex repository without actually performing it, the response to
+each `INPUT` will be an empty line rather than the path to an input file.
+This can also happen when an input file is not available for whatever
+reason. In this case, the program should proceed with the rest of its
+output to stdout (eg `OUTPUT` and `REPRODUCIBLE`), but should not perform
+any computation.
 
 ## output files
 
@@ -132,6 +133,16 @@ messages that the program can output. All of these are optional.
   files be provided via paths that are inside the sandbox directory. Usually
   that is done by making hard links, but it will fall back to copying annexed
   files if the filesystem does not support hard links.
+
+* `INPUT-REQUIRED`
+
+  This works the same as `INPUT`, except when `git-annex addcomputed --fast`
+  is being used to add a computation to the git-annex repository without
+  actually performing it, the input file will be provided as a response
+  to this, rather than the empty line provided as a response to `INPUT`.
+  
+  If the input file is not available for some reason, an empty line will
+  still be provided as a response to this.
 
 ## example
 

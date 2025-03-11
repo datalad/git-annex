@@ -201,17 +201,19 @@ programField = Accepted "program"
 data ProcessCommand
 	= ProcessInput FilePath
 	| ProcessOutput FilePath
+	| ProcessProgress PercentFloat
 	| ProcessReproducible
 	| ProcessSandbox
-	| ProcessProgress PercentFloat
+	| ProcessInputRequired FilePath
 	deriving (Show, Eq)
 
 instance Proto.Receivable ProcessCommand where
 	parseCommand "INPUT" = Proto.parse1 ProcessInput
 	parseCommand "OUTPUT" = Proto.parse1 ProcessOutput
+	parseCommand "PROGRESS" = Proto.parse1 ProcessProgress
 	parseCommand "REPRODUCIBLE" = Proto.parse0 ProcessReproducible
 	parseCommand "SANDBOX" = Proto.parse0 ProcessSandbox
-	parseCommand "PROGRESS" = Proto.parse1 ProcessProgress
+	parseCommand "INPUT-REQUIRED" = Proto.parse1 ProcessInputRequired
 	parseCommand _ = Proto.parseFail
 
 newtype PercentFloat = PercentFloat Float
@@ -392,9 +394,10 @@ runComputeProgram
 	:: ComputeProgram
 	-> ComputeState
 	-> ImmutableState
-	-> (OsPath -> Annex (Key, Maybe (Either Git.Sha OsPath)))
-	-- ^ get input file's content, or Nothing the input file's
-	-- content is not available
+	-> (OsPath -> Bool -> Annex (Key, Maybe (Either Git.Sha OsPath)))
+	-- ^ Get input file's content, or Nothing the input file's
+	-- content is not available. True is passed when the input content
+	-- is required even for addcomputed --fast.
 	-> Maybe (Key, MeterUpdate)
 	-- ^ update meter for this key
 	-> (ComputeProgramResult -> OsPath -> NominalDiffTime -> Annex v)
@@ -454,37 +457,8 @@ runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate)
 		liftIO $ hFlush (stdinHandle p)
 
 	parseoutput p tmpdir subdir result meterfile l = case Proto.parseMessage l of
-		Just (ProcessInput f) -> do
-			let f' = toOsPath f
-			let knowninput = M.member f'
-				(computeInputs (computeState result))
-			checksafefile tmpdir subdir f' "input"
-			checkimmutable knowninput "inputting" f' $ do
-				(k, inputcontent) <- getinputcontent f'
-				let mkrel a = Just <$> 
-					(a >>= liftIO . relPathDirToFile subdir)
-				mp <- case inputcontent of
-					Nothing -> pure Nothing
-					Just (Right obj)
-						| computeSandbox result -> 
-							mkrel $ populatesandbox obj tmpdir
-						| otherwise ->
-							mkrel $ pure obj
-					Just (Left gitsha) -> 
-						mkrel $ populategitsha gitsha tmpdir
-				sendresponse p $
-					maybe "" fromOsPath mp
-				let result' = result
-					{ computeInputsUnavailable = 
-						isNothing mp || computeInputsUnavailable result
-					}
-				return $ if immutablestate
-					then result'
-					else modresultstate result' $ \s -> s
-						{ computeInputs = 
-							M.insert f' k
-								(computeInputs s)
-						}
+		Just (ProcessInput f) -> handleinput f False p tmpdir subdir result
+		Just (ProcessInputRequired f) -> handleinput f True p tmpdir subdir result
 		Just (ProcessOutput f) -> do
 			let f' = toOsPath f
 			checksafefile tmpdir subdir f' "output"
@@ -524,6 +498,38 @@ runComputeProgram (ComputeProgram program) state (ImmutableState immutablestate)
 			return $ result { computeSandbox = True }
 		Nothing -> giveup $
 			program ++ " output an unparseable line: \"" ++ l ++ "\""
+
+	handleinput f required p tmpdir subdir result = do
+		let f' = toOsPath f
+		let knowninput = M.member f'
+			(computeInputs (computeState result))
+		checksafefile tmpdir subdir f' "input"
+		checkimmutable knowninput "inputting" f' $ do
+			(k, inputcontent) <- getinputcontent f' required
+			let mkrel a = Just <$> 
+				(a >>= liftIO . relPathDirToFile subdir)
+			mp <- case inputcontent of
+				Nothing -> pure Nothing
+				Just (Right obj)
+					| computeSandbox result -> 
+						mkrel $ populatesandbox obj tmpdir
+					| otherwise ->
+						mkrel $ pure obj
+				Just (Left gitsha) -> 
+					mkrel $ populategitsha gitsha tmpdir
+			sendresponse p $
+				maybe "" fromOsPath mp
+			let result' = result
+				{ computeInputsUnavailable = 
+					isNothing mp || computeInputsUnavailable result
+				}
+			return $ if immutablestate
+				then result'
+				else modresultstate result' $ \s -> s
+					{ computeInputs = 
+						M.insert f' k
+							(computeInputs s)
+					}
 
 	modresultstate result f = 
 		result { computeState = f (computeState result) }
@@ -630,7 +636,7 @@ computeKey rs (ComputeProgram program) k _af dest meterupdate vc =
 			(Just (k, p))
 			(postcompute keyfile)
 
-	getinputcontent state f =
+	getinputcontent state f _required =
 		case M.lookup f (computeInputs state) of
 			Just inputkey -> case keyGitSha inputkey of
 				Nothing -> 

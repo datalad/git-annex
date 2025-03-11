@@ -1,12 +1,16 @@
 This is the remainder of my todo list while I was building the
 compute special remote. --[[Joey]]
 
-* git-annex-compute-singularity with passthrough= cannot be used
-  by `git-annex addcomputed --fast` because the singularity image is not
-  available to run. Maybe make a varity of INPUT that is provided also
-  in --fast mode to solve this?
+* git-annex responds to each INPUT immediately, and flushes stdout.
+  This could cause problems if the program is sending several INPUT
+  first, before reading responses, as is documented it should do to allow
+  for parallel get of the input files.
 
 * write a tip showing how to use this
+
+* Support parallel get of input files. The design allows for this,
+  but how much parallelism makes sense? Would it be possible to use the
+  usual worker pool?
 
 * Write some simple compute programs so we have something to start with.
 
