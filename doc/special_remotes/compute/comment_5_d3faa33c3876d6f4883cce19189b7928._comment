@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: just thinking out loud"""
+ date="2025-03-11T16:42:46Z"
+ content="""
+> And there could be some generic "helper" (or a number of them) which would then provide desired CLI interfacing over arbitrary command
+
+Absolutely!
+
+You do need to use "--" before your own custom dashed options.
+
+And bear in mind that "field=value" parameters passed to initremote will
+be passed on to the program. So you can have a generic helper
+that is instantiated with a parameter like --command=, which then gets used
+automatically when running addcompute:
+
+	git-annex initremote foo type=compute program=git-annex-compute-generic-helper -- --command='convert {inputs} {outputs}'
+	git-annex addcomputed --to=foo -- -i foo.jpeg -o foo.gif
+"""]]
