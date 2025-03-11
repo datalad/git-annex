@@ -12,23 +12,50 @@ a command like one of these:
     git-annex addcomputed --to=myremote -- compress in out --level=9
     git-annex addcomputed --to=myremote -- clip foo 2:01-3:00 combine with bar to baz
 
+## security
+
+Security is very important here, because a user who enables a compute
+special remote and runs `git pull` followed by `git-annex get` is running
+the compute program with inputs under the control of anyone who has
+commit access to the repository.
+
+The contents of input files should be assumed to be untrusted, and so
+should the filenames of input and output files, as well as everything
+else passed to the program in `ARGV` and the environment.
+
+The program should make sure that whatever user input is passed
+to it can result in only safe and expected behavior. The program should
+avoid exposing user input to the shell unprotected, or otherwise executing
+it. (Except when the program is explicitly running user input in some form
+of sandbox.)
+
+## interface
+
 Whatever values the user passes to `git-annex addcomputed` are passed to
 the program in `ARGV`, followed by any values that the user provided to 
 `git-annex initremote`.
-
-For security, the program should avoid exposing user input to the shell
-unprotected, or otherwise executing it. And when running a command, make
-sure that whatever user input is passed to it can result in only safe and
-expected behavior.
 
 To simplify the program's option parsing, any value that the user provides
 that is in the form "foo=bar" will also result in an environment variable
 being set, eg `ANNEX_COMPUTE_passes=10` or `ANNEX_COMPUTE_--level=9`.
 
 The program is run in a temporary directory, which will be cleaned up after
-it exits. Note that it may be run in a subdirectory of a temporary
-directory. This is done when `git-annex addcomputed` was run in a subdirectory
-of the git repository.
+it exits. It may be run in a subdirectory of the temporary directory. This
+is done when `git-annex addcomputed` was run in a subdirectory of the git
+repository.
+
+Anything that the program outputs to stderr will be displayed to the user.
+This stderr should be used for error messages, and possibly computation
+output, but not for progress displays.
+
+If the program exits nonzero, nothing it computed will be stored in the 
+git-annex repository.
+
+## input files
+
+Before doing any computation, the program needs to communicate with
+git-annex about what input files it needs, and what output files it will
+generate.
 
 The content of any file in the repository can be an input to the
 computation. The program requests an input by writing a line to stdout:
@@ -48,25 +75,26 @@ the program should exit.
 
 When `git-annex addcomputed --fast` is being used to add a computation
 to the git-annex repository without actually performing it, the 
-response to each "INPUT" will be an empty line rather than the path to 
+response to eaach `INPUT` will be an empty line rather than the path to 
 an input file. In that case, the program should proceed with the rest of
-its output to stdout (eg "OUTPUT" and "REPRODUCIBLE"), but should not
+its output to stdout (eg `OUTPUT` and `REPRODUCIBLE`), but should not
 perform any computation.
 
+## output files
+
 For each output file that it will compute, the program should write a
-line to stdout:
+line to stdout, indicating the name of the file that will be added to the
+git-annex repository by `git-annex compute`.
 
     OUTPUT file.jpeg
 
-Then it can read a line from stdin. This will be a sanitized version of the
-output filename. It's important to use that sanitized version to avoid path
-traversal attacks, as well as problems like filenames that look like
-dashed options. If there is a path traversal attack, the program's stdin will
-be closed without a path being written to it.
-
-The filename of the output file is both the filename in the program's
-temporary directory that it should write to, and also the filename that will
-be added to the git-annex repository by `git-annex compute`.
+Then it should read a line from stdin, which is the path, in the program's
+temporary directory, where it should write the output file. Often this will
+be the same filename, but it also may be a sanitized version. It's
+important to use that sanitized version to avoid path traversal attacks, as
+well as problems like filenames that look like dashed options. 
+If there is a path traversal attack, the program's stdin will be closed
+without a path being written to it.
 
 The program must write a regular file to the output file. Symlinks
 or other special files will not be accepted as output files.
@@ -78,30 +106,34 @@ to somewhere else and renaming it at the end. But, if the program seeks
 around and writes out of order, it should write to a file somewhere else
 and rename it at the end.
 
-The program can also output lines to stdout to indicate its current
-progress:
+## other messages
 
-    PROGRESS 50%
+As well as `INPUT` and `OUTPUT` described above, there are some other
+messages that the program can output. All of these are optional.
 
-The program can optionally also output a "REPRODUCIBLE" line. That
-indicates that the results of its computations are expected to be
-bit-for-bit reproducible. That makes `git-annex addcomputed` behave as if
-the `--reproducible` option is set.
+* `PROGRESS 50%`
+  
+  To indicate its current progress while performing the computation,
+  the program can output lines like this. This is not needed if the program
+  streams output to an output file.
 
-The program can also output a "SANDBOX" line, and then read a line from
-stdin that will be the path to the directory it should sandbox to (which
-corresponds to the top of the git repository, so may be above its working
-directory). Any "INPUT" lines that come after "SANDBOX" will have input
-files be provided via paths that are inside the sandbox directory. Usually
-that is done by making hard links, but it will fall back to copying annexed
-files if the filesystem does not support hard links.
+* `REPRODUCIBLE`
+  
+  This indicates that the results of the computation are expected to be
+  bit-for-bit reproducible. That makes `git-annex addcomputed` behave as if
+  the `--reproducible` option is set.
 
-Anything that the program outputs to stderr will be displayed to the user.
-This stderr should be used for error messages, and possibly computation
-output, but not for progress displays.
+* `SANDBOX`
 
-If the program exits nonzero, nothing it computed will be stored in the 
-git-annex repository.
+  After outputting this line, the program can read a line from stdin
+  that will be the path to the directory it should sandbox to (which
+  corresponds to the top of the git repository, so may be above its working
+  directory). Any `INPUT` lines that come after `SANDBOX` will have input
+  files be provided via paths that are inside the sandbox directory. Usually
+  that is done by making hard links, but it will fall back to copying annexed
+  files if the filesystem does not support hard links.
+
+## example
 
 An example `git-annex-compute-foo` shell script follows:
 
