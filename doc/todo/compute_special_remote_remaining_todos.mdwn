@@ -1,6 +1,10 @@
 This is the remainder of my todo list while I was building the
 compute special remote. --[[Joey]]
 
+* prohibit using compute states where an input or output filename contains
+  a newline. The protocol doesn't allow this to happen usually, but an 
+  attacker might try it in order to scramble the protocol.
+
 * git-annex responds to each INPUT immediately, and flushes stdout.
   This could cause problems if the program is sending several INPUT
   first, before reading responses, as is documented it should do to allow
@@ -11,12 +15,6 @@ compute special remote. --[[Joey]]
 * Support parallel get of input files. The design allows for this,
   but how much parallelism makes sense? Would it be possible to use the
   usual worker pool?
-
-* Write some simple compute programs so we have something to start with.
-
-  - convert between images eg jpeg to png
-  - run a command in a singularity container (that is one of the inputs)
-  - run a wasm binary (that is one of the inputs)
 
 * compute on input files in submodules
 
