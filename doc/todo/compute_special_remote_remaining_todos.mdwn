@@ -1,10 +1,6 @@
 This is the remainder of my todo list while I was building the
 compute special remote. --[[Joey]]
 
-* prohibit using compute states where an input or output filename contains
-  a newline. The protocol doesn't allow this to happen usually, but an 
-  attacker might try it in order to scramble the protocol.
-
 * git-annex responds to each INPUT immediately, and flushes stdout.
   This could cause problems if the program is sending several INPUT
   first, before reading responses, as is documented it should do to allow

@@ -56,6 +56,7 @@ import Utility.CopyFile
 import Types.Key
 import Backend
 import qualified Git
+import qualified Utility.OsString as OS
 import qualified Utility.FileIO as F
 import qualified Utility.RawFilePath as R
 import qualified Utility.SimpleProtocol as Proto
@@ -271,7 +272,9 @@ formatComputeState' mk st = renderQuery False $ concat
 parseComputeState :: Key -> B.ByteString -> Maybe ComputeState
 parseComputeState k b =
 	let st = go emptycomputestate (parseQuery b)
-	in if st == emptycomputestate then Nothing else Just st
+	in if st == emptycomputestate || illegalComputeState st
+		then Nothing
+		else Just st
   where
 	emptycomputestate = ComputeState 
 		{ computeParams = mempty
@@ -316,6 +319,20 @@ parseComputeState k b =
 					}
 			_ -> Nothing
 		in go c' rest
+
+{- This is used to avoid ComputeStates that should never happen,
+ - but which could be injected into a repository by an attacker. -}
+illegalComputeState :: ComputeState -> Bool
+illegalComputeState st
+	-- The protocol is line-based, so filenames used in it cannot
+	-- contain newlines.
+	| any containsnewline (M.keys (computeInputs st)) = True
+	| any containsnewline (M.keys (computeOutputs st)) = True
+	-- Just in case.
+	| containsnewline (computeSubdir st) = True
+	| otherwise = False
+  where
+	containsnewline p = unsafeFromChar '\n' `OS.elem` p
 
 {- A compute: url for a given output file of a computation. -}
 computeStateUrl :: Remote -> ComputeState -> OsPath -> URLString
