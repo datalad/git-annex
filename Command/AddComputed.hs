@@ -52,6 +52,7 @@ optParser desc = AddComputedOptions
 	<*> parseReproducible
 
 newtype Reproducible = Reproducible { isReproducible :: Bool }
+	deriving (Show, Eq)
 
 parseReproducible :: Parser (Maybe Reproducible)
 parseReproducible = r <|> unr

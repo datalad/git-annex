@@ -21,7 +21,7 @@ import Annex.GitShaKey
 import Git.FilePath
 import Logs.Location
 import Command.AddComputed (Reproducible(..), parseReproducible, getInputContent, getInputContent', addComputed)
-import Backend (maybeLookupBackendVariety, unknownBackendVarietyMessage)
+import Backend (maybeLookupBackendVariety, unknownBackendVarietyMessage, chooseBackend)
 import Types.Key
 
 import qualified Data.Map as M
@@ -200,7 +200,11 @@ perform o r file origkey origstate = do
 					logStatus NoLiveUpdate origkey InfoMissing
 		return True
 
-	choosebackend _outputfile
+	choosebackend outputfile
+		-- When converting a VURL to reproducible, can't use
+		-- the VURL backend.
+		| recomputingvurl && reproducible o == Just (Reproducible True) =
+			chooseBackend outputfile
 		-- Use the same backend as was used to compute it before,
 		-- so if the computed file is the same, there will be
 		-- no change.
