@@ -26,6 +26,8 @@ program takes a dashed option, it can be provided after "--":
 
     # git-annex initremote myremote type=compute program=git-annex-compute-foo -- --level=9
 
+See [[tips/computing_annexed_files]] for more documentation.
+
 ## compute programs
 
 To write programs used by the compute special remote, see the 

@@ -1,0 +1,233 @@
+Do you ever check in original versions of files to `git-annex`, but then
+convert them in some way? Maybe you check in original photos from a camera,
+but then change them to a more useful file format, or smaller resolution. 
+Or you clip a video file. Or you crunch some data to a result.
+
+If you check the computed file into `git-annex` too, and store it on
+your remotes along with the original, that's a waste of disk space.
+But it is so convenient to be able to `git-annex get` the computed file.
+
+The [[compute special remote|special_remotes/compute]] is the solution to
+this. It "stores" the computed file by remembering how to compute it from
+input files. When you `git-annex get` the computed file from it, it re-runs
+the computation on the original input file to produced the computed file.
+
+[[!toc ]]
+
+## using the compute special remote
+
+There are many compute programs that each handle some type of computation,
+and it's pretty easy to write your own compute program too. In this tip,
+we'll use [[special_remotes/compute/git-annex-compute-imageconvert]], 
+which uses imagemagick to convert between image formats.
+
+To follow along, install that program in PATH (and remember to make it
+executable!) and make sure you have
+[imagemagick](https://www.imagemagick.org/) installed.
+
+First, initialize a compute remote:
+
+    # git-annex initremote imageconvert type=compute program=git-annex-compute-imageconvert
+
+Now suppose you have a file `foo.jpeg`, and you want to add a computed
+`foo.gif` to the git-annex repository.
+
+    # git-annex addcomputed --to=imageconvert foo.jpeg foo.gif
+
+(The syntax of the `git-annex addcomputed` command will vary depending on the
+program that a compute remote uses. Some may have multiple input files, or
+multiple ouput files, or other options to control the computation. See
+the documentation of each compute program for details.)
+
+Now you have `foo.gif` and can use it as usual, including copying it to
+other remotes. But it's already "stored" in the imageconvert remote,
+as a computation. So to free up space, you can drop it:
+
+    # git-annex drop foo.gif
+    drop foo.gif ok
+
+By the way, you can also add a computed file to the repository 
+without bothering to compute it yet! Just use `--fast`:
+
+    # git-annex addcomputed --fast --to=imageconvert bar.jpeg bar.gif
+
+Now suppose you're in another clone of this same repository, and you want
+these gifs.
+
+    # git-annex get foo.gif
+    get foo.gif (not available)
+	  Maybe enable some of these special remotes (git annex enableremote ...):
+	  	8332f7ad-d54e-435e-803b-138c1cfa7b71 -- imageconvert
+	failed
+
+With [[special_remotes/compute/git-annex-compute-imageconvert]] and
+imagemagic installed, all you need to do is enable the special remote to
+get the computed files from it:
+
+	# git-annex enableremote imageconvert
+	# git-annex get foo.gif
+	get foo.gif (from imageconvert...)
+    (getting input foo.jpeg from origin...)
+	ok
+
+Notice that, when the input file is not present in the repository, getting
+a file from a compute remote will first get the input file.
+
+That's the basics of using the compute special remote.
+
+## recomputation
+
+What happens if the input file `foo.gif` is changed to a new version?
+Will getting `foo.jpeg` from the compute remote base it on the new version
+too? No. `foo.gif` is stuck on the original version of the input file that
+was used to compute it.
+
+But, it's easy to recompute the file with a new version of the input file.
+Just `git-annex add` the new version of the input file, and then:
+
+    # git-annex recompute foo.gif
+    recompute foo.gif (foo.jpeg changed)
+    ok
+
+You can use commands like `git diff` and `git status` to see the
+change that made to `foo.gif`.
+
+    # git status --short foo.gif
+     M foo.gif
+
+Now both the new and old versions of `foo.gif` are stored in the
+imageconvert remote, and it can compute either as needed.
+
+## reproducibility
+
+You might be wondering, what happens if a computed file, such as `foo.gif`
+isn't exactly the same identical file each time it's computed? For example,
+what if there's a timestamp in there.
+
+The answer is that, by default, files computed by a compute special remote
+are not required, or guaranteed to be bit-for-bit reproducible. One gif
+converted from a jpeg is much like any other converted from the same jpeg.
+
+So git-annex usually treats all files computed in the same way from the
+same input as interchangeable. (Unless the compute program indicates
+that it produces reproducible files.)
+
+Sometimes though, it's important that a file be bit-for-bit reproducible. And
+you can ask git-annex to enforce this for computed files.
+There is a `--reproducible` option for this, which you can pass to
+`git-annex addcomputed` or to `git-annex recompute`.
+
+Let's switch the computed `foo.gif` to a reproducible file:
+
+    # git-annex recompute --original --reproducible foo.gif
+    recompute foo.gif
+    ok
+
+You can `git commit foo.gif` to store this change.
+
+But first, let's check if that computation actually *is* reproducible.
+This is easy, just drop it and get it from the compute remote again:
+
+    # git-annex drop foo.gif
+    drop foo.gif ok
+    # git-annex get foo.gif --from imageconvert
+    get foo.gif (from imageconvert...)
+    ok
+
+If it turned out that the computation was not reproducible, getting the
+file would fail, like this:
+
+    # git-annex get foo.gif --from imageconvert
+    get foo.gif (from imageconvert...)
+    Verification of content failed
+
+This is because a reproducible file uses a regular [[backend]], which
+by default uses a hash to verify the content of the file.
+
+If it does turn out that a file that was expected to be reproducible isn't,
+you can always convert it to an unreproducible file:
+
+    # git-annex recompute --original --unreproducible foo.gif
+    recompute foo.gif
+    ok
+
+## writing your own compute programs
+
+There is a whole little protocol that compute programs use to
+communicate with git-annex. It's all documented at
+[[design/compute_special_remote_interface]].
+
+But it's really easy to write simple ones, and you don't need to
+dive into all the details to do it. Let's walk through the code
+to [[special_remotes/compute/git-annex-compute-imageconvert]],
+which at 14 lines, is about as simple as one can be.
+
+    #!/bin/sh
+
+It's a shell script.
+
+    set -e
+
+If it fails to read input from standard input, or if a command fails, it
+will exit nonzero.
+
+	if [ -z "$1" ] || [ -z "$2" ]; then
+		echo "Specify the input image file, followed by the output image file." >&2
+		echo "Example: foo.jpg foo.gif" >&2
+		exit 1
+	fi
+
+It expects to be passed two parameters, which were "foo.jpeg" and "foo.gif" in
+the examples above. And it outputs some usage to stderr otherwise. That is
+displayed if the user runs `git-annex addcomputed` without the necessary
+filenames.
+
+	echo "INPUT $1"
+	read input
+
+It tells git-annex that the first filename is the input file. And git-annex
+replies by telling it *where* the content of the input file is. This is the
+path to a git-annex object file.
+
+	echo "OUTPUT $2"
+	read output
+
+It tells git-annex that the second filename is the output file. And git-annex
+replies by telling it the path it should write the output file to.
+
+	if [ -n "$input" ]; then
+
+When `git-annex addcomputed --fast` is used, the program shouldn't actually
+read the input file or compute the output file. git-annex indicates this by
+not giving it a path to the input file. That's checked here.
+
+		convert "$input" "$output" >&2
+
+This uses `convert` from imagemagick, and just converts the input file to
+the output file.
+
+Notice that stdout from `convert` is redirected to stderr. This is done
+because the compute program is speaking this protocol with git-annex over
+stdin and stdout, and we don't want random program output to mess that up.
+
+	fi
+
+Closing the `if` above.
+
+And that's all!
+
+Now you know almost enough to write your own compute program. Editing this one
+will be a good start.
+
+**But first, a word about security.**
+
+A user who enables a compute special remote and runs `git pull` followed by
+`git-annex get` is running the compute program with inputs under the control
+of anyone who has commit access to the repository.
+
+So, it's important that your compute program be secure. Please see
+the section on security in [[design/compute_special_remote_interface]]
+for security considerations.
+
+If you write a nice secure compute program, you can add it to the list
+in [[special_remotes/compute]] so other people can use it.
