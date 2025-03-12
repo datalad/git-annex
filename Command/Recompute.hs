@@ -137,7 +137,7 @@ perform o r file origkey origstate = do
 	go program reproducibleconfig result tmpdir ts = do
 		checkbehaviorchange program
 			(Remote.Compute.computeState result)
-		addComputed Nothing False r reproducibleconfig
+		addComputed Nothing r reproducibleconfig
 			choosebackend destfile False result tmpdir ts
 
 	checkbehaviorchange program state = do

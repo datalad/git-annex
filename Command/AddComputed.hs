@@ -102,12 +102,11 @@ perform o r = do
 		(Remote.Compute.ImmutableState False)
 		(getInputContent fast)
 		Nothing
-		(addComputed (Just "adding") True r (reproducible o) chooseBackend Just fast)
+		(addComputed (Just "adding") r (reproducible o) chooseBackend Just fast)
 	next $ return True
 
 addComputed
 	:: Maybe StringContainingQuotedPath
-	-> Bool
 	-> Remote
 	-> Maybe Reproducible
 	-> (OsPath -> Annex Backend)
@@ -117,7 +116,7 @@ addComputed
 	-> OsPath
 	-> NominalDiffTime
 	-> Annex ()
-addComputed maddaction stagefiles r reproducibleconfig choosebackend destfile fast result tmpdir ts = do
+addComputed maddaction r reproducibleconfig choosebackend destfile fast result tmpdir ts = do
 	when (M.null outputs) $
 		giveup "The computation succeeded, but it did not generate any files."
 	oks <- forM (M.keys outputs) $ \outputfile -> do
@@ -148,9 +147,7 @@ addComputed maddaction stagefiles r reproducibleconfig choosebackend destfile fa
 		| fast = do
 			case destfile outputfile of
 				Nothing -> noop
-				Just f
-					| stagefiles -> addSymlink f stateurlk Nothing
-					| otherwise -> makelink f stateurlk
+				Just f -> addSymlink f stateurlk Nothing
 			return stateurlk
 		| isreproducible = do
 			sz <- liftIO $ getFileSize outputfile'
@@ -175,16 +172,10 @@ addComputed maddaction stagefiles r reproducibleconfig choosebackend destfile fa
 		genkey f p = do
 			backend <- choosebackend outputfile
 			fst <$> genKey (ks f) p backend
-		makelink f k = void $ makeLink f k Nothing
-		ingesthelper f p mk
-			| stagefiles = ingestwith $ do
+		ingesthelper f p mk =
+			ingestwith $ do
 				k <- maybe (genkey f p) return mk
 				ingestAdd' p (Just (ld f)) (Just k)
-			| otherwise = ingestwith $ do
-				k <- maybe (genkey f p) return mk
-				mk' <- fst <$> ingest p (Just (ld f)) (Just k)
-				maybe noop (makelink f) mk'
-				return mk'
 		ingestwith a = a >>= \case
 			Nothing -> giveup "ingestion failed"
 			Just k -> do

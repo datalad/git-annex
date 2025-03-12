@@ -15,8 +15,7 @@ By default, this only recomputes files whose input files have changed.
 The new contents of the input files are used to re-run the computation.
 
 When the output of the computation is different, the computed file is
-updated with the new content. The updated file is written to the worktree,
-but is not staged, in order to avoid overwriting any staged changes.
+updated with the new content. The updated file is staged in git.
 
 # OPTIONS
 

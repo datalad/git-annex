@@ -1,13 +1,6 @@
 This is the remainder of my todo list while I was building the
 compute special remote. --[[Joey]]
 
-* recompute should stage files in git. Otherwise,
-  `git-annex drop` after recompute --reproducible drops the staged
-  file, and `git-annex get` gets the staged file, and if it wasn't
-  actually reproducible, this is not apparent.
-
-  This is blocking adding the tip.
-
 * Support parallel get of input files. The design allows for this,
   but how much parallelism makes sense? Would it be possible to use the
   usual worker pool?
