@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="msz"
+ avatar="http://cdn.libravatar.org/avatar/6e8b88e7c70d86f4cfd27d450958aed4"
+ subject="comment 23"
+ date="2025-03-12T19:44:23Z"
+ content="""
+@joey:
+
+> I do hope I'm not closing off the design space from such differences by dropping a compute special remote right into git-annex. But I also expect that having a standard and easy way for at least simple computations will lead to a lot of contributions as others use it.
+
+I think it's excellent to have something like this in git-annex. I didn't have the opportunity to try it out yet, but I am definitely looking forward to seeing how things can work in practice and comparing the implementations.
+"""]]
