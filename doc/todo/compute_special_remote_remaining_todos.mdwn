@@ -1,7 +1,12 @@
 This is the remainder of my todo list while I was building the
 compute special remote. --[[Joey]]
 
-* write a tip showing how to use this
+* recompute should stage files in git. Otherwise,
+  `git-annex drop` after recompute --reproducible drops the staged
+  file, and `git-annex get` gets the staged file, and if it wasn't
+  actually reproducible, this is not apparent.
+
+  This is blocking adding the tip.
 
 * Support parallel get of input files. The design allows for this,
   but how much parallelism makes sense? Would it be possible to use the
@@ -10,7 +15,12 @@ compute special remote. --[[Joey]]
 * compute on input files in submodules
 
 * annex.diskreserve can be violated if getting a file computes it but also
-  some other output files, which get added to the annex.
+  some other output files, which get added to the annex. This can't be
+  avoided at addcomputed time, but when getting later from the compute
+  remote, it could check (but not when using VURL without size information)
+
+* annex.diskreserve can also be violated if computing a file gets source
+  files that are larger than the disk reserve. This could be checked.
 
 * would be nice to have a way to see what computations are used by a
   compute remote for a file. Put it in `whereis` output? But it's not an
