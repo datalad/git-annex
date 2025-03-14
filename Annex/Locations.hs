@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE CPP #-}
 
 module Annex.Locations (
 	keyFile,
@@ -744,7 +745,7 @@ reSanitizeKeyName = preSanitizeKeyName' True
 keyFile :: Key -> OsPath
 keyFile k = 
 	let b = serializeKey'' k
-	in toOsPath $ if SB.any (`elem` needesc) b
+	in toOsPath $ if anyneedesc b
 		then mconcat $ map esc (SB.unpack b)
 		else b
   where
@@ -756,6 +757,12 @@ keyFile k =
 		_ -> SB.pack [w]
 
 	needesc = map (fromIntegral . ord) ['&', '%', ':', '/']
+
+#if MIN_VERSION_bytestring(0,11,3)
+	anyneedesc = SB.any (`elem` needesc)
+#else
+	anyneedesc = any (`elem` needesc) . SB.unpack
+#endif
 
 {- Reverses keyFile, converting a filename fragment (ie, the basename of
  - the symlink target) into a key. -}
