@@ -1,0 +1,11 @@
+Whenever I do an fsck, it's always annoyed me that you have to think of adding `--incremental` and then also think about whether an incremental fsck was started and interrupted before which would then require `--more` instead.
+
+Forgetting to add `--incremental` can leave you in a pickle when you later find out that you need to interrupt the fsck, losing all progress.
+
+I've found myself wondering whether there'd ever be a case where I'd not want an fsck to be resumeable. Could git-annex not just simply always store that information and leave it up to the next fsck execution to decide whether to use it or not?
+
+I actually don't see much reason to not make use of an incremental fsck either unless it's *really* old but I find this a lot more debatable than at least storing fsck state on each run.
+
+On that note: There also does not appear to be a documented method to figure out whether a fsck was interrupted before. You could infer existence and date from the annex internal directory structure but seeing the progress requires manual sql.
+
+Perhaps there could be a `fsck --info` flag for showing both interrupted fsck progress and perhaps also the progress of the current fsck.
