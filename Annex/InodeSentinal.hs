@@ -15,7 +15,7 @@ import qualified Annex
 import Utility.InodeCache
 import Annex.Perms
 
-{- If the sendinal shows the inodes have changed, only the size and mtime
+{- If the sentinal shows the inodes have changed, only the size and mtime
  - are compared. -}
 compareInodeCaches :: InodeCache -> InodeCache -> Annex Bool
 compareInodeCaches x y
