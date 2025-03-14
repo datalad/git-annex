@@ -1,0 +1,3 @@
+The man page is not too clear on this and I noticed that it's not possible to pass both flags at once.
+
+Does interrupting `fsck --more` lose the progress made since the initial incremental fsck?
