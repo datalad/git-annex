@@ -21,11 +21,6 @@ compute special remote. --[[Joey]]
   what files are inputs for another file. Or it could be exposed in the
   Remote interface, and made into a file matching option.
 
-* "getting input from <file>" message uses the original filename,
-  but that file might have been renamed. Would be more clear to use
-  whatever file in the tree currently points to the key it's getting
-  (what if there is not one?)
-
 * allow git-annex enableremote with program= explicitly specified,
   without checking annex.security.allowed-compute-programs
 
