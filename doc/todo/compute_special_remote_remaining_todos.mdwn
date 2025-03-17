@@ -48,9 +48,3 @@ compute special remote. --[[Joey]]
 
   Or it could build a DAG and traverse it, but building a DAG of a large
   directory tree has its own problems.
-
-* Should addcomputed honor annex.smallfiles? That would seem to imply
-  that recompute should also support recomputing non-annexed files.
-  Otherwise, adding a file and then recomputing it would vary in
-  what the content of the file is, depending on annex.smallfiles setting.
-
