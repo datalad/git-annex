@@ -24,11 +24,13 @@ import Annex.UUID
 import Annex.GitShaKey
 import Types.KeySource
 import Types.Key
+import Annex.FileMatcher
 import Messages.Progress
 import Logs.Location
 import Logs.EquivilantKeys
 import Utility.Metered
 import Backend.URL (fromUrl)
+import Git.FilePath
 
 import qualified Data.Map as M
 import Data.Time.Clock
@@ -73,20 +75,21 @@ seek o = startConcurrency commandStages (seek' o)
 
 seek' :: AddComputedOptions -> CommandSeek
 seek' o = do
+	addunlockedmatcher <- addUnlockedMatcher
 	r <- getParsed (computeRemote o)
 	unless (Remote.Compute.isComputeRemote r) $
 		giveup "That is not a compute remote."
 
-	commandAction $ start o r
+	commandAction $ start o r addunlockedmatcher
 
-start :: AddComputedOptions -> Remote -> CommandStart
-start o r = starting "addcomputed" ai si $ perform o r
+start :: AddComputedOptions -> Remote -> AddUnlockedMatcher -> CommandStart
+start o r = starting "addcomputed" ai si . perform o r
   where
 	ai = ActionItemUUID (Remote.uuid r) (UnquotedString (Remote.name r))
 	si = SeekInput (computeParams o)
 
-perform :: AddComputedOptions -> Remote -> CommandPerform
-perform o r = do
+perform :: AddComputedOptions -> Remote -> AddUnlockedMatcher -> CommandPerform
+perform o r addunlockedmatcher = do
 	program <- Remote.Compute.getComputeProgram r
 	repopath <- fromRepo Git.repoPath
 	subdir <- liftIO $ relPathDirToFile repopath (literalOsPath ".")
@@ -102,8 +105,11 @@ perform o r = do
 		(Remote.Compute.ImmutableState False)
 		(getInputContent fast)
 		Nothing
-		(addComputed (Just "adding") r (reproducible o) chooseBackend Just fast)
+		(go fast)
 	next $ return True
+  where
+	go fast = addComputed (Just "adding") r (reproducible o)
+		chooseBackend Just fast (Right addunlockedmatcher)
 
 addComputed
 	:: Maybe StringContainingQuotedPath
@@ -112,11 +118,12 @@ addComputed
 	-> (OsPath -> Annex Backend)
 	-> (OsPath -> Maybe OsPath)
 	-> Bool
+	-> Either Bool AddUnlockedMatcher
 	-> Remote.Compute.ComputeProgramResult
 	-> OsPath
 	-> NominalDiffTime
 	-> Annex ()
-addComputed maddaction r reproducibleconfig choosebackend destfile fast result tmpdir ts = do
+addComputed maddaction r reproducibleconfig choosebackend destfile fast addunlockedmatcher result tmpdir ts = do
 	when (M.null outputs) $
 		giveup "The computation succeeded, but it did not generate any files."
 	oks <- forM (M.keys outputs) $ \outputfile -> do
@@ -163,19 +170,43 @@ addComputed maddaction r reproducibleconfig choosebackend destfile fast result t
 	  	stateurl = Remote.Compute.computeStateUrl r state outputfile
 		stateurlk = fromUrl stateurl Nothing True
 		outputfile' = tmpdir </> outputfile
-		ld f = LockedDown ldc (ks f)
-		ks f = KeySource
-			{ keyFilename = f
-			, contentLocation = outputfile'
-			, inodeCache = Nothing
-			}
 		genkey f p = do
 			backend <- choosebackend outputfile
-			fst <$> genKey (ks f) p backend
-		ingesthelper f p mk =
-			ingestwith $ do
-				k <- maybe (genkey f p) return mk
-				ingestAdd' p (Just (ld f)) (Just k)
+			let ks = KeySource
+				{ keyFilename = f
+				, contentLocation = outputfile'
+				, inodeCache = Nothing
+				}
+			fst <$> genKey ks p backend
+		ingesthelper f p mk = ingestwith $ do
+			k <- maybe (genkey f p) return mk
+			topf <- inRepo $ toTopFilePath f
+			let fi = FileInfo
+				{ contentFile = outputfile'
+				, matchFile = getTopFilePath topf
+				, matchKey = Just k
+				}
+			lockingfile <- case addunlockedmatcher of
+				Right addunlockedmatcher' -> 
+					not <$> addUnlocked addunlockedmatcher'
+						(MatchingFile fi)
+						(not fast)
+				Left v -> pure v
+			let ldc = LockDownConfig
+				{ lockingFile = lockingfile
+				, hardlinkFileTmpDir = Nothing
+				, checkWritePerms = True
+				}
+			liftIO $ createDirectoryIfMissing True $
+				takeDirectory f
+			liftIO $ moveFile outputfile' f
+			let ks = KeySource
+				{ keyFilename = f
+				, contentLocation = f
+				, inodeCache = Nothing
+				}
+			let ld = LockedDown ldc ks
+			ingestAdd' p (Just ld) (Just k)
 		ingestwith a = a >>= \case
 			Nothing -> giveup "ingestion failed"
 			Just k -> do
@@ -187,12 +218,6 @@ addComputed maddaction r reproducibleconfig choosebackend destfile fast result t
 					void $ addEquivilantKey hb k 
 						=<< calcRepo (gitAnnexLocation k)
 				return k
-	
-	ldc = LockDownConfig
-		{ lockingFile = True
-		, hardlinkFileTmpDir = Nothing
-		, checkWritePerms = True
-		}
 	
 	isreproducible = case reproducibleconfig of
 		Just v -> isReproducible v

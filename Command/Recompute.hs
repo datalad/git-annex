@@ -23,8 +23,10 @@ import Logs.Location
 import Command.AddComputed (Reproducible(..), parseReproducible, getInputContent, getInputContent', addComputed)
 import Backend (maybeLookupBackendVariety, unknownBackendVarietyMessage, chooseBackend)
 import Types.Key
+import qualified Utility.RawFilePath as R
 
 import qualified Data.Map as M
+import System.PosixCompat.Files (isSymbolicLink)
 
 cmd :: Command
 cmd = notBareRepo $ 
@@ -126,19 +128,22 @@ perform :: RecomputeOptions -> Remote -> OsPath -> Key -> Remote.Compute.Compute
 perform o r file origkey origstate = do
 	program <- Remote.Compute.getComputeProgram r
 	reproducibleconfig <- getreproducibleconfig
+	originallocked <- liftIO $ isSymbolicLink
+		<$> R.getSymbolicLinkStatus (fromOsPath file)
 	showOutput
 	Remote.Compute.runComputeProgram program origstate
 		(Remote.Compute.ImmutableState False)
 		(getinputcontent program)
 		Nothing
-		(go program reproducibleconfig)
+		(go program reproducibleconfig originallocked)
 	next cleanup
   where
-	go program reproducibleconfig result tmpdir ts = do
+	go program reproducibleconfig originallocked result tmpdir ts = do
 		checkbehaviorchange program
 			(Remote.Compute.computeState result)
 		addComputed Nothing r reproducibleconfig
-			choosebackend destfile False result tmpdir ts
+			choosebackend destfile False (Left originallocked)
+			result tmpdir ts
 
 	checkbehaviorchange program state = do
 		let check s w a b = forM_ (M.keys (w a)) $ \f ->
