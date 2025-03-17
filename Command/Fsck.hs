@@ -713,13 +713,12 @@ getStartTime u = do
 #endif
 
 data Incremental
-	= NonIncremental
+	= NonIncremental (Maybe FsckDb.FsckHandle)
 	| ScheduleIncremental Duration UUID Incremental
 	| StartIncremental FsckDb.FsckHandle 
 	| ContIncremental FsckDb.FsckHandle
 
 prepIncremental :: UUID -> Maybe IncrementalOpt -> Annex Incremental
-prepIncremental _ Nothing = pure NonIncremental
 prepIncremental u (Just StartIncrementalO) = do
 	recordStartTime u
 	ifM (FsckDb.newPass u)
@@ -734,6 +733,14 @@ prepIncremental u (Just (ScheduleIncrementalO delta)) = do
 		Nothing -> StartIncrementalO
 		Just _ -> MoreIncrementalO
 	return (ScheduleIncremental delta u i)
+prepIncremental u Nothing =
+	ifM (Annex.getRead Annex.fast)
+		-- Avoid recording fscked files in --fast mode,
+		-- since that can interfere with a non-fast incremental
+		-- fsck.
+		( pure (NonIncremental Nothing)
+		, (NonIncremental . Just) <$> openFsckDb u
+		)
 
 cleanupIncremental :: Incremental -> Annex ()
 cleanupIncremental (ScheduleIncremental delta u i) = do
@@ -757,6 +764,6 @@ openFsckDb u = do
 withFsckDb :: Incremental -> (FsckDb.FsckHandle -> Annex ()) -> Annex ()
 withFsckDb (ContIncremental h) a = a h
 withFsckDb (StartIncremental h) a = a h
-withFsckDb NonIncremental _ = noop
+withFsckDb (NonIncremental mh) a = maybe noop a mh
 withFsckDb (ScheduleIncremental _ _ i) a = withFsckDb i a
 

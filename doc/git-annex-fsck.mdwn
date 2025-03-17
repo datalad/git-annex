@@ -37,17 +37,24 @@ better format.
 
 * `--incremental`
 
-  Start a new incremental fsck pass. An incremental fsck can be interrupted
-  at any time, with eg ctrl-c.
+  Start a new incremental fsck pass, clearing records of all files that
+  were checked in the previous incremental fsck pass.
 
 * `--more`
 
-  Resume the last incremental fsck pass, where it left off.
+  Skip files that were checked since the last incremental fsck pass
+  was started.
+
+  Note that before `--incremental` is used to start an incremental fsck
+  pass, files that are checked are still recorded, and using this option
+  will skip checking those files again.
 
   Resuming may redundantly check some files that were checked
   before. Any files that fsck found problems with before will be re-checked
   on resume. Also, checkpoints are made every 1000 files or every 5 minutes
-  during a fsck, and it resumes from the last checkpoint.
+  during a fsck, and it resumes from the last checkpoint, so if an
+  incremental fsck is interrupted using eg ctrl-c, it will recheck files
+  that didn't get into the last checkpoint.
 
 * `--incremental-schedule=time`
 

@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-03-17T18:34:20Z"
+ content="""
+I think it could make sense, when --incremental/--more are not passed, to
+initialize a new fsck database if there is not already one, and
+add each fscked key to the fsck database.
+
+That way, the user could run any combination of fscks, interrupted or not,
+and then use --more to fsck only new files. When the user wants to start
+a new fsck pass, they would use --incremental.
+
+It would need to avoid recording an incremental fsck pass start time,
+to avoid interfering with --incremental-schedule.
+
+The only problem I see with this is, someone might have a long-term
+incremental fsck they're running that is doing full checksumming.
+If they then do a quick fsck --fast for other reasons, it would
+record that every key has been fscked, and so lose their place.
+So it seems --fast should disable this new behavior. (Also incremental
+--fast fsck is not likely to be very useful anyway.)
+
+> I actually don't see much reason to not make use of an incremental fsck
+> either unless it's *really* old
+
+That's a hard judgement call for a program to make... someone might think
+10 minutes is really old, and someone else that a month is.
+
+As to figuring out whether a fsck was interrupted before, surely what
+matters is you remembering that? All git-annex has is a timestamp when
+the last fsck pass started, which is available in
+`.git/annex/fsck/*/state`, and a list of the keys that were fscked,
+which is not very useful as far as determining the progress of that fsck.
+"""]]

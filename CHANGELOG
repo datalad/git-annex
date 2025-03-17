@@ -10,6 +10,8 @@ git-annex (10.20250116) UNRELEASED; urgency=medium
   * Added OsPath build flag, which speeds up git-annex's operations on files.
   * git-lfs: Added an optional apiurl parameter.
     (This needs version 1.2.5 of the haskell git-lfs library to be used.)
+  * fsck: Remember the files that are checked, so a later run with --more
+    will skip them, without needing to use --incremental.
 
  -- Joey Hess <id@joeyh.name>  Mon, 20 Jan 2025 10:24:51 -0400
 
