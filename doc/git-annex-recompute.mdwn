@@ -48,6 +48,11 @@ updated with the new content. The updated file is staged in git.
   This is the default when the compute remote indicates that it produces
   reproducible output.
 
+* `--json`
+
+  Enable JSON output. This is intended to be parsed by programs that use
+  git-annex. Each line of output is a JSON object.
+
 * matching options
 
   The [[git-annex-matching-options]](1) can be used to control what

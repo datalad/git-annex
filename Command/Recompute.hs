@@ -29,7 +29,7 @@ import qualified Data.Map as M
 import System.PosixCompat.Files (isSymbolicLink)
 
 cmd :: Command
-cmd = notBareRepo $ 
+cmd = notBareRepo $ withAnnexOptions [jsonOptions] $
 	command "recompute" SectionCommon "recompute computed files"
 		paramPaths (seek <$$> optParser)
 

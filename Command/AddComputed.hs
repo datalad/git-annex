@@ -36,7 +36,7 @@ import qualified Data.Map as M
 import Data.Time.Clock
 
 cmd :: Command
-cmd = notBareRepo $ withAnnexOptions [backendOption] $
+cmd = notBareRepo $ withAnnexOptions [backendOption, jsonOptions] $
 	command "addcomputed" SectionCommon "add computed files to annex"
 		(paramRepeating paramExpression)
 		(seek <$$> optParser)
