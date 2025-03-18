@@ -15,18 +15,9 @@ compute special remote. --[[Joey]]
 * annex.diskreserve can also be violated if computing a file gets source
   files that are larger than the disk reserve. This could be checked.
 
-* would be nice to have a way to see what computations are used by a
-  compute remote for a file. Put it in `whereis` output? But it's not an
-  url. Maybe a separate command? That would also allow querying for eg,
-  what files are inputs for another file. 
+* Maybe add a file matching option, eg:
 
-  Or it could be exposed in the
-  Remote interface, and made into a file matching option:
-
-  git-annex find --inputof=foo
-
-  But that would require running expensive find over the whole tree,
-  and wouldn't work if the input file is no longer in the tree.
+  git-annex find --inputof=remote:file
 
 * allow git-annex enableremote with program= explicitly specified,
   without checking annex.security.allowed-compute-programs

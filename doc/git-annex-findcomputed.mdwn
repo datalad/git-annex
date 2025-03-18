@@ -1,0 +1,75 @@
+# NAME
+
+git-annex findcomputed - lists computed files
+
+# SYNOPSIS
+
+git annex findcomputed `[path ...]`
+
+# DESCRIPTION
+
+Outputs a list of files in the specified path that can be computed by
+enabled compute special remotes. With no path, lists files in the current
+directory and its subdirectories.
+
+Along with the name of each computed file, this displays the input that
+was provided to [[git-annex-addcomputed]](1).
+
+For example:
+
+    # git-annex findcomputed
+    foo.png (imageconvert) -- convert file.raw file.jpeg passes=10
+    bar.gz (compressor) -- compress bar --level=9
+
+# OPTIONS
+
+* matching options
+    
+  The [[git-annex-matching-options]](1)
+  can be used to specify files to list.
+
+* `--branch=ref`
+
+  List computed files in the specified branch or treeish.
+
+* `--format=value`
+
+  Use custom output formatting.
+
+  This option works the same as in [[git-annex-find]](1), with these
+  additional variables available for use in it: 
+  remote, computation
+
+  The default output format is the same as 
+  `--format='${file} (${remote}) -- ${computation}\\n'`,
+  except when outputting to a terminal, control characters will be escaped.
+
+* `--json`
+
+  Output the list of files in JSON format.
+
+  This is intended to be parsed by programs that use
+  git-annex. Each line of output is a JSON object.
+
+* `--json-error-messages`
+
+  Messages that would normally be output to standard error are included in
+  the JSON instead.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+[[git-annex-addcomputed]](1)
+
+[[git-annex-recompute]](1)
+
+[[git-annex-findcomputed]](1)
+
+[[git-annex-find]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

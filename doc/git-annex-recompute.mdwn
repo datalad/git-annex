@@ -9,7 +9,7 @@ git-annex recompute [path ...]`
 # DESCRIPTION
 
 This updates computed files that were added with
-[[git-annex-addcomputed]](1). 
+[[git-annex-addcomputed]](1).
 
 By default, this only recomputes files whose input files have changed.
 The new contents of the input files are used to re-run the computation.
@@ -21,7 +21,7 @@ updated with the new content. The updated file is staged in git.
 
 * `--original`
 
-  Re-run the computation with the original input files.
+  Re-run the computation with the original input files content.
 
 * `--remote=name`
 
@@ -65,6 +65,8 @@ updated with the new content. The updated file is staged in git.
 [[git-annex]](1)
 
 [[git-annex-addcomputed]](1)
+
+[[git-annex-findcomputed]](1)
 
 # AUTHOR
 

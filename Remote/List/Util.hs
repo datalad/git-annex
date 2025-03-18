@@ -55,8 +55,8 @@ remoteLocations' (IncludeIgnored ii) locations trusted rs = do
 
 	-- remotes that match uuids that have the key
 	allremotes <- if not ii
-			then filterM (not <$$> liftIO . getDynamicConfig . remoteAnnexIgnore . gitconfig) rs
-			else return rs
+		then filterM (not <$$> liftIO . getDynamicConfig . remoteAnnexIgnore . gitconfig) rs
+		else return rs
 	let validremotes = remotesWithUUID allremotes locations
 
 	return (sortBy (comparing cost) validremotes, validtrustedlocations)

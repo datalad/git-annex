@@ -198,6 +198,12 @@ content from the key-value store.
 
   See [[git-annex-recompute]](1) for details.
 
+* `findcomputed`
+
+  Lists computed files.
+
+  See [[git-annex-findcomputed]](1) for details.
+
 * `multicast`
 
   Multicast file distribution.

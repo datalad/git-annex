@@ -684,6 +684,7 @@ Executable git-annex
     Command.FilterBranch
     Command.FilterProcess
     Command.Find
+    Command.FindComputed
     Command.FindKeys
     Command.FindRef
     Command.Fix

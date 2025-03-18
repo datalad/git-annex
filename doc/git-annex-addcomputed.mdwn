@@ -99,6 +99,8 @@ the parameters provided to `git-annex addcomputed`.
 
 [[git-annex-recompute]](1)
 
+[[git-annex-findcomputed]](1)
+
 [[git-annex-initremote]](1)
 
 # AUTHOR
