@@ -29,6 +29,8 @@ import Types.Remote
 import Types.ProposedAccepted
 import Types.MetaData
 import Types.Creds
+import Types.TrustLevel
+import Types.RemoteState
 import Config
 import Config.Cost
 import Remote.Helper.Special
@@ -45,6 +47,8 @@ import qualified Annex.Transfer
 import Logs.MetaData
 import Logs.EquivilantKeys
 import Logs.Location
+import Logs.Trust.Basic
+import Logs.Remote
 import Messages.Progress
 import Utility.Metered
 import Utility.TimeStamp
@@ -87,6 +91,11 @@ remote = RemoteType
 
 isComputeRemote :: Remote -> Bool
 isComputeRemote r = typename (remotetype r) == typename remote
+
+isComputeRemote' :: RemoteConfig -> Bool
+isComputeRemote' rc = case M.lookup typeField rc of
+	Nothing -> False
+	Just t -> fromProposedAccepted t == typename remote
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u rc gc rs = case getComputeProgram' rc of
@@ -788,11 +797,40 @@ avoidCycles outputkeys inputkey = filterM go
 			rs' <- avoidCycles (inputkey:outputkeys) inputkey' rs
 			return (rs' == rs)
 
--- Make sure that the compute state exists.
+-- Make sure that the compute state exists, and that the input keys are
+-- still available (are not dead, and are stored in some repository).
+--
+-- When an input key is itself stored in a compute remote, check that
+-- its inputs are also still available.
 checkKey :: RemoteStateHandle -> Key -> Annex Bool
 checkKey rs k = do
-	states <- getComputeStatesUnsorted rs k
-	return (not (null states))
+	deadset <- S.fromList . M.keys . M.filter (== DeadTrusted)
+		<$> (trustMapLoad' =<< Annex.getState Annex.remotes)
+	computeset <- S.fromList . M.keys . M.filter isComputeRemote'
+		<$> remoteConfigMap
+	availablecompute [] deadset computeset k rs
+  where
+	availablecompute inputkeys deadset computeset k' rs'
+		| k' `elem` inputkeys = return False -- avoid cycles
+		| otherwise = 
+			anyM (hasinputs inputkeys deadset computeset . snd)
+				=<< getComputeStatesUnsorted rs' k'
+
+	hasinputs inputkeys deadset computeset state = do
+		let ks = M.elems (computeInputs state)
+		ifM (anyM checkDead ks)
+			( return False
+			, allM (available inputkeys deadset computeset) ks
+			)
+	
+	available inputkeys deadset computeset k' = do
+		(repolocs, computelocs) <- 
+			partition (flip S.notMember computeset)
+				. filter (flip S.notMember deadset)
+				<$> loggedLocations k'
+		if not (null repolocs)
+			then return True
+			else anyM (availablecompute (k':inputkeys) deadset computeset k' . RemoteStateHandle) computelocs
 
 -- Unsetting the compute state will prevent computing the key.
 dropKey :: RemoteStateHandle -> Maybe SafeDropProof -> Key -> Annex ()

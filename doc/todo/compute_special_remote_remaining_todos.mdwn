@@ -42,15 +42,3 @@ compute special remote. --[[Joey]]
 
   Or it could build a DAG and traverse it, but building a DAG of a large
   directory tree has its own problems.
-
-* Should checkPresent check that each input file is also present in some
-  (non-dead) repo?
-
-  Currently it only checks if compute state is recorded. The problem
-  this additional checking would solve is if an input file gets lost,
-  then a computation cannot be run again.
-
-  Should it be an active check against existing remotes, or a
-  passive check? An active check certainly makes sense if the input
-  file is itself present in a compute repo, either the same one or a
-  different one. Otherwise, a passive check seems enough.
