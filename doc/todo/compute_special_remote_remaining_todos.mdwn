@@ -15,9 +15,10 @@ compute special remote. --[[Joey]]
 * annex.diskreserve can also be violated if computing a file gets source
   files that are larger than the disk reserve. This could be checked.
 
-* Maybe add a file matching option, eg:
+* Maybe add a file matching options, eg:
 
-  git-annex find --inputof=remote:file
+        git-annex find --computeinputof=remote:file
+        git-annex find --computeoutputof=remote:file
 
 * allow git-annex enableremote with program= explicitly specified,
   without checking annex.security.allowed-compute-programs

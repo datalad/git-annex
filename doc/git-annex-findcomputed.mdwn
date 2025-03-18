@@ -18,7 +18,7 @@ was provided to [[git-annex-addcomputed]](1).
 For example:
 
     # git-annex findcomputed
-    foo.png (imageconvert) -- convert file.raw file.jpeg passes=10
+    foo.jpeg (imageconvert) -- convert file.raw file.jpeg passes=10
     bar.gz (compressor) -- compress bar --level=9
 
 # OPTIONS
