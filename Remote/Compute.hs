@@ -814,11 +814,11 @@ checkKey rs k = do
 		-- Usually this will already be populated with all remotes,
 		-- otherwise this compute remote would not be used. Check
 		-- just in case, to avoid trustMap' caching bad inputs.
-		rs <- Annex.getState Annex.remotes
-		if null rs
+		remotelist <- Annex.getState Annex.remotes
+		if null remotelist
 			then error "internal"
 			else S.fromList . M.keys . M.filter (== DeadTrusted)
-				<$> trustMap' rs
+				<$> trustMap' remotelist
 
 	getcomputeset = S.fromList . M.keys . M.filter isComputeRemote'
 		<$> remoteConfigMap
