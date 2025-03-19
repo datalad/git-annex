@@ -32,17 +32,43 @@ For example:
 
   List computed files in the specified branch or treeish.
 
+* `--inputs`
+
+  Display each computed file followed by the input that is used to
+  produce it. The current location of the input file in the work tree is
+  displayed, but if the input file is not in the work tree, the key
+  is displayed instead.
+
+  For example:
+
+    foo.jpeg file.raw
+    bar.gz bar
+
+  When multiple input files are needed to compute a file, outputs multiple
+  lines for that file:
+
+    foo bar
+    foo baz
+
 * `--format=value`
 
   Use custom output formatting.
 
   This option works the same as in [[git-annex-find]](1), with these
   additional variables available for use in it: 
-  remote, computation
+  "${remote}", "${computation}"
 
   The default output format is the same as 
   `--format='${file} (${remote}) -- ${computation}\\n'`,
   except when outputting to a terminal, control characters will be escaped.
+
+  When `--inputs` is used, there are additional variables "${inputfile}"
+  which is the input filename, "${inputkey}" which is the input key,
+  and "${input}" which is either the filename or the key.
+  The default output format for `--inputs`
+  is the same as `--format='${file} ${input}\\n'`
+  To separate the pair of files by nulls instead, use eg
+  `--format='${file}\\000${input}\\n'
 
 * `--json`
 

@@ -70,9 +70,9 @@ start o (_, key, _) = startingCustomOutput key $ do
   where
 	-- Some associated files that are in the keys database may no
 	-- longer correspond to files in the repository.
-	stillassociated f = catKeyFile f >>= \case
-		Just k | k == key -> return True
-		_ -> return False
+	stillassociated f = catKeyFile f >>= return . \case
+		Just k | k == key -> True
+		_ -> False
 
 display :: Key -> StringContainingQuotedPath -> Annex ()
 display key loc = do
