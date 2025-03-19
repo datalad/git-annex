@@ -20,7 +20,6 @@ module Logs.Trust (
 
 import Annex.Common
 import Types.TrustLevel
-import qualified Annex
 import Logs
 import Remote.List
 import Logs.Trust.Basic as X
@@ -61,7 +60,7 @@ trustExclude level ls = snd <$> trustPartition level ls
 {- trustLog in a map, overridden with any values from forcetrust or
  - the git config. The map is cached for speed. -}
 trustMap :: Annex TrustMap
-trustMap = maybe trustMapLoad return =<< Annex.getState Annex.trustmap
+trustMap = trustMap' =<< remoteList
 
 {- Loads the map, updating the cache, -}
 trustMapLoad :: Annex TrustMap

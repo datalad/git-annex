@@ -755,6 +755,8 @@ computeKey rs (ComputeProgram program) k _af dest meterupdate vc =
 		
 keyPossibilities :: Key -> Annex [Remote]
 keyPossibilities key = do
+	-- This gets populated with a list of all remotes before this
+	-- remote is used.
 	remotelist <- Annex.getState Annex.remotes
 	locs <- loggedLocations key
 	keyPossibilities' (IncludeIgnored False) key locs remotelist
@@ -804,12 +806,23 @@ avoidCycles outputkeys inputkey = filterM go
 -- its inputs are also still available.
 checkKey :: RemoteStateHandle -> Key -> Annex Bool
 checkKey rs k = do
-	deadset <- S.fromList . M.keys . M.filter (== DeadTrusted)
-		<$> (trustMapLoad' =<< Annex.getState Annex.remotes)
-	computeset <- S.fromList . M.keys . M.filter isComputeRemote'
-		<$> remoteConfigMap
+	deadset <- getdeadset
+	computeset <- getcomputeset
 	availablecompute [] deadset computeset k rs
   where
+	getdeadset = do
+		-- Usually this will already be populated with all remotes,
+		-- otherwise this compute remote would not be used. Check
+		-- just in case, to avoid trustMap' caching bad inputs.
+		rs <- Annex.getState Annex.remotes
+		if null rs
+			then error "internal"
+			else S.fromList . M.keys . M.filter (== DeadTrusted)
+				<$> trustMap' rs
+
+	getcomputeset = S.fromList . M.keys . M.filter isComputeRemote'
+		<$> remoteConfigMap
+
 	availablecompute inputkeys deadset computeset k' rs'
 		| k' `elem` inputkeys = return False -- avoid cycles
 		| otherwise = 

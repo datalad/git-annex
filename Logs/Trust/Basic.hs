@@ -9,6 +9,7 @@ module Logs.Trust.Basic (
 	module X,
 	trustSet,
 	trustMapRaw,
+	trustMap',
 	trustMapLoad',
 ) where
 
@@ -38,6 +39,9 @@ trustSet NoUUID _ = error "unknown UUID; cannot modify"
  - log file. -}
 trustMapRaw :: Annex TrustMap
 trustMapRaw = calcTrustMap <$> Annex.Branch.get trustLog
+
+trustMap' :: [Remote] -> Annex TrustMap
+trustMap' l = maybe (trustMapLoad' l) return =<< Annex.getState Annex.trustmap
 
 trustMapLoad' :: [Remote] -> Annex TrustMap
 trustMapLoad' l = do
