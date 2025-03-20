@@ -14,7 +14,7 @@ git-annex (10.20250320) upstream; urgency=medium
   * fsck: Remember the files that are checked, so a later run with --more
     will skip them, without needing to use --incremental.
 
- -- Joey Hess <id@joeyh.name>  Wed, 19 Mar 2025 14:45:47 -0400
+ -- Joey Hess <id@joeyh.name>  Thu, 20 Mar 2025 13:10:48 -0400
 
 git-annex (10.20250115) upstream; urgency=medium
 
