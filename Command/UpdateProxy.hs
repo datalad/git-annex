@@ -59,24 +59,32 @@ start = startingCustomOutput (ActionItemOther Nothing) $ do
 	
 	isproxy r
 		| remoteAnnexProxy (R.gitconfig r) || not (null (remoteAnnexClusterNode (R.gitconfig r))) = 
-			checkCanProxy r "Cannot proxy to this special remote."
+			checkCanProxy r "Cannot proxy to this remote."
 		| otherwise = pure False
 
 checkCanProxy :: Remote -> String -> Annex Bool
-checkCanProxy r cannotmessage = 
-	ifM (R.isExportSupported r)
-		( if annexObjects (R.config r)
-			then pure True
-			else do
-				warnannexobjects
-				pure False
-		, pure True
-		)
+checkCanProxy r cannotmessage
+	| R.uuid r == NoUUID = do
+		warning $ UnquotedString $ unwords
+			[ R.name r
+			, "is a git remote without a known annex-uuid."
+			, cannotmessage
+			]
+		pure False
+	| otherwise =
+		ifM (R.isExportSupported r)
+			( if annexObjects (R.config r)
+				then pure True
+				else do
+					warnannexobjects
+					pure False
+			, pure True
+			)
   where
 	warnannexobjects = warning $ UnquotedString $ unwords
 		[ R.name r
-		, "is configured with exporttree=yes, but without"
-		, "annexobjects=yes."
+		, "is a special remote configured with exporttree=yes,"
+		, "but without annexobjects=yes."
 		, cannotmessage
 		, "Suggest you run: git-annex enableremote"
 		, R.name r

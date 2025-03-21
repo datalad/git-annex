@@ -38,7 +38,7 @@ start = startingCustomOutput (ActionItemOther Nothing) $ do
 		Nothing -> return Nothing
 		Just [] -> return Nothing
 		Just clusternames -> 
-			ifM (Command.UpdateProxy.checkCanProxy r "Cannot use this special remote as a cluster node.")
+			ifM (Command.UpdateProxy.checkCanProxy r "Cannot use this remote as a cluster node.")
 				( return $ Just $ M.fromList $
 					zip clusternames (repeat (S.singleton r))
 				, return Nothing
