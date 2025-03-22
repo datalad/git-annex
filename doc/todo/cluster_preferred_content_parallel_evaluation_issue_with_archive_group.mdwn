@@ -1,0 +1,24 @@
+I tried a cluster where each node was in the archive group. Sending to the
+cluster caused the file the end up on multiple nodes, though the preferred
+content should have allowed it to be stored on only one.
+
+This is because a cluster checks preferred content for each node and sends
+to all nodes that want it. Which works fine when using balanced preferred
+content expressions, but for archive, they all want it until 1 has it.
+
+So to support archive better, after finding a node that wants the content,
+when checking the second node it would need to check its preferred content
+under the assumption that the first node already contains the content. And
+so on. Currently this is not supported when checking preferred content, but
+something similar is done when dropping, with a set of repos to assume
+don't contain the content any longer.
+
+(Oddly, in my case, it seemed to always end up on 2 nodes out of 4, I don't
+know why it didn't also get sent to the other 2.)
+
+(Not considering this a bug, because cluster was designed to be used with
+balanced preferred content, which will probably work better in many ways.
+Still it would be good to support this, especially for when existing
+archive repositories get put in a cluster.)
+
+--[[Joey]] 
