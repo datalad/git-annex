@@ -1,0 +1,23 @@
+I have a fleet of some headless systems and some desktop machines. In the git tree there are somethimes commits like these. Time between the two commits is always more or less 10 seconds.
+
+    git diff c69f4ffee8d288174abe34db03e572c04bc8ba8b 5aceafda84e2d737a97f1e6b8f647adc6b787789
+    diff --git a/Dokumente/Gesamtrechnung.pdf b/Dokumente/Gesamtrechnung.pdf
+    deleted file mode 100644
+    index ace4b282de7..00000000000
+    --- a/Dokumente/Gesamtrechnung.pdf
+    +++ /dev/null
+    @@ -1 +0,0 @@
+    -/annex/objects/SHA256E-s22050--e1551117820028dc66e8c4d2e834857664535a4297ce9649a5cf40f7b9fafc66.pdf
+
+    git diff 5aceafda84e2d737a97f1e6b8f647adc6b787789 d3c6388f50e06a5dfae94cd2431c6b3827cee05a
+    diff --git a/Dokumente/Gesamtrechnung.pdf b/Dokumente/Gesamtrechnung.pdf
+    new file mode 100644
+    index 00000000000..ace4b282de7
+    --- /dev/null
+    +++ b/Dokumente/Gesamtrechnung.pdf
+    @@ -0,0 +1 @@
+    +/annex/objects/SHA256E-s22050--e1551117820028dc66e8c4d2e834857664535a4297ce9649a5cf40f7b9fafc66.pdf
+
+Random files (one at a time) on random machines at random times are deleted and instantly recommitted. At least I think it happens randomly.
+
+What happens here?
