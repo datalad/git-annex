@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="octvs@17a99a7aaeb0c0e0a2375e14807b138740ba34e9"
+ nickname="octvs"
+ avatar="http://cdn.libravatar.org/avatar/e31212348b6392eb67daddf78fadfb1b"
+ subject="failing with `Operation not petmitted`"
+ date="2025-03-24T17:56:39Z"
+ content="""
+I also found the answer on my own.
+
+The trick was hidden under my redaction. The filenames had special characters which are problematic under Android. Removing them solved the issue.
+"""]]
