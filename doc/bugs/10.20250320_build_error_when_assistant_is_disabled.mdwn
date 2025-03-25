@@ -1,0 +1,62 @@
+When building git-annex 10.20250320 under `-f-assistant`, I hit into
+the following error:
+
+```
+[363 of 647] Compiling Annex.ChangedRefs ( Annex/ChangedRefs.hs, /git-annex/dist-newstyle/build/x86_64-linux/ghc-9.8.4/git-annex-10.20250320/build/git-annex/git-annex-tmp/Annex/ChangedRefs.o, /git-annex/dist-newstyle/build/x86_64-linux/ghc-9.8.4/git-annex-10.20250320/build/git-annex/git-annex-tmp/Annex/ChangedRefs.dyn_o )
+
+Annex/ChangedRefs.hs:96:48: error: [GHC-83865]
+    • Couldn't match type ‘OS.ByteString’ with ‘[Char]’
+      Expected: FilePath
+        Actual: System.Posix.ByteString.FilePath.RawFilePath
+    • In the first argument of ‘watchDir’, namely ‘refdir’
+      In the second argument of ‘($)’, namely
+        ‘watchDir refdir (const False) True hooks id’
+      In a stmt of a 'do' block:
+        h <- liftIO $ watchDir refdir (const False) True hooks id
+   |
+96 |                         h <- liftIO $ watchDir refdir
+   |                                                ^^^^^^
+```
+
+If I drop the `-f-assistant`, the build completes successfully.
+
+Alternatively, I was able to keep `-f-assistant` by un-indenting this
+block from git-annex.cabal one level:
+
+```
+    if os(linux)
+      Build-Depends: hinotify (>= 0.3.10)
+      CPP-Options: -DWITH_INOTIFY
+      Other-Modules: Utility.DirWatcher.INotify
+    else
+      if os(darwin)
+        Build-Depends: hfsevents
+        CPP-Options: -DWITH_FSEVENTS
+        Other-Modules:
+          Utility.DirWatcher.FSEvents
+      else
+        if os(windows)
+          Build-Depends: Win32-notify
+          CPP-Options: -DWITH_WIN32NOTIFY
+          Other-Modules: Utility.DirWatcher.Win32Notify
+        else
+          if (! os(solaris) && ! os(gnu) && ! os(linux))
+            CPP-Options: -DWITH_KQUEUE
+            C-Sources: Utility/libkqueue.c
+            Includes: Utility/libkqueue.h
+            Other-Modules: Utility.DirWatcher.Kqueue
+```
+
+I suspect that this is a general issue that anyone compiling without
+the assistant feature enabled would encounter.  Here are other details 
+of the setup in case they turn out to be relevant:
+
+ * Alpine Linux v3.21 image [*] with GHC 9.8.4
+   (<https://gitlab.com/benz0li/ghc-musl>)
+
+ * `cabal build` called with these flags:
+
+   - `--enable-executable-static`
+   - `--ghc-options="-j$n +RTS -A256m -RTS -split-sections -optc-Os -optl=-pthread"`
+
+   Full setup is at <https://git.kyleam.com/static-annex/>.
