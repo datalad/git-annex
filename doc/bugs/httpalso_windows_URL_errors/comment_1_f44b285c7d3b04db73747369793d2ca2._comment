@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-03-26T15:36:35Z"
+ content="""
+> `xw%5CXV%5C` should be something like `xw/XV` so some conversion of
+> the windows backslash to posix might not be working
+
+That was a good analysis, thanks!
+
+I see that Remote.HttpAlso.supportedLayouts uses hashDirLower and
+hashDirMixed. Which are implemented using OS-native path separators.
+So, on Windows, that does come out with the slash the wrong way around.
+I don't think that the actual url-encoding of it is problimatic.
+
+I've put in a workaround. I have not tested on windows, so please re-open
+this bug report if you upgrade and find it still somehow doesn't work.
+"""]]

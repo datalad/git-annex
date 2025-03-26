@@ -1,6 +1,6 @@
 {- HttpAlso remote (readonly).
  -
- - Copyright 2020-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2020-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -24,6 +24,7 @@ import Utility.Metered
 import Annex.Verify
 import qualified Annex.Url as Url
 import Annex.SpecialRemote.Config
+import Git.FilePath
 
 import Data.Either
 import qualified Data.Map as M
@@ -228,5 +229,10 @@ supportedLayouts baseurl =
 	  ]
 	]
   where
-	mkurl k hasher = baseurl P.</> fromOsPath (hasher k) P.</> kf k
+	mkurl k hasher = baseurl
+		-- On windows, the hasher uses `\` path separators,
+		-- but for an url, it needs to use '/'.
+		-- So, use toInternalGitPath.
+		P.</> fromOsPath (toInternalGitPath (hasher k)) 
+		P.</> kf k
 	kf k = fromOsPath (keyFile k)
