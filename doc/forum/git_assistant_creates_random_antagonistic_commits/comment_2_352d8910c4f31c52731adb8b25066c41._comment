@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="only for unlocked files?"
+ date="2025-03-24T18:37:31Z"
+ content="""
+I also see this very frequently in our shared family documents folder. Several people having the assistant running. I have a feeling it only happens for unlocked files, suggesting git clean/smudge filter nonsense is causing this. Looks like your files are also unlocked. Do you see any of this with locked files?
+"""]]
