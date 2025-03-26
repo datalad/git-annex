@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/6ac9c136a74bb8760c66f422d3d6dc32"
+ subject="comment 2"
+ date="2025-03-26T17:04:23Z"
+ content="""
+Please tell me if I'm getting this right:
+
+- `--incremental` starts a *new* incremental fsck, regardless of whether there was a previously interrupted fsck or not
+- `--more` also starts a new incremental fsck but only if there wasn't a previously interrupted incremental fsck in which case it resumes that to the end
+
+So if I do `git-annex fsck --more` on a repo without previously interrupted incremental fsck, it is effectively the same as `--incremental`? 
+"""]]
