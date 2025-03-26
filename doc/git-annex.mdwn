@@ -1464,7 +1464,7 @@ repository, using [[git-annex-config]]. See its man page for a list.)
   from being modified or deleted. Freezecontent is run after
   git-annex has removed (or attempted to remove) the write bit, and can
   be used to prevent writing in some other way.
-  Tawcontent should undo its effect, and is run before
+  Thawcontent should undo its effect, and is run before
   git-annex restores the write bit.
 
   In the command line, %path is replaced with the file or directory to
