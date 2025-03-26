@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-03-26T14:32:46Z"
+ content="""
+This looks like the problem is happening in the remote repository,
+and not in the local repisotry. (Which I think is the one whose config you
+showed as the "outbound config").
+
+It looks like a `git push` is being run to that remote. And then it seems
+like git on that remote is trying to run `git-annex filter-process`.
+
+That would not usually happen because pushing to a remote does not
+update that remote's working tree. Which is what git must be doing when it
+runs that command.
+
+So, I think you likely have `receive.denyCurrentBranch` set to
+`updateInstead` in the remote repository. That will make git update the
+working tree. And having that configuration for the one repository would
+explain why you only see the problem for that one.
+
+As to why `git-annex` is not in PATH when git tries to run it there, that
+probably comes down to how you have git-annex installed on that system. You
+showed that an interactive shell does have `git-annex` in PATH when you ssh
+in. But sometimes the shell configuration differs between interactive and
+noninteractive shells. See [[tips/get_git-annex-shell_into_PATH]] (which is
+about git-annex-shell, but also applies to git-annex).
+
+BTW `realpath` is a unix command, and not one that git-annex uses. This is
+probably something in a configuration file like ~/.bashrc that is run when
+you ssh in to that host.
+"""]]
