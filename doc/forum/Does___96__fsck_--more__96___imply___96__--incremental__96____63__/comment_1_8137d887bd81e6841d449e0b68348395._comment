@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-03-26T14:18:02Z"
+ content="""
+No, interrupting will never lose previous incremental progress. In fact, if
+you interrupt `--more` and run the same command again, it will skip all
+files that were recorded as checked already by the first `--more`.
+
+I suspect you were reading a previous version of the man page, which
+discussed being interrupted under `--incremental`. That wording was
+recently adjusted.
+"""]]
