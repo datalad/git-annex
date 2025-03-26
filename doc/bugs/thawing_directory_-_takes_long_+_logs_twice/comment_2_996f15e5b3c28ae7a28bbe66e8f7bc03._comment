@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2025-03-26T15:31:45Z"
+ content="""
+> Do you have annex.freezecontent-command / annex.thawcontent-command configured for this repo? 
+
+I do not think so as I did not see anything of that kind in output of `git config -l | grep annex` I included. Or it could have missed that somehow?
+"""]]
