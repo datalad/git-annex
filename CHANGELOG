@@ -4,6 +4,7 @@ git-annex (10.20250321) UNRELEASED; urgency=medium
     configured as annex-cluster-node, warn and avoid writing bad data to
     the git-annex branch.
   * Fix build without the assistant.
+  * fsck: Avoid complaining about required content of dead repositories.
 
  -- Joey Hess <id@joeyh.name>  Fri, 21 Mar 2025 12:27:11 -0400
 

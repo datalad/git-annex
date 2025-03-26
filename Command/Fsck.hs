@@ -375,11 +375,13 @@ verifyRequiredContent key ai@(ActionItemAssociatedFile afile _) = case afile of
 	-- Can't be checked if there's no associated file.
 	AssociatedFile Nothing -> return True
 	AssociatedFile (Just _) -> do
-		requiredlocs <- S.fromList . M.keys <$> requiredContentMap
-		if S.null requiredlocs
+		requiredlocs <- filterM notdead =<< (M.keys <$> requiredContentMap)
+		if null requiredlocs
 			then return True
-			else go requiredlocs
+			else go (S.fromList requiredlocs)
   where
+	notdead u = (/=) DeadTrusted <$> lookupTrust u
+
 	go requiredlocs = do
 		presentlocs <- S.fromList <$> loggedLocations key
 		missinglocs <- filterM
