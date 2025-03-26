@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-03-26T14:45:38Z"
+ content="""
+Do you have `annex.freezecontent-command` / `annex.thawcontent-command`
+configured for this repo? Asking because I know you use it somewhere,
+and some expensive command might explain why thawing takes so long.
+
+As to the content directory perms, `drwxr-sr-x` is weird and the really
+weird part of it is the `s`. I don't see how git-annex would ever 
+set that bit itself.
+
+Here's what's going on with the repeated thawing:
+
+* Before it can drop the content, it has to take the drop lock, so thaws
+  the directory in order to write the lock file.
+* After taking the drop lock, it re-freezes. Of course this is not
+  necessary, but it avoids a complicated error unwind if it is later unable
+  to drop.
+* Then it thaws in order to delete the object file.
+* The final thaw is to delete the drop lock file. While the thaw is in
+  this situation unncessary, since it's left thawed after deleting the
+  object file, if the drop had failed it would get to this point with the
+  directory frozen, but would still want to delete the drop lock file,
+  and so would need to thaw it.
+
+I have now optimized away that final thaw. I don't think it makes sense to
+optimise away the first thaw/freeze cycle, because it would complicate
+error unwinding and there is anyway no indication it's slow.
+
+I don't know though, that the 2 minutes between the 2nd and 3rd thawing
+lines are caused by the actual chmod calls. Seems unlikely, unless you do
+have a thawcontent-command. It seems more likely that deleting the object
+file and whatever else happens at that point is what is taking 2 minutes.
+I suggest strace.
+"""]]

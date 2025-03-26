@@ -368,8 +368,16 @@ lockContentUsing contentlocker key fallback a = withContentLockFile key $ \mlock
 				cleanuplockfile lockfile
 #endif
 
-	cleanuplockfile lockfile = void $ tryNonAsync $ do
-		thawContentDir lockfile
+	cleanuplockfile lockfile = 
+		-- Often the content directory will be thawed already,
+		-- so avoid re-thawing, unless cleanup fails.
+		tryNonAsync (cleanuplockfile' lockfile) >>= \case
+			Right () -> return ()
+			Left _ -> void $ tryNonAsync $ do
+				thawContentDir lockfile
+				cleanuplockfile' lockfile
+	
+	cleanuplockfile' lockfile = do
 		liftIO $ removeWhenExistsWith removeFile lockfile
 		cleanObjectDirs lockfile
 
