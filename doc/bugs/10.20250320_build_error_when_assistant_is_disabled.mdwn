@@ -60,3 +60,5 @@ of the setup in case they turn out to be relevant:
    - `--ghc-options="-j$n +RTS -A256m -RTS -split-sections -optc-Os -optl=-pthread"`
 
    Full setup is at <https://git.kyleam.com/static-annex/>.
+
+> [[fixed|done]] --[[Joey]]

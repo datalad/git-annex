@@ -3,6 +3,7 @@ git-annex (10.20250321) UNRELEASED; urgency=medium
   * updatecluster, updateproxy: When a remote that has no annex-uuid is
     configured as annex-cluster-node, warn and avoid writing bad data to
     the git-annex branch.
+  * Fix build without the assistant.
 
  -- Joey Hess <id@joeyh.name>  Fri, 21 Mar 2025 12:27:11 -0400
 

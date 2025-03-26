@@ -139,7 +139,7 @@ watchDir dir prune scanevents hooks runstartup =
 	runstartup $ Win32Notify.watchDir dir prune scanevents hooks
 #else
 type DirWatcherHandle = ()
-watchDir :: FilePath -> Pruner -> Bool -> WatchHooks -> (IO () -> IO ()) -> IO DirWatcherHandle
+watchDir :: OsPath -> Pruner -> Bool -> WatchHooks -> (IO () -> IO ()) -> IO DirWatcherHandle
 watchDir = error "watchDir not defined"
 #endif
 #endif
