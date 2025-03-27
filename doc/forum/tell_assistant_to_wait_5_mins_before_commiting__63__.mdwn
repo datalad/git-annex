@@ -1,0 +1,3 @@
+Git annex assistant commited a downloaded file still named XXXXX.crdownload which was created by chrome before saving the file with a correct name.
+
+Is it possible to tell assistant to only auto-commit files which were not changed for 5 minutes?
