@@ -1,0 +1,14 @@
+In ["--fast" option for git annex get?](https://git-annex.branchable.com/forum/__34__--fast__34___option_for_git_annex_get__63__/) it was indicated that `git annex get --fast` doesn't have any effect.
+
+In an HPC context, users are frequently expected to use login (or dedicated data transfer) nodes for data transfer, and can get their sessions killed for excessive CPU use. For OpenNeuro, the high bandwidth between many HPC centers and S3 means that checksums can become the bottleneck in data transfer. I would like to be able to recommend something like:
+
+```console
+git annex get -f s3-PUBLIC --fast --all
+srun git annex fsck
+```
+
+Is this feasible?
+
+
+[[!meta author=cjmarkie]]
+[[!tag projects/openneuro]]
