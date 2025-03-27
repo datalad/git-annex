@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="cjmarkie"
+ avatar="http://cdn.libravatar.org/avatar/cfcc5894b1cec05bf76d200073dd8977"
+ subject="Ignore .crdownload?"
+ date="2025-03-27T20:18:03Z"
+ content="""
+I don't use the assistant, but you should be able to add the following line to your `.gitignore` file:
+
+```gitignore
+*.crdownload
+```
+"""]]
