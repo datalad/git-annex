@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="Basile.Pinsard"
- avatar="http://cdn.libravatar.org/avatar/87e1f73acf277ad0337b90fc0253c62e"
- subject="thanks"
- date="2025-03-27T18:39:58Z"
- content="""
-Thanks for the fix, I will try that when I get the time and when that release gets built on https://github.com/datalad/git-annex/ so that I can use my existing action.
-
-"""]]
