@@ -1,0 +1,95 @@
+### Please describe the problem.
+
+<details>
+<summary>I have a file with a key which was missing yt: prefix, so I added it manually</summary> 
+
+```
+$> git show git-annex
+commit 318da631abbd7562de52dd4e51fdcc6df01c3622 (git-annex)
+Author: Yaroslav Halchenko <debian@onerussian.com>
+Date:   Fri Mar 28 07:27:33 2025 -0400
+
+    [DATALAD RUNCMD] Manually trying to fixup one URL so it uses yt-dlp
+    
+    refs:
+    - https://git-annex.branchable.com/bugs/tries_to_download_a_.mkv_video_without_yt-dlp/
+    - https://git-annex.branchable.com/todo/yt-dlp__58___parse__47__handle___40__error__41_____34__Video_unavailable__34__/
+    
+    note that key also does not have yt: prefix as those which would be going through yt:
+    but I think this is irrelevant here for our purposes. Just something to remember to not rely on
+    
+    Note: it was not actually "datalad run" committed due to
+            https://git-annex.branchable.com/bugs/git-annex_should_not___34__annex__34___in_git-annex_branch/?updated
+    
+    I just reused the record etc
+    
+    === Do not change lines below ===
+    {
+     "chain": [],
+     "cmd": "sed -i -e 's,^[0-9]*s\\(.*\\)https:,1743156234s\\1yt:https:,g' 'e9f/464/URL-s955950--https&c%%www.youtube.com%watch,63v,61hWwtFQLntbE.log.web'",
+     "exit": 0,
+     "extra_inputs": [],
+     "inputs": [],
+     "outputs": [],
+     "pwd": "."
+    }
+    ^^^ Do not change lines above ^^^
+
+diff --git a/e9f/464/URL-s955950--https&c%%www.youtube.com%watch,63v,61hWwtFQLntbE.log.web b/e9f/464/URL-s955950--https&c%%www.youtube.com%watch,63v,61hWwtFQLntbE.log.web
+index 331362218..e63cffe5d 100644
+--- a/e9f/464/URL-s955950--https&c%%www.youtube.com%watch,63v,61hWwtFQLntbE.log.web
++++ b/e9f/464/URL-s955950--https&c%%www.youtube.com%watch,63v,61hWwtFQLntbE.log.web
+@@ -1 +1 @@
+-1742983318s 1 https://www.youtube.com/watch?v=hWwtFQLntbE
++1743156234s 1 yt:https://www.youtube.com/watch?v=hWwtFQLntbE
+
+```
+</details>
+
+but then `git annex get` would still fail, since verification fails, likely due to the key also having size in it.  So I had to migrate to URL backend without size, as the bible teaches us:
+
+```shell
+$> git annex help migrate   
+...
+              One use of this option is to convert URL keys that were added by git-annex addurl --fast to ones that would have been added if that command was run with the --relaxed option. Eg:
+
+               git-annex migrate --remove-size --backend=URL somefile
+```
+
+but no luck -- nothing is done for that file/key:
+
+
+```shell
+$> git status
+On branch master
+Your branch is ahead of 'origin/master' by 1 commit.
+  (use "git push" to publish your local commits)
+
+nothing to commit, working tree clean
+
+$> ls -ld Чат_рулетка/2025-03-26-_Что_у_россиянок_в_головах____чат_рулетка.mkv
+lrwxrwxrwx 1 yoh datalad 151 Mar 26 06:01 Чат_рулетка/2025-03-26-_Что_у_россиянок_в_головах____чат_рулетка.mkv -> ../.git/annex/objects/p9/Km/URL-s955950--https&c%%www.youtube.com%watch,63v,61hWwtFQLntbE/URL-s955950--https&c%%www.youtube.com%watch,63v,61hWwtFQLntbE
+
+$> git annex --debug migrate --remove-size --backend=URL Чат_рулетка/2025-03-26-_Что_у_россиянок_в_головах____чат_рулетка.mkv
+[2025-03-28 08:09:40.732628384] (Utility.Process) process [1262316] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","ls-files","--stage","-z","--error-unmatch","--","\1063\1072\1090_\1088\1091\1083\1077\1090\1082\1072/2025-03-26-_\1063\1090\1086_\1091_\1088\1086\1089\1089\1080\1103\1085\1086\1082_\1074_\1075\1086\1083\1086\1074\1072\1093____\1095\1072\1090_\1088\1091\1083\1077\1090\1082\1072.mkv"]
+[2025-03-28 08:09:40.733804218] (Utility.Process) process [1262317] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)","--buffer"]
+[2025-03-28 08:09:40.73435116] (Utility.Process) process [1262318] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch=%(objectname) %(objecttype) %(objectsize)","--buffer"]
+[2025-03-28 08:09:40.738110034] (Utility.Process) process [1262318] done ExitSuccess
+[2025-03-28 08:09:40.738197257] (Utility.Process) process [1262317] done ExitSuccess
+[2025-03-28 08:09:40.738250358] (Utility.Process) process [1262316] done ExitSuccess
+[2025-03-28 08:09:40.738775092] (Utility.Process) process [1262319] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","mktree","--missing","--batch","-z"]
+[2025-03-28 08:09:40.739138127] (Utility.Process) process [1262320] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","mktree","--missing","--batch","-z"]
+[2025-03-28 08:09:40.741935559] (Utility.Process) process [1262320] done ExitSuccess
+[2025-03-28 08:09:40.74216456] (Utility.Process) process [1262319] done ExitSuccess
+
+$> ls -ld Чат_рулетка/2025-03-26-_Что_у_россиянок_в_головах____чат_рулетка.mkv
+lrwxrwxrwx 1 yoh datalad 151 Mar 26 06:01 Чат_рулетка/2025-03-26-_Что_у_россиянок_в_головах____чат_рулетка.mkv -> ../.git/annex/objects/p9/Km/URL-s955950--https&c%%www.youtube.com%watch,63v,61hWwtFQLntbE/URL-s955950--https&c%%www.youtube.com%watch,63v,61hWwtFQLntbE
+
+$> git annex version | head -n 1
+git-annex version: 10.20250115
+```
+
+
+
+
+
