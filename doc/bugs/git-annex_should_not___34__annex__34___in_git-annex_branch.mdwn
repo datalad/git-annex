@@ -1,0 +1,54 @@
+### Please describe the problem.
+
+Using `git annex add` while in `git-annex` branch would make git-annex add to annex not to git.
+
+There might be cases where direct manipulation within git-annex branch is desired. (in my case was to workaround [missing yt: prefix](https://git-annex.branchable.com/bugs/tries_to_download_a_.mkv_video_without_yt-dlp/)). Then I wanted to use generic tools (`sed` + `datalad run`) but was surprised that we got content added to annex while within git-annex branch.  I do not see when/why that could potentially be useful (but I might be wrong?!) 
+
+Sure could be argued to be "operator error" but it is more of question of assumptions and automations -- should all tools around git-annex guard for that?
+
+I think `annex add` should avoid annexing, and just do `git add` while under its dedicated `git-annex` branch -- after all it would only be git-annex which would know how special this (or any other) branch for it.
+
+### What steps will reproduce the problem?
+
+```
+❯ git clone -b git-annex https://github.com/OpenNeuroDatasets/ds000003; builtin cd ds000003; echo 123 > 123; git annex add 123; git commit -m 123 123; git show
+
+Cloning into 'ds000003'...
+remote: Enumerating objects: 1121, done.
+remote: Counting objects: 100% (29/29), done.
+remote: Compressing objects: 100% (19/19), done.
+remote: Total 1121 (delta 18), reused 10 (delta 10), pack-reused 1092 (from 1)
+Receiving objects: 100% (1121/1121), 92.35 KiB | 331.00 KiB/s, done.
+Resolving deltas: 100% (223/223), done.
+
+  Remote origin not usable by git-annex; setting annex-ignore
+
+  https://github.com/OpenNeuroDatasets/ds000003/config download failed: Not Found
+add 123 
+ok                                
+(recording state in git...)
+[git-annex cbbce8c] 123
+ 1 file changed, 1 insertion(+)
+ create mode 120000 123
+commit cbbce8c1d594f9e675eb6784111ee2e7926bc6ec (HEAD -> git-annex)
+Author: Yaroslav Halchenko <debian@onerussian.com>
+Date:   Fri Mar 28 07:21:14 2025 -0400
+
+    123
+
+diff --git a/123 b/123
+new file mode 120000
+index 0000000..0f13084
+--- /dev/null
++++ b/123
+@@ -0,0 +1 @@
++.git/annex/objects/G6/qW/SHA256E-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b/SHA256E-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b
+```
+
+### What version of git-annex are you using? On what operating system?
+
+```
+❯ git annex version
+git-annex version: 10.20250115
+...
+```
