@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="cjmarkie"
+ avatar="http://cdn.libravatar.org/avatar/cfcc5894b1cec05bf76d200073dd8977"
+ subject="comment 1"
+ date="2025-03-28T13:44:13Z"
+ content="""
+By the way, I'm happy to try my hand at contributing if I can get a couple pointers to where to start work. It's been a while since I wrote Haskell, so following execution paths is rusty. I've found the `Annex.fast` setting, but the `get` command implementation is harder to grep for.
+"""]]
