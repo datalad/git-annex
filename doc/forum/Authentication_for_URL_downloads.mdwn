@@ -1,0 +1,5 @@
+A while ago, I added a bunch of files from archive.org to my repository, using `git annex addurl --fast`. This worked fine. Unfortunately, since then the relevant archive has been marked access-restricted, meaning you need to log in to archive.org to download it.
+
+archive.org uses the now-standard Web authentication method of going to a login page and setting an authentication cookie. This is, of course, hard to automate. However, I can just log in from the browser and then export those cookies; I use [curlfire](https://github.com/talwrii/curlfire) for this.
+
+The problem is there isn't apparently any way to tell git-annex to do this. The old `annex.web-download-command` is apparently defunct; the new `web-options` doesn't let you change what program to use, only pass options to curl. What's the best way to handle this?
