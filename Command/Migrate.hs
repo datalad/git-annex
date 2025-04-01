@@ -90,7 +90,7 @@ start o ksha si file key = do
 			newbackend <- chooseBackend file
 			if (newbackend /= oldbackend || upgradableKey oldbackend || forced) && exists
 				then go False oldbackend newbackend
-				else if cantweaksize newbackend oldbackend && exists
+				else if cantweaksize newbackend oldbackend exists
 					then go True oldbackend newbackend
 					else stop
   where
@@ -101,10 +101,10 @@ start o ksha si file key = do
 		starting "migrate" (mkActionItem (key, file)) si $
 			perform onlytweaksize o file key keyrec oldbackend newbackend
 
-	cantweaksize newbackend oldbackend
+	cantweaksize newbackend oldbackend exists
 		| removeSize o = isJust (fromKey keySize key)
 		| newbackend /= oldbackend = False
-		| isNothing (fromKey keySize key) = True
+		| isNothing (fromKey keySize key) && exists = True
 		| otherwise = False
 
 	upgradableKey oldbackend = maybe False (\a -> a key) (canUpgradeKey oldbackend)

@@ -9,6 +9,8 @@ git-annex (10.20250321) UNRELEASED; urgency=medium
   * httpalso: Windows url fix.
   * Added remote.name.annex-web-options config, which is a per-remote
     version of the annex.web-options config.
+  * migrate: Fix --remove-size to work when a file is not present.
+    Fixes reversion introduced in version 10.20231129.
 
  -- Joey Hess <id@joeyh.name>  Fri, 21 Mar 2025 12:27:11 -0400
 
