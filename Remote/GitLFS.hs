@@ -101,7 +101,7 @@ gen r u rc gc rs = do
 		}
 	return $ Just $ specialRemote' specialcfg c
 		(store rs h)
-		(retrieve rs h)
+		(retrieve gc rs h)
 		(remove h)
 		(checkKey rs h)
 		(this c cst h)
@@ -367,7 +367,7 @@ getLFSEndpoint tro hv = do
 -- Not for use in downloading an object.
 makeSmallAPIRequest :: Request -> Annex (Response L.ByteString)
 makeSmallAPIRequest req = do
-	uo <- getUrlOptions
+	uo <- getUrlOptions Nothing
 	let req' = applyRequest uo req
 	fastDebug "Remote.GitLFS" (show req')
 	resp <- liftIO $ httpLbs req' (httpManager uo)
@@ -499,8 +499,8 @@ store rs h = fileStorer $ \k src p -> getLFSEndpoint LFS.RequestUpload h >>= \ca
 					Just reqs -> forM_ reqs $
 						makeSmallAPIRequest . setRequestCheckStatus
 
-retrieve :: RemoteStateHandle -> TVar LFSHandle -> Retriever
-retrieve rs h = fileRetriever' $ \dest k p iv -> getLFSEndpoint LFS.RequestDownload h >>= \case
+retrieve :: RemoteGitConfig -> RemoteStateHandle -> TVar LFSHandle -> Retriever
+retrieve gc rs h = fileRetriever' $ \dest k p iv -> getLFSEndpoint LFS.RequestDownload h >>= \case
 	Nothing -> giveup "unable to connect to git-lfs endpoint"
 	Just endpoint -> mkDownloadRequest rs k >>= \case
 		Nothing -> giveup "unable to download this object from git-lfs"
@@ -520,7 +520,7 @@ retrieve rs h = fileRetriever' $ \dest k p iv -> getLFSEndpoint LFS.RequestDownl
 			Just op -> case LFS.downloadOperationRequest op of
 				Nothing -> giveup "unable to parse git-lfs server download url"
 				Just req -> do
-					uo <- getUrlOptions
+					uo <- getUrlOptions (Just gc)
 					liftIO $ downloadConduit p iv req dest uo
 
 -- Since git-lfs does not support removing content, nothing needs to be

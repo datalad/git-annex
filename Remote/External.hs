@@ -77,9 +77,9 @@ gen rt externalprogram r u rc gc rs
 			exportUnsupported
 		return $ Just $ specialRemote c
 			readonlyStorer
-			retrieveUrl
+			(retrieveUrl gc)
 			readonlyRemoveKey
-			checkKeyUrl
+			(checkKeyUrl gc)
 			rmt
 	| otherwise = do
 		c <- parsedRemoteConfig remote rc
@@ -834,16 +834,16 @@ checkUrlM external url =
   where
 	mkmulti (u, s, f) = (u, s, toOsPath f)
 
-retrieveUrl :: Retriever
-retrieveUrl = fileRetriever' $ \f k p iv -> do
+retrieveUrl :: RemoteGitConfig -> Retriever
+retrieveUrl gc = fileRetriever' $ \f k p iv -> do
 	us <- getWebUrls k
-	unlessM (withUrlOptions $ downloadUrl True k p iv us f) $
+	unlessM (withUrlOptions (Just gc) $ downloadUrl True k p iv us f) $
 		giveup "failed to download content"
 
-checkKeyUrl :: CheckPresent
-checkKeyUrl k = do
+checkKeyUrl :: RemoteGitConfig -> CheckPresent
+checkKeyUrl gc k = do
 	us <- getWebUrls k
-	anyM (\u -> withUrlOptions $ checkBoth u (fromKey keySize k)) us
+	anyM (\u -> withUrlOptions (Just gc) $ checkBoth u (fromKey keySize k)) us
 
 getWebUrls :: Key -> Annex [URLString]
 getWebUrls key = filter supported <$> getUrls key

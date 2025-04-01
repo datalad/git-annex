@@ -496,7 +496,7 @@ parseSpecialRemoteUrl url remotename = case parseURI url of
 resolveSpecialRemoteWebUrl :: String -> Annex (Maybe String)
 resolveSpecialRemoteWebUrl url
 	| "http://" `isPrefixOf` lcurl || "https://" `isPrefixOf` lcurl =
-		Url.withUrlOptionsPromptingCreds $ \uo ->
+		Url.withUrlOptionsPromptingCreds Nothing $ \uo ->
 			withTmpFile (literalOsPath "git-remote-annex") $ \tmp h -> do
 				liftIO $ hClose h
 				Url.download' nullMeterUpdate Nothing url tmp uo >>= \case

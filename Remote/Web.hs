@@ -75,7 +75,7 @@ gen r u rc gc rs = do
 		, cost = cst
 		, name = Git.repoDescribe r
 		, storeKey = uploadKey
-		, retrieveKeyFile = downloadKey urlincludeexclude
+		, retrieveKeyFile = downloadKey gc urlincludeexclude
 		, retrieveKeyFileInOrder = pure True
 		, retrieveKeyFileCheap = Nothing
 		-- HttpManagerRestricted is used here, so this is
@@ -83,7 +83,7 @@ gen r u rc gc rs = do
 		, retrievalSecurityPolicy = RetrievalAllKeysSecure
 		, removeKey = dropKey urlincludeexclude
 		, lockContent = Nothing
-		, checkPresent = checkKey urlincludeexclude
+		, checkPresent = checkKey gc urlincludeexclude
 		, checkPresentCheap = False
 		, exportActions = exportUnsupported
 		, importActions = importUnsupported
@@ -115,8 +115,8 @@ setupInstance _ mu _ c _ = do
 	gitConfigSpecialRemote u c [("web", "true")]
 	return (c, u)
 
-downloadKey :: UrlIncludeExclude -> Key -> AssociatedFile -> OsPath -> MeterUpdate -> VerifyConfig -> Annex Verification
-downloadKey urlincludeexclude key _af dest p vc = 
+downloadKey :: RemoteGitConfig -> UrlIncludeExclude -> Key -> AssociatedFile -> OsPath -> MeterUpdate -> VerifyConfig -> Annex Verification
+downloadKey gc urlincludeexclude key _af dest p vc = 
 	go =<< getWebUrls' urlincludeexclude key
   where
 	go [] = giveup "no known url"
@@ -138,7 +138,7 @@ downloadKey urlincludeexclude key _af dest p vc =
 			)
 	dl (us, ytus) = do
 		iv <- startVerifyKeyContentIncrementally vc key
-		ifM (Url.withUrlOptions $ downloadUrl True key p iv (map fst us) dest)
+		ifM (Url.withUrlOptions (Just gc) $ downloadUrl True key p iv (map fst us) dest)
 			( finishVerifyKeyContentIncrementally iv >>= \case
 				(True, v) -> postdl v
 				(False, _) -> dl ([], ytus)
@@ -177,19 +177,21 @@ uploadKey _ _ _ _ = giveup "upload to web not supported"
 dropKey :: UrlIncludeExclude -> Maybe SafeDropProof -> Key -> Annex ()
 dropKey urlincludeexclude _proof k = mapM_ (setUrlMissing k) =<< getWebUrls' urlincludeexclude k
 
-checkKey :: UrlIncludeExclude -> Key -> Annex Bool
-checkKey urlincludeexclude key = do
+checkKey :: RemoteGitConfig -> UrlIncludeExclude -> Key -> Annex Bool
+checkKey gc urlincludeexclude key = do
 	us <- getWebUrls' urlincludeexclude key
 	if null us
 		then return False
-		else either giveup return =<< checkKey' key us
-checkKey' :: Key -> [URLString] -> Annex (Either String Bool)
-checkKey' key us = firsthit us (Right False) $ \u -> do
+		else either giveup return =<< checkKey' gc key us
+
+checkKey' :: RemoteGitConfig -> Key -> [URLString] -> Annex (Either String Bool)
+checkKey' gc key us = firsthit us (Right False) $ \u -> do
 	let (u', downloader) = getDownloader u
 	case downloader of
 		YoutubeDownloader -> youtubeDlCheck u'
 		_ -> catchMsgIO $
-			Url.withUrlOptions $ Url.checkBoth u' (fromKey keySize key)
+			Url.withUrlOptions (Just gc) $
+				Url.checkBoth u' (fromKey keySize key)
   where
 	firsthit [] miss _ = return miss
 	firsthit (u:rest) _ a = do

@@ -142,11 +142,11 @@ isGitRemoteAnnex r = "annex::" `isPrefixOf` Git.repoLocation r
  - etc.
  -}
 gitSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-gitSetup Init mu _ c _ = do
+gitSetup Init mu _ c gc = do
 	let location = maybe (giveup "Specify location=url") fromProposedAccepted $
 		M.lookup locationField c
 	r <- inRepo $ Git.Construct.fromRemoteLocation location False
-	r' <- tryGitConfigRead False r False
+	r' <- tryGitConfigRead gc False r False
 	let u = getUncachedUUID r'
 	if u == NoUUID
 		then giveup "git repository does not have an annex uuid"
@@ -187,10 +187,10 @@ configRead autoinit r = do
 	case (repoCheap r, annexignore, hasuuid) of
 		(_, True, _) -> return r
 		(True, _, _)
-			| remoteAnnexCheckUUID gc -> tryGitConfigRead autoinit r hasuuid
+			| remoteAnnexCheckUUID gc -> tryGitConfigRead gc autoinit r hasuuid
 			| otherwise -> return r
 		(False, _, False) -> configSpecialGitRemotes r >>= \case
-			Nothing -> tryGitConfigRead autoinit r False
+			Nothing -> tryGitConfigRead gc autoinit r False
 			Just r' -> return r'
 		_ -> return r
 
@@ -273,8 +273,8 @@ unavailable r u c gc = gen r' u c gc'
 
 {- Tries to read the config for a specified remote, updates state, and
  - returns the updated repo. -}
-tryGitConfigRead :: Bool -> Git.Repo -> Bool -> Annex Git.Repo
-tryGitConfigRead autoinit r hasuuid
+tryGitConfigRead :: RemoteGitConfig -> Bool -> Git.Repo -> Bool -> Annex Git.Repo
+tryGitConfigRead gc autoinit r hasuuid
 	| haveconfig r = return r -- already read
 	| Git.repoIsSsh r = storeUpdatedRemote $ do
 		v <- Ssh.onRemote NoConsumeStdin r
@@ -323,7 +323,7 @@ tryGitConfigRead autoinit r hasuuid
 				warning $ UnquotedString $ "Unable to parse git config from " ++ configloc
 				return $ Left exitcode
 
-	geturlconfig = Url.withUrlOptionsPromptingCreds $ \uo -> do
+	geturlconfig = Url.withUrlOptionsPromptingCreds (Just gc) $ \uo -> do
 		let url = Git.repoLocation r ++ "/config"
 		v <- withTmpFile (literalOsPath "git-annex.tmp") $ \tmpfile h -> do
 			liftIO $ hClose h
@@ -449,7 +449,7 @@ inAnnex' repo rmt st@(State connpool duc _ _ _) key
 	checkp2phttp = p2pHttpClient rmt giveup (clientCheckPresent key)
 	checkhttp = do
 		gc <- Annex.getGitConfig
-		Url.withUrlOptionsPromptingCreds $ \uo -> 
+		Url.withUrlOptionsPromptingCreds (Just (gitconfig rmt)) $ \uo -> 
 			anyM (\u -> Url.checkBoth u (fromKey keySize key) uo)
 				(keyUrls gc repo rmt key)
 	checkremote = P2PHelper.checkpresent (Ssh.runProto rmt connpool (cantCheck rmt)) key
@@ -570,7 +570,7 @@ copyFromRemote'' repo r st@(State connpool _ _ _ _) key af dest meterupdate vc
 	| isP2PHttp r = copyp2phttp
 	| Git.repoIsHttp repo = verifyKeyContentIncrementally vc key $ \iv -> do
 		gc <- Annex.getGitConfig
-		ok <- Url.withUrlOptionsPromptingCreds $
+		ok <- Url.withUrlOptionsPromptingCreds (Just (gitconfig r)) $
 			Annex.Content.downloadUrl False key meterupdate iv (keyUrls gc repo r key) dest
 		unless ok $
 			giveup "failed to download content"
@@ -890,7 +890,7 @@ mkState r u gc = do
 			rv <- liftIO newEmptyMVar
 			let getrepo = ifM (liftIO $ isEmptyMVar rv)
 				( do
-					r' <- tryGitConfigRead False r True
+					r' <- tryGitConfigRead gc False r True
 					let t = (r', extractGitConfig FromGitConfig r')
 					void $ liftIO $ tryPutMVar rv t
 					return t

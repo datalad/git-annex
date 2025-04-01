@@ -74,7 +74,7 @@ youtubeDlNotAllowedMessage = unwords
 -- <https://github.com/rg3/youtube-dl/issues/14864>)
 youtubeDl :: URLString -> OsPath -> MeterUpdate -> Annex (Either String (Maybe OsPath))
 youtubeDl url workdir p = ifM ipAddressesUnlimited
-	( withUrlOptions $ youtubeDl' url workdir p
+	( withUrlOptions Nothing $ youtubeDl' url workdir p
 	, return $ Left youtubeDlNotAllowedMessage
 	)
 
@@ -194,7 +194,7 @@ youtubeDlTo key url dest p = do
 -- without it. So, this first downloads part of the content and checks 
 -- if it's a html page; only then is youtube-dl used.
 htmlOnly :: URLString -> a -> Annex a -> Annex a
-htmlOnly url fallback a = withUrlOptions $ \uo -> 
+htmlOnly url fallback a = withUrlOptions Nothing $ \uo -> 
 	liftIO (downloadPartial url uo htmlPrefixLength) >>= \case
 		Just bs | isHtmlBs bs -> a
 		_ -> return fallback
@@ -202,7 +202,7 @@ htmlOnly url fallback a = withUrlOptions $ \uo ->
 -- Check if youtube-dl supports downloading content from an url.
 youtubeDlSupported :: URLString -> Annex Bool
 youtubeDlSupported url = either (const False) id
-	<$> withUrlOptions (youtubeDlCheck' url)
+	<$> withUrlOptions Nothing (youtubeDlCheck' url)
 
 -- Check if youtube-dl can find media in an url.
 --
@@ -211,7 +211,7 @@ youtubeDlSupported url = either (const False) id
 -- download won't succeed.
 youtubeDlCheck :: URLString -> Annex (Either String Bool)
 youtubeDlCheck url = ifM youtubeDlAllowed
-	( withUrlOptions $ youtubeDlCheck' url
+	( withUrlOptions Nothing $ youtubeDlCheck' url
 	, return $ Left youtubeDlNotAllowedMessage
 	)
 
@@ -227,7 +227,7 @@ youtubeDlCheck' url uo
 --
 -- (This is not always identical to the filename it uses when downloading.)
 youtubeDlFileName :: URLString -> Annex (Either String OsPath)
-youtubeDlFileName url = withUrlOptions go
+youtubeDlFileName url = withUrlOptions Nothing go
   where
 	go uo
 		| supportedScheme uo url = flip catchIO (pure . Left . show) $
@@ -238,7 +238,7 @@ youtubeDlFileName url = withUrlOptions go
 -- Does not check if the url contains htmlOnly; use when that's already
 -- been verified.
 youtubeDlFileNameHtmlOnly :: URLString -> Annex (Either String OsPath)
-youtubeDlFileNameHtmlOnly = withUrlOptions . youtubeDlFileNameHtmlOnly'
+youtubeDlFileNameHtmlOnly = withUrlOptions Nothing . youtubeDlFileNameHtmlOnly'
 
 youtubeDlFileNameHtmlOnly' :: URLString -> UrlOptions -> Annex (Either String OsPath)
 youtubeDlFileNameHtmlOnly' url uo

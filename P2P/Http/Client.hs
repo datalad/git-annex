@@ -100,7 +100,7 @@ p2pHttpClientVersions' allowedversion rmt rmtrepo fallback clientaction =
 	case p2pHttpBaseUrl <$> remoteAnnexP2PHttpUrl (gitconfig rmt) of
 		Nothing -> error "internal"
 		Just baseurl -> do
-			mgr <- httpManager <$> getUrlOptions
+			mgr <- httpManager <$> getUrlOptions Nothing
 			let clientenv = mkClientEnv mgr baseurl
 			ccv <- Annex.getRead Annex.gitcredentialcache
 			Git.CredentialCache cc <- liftIO $ atomically $

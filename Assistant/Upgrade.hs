@@ -324,7 +324,7 @@ usingDistribution = isJust <$> getEnv "GIT_ANNEX_STANDLONE_ENV"
 
 downloadDistributionInfo :: Assistant (Maybe GitAnnexDistribution)
 downloadDistributionInfo = do
-	uo <- liftAnnex Url.getUrlOptions
+	uo <- liftAnnex $ Url.getUrlOptions Nothing
 	gpgcmd <- liftAnnex $ gpgCmd <$> Annex.getGitConfig
 	liftIO $ withTmpDir (literalOsPath "git-annex.tmp") $ \tmpdir -> do
 		let infof = tmpdir </> literalOsPath "info"

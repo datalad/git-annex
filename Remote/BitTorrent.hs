@@ -66,7 +66,7 @@ gen r _ rc gc rs = do
 		, cost = cst
 		, name = Git.repoDescribe r
 		, storeKey = uploadKey
-		, retrieveKeyFile = downloadKey
+		, retrieveKeyFile = downloadKey gc
 		-- Bittorrent downloads out of order, but downloadTorrentContent
 		-- moves the downloaded file to the destination at the end.
 		, retrieveKeyFileInOrder = pure True
@@ -94,12 +94,12 @@ gen r _ rc gc rs = do
 		, mkUnavailable = return Nothing
 		, getInfo = return []
 		, claimUrl = Just (pure . isSupportedUrl)
-		, checkUrl = Just checkTorrentUrl
+		, checkUrl = Just (checkTorrentUrl gc)
 		, remoteStateHandle = rs
 		}
 
-downloadKey :: Key -> AssociatedFile -> OsPath -> MeterUpdate -> VerifyConfig -> Annex Verification
-downloadKey key _file dest p _ = do
+downloadKey :: RemoteGitConfig -> Key -> AssociatedFile -> OsPath -> MeterUpdate -> VerifyConfig -> Annex Verification
+downloadKey gc key _file dest p _ = do
 	get . map (torrentUrlNum . fst . getDownloader) =<< getBitTorrentUrls key
 	-- While bittorrent verifies the hash in the torrent file,
 	-- the torrent file itself is downloaded without verification,
@@ -112,7 +112,7 @@ downloadKey key _file dest p _ = do
 		ok <- untilTrue urls $ \(u, filenum) -> do
 			registerTorrentCleanup u
 			checkDependencies
-			ifM (downloadTorrentFile u)
+			ifM (downloadTorrentFile gc u)
 				( downloadTorrentContent key u dest filenum p
 				, return False
 				)
@@ -151,11 +151,11 @@ isTorrentMagnetUrl u = "magnet:" `isPrefixOf` u && checkbt (parseURIPortable u)
 	checkbt (Just uri) | "xt=urn:btih:" `isInfixOf` uriQuery uri = True
 	checkbt _ = False
 
-checkTorrentUrl :: URLString -> Annex UrlContents
-checkTorrentUrl u = do
+checkTorrentUrl :: RemoteGitConfig -> URLString -> Annex UrlContents
+checkTorrentUrl gc u = do
 	checkDependencies
 	registerTorrentCleanup u
-	ifM (downloadTorrentFile u)
+	ifM (downloadTorrentFile gc u)
 		( torrentContents u
 		, giveup "could not download torrent file"
 		)
@@ -192,8 +192,8 @@ registerTorrentCleanup u = Annex.addCleanupAction (TorrentCleanup u) $
 	liftIO . removeWhenExistsWith removeFile =<< tmpTorrentFile u
 
 {- Downloads the torrent file. (Not its contents.) -}
-downloadTorrentFile :: URLString -> Annex Bool
-downloadTorrentFile u = do
+downloadTorrentFile :: RemoteGitConfig -> URLString -> Annex Bool
+downloadTorrentFile gc u = do
 	torrent <- tmpTorrentFile u
 	ifM (liftIO $ doesFileExist torrent)
 		( return True
@@ -213,7 +213,7 @@ downloadTorrentFile u = do
 					withTmpFileIn othertmp (literalOsPath "torrent") $ \f h -> do
 						liftIO $ hClose h
 						resetAnnexFilePerm f
-						ok <- Url.withUrlOptions $ 
+						ok <- Url.withUrlOptions (Just gc) $ 
 							Url.download nullMeterUpdate Nothing u f
 						when ok $
 							liftIO $ moveFile f torrent

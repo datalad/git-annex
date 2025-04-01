@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-04-01T13:15:04Z"
+ content="""
+Well curl does have a --cookie option. But setting that would make all
+downloads from the web special remote have the same cookies set. So
+exposing them to any other web servers you also use with that remote.
+
+I think that generally, things involving authentication are a 
+good use case for writing a little external special remote of your own
+that handles the particulars of a given service. Especially if you can
+share it with others. [[doc/special_remotes/external/example.sh]] is a good
+starting place for writing that.
+
+That said, this is also right on the line to something it might be possible
+for git-annex to support better without you needing to do that work. It's
+actually possible to initremote a second web special remote that is limited
+to a single host and is used preferentially to the web special remote:
+
+	git-annex initremote --sameas=web archiveorg type=web urlinclude='*archive.org/*'
+	git config remote.archiveorg.annex-cost 100
+
+If `annex.web-options` had a per-remote config, like some other configs do, 
+but which it currently does not, you could then just set that to pass the
+cookies to curl when using that archiveorg special remote:
+
+	git config remote.archiveorg.annex-web-options "--cookie=whatever"
+
+Since that seems like a good idea, I've implemented it! Get it in the next
+release or a daily build.
+
+PS, you'll also need to set this, which does have its own security
+ramifications:
+
+	git config annex.security.allowed-ip-addresses all
+"""]]

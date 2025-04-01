@@ -404,6 +404,7 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexBwLimitUpload :: Maybe BwRate
 	, remoteAnnexBwLimitDownload :: Maybe BwRate
 	, remoteAnnexAllowUnverifiedDownloads :: Bool
+	, remoteAnnexWebOptions :: [String]
 	, remoteAnnexUUID :: Maybe UUID
 	, remoteAnnexConfigUUID :: Maybe UUID
 	, remoteAnnexMaxGitBundles :: Int
@@ -492,6 +493,7 @@ extractRemoteGitConfig r remotename = do
 			readBwRatePerSecond =<< getmaybe BWLimitDownloadField
 		, remoteAnnexAllowUnverifiedDownloads = (== Just "ACKTHPPT") $
 			getmaybe SecurityAllowUnverifiedDownloadsField
+		, remoteAnnexWebOptions = getwords WebOptionsField
 		, remoteAnnexUUID = toUUID <$> getmaybe UUIDField
 		, remoteAnnexConfigUUID = toUUID <$> getmaybe ConfigUUIDField
 		, remoteAnnexMaxGitBundles =
@@ -556,6 +558,7 @@ extractRemoteGitConfig r remotename = do
 			| B.null b -> Nothing
 			| otherwise -> Just (decodeBS b)
 		_ -> Nothing
+	getwords k = fromMaybe [] $ words <$> getmaybe k
 
 data RemoteGitConfigField
 	= CostField
@@ -588,6 +591,7 @@ data RemoteGitConfigField
 	| UUIDField
 	| ConfigUUIDField
 	| SecurityAllowUnverifiedDownloadsField
+	| WebOptionsField
 	| MaxGitBundlesField
 	| AllowEncryptedGitRepoField
 	| ProxyField
@@ -656,6 +660,7 @@ remoteGitConfigField = \case
 	UUIDField -> uninherited True "uuid"
 	ConfigUUIDField -> uninherited True "config-uuid"
 	SecurityAllowUnverifiedDownloadsField -> inherited True "security-allow-unverified-downloads"
+	WebOptionsField -> inherited True "web-options"
 	MaxGitBundlesField -> inherited True "max-git-bundles"
 	AllowEncryptedGitRepoField -> inherited True "allow-encrypted-gitrepo"
 	-- Allow proxy chains.

@@ -57,9 +57,9 @@ gen r u rc gc rs = do
 	ll <- liftIO newLearnedLayout
 	return $ Just $ specialRemote c
 		cannotModify
-		(downloadKey url ll)
+		(downloadKey gc url ll)
 		cannotModify
-		(checkKey url ll)
+		(checkKey gc url ll)
 		(this url c cst)
   where
 	this url c cst = Remote
@@ -79,9 +79,9 @@ gen r u rc gc rs = do
 		, checkPresentCheap = False
 		, exportActions = ExportActions
 			{ storeExport = cannotModify
-			, retrieveExport = retriveExportHttpAlso url
+			, retrieveExport = retriveExportHttpAlso gc url
 			, removeExport = cannotModify
-			, checkPresentExport = checkPresentExportHttpAlso url
+			, checkPresentExport = checkPresentExportHttpAlso gc url
 			, removeExportDirectory = Nothing
 			, renameExport = cannotModify
 			}
@@ -121,34 +121,35 @@ httpAlsoSetup _ (Just u) _ c gc = do
 	gitConfigSpecialRemote u c' [("httpalso", "true")]
 	return (c', u)
 
-downloadKey :: Maybe URLString -> LearnedLayout -> Retriever
-downloadKey baseurl ll = fileRetriever' $ \dest key p iv ->
-	downloadAction dest p iv (keyUrlAction baseurl ll key)
+downloadKey :: RemoteGitConfig -> Maybe URLString -> LearnedLayout -> Retriever
+downloadKey gc baseurl ll = fileRetriever' $ \dest key p iv ->
+	downloadAction gc dest p iv (keyUrlAction baseurl ll key)
 
-retriveExportHttpAlso :: Maybe URLString -> Key -> ExportLocation -> OsPath -> MeterUpdate -> Annex Verification
-retriveExportHttpAlso baseurl key loc dest p = do
+retriveExportHttpAlso :: RemoteGitConfig -> Maybe URLString -> Key -> ExportLocation -> OsPath -> MeterUpdate -> Annex Verification
+retriveExportHttpAlso gc baseurl key loc dest p = do
 	verifyKeyContentIncrementally AlwaysVerify key $ \iv ->
-		downloadAction dest p iv (exportLocationUrlAction baseurl loc)
+		downloadAction gc dest p iv (exportLocationUrlAction baseurl loc)
 
-downloadAction :: OsPath -> MeterUpdate -> Maybe IncrementalVerifier -> ((URLString -> Annex (Either String ())) -> Annex (Either String ())) -> Annex ()
-downloadAction dest p iv run =
-	Url.withUrlOptions $ \uo ->
+downloadAction :: RemoteGitConfig -> OsPath -> MeterUpdate -> Maybe IncrementalVerifier -> ((URLString -> Annex (Either String ())) -> Annex (Either String ())) -> Annex ()
+downloadAction gc dest p iv run =
+	Url.withUrlOptions (Just gc) $ \uo ->
 		run (\url -> Url.download' p iv url dest uo)
 			>>= either giveup (const (return ()))
 
-checkKey :: Maybe URLString -> LearnedLayout -> CheckPresent
-checkKey baseurl ll key =
-	isRight <$> keyUrlAction baseurl ll key (checkKey' key)
+checkKey :: RemoteGitConfig -> Maybe URLString -> LearnedLayout -> CheckPresent
+checkKey gc baseurl ll key =
+	isRight <$> keyUrlAction baseurl ll key (checkKey' gc key)
 
-checkKey' :: Key -> URLString -> Annex (Either String ())
-checkKey' key url = ifM (Url.withUrlOptions $ Url.checkBoth url (fromKey keySize key))
-	( return (Right ())
-	, return (Left "content not found")
-	)
+checkKey' :: RemoteGitConfig -> Key -> URLString -> Annex (Either String ())
+checkKey' gc key url = 
+	ifM (Url.withUrlOptions (Just gc) $ Url.checkBoth url (fromKey keySize key))
+		( return (Right ())
+		, return (Left "content not found")
+		)
 
-checkPresentExportHttpAlso :: Maybe URLString -> Key -> ExportLocation -> Annex Bool
-checkPresentExportHttpAlso baseurl key loc =
-	isRight <$> exportLocationUrlAction baseurl loc (checkKey' key)
+checkPresentExportHttpAlso :: RemoteGitConfig -> Maybe URLString -> Key -> ExportLocation -> Annex Bool
+checkPresentExportHttpAlso gc baseurl key loc =
+	isRight <$> exportLocationUrlAction baseurl loc (checkKey' gc key)
 
 type LearnedLayout = TVar (Maybe [Key -> URLString])
 

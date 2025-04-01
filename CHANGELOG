@@ -7,6 +7,8 @@ git-annex (10.20250321) UNRELEASED; urgency=medium
   * fsck: Avoid complaining about required content of dead repositories.
   * drop: Avoid redundant object directory thawing.
   * httpalso: Windows url fix.
+  * Added remote.name.annex-web-options config, which is a per-remote
+    version of the annex.web-options config.
 
  -- Joey Hess <id@joeyh.name>  Fri, 21 Mar 2025 12:27:11 -0400
 

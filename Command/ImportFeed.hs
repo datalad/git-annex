@@ -268,7 +268,7 @@ findDownloads u f = catMaybes $ map mk (feedItems f)
 downloadFeed :: URLString -> FilePath -> Annex Bool
 downloadFeed url f
 	| Url.parseURIRelaxed url == Nothing = giveup "invalid feed url"
-	| otherwise = Url.withUrlOptions $
+	| otherwise = Url.withUrlOptions Nothing $
 		Url.download nullMeterUpdate Nothing url (toOsPath f)
 
 startDownload :: AddUnlockedMatcher -> ImportFeedOptions -> Cache -> TMVar Bool -> ToDownload -> CommandStart
@@ -367,7 +367,7 @@ downloadEnclosure addunlockedmatcher opts cache cv todownload url =
 				let go urlinfo = Just . maybeToList <$> addUrlFile addunlockedmatcher dlopts url urlinfo f
 				if relaxedOption (downloadOptions opts)
 					then go Url.assumeUrlExists
-					else Url.withUrlOptions (Url.getUrlInfo url) >>= \case
+					else Url.withUrlOptions Nothing (Url.getUrlInfo url) >>= \case
 						Right urlinfo -> go urlinfo
 						Left err -> do
 							warning (UnquotedString err)

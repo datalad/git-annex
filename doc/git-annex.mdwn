@@ -2067,18 +2067,18 @@ Remotes are configured using these settings in `.git/config`.
 
   Used by hook special remotes to record the type of the remote.
 
-* `annex.web-options`
+* `annex.web-options`, `remote.<name>.annex-web-options`
 
   Options to pass to curl when git-annex uses it to download urls
   (rather than the default built-in url downloader).
 
   For example, to force IPv4 only, set it to "-4".
 
-  Setting this option makes git-annex use curl, but only
+  Setting this makes git-annex use curl, but only
   when annex.security.allowed-ip-addresses is configured in a
   specific way. See its documentation.
 
-  Setting this option prevents git-annex from using git-credential
+  Setting this prevents git-annex from using git-credential
   for prompting for http passwords. Instead, you can include "--netrc"
   to make curl use your ~/.netrc file and record the passwords there.
 

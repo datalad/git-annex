@@ -251,7 +251,7 @@ startWeb addunlockedmatcher o si urlstring = go $ fromMaybe bad $ parseURIPortab
 	go url = startingAddUrl si urlstring o $
 		if relaxedOption (downloadOptions o)
 			then go' url Url.assumeUrlExists
-			else Url.withUrlOptions (Url.getUrlInfo urlstring) >>= \case
+			else Url.withUrlOptions Nothing (Url.getUrlInfo urlstring) >>= \case
 				Right urlinfo -> go' url urlinfo
 				Left err -> do
 					warning (UnquotedString err)
@@ -352,7 +352,8 @@ downloadWeb addunlockedmatcher o url urlinfo file =
 	go =<< downloadWith' downloader urlkey webUUID url file
   where
 	urlkey = addSizeUrlKey urlinfo $ Backend.URL.fromUrl url Nothing (verifiableOption o)
-	downloader f p = Url.withUrlOptions $ downloadUrl False urlkey p Nothing [url] f
+	downloader f p = Url.withUrlOptions Nothing $
+		downloadUrl False urlkey p Nothing [url] f
 	go Nothing = return Nothing
 	go (Just (tmp, backend)) = ifM (useYoutubeDl o <&&> liftIO (isHtmlFile tmp))
 		( tryyoutubedl tmp backend

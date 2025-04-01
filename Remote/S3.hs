@@ -427,7 +427,7 @@ retrieve hv r rs c info = fileRetriever' $ \f k p iv -> withS3Handle hv $ \case
 			Left failreason -> do
 				warning (UnquotedString failreason)
 				giveup "cannot download content"
-			Right us -> unlessM (withUrlOptions $ downloadUrl False k p iv us f) $
+			Right us -> unlessM (withUrlOptions Nothing $ downloadUrl False k p iv us f) $
 				giveup "failed to download content"
 	Left S3HandleAnonymousOldAws -> giveupS3HandleProblem S3HandleAnonymousOldAws (uuid r)
 
@@ -475,7 +475,7 @@ checkKey hv r rs c info k = withS3Handle hv $ \case
 				warning (UnquotedString failreason)
 				giveup "cannot check content"
 			Right us -> do
-				let check u = withUrlOptions $ 
+				let check u = withUrlOptions Nothing $ 
 					Url.checkBoth u (fromKey keySize k)
 				anyM check us
 	Left S3HandleAnonymousOldAws -> giveupS3HandleProblem S3HandleAnonymousOldAws (uuid r)
@@ -516,7 +516,7 @@ retrieveExportS3 hv r info k loc f p = verifyKeyContentIncrementally AlwaysVerif
 		Right h -> retrieveHelper info h (Left (T.pack exportloc)) f p iv
 		Left S3HandleNeedCreds -> case getPublicUrlMaker info of
 			Just geturl -> either giveup return =<<
-				Url.withUrlOptions
+				withUrlOptions Nothing
 					(Url.download' p iv (geturl exportloc) f)
 			Nothing -> giveup $ needS3Creds (uuid r)
 		Left S3HandleAnonymousOldAws -> giveupS3HandleProblem S3HandleAnonymousOldAws (uuid r)
@@ -537,7 +537,7 @@ checkPresentExportS3 :: S3HandleVar -> Remote -> S3Info -> Key -> ExportLocation
 checkPresentExportS3 hv r info k loc = withS3Handle hv $ \case
 	Right h -> checkKeyHelper info h (Left (T.pack $ bucketExportLocation info loc))
 	Left S3HandleNeedCreds -> case getPublicUrlMaker info of
-		Just geturl -> withUrlOptions $
+		Just geturl -> withUrlOptions Nothing $
 			Url.checkBoth (geturl $ bucketExportLocation info loc) (fromKey keySize k)
 		Nothing -> giveupS3HandleProblem S3HandleNeedCreds (uuid r)
 	Left S3HandleAnonymousOldAws -> giveupS3HandleProblem S3HandleAnonymousOldAws (uuid r)
@@ -913,7 +913,7 @@ mkS3HandleVar c gc u = liftIO $ newTVarIO $ Left $
 				Nothing -> return (Left S3HandleNeedCreds)
   where
 	go awscreds = do
-		ou <- getUrlOptions
+		ou <- getUrlOptions Nothing
 		ua <- getUserAgent
 		let awscfg = AWS.Configuration AWS.Timestamp awscreds debugMapper Nothing
 		let s3cfg = s3Configuration (Just ua) c

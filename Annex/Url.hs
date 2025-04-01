@@ -56,8 +56,8 @@ getUserAgent :: Annex U.UserAgent
 getUserAgent = Annex.getRead $ 
 	fromMaybe defaultUserAgent . Annex.useragent
 
-getUrlOptions :: Annex U.UrlOptions
-getUrlOptions = Annex.getState Annex.urloptions >>= \case
+getUrlOptions :: Maybe RemoteGitConfig -> Annex U.UrlOptions
+getUrlOptions mgc = Annex.getState Annex.urloptions >>= \case
 	Just uo -> return uo
 	Nothing -> do
 		uo <- mk
@@ -81,10 +81,15 @@ getUrlOptions = Annex.getState Annex.urloptions >>= \case
 			>>= \case
 				Just output -> pure (lines output)
 				Nothing -> annexHttpHeaders <$> Annex.getGitConfig
+			
+	getweboptions = case mgc of
+		Just gc | not (null (remoteAnnexWebOptions gc)) ->
+			pure (remoteAnnexWebOptions gc)
+		_ -> annexWebOptions <$> Annex.getGitConfig
 	
 	checkallowedaddr = words . annexAllowedIPAddresses <$> Annex.getGitConfig >>= \case
 		["all"] -> do
-			curlopts <- map Param . annexWebOptions <$> Annex.getGitConfig
+			curlopts <- map Param <$> getweboptions
 			allowedurlschemes <- annexAllowedUrlSchemes <$> Annex.getGitConfig
 			let urldownloader = if null curlopts && not (any (`S.notMember` U.conduitUrlSchemes) allowedurlschemes)
 				then U.DownloadWithConduit $
@@ -148,8 +153,8 @@ ipAddressesUnlimited :: Annex Bool
 ipAddressesUnlimited = 
 	("all" == ) . annexAllowedIPAddresses <$> Annex.getGitConfig
 
-withUrlOptions :: (U.UrlOptions -> Annex a) -> Annex a
-withUrlOptions a = a =<< getUrlOptions
+withUrlOptions :: Maybe RemoteGitConfig -> (U.UrlOptions -> Annex a) -> Annex a
+withUrlOptions mgc a = a =<< getUrlOptions mgc
 
 -- When downloading an url, if authentication is needed, uses
 -- git-credential to prompt for username and password.
@@ -157,10 +162,10 @@ withUrlOptions a = a =<< getUrlOptions
 -- Note that, when the downloader is curl, it will not use git-credential.
 -- If the user wants to, they can configure curl to use a netrc file that
 -- handles authentication.
-withUrlOptionsPromptingCreds :: (U.UrlOptions -> Annex a) -> Annex a
-withUrlOptionsPromptingCreds a = do
+withUrlOptionsPromptingCreds :: Maybe RemoteGitConfig -> (U.UrlOptions -> Annex a) -> Annex a
+withUrlOptionsPromptingCreds mgc a = do
 	g <- Annex.gitRepo
-	uo <- getUrlOptions
+	uo <- getUrlOptions mgc
 	prompter <- mkPrompter
 	cc <- Annex.getRead Annex.gitcredentialcache
 	a $ uo
