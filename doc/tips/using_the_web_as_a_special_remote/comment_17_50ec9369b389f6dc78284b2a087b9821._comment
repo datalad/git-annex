@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: Special use case for Scientific application"""
+ date="2025-04-01T14:48:34Z"
+ content="""
+Sure it will work fine to have different versions of annexed files. 
+git-annex will know the url it can use to get whichever version is checked
+out in the current git branch.
+
+As for an easier way, it's possible to use [[git-annex-import]]
+with certian special remotes, which imports a tree of files from them, and
+re-running it imports whatever files are new or changed. This needs a
+special remote that supports it, and it would perhaps be possible to write
+such a special remote for Zenodo. Dunno if it would be worth the work to
+implement, but it may be worth seeing if Datalad could support that, if
+you use Datalad.
+"""]]
