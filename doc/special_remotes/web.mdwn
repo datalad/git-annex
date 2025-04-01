@@ -39,4 +39,4 @@ can't be downloaded from "web" (or some other remote) will it fall back
 to downloading from slowweb.
 
     git-annex initremote --sameas=web slowweb type=web urlinclude='*//slowhost.com/*'
-    git config remote.slowweb.cost 300
+    git config remote.slowweb.annex-cost 300
