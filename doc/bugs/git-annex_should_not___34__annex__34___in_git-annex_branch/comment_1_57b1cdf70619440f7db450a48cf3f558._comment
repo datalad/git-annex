@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-04-01T13:07:03Z"
+ content="""
+Adding a large file to git just because the git-annex branch is currently
+checked out seems like it would be a large footbomb. That is generally
+harder to recover from than adding a file to the annex and then realizing
+it needs to be added to git instead.
+
+Since git generally allows switching branches with new files
+staged. It would be entirely reasonable to check out the git-annex branch
+after adding a new annexed file but before committing it.
+And checking out the git-annex branch, `git-annex add` of a large file
+without committing it, then switching back to the main branch and committing
+there is also possible if someone wants to do that for some reason.
+
+Since manual commits to the git-annex branch need extra steps anyway
+(eg removing .git/annex/index or committing using it instead of the usual
+index file), I don't see much point in refining it.
+"""]]
