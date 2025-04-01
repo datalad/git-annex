@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2025-04-01T14:25:54Z"
+ content="""
+What you can recommend, which works already, is:
+
+	git -c annex.verify=false annex get
+
+As to adding this to --fast, I think some would be surprised if --fast
+allowed bad data to get into the repository. And commands like
+`git-annex copy --to` that do support --fast already use it to avoid round
+trip checks. It would not do to make --fast for those commands also avoid
+verification. And `git-annex copy` is very close to `git-annex get`, to
+the point that `git-annex get --from` is the same as `git-annex copy
+--from`.
+
+So, I think it's better to keep this a separate option, and the -c option I
+gave above works well enough I suppose.
+
+With that said, you're the second person asking about this in an HPC
+context this week. I suspect maybe you and @mih were working on the same
+problem in asking about this? Anyway, since you both seemed to have
+difficulty finding the way to do this, maybe it would be worth making a
+dedicated option like `--no-verify`.
+"""]]
