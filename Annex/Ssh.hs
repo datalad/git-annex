@@ -351,10 +351,15 @@ hostport2socket host (Just port) = hostport2socket' $
 	fromSshHost host ++ "!" ++ show port
 hostport2socket' :: String -> OsPath
 hostport2socket' s
-	| length s > lengthofmd5s = toOsPath $ show $ md5 $ encodeBL s
-	| otherwise = toOsPath s
+	| length s' > lengthofmd5s = toOsPath $ show $ md5 $ encodeBL s'
+	| otherwise = toOsPath s'
   where
 	lengthofmd5s = 32
+	-- ssh parses the socket filename as a ControlPath, so it can
+	-- contain eg "%h". We don't want that here, and it's possible
+	-- for a hostname to itself contain a '%', eg a IPV6 link-local
+	-- address with a zone ID.
+	s' = filter (/= '%') s
 
 socket2lock :: OsPath -> OsPath
 socket2lock socket = socket <> lockExt

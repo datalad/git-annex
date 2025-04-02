@@ -103,9 +103,10 @@ parseRemoteLocation s knownurl repo = go
 	urlstyle v = isURI (escapeURIString isUnescapedInURI v)
 	-- git remotes can be written scp style -- [user@]host:dir
 	-- but foo::bar is a git-remote-helper location instead
+	-- (although '::' can also be part of an IPV6 address)
 	scpstyle v = ":" `isInfixOf` v 
 		&& not ("//" `isInfixOf` v)
-		&& not ("::" `isInfixOf` v)
+		&& not ("::" `isInfixOf` (takeWhile (/= '[') v))
 	scptourl v = "ssh://" ++ host ++ slash dir
 	  where
 		(host, dir)

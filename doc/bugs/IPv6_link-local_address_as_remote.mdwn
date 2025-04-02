@@ -31,3 +31,5 @@ There is no problem with global IPv6 addresses, so it is likely that the percent
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes, I have successfully used git-annex with a local remote (same computer), ssh over IPv4, and ssh to a globally visible IPv6 address.
+
+> [[fixed|done]] --[[Joey]]
