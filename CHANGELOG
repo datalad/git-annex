@@ -12,7 +12,9 @@ git-annex (10.20250321) UNRELEASED; urgency=medium
   * migrate: Fix --remove-size to work when a file is not present.
     Fixes reversion introduced in version 10.20231129.
   * Support git remotes that use a IPV6 link-local address with a zone ID.
-  * Support git remotes that use an url with a user name that is URL encoded.
+  * Support git remotes that use an url with a user name that is URL
+    encoded, or in the case of an "scp-style" url, a user name that must be
+    encoded to be legal in an URL.
   * Fix git-lfs special remote ssh endpoint discovery when the repository
     path is URL encoded.
 
