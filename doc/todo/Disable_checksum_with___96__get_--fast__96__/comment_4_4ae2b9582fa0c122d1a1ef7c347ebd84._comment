@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="cjmarkie"
+ avatar="http://cdn.libravatar.org/avatar/cfcc5894b1cec05bf76d200073dd8977"
+ subject="comment 4"
+ date="2025-04-04T01:14:55Z"
+ content="""
+Ah, thanks! Honestly, I'm okay with this being hard and scary-looking to do, as long as I can find it. I don't see `annex.verify` in `man git-annex-config`. Do those docs need refreshing?
+"""]]
