@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="msz"
+ avatar="http://cdn.libravatar.org/avatar/6e8b88e7c70d86f4cfd27d450958aed4"
+ subject="comment 3"
+ date="2025-04-07T17:06:15Z"
+ content="""
+I've had the opportunity to revisit this old question of mine, and I'd like to ask some further questions.
+
+I understand the preference for git+annex remotes to not support encryption. However, I'm not sure how to understand layering the special remote (in particular, in front of a proxy).
+
+Is this possible with the existing git-annex tooling, or hypothetical? As far as I understand, a proxy 1) has to be a git repo thus cannot have encryption enabled, and 2) can push to an encrypted special remote (which must be a different type than git). It cannot pull encrypted annex keys from one special remote and put them unmodified into another (especially not into an annex-supporting git remote), right?
+
+The (modified) Forgejo instances we use support git-annex, i.e. git remotes which do not ignore the annex and accept content pushes (I call that git+annex). AFAIK the internal layout of such a Forgejo repository is not different from a bare repository ([DataLad blog: forgejo-anexajo - behind the curtain](https://blog.datalad.org/posts/forgejo-aneksajo/#behind-the-curtain)). The goal would be to have the annex objects sent encrypted to a Forgejo instance, *inside* or *alongside* the git repository. It seems that we would need a \"layer\" sitting on top of a normal git remote - but I don't see what that layer could look like.
+
+The best proxy set-up I came up with was a like this, with the encrypted remote behind the proxy (I'm using bare repository as the push target - not sure if Forgejo could be bent to our will like that):
+
+```
+local repository ----> (bare repository on a server) --proxy--> (directory special remote on the same server)
+                                 \"origin\"                          \"storage\" / proxied as \"origin-storage\"
+```
+It worked, also with encryption, but the setup has limitations. First, encryption happens server-side. Second, only sharedpubkey encryption does not require private keys to be on the server -- in which case pushing to the proxied \"origin-storage\" works, but getting (necessarily) requires enabling \"storage\" locally.
+"""]]
