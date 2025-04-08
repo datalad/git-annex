@@ -12,3 +12,5 @@ My understanding is that the current tor p2p support is essentially a special ca
 This should also make it possible to build e.g. a `git annex enable-yggstack` and `yggstack-annex::<pubkey>.pk.ygg` remote in terms of enable-p2p-socket and `p2p-annex::`, even outside of git-annex itself.
 
 What do you think?
+
+[[!tag projects/INM7]]
