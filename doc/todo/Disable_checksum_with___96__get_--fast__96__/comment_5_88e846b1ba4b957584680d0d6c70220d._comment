@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2025-04-09T15:11:14Z"
+ content="""
+It's documented on the main git-annex man page with all other git configs.
+The git-annex-config man page is for configs that can be stored in the
+git-annex branch, which this one cannot be.
+"""]]

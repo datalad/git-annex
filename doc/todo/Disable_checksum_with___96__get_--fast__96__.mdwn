@@ -12,3 +12,5 @@ Is this feasible?
 
 [[!meta author=cjmarkie]]
 [[!tag projects/openneuro]]
+
+> [[closing|done]] since the git config exists already. --[[Joey]]
