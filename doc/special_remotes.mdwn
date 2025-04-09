@@ -10,23 +10,23 @@ the content of files.
 * [[adb]] (for Android devices)
 * [[Amazon_Glacier|glacier]]
 * [[bittorrent]]
+* [[borg]]
 * [[bup]]
 * [[compute]]
 * [[ddar]]
 * [[directory]]
 * [[gcrypt]] (encrypted git repositories!)
 * [[git-lfs]]
+* [[git]]
 * [[hook]]
+* [[httpalso]]
+* [[rclone]]
 * [[rsync]]
 * [[S3]] (Amazon S3, and other compatible services)
 * [[tahoe]]
 * [[tor]]
 * [[web]]
 * [[webdav]]
-* [[git]]
-* [[httpalso]]
-* [[borg]]
-* [[rclone]]
 
 The above special remotes are built into git-annex, and can be used
 to tie git-annex into many cloud services.
