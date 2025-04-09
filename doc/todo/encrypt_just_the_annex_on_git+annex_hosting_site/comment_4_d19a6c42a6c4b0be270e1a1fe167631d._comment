@@ -41,4 +41,12 @@ A few gotchas I can see:
   are set up all storing to the same underlying remote. I think this is
   minor, because there would be 2 actual copies, just copies that happen to
   be on the same drive.
+* `encryption=shared` will not add any security if the underlying remote
+  is a git repository, because pushing the git-annex branch there will make
+  the encryption key available to anyone who can access the git repository.
+  Instead will need to use `encryption=pubkey`.
+  (Since this is a bit non-obvious, it should probably reject attempts
+  to do that.)
+
+I have some early work (documentation) in the `maskremote` branch.
 """]]
