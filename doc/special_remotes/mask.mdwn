@@ -1,0 +1,31 @@
+This adds a layer of encryption to another remote. Files are stored on the
+underlying remote, but get encrypted first by the mask.
+
+For example, a git repository is usually not encrypted (although see
+[[gcrypt]]). If you want to store some annexed files encrypted 
+in the git remote "foo", you can set up a mask remote:
+
+    git annex initremote foo-encrypted type=mask remote=foo encryption=hybrid keyid=...
+
+When someone else clones that git repository, they will be able to access
+any annexed files that were sent directly to foo, which are stored unencrypted. 
+But any files that were sent to foo-encrypted will only be accessible to
+people with the configured gpg keys.
+
+## configuration
+
+* `remote` - The name of the remote to use under the mask, which is where
+  files are stored. This must be provided when running `initremote`.
+
+  When later running `enableremote`, any enabled remote with the same uuid
+  will be used, even if it has a different name than the name given here. This
+  parameter can also be provided when running `enableremote` to specify
+  explicitly which remote to use under the mask.
+
+* `encryption` - Encryption *must* be enabled for a mask.
+  One of "hybrid", "shared", or "pubkey". See [[encryption]].
+
+* `keyid` - Specifies the gpg key to use for [[encryption]].
+
+* `chunk` - Enables [[chunking]] when storing large files.
+  `chunk=1MiB` is a good starting point for chunking.
