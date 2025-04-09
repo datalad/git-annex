@@ -1,0 +1,44 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2025-04-09T15:17:25Z"
+ content="""
+What I was talking about is still hypothetical. But I think it would be
+fairly easy to implement.
+
+This would be a regular special remote, so it supports encryption=yes and
+related settings as usual. When a file is stored to this special remote, it
+would take the object (which would be encrypted if it were so configured),
+and store it on the remote it is layered on top of. Retrieval would get
+the object from the layered remote. And so on.
+
+That could probably be implemented outside git-annex as an external special
+remote. It might be better to build it into git-annex, to allow
+for better streaming of files through it.
+
+When used on top of a regular git remote, it would result in the remote
+having `.git/annex/objects/` containing some encrypted keys. (It could also
+contain un-encrypted keys stored in it as usual.)
+
+The proxy would not be needed to use it. A proxy is just another case
+where a layered special remote could be useful, when the user wants
+client-side encryption.
+
+A few gotchas I can see:
+
+* Running `git-annex unused against the repository storing those
+  encrypted keys would see them as unused.
+* If the special remote did not use encryption, it would be possible
+  to get into situations where drop violates numcopies. Eg, a drop could
+  verify that the key being dropped from the special remote is present
+  in the remote it's layered on top of and so count it as a copy.
+  But then dropping from the special remote would remove it from the
+  other remote. Probably the solution is for the special remote to require
+  encryption.
+* If a file is stored on both this special remote and on the underlying remote,
+  that would count as 2 copies. But losing a single repository risks losing
+  both copies at once. Same problem if multiple of these special remotes
+  are set up all storing to the same underlying remote. I think this is
+  minor, because there would be 2 actual copies, just copies that happen to
+  be on the same drive.
+"""]]
