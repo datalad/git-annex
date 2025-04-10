@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="tomdhunt"
+ avatar="http://cdn.libravatar.org/avatar/02694633d0fb05bb89f025cf779218a3"
+ subject="comment 2"
+ date="2025-04-10T20:25:30Z"
+ content="""
+Just passing the `--cookie` option to `curl` doesn't do it; what I need is to automatically fetch the current cookies from the browser and use those every time, i.e. to run custom code at download time. The old `web-download-command` option would have worked fine; alternatively, a setting to run a script to generate the curl options would also work.
+"""]]
