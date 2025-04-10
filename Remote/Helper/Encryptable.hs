@@ -8,7 +8,7 @@
 {-# LANGUAGE FlexibleContexts, ScopedTypeVariables, PackageImports #-}
 
 module Remote.Helper.Encryptable (
-	EncryptionIsSetup,
+	EncryptionIsSetup(..),
 	encryptionSetup,
 	noEncryptionUsed,
 	encryptionAlreadySetup,

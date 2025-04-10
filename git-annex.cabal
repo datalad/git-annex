@@ -964,6 +964,7 @@ Executable git-annex
     Remote.Hook
     Remote.List
     Remote.List.Util
+    Remote.Mask
     Remote.P2P
     Remote.Rclone
     Remote.Rsync

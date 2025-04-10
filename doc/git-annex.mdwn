@@ -2051,6 +2051,11 @@ Remotes are configured using these settings in `.git/config`.
   Used to identify httpalso special remotes.
   Normally this is automatically set up by `git annex initremote`.
 
+* `remote.<name>.annex-mask`
+
+  Used by mask special remotes.
+  Normally this is automatically set up by `git annex initremote`.
+
 * `remote.<name>.annex-externaltype`
 
   Used by external special remotes to record the type of the remote.

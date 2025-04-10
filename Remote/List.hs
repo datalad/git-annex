@@ -41,6 +41,7 @@ import qualified Remote.Rclone
 import qualified Remote.Hook
 import qualified Remote.External
 import qualified Remote.Compute
+import qualified Remote.Mask
 
 remoteTypes :: [RemoteType]
 remoteTypes = map adjustExportImportRemoteType
@@ -65,6 +66,7 @@ remoteTypes = map adjustExportImportRemoteType
 	, Remote.Hook.remote
 	, Remote.External.remote
 	, Remote.Compute.remote
+	, Remote.Mask.remote
 	]
 
 {- Builds a list of all Remotes.

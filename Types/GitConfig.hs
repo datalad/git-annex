@@ -441,6 +441,7 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexDdarRepo :: Maybe String
 	, remoteAnnexHookType :: Maybe String
 	, remoteAnnexExternalType :: Maybe String
+	, remoteAnnexMask :: Maybe String
 	}
 
 {- The Git.Repo is the local repository, which has the remote with the
@@ -541,6 +542,7 @@ extractRemoteGitConfig r remotename = do
 		, remoteAnnexDdarRepo = getmaybe DdarRepoField
 		, remoteAnnexHookType = notempty $ getmaybe HookTypeField
 		, remoteAnnexExternalType = notempty $ getmaybe ExternalTypeField
+		, remoteAnnexMask = notempty $ getmaybe MaskField
 		}
   where
 	getbool k d = fromMaybe d $ getmaybebool k
@@ -623,6 +625,7 @@ data RemoteGitConfigField
 	| DdarRepoField
 	| HookTypeField
 	| ExternalTypeField
+	| MaskField
 	deriving (Enum, Bounded)
 
 remoteGitConfigField :: RemoteGitConfigField -> (MkRemoteConfigKey, ProxyInherited)
@@ -693,6 +696,7 @@ remoteGitConfigField = \case
 	DdarRepoField -> uninherited True "ddarrepo"
 	HookTypeField -> uninherited True "hooktype"
 	ExternalTypeField -> uninherited True "externaltype"
+	MaskField -> uninherited True "mask"
   where
 	inherited True f = (MkRemoteAnnexConfigKey f, ProxyInherited True)
 	inherited False f = (MkRemoteConfigKey f, ProxyInherited True)
