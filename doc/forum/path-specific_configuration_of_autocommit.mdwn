@@ -1,0 +1,3 @@
+Is there any way to make the assistant (presumably also sync, etc) autocommit only in particular directories?
+
+I usually want to manage things myself, but autocommit would make it possible to use annex alongside some other automated tools if I moved their data directories under annex.
