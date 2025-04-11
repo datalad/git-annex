@@ -23,8 +23,10 @@ import Annex.UUID
 import Types.ProposedAccepted
 import Annex.SpecialRemote.Config
 import Logs.UUID
+import Utility.Metered
 import qualified Remote.Git
 
+import Control.Concurrent.STM
 import qualified Data.Map as M
 
 remote :: RemoteType
@@ -44,13 +46,9 @@ remote = specialRemoteType $ RemoteType
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u rc gc rs = do
-	maskedremote <- getMaskedRemote rc gc
-	let inherited d f = case maskedremote of
-		Right mr -> f mr
-		Left _ -> d
+	maskedremote <- mkMaskedRemote rc gc
 	c <- parsedRemoteConfig remote rc
-	cst <- remoteCost gc c $ encryptedRemoteCostAdj + 
-		inherited semiExpensiveRemoteCost cost
+	cst <- remoteCost gc c $ encryptedRemoteCostAdj + semiExpensiveRemoteCost
 	let this = Remote
 		{ uuid = u
 		, cost = cst
@@ -59,11 +57,11 @@ gen r u rc gc rs = do
 		, retrieveKeyFile = retrieveKeyFileDummy
 		, retrieveKeyFileInOrder = pure True
 		, retrieveKeyFileCheap = Nothing
-		, retrievalSecurityPolicy = inherited RetrievalVerifiableKeysSecure retrievalSecurityPolicy
+		, retrievalSecurityPolicy = RetrievalVerifiableKeysSecure
 		, removeKey = removeKeyDummy
 		, lockContent = Nothing
 		, checkPresent = checkPresentDummy
-		, checkPresentCheap = inherited False checkPresentCheap
+		, checkPresentCheap = False
 		, exportActions = exportUnsupported
 		, importActions = importUnsupported
 		, whereisKey = Nothing
@@ -74,12 +72,12 @@ gen r u rc gc rs = do
 		, gitconfig = gc
 		, localpath = Nothing
 		, remotetype = remote
-		, availability = inherited (pure Unavailable) availability
-		, readonly = inherited False readonly
-		, appendonly = inherited False appendonly
-		, untrustworthy = inherited False untrustworthy
+		, availability = pure LocallyAvailable
+		, readonly = False
+		, appendonly = False
+		, untrustworthy = False
 		, mkUnavailable = return Nothing
-		, getInfo = inherited (pure []) getInfo
+		, getInfo = getInfo =<< getMaskedRemote maskedremote
 		, claimUrl = Nothing
 		, checkUrl = Nothing
 		, remoteStateHandle = rs
@@ -149,27 +147,44 @@ maskSetup setupstage mu _ c gc = do
 			giveup "It's not secure to use encryption=shared with a git remote."
 		_ -> noop
 
-getMaskedRemote :: RemoteConfig -> RemoteGitConfig -> Annex (Either UUID Remote)
-getMaskedRemote c gc = case remoteAnnexMask gc of
+newtype MaskedRemote = MaskedRemote { getMaskedRemote :: Annex Remote }
+
+-- findMaskedRemote won't work until the remote list has been populated,
+-- so has to be done on the fly rather than at generation time.
+-- This caches it for speed.
+mkMaskedRemote :: RemoteConfig -> RemoteGitConfig -> Annex MaskedRemote
+mkMaskedRemote c gc = do
+	v <- liftIO $ newTMVarIO Nothing
+	return $ MaskedRemote $ 
+		liftIO (atomically (takeTMVar v)) >>= \case
+			Just maskedremote -> return maskedremote
+			Nothing -> do
+				maskedremote <- findMaskedRemote c gc
+				liftIO $ atomically $ putTMVar v (Just maskedremote)
+				return maskedremote
+
+-- XXX prevent using self as masked remote, and prevent using mask special
+-- remote, to avoid cycles
+findMaskedRemote :: RemoteConfig -> RemoteGitConfig -> Annex Remote
+findMaskedRemote c gc = case remoteAnnexMask gc of
 	-- This remote was autoenabled, so use any remote with the
 	-- uuid of the masked remote, so that it can also be autoenabled.
 	Just "true" -> 
 		case getmaskedremoteuuid of
 			Just maskremoteuuid -> 
-				selectremote (\r -> uuid r == maskremoteuuid)
-					maskremoteuuid
-			Nothing -> return (Left NoUUID)
+				selectremote maskremoteuuid
+					(\r -> uuid r == maskremoteuuid)
+			Nothing -> missingMaskedRemote NoUUID
 	Just maskremotename ->
-		selectremote (\r -> name r == maskremotename) $
-			(fromMaybe NoUUID getmaskedremoteuuid)
-	Nothing -> return (Left NoUUID)
+		selectremote NoUUID (\r -> name r == maskremotename)
+	Nothing -> missingMaskedRemote NoUUID
   where
 	getmaskedremoteuuid = toUUID . fromProposedAccepted <$> M.lookup remoteField c
-	selectremote f fallback = do
+	selectremote u f = do
 		remotelist <- Annex.getState Annex.remotes
 		case filter f remotelist of
-			(r:_) -> return (Right r)
-			[] -> return (Left fallback)
+			(r:_) -> return r
+			[] -> missingMaskedRemote u
 
 missingMaskedRemote :: UUID -> Annex a
 missingMaskedRemote maskremoteuuid = do
@@ -182,21 +197,45 @@ missingMaskedRemote maskremoteuuid = do
 		, "  " ++ fromUUID maskremoteuuid ++ " -- " ++ desc
 		]
 
-store :: Either UUID Remote -> Storer
-store (Right maskedremote) k src p = undefined
-store (Left maskedremoteuuid) _ _ _ = missingMaskedRemote maskedremoteuuid
+store :: MaskedRemote -> Storer
+store maskedremote k src p = do
+	r <- getMaskedRemote maskedremote 
+	storeMasked r k src p
 
-retrieve :: Either UUID Remote -> Retriever
-retrieve (Right maskedremote) k p dest iv callback = undefined
-retrieve (Left maskedremoteuuid) _ _ _ _ _ = missingMaskedRemote maskedremoteuuid
+storeMasked :: Remote -> Storer
+storeMasked maskedremote = 
+	fileStorer $ \k f p -> storeKey maskedremote k af (Just f) p
+  where
+	af = AssociatedFile Nothing
 
-remove :: Either UUID Remote -> Remover
-remove (Right maskedremote) proof k = undefined
-remove (Left maskedremoteuuid) _ _ = missingMaskedRemote maskedremoteuuid
+retrieve :: MaskedRemote -> Retriever
+retrieve maskedremote k p dest iv callback = do
+	r <- getMaskedRemote maskedremote 
+	fileRetriever (retrieveMasked r) k p dest iv callback
 
-checkKey :: Either UUID Remote -> CheckPresent
-checkKey (Right maskedremote) k = undefined
-checkKey (Left maskedremoteuuid) _ = missingMaskedRemote maskedremoteuuid
+retrieveMasked :: Remote -> OsPath -> Key -> MeterUpdate -> Annex ()
+retrieveMasked maskedremote dest k p = 
+	-- The masked remote does not need to verify, because fileRetriever
+	-- does its own verification.
+	void $ retrieveKeyFile maskedremote k af dest p NoVerify
+  where
+	af = AssociatedFile Nothing
+
+remove :: MaskedRemote -> Remover
+remove maskedremote proof k = do
+	r <- getMaskedRemote maskedremote 
+	removeMasked r proof k
+
+removeMasked :: Remote -> Remover
+removeMasked maskedremote = removeKey maskedremote
+
+checkKey :: MaskedRemote -> CheckPresent
+checkKey maskedremote k = do
+	r <- getMaskedRemote maskedremote 
+	checkKeyMasked r k
+
+checkKeyMasked :: Remote -> CheckPresent
+checkKeyMasked maskedremote = checkPresent maskedremote
 
 remoteField :: RemoteConfigField
 remoteField = Accepted "remote"
