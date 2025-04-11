@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2025-04-11T17:23:59Z"
+ content="""
+> Could such a special remote use the same \"transport\" as the underlying remote (thinking of p2p http in particular), which would mean the same authentication & the same set of permissions server side?
+
+Yes, the underlying remote is used as-is, whatever it is.
+"""]]
