@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="msz"
+ avatar="http://cdn.libravatar.org/avatar/6e8b88e7c70d86f4cfd27d450958aed4"
+ subject="comment 5"
+ date="2025-04-10T16:56:50Z"
+ content="""
+Thank you, this is very informative!
+
+Could such a special remote use the same \"transport\" as the underlying remote (thinking of p2p http in particular), which would mean the same authentication & the same set of permissions server side?
+"""]]
