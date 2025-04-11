@@ -39,8 +39,8 @@ remote = specialRemoteType $ RemoteType
 			(FieldDesc "remote to mask")
 		]
 	, setup = maskSetup
-	, exportSupported = exportIsSupported
-	, importSupported = importIsSupported
+	, exportSupported = exportUnsupported
+	, importSupported = importUnsupported
 	, thirdPartyPopulated = False
 	}
 
