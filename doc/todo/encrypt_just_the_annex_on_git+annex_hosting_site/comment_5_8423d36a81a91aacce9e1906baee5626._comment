@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2025-04-11T17:20:08Z"
+ content="""
+Implemented this as the mask special remote. 
+
+For example, to make a remote that stores annexed 
+files encrypted in the origin remote:
+
+	git annex initremote encryptedorigin type=mask remote=origin encryption=hybrid pubkey=id@joeyh.name
+"""]]
