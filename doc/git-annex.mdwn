@@ -2053,7 +2053,9 @@ Remotes are configured using these settings in `.git/config`.
 
 * `remote.<name>.annex-mask`
 
-  Used by mask special remotes.
+  Used by mask special remotes, this is set to the name of the remote
+  that is masked. If this is set to "true", then any remote with the
+  right UUID will be used.
   Normally this is automatically set up by `git annex initremote`.
 
 * `remote.<name>.annex-externaltype`

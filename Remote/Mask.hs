@@ -104,8 +104,13 @@ maskSetup setupstage mu _ c gc = do
 				(M.lookup remoteField c)
 			setupremote =<< findnamed maskremotename
 		_ -> case M.lookup remoteField c of
-			Just (Proposed maskremotename) ->
-				setupremote =<< findnamed maskremotename
+			-- enableremote with remote= overrides the remote
+			-- name that was used with initremote.
+			Just (Proposed maskremotename) -> do
+				r <- findnamed maskremotename
+				unless (uuid r == maskremoteuuid) $
+					giveup $ "Remote \"" ++ maskremotename ++ "\" does not have the expected uuid (" ++ fromUUID maskremoteuuid ++ ")" 
+				setupremote r
 			_ -> enableremote remotelist
   where
 	setupremote r = do
@@ -117,18 +122,20 @@ maskSetup setupstage mu _ c gc = do
 		u <- maybe (liftIO genUUID) return mu
 		gitConfigSpecialRemote u c'' [ ("mask", name r) ]
 		return (c'', u)
+		
+	maskremoteuuid = fromMaybe NoUUID $ 
+		toUUID . fromProposedAccepted
+			<$> M.lookup remoteUUIDField c
 				
 	enableremote remotelist = do
-		let maskremoteuuid = fromMaybe NoUUID $ 
-			toUUID . fromProposedAccepted
-				<$> M.lookup remoteUUIDField c
 		case filter (\r -> uuid r == maskremoteuuid) remotelist of
 			(r:_) -> setupremote r
 			[] -> case setupstage of
 				Enable _ ->
 					missingMaskedRemote maskremoteuuid
 				-- When autoenabling, the masked remote may
-				-- get autoenabled later.
+				-- get autoenabled later, or need to be
+				-- manually enabled.
 				_ -> do
 					(c', _) <- encryptionSetup c gc
 					u <- maybe (liftIO genUUID) return mu
@@ -170,14 +177,17 @@ findMaskedRemote c gc myuuid = case remoteAnnexMask gc of
 	Just "true" -> 
 		case getmaskedremoteuuid of
 			Just maskremoteuuid -> 
-				selectremote maskremoteuuid
-					(\r -> uuid r == maskremoteuuid)
+				selectremote maskremoteuuid $ \r ->
+					uuid r == maskremoteuuid
 			Nothing -> missingMaskedRemote NoUUID
 	Just maskremotename ->
-		selectremote NoUUID (\r -> name r == maskremotename)
+		selectremote (fromMaybe NoUUID getmaskedremoteuuid) $ \r -> 
+			name r == maskremotename 
+				&& Just (uuid r) == getmaskedremoteuuid
 	Nothing -> missingMaskedRemote NoUUID
   where
-	getmaskedremoteuuid = toUUID . fromProposedAccepted <$> M.lookup remoteField c
+	getmaskedremoteuuid = toUUID . fromProposedAccepted
+		<$> M.lookup remoteUUIDField c
 	selectremote u f = do
 		remotelist <- Annex.getState Annex.remotes
 		case filter f remotelist of
