@@ -46,7 +46,7 @@ remote = specialRemoteType $ RemoteType
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u rc gc rs = do
-	maskedremote <- mkMaskedRemote rc gc
+	maskedremote <- mkMaskedRemote rc gc u
 	c <- parsedRemoteConfig remote rc
 	cst <- remoteCost gc c $ encryptedRemoteCostAdj + semiExpensiveRemoteCost
 	let this = Remote
@@ -152,21 +152,19 @@ newtype MaskedRemote = MaskedRemote { getMaskedRemote :: Annex Remote }
 -- findMaskedRemote won't work until the remote list has been populated,
 -- so has to be done on the fly rather than at generation time.
 -- This caches it for speed.
-mkMaskedRemote :: RemoteConfig -> RemoteGitConfig -> Annex MaskedRemote
-mkMaskedRemote c gc = do
+mkMaskedRemote :: RemoteConfig -> RemoteGitConfig -> UUID -> Annex MaskedRemote
+mkMaskedRemote c gc u = do
 	v <- liftIO $ newTMVarIO Nothing
 	return $ MaskedRemote $ 
 		liftIO (atomically (takeTMVar v)) >>= \case
 			Just maskedremote -> return maskedremote
 			Nothing -> do
-				maskedremote <- findMaskedRemote c gc
+				maskedremote <- findMaskedRemote c gc u
 				liftIO $ atomically $ putTMVar v (Just maskedremote)
 				return maskedremote
 
--- XXX prevent using self as masked remote, and prevent using mask special
--- remote, to avoid cycles
-findMaskedRemote :: RemoteConfig -> RemoteGitConfig -> Annex Remote
-findMaskedRemote c gc = case remoteAnnexMask gc of
+findMaskedRemote :: RemoteConfig -> RemoteGitConfig -> UUID -> Annex Remote
+findMaskedRemote c gc myuuid = case remoteAnnexMask gc of
 	-- This remote was autoenabled, so use any remote with the
 	-- uuid of the masked remote, so that it can also be autoenabled.
 	Just "true" -> 
@@ -183,7 +181,12 @@ findMaskedRemote c gc = case remoteAnnexMask gc of
 	selectremote u f = do
 		remotelist <- Annex.getState Annex.remotes
 		case filter f remotelist of
-			(r:_) -> return r
+			(r:_)
+				| uuid r == myuuid -> giveup "Mask special remote is configured to mask itself. This is not a valid configuration."
+				-- Avoid cycles, and there is no benefit
+				-- to masking a mask special remote.
+				| remotetype r == remote -> giveup "Mask special remote is configured to mask another mask special remote. This is not supported."
+				| otherwise -> return r
 			[] -> missingMaskedRemote u
 
 missingMaskedRemote :: UUID -> Annex a
