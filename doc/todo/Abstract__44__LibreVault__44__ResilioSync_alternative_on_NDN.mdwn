@@ -1,10 +1,11 @@
-Average users could get so much value out of a simple and intuitive p2p
-file-syncing service that is as polished as ResilioSync
-(https://www.resilio.com/sync/), provides revision control on arbitrary
-files like Abstract (version control for designers)
-(https://www.goabstract.com/), but open source like LibreVault, SyncThing
-and SparkleShare. This would be priceless for science, design, all sorts of
-collaborative workspaces, and especially for backups and data redundancy. 
+Average users could get so much value out of a simple and intuitive p2p 
+file-syncing service that is as polished as ResilioSync (formerly BitTorrent 
+Sync), provides revision control on arbitrary files like Abstract (version 
+control for designers) (https://www.goabstract.com/), but open source like 
+LibreVault & SyncThing, plus backed by a distributed revision/version control 
+system (DRCS/DVCS)¹ like SparkleShare. This would be priceless for science, 
+design, all sorts of collaborative workspaces, and especially for backups and 
+data redundancy. 
 
 Currently, `git-annex` depends on Tor and [Magic
 Wormhole](https://github.com/magic-wormhole/magic-wormhole) to
@@ -21,6 +22,13 @@ Networking](https://github.com/JonnyKong/GitSync)" and
 both exist. Could NDN be used as the backbone for a built-in method for
 connections to be made for `git-annex` and set the foundation—pave the
 way—for the perfect file synchronization/sharing app?
+
+_¹ Although, it might be nice to use
+[Pijul](https://pijul.org/manual/why_pijul.html), which has [efficient
+binary diffs](https://pijul.org/posts/2021-06-28-two-changes/) and 
+hopefully someday also [word-by-word d
+iffs](https://discourse.pijul.org/t/fast-characterwise-and-binary-patches/32/9) 
+(for example, to be the revision control system for a wiki)_
 
 > treating this as a duplicate of [[todo/generic_p2p_socket_transport]];
 > [[done]] --[[Joey]]
