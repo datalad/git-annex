@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-04-15T13:31:34Z"
+ content="""
+Honestly, your message somewhat triggered my internal spam filters. In
+particular, its linking to multiple proprietary services adjacent to
+glowing language about them. Also the very
+similar language and linking in your post at
+<https://github.com/named-data-mobile/ndn-photo-app/issues/186>.
+
+For this reason, I have removed some hyperlinks from your post.
+While I think, on review, that you are acting in good faith,
+I also think it's important you understand a post like this can
+cause that kind of reaction these days. And removing the links
+will thus help no matter what.
+
+---
+
+There is actually an open todo at [[todo/generic_p2p_socket_transport]]
+which I think could probably be used to implement what you are envisioning.
+
+So my suggestion is you review that proposed design and see if it would
+support the use cases you are envisioning. And if not, what changes would
+need to be made.
+"""]]
