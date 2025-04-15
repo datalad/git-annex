@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="alex@5879ea369269daf3c1bd734246d83dd55d12f2da"
+ nickname="alex"
+ avatar="http://cdn.libravatar.org/avatar/fffc45a4d972ca89ae78df01d2c752a3"
+ subject="yt-dlp did not put any media in its work directory"
+ date="2025-04-15T14:15:37Z"
+ content="""
+Here's the translation:
+
+I've encountered an issue. I am using yt-dlp with the following settings:
+annex.youtube-dl-options \"--proxy socks5://127.0.0.1:1080 --config-locations ~/.config/yt-dlp/config\"
+
+But when I try to download a video playlist using git-annex addurl, I always get the following error:
+yt-dlp did not put any media in its work directory, perhaps it's been configured to store files somewhere else?
+
+What could be the problem?
+
+Thanks in advance.
+"""]]
