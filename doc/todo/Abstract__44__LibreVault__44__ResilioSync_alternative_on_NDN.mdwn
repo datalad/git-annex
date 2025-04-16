@@ -18,9 +18,9 @@ backbone.
 
 Even better, there was an experiment for "[Distributed Git over Named Data
 Networking](https://github.com/JonnyKong/GitSync)" and
-[npChat](https://github.com/named-data-mobile/ndn-photo-app/issues/186)
-both exist. Could NDN be used as the backbone for a built-in method for
-connections to be made for `git-annex` and set the foundation—pave the
+[npChat](https://github.com/named-data-mobile/ndn-photo-app/issues/186),
+and now [Ownly](https://github.com/pulsejet/ownly/issues/49) exists. Could 
+`git-annex` provide a revision control system and set the foundation—pave the
 way—for the perfect file synchronization/sharing app?
 
 _¹ Although, it might be nice to use
