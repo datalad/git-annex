@@ -1,4 +1,4 @@
-git-annex (10.20250416) UNRELEASED; urgency=medium
+git-annex (10.20250416) upstream; urgency=medium
 
   * Added the mask special remote.
   * updatecluster, updateproxy: When a remote that has no annex-uuid is
@@ -19,7 +19,7 @@ git-annex (10.20250416) UNRELEASED; urgency=medium
   * Fix git-lfs special remote ssh endpoint discovery when the repository
     path is URL encoded.
 
- -- Joey Hess <id@joeyh.name>  Tue, 15 Apr 2025 09:52:43 -0400
+ -- Joey Hess <id@joeyh.name>  Wed, 16 Apr 2025 13:34:40 -0400
 
 git-annex (10.20250320) upstream; urgency=medium
 
