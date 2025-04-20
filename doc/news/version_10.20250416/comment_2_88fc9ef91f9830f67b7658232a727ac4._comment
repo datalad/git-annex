@@ -1,0 +1,34 @@
+[[!comment format=mdwn
+ username="liam"
+ avatar="http://cdn.libravatar.org/avatar/5cb416d010c1d3f0ca677dd7f6c822ea"
+ subject="Repairing repositories on MacOS"
+ date="2025-04-20T02:49:48Z"
+ content="""
+Hi,
+
+As follow on from the above, I'm trying to repair the repo using the built-in tool from here: [[https://git-annex.branchable.com/git-annex-repair/]]
+However, it seems to have problems on MacOS.
+
+```
+$ git annex repair
+repair  Running git fsck ...                                                                                                                                                                                                                         
+Fsck found no problems. Checking for broken branches.                                                                                                                                                                                                
+fatal: ambiguous argument 'refs/.DS_Store': unknown revision or path not in the working tree.                                                                                                                                                        
+Use '--' to separate paths from revisions, like this:                                                                                                                                                                                                
+'git <command> [<revision>...] -- [<file>...]'                                                                                                                                                                                                       
+fatal: ambiguous argument 'refs/heads/.DS_Store': unknown revision or path not in the working tree.                                                                                                                                                  
+Use '--' to separate paths from revisions, like this:                                                                                                                                                                                                
+'git <command> [<revision>...] -- [<file>...]'                                                                                                                                                                                                       
+^C
+```
+
+Somethings gone quite wrong if those .DS_Store files are showing up there.
+
+I'd love to dig into the source for git-annex but I don't know Haskell...
+Maybe this is a sign I should learn it?
+
+The `uuid.log` problem in my previous post seems to have a bit of documentation here: [[https://git-annex.branchable.com/internals/]]
+Maybe it has something to do with a previously failed clone attempt? I will dig some more tomorrow.
+
+Liam
+"""]]
