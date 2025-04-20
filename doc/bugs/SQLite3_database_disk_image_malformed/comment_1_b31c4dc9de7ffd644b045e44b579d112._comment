@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="puck"
+ avatar="http://cdn.libravatar.org/avatar/06d3f4f0a82dd00a84f8f8fabc8e537d"
+ subject="Better error message"
+ date="2025-04-20T01:52:45Z"
+ content="""
+Hey,
+
+I hit this again today, running 10.20230126-3, so I upgraded to 10.20250115-1~bpo12+1. New error messages, excellent! Including: The SQL trying to be run, and the error from sqlite.
+
+This included \"disk I/O error\" from sqlite. Further investigation, and the volume was out of space 🤦. Don't know if that was the case when I first hit this or not.
+
+Cheers,
+Andrew
+"""]]
