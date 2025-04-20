@@ -1,0 +1,86 @@
+[[!comment format=mdwn
+ username="liam"
+ avatar="http://cdn.libravatar.org/avatar/5cb416d010c1d3f0ca677dd7f6c822ea"
+ subject="Corruption? invalid object for uuid.log"
+ date="2025-04-20T02:32:45Z"
+ content="""
+Hello,
+
+I just installed this version (10.20250416) this afternoon.
+Now I have the following issue:
+
+```
+$ git annex info
+(recording state in git...)
+error: invalid object 100644 f83a2e4115f14218f574058d3b3ccf72e9cfe677 for 'uuid.log'
+fatal: git-write-tree: error building trees
+git-annex: failed to read sha from git write-tree
+```
+
+and again with --verbose and --debug
+
+```
+git annex info --verbose --debug
+[2025-04-20 04:27:23.998527] (Utility.Process) process [12752] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"show-ref\",\"git-annex\"]
+[2025-04-20 04:27:24.042056] (Utility.Process) process [12752] done ExitSuccess
+[2025-04-20 04:27:24.042331] (Utility.Process) process [12753] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2025-04-20 04:27:24.046759] (Utility.Process) process [12753] done ExitSuccess
+[2025-04-20 04:27:24.051021] (Utility.Process) process [12754] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"hash-object\",\"-w\",\"--no-filters\",\"--stdin-paths\"]
+[2025-04-20 04:27:24.051495] (Utility.Process) process [12755] feed: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"update-index\",\"-z\",\"--index-info\"]
+[2025-04-20 04:27:24.265152] (Utility.Process) process [12755] done ExitSuccess
+[2025-04-20 04:27:24.265928] (Annex.Branch) read transitions.log
+[2025-04-20 04:27:24.266808] (Utility.Process) process [12756] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"cat-file\",\"--batch\"]
+(recording state in git...)
+[2025-04-20 04:27:24.278685] (Utility.Process) process [12757] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"write-tree\"]
+error: invalid object 100644 f83a2e4115f14218f574058d3b3ccf72e9cfe677 for 'uuid.log'
+fatal: git-write-tree: error building trees
+[2025-04-20 04:27:25.065295] (Utility.Process) process [12757] done ExitFailure 128
+git-annex: failed to read sha from git write-tree
+```
+
+This first showed up when I tried to do: `git annex sync myremote`
+Now this error keeps showing up but only in my computer's repo.
+
+Note: The object id shown doesn't seem to correspond to anything on my other drives.
+
+I'm worried it might be something in the latest version.
+
+On the external SSD from which I tried to sync it shows:
+
+```
+trusted repositories: 0                                                                                                                                                                                                                              
+semitrusted repositories: 12  
+untrusted repositories: 1
+local annex keys: 245972
+local annex size: 2.7 terabytes
+annexed files in working tree: 404264
+size of annexed files in working tree: 3.54 terabytes
+combined annex size of all repositories: 9.46 terabytes
+backend usage: 
+        SHA256E: 404264
+bloom filter size: 32 mebibytes (49.2% full)
+```
+
+Any idea what this could be?
+
+Is it safe to fix this by just cloning the repo again and then replacing the annex directory?
+I'm not sure how to deal with this since I've never had this error before.
+
+version information:
+
+```
+$ git annex version
+git-annex version: 10.20250416
+build flags: Pairing TorrentParser MagicMime Servant Benchmark Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.24.4 bloomfilter-2.0.1.2 crypton-1.0.4 DAV-1.3.4 feed-1.3.2.1 ghc-9.8.4 http-client-0.7.19 persistent-sqlite-2.13.3.0 torrent-10000.1.3 uuid-1.3.16
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL GITBUNDLE GITMANIFEST VURL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg rclone hook external compute mask
+operating system: darwin aarch64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
+local repository version: 10
+```
+
+Thank you,
+Liam
+"""]]
