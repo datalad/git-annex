@@ -14,6 +14,11 @@ eventually. Could be a fsck warning about URL keys, at some point after
 transferring the content between repositories that it's not possible to
 verify it.
 
+> This would need a way to migrate from URL key to VURL key.
+> Currently, `git-annex migrate` of an URL key defaults to using the
+> default hashing backend. And adding `--backend=VURL` does not work.
+> --[[Joey]]
+
 Of course if users want to continue to use their existing URL keys and 
 not be able to verify content, that's fine. Users can also choose to use 
 WORM keys if they really want to. 
@@ -27,3 +32,14 @@ configuration of which kind of keys addurl uses, once VURL is the default.
 > generates an URL key. If that is changed to generate a VURL key, then
 > it might break some workflow, particularly one where an url was
 > registered as an URL key and is now being unregistered.
+> 
+> > Also `git-annex registerurl`, if it generated a VURL key, would not be 
+> > able to register an equivilant key for that VURL key, because it does
+> > not have the content of the url available. This leads me to think 
+> > that it's not possible to have registerurl usefully support generating
+> > VURL keys. (Registering one without an equivilant key would make no hash
+> > verification be done, so no better than an URL key.)
+> > 
+> > But, I don't think that registerurl/unregisterurl continuing to
+> > generate URL keys is a big problem, it should not block making VURL
+> > the default in places where it can be default. --[[Joey]]
