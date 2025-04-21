@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-04-21T17:02:34Z"
+ content="""
+That might be hard to implement, since it uses servant to do the http
+serving and that probably does not have a way to listen to a unix domain
+socket.
+
+Is this needed any more since p2phttp does support serving multiple
+repositories?
+"""]]
