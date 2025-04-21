@@ -1,0 +1,39 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-04-21T16:14:49Z"
+ content="""
+Produced what I think is the same bug, or related, though without the looping:
+
+	map foo (sshing...)
+	[2025-04-21 12:33:47.241024518] (Utility.Process) process [1709431] read: ssh ["localhost","-S",".git/annex/ssh/localhost","-o","ControlMaster=auto","-o","ControlPersist=yes","-n","-T","sh -c 'cd ~ && if ! cd '\"'\"'tmp/foo/../foo.git.git'\"'\"' 2>/dev/null; then cd '\"'\"'tmp/foo/../foo.git.git'\"'\"'.git; fi && git config --null --list'"
+	sh: 1: cd: can't cd to tmp/foo/../foo.git.git.git
+	(sshing...)
+	[2025-04-21 12:33:47.249055766] (Utility.Process) process [1709434] read: ssh ["localhost","-S",".git/annex/ssh/localhost","-o","ControlMaster=auto","-o","ControlPersist=yes","-n","-T","git-annex-shell 'configlist' '/~/tmp/foo/../foo.git.git' '--debug'"]
+	git-annex: failed to read git config of git repository in darkstar on /~/tmp/foo/../foo.git.git; perhaps this repository is not set up correctly or has moved
+
+Where foo is a remote accessed via ssh, which happens to be on the same host and parent directory
+as the repo I ran map in, and itself has a remote named foo that has an url of "../foo.git"
+
+Changing the remote to be named foox with url "../foox", and 
+with the bare remote now at "../foox.git", I started to see some looping too,
+though it didn't loop forever:
+
+	map . ok
+	map origin (sshing...)
+	ok
+	map foox (sshing...)
+	ok
+	map origin (sshing...)
+	ok
+	map foox (sshing...)
+	ok
+
+One or both problems are caused by `map` using Git.Construct.fromRemotes
+on the git config that is has gotten by sshing to the remote and listing its config.
+Git.Construct really is written to operate on local repos, and fromRemotes
+ends up calling Git.Construct.fromPath, which checks doesDirectoryExist ... locally.
+
+That is just not ever going to work correctly and map will need to use something else
+to get the paths to the remotes.
+""]]
