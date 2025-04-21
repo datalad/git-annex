@@ -6,6 +6,6 @@ It will be a safer implementation, will support incremental pushes, and
 will be available to users who don't use datalad. 
 --[[Joey]]
 
-> [[done!]] --[[Joey]]
+> [[done]]! --[[Joey]]
 
 See also: [[git-remote-annex_web_special_remote_support]]
