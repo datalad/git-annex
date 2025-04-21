@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2025-04-21T15:50:09Z"
+ content="""
+Note that the compute special remote handles its VURL keys by calling
+addEquivilantKey when it's computed a new value.
+
+I do think this belongs in the special remote, so if anything what's needed
+is an extension to the external special remote protocol, or a plumbing
+command.
+"""]]
