@@ -89,8 +89,6 @@ localGitDir :: Repo -> OsPath
 localGitDir Repo { location = Local { gitdir = d } } = d
 localGitDir _ = giveup "unknown localGitDir"
 
-{- Some code needs to vary between URL and normal repos,
- - or bare and non-bare, these functions help with that. -}
 repoIsUrl :: Repo -> Bool
 repoIsUrl Repo { location = Url _ } = True
 repoIsUrl Repo { location = UnparseableUrl _ } = True
