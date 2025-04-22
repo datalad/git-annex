@@ -1,6 +1,6 @@
 {- Construction of Git Repo objects
  -
- - Copyright 2010-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -18,6 +18,7 @@ module Git.Construct (
 	remoteNamed,
 	remoteNamedFromKey,
 	fromRemotes,
+	fromRemoteUrlRemotes,
 	fromRemoteLocation,
 	repoAbsPath,
 	checkForRepo,
@@ -97,14 +98,15 @@ fromAbsPath dir
  - or is invalid, because git can also function despite remotes having
  - such urls, only failing if such a remote is used.
  -}
-fromUrl :: String -> IO Repo
-fromUrl url
-	| not (isURI url) = fromUrl' $ escapeURIString isUnescapedInURI url
-	| otherwise = fromUrl' url
+fromUrl :: Bool -> String -> IO Repo
+fromUrl fileurlislocal url
+	| not (isURI url) = fromUrl' fileurlislocal $
+		escapeURIString isUnescapedInURI url
+	| otherwise = fromUrl' fileurlislocal url
 
-fromUrl' :: String -> IO Repo
-fromUrl' url
-	| "file://" `isPrefixOf` url = case parseURIPortable url of
+fromUrl' :: Bool -> String -> IO Repo
+fromUrl' fileurlislocal url
+	| "file://" `isPrefixOf` url && fileurlislocal = case parseURIPortable url of
 		Just u -> fromAbsPath $ toOsPath $ unEscapeString $ uriPath u
 		Nothing -> pure $ newFrom $ UnparseableUrl url
 	| otherwise = case parseURIPortable url of
@@ -123,24 +125,41 @@ localToUrl reference r
 	| repoIsUrl r = r
 	| otherwise = case (Url.authority reference, Url.scheme reference) of
 		(Just auth, Just s) -> 
-			let absurl = concat
+			let referencepath = fromMaybe "" $ Url.path reference
+			    absurl = concat
 				[ s
 				, "//"
 				, auth
-				, fromOsPath (repoPath r)
+				, fromOsPath $
+					toOsPath referencepath </> repoPath r
 				]
 			in r { location = Url $ fromJust $ parseURIPortable absurl }
 		_ -> r
 
 {- Calculates a list of a repo's configured remotes, by parsing its config. -}
 fromRemotes :: Repo -> IO [Repo]
-fromRemotes repo = catMaybes <$> mapM construct remotepairs
+fromRemotes = fromRemotes' fromRemoteLocation
+
+fromRemotes' :: (String -> Bool -> Repo -> IO Repo) -> Repo -> IO [Repo]
+fromRemotes' fromremotelocation repo = catMaybes <$> mapM construct remotepairs
   where
 	filterconfig f = filter f $ M.toList $ config repo
 	filterkeys f = filterconfig (\(k,_) -> f k)
 	remotepairs = filterkeys isRemoteUrlKey
 	construct (k,v) = remoteNamedFromKey k $
-		fromRemoteLocation (fromConfigValue v) False repo
+		fromremotelocation (fromConfigValue v) False repo
+
+{- Calculates a list of a remote repo's configured remotes, by parsing its
+ - config. Unlike fromRemotes, this does not do any local path checking. 
+ - The remote repo must have an url path. -}
+fromRemoteUrlRemotes :: Repo -> IO [Repo]
+fromRemoteUrlRemotes = fromRemotes' go
+  where
+	go s knownurl repo = 
+		case parseRemoteLocation s knownurl repo of
+			RemotePath p -> pure $ localToUrl repo $ 
+				newFrom $ LocalUnknown $ toOsPath p
+			RemoteUrl u -> fromUrl False u
 
 {- Sets the name of a remote when constructing the Repo to represent it. -}
 remoteNamed :: String -> IO Repo -> IO Repo
@@ -167,7 +186,7 @@ fromRemoteLocation :: String -> Bool -> Repo -> IO Repo
 fromRemoteLocation s knownurl repo = gen $ parseRemoteLocation s knownurl repo
   where
 	gen (RemotePath p) = fromRemotePath p repo
-	gen (RemoteUrl u) = fromUrl u
+	gen (RemoteUrl u) = fromUrl True u
 
 {- Constructs a Repo from the path specified in the git remotes of
  - another Repo. -}

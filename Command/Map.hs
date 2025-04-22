@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -154,7 +154,7 @@ trustDecorate trustmap u s = case M.lookup u trustmap of
 	Just DeadTrusted -> Dot.fillColor "grey" s
 	Nothing -> Dot.fillColor "white" s
 
-{- Recursively searches out remotes starting with the specified repo. -}
+{- Recursively searches out remotes starting with the specified local repo. -}
 spider :: Git.Repo -> Annex [RepoRemotes]
 spider r = spider' [r] []
 spider' :: [Git.Repo] -> [RepoRemotes] -> Annex [RepoRemotes]
@@ -166,15 +166,18 @@ spider' (r:rs) known
 
 		-- The remotes will be relative to r', and need to be
 		-- made absolute for later use.
-		remotes <- mapM (absRepo r')
-			=<< (liftIO $ Git.Construct.fromRemotes r')
-	
+		remotes <- mapM (absRepo r') =<<
+			if Git.repoIsUrl r
+				then liftIO $ Git.Construct.fromRemoteUrlRemotes r'
+				else liftIO $ Git.Construct.fromRemotes r'
+
 		spider' (rs ++ remotes) ((r', remotes):known)
 
 {- Converts repos to a common absolute form. -}
 absRepo :: Git.Repo -> Git.Repo -> Annex Git.Repo
 absRepo reference r
-	| Git.repoIsUrl reference = return $ Git.Construct.localToUrl reference r
+	| Git.repoIsUrl reference = return $
+		Git.Construct.localToUrl reference r
 	| Git.repoIsUrl r = return r
 	| otherwise = liftIO $ do
 		r' <- Git.Construct.fromPath =<< absPath (Git.repoPath r)

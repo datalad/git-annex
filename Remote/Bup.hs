@@ -304,7 +304,7 @@ bup2GitRemote r
 		if "/" `isPrefixOf` r
 			then Git.Construct.fromPath (toOsPath r)
 			else giveup "please specify an absolute path"
-	| otherwise = Git.Construct.fromUrl $ "ssh://" ++ host ++ slash dir
+	| otherwise = Git.Construct.fromUrl False $ "ssh://" ++ host ++ slash dir
   where
 	bits = splitc ':' r
 	host = fromMaybe "" $ headMaybe bits
