@@ -26,9 +26,6 @@ import Types.TrustLevel
 import qualified Remote.Helper.Ssh as Ssh
 import qualified Utility.Dot as Dot
 
--- a link from the first repository to the second (its remote)
-data Link = Link Git.Repo Git.Repo
-
 -- a repo and its remotes
 type RepoRemotes = (Git.Repo, [Git.Repo])
 
@@ -68,7 +65,7 @@ runViewer file [] = do
 	return True
 runViewer file ((c, ps):rest) = ifM (liftIO $ inSearchPath c)
 	( do
-		showLongNote $ UnquotedString $ "running: " ++ c ++ unwords (toCommand ps)
+		showLongNote $ UnquotedString $ "running: " ++ c ++ " " ++ unwords (toCommand ps)
 		showOutput
 		liftIO $ boolSystem c ps
 	, runViewer file rest
