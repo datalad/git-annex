@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2025-04-22T19:27:43Z"
+ content="""
+Put in some fixes which have solved the ".git.git" problem.
+
+Also though I reproduced the infinite loop just now, and it still is a problem
+after my fixes. I had a repo with a remote foo, accessed over ssh. That remote
+itself had a local remote with path "../foo.git". And foo.git had a remote with
+path "../foo"
+
+Resulting in a loop like:
+	
+	ssh://localhost/~/tmp/foo/../foo.git/../foo/../foo.git/../foo/../foo.git/../foo/..
+
+Making the foo.git's remote have a path like "/home/joey/tmp/foo"
+avoids the problem.
+
+I think that the fix for this is going to need to involve path normalization.
+Because this could happen with 2 git repos, that don't have git-annex uuids.
+So it needs to be able to figure out that "foo/../foo.git" is the same as
+"foo/../foo.git/../foo/../foo.git"
+"""]]
