@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-04-22T17:19:05Z"
+ content="""
+Adding --json to `map` would be a useful thing to do.
+
+Conceptually, we have here a directed graph (cyclic) with named edges 
+(remote names) and nodes (repository uuids or urls). Fitting a cyclic graph
+into json probably needs something not unlike the graphviz output, and
+also as implemented `map` doesn't actually build the graph internally.
+
+So I envision a json output something like a list of nodes, where each node
+has a field for uuid (omitted for non-annex git repos), a field 
+for url, and a field containing a list of its remotes. With each json
+object in the remotes list having a remote name, a uuid (for annex repos),
+and an url.
+
+As for how well it might fit the needs of your project, some thoughts:
+
+* `map` is able to spider out to remotes of remotes, but that's as far as
+  it can go, since it only queries the `git config` of remote repositories,
+  and does not run itself recursively on other hosts. Which can only get so
+  far, but is a reasonable limitation for it. Often sshing into a remote
+  host to run map recursively would be blocked for security reasons anyway.
+  With --json output, you could run `map` on several hosts and combine them
+  easily enough.
+* `map` does not currently show connections to special remotes, which maybe you
+  would need. This would be easy to do for special remotes of the local
+  repository, but it seems like it would actually be pretty hard to do for
+  special remotes of a remote repository.
+"""]]
