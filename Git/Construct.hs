@@ -130,7 +130,7 @@ localToUrl reference r
 				[ s
 				, "//"
 				, auth
-				, fromOsPath $
+				, fromOsPath $ simplifyPath $
 					toOsPath referencepath </> repoPath r
 				]
 			in r { location = Url $ fromJust $ parseURIPortable absurl }

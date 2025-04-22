@@ -15,20 +15,6 @@ Produced what I think is the same bug, or related, though without the looping:
 Where foo is a remote accessed via ssh, which happens to be on the same host and parent directory
 as the repo I ran map in, and itself has a remote named foo that has an url of "../foo.git"
 
-Changing the remote to be named foox with url "../foox", and 
-with the bare remote now at "../foox.git", I started to see some looping too,
-though it didn't loop forever:
-
-	map . ok
-	map origin (sshing...)
-	ok
-	map foox (sshing...)
-	ok
-	map origin (sshing...)
-	ok
-	map foox (sshing...)
-	ok
-
 One or both problems are caused by `map` using Git.Construct.fromRemotes
 on the git config that is has gotten by sshing to the remote and listing its config.
 Git.Construct really is written to operate on local repos, and fromRemotes

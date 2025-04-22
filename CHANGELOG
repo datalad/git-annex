@@ -2,6 +2,8 @@ git-annex (10.20250417) UNRELEASED; urgency=medium
 
   * map: Fix buggy handling of remotes that are bare git repositories
     accessed via ssh.
+  * map: Avoid looping forever with mutually recursive paths between
+    repositories accessed via ssh.
 
  -- Joey Hess <id@joeyh.name>  Tue, 22 Apr 2025 14:33:26 -0400
 
