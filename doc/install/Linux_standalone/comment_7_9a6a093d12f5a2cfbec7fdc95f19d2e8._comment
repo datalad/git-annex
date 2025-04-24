@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="standalone builds apparently not deployed"
+ date="2025-04-24T15:23:47Z"
+ content="""
+Yup:
+
+[[!format  bash \"\"\"
+❯ git annex info git-annex/linux/current/git-annex-standalone-amd64.tar.gz
+file: git-annex/linux/current/git-annex-standalone-amd64.tar.gz
+size: 62.24 megabytes
+key: SHA256E-s62243866--e127f7cbb28d116cb34a22321b3a8db469d73174b23869c122d9425066729ea5.tar.gz
+present: false
+❯ git annex whereis git-annex/linux/current/git-annex-standalone-amd64.tar.gz
+whereis git-annex/linux/current/git-annex-standalone-amd64.tar.gz (1 copy) 
+  	4f2108b9-5561-40a1-8923-b0b683b3b898 -- joey@kite:~/lib/downloads
+ok
+\"\"\"]]
+"""]]
