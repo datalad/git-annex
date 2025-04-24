@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="matteo@4122eaeed50d58332e6ae9e6ba7237fe81294399"
+ nickname="matteo"
+ avatar="http://cdn.libravatar.org/avatar/b113a0f7867c398c5e9c24646f8495b8"
+ subject="Disabling &quot;synced&quot; branches"
+ date="2025-04-24T02:34:59Z"
+ content="""
+Is there any option/configuration to disable the creation and use of \"synced/*\" branches on `git annex sync`?
+
+I have a simple \"centralised\" setup where local clones push/pull from a single remote bare repository, so I don't see the benefit of using \"synced/*\" branches. They mostly just add noise in whichever git GUI I use.
+"""]]
