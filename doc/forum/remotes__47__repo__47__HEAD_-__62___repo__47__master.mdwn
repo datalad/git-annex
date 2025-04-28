@@ -1,0 +1,7 @@
+In one of my repositories (say `REPO1`) I have a line in `git branch --all`
+
+    remotes/REPO2/HEAD -> REPO2/master
+
+`REPO2` refers to the name of another remote.
+
+How did I do that?
