@@ -1,0 +1,66 @@
+# Scalability Issues
+
+I am struggling with very slow operations in my cluster setup and looking for some advice.
+
+## Setup
+
+My repository contains **24 million files** with a total of **2.3 terabyte**.
+The files are divided into several sub folders so the file count per directory is below 20k.
+I am using the git-annex cluster setup with **one gateway** and **16 nodes**.
+
+The gateway repository stores a copy of all files.
+The distribution of the files across the 16 nodes should be random but deterministic. Therefore, I want to use the filehash property (SHA-256) and store all files starting with one of the 16 characters `0-f` on one of the 16 nodes. For example, `node-01` stores all files starting with filehash `0...` and `node-16` stores all files starting with filehash `f...`.
+
+Since I did not find an immediate preferred content expression for this special distribution method, I decided to add the hash as metadata to every annexed file using a pre-commit hook.
+Inside the git-annex config, I define for each node that it only stores files with one of the characters.
+
+```
+wanted node-01 = metadata=hash=0*
+wanted node-02 = metadata=hash=1*
+...
+wanted node-16 = metadata=hash=f*
+```
+
+## Issues
+
+### Adding files
+While adding more and more files with git-annex, I noticed that `(recording state in git...)` takes very long and my whole memory (8GB) is used by git-annex.
+Therefore, increasing the `annex.queuesize` at the expense of more memory is not possible [ [1] ](https://git-annex.branchable.com/scalability/).
+Is there anything else to adjust? Why does it use so much RAM? Is my number of files out of scope for git?
+
+### Commiting files
+Furthermore, I use the following `pre-commit-annex` hook to add the filehash as metadata to the files.
+However, it takes almost one second for each file to add the metadata.
+I am trying to adjust the script to support batches as well but maybe there is a different way to distribute the files across nodes by the filehash?
+
+```
+#!/bin/bash
+
+if git rev-parse --verify HEAD >/dev/null 2>&1; then
+	against="HEAD"
+else
+	# Initial commit: diff against an empty tree object
+	against="4b825dc642cb6eb9a060e54bf8d69288fbee4904"
+fi
+
+process() {
+	file_hash=$(readlink "$file_path" | tail -c 65)
+	if \[[ -n "$file_hash" ]];  then
+		git -c annex.alwayscommit=false annex metadata --set "hash=$file_hash" --quiet -- "$file_path"
+	fi
+}
+
+if \[[ -n "$*" ]];  then
+	for file_path in "$@"; do
+		process "$file_path"
+	done
+else
+	git diff-index -z --name-only --cached $against | sed 's/\x00/\n/g' | while read file_path; do
+		process "$file_path"
+	done
+fi
+```
+
+[1] [https://git-annex.branchable.com/scalability/](https://git-annex.branchable.com/scalability/)
+
+I would be glad for any feedback :)
