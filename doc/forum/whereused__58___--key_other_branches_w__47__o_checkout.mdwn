@@ -1,0 +1,1 @@
+Not sure if this is a feature request... is it possible to get git-annex whereused --key to act on one or more other branches than the checkout one... obviously without having to check each individual one out?
