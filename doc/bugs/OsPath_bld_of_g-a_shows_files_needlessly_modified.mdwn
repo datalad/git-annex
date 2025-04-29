@@ -1,0 +1,526 @@
+---
+title: (Windows) OsPath build of git-annex shows files needlessly modified in git status
+---
+### Please describe the problem.
+
+I've found some small undesirable behaviour or some kind of regression with the two recent releases
+of git-annex employing the OsPath build flag / code path on Windows (NTFS). The problem is that
+`git status` sometimes shows recently `get` or `drop`'ed annexed files as modified (when in fact
+they are really not) and no amount of `git restore` commands issued will rectify the situation
+when it happens. However, by disabling the `ospath` flag in `stack.yaml` and then rebuilding
+git-annex the problem seems to go away.
+
+I'm not sure I can fabricate a clean test case by just by conjuring up a few commands, so I have
+made a reasonably small version of my repo once again by employing the tip [[tips/splitting_a_repository]].
+It has only a dozen or so rather non-personal files related to a git-annex bug report from about four
+years back. I can make it available to Joey via email, if so desired. Due to tiny, remaining
+privacy reasons (it includes metadata *not* data as such and the files are really of no consequence
+to anybody even if made public), I'd still prefer to not link the tarball here.
+
+### What steps will reproduce the problem?
+
+The following steps are in Git Bash.
+
+[[!format sh """
+jkniiv@AINESIS MINGW64 ~
+$ cd /e/git-annex-tests/test-ospath-regression/
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression
+$ git annex version | head -2
+git-annex version: 10.20250416-gb22a72cd9444071e86a46cc1eb8799e7d085b49d
+build flags: Assistant Webapp Pairing TorrentParser Servant Benchmark Feeds Testsuite S3 WebDAV
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression
+$ ls
+'Sm1@split.tar.xz'
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression
+$ tar -xf Sm1\@split.tar.xz
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression
+$ du -hs Sm1\@split
+771M    Sm1@split
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression
+$ ls
+'Sm1@split'/  'Sm1@split.tar.xz'
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression
+$ git clone Sm1\@split Sm2
+Cloning into 'Sm2'...
+done.
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression
+$ cd Sm2/
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression/Sm2 (adjusted/master(unlocked))
+$ ls
+Ylläpito/  _scripts/
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression/Sm2 (adjusted/master(unlocked))
+$ cd _scripts/
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression/Sm2/_scripts (adjusted/master(unlocked))
+$ cat init-git-annex.cmd
+git config annex.thin true
+git config annex.backend BLAKE2B160E
+git config annex.largefiles "largerthan=1megabytes"
+git config annex.maxextensionlength 8
+git config core.autocrlf false
+git config receive.denycurrentbranch warn
+git config merge.renames true
+git config merge.directoryRenames false
+git annex init "Sm clone (split version)"
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression/Sm2/_scripts (adjusted/master(unlocked))
+$ cp init-git-annex.cmd init-git-annex.sh
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression/Sm2/_scripts (adjusted/master(unlocked))
+$ dos2unix init-git-annex.sh
+dos2unix: converting file init-git-annex.sh to Unix format...
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression/Sm2/_scripts (adjusted/master(unlocked))
+$ nano init-git-annex.sh
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression/Sm2/_scripts (adjusted/master(unlocked))
+$ cat init-git-annex.sh
+git config annex.thin true
+git config annex.backend BLAKE2B160E
+git config annex.largefiles "largerthan=1megabytes"
+git config annex.maxextensionlength 8
+git config core.autocrlf false
+git config receive.denycurrentbranch warn
+git config merge.renames true
+git config merge.directoryRenames false
+git annex init "Sm2"
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression/Sm2/_scripts (adjusted/master(unlocked))
+$ git status
+On branch adjusted/master(unlocked)
+Your branch is up to date with 'origin/adjusted/master(unlocked)'.
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        init-git-annex.sh
+
+nothing added to commit but untracked files present (use "git add" to track)
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression/Sm2/_scripts (adjusted/master(unlocked))
+$ sh -x init-git-annex.sh
++ git config annex.thin true
++ git config annex.backend BLAKE2B160E
++ git config annex.largefiles largerthan=1megabytes
++ git config annex.maxextensionlength 8
++ git config core.autocrlf false
++ git config receive.denycurrentbranch warn
++ git config merge.renames true
++ git config merge.directoryRenames false
++ git annex init Sm2
+init Sm2
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+
+  Detected a crippled filesystem.
+ok
+(recording state in git...)
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression/Sm2/_scripts (adjusted/master(unlocked))
+$ cd ..
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression/Sm2 (adjusted/master(unlocked))
+$ ls
+Ylläpito/  _scripts/
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression/Sm2 (adjusted/master(unlocked))
+$ git annex info
+trusted repositories: 0
+semitrusted repositories: 8
+        00000000-0000-0000-0000-000000000001 -- web
+        00000000-0000-0000-0000-000000000002 -- bittorrent
+        06b5457f-a76e-4e44-a3d6-7a06cdda62a8 -- Jibun.Safe1812-klooni
+        163fd60d-2d8a-4ef5-9c8c-d6b6e3c9d51c -- Sm2 [here]
+        4fd98ae2-42e3-4b93-8b81-0316dbf38169 -- Jibun.Safe1812
+        5e431ba8-1fc6-4d99-b831-8c3571b57272 -- Sm clone (split version) [origin]
+        88035634-8cb4-4e7f-b482-398bd9e2b9ab -- Sm clone (source)
+        c1ba110c-97eb-4e3c-989e-afb9cb4f75a6 -- Jibun.Safe2504p (S: > P:)
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 74.56 gigabytes (+100 megabytes reserved)
+local annex keys: 0
+local annex size: 0 bytes
+annexed files in working tree: 6
+size of annexed files in working tree: 805.75 megabytes
+combined annex size of all repositories: 805.75 megabytes
+annex sizes of repositories:
+        805.75 MB: 5e431ba8-1fc6-4d99-b831-8c3571b57272 -- Sm clone (split version) [origin]
+backend usage:
+        BLAKE2B160E: 6
+bloom filter size: 32 mebibytes (0% full)
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression/Sm2 (adjusted/master(unlocked))
+$ git annex get .
+get "Yll\303\244pito/FileSpy/git-annex-fsck.9BEAE03792B9FAFB-01-01.mrimg.txt" (from origin...)
+(checksum...) ok
+get "Yll\303\244pito/FileSpy/git-annex-fsck.9BEAE03792B9FAFB-01-01.mrimg.utf8.txt" (from origin...)
+ok
+get "Yll\303\244pito/FileSpy/git-annex-sync---content-of.9BEAE03792B9FAFB-01-01.mrimg.txt" (from origin...)
+ok
+get "Yll\303\244pito/FileSpy/git-annex-sync---content-of.9BEAE03792B9FAFB-01-01.mrimg.utf8.txt" (from origin...)
+ok
+get "Yll\303\244pito/FileSpy/git-annex-sync---content-of.9BEAE03792B9FAFB-01-01.mrimg~2.txt" (from origin...)
+ok
+get "Yll\303\244pito/FileSpy/git-annex-sync---content-of.9BEAE03792B9FAFB-01-01.mrimg~2.utf8.csv" (from origin...)
+ok
+(recording state in git...)
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression/Sm2 (adjusted/master(unlocked))
+$ git status
+On branch adjusted/master(unlocked)
+Your branch is up to date with 'origin/adjusted/master(unlocked)'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   "Yll\303\244pito/FileSpy/git-annex-fsck.9BEAE03792B9FAFB-01-01.mrimg.txt"
+        modified:   "Yll\303\244pito/FileSpy/git-annex-fsck.9BEAE03792B9FAFB-01-01.mrimg.utf8.txt"
+        modified:   "Yll\303\244pito/FileSpy/git-annex-sync---content-of.9BEAE03792B9FAFB-01-01.mrimg.txt"
+        modified:   "Yll\303\244pito/FileSpy/git-annex-sync---content-of.9BEAE03792B9FAFB-01-01.mrimg.utf8.txt"
+        modified:   "Yll\303\244pito/FileSpy/git-annex-sync---content-of.9BEAE03792B9FAFB-01-01.mrimg~2.txt"
+        modified:   "Yll\303\244pito/FileSpy/git-annex-sync---content-of.9BEAE03792B9FAFB-01-01.mrimg~2.utf8.csv"
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        _scripts/init-git-annex.sh
+
+no changes added to commit (use "git add" and/or "git commit -a")
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression/Sm2 (adjusted/master(unlocked))
+$ git restore .
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression/Sm2 (adjusted/master(unlocked))
+$ git status
+git-annex: git status will show "Yll\303\244pito/FileSpy/git-annex-fsck.9BEAE03792B9FAFB-01-01.mrimg.txt" to be modified
+, since content availability has changed and git-annex was unable to update the index. This is only a cosmetic problem a
+ffecting git status; git add, git commit, etc won't be affected. To fix the git status display, you can run: git-annex r
+estage
+git-annex: git status will show "Yll\303\244pito/FileSpy/git-annex-fsck.9BEAE03792B9FAFB-01-01.mrimg.utf8.txt" to be mod
+ified, since content availability has changed and git-annex was unable to update the index. This is only a cosmetic prob
+lem affecting git status; git add, git commit, etc won't be affected. To fix the git status display, you can run: git-an
+nex restage
+git-annex: git status will show "Yll\303\244pito/FileSpy/git-annex-sync---content-of.9BEAE03792B9FAFB-01-01.mrimg.txt" t
+o be modified, since content availability has changed and git-annex was unable to update the index. This is only a cosme
+tic problem affecting git status; git add, git commit, etc won't be affected. To fix the git status display, you can run
+: git-annex restage
+git-annex: git status will show "Yll\303\244pito/FileSpy/git-annex-sync---content-of.9BEAE03792B9FAFB-01-01.mrimg.utf8.t
+xt" to be modified, since content availability has changed and git-annex was unable to update the index. This is only a
+cosmetic problem affecting git status; git add, git commit, etc won't be affected. To fix the git status display, you ca
+n run: git-annex restage
+git-annex: git status will show "Yll\303\244pito/FileSpy/git-annex-sync---content-of.9BEAE03792B9FAFB-01-01.mrimg~2.txt"
+ to be modified, since content availability has changed and git-annex was unable to update the index. This is only a cos
+metic problem affecting git status; git add, git commit, etc won't be affected. To fix the git status display, you can r
+un: git-annex restage
+git-annex: git status will show "Yll\303\244pito/FileSpy/git-annex-sync---content-of.9BEAE03792B9FAFB-01-01.mrimg~2.utf8
+.csv" to be modified, since content availability has changed and git-annex was unable to update the index. This is only
+a cosmetic problem affecting git status; git add, git commit, etc won't be affected. To fix the git status display, you
+can run: git-annex restage
+On branch adjusted/master(unlocked)
+Your branch is up to date with 'origin/adjusted/master(unlocked)'.
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        _scripts/init-git-annex.sh
+
+nothing added to commit but untracked files present (use "git add" to track)
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression/Sm2 (adjusted/master(unlocked))
+$ git annex restage
+restage  ok
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression/Sm2 (adjusted/master(unlocked))
+$ git status
+On branch adjusted/master(unlocked)
+Your branch is up to date with 'origin/adjusted/master(unlocked)'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   "Yll\303\244pito/FileSpy/git-annex-fsck.9BEAE03792B9FAFB-01-01.mrimg.txt"
+        modified:   "Yll\303\244pito/FileSpy/git-annex-fsck.9BEAE03792B9FAFB-01-01.mrimg.utf8.txt"
+        modified:   "Yll\303\244pito/FileSpy/git-annex-sync---content-of.9BEAE03792B9FAFB-01-01.mrimg.txt"
+        modified:   "Yll\303\244pito/FileSpy/git-annex-sync---content-of.9BEAE03792B9FAFB-01-01.mrimg.utf8.txt"
+        modified:   "Yll\303\244pito/FileSpy/git-annex-sync---content-of.9BEAE03792B9FAFB-01-01.mrimg~2.txt"
+        modified:   "Yll\303\244pito/FileSpy/git-annex-sync---content-of.9BEAE03792B9FAFB-01-01.mrimg~2.utf8.csv"
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        _scripts/init-git-annex.sh
+
+no changes added to commit (use "git add" and/or "git commit -a")
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression/Sm2 (adjusted/master(unlocked))
+$ git annex drop .
+drop "Yll\303\244pito/FileSpy/git-annex-fsck.9BEAE03792B9FAFB-01-01.mrimg.txt" ok
+drop "Yll\303\244pito/FileSpy/git-annex-fsck.9BEAE03792B9FAFB-01-01.mrimg.utf8.txt" ok
+drop "Yll\303\244pito/FileSpy/git-annex-sync---content-of.9BEAE03792B9FAFB-01-01.mrimg.txt" ok
+drop "Yll\303\244pito/FileSpy/git-annex-sync---content-of.9BEAE03792B9FAFB-01-01.mrimg.utf8.txt" ok
+drop "Yll\303\244pito/FileSpy/git-annex-sync---content-of.9BEAE03792B9FAFB-01-01.mrimg~2.txt" ok
+drop "Yll\303\244pito/FileSpy/git-annex-sync---content-of.9BEAE03792B9FAFB-01-01.mrimg~2.utf8.csv" ok
+(recording state in git...)
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression/Sm2 (adjusted/master(unlocked))
+$ git status
+On branch adjusted/master(unlocked)
+Your branch is up to date with 'origin/adjusted/master(unlocked)'.
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        _scripts/init-git-annex.sh
+
+nothing added to commit but untracked files present (use "git add" to track)
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression/Sm2 (adjusted/master(unlocked))
+$ # rinse and repeat with `git annex get` etc. -- no change
+
+"""]]
+
+### What version of git-annex are you using? On what operating system?
+
+[[!format sh """
+git-annex version: 10.20250416-gb22a72cd9444071e86a46cc1eb8799e7d085b49d
+build flags: Assistant Webapp Pairing TorrentParser Servant Benchmark Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.24.4 bloomfilter-2.0.1.2 crypton-1.0.4 DAV-1.3.4 feed-1.3.2.1 ghc-9.10.1 http-client-0.7.19 p
+ersistent-sqlite-2.13.3.0 torrent-10000.1.3 uuid-1.3.16 yesod-1.6.2.1
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SH
+A3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512
+BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLA
+KE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM UR
+L GITBUNDLE GITMANIFEST VURL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg r
+clone hook external compute mask
+operating system: mingw32 x86_64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 2 3 4 5 6 7 8 9 10
+local repository version: 10
+"""]]
+
+Windows 10 version 22H2 (build 19045.5737), 64 bit.
+
+### Please provide any additional information below.
+
+As mentioned, for a comparison I've built a version of git-annex without the `ospath` build flag
+set. To be able to determine from `git-annex version` whether the flag is set or not, I've employed
+the following patch:
+
+[[!format diff """
+diff --git a/BuildFlags.hs b/BuildFlags.hs
+index d273c216e4..aa01bac5e6 100644
+--- a/BuildFlags.hs
++++ b/BuildFlags.hs
+@@ -69,6 +69,12 @@ buildFlags = filter (not . null)
+        , "Testsuite"
+        , "S3"
+        , "WebDAV"
++       -- OsPath, whether it’s enabled or not.
++#ifdef WITH_OSPATH
++       , "OsPath"
++#else
++       , "-OsPath"
++#endif
+        ]
+
+ -- Not a complete list, let alone a listing transitive deps, but only
+"""]]
+
+And here is
+<details>
+<summary>a transcript of when things work as intended</summary>
+[[!format sh """
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression
+$ git annex version | head -2
+git-annex version: 10.20250416-gb22a72cd9444071e86a46cc1eb8799e7d085b49d
+build flags: Assistant Webapp Pairing TorrentParser Servant Benchmark Feeds Testsuite S3 WebDAV -OsPath
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression
+$ ls
+'Sm1@split'/  'Sm1@split.tar.xz'   Sm2/
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression
+$ git clone Sm1\@split Sm3
+Cloning into 'Sm3'...
+done.
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression
+$ cd Sm3
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression/Sm3 (adjusted/master(unlocked))
+$ ls
+Ylläpito/  _scripts/
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression/Sm3 (adjusted/master(unlocked))
+$ cd _scripts/
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression/Sm3/_scripts (adjusted/master(unlocked))
+$ ls
+init-git-annex.cmd
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression/Sm3/_scripts (adjusted/master(unlocked))
+$ cat init-git-annex.cmd
+git config annex.thin true
+git config annex.backend BLAKE2B160E
+git config annex.largefiles "largerthan=1megabytes"
+git config annex.maxextensionlength 8
+git config core.autocrlf false
+git config receive.denycurrentbranch warn
+git config merge.renames true
+git config merge.directoryRenames false
+git annex init "Sm clone (split version)"
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression/Sm3/_scripts (adjusted/master(unlocked))
+$ cp init-git-annex.cmd init-git-annex.sh
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression/Sm3/_scripts (adjusted/master(unlocked))
+$ dos2unix init-git-annex.sh
+dos2unix: converting file init-git-annex.sh to Unix format...
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression/Sm3/_scripts (adjusted/master(unlocked))
+$ nano init-git-annex.sh
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression/Sm3/_scripts (adjusted/master(unlocked))
+$ cat init-git-annex.sh
+git config annex.thin true
+git config annex.backend BLAKE2B160E
+git config annex.largefiles "largerthan=1megabytes"
+git config annex.maxextensionlength 8
+git config core.autocrlf false
+git config receive.denycurrentbranch warn
+git config merge.renames true
+git config merge.directoryRenames false
+git annex init "Sm3"
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression/Sm3/_scripts (adjusted/master(unlocked))
+$ git status
+On branch adjusted/master(unlocked)
+Your branch is up to date with 'origin/adjusted/master(unlocked)'.
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        init-git-annex.sh
+
+nothing added to commit but untracked files present (use "git add" to track)
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression/Sm3/_scripts (adjusted/master(unlocked))
+$ sh -x init-git-annex.sh
++ git config annex.thin true
++ git config annex.backend BLAKE2B160E
++ git config annex.largefiles largerthan=1megabytes
++ git config annex.maxextensionlength 8
++ git config core.autocrlf false
++ git config receive.denycurrentbranch warn
++ git config merge.renames true
++ git config merge.directoryRenames false
++ git annex init Sm3
+init Sm3
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+
+  Detected a crippled filesystem.
+ok
+(recording state in git...)
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression/Sm3/_scripts (adjusted/master(unlocked))
+$ cd ..
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression/Sm3 (adjusted/master(unlocked))
+$ ls
+Ylläpito/  _scripts/
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression/Sm3 (adjusted/master(unlocked))
+$ git annex info
+trusted repositories: 0
+semitrusted repositories: 8
+        00000000-0000-0000-0000-000000000001 -- web
+        00000000-0000-0000-0000-000000000002 -- bittorrent
+        06b5457f-a76e-4e44-a3d6-7a06cdda62a8 -- Jibun.Safe1812-klooni
+        0bb08840-d799-46b0-a161-5f383b7d2092 -- Sm3 [here]
+        4fd98ae2-42e3-4b93-8b81-0316dbf38169 -- Jibun.Safe1812
+        5e431ba8-1fc6-4d99-b831-8c3571b57272 -- Sm clone (split version) [origin]
+        88035634-8cb4-4e7f-b482-398bd9e2b9ab -- Sm clone (source)
+        c1ba110c-97eb-4e3c-989e-afb9cb4f75a6 -- Jibun.Safe2504p (S: > P:)
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 74.56 gigabytes (+100 megabytes reserved)
+local annex keys: 0
+local annex size: 0 bytes
+annexed files in working tree: 6
+size of annexed files in working tree: 805.75 megabytes
+combined annex size of all repositories: 805.75 megabytes
+annex sizes of repositories:
+        805.75 MB: 5e431ba8-1fc6-4d99-b831-8c3571b57272 -- Sm clone (split version) [origin]
+backend usage:
+        BLAKE2B160E: 6
+bloom filter size: 32 mebibytes (0% full)
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression/Sm3 (adjusted/master(unlocked))
+$ git annex get .
+get "Yll\303\244pito/FileSpy/git-annex-fsck.9BEAE03792B9FAFB-01-01.mrimg.txt" (from origin...)
+(checksum...) ok
+get "Yll\303\244pito/FileSpy/git-annex-fsck.9BEAE03792B9FAFB-01-01.mrimg.utf8.txt" (from origin...)
+ok
+get "Yll\303\244pito/FileSpy/git-annex-sync---content-of.9BEAE03792B9FAFB-01-01.mrimg.txt" (from origin...)
+ok
+get "Yll\303\244pito/FileSpy/git-annex-sync---content-of.9BEAE03792B9FAFB-01-01.mrimg.utf8.txt" (from origin...)
+ok
+get "Yll\303\244pito/FileSpy/git-annex-sync---content-of.9BEAE03792B9FAFB-01-01.mrimg~2.txt" (from origin...)
+ok
+get "Yll\303\244pito/FileSpy/git-annex-sync---content-of.9BEAE03792B9FAFB-01-01.mrimg~2.utf8.csv" (from origin...)
+ok
+(recording state in git...)
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression/Sm3 (adjusted/master(unlocked))
+$ git status
+On branch adjusted/master(unlocked)
+Your branch is up to date with 'origin/adjusted/master(unlocked)'.
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        _scripts/init-git-annex.sh
+
+nothing added to commit but untracked files present (use "git add" to track)
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression/Sm3 (adjusted/master(unlocked))
+$ git annex drop .
+drop "Yll\303\244pito/FileSpy/git-annex-fsck.9BEAE03792B9FAFB-01-01.mrimg.txt" ok
+drop "Yll\303\244pito/FileSpy/git-annex-fsck.9BEAE03792B9FAFB-01-01.mrimg.utf8.txt" ok
+drop "Yll\303\244pito/FileSpy/git-annex-sync---content-of.9BEAE03792B9FAFB-01-01.mrimg.txt" ok
+drop "Yll\303\244pito/FileSpy/git-annex-sync---content-of.9BEAE03792B9FAFB-01-01.mrimg.utf8.txt" ok
+drop "Yll\303\244pito/FileSpy/git-annex-sync---content-of.9BEAE03792B9FAFB-01-01.mrimg~2.txt" ok
+drop "Yll\303\244pito/FileSpy/git-annex-sync---content-of.9BEAE03792B9FAFB-01-01.mrimg~2.utf8.csv" ok
+(recording state in git...)
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression/Sm3 (adjusted/master(unlocked))
+$ git status
+On branch adjusted/master(unlocked)
+Your branch is up to date with 'origin/adjusted/master(unlocked)'.
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        _scripts/init-git-annex.sh
+
+nothing added to commit but untracked files present (use "git add" to track)
+
+jkniiv@AINESIS MINGW64 /e/git-annex-tests/test-ospath-regression/Sm3 (adjusted/master(unlocked))
+$ # All is well :)
+
+"""]]
+</details>
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Sure, Git Annex is great as always. I use it a few times a week with my multigigabyte
+backups, where it gives structure to my image-based backup routines, so you could
+say I'm a believer. :)
+
+[[!meta author=jkniiv]]
+[[!meta title="(Windows) OsPath build of git-annex shows files needlessly modified in git status"]]
