@@ -1,0 +1,34 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="re: finding key in specific branches"
+ date="2025-05-01T03:51:27Z"
+ content="""
+> get git-annex whereused --key to act on one or more other branches
+> than the checked-out one
+
+The `--historical` flag of `whereused` leads to a wider search,
+including of other branches but also other things, like the current
+branch's history and the reflog.
+
+I'm guessing you're after more specific control.
+
+If I want to know when a key occurred in a particular branch, I
+usually do something like
+
+```
+$ git log -p -S $KEY $BRANCH
+```
+
+To know whether a particular key is in the *tip* of a particular
+branch (or of some subset of branches), one way would be
+
+```
+$ git rev-list --objects --no-object-names --no-walk $BRANCH | \
+  git annex lookupkey --ref --batch | \
+  grep $KEY
+```
+
+Perhaps there are more streamlined ways to get to that information,
+though.
+"""]]
