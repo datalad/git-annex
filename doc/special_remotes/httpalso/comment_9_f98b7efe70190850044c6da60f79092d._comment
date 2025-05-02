@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="Basile.Pinsard"
+ avatar="http://cdn.libravatar.org/avatar/87e1f73acf277ad0337b90fc0253c62e"
+ subject="Setup dirhash parameter for httpalso to avoid hammering server"
+ date="2025-05-02T17:53:53Z"
+ content="""
+Hi @Joey,
+I was wondering if it would be possible to setup the dirhash format for the special remote.
+
+We push data to a datalad ria-store through ssh that gets RO accessed through a httpalso remote.
+However, I observe that get operations try different directory hashing schema before hitting the right one that datalad ORA remote uses.
+This is also the case when doing repo-wide `fsck` in recurring tests of the dataset. 
+All of that is doubling the number of http request, and could in some setups trigger fail2ban-type mechanisms at network or server levels.
+If there was a parameter that could be set on the httpalso to directly use the right URLs, that would be great.
+
+Thanks!
+"""]]
