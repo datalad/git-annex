@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-05-05T18:12:16Z"
+ content="""
+I was able to reproduce the "origin/git-annex~12:export.tree" part of this
+and have fixed that, so it won't show that git-annex branch location,
+which is part of git-annex's internal bookkeeping and not something useful
+for the command to display.
+
+As to why it is not finding your file, what you show is not necessarily a
+bug. If the file `2010-08-21/042.JPG` is not staged in git, it won't be
+shown by `git-annex whereused` when run without --historical. It's easy
+enough to get into such a situation, for example you could have run a
+series of commands like this:
+
+	git-annex add 042.JPG
+	mv 042.JPG 2010-08-21/042.JPG
+	git commit -a -m foo
+
+If the file is in fact staged in git and whereused doesn't list it,
+my next guess would be that somehow it's not getting added to the
+associated files database, which is what whereused looks at.
+You can check for that with this command:
+
+	sqlite3 .git/annex/keysdb/db 'select * from associated;'| grep SHA256E-s1000013--e435522a9059bcb086b6db5fa5f05a06913266772a7931eefae2b8f7647f5f14.JPG
+"""]]

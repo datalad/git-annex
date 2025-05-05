@@ -89,7 +89,7 @@ findHistorical key = do
 		[ Param ("--exclude=*/" ++ fromRef (Annex.Branch.name))
 		, Param "--glob=*"
 		-- Also search remote branches
-		, Param ("--exclude=" ++ fromRef (Annex.Branch.name))
+		, Param ("--exclude=*/" ++ fromRef (Annex.Branch.name))
 		, Param "--remotes=*"
 		-- And search tags.
 		, Param "--tags=*"

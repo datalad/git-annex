@@ -4,6 +4,8 @@ git-annex (10.20250417) UNRELEASED; urgency=medium
     accessed via ssh.
   * map: Avoid looping forever with mutually recursive paths between
     repositories accessed via ssh.
+  * whereused: Fix bug that could find matches from grafts 
+    in remote git-annex branches.
 
  -- Joey Hess <id@joeyh.name>  Tue, 22 Apr 2025 14:33:26 -0400
 
