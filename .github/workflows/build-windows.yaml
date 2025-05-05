@@ -134,6 +134,13 @@ jobs:
       - name: Build git-annex
         run: stack install --no-haddock --local-bin-path .
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Build the Python wheel
+        run: |
+          uv build --wheel
+
       - name: Build the installer
         run: |
           stack ghc --no-haddock --package nsis Build/NullSoftInstaller.hs
