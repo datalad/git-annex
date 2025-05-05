@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2025-05-05T17:46:05Z"
+ content="""
+The --historical option does look for the key in all branches, if the
+checked out branch does not contain the key.
+
+If that doesn't do what you want, it would be possible to add an option
+that only looks at branches that match a refspec you provide.
+"""]]
