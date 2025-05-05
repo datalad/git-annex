@@ -1,0 +1,56 @@
+[[!comment format=mdwn
+ username="beryllium@5bc3c32eb8156390f96e363e4ba38976567425ec"
+ nickname="beryllium"
+ avatar="http://cdn.libravatar.org/avatar/62b67d68e918b381e7e9dd6a96c16137"
+ subject="comment 2"
+ date="2025-05-05T11:13:59Z"
+ content="""
+Thank you. For your kindness, I think I owe a better explanation.
+
+It might be being a little ambitious... but I am trying to work on a git-annex where I am indexing retired internal drives. Performing a git-annex import --no-content on each setup importtree=yes remote, and then merging/fast-forwarding to a git checkout --orphan'ed branch.
+
+Key point is, now, for example, I want to find out where a file might have been duplicated.
+
+I have considered your idea of the --historical switch. But perhaps related to <https://git-annex.branchable.com/bugs/whereused_--key_forcing_--historical._exportree__63__/>, I have experienced strange behaviour, now and in the past.
+
+The following sequence might explain.
+
+```
+$ git rev-parse --abbrev-ref HEAD
+master
+$ ls
+$ # no files, because only branches with unrelated histories available
+$ git-annex whereused --key SHA256E-s2702--7f79dade5c9f7c6851af225be7d73d88b62259ed251638ba0140c7ea311cf2ed.bmp
+$ # not unusual
+```
+
+Now with historical:
+
+```
+$ git-annex whereused --historical --key SHA256E
+-s2702--7f79dade5c9f7c6851af225be7d73d88b62259ed251638ba0140c7ea311cf2ed.bmp
+warning: exhaustive rename detection was skipped due to too many files.
+warning: you may want to set your diff.renameLimit variable to at least 115576 and retry the command.
+SHA256E-s2702--7f79dade5c9f7c6851af225be7d73d88b62259ed251638ba0140c7ea311cf2ed.bmp ntfs,uuid=E06053EC6053C7C4~2:Program Files/Common Files/Services/verisign.bmp
+$ # this is good, but not exhaustive
+$ # plus it includes the weird to me, but perhaps explainable offset
+$ # i do prune and curate these branches after merging
+```
+
+To demonstrate that this isn't a exhaustive search, here I am following your suggestion on using git rev-list
+
+```
+$ git rev-list --objects --no-object-names --no-walk ntfs,uuid=E06053EC6053C7C4 | git annex lookupkey --ref --batch | grep SHA256E-s2702--7f79dade5c9f7c6851af225b
+e7d73d88b62259ed251638ba0140c7ea311cf2ed.bmp
+SHA256E-s2702--7f79dade5c9f7c6851af225be7d73d88b62259ed251638ba0140c7ea311cf2ed.bmp
+$ # confirming --historical find
+$ git rev-list --objects --no-object-names --no-walk ntfs,uuid=01D20F52B11B58A0 | git annex lookupkey --ref --batch | grep SHA256E-s2702--7f79dade5c9f7c6851af225be7d73d
+88b62259ed251638ba0140c7ea311cf2ed.bmp
+SHA256E-s2702--7f79dade5c9f7c6851af225be7d73d88b62259ed251638ba0140c7ea311cf2ed.bmp
+$ # as you can see, the only technique that sort of works is if your technique
+$ # iterated over all branches
+```
+
+Thank you again, because I do have something to work with now in any case.
+
+"""]]
