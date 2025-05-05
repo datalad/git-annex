@@ -6,7 +6,7 @@ When I run git-annex whereused --key <keyname>, nothing comes up. But if I look 
 
 If I add --historical, I can see the file exists in some previous commit that I thought had been successfully merged, and moved on from. It seems like this might be related to export trees, because that keyword is also present in the output with --historical
 
-[[!format sh """
+```
 $ git-annex whereused --key SHA256E-s1000013--e435522a9059bcb086b6db5fa5f05a06913266772a7931eefae2b8f7647f5f14.JPG
 $ git-annex whereused --historical --key SHA256E-s1000013--e435522a9059bcb086b6db5fa5f05a06913266772a7931eefae2b8f7647f5f14.JPG
 SHA256E-s1000013--e435522a9059bcb086b6db5fa5f05a06913266772a7931eefae2b8f7647f5f14.JPG remotes/origin/git-annex~12:export.tree/2010-08-21/042.JPG
@@ -21,7 +21,7 @@ lrwxrwxrwx 1 shaddy shaddy 201 May 20  2024 2010-08-21/042.JPG -> ../.git/annex/
 $ ls -lL 2010-08-21/042.JPG
 -r--r--r-- 1 shaddy shaddy 1000013 May 21  2024 2010-08-21/042.JPG
 $ 
-"""]]
+```
 
 My reading of the documentation is that the file being present in the local annex shouldn't require the --historical argument, which is much slower.
 
