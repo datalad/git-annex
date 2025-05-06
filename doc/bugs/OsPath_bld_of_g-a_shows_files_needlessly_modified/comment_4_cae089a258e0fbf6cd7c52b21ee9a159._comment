@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="jkniiv"
+ avatar="http://cdn.libravatar.org/avatar/595babb94a7609cb73c284d81467837f"
+ subject="comment 4"
+ date="2025-05-06T22:14:48Z"
+ content="""
+@Joey: you've got email. Thanks in advance for taking a look at my problem. I forgot
+to mention in the email that you really need to comment or remove the line with
+`git config core.autocrlf false` from my init script (init-git-annex.cmd|.sh) or
+you're going to get spurious modified files in git status. I believe the default
+is `core.autocrlf` set to true systemwide in Git for Windows. Somehow that default
+is what Git for Windows is most \"comfortable\" with, although personally I hate
+that it always \"cooks\" my newlines, so to speak. :)
+
+"""]]
