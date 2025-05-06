@@ -45,7 +45,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DATALAD_GITHUB_TOKEN }}
 
       - name: Send e-mail
-        uses: dawidd6/action-send-mail@v4
+        uses: dawidd6/action-send-mail@v5
         with:
           server_address: ${{ secrets.NOTIFY_SMTP_HOST }}
           server_port: ${{ secrets.NOTIFY_SMTP_PORT }}

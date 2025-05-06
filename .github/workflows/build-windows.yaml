@@ -192,7 +192,7 @@ jobs:
 
       - name: Send e-mail on failed run
         if: failure() && contains(fromJSON('["schedule", "workflow_dispatch"]'), github.event_name)
-        uses: dawidd6/action-send-mail@v4
+        uses: dawidd6/action-send-mail@v5
         with:
           server_address: ${{ secrets.NOTIFY_SMTP_HOST }}
           server_port: ${{ secrets.NOTIFY_SMTP_PORT }}
@@ -296,7 +296,7 @@ jobs:
 
       - name: Send e-mail on failed run
         if: failure() && contains(fromJSON('["schedule", "workflow_dispatch"]'), github.event_name)
-        uses: dawidd6/action-send-mail@v4
+        uses: dawidd6/action-send-mail@v5
         with:
           server_address: ${{ secrets.NOTIFY_SMTP_HOST }}
           server_port: ${{ secrets.NOTIFY_SMTP_PORT }}
