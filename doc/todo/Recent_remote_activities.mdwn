@@ -1,0 +1,29 @@
+It would be great to have a way to find out when a remote was last "active" and what happened. This can help with:
+
+- knowing which remotes can safely be marked "dead", as it didn't "do" anything for the last 10 years
+- finding out what exactly a repository is or where it was, if the (auto-generated) description isn't helpful
+- double-checking if one's setup indeed does the expected, puts files where they should go, etc.
+- maybe for sorting the remotes in `git annex info` by a `last contact` time? (see also here, sorting by description would already be cool and better than sorting by UUID, which is random: https://git-annex.branchable.com/todo/Sorting_remotes_by_description_in___96__git_annex_info__96__/)
+
+For a specific file, one can already get an activity log for a specific remote with `git annex log`:
+
+[[!format  bash """
+git annex log thatfile.pdf  | grep 5091aa91-fb08-44b1-aece-7406257103f8
+# + Mon, 27 Mar 2023 21:39:07 CEST thatfile.pdf | 5091aa91-fb08-44b1-aece-7406257103f8 -- ThatRemoteName
+"""]]
+
+But that is very slow and doesn't scale at all for considering all files.
+
+There's also the `activity.log` in the git-annex branch, which AFAIK currently only logs `git annex fsck` invocation timestamps:
+
+[[!format  bash """
+git annex log thatfile.pdf  | grep 091aa91-fb08-44b1-aece-7406257103f8
+# 091aa91-fb08-44b1-aece-7406257103f8 Fsck timestamp=1743873054s
+# ...
+"""]]
+
+The commit messages on the git-annex branch don't include the remote's ID (which might be helpful but hogs disk space?), so that can't be used to inspect activity - one doesn't know who did the commit.
+
+Any ideas how this could be done?
+
+Cheers, Yann
