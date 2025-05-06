@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2025-05-06T15:31:51Z"
+ content="""
+git grep for uuid is a good simple solution.
+
+Maybe `git-annex log --all` could be made to show all location log changes
+for all keys. Then you could just grep that for the uuid to see what
+changes have been happening to what files (if it mapped keys back to
+current filenames when possible). Implementation would be `git log`
+filtered to location log files, with `--raw` to get the diff, then
+parsing the diff.
+
+There is already code that does something very similar in
+Annex.RepoSize.diffBranchRepoSizes. And since that is already run by
+`git-annex info`, it would be cheap to pull out a last activity date
+for each repo at the same time as the repo's size, and have `git-annex
+info` display it or use it in the other ways you suggest. 
+
+The only wrinkle is that is an incremental diff since the
+last time it was called, so would not include dates for repos that
+have not changed since. So the dates would need to be cached
+somewhere.
+"""]]
