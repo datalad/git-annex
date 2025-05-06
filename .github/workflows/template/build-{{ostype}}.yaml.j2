@@ -269,6 +269,14 @@ jobs:
              git-annex-installer_"${{ steps.build-version.outputs.version }}".exe
 
     {% endif %}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Build the Python wheel
+        run: |
+          uv build --wheel
+
       - name: Upload packages
         uses: actions/upload-artifact@v4
         with:
