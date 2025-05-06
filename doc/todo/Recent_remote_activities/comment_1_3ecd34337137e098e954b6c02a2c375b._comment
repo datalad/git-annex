@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="grepping the git-annex branch for remote activity"
+ date="2025-05-06T13:06:28Z"
+ content="""
+Apparently, `git grep` in the git-annex branch is pretty performant, so this can be used to find activity times:
+
+[[!format bash \"\"\"
+# (roughly) First date of \"activity\" in the remote
+❯ git grep $REMOTE_UUID git-annex -- '*/*.log' | sort -t: -k3 | cut -d: -f3 | cut -ds -f1 | head -n1 | xargs -ITS date -d@TS
+Mi 1. Jan 21:02:30 CET 2025
+
+# latest activity in a given remote
+❯ git grep $REMOTE_UUID git-annex -- '*/*.log' | sort -t: -k3 | cut -d: -f3 | cut -ds -f1 | tail -n1 | xargs -ITS date -d@TS
+Di 6. Mai 11:25:49 CEST 2025
+\"\"\"]]
+"""]]
