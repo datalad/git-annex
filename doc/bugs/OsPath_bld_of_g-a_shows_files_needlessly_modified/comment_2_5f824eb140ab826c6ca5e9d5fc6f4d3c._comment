@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="jkniiv"
+ avatar="http://cdn.libravatar.org/avatar/595babb94a7609cb73c284d81467837f"
+ subject="comment 2"
+ date="2025-05-06T00:14:04Z"
+ content="""
+On my end the test case is very consistent in exhibiting this problem with this particular repo
+-- as in I git clone it into half a dozen copies and then enter them one by one to run the commands
+above and, e.g., six out of six times I get the same result with the affected versions of git-annex.
+Ok, sometimes it doesn't suggest to you to run `git-annex restage` in the middle but basically
+when the availability of the annexed files change (mostly after `get` but sometimes after `drop`, too),
+git seems to think the (unlocked) files have been modified.
+
+There *is* a small red herring, though, as it turns out Git for Windows' handling of `core.autocrlf` set to
+false seems to be a bit haphazard, in which case even otherwise unaffected (i.e., older) versions
+of git-annex (or rather core git) start to unnecessarily show files as having been modified (including
+non-large files stored in plain git). But that is a separate problem which doesn't involve git-annex
+as such.
+
+Finally, the affected versions (in my tests) are the two latest released versions (with OsPath
+build flag set to true by default):
+
+  - 10.20250320-g4c8577d3a2b963d4c790124633584537a372d389
+  - 10.20250416-gb22a72cd9444071e86a46cc1eb8799e7d085b49d
+
+In contrast, version 10.20250416 built with OsPath set to false, and the pre-OsPath
+released version 10.20250115-g7a8bc19228b2e16ec86836277c4077b63667b391 seem to not
+be affected by the problem. At least that's the conclusion that I have reached by
+repeatedly running the test case a few dozen times in total (in sets of six like I
+mentioned above).
+"""]]
