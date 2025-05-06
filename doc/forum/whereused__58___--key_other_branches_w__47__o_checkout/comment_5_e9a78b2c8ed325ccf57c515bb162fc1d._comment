@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2025-05-06T15:18:51Z"
+ content="""
+It's fine to have multiple unrelated branches in a repository, I don't
+think you're doing anything wrong.
+
+Currently --historical stops once it finds one use of the key.
+I think you are wanting to find all uses by any of your branches?
+
+Maybe the right option for this use case would be a --branches that
+searches each branch for uses of the key and doesn't stop at the first hit.
+Perhaps combined with a --refspec= option that takes a wildcard that can be
+used to select which branches to search.
+"""]]
