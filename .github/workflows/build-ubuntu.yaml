@@ -5,6 +5,7 @@ on:
   pull_request:
     paths:
       - '.github/workflows/build-ubuntu.yaml'
+      - '.github/workflows/tools/apply-patches'
       - 'patches/*.patch'
   schedule:
     - cron: '30 02 * * *'
@@ -140,6 +141,14 @@ jobs:
       - name: Check that all tests were run and passed
         run: grep -E '^All [[:digit:]]{3} tests passed' "${bbuild_log}"
         if: "!contains(env.DEB_BUILD_OPTIONS, 'nocheck')"
+
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Build the Python wheel
+        run: |
+          uv build --wheel
 
       - name: Upload packages
         uses: actions/upload-artifact@v4
