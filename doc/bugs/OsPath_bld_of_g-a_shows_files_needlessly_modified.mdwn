@@ -524,3 +524,5 @@ say I'm a believer. :)
 
 [[!meta author=jkniiv]]
 [[!meta title="(Windows) OsPath build of git-annex shows files needlessly modified in git status"]]
+
+> [[fixed|done]] --[[Joey]]

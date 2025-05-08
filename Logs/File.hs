@@ -145,6 +145,7 @@ streamLogFileUnsafe f finalizer processor = bracketOnError setup cleanup go
 	cleanup (Just h) = liftIO $ hClose h
 	go Nothing = finalizer
 	go (Just h) = do
+		liftIO $ fileEncoding h
 		mapM_ processor =<< liftIO (lines <$> hGetContents h)
 		liftIO $ hClose h
 		finalizer

@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2025-05-08T18:03:11Z"
+ content="""
+In restagePointerFiles, isunmodified's call to genInodeCache is returning
+Nothing, and so it does not try to restage the file.
+
+The path to the annexed file includes "läp", and that non-ascii
+character is causing the problem. If I rename that to "lap", the problem
+goes away.
+
+Printing out the OsPath, I see `"l\195\164p"`. That seems wrong for
+Windows, where it should be using UTF-16. Calling `fromOsPath` on it to
+make a RawFilePath yields `"l\195\131\194\164p"` which is certainly wrong,
+and explains why genInodeCache, which does that conversion, is failing.
+
+So the question is how the OsPath is being constructed with the wrong
+encoding. In this case, it's coming from streamRestageLog.
+Which uses streamLogFileUnsafe. Which does not set the filesystem encoding
+when reading the log file. So that's the bug. I'm not sure if this bug is
+actually Windows specific, although the use of UTF16 on windows may be
+helping trigger a problem with it.
+
+Anyway, fixed it!
+"""]]
