@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2025-05-08T16:33:54Z"
+ content="""
+I've reproduced this.
+
+Note that running `git-annex add` on the affected files will clear up the
+problem. It manages to restage the file, and as there is no modification,
+is otherwise a no-op.
+
+As a first analysis, I looked as annex.debug output between the two
+versions of git-annex. There were no differences other than pid numbers and
+git-annex branch shas.
+
+Also, after running `git-annex get` with the bad git-annex, running `git
+status` with the good git-annex in path did not correct the problem.
+
+My current guess is that restagePointerFiles has changed its behavior in
+the filenames it sends to git update-index. In particular the comment about
+"update-index is documented as picky" about filepaths suggests a small and
+otherwise ok change to a file path could cause this breakage.
+"""]]
