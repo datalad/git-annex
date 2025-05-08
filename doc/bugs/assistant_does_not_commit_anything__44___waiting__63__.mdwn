@@ -1,0 +1,89 @@
+### Please describe the problem.
+
+I have used assistant on that box but forgot how I start it etc... so finally came up with a systemd recipe which seems to start it
+
+```
+reprostim@reproiner:/data/reprostim$ cat ~/.config/systemd/user/git-annex-assistant.service
+[Unit]
+Description=Git Annex Assistant Service
+After=network.target
+
+[Service]
+WorkingDirectory=/data/reprostim
+ExecStart=/usr/bin/git annex assistant --foreground
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=default.target
+```
+
+which seemed to start it nicely on booth, but I did not see anything committed/transferred. Even if I stop the systemd service, and start from terminal (remote via ssh), we see
+
+```
+reprostim@reproiner:/data/reprostim$ git annex --debug assistant --foreground
+[2025-05-08 14:08:32.609958543] (Utility.Process) process [5887] read: uname ["-o"]
+[2025-05-08 14:08:32.611617504] (Utility.Process) process [5887] done ExitSuccess
+[2025-05-08 14:08:32.614088771] (Utility.Process) process [5888] read: uname ["-o"]
+[2025-05-08 14:08:32.615900478] (Utility.Process) process [5888] done ExitSuccess
+[2025-05-08 14:08:32.617482785] (Assistant) logging to .git/annex/daemon.log
+[2025-05-08 14:08:32.618258041] (Annex.Branch) read remote.log
+[2025-05-08 14:08:32.632058148] (Utility.Process) process [5889] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch"]
+[2025-05-08 14:08:32.635478016] (Annex.Branch) read proxy.log
+[2025-05-08 14:08:32.636566897] (Annex.Branch) read trust.log
+[2025-05-08 14:08:32.63751056] (Assistant) logging to .git/annex/daemon.log
+```
+
+and in that daemon.log:
+
+```
+reprostim@reproiner:/data/reprostim$ cat .git/annex/daemon.log
+[2025-05-08 14:08:32.640121818] (Annex.Branch) read schedule.log
+[2025-05-08 14:08:32.64120032] (Utility.Process) process [5892] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch"]
+[2025-05-08 14:08:32.655526372] (Annex.Branch) read schedule.log
+[2025-05-08 14:08:32.662389467] (Utility.Process) process [5895] read: lsof ["-F0can","--",".git/reprostim-videocapture.lock"]
+lsof: WARNING: can't stat() fuse.gvfsd-fuse file system /run/user/113/gvfs
+      Output information may be incomplete.
+[2025-05-08 14:08:32.707976737] (Utility.Process) process [5895] done ExitSuccess
+[2025-05-08 14:08:32.708169976] (SanityCheckerStartup) Waiting for 60 seconds for git lock file writer
+[2025-05-08 14:09:32.769444892] (Utility.Process) process [6090] read: lsof ["-F0can","--",".git/reprostim-videocapture.lock"]
+lsof: WARNING: can't stat() fuse.gvfsd-fuse file system /run/user/113/gvfs
+      Output information may be incomplete.
+[2025-05-08 14:09:32.824400459] (Utility.Process) process [6090] done ExitSuccess
+[2025-05-08 14:09:32.82450385] (SanityCheckerStartup) Waiting for 60 seconds for git lock file writer
+[2025-05-08 14:10:32.873375671] (Utility.Process) process [6281] read: lsof ["-F0can","--",".git/reprostim-videocapture.lock"]
+lsof: WARNING: can't stat() fuse.gvfsd-fuse file system /run/user/113/gvfs
+      Output information may be incomplete.
+[2025-05-08 14:10:32.930940073] (Utility.Process) process [6281] done ExitSuccess
+[2025-05-08 14:10:32.931056974] (SanityCheckerStartup) Waiting for 60 seconds for git lock file writer
+[2025-05-08 14:11:32.992138737] (Utility.Process) process [6464] read: lsof ["-F0can","--",".git/reprostim-videocapture.lock"]
+lsof: WARNING: can't stat() fuse.gvfsd-fuse file system /run/user/113/gvfs
+      Output information may be incomplete.
+[2025-05-08 14:11:33.063544538] (Utility.Process) process [6464] done ExitSuccess
+[2025-05-08 14:11:33.063652636] (SanityCheckerStartup) Waiting for 60 seconds for git lock file writer
+```
+
+and no new files are added/committed etc.
+
+May be I am invoking assistant incorrectly? (FWIW when I echoed that path into /home/reprostim/.config/git-annex/autostart, and start with --autostart option, then it seems to start two of the processes and still to not commit anything)
+
+
+### What version of git-annex are you using? On what operating system?
+
+```
+reprostim@reproiner:/data/reprostim$ git annex version
+git-annex version: 10.20250115-1~ndall+1
+build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Servant Benchmark Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22.1 bloomfilter-2.0.1.0 cryptonite-0.29 DAV-1.3.4 feed-1.3.2.1 ghc-9.0.2 http-client-0.7.13.1 persistent-sqlite-2.13.1.0 torrent-10000.1.1 uuid-1.3.15 yesod-1.6.2.1
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL GITBUNDLE GITMANIFEST VURL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg rclone hook external
+operating system: linux x86_64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
+local repository version: 10
+```
+
+Please advise
+
+[[!meta author=yoh]]
+[[!tag projects/repronim]]
