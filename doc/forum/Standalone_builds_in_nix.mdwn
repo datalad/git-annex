@@ -1,0 +1,3 @@
+Nix/NixOS/nixpkgs tends to hang behind git-annex packaging, which is annoying. The standalone builds of git annex work fine when downloaded manually, but that's not the nix way ;-) Here is a derivation for the standalone builds: [git-annex-standalone.nix](https://gitlab.com/nobodyinperson/nixconfig/-/blob/c74523beb6eacf31d95d5f1a79d1558563fc82fc/pkgs/git-annex-standalone.nix). Also [this discussion](https://discourse.nixos.org/t/packaging-prebuilt-haskell-binaries/64031/1).
+
+One thing that's quite inelegant here is the lack of predictable urls for specific versions of the standalone builds. One has to grab them from the annexed content and build a sus looking download link. This also presents a bootstrapping problem as one would need git annex to do that.
