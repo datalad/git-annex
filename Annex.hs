@@ -197,6 +197,7 @@ data AnnexState = AnnexState
 	, checkignorehandle :: Maybe (ResourcePool CheckIgnoreHandle)
 	, globalnumcopies :: Maybe (Maybe NumCopies)
 	, globalmincopies :: Maybe (Maybe MinCopies)
+	, nummincopiesattrcache :: Maybe (OsPath, (Maybe NumCopies, Maybe MinCopies))
 	, limit :: ExpandableMatcher Annex
 	, timelimit :: Maybe (Duration, POSIXTime)
 	, sizelimit :: Maybe (TVar Integer)
@@ -253,6 +254,7 @@ newAnnexState c r = do
 		, checkignorehandle = Nothing
 		, globalnumcopies = Nothing
 		, globalmincopies = Nothing
+		, nummincopiesattrcache = Nothing
 		, limit = BuildingMatcher []
 		, timelimit = Nothing
 		, sizelimit = Nothing

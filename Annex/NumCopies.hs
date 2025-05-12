@@ -1,6 +1,6 @@
 {- git-annex numcopies configuration and checking
  -
- - Copyright 2014-2024 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -181,12 +181,18 @@ getGlobalFileNumCopies f = fromSourcesOr defaultNumCopies
 	]
 
 getNumMinCopiesAttr :: OsPath  -> Annex (Maybe NumCopies, Maybe MinCopies)
-getNumMinCopiesAttr file =
-	checkAttrs ["annex.numcopies", "annex.mincopies"] file >>= \case
-		(n:m:[]) -> return
-			( configuredNumCopies <$> readish n
-			, configuredMinCopies <$> readish m
-			)
+getNumMinCopiesAttr file = Annex.getState Annex.nummincopiesattrcache >>= \case
+	Just (cfile, v) | cfile == file -> return v
+	_ -> checkAttrs ["annex.numcopies", "annex.mincopies"] file >>= \case
+		(n:m:[]) -> do
+			let v =
+				( configuredNumCopies <$> readish n
+				, configuredMinCopies <$> readish m
+				)
+			Annex.changeState $ \s -> s 
+				{ Annex.nummincopiesattrcache = Just (file, v)
+				}
+			return v
 		_ -> error "internal"
 
 {- Checks if numcopies are satisfied for a file by running a comparison
