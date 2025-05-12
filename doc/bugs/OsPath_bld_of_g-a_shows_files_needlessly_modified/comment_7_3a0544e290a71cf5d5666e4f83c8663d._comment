@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="jkniiv"
+ avatar="http://cdn.libravatar.org/avatar/595babb94a7609cb73c284d81467837f"
+ subject="comment 7"
+ date="2025-05-12T20:02:48Z"
+ content="""
+I had an inkling that this could involve encoding issues / non-ascii characters but I
+didn't end up approaching my tests with that particular thing in focus. Anyway, many
+thanks for fixing something that certainly had at the very least usability implications
+for us international users of git-annex (well, on Windows at least).
+"""]]
