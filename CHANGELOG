@@ -1,5 +1,8 @@
 git-annex (10.20250417) UNRELEASED; urgency=medium
 
+  * Preferred content now supports "balanced=groupname:lackingcopies"
+    to make files be evenly balanced amoung as many repositories as are
+    needed to satisfy numcopies.
   * map: Fix buggy handling of remotes that are bare git repositories
     accessed via ssh.
   * map: Avoid looping forever with mutually recursive paths between

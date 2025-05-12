@@ -1,6 +1,6 @@
 {- user-specified limits on files to act on
  -
- - Copyright 2011-2024 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -459,19 +459,26 @@ limitLackingCopies desc approx want = case readish want of
 		}
 	Nothing -> Left "bad value for number of lacking copies"
   where
-	go mi needed notpresent key = do
-		numcopies <- if approx
-			then approxNumCopies
-			else case mi of
-				MatchingFile fi -> getGlobalFileNumCopies $
-					matchFile fi
-				MatchingInfo {} -> approxNumCopies
-				MatchingUserInfo {} -> approxNumCopies
-		us <- filter (`S.notMember` notpresent)
-			<$> (trustExclude UnTrusted =<< Remote.keyLocations key)
-		let vs nhave numcopies' = numcopies' - nhave >= needed
-		return $ numCopiesCheck'' us vs numcopies
+	go mi needed notpresent key =
+		limitCheckNumCopies approx mi notpresent key vs
+	  where
+		vs nhave numcopies' = numcopies' - nhave >= needed
+
+limitCheckNumCopies :: Bool -> MatchInfo -> AssumeNotPresent -> Key -> (Int -> Int -> v) -> Annex v
+limitCheckNumCopies approx mi notpresent key vs = do
+	numcopies <- if approx
+		then approxNumCopies
+		else case mi of
+			MatchingFile fi -> getGlobalFileNumCopies $
+				matchFile fi
+			MatchingInfo {} -> approxNumCopies
+			MatchingUserInfo {} -> approxNumCopies
+	us <- filter (`S.notMember` notpresent)
+		<$> (trustExclude UnTrusted =<< Remote.keyLocations key)
+	return $ numCopiesCheck'' us vs numcopies
+  where
 	approxNumCopies = fromMaybe defaultNumCopies <$> getGlobalNumCopies
+	
 
 {- Match keys that are unused.
  - 
@@ -597,17 +604,21 @@ limitBalanced mu getgroupmap groupname = do
 
 limitBalanced' :: String -> MatchFiles Annex -> Maybe UUID -> MkLimit Annex
 limitBalanced' termname fullybalanced mu groupname = do
-	copies <- limitCopies $ if ':' `elem` groupname
-		then groupname
-		else groupname ++ ":1"
+	let checknumcopies = ":lackingcopies" `isSuffixOf` groupname
+	enoughcopies <- if checknumcopies
+		then limitLackingCopies termname False "1"
+		else limitCopies $ if ':' `elem` groupname
+			then groupname
+			else groupname ++ ":1"
+	let checkenoughcopies = if checknumcopies then id else not
 	let present = limitPresent mu
-	let combo f = f present || f fullybalanced || f copies
+	let combo f = f present || f fullybalanced || f enoughcopies
 	Right $ MatchFiles
 		{ matchAction = \lu a i ->
 			ifM (Annex.getRead Annex.rebalance)
 				( matchAction fullybalanced lu a i
 				, matchAction present lu a i <||>
-					((not <$> matchAction copies lu a i)
+					((checkenoughcopies <$> matchAction enoughcopies lu a i)
 						<&&> matchAction fullybalanced lu a i
 					)
 				)
@@ -667,11 +678,16 @@ limitFullyBalanced''
 	-> MkLimit Annex
 limitFullyBalanced'' filtercandidates termname mu getgroupmap want =
 	case splitc ':' want of
-		[g] -> go g 1
-		[g, n] -> maybe
-			(Left $ "bad number for " ++ termname)
-			(go g)
-			(readish n)
+		[g] -> go g (Right 1)
+		[g, n]
+			| n == "lackingcopies" -> go g $ 
+				Left $ \mi notpresent key -> 
+					let vs nhave numcopies = numcopies - nhave
+					in limitCheckNumCopies False mi notpresent key vs
+			| otherwise -> maybe
+				(Left $ "bad number for " ++ termname)
+				(go g . Right)
+				(readish n)
 		_ -> Left $ "bad value for " ++ termname
   where
 	go s n = limitFullyBalanced''' filtercandidates termname mu
@@ -683,13 +699,16 @@ limitFullyBalanced'''
 	-> Maybe UUID
 	-> Annex GroupMap
 	-> Group
-	-> Int
+	-> Either (MatchInfo -> AssumeNotPresent -> Key -> Annex Int) Int
 	-> MkLimit Annex
-limitFullyBalanced''' filtercandidates termname mu getgroupmap g n want = Right $ MatchFiles
-	{ matchAction = \lu -> const $ checkKey $ \key -> do
+limitFullyBalanced''' filtercandidates termname mu getgroupmap g getn want = Right $ MatchFiles
+	{ matchAction = \lu notpresent mi -> flip checkKey mi $ \key -> do
 		gm <- getgroupmap
 		let groupmembers = fromMaybe S.empty $
 			M.lookup g (uuidsByGroup gm)
+		n <- case getn of
+			Right n -> pure n
+			Left a -> a mi notpresent key
 		candidates <- filtercandidates n key groupmembers
 		let wanted = if S.null candidates
 			then False

@@ -267,7 +267,7 @@ content not being configured.
   says it wants them. (Or, if annex.expireunused is set, it may just delete
   them.)
 
-* `balanced=groupname[:number]`
+* `balanced=groupname[:number|:lackingcopies]`
 
   Makes content be evenly balanced amoung repositories in the group.
   
@@ -277,9 +277,15 @@ content not being configured.
   For example, "balanced=backup:2", when there are 3 members of the backup
   group, will make each backup repository want 2/3rds of the files.
 
-  For this to work, each repository in the group should have its preferred
-  content set to the same expression. Using `groupwanted` is a good
-  way to do that.
+  Using "lackingcopies" rather than a number makes each file be balanced
+  amoung as many repositories in the group as are needed to satisfy
+  its numcopies configuration. Eg, "balanced=backup:lackingcopies", when
+  numcopies is 3 and there is 1 other copy will behave the same as
+  "balanced=backup:2".
+
+  For balancing to work, each repository in the group should have its
+  preferred content set to the same expression. Using `groupwanted` is a
+  good way to do that.
 
   The sizes of files are not taken into account, so it's possible for
   one repository to get larger than usual files and so fill up before
@@ -312,7 +318,7 @@ content not being configured.
   Note that `not balanced` not a reasonable thing to use in a preferred
   content expression for the same reasons as `not present`.
 
-* `fullybalanced=groupname[:number]`
+* `fullybalanced=groupname[:number|:lackingcopies]`
 
   This is like `balanced`, but allows moving content between repositories
   in the group at any time to keep it fully balanced.
@@ -333,7 +339,7 @@ content not being configured.
   but it allows new files to continue to be stored on the specified number
   of repositories.
 
-* `sizebalanced=groupname:number`
+* `sizebalanced=groupname[:number|:lackingcopies]`
 
   Distributes content amoung repositories in the group, keeping
   repositories proportionally full. 
@@ -373,7 +379,7 @@ content not being configured.
   Note that `not sizebalanced` not a reasonable thing to use in a preferred
   content expression for the same reasons as `not present`.
 
-* `fullysizebalanced=groupname:number`
+* `fullysizebalanced=groupname[:number|:lackingcopies]`
 
   This is like `sizebalanced`, but allows moving content between repositories
   in the group at any time to keep it fully balanced.

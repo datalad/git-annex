@@ -1,0 +1,21 @@
+Using `balanced` or similar preferred content expressions makes files be
+spread amoung repositories in a group, but does not take numcopies into
+account. Could this be made to support numcopies?
+
+The number of nodes to store each file on can be specified
+(`balanced=foo:N`). That is a separate number than numcopies. When
+different files have different numcopies, a single number there is not
+always useful. (Although it may be that someone always wants each file in
+the cluster to have say, 3 copies, regardless of numcopies.)
+
+Could `balanced=foo:lackingcopies` just make enough nodes want copies to
+satisfy numcopies? (Assuming there are enough nodes.)
+
+That would not be the same as using `balanced=foo or lackingcopies=1`,
+because that makes every node want every file until numcopies is satisfied.
+So that does not evenly balance files amoung nodes. Eg, if `git-annex
+sync` is syncing with 3 nodes and happens to always try sending to A first,
+A would get every file, and B and C would not get any files with that
+preferred content expression.
+
+> Implemented! [[done]] --[[Joey]]
