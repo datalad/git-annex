@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="also noticed some assistant weirdness"
+ date="2025-05-09T07:45:02Z"
+ content="""
+Don't know if related, but I also noticed some weirdness with the assistant lately (last 2 versions or so), where it just wouldn't push and sometimes also not commit without any apparent reason or error messages. But also `git annex assist` wouldn't do those things. It was erratic and a re-clone appeared to fix it. It feels like a repo-size thing - the problematic one is a big repo with a lot of unlocked files and I feel like those are troublemakers, often needlessly appearing as changed in `git diff`. Smaller repos no problemo. Just my doubtly helpful anecdotal evidence.
+"""]]
