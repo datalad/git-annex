@@ -22,3 +22,5 @@ Still it would be good to support this, especially for when existing
 archive repositories get put in a cluster.)
 
 --[[Joey]] 
+
+> [[wontfix|done]]

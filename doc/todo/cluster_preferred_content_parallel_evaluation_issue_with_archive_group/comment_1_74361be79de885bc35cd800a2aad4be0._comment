@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-05-12T16:03:36Z"
+ content="""
+If this were implemented, and one of the nodes was full, and that happened
+to be the node whose preferred content expression were evaluated first, it
+would try to store there and fail, and the content would not be stored in
+any of the other nodes. Which seems potentially worse than the file being
+stored on multiple nodes currently.
+
+Of course, this is the problem that `sizebalanced` preferred content
+solves. Since sizebalanced is otherwise much like the archive group,
+it would make sense to just switch the cluster nodes to use it.
+
+As for other preferred content expressions, unless they use
+`copies=groupname:number` or `lackingcopies`, whether one node wants
+content won't be influenced by what other nodes have it. So evaluating
+in preferred content in parallel is ok for those.
+
+I think I've talked myself out of making a change!
+"""]]
