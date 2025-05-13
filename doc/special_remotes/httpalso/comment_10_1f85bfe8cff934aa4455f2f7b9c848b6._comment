@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: Setup dirhash parameter for httpalso to avoid hammering server"""
+ date="2025-05-13T14:52:34Z"
+ content="""
+httpalso learns the layout of the remote, so one a process has found one
+file it will use that same layout going forward. So you should see only a
+few 404's per process.
+
+Please open a [[todo]] with details about the problem if that's not the
+case, or if that's somehow insufficient.
+"""]]
