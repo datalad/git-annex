@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-05-13T14:24:42Z"
+ content="""
+My downloads.kitenet.net repository has limited size and only retains old
+builds for a certain amount of time. (There are 200+ gb of old builds at
+this point.) So I would recommend making your own
+copy of the file, or using the archive.org url which you can find with
+git-annex.
+
+(I've only recently gotten uploading to archive.org working again.)
+"""]]
