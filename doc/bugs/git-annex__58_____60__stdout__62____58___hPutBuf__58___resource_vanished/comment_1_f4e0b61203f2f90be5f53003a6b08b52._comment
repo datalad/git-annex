@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-05-13T15:06:43Z"
+ content="""
+I've seen this message before with `git-annex version | head -n 1`
+
+That particular one was made to ignore the error to write to stdout after
+it was closed, but any other write to stdout might fail similarly when
+going to a pipe that got closed.
+
+So can you please track down what git-annex command is being run? My
+suggestion is to use `strace -f`
+"""]]
