@@ -63,3 +63,5 @@ run `git annex map` in my situation
 
 [[!meta author=yoh]]
 [[!tag projects/openneuro]]
+
+> [[done]] I think --[[Joey]]
