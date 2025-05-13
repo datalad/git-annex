@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2025-05-13T14:07:17Z"
+ content="""
+You can delete the sqlite database affected by the problem and git-annex
+will recreate it as needed.
+
+Given the improved error message shows what the problem is now,
+I don't know what more can be done about this really.
+"""]]
