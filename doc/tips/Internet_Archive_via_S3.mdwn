@@ -36,7 +36,7 @@ rather than having git-annex pick a random one; and you can optionally
 specify `x-archive-meta*` headers to add metadata as explained in their
 [documentation](http://www.archive.org/help/abouts3.txt).
 
-	# git annex initremote archive-panama type=S3 \
+	# git annex initremote archive-panama type=S3 protocol=https \
 		host=s3.us.archive.org bucket=panama-canal-lock-blueprints \
 		x-archive-meta-mediatype=texts x-archive-meta-language=eng \
                 x-archive-meta-collection=test_collection \

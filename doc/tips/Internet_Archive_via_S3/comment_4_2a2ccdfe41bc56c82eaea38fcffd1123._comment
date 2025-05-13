@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2025-05-13T14:22:17Z"
+ content="""
+After the 2025 compromise of archive.org and its subsequent rebuild, it
+seems they have changed to require http be used with their S3 API. I was
+getting error 404 when using my internet archive special remote because of
+that. I fixed it by running:
+
+	git annex enableremote archive.org protocol=https
+"""]]
