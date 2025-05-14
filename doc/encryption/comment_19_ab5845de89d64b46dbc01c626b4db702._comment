@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: Why is the default HMACSHA1 for shared encryption?"""
+ date="2025-05-14T17:52:30Z"
+ content="""
+This is a HMACSHA1 of the git-annex key, so for a collision to be a problem
+you would need two files whose keys collide to be stored in the repository. 
+And then the result would be that retrieving one of the files from the remote
+would fail when it verifies the downloaded file matches the hash.
+Which is not worth the bother of generating the collision.
+
+The point of using HMAC here is not cryptographic collision resistance, but
+to prevent an attacker who does not have access to the git repository 
+(and so lacks access to the HMAC secret key) from making guesses about what
+files are stored in an encrypted special remote that they do have access to.
+And HMACSHA1 accomplishes that as securely as HMACSHA256, I think.
+"""]]
