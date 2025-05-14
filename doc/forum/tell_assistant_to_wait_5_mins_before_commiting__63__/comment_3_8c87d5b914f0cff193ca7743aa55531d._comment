@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2025-05-14T17:27:40Z"
+ content="""
+Yes, the `annex.delayadd` git configuration can be used to do this.
+It is a number of seconds for the assistant to delay before adding a
+newly created file.
+"""]]
