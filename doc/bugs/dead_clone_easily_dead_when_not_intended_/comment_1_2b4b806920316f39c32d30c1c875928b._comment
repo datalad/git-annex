@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-05-14T16:29:46Z"
+ content="""
+It's not repository OR key, dead can be used with multiple keys, multiple
+repositories, or a combination of keys and repositories.
+
+(The automatically generated --help does not make it clear that --key
+can be used repeatedly, but the man page does and is correct. I guess that
+optparse-applicative --help does not try to distinguish between options
+that can be repeated vs options where a later option overrides an earlier
+one.)
+"""]]

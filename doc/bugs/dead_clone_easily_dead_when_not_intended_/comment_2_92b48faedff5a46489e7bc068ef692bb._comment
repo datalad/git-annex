@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2025-05-14T16:34:22Z"
+ content="""
+I think arguably dead should be able to operate on paths too. If a user has
+lost the only copy of a file, but not deleted the annex link, it would
+be easier to use the path than looking up the key.
+
+Since dead refuses to do anything when there's still a recorded location for
+a key, there would not be any risk of operating on files whose data has not
+been lost.
+
+(There would be some ambiguity, eg "." can refer to both the "here"
+repository, or all files in the current directory. For that matter,
+the name of a repository could also be ambiguous with a filename.)
+
+Making it reject "here" when provided with additional parameters that are
+not repositories would conflict with such a change. 
+
+I realize that it's annoying to make a mistake like you made, but it's also
+not hard to undo it once you realize that you've made "here" dead.
+
+A better guard against that mistake might be for it to refuse to mark the
+current repository as dead, since it still exists. But there are probably
+workflows where a repository gets marked as dead just before `rm -rf` of it,
+which that would break.
+"""]]
