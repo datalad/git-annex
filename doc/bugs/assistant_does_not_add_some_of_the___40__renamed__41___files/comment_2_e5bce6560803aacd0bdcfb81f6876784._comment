@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2025-05-14T16:45:48Z"
+ content="""
+The affected files are small files, is git-annex configured to add them to git
+rather than annexing them?
+
+Are you renaming large numbers of files at once? There are
+limits to how many changes inotify can report on at one time.
+
+`.git/annex/daemon.log` might have some useful information.
+"""]]
