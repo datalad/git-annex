@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2025-05-14T17:30:12Z"
+ content="""
+The assistant is seeing changes that are made in the process of populating
+an annex pointer file with the file content on get, or replacing the file
+content with the pointer file on drop.
+
+For example, Annex/Content/PointerFile.hs in populatePointerFile
+calls removeFile before replaceWorkTreeFile. I'm not sure why it needs to
+do that, but since that's non-atomic, there's a window for the assistant
+to see the file got deleted and commit the deletion, followed by committing
+that it got added back.
+
+In depopulatePointerFile, it's more clear why it does a non-atomic
+replacement, since it calls secureErase on the file.
+
+`git config annex.delayadd 1` will probably effectively avoid the problem.
+"""]]
