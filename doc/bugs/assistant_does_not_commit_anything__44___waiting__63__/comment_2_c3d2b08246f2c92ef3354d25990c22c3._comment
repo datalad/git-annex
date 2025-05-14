@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2025-05-14T17:05:37Z"
+ content="""
+It's pretty easy to replicate this behavior:
+
+	cat > .git/index.lock
+
+And while that process is still running, start the assistant.
+
+It might be some other ".lock" file or perhaps `.git/gc.pid` that a process
+has open for write. The assistant does not want to start running with a
+stale git lock file, which is a pretty common problem given the way that
+git lock files work. So when the lock file exists, it waits for it to have
+no writers, before removing it.
+"""]]
