@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-05-14T18:05:28Z"
+ content="""
+24 million files is a lot of files for a git repository, and is past the
+threshhold where git generally slows down, in my experience.
+
+With that said, the git-annex cluster feature is fairly new, you're the
+first person I've heard from using it at scale, and if it has its own 
+scalability problems, I'd like to address that. And I generally think it's
+cool you're using a cluster for such a large repo!
+
+Have you looked at the "balanced" preferred content expression? It is
+designed for the cluster use case and picks nodes so content gets evenly
+balanced amoung them. Without needing the overhead of setting metadata.
+
+The reason your pre-commit-annex hook script is slow is that running
+`git-annex metadata` has to update the `.git/annex/index` file, which
+you'll probably find is quite a large file. And git updates index files,
+by default by rewriting the whole file. 
+
+Needing to rewrite the index file is also probably a lot of the slow
+down of "(recording state in git...)".
+
+There are ways to make git update index files more efficiently, eg
+switching to v4 index files. Enabling split index mode can also help
+in cases where the index file is being written repeatedly. Do bear
+in mind that you would want to make these changes both to `.git/index`
+and to `.git/annex/index`
+
+Your pre-commit-annex hook is running `git-annex metadata` once per file,
+so the index gets updated once per file.
+Rather than running `git-annex metadata` in a loop, that can also 
+be sped up by using `--batch` and feed in JSON, and it will only
+need to update the index once.
+"""]]
