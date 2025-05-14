@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="liam"
+ avatar="http://cdn.libravatar.org/avatar/5cb416d010c1d3f0ca677dd7f6c822ea"
+ subject="Why is the default HMACSHA1 for shared encryption?"
+ date="2025-05-14T16:04:11Z"
+ content="""
+I see that the shared encryption seems to use HMACSHA1 as the default.
+The https://git-annex.branchable.com/backends/ page indicates that SHA256E is the default backend used for the unencrypted key value store.
+
+Is there a reason why the default for shared encryption is not HMACSHA256 to match the default used by unencrypted repos?
+
+Does using HMACSHA1 present any caveats?
+I imagine something like collisions more likely with the older hashing algorithm.
+However, I don't know enough about how it works to make a good judgement on that.
+
+Any insight is appreciated.
+
+Thanks
+"""]]
