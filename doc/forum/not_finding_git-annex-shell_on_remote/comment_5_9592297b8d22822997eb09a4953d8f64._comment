@@ -1,0 +1,40 @@
+[[!comment format=mdwn
+ username="liam"
+ avatar="http://cdn.libravatar.org/avatar/5cb416d010c1d3f0ca677dd7f6c822ea"
+ subject="How to mitigate not finding git-annex-shell on MacOS remote?"
+ date="2025-05-15T02:08:58Z"
+ content="""
+I have a similar issue on MacOS with git-annex installed via homebrew.
+
+I'm trying to do `git annex sync macbook-remote` which is setup as a remote pointing to `ssh://macbook-remote:/Users/me/annex`.
+
+I get the messages:
+
+```
+Unable to parse git config from macbook-remote
+Remote macbook-remote does not have git-annex installed; setting annex-ignore
+This could be a problem with the git-annex installation on the remote. Please make sure that git-annex-shell is available in PATH when you ssh into the remote.
+Once you have fixed the git-annex installation, run: git annex enableremote macbook-remote
+```
+
+I have confirmed git-annex is installed on the remote machine, and `which git-annex` and `which git-annex-shell` both show the binaries in the `/usr/local/bin/` directory.
+
+I tried to fix it by setting the path in `~/.zprofile` of the remote machine:
+`PATH=$PATH:/usr/local/bin/git-annex-shell`
+Then I ran `git annex enableremote macbook-remote` on the local machine.
+This doesn't seem to work. It gives the same error.
+I also tried changing the path in the `.zshrc` even though from my understanding I should be setting the `.zprofile` one.
+Am I doing it wrong?
+
+What confuses me is why there is a message about parsing the git config.
+The message is not clear which git config it is talking about.
+Does this mean there is an issue with the `~/.gitconfig` file?
+Maybe it is referring to the `~/annex/.git/config` file instead?
+Maybe the shell issue is not the only problem here.
+
+Toggling verbosity / debug with the `--verbose --debug` flags doesn't seem to give any extra information to identify which file it's having problems parsing.
+
+Any insight is appreciated.
+
+Thanks
+"""]]
