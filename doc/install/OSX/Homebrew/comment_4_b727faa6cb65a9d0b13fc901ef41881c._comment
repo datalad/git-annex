@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="liam"
+ avatar="http://cdn.libravatar.org/avatar/5cb416d010c1d3f0ca677dd7f6c822ea"
+ subject="How to install man pages for git-annex?"
+ date="2025-05-15T01:10:48Z"
+ content="""
+Did anyone figure out how to get man pages to show for git-annex on mac with homebrew?
+I have installed on several macs via `brew install git-annex`.
+I don't seem to have any man pages for git-annex on my system.
+
+Thanks
+"""]]
