@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="liam"
+ avatar="http://cdn.libravatar.org/avatar/5cb416d010c1d3f0ca677dd7f6c822ea"
+ subject="How to mitigate not finding git-annex-shell on MacOS remote?"
+ date="2025-05-15T02:35:31Z"
+ content="""
+As a solution to my own question, for anyone who stumbles upon this with the same problem...
+You don't have to set the path on the remote machine to get this working.
+
+On the local machine, simply do: `git config remote.macbook-remote.annex-shell /usr/local/bin/git-annex-shell`
+Then do: `git annex enableremote macbook-remote`
+Finally, `git annex sync macbook-remote` to sync it with the remote one.
+
+See: [[https://git-annex.branchable.com/tips/get_git-annex-shell_into_PATH/]]
+
+I don't think this really fixed whatever weirdness is going on with the remote, but thankfully the tip works.
+"""]]
