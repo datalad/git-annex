@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="cznug"
+ avatar="http://cdn.libravatar.org/avatar/fc76e1657886a3bb6f2905c554d0f80c"
+ subject="comment 2"
+ date="2025-05-16T08:29:33Z"
+ content="""
+Thanks a lot **joey** for your help.
+
+I gave it another try without setting the metadata and by using v4 index.
+
+Instead of directly adding all files to the gateway repository, I distributed the files equally across the 16 nodes to make use of their resources.
+On each node I added the file portion to a git-annex repository in order to merge them later via the gateway repository.
+Adding the files on each node worked very well using the `--jobs=\"cpus\"` flag.
+
+However, once I tried to merge all 16 repos using `git-annex sync --no-content --allow-unrelated-histories --jobs=\"cpus\"` all of the nodes crashed due to out-of-memory during this step:
+
+`remote: (merging synced/git-annex bigserver/git-annex into git-annex...)`
+
+I assume that you are right and that I simply have too many files.
+
+Unfortunately, I currently cannot spend more time on investigating the issues.
+Thanks again for your help. :)
+"""]]
