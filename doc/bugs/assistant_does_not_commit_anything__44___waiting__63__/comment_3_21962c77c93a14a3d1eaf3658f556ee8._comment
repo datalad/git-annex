@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 3"
+ date="2025-05-20T15:00:07Z"
+ content="""
+I see, in my case I have no git lock files but rather a lock file for our process:
+
+```
+reprostim@reproiner:/data/reprostim$ ls -ld .git/*.lock
+-rw-r--r-- 1 reprostim reprostim 0 May  8 13:51 .git/reprostim-videocapture.lock
+
+```
+
+which I guess `git-annex` treats as a git lock file.  Is there a way to make them two play nicely without me coming up with some alternative location which is to be ignored by git but local to this repository? May be only known to belong to `git` lock files should be considered?  Or may be me placing it under `.git/reprostim-videocapture/lock` would be satisfactory? (do not want to interrupt ATM - doing useful stuff)
+
+After all both of them \"are not git\" (in that they both also use `.git/` space for their own needs) ;-)
+
+
+"""]]
