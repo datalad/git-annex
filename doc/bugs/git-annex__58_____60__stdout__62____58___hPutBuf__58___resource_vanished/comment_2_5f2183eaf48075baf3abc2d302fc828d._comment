@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="mak"
+ avatar="http://cdn.libravatar.org/avatar/22a5cc617809fed3c309300a28e8adc4"
+ subject="git-annex and starship"
+ date="2025-05-20T04:06:38Z"
+ content="""
+I arrived here because I was having the same issue. At least in my case, the issue seems to stem from the `git_status` module in starship. I know this is not the best solution, but I was able to stop this issue by increasing the value of `command_timeout` in my starship config. Another potential solution might be to use `gitoxide` for checking the status of the repository with starship (my assumption here is that `gitoxide` might be faster than regular git for checking the status of the repository).
+"""]]
