@@ -55,3 +55,9 @@ Since difference is quite substantial I have decided to file this issue.
 [[!meta author=yoh]]
 [[!tag projects/dandi]]
 
+> I have decided to close this, it seems plausible that the additional
+> overhead of reconcileStaged that I was measuring is not something that
+> can be eliminated. Measurement error also is possible. Since I made
+> several optimisations and persistent-sqlite got optimised as well, and
+> since the scan was moved to not happen at init time, this should no
+> longer be a problem. [[done]] --[[Joey]]
