@@ -62,3 +62,6 @@ I believe that no particular handling of annex key that are declared inputs to c
 We would need a way for users to indicate that they trust a particular compute introduction or the entity that provided it. Even if git-annex does not implement tooling for that, it would be good to settle on a concept that can be interpreted/implemented by such special remotes.
 
 [[!tag projects/INM7]]
+
+> [[done]], with [[compute_special_remote_remaining_todos]] having some
+> more things that could be done to improve this. --[[Joey]]
