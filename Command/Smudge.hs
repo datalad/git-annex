@@ -112,7 +112,6 @@ clean file = do
 		discardreststdin
 		emitpointer
 	stop
-  where
 
 -- Handles everything except the IO of the file content.
 clean'
@@ -135,7 +134,6 @@ clean' file mk passthrough discardreststdin emitpointer =
 		, inSmudgeCleanFilter go
 		)
   where
-
 	go = case mk of
 		Right (Just k) -> do
 			addingExistingLink file k $ do
