@@ -1,4 +1,4 @@
-git-annex (10.20250417) UNRELEASED; urgency=medium
+git-annex (10.20250520) upstream; urgency=medium
 
   * Preferred content now supports "balanced=groupname:lackingcopies"
     to make files be evenly balanced amoung as many repositories as are
@@ -12,7 +12,7 @@ git-annex (10.20250417) UNRELEASED; urgency=medium
   * Windows: Fix bug that can cause git status to show annexed files as
     modified when built with OsPath.
 
- -- Joey Hess <id@joeyh.name>  Tue, 22 Apr 2025 14:33:26 -0400
+ -- Joey Hess <id@joeyh.name>  Tue, 20 May 2025 10:25:47 -0400
 
 git-annex (10.20250416) upstream; urgency=medium
 
