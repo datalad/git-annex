@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2025-05-21T17:06:51Z"
+ content="""
+As to the ordering, at first I thought it would make sense for it to
+pick the most full repository that still has space for a file.
+
+But: Suppose that the files being processed alternate between large, and
+small. The fullest tape is too full for any of the large files, but it can
+hold all the small files. The second fullest tape has plenty of room.
+In this case, it would constantly switch back and forth between the two tapes.
+
+sizebalanced picks the least full repository. That's not what we want
+either, clearly, since it alternates between repositories frequently when
+they're near the same size.
+
+The optimal solution is for git-annex to remember what repository was used
+to store the last file, and can just use that repository again. Unless it's
+full, in which case it can pick any repository that still has space. And
+then it will continue to use that new repository for subsequent files.
+
+That memory would necessarily be local to a repository in front of these
+tape remotes. (Eg, a cluster gateway). If there were multiple repositories
+that were all writing to the same tape remotes, they would each have their
+own memory, and chaos would ensue. 
+
+Needing a memory makes me a bit dubious about putting this in a preferred
+content expression. But in your specific case, I guess it would work.
+"""]]
