@@ -1,0 +1,9 @@
+I am currently working on a new special remote for storing git-annex objects on tape media.
+In my setup every tape cartridge is tracked by git-annex as a dedicated special remote.
+All these remotes are part of a new `tape` group.
+
+I would like to use a preferred content expression similar to the `archive` standard group: `(not copies=tape:1) or approxlackingcopies=1`.
+
+However, with having many tapes (remotes) which would match this expression, I would like to choose only one of the as the target (and always the same one) until it is full.
+
+This is necessary, as I need to avoid frequently swapping cartridges from the tape drive to minimize wear.
