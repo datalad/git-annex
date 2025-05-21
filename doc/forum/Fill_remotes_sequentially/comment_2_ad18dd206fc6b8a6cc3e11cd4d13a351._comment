@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2025-05-21T16:39:53Z"
+ content="""
+I think this is the same system that there will be a talk about at
+Distribits 2025? I have been looking forward to that talk.
+
+@nobodyinperson seems on the right track with the `sequential=tape:1` idea.
+And it seems fairly easy to implement using the same building blocks as
+`sizebalanced`.
+
+Relatedly, I wonder about sequential reading when a big `git-annex get`
+is run. Do you have some solution for that in mind? I could imagine doing
+something similar to Amazon Glacier, where the first get of a file fails,
+but is queued for later retrival from tape, allowing multiple requests to
+be ordered more efficiently.
+"""]]
