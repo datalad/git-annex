@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2025-05-21T18:16:32Z"
+ content="""
+As part of removing the webapp, I patched Alerts out of the assistant in 
+[[!commit 33cf88c8b8962a7f5d3b3caada95890d5f4d377e]].
+
+It did occur to me that logging the text of the Alert might make the
+assistant's log more useful. That commit would be an easy starting point to
+adding such logging.
+
+I don't think it solves [[todo/Recent_remote_activities]] though because
+it would only show activity by the assistant, not by other commands, and
+not activity that happened in other clones of the repository.
+"""]]
