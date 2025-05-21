@@ -6,5 +6,5 @@
  content="""
 It sounds like *maybe* the new `sizebalanced=tape:1` expression could help here? 🤔 But if I understand correctly, it would try to fill the tapes up equally, which is not what you want. There would need to be something like `sequential=tape:1`, which doesn't want to balance the annexes in terms of size, but just in order. But what order? 🤔 Ordered by descending filled annex size? That would be what you need I think.
 
-https://git-annex.branchable.com/git-annex-preferred-content/#:~:text=sizebalanced=groupname
+[git-annex-preferred-content](https://git-annex.branchable.com/git-annex-preferred-content/#:~:text=sizebalanced=groupname)
 """]]
