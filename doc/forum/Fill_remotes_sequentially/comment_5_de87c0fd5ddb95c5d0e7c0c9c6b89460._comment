@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="stv0g"
+ avatar="http://cdn.libravatar.org/avatar/6faa6cc783a165b25fc1c8f3154ba449"
+ subject="comment 5"
+ date="2025-05-21T23:40:28Z"
+ content="""
+Thanks a lot @joey & @nobodyinperson for your input :)
+
+> I think this is the same system that there will be a talk about at Distribits 2025? I have been looking forward to that talk.
+
+Yes exactly :) I am still working on the code. But having a deadline is sometimes helpful :D
+
+> Relatedly, I wonder about sequential reading when a big git-annex get is run. Do you have some solution for that in mind?
+
+I am using the approach proposed by you in this post: https://git-annex.branchable.com/forum/Storing_copies_on_LTO_tapes__63__/
+As you noted, this is quite similar to how Glacier is handled.
+
+And yes, it would also allow batching together multiple `git-annex get` into a single sequential pass over the tape.
+I would like to also support batching together objects originating from multiple git-annex repos.
+
+But this would make it pretty difficult to track the available capacity per tape cartridge as multiple git-annex repos would contribute (or even other non git-annex files).
+
+LTO tapes are a bit special, as they are append-only. The available capacity will only decreases when new objects are added.
+The only option to regain capacity is by erasing the tape. If this happens, I am marking the git-annex remote as dead and initialize a new fresh remote.
+
+I now realized, that I can use this fact to detect the first EOT (end of tape) error for each tape and then update its preferred content expression..
+
+> Another approach would be to configure remote.<name>.annex-cost-command with a command that gives a low cost to the tape in the drive, and a high cost to other tapes.
+
+Oh that sounds really interesting. But how is this related to the `GETCOST` & `GETAVAILABILITY` messages of the external special remote protocol?
+
+It seems like that the remote's cost could be a way to define the order in which the remotes are filled?
+
+Its a lot to digest. I will start testing and playing around with your ideas.
+
+Thanks :)
+"""]]
