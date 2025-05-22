@@ -1,0 +1,46 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-05-22T17:07:32Z"
+ content="""
+> (datalad) [f006rq8@discovery-01 ds-perms]$ ls -l by-git-*
+> -rwxrwx---+ 1 f006rq8 rc-DBIC 5 Oct 16 15:05 by-git-add
+> -rwxrwx---+ 1 f006rq8 rc-DBIC 5 Oct 16 15:05 by-git-annex-add
+
+git-annex is seeing these files as executable for the same reason that `ls`
+displays them as having `x` set. `stat()` is getting populated with values
+based on the ACLs.
+
+I was able to reproduce that with `setfacl -m user::rwx-`,
+run on a regular ext4 filesystem. Doing that to a file makes `ls`
+display the owner x bit, as well as "+".
+
+But then, `git add` added the file as executable too.
+So `git add` and `git-annex add` are behaving the same for me with ACLs.
+
+	joey@darkstar:~/tmp/acl>touch foo
+	joey@darkstar:~/tmp/acl>touch bar
+	joey@darkstar:~/tmp/acl>setfacl -m user::rwx- foo
+	joey@darkstar:~/tmp/acl>setfacl -m user::rwx- bar
+	joey@darkstar:~/tmp/acl>git config 'annex.largefiles' 'nothing'
+	joey@darkstar:~/tmp/acl>git add foo
+	joey@darkstar:~/tmp/acl>git-annex add bar
+	joey@darkstar:~/tmp/acl>git diff --cached
+	diff --git a/foo b/foo
+	new file mode 100755
+	index 0000000..e69de29
+	diff --git a/bar b/bar
+	new file mode 100755
+	index 0000000..e69de29
+
+My guess is that something about your specific ACLs or your filesystem
+is making git behave differently. Perhaps it's using a different variant
+of the stat syscall which behaves differently than the stat git-annex does
+in your specific situation somehow.
+
+With the x acl set, and without the x bit manually set, I am able to actually
+execute the files. So it seems to me, if git chose to add the file without
+the exeucte bit set, that would be a bug in git? After all, if I have a build
+system that relies on executing a file that I can execute it, checking the file
+into git and cloning should let me execute the file in the clone.
+"""]]
