@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2025-05-22T16:59:42Z"
+ content="""
+So as far as I know this bug can only happen if something causes git to
+lose the symlink bit. Which would be a git bug, or perhaps some misbehavior
+on a fileystem like FAT?
+
+Since git-annex's behavior is to stage a change that fixes the file to be a
+proper annex pointer file, a user who encounters whatever this is only has
+to make a commit to get out of the weird situation.
+
+Unless we have a repeatable way for that to happen, that is not a git bug,
+it's hard for me to justify making git-annex slow in order to deal with it
+better.
+"""]]
