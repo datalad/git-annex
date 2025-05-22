@@ -1,0 +1,39 @@
+How can i achieve that my main remote is exported to bunch of WORM disk?
+I tried making special remote directories for each of them on loopback device, but when exporting data it fail. And export the same files to each remote, rather than files not archived.
+
+What i did
+
+ - Create git annex repo, then imported pictures from special remote directory, and merged it to main branch
+
+```
+git annex initremote main-pictures type=directory directory=../Pictures/ encryption=none importtree=yes exporttree=yes
+git annex import --from main-pictures master --no-content
+git annex merge --allow-unrelated-histories main-pictures/master
+```
+
+ this step was done so i don't have symlinks on my current folder structures
+
+ - I created 3 repositories as such on which i want to export data
+
+```
+git annex initremote BD2 type=directory directory=/run/media/tokariew/BD2/ exporttree=yes encryption=none
+git annex wanted BD2 standard
+git annex group BD2 archive
+```
+ - Then i tried to export to all 3 remotes data
+
+```
+ git annex export  master -t BD2 -f main-pictures
+```
+
+ Each fail after copying ~25GB (size of loopback)
+
+```
+(recording state in git...)
+export: 28555 failed
+```
+
+ - I was thinking that this is ok, and with export to next device it will export files which are not in previous remotes.
+
+
+What should i do to archive my pictures and have single copy on BD/dvd?
