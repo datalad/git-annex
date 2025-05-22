@@ -1,0 +1,49 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-05-22T17:52:10Z"
+ content="""
+A simplified test case, which works on any filesystem, not only crippled
+filesystems:
+
+	#!/bin/sh
+	git init r
+	cd r
+	git annex init
+	git commit -m initial --allow-empty
+	git-annex adjust --unlock
+	touch emptyfile
+	git annex add emptyfile
+	git diff
+
+The adjusted branch is not even needed. `git-annex add emptyfile`
+followed by `git-annex unlock emptyfile` has the same result.
+
+In this case, `git diff` is running the `git-annex smudge --clean` 
+filter every time. Which IIRC is a bug of some kind with git when
+smudging empty files.
+
+I've verified that `git-annex smudge --clean` behaves corretly.
+It outputs the same annex link that was already staged. So git diff is
+choosing for whatever reason to ignore what it output, and using ""
+as the content of the file instead.
+
+So, I think this is a git bug, which git-annex cannot work around.
+
+See also [[bugs/Empty_files_make_git_status_slow]] which is about
+the repeated and unncessary running of the smudge filter on empty files.
+There I hypothesize that git treats 0 size in the index as an indication that it
+doesn't know about the file, so generally mishandles empty files.
+
+And see also [[bugs/resolvemerge_fails_when_unlocked_empty_files_exist]]
+where I identified a related git bug, where an empty unlocked file causes
+git to crash with an internal error, and reported it to the git developers.
+Unfortunately, nobody ever responded to my bug report.
+
+Perhaps the thing to do is for git-annex to refuse to store an empty file
+as an unlocked file. It could still use annex symlinks for locked empty files,
+but unlocking would necessarily switch to an empty file stored in git
+the usual way. Unfortunately, that would make reverse adjusting an unlocked
+branch not know if the file was intended to be annexed or not. Also, it doesn't
+help for any repositories that already contain unlocked empty files.
+"""]]
