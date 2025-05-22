@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2025-05-22T19:20:15Z"
+ content="""
+Filed a bug report on git, with a testcase that does not need git-annex:
+
+<https://lore.kernel.org/git/aC90kn2mE93DCJEH@kitenet.net/T/#u>
+"""]]
