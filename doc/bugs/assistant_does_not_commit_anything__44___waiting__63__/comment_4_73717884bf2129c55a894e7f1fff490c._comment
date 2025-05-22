@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2025-05-22T16:19:35Z"
+ content="""
+It's treating `*.lock` as git lock files. Any other filename won't have the
+problem.
+
+[[!commit 635c9a1549f28992b6ae370f6e8687170c971525]] has a rationalle for
+that, that git has other lock files than index.lock. It does seem to me to
+be doubtful that any other stale git lock than index.lock would cause
+significant trouble to the assistant.
+
+But this code is supposed to deal with stale locks. This lock is not
+stale; it has a process holding it open. So the assistant has no
+reason to wait on it. I've removed the wait loop.
+"""]]

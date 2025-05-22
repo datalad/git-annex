@@ -1,3 +1,10 @@
+git-annex (10.20250521) UNRELEASED; urgency=medium
+
+  * assistant: Avoid hanging at startup when a process has a *.lock file
+    open in the .git directory.
+
+ -- Joey Hess <id@joeyh.name>  Thu, 22 May 2025 12:43:38 -0400
+
 git-annex (10.20250520) upstream; urgency=medium
 
   * Preferred content now supports "balanced=groupname:lackingcopies"

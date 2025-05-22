@@ -147,17 +147,10 @@ repairStaleLocks lockfiles = go =<< getsizes
 		<$> getFileSize lf
 	getsizes = liftIO $ catMaybes <$> mapM getsize lockfiles
 	go [] = return ()
-	go l = ifM (liftIO $ null <$> Lsof.query ("--" : map (fromOsPath . fst) l))
-		( do
-			waitforit "to check stale git lock file"
-			l' <- getsizes
-			if l' == l
-				then liftIO $ mapM_ (removeWhenExistsWith removeFile . fst) l
-				else go l'
-		, do
-			waitforit "for git lock file writer"
-			go =<< getsizes
-		)
-	waitforit why = do
-		debug ["Waiting for 60 seconds", why]
+	go l = whenM (liftIO $ null <$> Lsof.query ("--" : map (fromOsPath . fst) l)) $ do
+		debug ["Waiting for 60 seconds to check stale git lock file"]
 		liftIO $ threadDelaySeconds $ Seconds 60
+		l' <- getsizes
+		if l' == l
+			then liftIO $ mapM_ (removeWhenExistsWith removeFile . fst) l
+			else go l'
