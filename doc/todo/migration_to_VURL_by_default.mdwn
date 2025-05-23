@@ -15,9 +15,10 @@ transferring the content between repositories that it's not possible to
 verify it.
 
 > This would need a way to migrate from URL key to VURL key.
-> Currently, `git-annex migrate` of an URL key defaults to using the
-> default hashing backend. And adding `--backend=VURL` does not work.
-> --[[Joey]]
+> 
+> > Oh, I was wrong, that does exist already, just `git-annex migrate
+> > --backend=VURL` works for URL keys. (Content must be present of course
+> > or no migration is done). --[[Joey]]
 
 Of course if users want to continue to use their existing URL keys and 
 not be able to verify content, that's fine. Users can also choose to use 
