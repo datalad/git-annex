@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2025-05-23T19:44:03Z"
+ content="""
+Basically the same todo previously: [[todo/show_time_of_last_interaction_with_a_repo]]
+
+I'll close that one in favor of this new one. The old one did have some
+ideas about using groups to manually track activity, and a way to use
+`git-annex expire` to list recently fsked repos.
+"""]]
