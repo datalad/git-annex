@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://tokariew.id.fedoraproject.org/"
+ nickname="tokariew"
+ avatar="http://cdn.libravatar.org/avatar/fcff1d07fd8c44bf9004540658358a6b"
+ subject="comment 1"
+ date="2025-05-23T11:05:27Z"
+ content="""
+Reorganized my idea, made git annex repo inside of Pictures folder, but set `annex.addunlocked = true` 
+I avoid symlinks, and COW filesystem don't care about duplicates 
+"""]]
