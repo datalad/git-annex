@@ -58,3 +58,5 @@ git-annex: cannot determine uuid for origin (perhaps you need to run "git annex 
 ```
 
 which is simply due to the fact that git-annex does not only unable to parse, it is unable to connect.  But if so, IMHO ideally it should avoid claiming anything about git annex installation there.
+
+> Closing as duplicate of the other post, which did get though. [[done]] --[[Joey]]
