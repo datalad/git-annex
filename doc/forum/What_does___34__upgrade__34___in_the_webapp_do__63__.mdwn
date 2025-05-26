@@ -1,0 +1,3 @@
+The webapp showed "(metadata only)" behind a repository. Running `git annex upgrade` in the repositories didn't change that. I had top to "upgrade" the repository under "edit" in the webapp to fix that.
+
+What did upgrading in the webapp do, that running `git annex upgrade` did not?
