@@ -1,0 +1,46 @@
+### Please describe the problem.
+I get this error when I try to run git annex sync on my amazon fire tablet.
+`proot info: vpid 1: terminated with signal 4`
+
+```
+$ cat /proc/cpuinfo
+processor	: 0
+Processor	: ARMv7 Processor rev 3 (v7l)
+model name	: ARMv7 Processor rev 3 (v7l)
+BogoMIPS	: 32.19
+Features	: half thumb fastmult vfp edsp neon vfpv3 tls vfpv4 idiva idivt vfpd32 lpae evtstrm aes pmull sha1 sha2 crc32 
+CPU implementer	: 0x41
+CPU architecture: 7
+CPU variant	: 0x0
+CPU part	: 0xd03
+CPU revision	: 3
+
+processor	: 1
+Processor	: ARMv7 Processor rev 3 (v7l)
+model name	: ARMv7 Processor rev 3 (v7l)
+BogoMIPS	: 26.00
+Features	: half thumb fastmult vfp edsp neon vfpv3 tls vfpv4 idiva idivt vfpd32 lpae evtstrm aes pmull sha1 sha2 crc32 
+CPU implementer	: 0x41
+CPU architecture: 7
+CPU variant	: 0x0
+CPU part	: 0xd03
+CPU revision	: 3
+
+Hardware	: MT8163
+Revision	: 0000
+Serial		: 84b2d1e8651995fc
+```
+
+`uname -m` reports `armv7l`
+
+If I do `proot-distro login debian` then I can use the very same git-annex.linux and it works but it's slow (idk why). If I try to use git annex from termux then it fails with that error. Not that it matters, I'm using termux from here https://sourceforge.net/projects/android-ports-for-gnu-emacs/files/termux/ which is "a version of the Termux terminal emulator signed with
+Emacs's signing keys" so that Emacs can use the termux binaries or something.
+ 
+### What version of git-annex are you using? On what operating system?
+Android 9. LineageOS.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+So, I've been trying to uss it for years. Kind of like how I tried using Emacs and went bankrupt twice before things clicked. I was so hung up on the symlinks. Then I finally understood some things, thanks Gemini, and now I'm using annex.addunlocked and annex.thin and I feel really nerdy and cool. I would love to get this working on my tablet too.
+
+Thanks!
