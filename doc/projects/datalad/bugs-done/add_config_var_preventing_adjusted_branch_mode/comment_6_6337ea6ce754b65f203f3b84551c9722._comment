@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2025-05-27T14:53:52Z"
+ content="""
+Note that this bug is closed, and it would need to be moved out of
+this archive to be reopened.
+
+Anyway, I agree that if the freeze/thaw hook is configured, but fails,
+it would make sense for crippled filesystem probing to tell the user to
+fix their configuration, and abort initialization, rather than
+unnecessarily entering an adjusted branch. I have implemented that now.
+
+As far as situations where the hook is configured at first but later
+is not configured, `git-annex fsck` re-runs the hook to freeze content.
+So that is not dissimilar from other situations where permissions prevent 
+proper freezing, which fsck also fixes.
+"""]]

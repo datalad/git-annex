@@ -2,6 +2,10 @@ git-annex (10.20250521) UNRELEASED; urgency=medium
 
   * assistant: Avoid hanging at startup when a process has a *.lock file
     open in the .git directory.
+  * When annex.freezecontent-command or annex.thawcontent-command is
+    configured but fails, prevent initialization. This allows the user to
+    fix their configuration and avoid crippled filesystem detection
+    entering an adjusted branch.
 
  -- Joey Hess <id@joeyh.name>  Thu, 22 May 2025 12:43:38 -0400
 

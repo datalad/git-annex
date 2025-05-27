@@ -1204,7 +1204,7 @@ cleanupInitialization sab alternatejournaldir = void $ tryNonAsync $ do
 			_ -> noop
 		void $ liftIO $ tryIO $ removeDirectory annexobjectdir
 
-	notcrippledfilesystem = not <$> probeCrippledFileSystem
+	notcrippledfilesystem = not <$> isCrippledFileSystem
 
 	nonbuggygitversion = liftIO $
 		flip notElem buggygitversions <$> Git.Version.installed

@@ -804,9 +804,10 @@ parallelTestRunner' numjobs opts mkts
 
 	go Nothing = summarizeresults $ withConcurrentOutput $ do
 		ensuredir tmpdir
-		crippledfilesystem <- fst <$> Annex.Init.probeCrippledFileSystem'
-			(toOsPath tmpdir)
-			Nothing Nothing False
+		crippledfilesystem <- fromMaybe False . fst 
+			<$> Annex.Init.probeCrippledFileSystem'
+				(toOsPath tmpdir)
+				Nothing Nothing False
 		adjustedbranchok <- Annex.AdjustedBranch.isGitVersionSupported
 		let ts = mkts numparts crippledfilesystem adjustedbranchok opts
 		let warnings = fst (tastyParser ts)

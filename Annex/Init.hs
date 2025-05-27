@@ -19,6 +19,7 @@ module Annex.Init (
 	uninitialize,
 	probeCrippledFileSystem,
 	probeCrippledFileSystem',
+	isCrippledFileSystem,
 ) where
 
 import Annex.Common
@@ -75,10 +76,10 @@ data InitializeAllowed = InitializeAllowed
 checkInitializeAllowed :: (InitializeAllowed -> Annex a) -> Annex a
 checkInitializeAllowed a = guardSafeToUseRepo $ noAnnexFileContent' >>= \case
 	Nothing -> runAnnexHook' preInitAnnexHook annexPreInitCommand >>= \case
-		Nothing -> do
+		HookSuccess -> do
 			checkSqliteWorks
 			a InitializeAllowed
-		Just failedcommanddesc -> do
+		HookFailed failedcommanddesc -> do
 			initpreventedby failedcommanddesc
 			notinitialized
 	Just noannexmsg -> do
@@ -94,8 +95,8 @@ checkInitializeAllowed a = guardSafeToUseRepo $ noAnnexFileContent' >>= \case
 initializeAllowed :: Annex Bool
 initializeAllowed = noAnnexFileContent' >>= \case
 	Nothing -> runAnnexHook' preInitAnnexHook annexPreInitCommand >>= \case
-		Nothing -> return True
-		Just _ -> return False
+		HookSuccess -> return True
+		HookFailed _ -> return False
 	Just _ -> return False
 
 noAnnexFileContent' :: Annex (Maybe String)
@@ -288,73 +289,116 @@ isInitialized :: Annex Bool
 isInitialized = maybe Annex.Branch.hasSibling (const $ return True) =<< getVersion
 
 {- A crippled filesystem is one that does not allow making symlinks,
- - or removing write access from files. -}
-probeCrippledFileSystem :: Annex Bool
-probeCrippledFileSystem = withEventuallyCleanedOtherTmp $ \tmp -> do
-	(r, warnings) <- probeCrippledFileSystem' tmp
+ - or removing write access from files.
+ -
+ - This displays messages about problems detected with the filesystem.
+ -
+ - If a freeze or thaw hook is configured, but exits nonzero,
+ - this returns Nothing after displaying a message to the user about the
+ - problem. Such a hook can in some cases make a filesystem
+ - that would otherwise be detected as crippled work ok, so this avoids
+ - a false positive.
+ -}
+probeCrippledFileSystem :: Annex (Maybe Bool)
+probeCrippledFileSystem = do
+	(r, warnings) <- isCrippledFileSystem'
+	mapM_ (warning . UnquotedString) warnings
+	return r
+
+isCrippledFileSystem :: Annex Bool
+isCrippledFileSystem = do
+	(r, _warnings) <- isCrippledFileSystem'
+	return (fromMaybe True r)
+
+isCrippledFileSystem' :: Annex (Maybe Bool, [String])
+isCrippledFileSystem' = withEventuallyCleanedOtherTmp $ \tmp ->
+	probeCrippledFileSystem' tmp
 		(Just (freezeContent' UnShared))
 		(Just (thawContent' UnShared))
 		=<< hasFreezeHook
-	mapM_ (warning . UnquotedString) warnings
-	return r
 
 probeCrippledFileSystem'
 	:: (MonadIO m, MonadCatch m)
 	=> OsPath
-	-> Maybe (OsPath -> m ())
-	-> Maybe (OsPath -> m ())
+	-> Maybe (OsPath -> m HookResult)
+	-> Maybe (OsPath -> m HookResult)
 	-> Bool
-	-> m (Bool, [String])
+	-> m (Maybe Bool, [String])
 #ifdef mingw32_HOST_OS
-probeCrippledFileSystem' _ _ _ _ = return (True, [])
+probeCrippledFileSystem' _ _ _ _ = return (Just True, [])
 #else
 probeCrippledFileSystem' tmp freezecontent thawcontent hasfreezehook = do
 	let f = tmp </> literalOsPath "gaprobe"
 	liftIO $ F.writeFile' f ""
-	r <- probe f
-	void $ tryNonAsync $ (fromMaybe (liftIO . allowWrite) thawcontent) f
+	r <- freezethaw f probe
 	liftIO $ removeFile f
 	return r
   where
-	probe f = catchDefaultIO (True, []) $ do
+	fallbackfreezecontent f = do
+		liftIO $ preventWrite f
+		return HookSuccess
+	
+	fallbackthawcontent f = do
+		liftIO $ allowWrite f
+		return HookSuccess
+	
+	freezethaw f cont =
+		(fromMaybe fallbackfreezecontent freezecontent) f >>= \case
+			HookFailed failedcommanddesc ->
+				return (Nothing, [hookfailed failedcommanddesc])
+			HookSuccess -> do
+				r <- cont f
+				tryNonAsync ((fromMaybe fallbackthawcontent thawcontent) f)
+					>>= return . \case
+						Right (HookFailed failedcommanddesc) ->
+							let (_, warnings) = r
+							in (Nothing, hookfailed failedcommanddesc : warnings)
+						_ -> r
+
+	hookfailed failedcommanddesc = "Failed to run " ++ failedcommanddesc 
+		++ ". Unable to initialize until this is fixed."
+
+	probe f = catchDefaultIO (Just True, []) $ do
 		let f2 = f <> literalOsPath "2"
 		liftIO $ removeWhenExistsWith removeFile f2
 		liftIO $ R.createSymbolicLink (fromOsPath f) (fromOsPath f2)
 		liftIO $ removeWhenExistsWith removeFile f2
-		(fromMaybe (liftIO . preventWrite) freezecontent) f
 		-- Should be unable to write to the file (unless
 		-- running as root). But some crippled
 		-- filesystems ignore write bit removals or ignore
 		-- permissions entirely.
 		ifM ((== Just False) <$> liftIO (checkContentWritePerm' UnShared f Nothing hasfreezehook))
-			( return (True, ["Filesystem does not allow removing write bit from files."])
+			( return (Just True, ["Filesystem does not allow removing write bit from files."])
 			, liftIO $ ifM ((== 0) <$> getRealUserID)
-				( return (False, [])
+				( return (Just False, [])
 				, do
 					r <- catchBoolIO $ do
 						F.writeFile' f "2"
 						return True
 					if r
-						then return (True, ["Filesystem allows writing to files whose write bit is not set."])
-						else return (False, [])
+						then return (Just True, ["Filesystem allows writing to files whose write bit is not set."])
+						else return (Just False, [])
 				)
 			)
 #endif
 
 checkCrippledFileSystem :: Annex ()
-checkCrippledFileSystem = whenM probeCrippledFileSystem $ do
-	warning "Detected a crippled filesystem."
-	setCrippledFileSystem True
+checkCrippledFileSystem = probeCrippledFileSystem >>= \case
+	Just True -> do
+		warning "Detected a crippled filesystem."
+		setCrippledFileSystem True
 
-	{- Normally git disables core.symlinks itself when the:w
-	 -
-	 - filesystem does not support them. But, even if symlinks are
-	 - supported, we don't use them by default in a crippled
-	 - filesystem. -}
-	whenM (coreSymlinks <$> Annex.getGitConfig) $ do
-		warning "Disabling core.symlinks."
-		setConfig "core.symlinks"
-			(Git.Config.boolConfig False)
+		{- Normally git disables core.symlinks itself when the
+		 -
+		 - filesystem does not support them. But, even if symlinks are
+		 - supported, we don't use them by default in a crippled
+		 - filesystem. -}
+		whenM (coreSymlinks <$> Annex.getGitConfig) $ do
+			warning "Disabling core.symlinks."
+			setConfig "core.symlinks"
+				(Git.Config.boolConfig False)
+	Just False -> noop
+	Nothing -> giveup "Not initialized."
 
 probeLockSupport :: Annex Bool
 #ifdef mingw32_HOST_OS

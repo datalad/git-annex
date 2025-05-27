@@ -106,44 +106,55 @@ doesAnnexHookExist hook = do
 
 runAnnexHook :: Git.Hook -> (GitConfig -> Maybe String) -> Annex ()
 runAnnexHook hook commandcfg = runAnnexHook' hook commandcfg >>= \case
-	Nothing -> noop
-	Just failedcommanddesc -> 
+	HookSuccess -> noop
+	HookFailed failedcommanddesc -> 
 		warning $ UnquotedString $ failedcommanddesc ++ " failed"
 
--- Returns Nothing if the hook or GitConfig command succeeded, or a
--- description of what failed.
-runAnnexHook' :: Git.Hook -> (GitConfig -> Maybe String) -> Annex (Maybe String)
+data HookResult
+	= HookSuccess
+	| HookFailed String
+	-- ^ A description of the hook command that failed.
+	deriving (Eq, Show)
+
+runAnnexHook' :: Git.Hook -> (GitConfig -> Maybe String) -> Annex HookResult
 runAnnexHook' hook commandcfg = ifM (doesAnnexHookExist hook)
 	( runhook
 	, runcommandcfg
 	)
   where
 	runhook = ifM (inRepo $ Git.runHook boolSystem hook [])
-		( return Nothing
+		( return HookSuccess
 		, do
 			h <- fromRepo (Git.hookFile hook)
-			commandfailed (fromOsPath h)
+			return $ HookFailed $ fromOsPath h
 		)
 	runcommandcfg = commandcfg <$> Annex.getGitConfig >>= \case
-		Nothing -> return Nothing
+		Nothing -> return HookSuccess
 		Just command ->
 			ifM (liftIO $ boolSystem "sh" [Param "-c", Param command])
-				( return Nothing
-				, commandfailed $ "git configured command '" ++  command ++ "'"
+				( return HookSuccess
+				, return $ HookFailed $ "git configured command '" ++  command ++ "'"
 				)
-	commandfailed c = return $ Just c
 
-runAnnexPathHook :: String -> Git.Hook -> (GitConfig -> Maybe String) -> OsPath -> Annex Bool
+runAnnexPathHook :: String -> Git.Hook -> (GitConfig -> Maybe String) -> OsPath -> Annex HookResult
 runAnnexPathHook pathtoken hook commandcfg p = ifM (doesAnnexHookExist hook)
 	( runhook
 	, runcommandcfg
 	)
   where
-	runhook = inRepo $ Git.runHook boolSystem hook [ File p' ]
+	runhook = ifM (inRepo $ Git.runHook boolSystem hook [ File p' ])
+		( return HookSuccess
+		, do
+			h <- fromRepo (Git.hookFile hook)
+			return $ HookFailed $ fromOsPath h
+		)
 	runcommandcfg = commandcfg <$> Annex.getGitConfig >>= \case
-		Nothing -> return True
-		Just basecmd -> liftIO $
-			boolSystem "sh" [Param "-c", Param $ gencmd basecmd]
+		Nothing -> return HookSuccess
+		Just basecmd -> 
+			ifM (liftIO $ boolSystem "sh" [Param "-c", Param (gencmd basecmd)])
+				( return HookSuccess
+				, return $ HookFailed $ "git configured command '" ++ basecmd ++ "'"
+				)
 	gencmd = massReplace [ (pathtoken, shellEscape p') ]
 	p' = fromOsPath p
 

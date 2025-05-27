@@ -161,13 +161,12 @@ createWorkTreeDirectory dir = do
  - that happens with write permissions.
  -}
 freezeContent :: OsPath -> Annex ()
-freezeContent file =
-	withShared $ \sr -> freezeContent' sr file
+freezeContent file = withShared $ \sr -> void $ freezeContent' sr file
 
-freezeContent' :: SharedRepository -> OsPath -> Annex ()
+freezeContent' :: SharedRepository -> OsPath -> Annex HookResult
 freezeContent' sr file = freezeContent'' sr file =<< getVersion
 
-freezeContent'' :: SharedRepository -> OsPath -> Maybe RepoVersion -> Annex ()
+freezeContent'' :: SharedRepository -> OsPath -> Maybe RepoVersion -> Annex HookResult
 freezeContent'' sr file rv = do
 	fastDebug "Annex.Perms" ("freezing content " ++ fromOsPath file)
 	unlessM crippledFileSystem $ go sr
@@ -255,9 +254,9 @@ checkContentWritePerm' sr file rv hasfreezehook
 {- Allows writing to an annexed file that freezeContent was called on
  - before. -}
 thawContent :: OsPath -> Annex ()
-thawContent file = withShared $ \sr -> thawContent' sr file
+thawContent file = withShared $ \sr -> void $ thawContent' sr file
 
-thawContent' :: SharedRepository -> OsPath -> Annex ()
+thawContent' :: SharedRepository -> OsPath -> Annex HookResult
 thawContent' sr file = do
 	fastDebug "Annex.Perms" ("thawing content " ++ fromOsPath file)
 	thawPerms (go sr) (thawHook file)
@@ -272,10 +271,10 @@ thawContent' sr file = do
  - fail on a crippled filesystem. But, if file modes are supported on a
  - crippled filesystem, the file may be frozen, so try to thaw its
  - permissions. -}
-thawPerms :: Annex () -> Annex () -> Annex ()
+thawPerms :: Annex () -> Annex HookResult -> Annex HookResult
 thawPerms a hook = ifM crippledFileSystem
-	( hook >> void (tryNonAsync a)
-	, hook >> a
+	( void (tryNonAsync a) `after` hook
+	, a `after` hook
 	)
 
 {- Blocks writing to the directory an annexed file is in, to prevent the
@@ -287,7 +286,7 @@ freezeContentDir :: OsPath -> Annex ()
 freezeContentDir file = do
 	fastDebug "Annex.Perms" ("freezing content directory " ++ fromOsPath dir)
 	unlessM crippledFileSystem $ withShared go
-	freezeHook dir
+	void $ freezeHook dir
   where
 	dir = parentDir file
 	go UnShared = liftIO $ preventWrite dir
@@ -303,7 +302,7 @@ freezeContentDir file = do
 thawContentDir :: OsPath -> Annex ()
 thawContentDir file = do
 	fastDebug "Annex.Perms" ("thawing content directory " ++ fromOsPath dir)
-	thawPerms (withShared (liftIO . go)) (thawHook dir)
+	void $ thawPerms (withShared (liftIO . go)) (thawHook dir)
   where
 	dir = parentDir file
 	go UnShared = allowWrite dir
@@ -318,7 +317,7 @@ createContentDir dest = do
 	unlessM (liftIO $ doesDirectoryExist dir) $
 		createAnnexDirectory dir 
 	-- might have already existed with restricted perms
-	thawHook dir
+	void $ thawHook dir
 	unlessM crippledFileSystem $ liftIO $ allowWrite dir
   where
 	dir = parentDir dest
@@ -354,12 +353,12 @@ hasThawHook =
 		<||>
 	(doesAnnexHookExist thawContentAnnexHook)
 
-freezeHook :: OsPath -> Annex ()
-freezeHook = void . runAnnexPathHook "%path"
+freezeHook :: OsPath -> Annex HookResult
+freezeHook = runAnnexPathHook "%path"
 	freezeContentAnnexHook annexFreezeContentCommand
 
-thawHook :: OsPath -> Annex ()
-thawHook = void . runAnnexPathHook "%path"
+thawHook :: OsPath -> Annex HookResult
+thawHook = runAnnexPathHook "%path"
 	thawContentAnnexHook annexThawContentCommand
 
 {- Calculate mode to use for a directory from the mode to use for a file.

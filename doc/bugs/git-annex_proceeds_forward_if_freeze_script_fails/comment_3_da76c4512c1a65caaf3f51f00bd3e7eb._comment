@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2025-05-27T16:16:38Z"
+ content="""
+I agreee it makes sense to detect freeze/thaw hook fail at init and error
+out rather than switching to an adjusted branch, and rather than start
+using a repisitory that is not configured as desired from the start. 
+I've implemented that now.
+
+I think that change is arguably enough to consider this done. It avoids
+the user initializing a broken repository, or otherwise starting from an
+unexpected state. Fixing problems that happen later is the
+job of `git-annex fsck`.
+"""]]
