@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 7"
+ date="2025-05-27T10:57:18Z"
+ content="""
+FTR, Yukai reported that it was \"WSL (Ubuntu 22.04, x86_64) on Windows 10. Git version was 2.34.1, git-annex version was 10.20230407-1~ndall+1.\".  So definitely not a trivial/typical setup ;)  I do not remember when it was that I have tried git-annex under WSL.
+"""]]
