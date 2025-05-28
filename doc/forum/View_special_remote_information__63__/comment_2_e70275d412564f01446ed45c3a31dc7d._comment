@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="guez@e17c318e09fc77b4a5be4cd330364e3a41a96971"
+ nickname="guez"
+ avatar="http://cdn.libravatar.org/avatar/ffec09075c5b5cd47832649a306d68c3"
+ subject="Not enough information on special remotes"
+ date="2025-05-28T21:58:23Z"
+ content="""
+You say that the command shows the url used for a WebDAV remote, but this does not seem to be the case any longer:
+
+```
+$ git annex info sdrive
+uuid: d17d5946-d126-4a0e-b6c1-232fb34fb461
+description: sdrive
+trust: semitrusted
+remote annex keys: 1
+remote annex size: 249.11 kilobytes
+```
+
+I can get a list of special remotes with `git annex enableremote` but how can I get a more detailed list, with all the information on each special remote: the type, the configuration options (encryption or not, etc.), the URLs?
+"""]]
