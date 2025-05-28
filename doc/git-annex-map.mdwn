@@ -39,6 +39,10 @@ on that host.
 
   Don't display the generated Graphviz file, but save it for later use.
 
+* `--json`
+
+  Output the map as a JSON object.
+
 * Also the [[git-annex-common-options]](1) can be used.
 
 # SEE ALSO

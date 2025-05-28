@@ -1,0 +1,51 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2025-05-28T18:11:34Z"
+ content="""
+I went ahead and implemented `git-annx map --json`.
+
+Example output, after being passed through `jq` to pretty-print it:
+
+	{
+	  "nodes": [
+	    {
+	      "name": "joey@darkstar:~/tmp/mapbench/a",
+	      "remotes": [
+	        {
+	          "name": "joey@darkstar:~/tmp/mapbench/b",
+	          "url": "/home/joey/tmp/mapbench/b",
+	          "uuid": "645d92d8-6461-43c1-b23c-6dd04dc3a015"
+	        }
+	      ],
+	      "url": "/home/joey/tmp/mapbench/a",
+	      "uuid": "3f34e4c2-dd19-433a-ab04-9fd4be959325"
+	    },
+	    {
+	      "name": "joey@darkstar:~/tmp/mapbench/b",
+	      "remotes": [
+	        {
+	          "name": "joey@darkstar:~/tmp/mapbench/a",
+	          "url": "/home/joey/tmp/mapbench/a",
+	          "uuid": "3f34e4c2-dd19-433a-ab04-9fd4be959325"
+	        }
+	      ],
+	      "url": "/home/joey/tmp/mapbench/b",
+	      "uuid": "645d92d8-6461-43c1-b23c-6dd04dc3a015"
+	    },
+	    {
+	      "name": "unknown",
+	      "remotes": [
+	        {
+	          "name": "joey@darkstar:~/tmp/mapbench/b",
+	          "url": "/home/joey/tmp/mapbench/b",
+	          "uuid": "645d92d8-6461-43c1-b23c-6dd04dc3a015"
+	        }
+	      ],
+	      "url": ".",
+	      "uuid": null
+	    }
+	  ],
+	  "error-messages": []
+	}
+"""]]

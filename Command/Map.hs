@@ -9,8 +9,6 @@
 
 module Command.Map where
 
-import qualified Data.Map as M
-
 import Command
 import qualified Git
 import qualified Git.Url
@@ -25,12 +23,17 @@ import Logs.Trust
 import Types.TrustLevel
 import qualified Remote.Helper.Ssh as Ssh
 import qualified Utility.Dot as Dot
+import qualified Messages.JSON as JSON
+import Messages.JSON ((.=))
+import Utility.Aeson (packString)
+
+import qualified Data.Map as M
 
 -- a repo and its remotes
 type RepoRemotes = (Git.Repo, [Git.Repo])
 
 cmd :: Command
-cmd = dontCheck repoExists $
+cmd = dontCheck repoExists $ withAnnexOptions [jsonOptions] $
 	command "map" SectionQuery
 		"generate map of repositories"
 		paramNothing (withParams seek)
@@ -45,19 +48,23 @@ start = startingNoMessage (ActionItemOther Nothing) $ do
 	umap <- uuidDescMap
 	trustmap <- trustMapLoad
 		
-	file <- (</>)
-		<$> fromRepo gitAnnexDir
-		<*> pure (literalOsPath "map.dot")
+	ifM (outputJSONMap rs trustmap umap)
+		( next $ return True
+		, do
+			file <- (</>)
+				<$> fromRepo gitAnnexDir
+				<*> pure (literalOsPath "map.dot")
 
-	liftIO $ writeFile (fromOsPath file) (drawMap rs trustmap umap)
-	next $
-		ifM (Annex.getRead Annex.fast)
-			( runViewer file []
-			, runViewer file
-	 			[ ("xdot", [File (fromOsPath file)])
-				, ("dot", [Param "-Tx11", File (fromOsPath file)])
-				]	
-			)
+			liftIO $ writeFile (fromOsPath file) (drawMap rs trustmap umap)
+			next $
+				ifM (Annex.getRead Annex.fast)
+					( runViewer file []
+					, runViewer file
+			 			[ ("xdot", [File (fromOsPath file)])
+						, ("dot", [Param "-Tx11", File (fromOsPath file)])
+						]	
+					)
+		)
 
 runViewer :: OsPath -> [(String, [CommandParam])] -> Annex Bool
 runViewer file [] = do
@@ -198,7 +205,8 @@ same a b
 {- reads the config of a remote, with progress display -}
 scan :: Git.Repo -> Annex Git.Repo
 scan r = do
-	showStartMessage (StartMessage "map" (ActionItemOther (Just $ UnquotedString $ Git.repoDescribe r)) (SeekInput []))
+	unlessM jsonOutputEnabled $
+		showStartMessage (StartMessage "map" (ActionItemOther (Just $ UnquotedString $ Git.repoDescribe r)) (SeekInput []))
 	v <- tryScan r
 	case v of
 		Just r' -> do
@@ -269,7 +277,7 @@ tryScan r
 				configlist
 			ok -> return ok
 
-	sshnote = do
+	sshnote = unlessM jsonOutputEnabled $ do
 		showAction "sshing"
 		showOutput
 
@@ -287,3 +295,33 @@ safely a = do
 	case result of
 		Left _ -> return Nothing
 		Right r' -> return $ Just r'
+
+outputJSONMap :: [RepoRemotes] -> TrustMap -> UUIDDescMap -> Annex Bool
+outputJSONMap rs trustmap umap = 
+	showFullJSON $ JSON.AesonObject $ case mapo of
+		JSON.Object obj -> obj
+		_ -> error "internal"
+  where
+	mapo = JSON.object
+		[ "nodes" .= map mknode (filterdead fst rs)
+		]
+	
+	mknode (r, remotes) = JSON.object
+		[ "name" .= packString (repoName umap r)
+		, "uuid" .= mkuuid (getUncachedUUID r)
+		, "url" .= packString (Git.repoLocation r)
+		, "remotes" .= map mkremote (filterdead id remotes)
+		]
+	
+	mkremote r = JSON.object
+		[ "name" .= packString (repoName umap r)
+		, "uuid" .= mkuuid (getUncachedUUID r)
+		, "url" .= packString (Git.repoLocation r)
+		]
+	
+	mkuuid NoUUID = Nothing
+	mkuuid u = Just $ packString $ fromUUID u
+	
+	filterdead f = filter
+		(\i -> M.lookup (getUncachedUUID (f i)) trustmap /= Just DeadTrusted)
+
