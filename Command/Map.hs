@@ -108,7 +108,7 @@ hostname r
 basehostname :: Git.Repo -> String
 basehostname r = fromMaybe "" $ headMaybe $ splitc '.' $ hostname r
 
-{- A name to display for a repo. Uses the description 
+{- A description to display for a repo. Uses the description 
  - from uuid.log if available, or the remote name if not. -}
 repoName :: UUIDDescMap -> Git.Repo -> String
 repoName umap r
@@ -189,7 +189,9 @@ absRepo reference r
 	| otherwise = liftIO $ do
 		r' <- Git.Construct.fromPath =<< absPath (Git.repoPath r)
 		r'' <- safely $ flip Annex.eval Annex.gitRepo =<< Annex.new r'
-		return (fromMaybe r' r'')
+		return $ (fromMaybe r' r'')
+			{ Git.remoteName = Git.remoteName r
+			}
 
 {- Checks if two repos are the same. -}
 same :: Git.Repo -> Git.Repo -> Bool
@@ -314,7 +316,7 @@ outputJSONMap rs trustmap umap =
 		]
 	
 	mkremote r = JSON.object
-		[ "remote" .= packString (repoName umap r)
+		[ "remote" .= (packString <$> Git.remoteName r)
 		, "uuid" .= mkuuid (getUncachedUUID r)
 		, "url" .= packString (Git.repoLocation r)
 		]
