@@ -7,6 +7,7 @@ git-annex (10.20250521) UNRELEASED; urgency=medium
     fix their configuration and avoid crippled filesystem detection
     entering an adjusted branch.
   * map: Support --json option.
+  * map: Improve display of remote names.
 
  -- Joey Hess <id@joeyh.name>  Thu, 22 May 2025 12:43:38 -0400
 
