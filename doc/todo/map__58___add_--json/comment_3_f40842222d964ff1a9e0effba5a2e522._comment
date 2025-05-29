@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2025-05-29T16:58:29Z"
+ content="""
+BTW, my first comment incorrectly described map's spidering capabilities
+slightly. Suppose you have a remote on host foo, and that repository has
+its own remote on host bar. Then map will ssh to foo to dump the git
+config, find the additional urls on bar, and try to ssh to bar to get
+the git config of the remote of the remote. And this can continue
+artibtarily far, but limited of course by what hosts you can ssh to.
+Whether that will be enough for your needs, I don't know.
+"""]]
