@@ -110,8 +110,8 @@ basehostname r = fromMaybe "" $ headMaybe $ splitc '.' $ hostname r
 
 {- A description to display for a repo. Uses the description 
  - from uuid.log if available, or the remote name if not. -}
-repoName :: UUIDDescMap -> Git.Repo -> String
-repoName umap r
+repoDesc :: UUIDDescMap -> Git.Repo -> String
+repoDesc umap r
 	| repouuid == NoUUID = fallback
 	| otherwise = maybe fallback fromUUIDDesc $ M.lookup repouuid umap
   where
@@ -131,7 +131,7 @@ node umap fullinfo trustmap (r, rs) = unlines $ n:edges
   where
 	n = Dot.subGraph (hostname r) (basehostname r) "lightblue" $
 		trustDecorate trustmap (getUncachedUUID r) $
-			Dot.graphNode (nodeId r) (repoName umap r)
+			Dot.graphNode (nodeId r) (repoDesc umap r)
 	edges = map (edge umap fullinfo r) rs
 
 {- An edge between two repos. The second repo is a remote of the first. -}
@@ -150,7 +150,7 @@ edge umap fullinfo from to =
 	 - different from its hostname. (This reduces visual clutter.) -}
 	edgename = maybe Nothing calcname $ Git.remoteName to
 	calcname n
-		| n `elem` [repoName umap fullto, hostname fullto] = Nothing
+		| n `elem` [repoDesc umap fullto, hostname fullto] = Nothing
 		| otherwise = Just n
 
 trustDecorate :: TrustMap -> UUID -> String -> String
@@ -309,7 +309,7 @@ outputJSONMap rs trustmap umap =
 		]
 	
 	mknode (r, remotes) = JSON.object
-		[ "description" .= packString (repoName umap r)
+		[ "description" .= packString (repoDesc umap r)
 		, "uuid" .= mkuuid (getUncachedUUID r)
 		, "url" .= packString (Git.repoLocation r)
 		, "remotes" .= map mkremote (filterdead id remotes)
