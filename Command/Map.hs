@@ -47,7 +47,7 @@ start = startingNoMessage (ActionItemOther Nothing) $ do
 
 	umap <- uuidDescMap
 	trustmap <- trustMapLoad
-		
+	
 	ifM (outputJSONMap rs trustmap umap)
 		( next $ return True
 		, do
@@ -108,8 +108,8 @@ hostname r
 basehostname :: Git.Repo -> String
 basehostname r = fromMaybe "" $ headMaybe $ splitc '.' $ hostname r
 
-{- A name to display for a repo. Uses the name from uuid.log if available,
- - or the remote name if not. -}
+{- A name to display for a repo. Uses the description 
+ - from uuid.log if available, or the remote name if not. -}
 repoName :: UUIDDescMap -> Git.Repo -> String
 repoName umap r
 	| repouuid == NoUUID = fallback
@@ -307,14 +307,14 @@ outputJSONMap rs trustmap umap =
 		]
 	
 	mknode (r, remotes) = JSON.object
-		[ "name" .= packString (repoName umap r)
+		[ "description" .= packString (repoName umap r)
 		, "uuid" .= mkuuid (getUncachedUUID r)
 		, "url" .= packString (Git.repoLocation r)
 		, "remotes" .= map mkremote (filterdead id remotes)
 		]
 	
 	mkremote r = JSON.object
-		[ "name" .= packString (repoName umap r)
+		[ "remote" .= packString (repoName umap r)
 		, "uuid" .= mkuuid (getUncachedUUID r)
 		, "url" .= packString (Git.repoLocation r)
 		]

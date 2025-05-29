@@ -10,10 +10,10 @@ Example output, after being passed through `jq` to pretty-print it:
 	{
 	  "nodes": [
 	    {
-	      "name": "joey@darkstar:~/tmp/mapbench/a",
+	      "description": "joey@darkstar:~/tmp/mapbench/a",
 	      "remotes": [
 	        {
-	          "name": "joey@darkstar:~/tmp/mapbench/b",
+	          "remote": "b",
 	          "url": "/home/joey/tmp/mapbench/b",
 	          "uuid": "645d92d8-6461-43c1-b23c-6dd04dc3a015"
 	        }
@@ -22,10 +22,10 @@ Example output, after being passed through `jq` to pretty-print it:
 	      "uuid": "3f34e4c2-dd19-433a-ab04-9fd4be959325"
 	    },
 	    {
-	      "name": "joey@darkstar:~/tmp/mapbench/b",
+	      "description": "joey@darkstar:~/tmp/mapbench/b",
 	      "remotes": [
 	        {
-	          "name": "joey@darkstar:~/tmp/mapbench/a",
+	          "remote": "a",
 	          "url": "/home/joey/tmp/mapbench/a",
 	          "uuid": "3f34e4c2-dd19-433a-ab04-9fd4be959325"
 	        }
@@ -34,10 +34,10 @@ Example output, after being passed through `jq` to pretty-print it:
 	      "uuid": "645d92d8-6461-43c1-b23c-6dd04dc3a015"
 	    },
 	    {
-	      "name": "unknown",
+	      "description": "unknown",
 	      "remotes": [
 	        {
-	          "name": "joey@darkstar:~/tmp/mapbench/b",
+	          "remote": "b",
 	          "url": "/home/joey/tmp/mapbench/b",
 	          "uuid": "645d92d8-6461-43c1-b23c-6dd04dc3a015"
 	        }
