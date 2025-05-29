@@ -1,0 +1,57 @@
+[[!comment format=mdwn
+ username="Spencer"
+ avatar="http://cdn.libravatar.org/avatar/2e0829f36a68480155e09d0883794a55"
+ subject="I need help with this too (c.f. submodule refactor)"
+ date="2025-05-29T03:42:42Z"
+ content="""
+I do this quite often because I use a monorepo approach with regular refactoring of subtrees into their own submodules. I have yet to find a bulletproof way to do this on the git-annex side.
+
+The first step is as simple as `git annex unannex` in `A`, or including `--include \"*\"` if pattern matching is easier.
+
+- On the `git` side, this logs the files as deleted from the main repo (`src`, let's call her). This is ideal so that you have a record for yourself (with a descriptive commit message) of where you've moved your files to.
+- On the `git-annex` side, (once you commit), the file data will eventually become \"unused\" - you'll have to do some combination of `git annex push` and `git annex sync [--cleanup]` to ensure all branches really don't reference those files (including remote branches and `synced/*` branches).
+
+Now the question is: how do we get the data into the new repo (`dst`) and safely drop from `src`?
+
+- You could add `dst` as a remote of `src` and pull only `dst`'s `git-annex` branch, which (after moving, re-annexing, and committing the unannexed files to `dst`) now shows as having a copy of those files. (**Warning:** this has bad side-effects).
+- You could do the opposite but use `dst` to move any (used) files from `src` (**Warning:** this has bad side-effects).
+- You could add `dst` as a remote and `move` unused files over (requires a clean unused stack already and having to do the push/sync stuff correctly and fully before the files can be released)
+- You could do the opposite and \"copy\" the files *to* `src` first *then* move them over to `dst`. (Required because per `dst`'s knowledge, it has no record of `src` having any keys. I find it logical albeit sad that `git-annex` can't dynamically poll local repos' annexes for file content)
+- You could forcibly drop the data either by individual key or once it eventually becomes unused (super unsafe and sad)
+
+### Conclusions
+
+- Keep a clean unused stack (`git annex unused` gives nothing) as much as you can, and clean it out before testing out any sort of move/drop operations like this.
+- Option 4 is the best so far. Following the initial step of `gx unannex` in `src`:
+  - Add `src` as a remote in `dst`, `mv` files into `dst`, `gx add` files in `dst`, `gx copy` files from `dst` back to `src`, then do `gx move -f <src>`
+  - This will only move the files known by `dst`. If it so happens that one of these files is actually duplicate data with something you want to also be in `src`, this *will* drop it and leave no record in `src` of where it went (besides your `git` commit message).
+
+As described, there are still side effects with Option 4, but it's so far the best option I've devised.
+Oh, and if you want to keep `src` around as a remote on `dst` to e.g. remind yourself of various relations, make sure you configure it in `.git/config` with:
+
+- `annex.sync=false`. This skips it when you do a `git annex sync`
+- Delete the `remote.fetch` spec, or add `remote.skipFetchAll=true`. This ensures `git fetch` doesn't fetch all the branch and unrelated objects
+- (pray there are no more side-effects)
+
+Now, what happens if a side-effect does happen and it looks like you lost some content and don't know where it went? `git annex whereis` is no help.
+Instead, you have to extract the key from the now broken symlink and run `find <> -type f -iname \"<KEY>\"`. Easy enough but kind of scary when it happens to you.
+
+### Side-Effects of Option 1+2: `git-annex` synchronization
+
+*DON'T DEAD OPEN INSIDE*
+
+While this is currently the only way to propagate annex key information, it has bad side-effects:
+
+- Remotes and known repos start to clutter whichever absorbs the others' `git-annex` branch. For me this is a no-go because I have redundant remotes (an exporttree called `dropbox` in my case)
+- If you decide to `dead` these remotes or repos and by coincidence the `git-annex` branch is later absorbed in the other direction, chaos ensues (`dead` is propagated, remote annex key history is killed: especially gross for export/importtrees)
+  - Best way to avoid this is to `dead`, `forget --drop-dead` then `semitrust UUID`. Many steps, potentially undefined condition. Gross.
+
+## Potential Feature Requests
+
+Ideally, I would wish `git-annex` could intelligently scan another repo's annex and populate information about what keys it has simply by what keys are objectively in `.git/annex/objects`. This pulls in the information we care about without cluttering additional information relevant only to each respective repo.
+Then, presuming you've set up a remote (`dst`) pointing to this repo (`src`) and run `git annex info`, then `src` should have a list of keys that are inside `dst`, and `gx whereis` from `src` will identify the keys inside `dst`, and `drop` will happily do so.
+
+- Maybe there could be something called an `acquaintance` repo that is not allowed to be synced, pulled, fetched, pushed to.
+- Acquaintances are semitrusted because they're still annex-controlled.
+- On removing an acquaintance repo, and running `gx forget`, the list of keys is wiped.
+"""]]
