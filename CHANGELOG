@@ -8,6 +8,8 @@ git-annex (10.20250521) UNRELEASED; urgency=medium
     entering an adjusted branch.
   * map: Support --json option.
   * map: Improve display of remote names.
+  * Windows: Fix duplicate file bug that could occur when files were
+    supposed to be moved across devices.
 
  -- Joey Hess <id@joeyh.name>  Thu, 22 May 2025 12:43:38 -0400
 

@@ -65,10 +65,12 @@ moveFile src dest = tryIO (renamePath src dest) >>= onrename
 			let (ok, e') = case r of
 				Left err -> (False, err)
 				Right _ -> (True, e)
+			when ok $
+				void $ tryIO $ removeFile src
 #endif
 			unless ok $ do
 				-- delete any partial
-				_ <- tryIO $ removeFile tmp
+				void $ tryIO $ removeFile tmp
 				throwM e'
 
 #ifndef mingw32_HOST_OS	
