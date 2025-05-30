@@ -1139,9 +1139,9 @@ warnSyncContentTransition o remotes
   where
 	showwarning = earlyWarning $
 		"git-annex sync will change default behavior in the future to"
-		<> " send content to repositories that have"
+		<> " sync content with repositories that have"
 		<> " preferred content configured. If you do not want this to"
-		<> " send any content, use --no-content (or -g)"
+		<> " sync any content, use --no-content (or -g)"
 		<> " to prepare for that change."
 		<> " (Or you can configure annex.synccontent)"
 	preferredcontentconfigured m u = 
