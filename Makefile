@@ -1,4 +1,4 @@
-all=git-annex git-annex-shell git-remote-annex mans docs
+all=git-annex git-annex-shell git-remote-annex git-remote-tor-annex mans docs
 
 # set to "./Setup" if you lack a cabal program. Or can be set to "stack"
 BUILDER?=cabal
@@ -73,6 +73,9 @@ git-annex-shell: git-annex
 
 git-remote-annex: git-annex
 	ln -sf git-annex git-remote-annex
+
+git-remote-tor-annex: git-annex
+	ln -sf git-annex git-remote-tor-annex
 
 install-mans: mans
 	install -d $(DESTDIR)$(PREFIX)/$(SHAREDIR)/man/man1
