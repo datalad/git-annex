@@ -69,13 +69,13 @@ git-annex: tmp/configure-stamp
 	fi
 
 git-annex-shell: git-annex
-	ln -sf git-annex git-annex-shell
+	@ln -sf git-annex git-annex-shell
 
 git-remote-annex: git-annex
-	ln -sf git-annex git-remote-annex
+	@ln -sf git-annex git-remote-annex
 
 git-remote-tor-annex: git-annex
-	ln -sf git-annex git-remote-tor-annex
+	@ln -sf git-annex git-remote-tor-annex
 
 install-mans: mans
 	install -d $(DESTDIR)$(PREFIX)/$(SHAREDIR)/man/man1
