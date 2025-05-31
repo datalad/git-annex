@@ -23,7 +23,7 @@ detailed instructions             | quick install
 [[OpenBSD]]                       | `pkg_add git-annex`
 [[Android]]                       | **beta**
 [[Windows]]                       | **beta**
-[PyPi][pypi]                      | `uv tool install git-annex`
+[[PyPi]]                          | `uv tool install git-annex`
 """]]
 
 ## Historical builds
@@ -40,5 +40,3 @@ it [[from source|fromsource]].
 
  * [[autobuild overview|builds]]
  * [[upgrades]]
-
-[pypi]: https://pypi.org/project/git-annex/

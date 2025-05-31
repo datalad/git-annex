@@ -1,0 +1,3 @@
+git-annex is packaged in PyPi for ease of use for python users.
+
+<https://pypi.org/project/git-annex/>
