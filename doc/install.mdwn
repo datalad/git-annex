@@ -23,7 +23,7 @@ detailed instructions             | quick install
 [[OpenBSD]]                       | `pkg_add git-annex`
 [[Android]]                       | **beta**
 [[Windows]]                       | **beta**
-[[PyPi]]                          | `uv tool install git-annex`
+[[PyPI]]                          | `uv tool install git-annex`
 """]]
 
 ## Historical builds
