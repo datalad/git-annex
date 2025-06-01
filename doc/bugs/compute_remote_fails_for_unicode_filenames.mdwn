@@ -1,0 +1,136 @@
+### Please describe the problem.
+
+I'm experimenting with the compute special remote by trying to convert FLAC files to .opus.
+
+Some of the music files have unicode characters in the filename, which leads to an incorrect error message saying that the file is not checked into the repository.
+
+It is possible that I'm just doing something wrong here, but as far as I can tell, the unicode characters are simply stripped by git-annex.
+
+
+### What steps will reproduce the problem?
+
+1. Commit a file with unicode characters in the filename to the git repository
+2. Invoke a compute remote with that file
+3. git annex complains that the file is not checked into the git repository
+
+### What version of git-annex are you using? On what operating system?
+
+I'm running on Linux and my locale is de_DE.UTF-8:
+
+```
+$ locale
+LANG=de_DE.UTF-8
+LC_CTYPE="de_DE.UTF-8"
+LC_NUMERIC="de_DE.UTF-8"
+LC_TIME="de_DE.UTF-8"
+LC_COLLATE="de_DE.UTF-8"
+LC_MONETARY="de_DE.UTF-8"
+LC_MESSAGES="de_DE.UTF-8"
+LC_PAPER="de_DE.UTF-8"
+LC_NAME="de_DE.UTF-8"
+LC_ADDRESS="de_DE.UTF-8"
+LC_TELEPHONE="de_DE.UTF-8"
+LC_MEASUREMENT="de_DE.UTF-8"
+LC_IDENTIFICATION="de_DE.UTF-8"
+LC_ALL=
+```
+
+git-annex was installed using Homebrew.
+
+```
+git-annex version: 10.20250520
+build flags: Pairing DBus DesktopNotify TorrentParser MagicMime Servant Benchmark Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.24.4 bloomfilter-2.0.1.2 crypton-1.0.4 DAV-1.3.4 feed-1.3.2.1 ghc-9.8.4 http-client-0.7.19 persistent-sqlite-2.13.3.1 torrent-10000.1.3 uuid-1.3.16
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL GITBUNDLE GITMANIFEST VURL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg rclone hook external compute mask
+operating system: linux x86_64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
+local repository version: 10
+```
+
+### Please provide any additional information below.
+
+Here is a minimal reproduction of the problem:
+
+[[!format sh """
+$ git init compute-unicode
+$ cd compute-unicode
+$ touch "A filename without Unicode characters.txt"
+$ touch "Ä filename with Unicöde chäracters.txt"
+$ git add .
+$ git commit -m "Demo"
+
+[main (Root-Commit) 3655a71] Demo
+ 2 files changed, 0 insertions(+), 0 deletions(-)
+ create mode 100644 A filename without Unicode characters.txt
+ create mode 100644 "\303\204 filename with Unic\303\266de ch\303\244racters.txt"
+
+$ git annex init
+
+init  ok
+(recording state in git...)
+
+$ git annex initremote passthrough type=compute program=git-annex-compute-passthrough
+
+initremote passthrough ok
+(recording state in git...)
+
+$ git annex addcomputed --to=passthrough "A filename without Unicode characters.txt" works.txt
+
+addcomputed passthrough
+(adding works.txt...) (checksum...)
+ok
+(recording state in git...)
+
+$ git annex addcomputed --to=passthrough "Ä filename with Unicöde chäracters.txt" fails.txt
+
+addcomputed passthrough
+
+git-annex: The computation needs an input file that is not checked into the git repository:  filename with Unicde chracters.txt
+failed
+addcomputed: 1 failed
+"""]]
+
+Note how the unicode characters are simply missing in git-annex's message: " filename with Unicde chracters.txt".
+
+I first thought this was a problem with my script, but it seems that git-annex strips the Unicode characters before invoking it.
+
+The passthrough-remote looks like this (adapted from the ImageMagick example):
+
+```sh
+#!/bin/sh
+set -e
+
+if [ -z "$1" ] || [ -z "$2" ]; then
+	echo "Specify the input file, followed by the output file." >&2
+	echo "Example: input.txt output.txt" >&2
+	exit 1
+fi
+
+echo "INPUT:  $1" >  /tmp/passthrough.log
+echo "OUTPUT: $2" >> /tmp/passthrough.log
+
+echo "INPUT $1"
+read input
+echo "OUTPUT $2"
+read output
+
+
+if [ -n "$input" ]; then
+	cat "$input" > "$output"
+fi
+```
+
+The log file in /tmp/passthrough.log doesn't have the Unicode characters:
+
+```
+INPUT:   filename with Unicde chracters.txt
+OUTPUT: fails.txt
+```
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
+I've been happily managing my important data (as well as things like my music collection) with git-annex for a few years now, with it making sure that everything has several copies on different external storage media. :-)
