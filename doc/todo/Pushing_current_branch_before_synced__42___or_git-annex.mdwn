@@ -1,0 +1,14 @@
+Many git forges (gitlab, gitea, forgejo, etc.) support [push-to-create](https://forgejo.org/docs/latest/user/push-to-create/#push-to-create) to create repositories upon the first push, e.g.
+
+[[!format  bash """
+# add the (still nonexistant) remote to this local repo
+> git remote add myserver ssh://me@myserver.com/me/myrepo
+# push to the remote as if it existed (will create it on the remote)
+> git push -u myserver
+"""]]
+
+This is very useful as it enables quick creation of repos without going through a tedious GUI.
+
+However, `git annex assist|sync|push` seem to push `git-annex`, `synced/git-annex`, or `synced/<currentbranch>` (in a seemingly random order? 🤔) **before** pushing `<currentbranch>` itself, causing this first pushed branch to become the repository's default branch. A `git clone ssh://me@myserver.com/me/myrepo` will then result in a local repo with e.g. `synced/main` checked out - or worse - `synced/git-annex`, causing a lot of confusion. Accidentally running `git annex assist` again will produce another level of `synced/synced/main` branches and all that fun stuff. (Very fun time during that summer school where I established git-annex + forgejo as data exchange 😉).
+
+Of course the solution is to just `git push` manually before `git annex assist`. But `git annex assist` is already such a brilliant command that does it all, and telling people to just run that to "do the git stuff" is very comfortable and easily accepted. Could the current branch be pushed first? Or is there a reason for pushing all the meta-branches first?
