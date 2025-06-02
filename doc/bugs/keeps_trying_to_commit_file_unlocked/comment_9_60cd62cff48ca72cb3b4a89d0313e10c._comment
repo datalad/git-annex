@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 9"
+ date="2025-06-02T17:22:37Z"
+ content="""
+Kai said
+
+>    The repository is located on an NTFS drive. I don't recall whether it                                                                                                            
+>   was cloned using git clone from within WSL or downloaded directly from                                                                                                           
+>   GitHub, but the repository is stored on an NTFS drive and is accessible                                                                                                          
+>   from WSL. I'm not sure if the cloning method is relevant to this issue,                                                                                                          
+
+"""]]
