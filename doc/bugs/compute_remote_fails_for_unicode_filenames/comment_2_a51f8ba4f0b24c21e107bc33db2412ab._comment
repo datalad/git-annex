@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2025-06-02T17:54:05Z"
+ content="""
+I don't see how git-annex could be stripping even invalid unicode here.
+When it runs the compute program it uses `process` with `CreatePipe`. That
+is documented to use the default encoding. git-annex sets the default
+encoding in `useFileSystemEncoding`.
+
+With that said, git-annex is here using `hGetLineUntilExitOrEOF`, and if
+`hGetChar` ever failed with an encoding error, it does look like that
+would skip over the problem and return the rest of the string.
+
+It would not hurt to throw in a `fileEncoding` on the compute process's
+handles, but I'd really want to be able to reproduce this first.
+
+I have also tried with filenames that are not valid unicode at all, and
+they pass through ok. Eg:
+
+	invalid_byte_sequence=$'\x80\x81'
+	echo hi > invalid$(printf %s $invalid_byte_sequence)
+	git-annex add invalid*
+	git annex addcomputed --to=passthrough invalid* invalidout
+	cat invalidout
+	hi
+"""]]

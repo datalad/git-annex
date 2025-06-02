@@ -1,0 +1,43 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-06-02T17:21:37Z"
+ content="""
+> I'm running on Linux and my locale is de_DE.UTF-8:
+> 
+> git-annex was installed using Homebrew.
+
+That's unusual. Linux and Homebrew? I just want to check you didn't
+typo there and mean to say you're on OSX. 
+
+Tried just now (including the same locale setting) and it does not fail for me:
+
+	joey@darkstar:~/tmp/c>git annex addcomputed --to=passthrough "Ä filename with Unicöde chäracters.txt" fails.txt
+	addcomputed passthrough
+	(adding fails.txt...) (checksum...)
+	ok
+	(recording state in git...)
+
+There are 3 possibilities here:
+
+1. The unicode characters are getting stripped out before git-annex is run,
+   eg by your interactive shell or by git.
+2. git-annex is stripping out valid (or invalid) unicode.
+3. "read" or "echo" in your git-annex-compute-passthrough script is
+   for some reason stripping unicode
+
+The best way to track down which of these is the problem is `strace`, so could you please try this:
+
+	strace -o log -f git annex addcomputed --to=passthrough "Ä filename with Unicöde chäracters.txt" foo.txt
+	grep "filename with" log
+
+Here's how that strace looks for me, when the characters are making it through unscathed:
+
+	2395608 execve("/usr/bin/git", ["git", "annex", "addcomputed", "--to=passthrough", "\303\204 filename with Unic\303\266de ch\303\244ra"..., "fails3.txt"], 0x7ffc44897f00 /* 69 vars */) = 0
+	2395609 execve("/home/joey/bin/git-annex", ["/home/joey/bin/git-annex", "addcomputed", "--to=passthrough", "\303\204 filename with Unic\303\266de ch\303\244ra"..., "fails3.txt"], 0x55c3cfdf27c0 /* 70 vars */ <unfinished ...>
+	2395618 execve("/home/joey/bin/git-annex-compute-passthrough", ["git-annex-compute-passthrough", "\303\204 filename with Unic\303\266de ch\303\244ra"..., "fails3.txt"], 0x42000ec610 /* 70 vars */ <unfinished ...>
+	2395618 write(1, "INPUT \303\204 filename with Unic\303\266de "..., 48) = 48
+	2395609 read(16, "INPUT \303\204 filename with Unic\303\266de "..., 8192) = 48
+
+(I commented out the passthrough.log writing from the script to keep the strace easier to follow.)
+"""]]
