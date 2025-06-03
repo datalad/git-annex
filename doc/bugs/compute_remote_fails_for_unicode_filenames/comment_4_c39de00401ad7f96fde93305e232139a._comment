@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2025-06-03T19:05:35Z"
+ content="""
+Nice work investigating this. I would not have guessed a kernel bug might
+be involved. But I am not convinced one is, either.
+
+I agree with your analysis of your strace. The filename is getting into
+git-annex ok. Then it runs the compute program with the mangled filename.
+
+I don't see how a kernel bug would cause git-annex to mangle the filename
+though. As far as `git-annex addcomputed` is concerned, the filename is
+just a parameter to use as input to the computation. Such parameters are
+not limited to filenames actually. And so they pass through `git-annex
+addcomputed` without being exposed to any kernel syscall that might do
+something wrong on a buggy kernel.
+
+Unless, that is, the haskell `process` library, or indeed the kernel
+itself, does something with parameters passed to the compute program.
+
+(This strace does rule out my theories around `hGetLineUntilExitOrEOF`.)
+
+----
+
+What are the versions of git-annex in the VM where it worked vs
+where it didn't?
+
+And, if you can possibly download and unpack the linuxstandalone tarball,
+and use that to run git-annex in the bad VM, that would be a useful check
+that the problem does not somehow involve the homebrew build.
+<https://git-annex.branchable.com/install/Linux_standalone/>
+"""]]
