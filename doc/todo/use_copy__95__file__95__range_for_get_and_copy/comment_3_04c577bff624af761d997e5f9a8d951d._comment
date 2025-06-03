@@ -1,0 +1,56 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2025-06-03T16:37:31Z"
+ content="""
+A config setting may be unncessesary. If git-annex tried to use
+`copy_file_range` itself, that would fail with EOPNOTSUPP or EXDEV
+or EXDEV when not supported. Then git-annex could use `cp --reflink=always`
+as a fallback.
+
+However, `copy_file_range` is not necessarily inexpensive. Depending on the
+filesystem it can still need to read and write the whole file. And, rather
+than a single syscall copying the whole file, git-annex would need to call
+it repeatedly in chunks in order to display a progress bar. But, making a
+lot of syscalls against a NFS filesystem would be its own overhead.
+
+So there seems to be a tradeoff between progress display and efficiency on
+NFS. And if the goal is to maximize speed for NFS with server-side copy,
+maybe progress bars are not important enough to have in that case?
+
+Also, it seems likely to me that you would certainly want to turn off
+annex.verify along with using `copy_file_range`, which is already a manual
+config setting. So a second config setting would be no big deal.
+
+----
+
+As to other filesystems, I found this comment with an overview as of 2022:
+<https://github.com/openzfs/zfs/discussions/4237#discussioncomment-3579635>
+
+For btrfs, it does reflinking, so no benefit to using it over what
+git-annex does now.
+
+Testing on ext4, `cp --reflink=auto` used `copy_file_range` in a copy on
+the same filesystem (it tried it cross-filesystem, but it failed and had to
+fall back to a regulat copy). So does `cp` with no options. On a SSD,
+with big enough files (4 gb or so), I did see noticable performance
+improvements.
+
+If git-annex did `copy_file_range` in chunks on ext4, it could read each
+chunk after it was written to the destination file, and get it from the
+page cache. But that would still copy the content of the file into user
+space. So the savings from using `copy_file_range` with annex.verify set
+on ext4 seem like they would only be in avoiding the userspace to kernel
+transfer, with the kernel to userspace transfer still needed.
+
+That also notes that, on NFS, `copy_file_range` can do a CoW copy when the
+underlying filesystem supports it. So with NFS on btrfs or zfs, a single
+`copy_file_range` call could result in no more work than a reflink,
+optimially efficient. If git-annex did `copy_file_range` on each chunk in
+order to display a progress bar, that would be a lot of syscalls in flight
+over the network, so noticably slower.
+
+All of this is making me lean toward a config setting that enables
+`copy_file_range`, without progress bars, and that is intended to be
+used with annex.verify disabled in order to get optimal performance.
+"""]]
