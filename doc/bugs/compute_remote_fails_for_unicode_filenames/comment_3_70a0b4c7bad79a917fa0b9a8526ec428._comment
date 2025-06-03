@@ -1,0 +1,61 @@
+[[!comment format=mdwn
+ username="datawraith"
+ avatar="http://cdn.libravatar.org/avatar/e36c82a2b6f3150ad14a24eb7eb85826"
+ subject="comment 3"
+ date="2025-06-03T17:05:58Z"
+ content="""
+Thank you for taking the time to look into this!
+
+I am indeed using Homebrew on Linux. I'm on [Bluefin](https://projectbluefin.io/), which uses Fedora Silverblue as a base. Software there is generally installed either as Flatpak or via Homebrew because the root image is immutable.
+
+I see the behavior on both my desktop and laptop, both running a recent Bluefin version (bluefin-dx:latest, based on Fedora Silverblue 42), but it just occurred to me that I could try it in a virtual machine, too.
+
+When using a slightly older release of Bluefin I had on that VM, everything worked fine, but when I updated to the latest version, the `addcomputed` command started failing. Interestingly it works fine with files that were created before the update -- including with unicode filenames --, but when I create a new file with unicode characters after updating to the latest image, addcomputed fails on those, which seems to indicate this is **likely not a git-annex problem after all**.
+
+After a bit of research, I found [this](https://www.phoronix.com/news/Linux-Reverts-Special-Char-Uni) Linux problem that broke unicode handling in filenames, but I'm by no means certain that that is the cause of the problem, and if it is, there might be nothing you can do in git-annex to fix it.
+
+Unless you want to pursue this further, I'm fine with just closing the bug as not applicable.
+
+---
+
+Still, I've added the requested strace log below -- I couldn't see a meaningful difference between the logs that worked, and the ones that failed, other than the failure itself and the missing unicode character escapes.
+
+Grepping the failure strace log for \"filename\" yields the following:
+
+```
+14497 execve(\"/usr/sbin/git\", [\"git\", \"annex\", \"addcomputed\", \"--to=passthrough\", \"\303\204 filename with Unic\303\266de ch\303\244ra\"..., \"foo.txt\"], 0x7ffe655d3190 /* 81 vars */) = 0
+14498 execve(\"/home/linuxbrew/.linuxbrew/bin/git-annex\", [\"/home/linuxbrew/.linuxbrew/bin/g\"..., \"addcomputed\", \"--to=passthrough\", \"\303\204 filename with Unic\303\266de ch\303\244ra\"..., \"foo.txt\"], 0x55d77d2df560 /* 82 vars */ <unfinished ...>
+14507 execve(\"/usr/libexec/git-core/git-annex-compute-passthrough\", [\"git-annex-compute-passthrough\", \" filename with Unicde chracters.\"..., \"foo.txt\"], 0x4200427cb0 /* 82 vars */) = -1 ENOENT (No such file or directory)
+14507 execve(\"/home/linuxbrew/.linuxbrew/bin/git-annex-compute-passthrough\", [\"git-annex-compute-passthrough\", \" filename with Unicde chracters.\"..., \"foo.txt\"], 0x4200427cb0 /* 82 vars */) = -1 ENOENT (No such file or directory)
+14507 execve(\"/home/linuxbrew/.linuxbrew/sbin/git-annex-compute-passthrough\", [\"git-annex-compute-passthrough\", \" filename with Unicde chracters.\"..., \"foo.txt\"], 0x4200427cb0 /* 82 vars */) = -1 ENOENT (No such file or directory)
+14507 execve(\"/var/home/myusername/.local/bin/git-annex-compute-passthrough\", [\"git-annex-compute-passthrough\", \" filename with Unicde chracters.\"..., \"foo.txt\"], 0x4200427cb0 /* 82 vars */) = -1 ENOENT (No such file or directory)
+14507 execve(\"/var/home/myusername/bin/git-annex-compute-passthrough\", [\"git-annex-compute-passthrough\", \" filename with Unicde chracters.\"..., \"foo.txt\"], 0x4200427cb0 /* 82 vars */ <unfinished ...>
+14507 write(1, \"INPUT  filename with Unicde chra\"..., 42) = 42
+14498 <... read resumed>\"INPUT  filename with Unicde chra\"..., 8192) = 42
+14498 write(19, \":./ filename with Unicde chracte\"..., 39 <unfinished ...>
+14508 read(0, \":./ filename with Unicde chracte\"..., 4096) = 39
+14508 write(1, \":./ filename with Unicde chracte\"..., 47) = 47
+14498 read(20, \":./ filename with Unicde chracte\"..., 8192) = 47
+14498 write(19, \":./ filename with Unicde chracte\"..., 39) = 39
+14508 <... read resumed>\":./ filename with Unicde chracte\"..., 4096) = 39
+14508 write(1, \":./ filename with Unicde chracte\"..., 47 <unfinished ...>
+14498 read(20, \":./ filename with Unicde chracte\"..., 8192) = 47
+```
+
+Also with the /tmp/passthrough.log commented out.
+
+I haven't used strace before, but if I'm reading this right, it looks like the characters get lost as or after git-annex receives them, but before the passthrough script is called. There is a ton of output between the git-annex execve (14498) and the one for the passthrough script (14507), mostly seems to be loading libraries and examining the .git directory. It also loads the git.mo translation files and system locale settings in-between, but there is no obvious point of failure.
+
+---
+
+Interestingly I get the same behavior for the invalid byte sequence example as for the unicode characters:
+
+```
+git-annex: The computation needs an input file that is not checked into the git repository: invalid
+failed
+addcomputed: 1 failed
+```
+
+They are simply stripped.
+
+"""]]
