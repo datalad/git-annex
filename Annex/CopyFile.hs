@@ -30,7 +30,7 @@ newtype CopyCoWTried = CopyCoWTried (MVar Bool)
 newCopyCoWTried :: IO CopyCoWTried
 newCopyCoWTried = CopyCoWTried <$> newEmptyMVar
 
-{- Copies a file is copy-on-write is supported. Otherwise, returns False.
+{- Copies a file if copy-on-write is supported. Otherwise, returns False.
  -
  - The destination file must not exist yet (or may exist but be empty), 
  - or it will fail to make a CoW copy, and will return false.
