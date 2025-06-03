@@ -1,6 +1,6 @@
 {- git-annex configuration
  -
- - Copyright 2012-2024 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -135,6 +135,7 @@ data GitConfig = GitConfig
 	, annexDifferences :: Differences
 	, annexUsedRefSpec :: Maybe RefSpec
 	, annexVerify :: Bool
+	, annexFastCopy :: Bool
 	, annexPidLock :: Bool
 	, annexPidLockTimeout :: Seconds
 	, annexDbDir :: Maybe OsPath
@@ -241,6 +242,7 @@ extractGitConfig configsource r = GitConfig
 	, annexUsedRefSpec = either (const Nothing) Just . parseRefSpec 
 		=<< getmaybe (annexConfig "used-refspec")
 	, annexVerify = getbool (annexConfig "verify") True
+	, annexFastCopy = getbool (annexConfig "fastcopy") False
 	, annexPidLock = getbool (annexConfig "pidlock") False
 	, annexPidLockTimeout = Seconds $ fromMaybe 300 $
 		getmayberead (annexConfig "pidlocktimeout")
@@ -387,6 +389,7 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexPush :: Bool
 	, remoteAnnexReadOnly :: Bool
 	, remoteAnnexVerify :: Bool
+	, remoteAnnexFastCopy :: Bool
 	, remoteAnnexCheckUUID :: Bool
 	, remoteAnnexTrackingBranch :: Maybe Git.Ref
 	, remoteAnnexTrustLevel :: Maybe String
@@ -466,6 +469,7 @@ extractRemoteGitConfig r remotename = do
 		, remoteAnnexReadOnly = getbool ReadOnlyField False
 		, remoteAnnexCheckUUID = getbool CheckUUIDField True
 		, remoteAnnexVerify = getbool VerifyField True
+		, remoteAnnexFastCopy = getbool FastCopyField False
 		, remoteAnnexTrackingBranch = Git.Ref . encodeBS <$>
 			( notempty (getmaybe TrackingBranchField)
 			<|> notempty (getmaybe ExportTrackingField) -- old name
@@ -574,6 +578,7 @@ data RemoteGitConfigField
 	| ReadOnlyField
 	| CheckUUIDField
 	| VerifyField
+	| FastCopyField
 	| TrackingBranchField
 	| ExportTrackingField
 	| TrustLevelField
@@ -644,6 +649,7 @@ remoteGitConfigField = \case
 	ReadOnlyField -> inherited True "readonly"
 	CheckUUIDField -> uninherited True "checkuuid"
 	VerifyField -> inherited True "verify"
+	FastCopyField -> inherited True "fastcopy"
 	TrackingBranchField -> uninherited True "tracking-branch"
 	ExportTrackingField -> uninherited True "export-tracking"
 	TrustLevelField -> uninherited True "trustlevel"

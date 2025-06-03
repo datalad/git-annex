@@ -84,11 +84,12 @@ gen r u rc gc rs = do
 	cst <- remoteCost gc c cheapRemoteCost
 	let chunkconfig = getChunkConfig c
 	cow <- liftIO newCopyCoWTried
+	fastcopy <- getFastCopy gc
 	let ii = IgnoreInodes $ fromMaybe True $
 		getRemoteConfigValue ignoreinodesField c
 	return $ Just $ specialRemote c
-		(storeKeyM dir chunkconfig cow)
-		(retrieveKeyFileM dir chunkconfig cow)
+		(storeKeyM dir chunkconfig cow fastcopy)
+		(retrieveKeyFileM dir chunkconfig cow fastcopy)
 		(removeKeyM dir)
 		(checkPresentM dir chunkconfig)
 		Remote
@@ -105,8 +106,8 @@ gen r u rc gc rs = do
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = True
 			, exportActions = ExportActions
-				{ storeExport = storeExportM dir cow
-				, retrieveExport = retrieveExportM dir cow
+				{ storeExport = storeExportM dir cow fastcopy
+				, retrieveExport = retrieveExportM dir cow fastcopy
 				, removeExport = removeExportM dir
 				, checkPresentExport = checkPresentExportM dir
 				-- Not needed because removeExportLocation
@@ -118,7 +119,7 @@ gen r u rc gc rs = do
 				{ listImportableContents = listImportableContentsM ii dir
 				, importKey = Just (importKeyM ii dir)
 				, retrieveExportWithContentIdentifier = retrieveExportWithContentIdentifierM ii dir cow
-				, storeExportWithContentIdentifier = storeExportWithContentIdentifierM ii dir cow
+				, storeExportWithContentIdentifier = storeExportWithContentIdentifierM ii dir cow fastcopy
 				, removeExportWithContentIdentifier = removeExportWithContentIdentifierM ii dir
 				-- Not needed because removeExportWithContentIdentifier
 				-- auto-removes empty directories.
@@ -189,8 +190,8 @@ storeDir d k = addTrailingPathSeparator $
 
 {- Check if there is enough free disk space in the remote's directory to
  - store the key. Note that the unencrypted key size is checked. -}
-storeKeyM :: OsPath -> ChunkConfig -> CopyCoWTried -> Storer
-storeKeyM d chunkconfig cow k c m = 
+storeKeyM :: OsPath -> ChunkConfig -> CopyCoWTried -> FastCopy -> Storer
+storeKeyM d chunkconfig cow fastcopy k c m = 
 	ifM (checkDiskSpaceDirectory d k)
 		( do
 			void $ liftIO $ tryIO $ createDirectoryUnder [d] tmpdir
@@ -210,7 +211,7 @@ storeKeyM d chunkconfig cow k c m =
 			in byteStorer go k c m
 		NoChunks ->
 			let go _k src p = liftIO $ do
-				void $ fileCopier cow src tmpf p Nothing
+				void $ fileCopier cow fastcopy src tmpf p Nothing
 				finalizeStoreGeneric d tmpdir destdir
 			in fileStorer go k c m
 		_ -> 
@@ -247,12 +248,12 @@ finalizeStoreGeneric d tmp dest = do
 		mapM_ preventWrite =<< dirContents dest
 		preventWrite dest
 
-retrieveKeyFileM :: OsPath -> ChunkConfig -> CopyCoWTried -> Retriever
-retrieveKeyFileM d (LegacyChunks _) _ = Legacy.retrieve locations' d
-retrieveKeyFileM d NoChunks cow = fileRetriever' $ \dest k p iv -> do
+retrieveKeyFileM :: OsPath -> ChunkConfig -> CopyCoWTried -> FastCopy -> Retriever
+retrieveKeyFileM d (LegacyChunks _) _ _ = Legacy.retrieve locations' d
+retrieveKeyFileM d NoChunks cow fastcopy = fileRetriever' $ \dest k p iv -> do
 	src <- liftIO $ getLocation d k
-	void $ liftIO $ fileCopier cow src dest p iv
-retrieveKeyFileM d _ _ = byteRetriever $ \k sink ->
+	void $ liftIO $ fileCopier cow fastcopy src dest p iv
+retrieveKeyFileM d _ _ _ = byteRetriever $ \k sink ->
 	sink =<< liftIO (F.readFile =<< getLocation d k)
 
 retrieveKeyFileCheapM :: OsPath -> ChunkConfig -> Maybe (Key -> AssociatedFile -> OsPath -> Annex ())
@@ -327,8 +328,8 @@ checkPresentGeneric' d check = ifM check
 		)
 	)
 
-storeExportM :: OsPath -> CopyCoWTried -> OsPath -> Key -> ExportLocation -> MeterUpdate -> Annex ()
-storeExportM d cow src _k loc p = do
+storeExportM :: OsPath -> CopyCoWTried -> FastCopy -> OsPath -> Key -> ExportLocation -> MeterUpdate -> Annex ()
+storeExportM d cow fastcopy src _k loc p = do
 	liftIO $ createDirectoryUnder [d] (takeDirectory dest)
 	-- Write via temp file so that checkPresentGeneric will not
 	-- see it until it's fully stored.
@@ -336,12 +337,12 @@ storeExportM d cow src _k loc p = do
   where
 	dest = exportPath d loc
 	go tmp () = void $ liftIO $
-		fileCopier cow src tmp p Nothing
+		fileCopier cow fastcopy src tmp p Nothing
 
-retrieveExportM :: OsPath -> CopyCoWTried -> Key -> ExportLocation -> OsPath -> MeterUpdate -> Annex Verification
-retrieveExportM d cow k loc dest p = 
+retrieveExportM :: OsPath -> CopyCoWTried -> FastCopy -> Key -> ExportLocation -> OsPath -> MeterUpdate -> Annex Verification
+retrieveExportM d cow fastcopy k loc dest p = 
 	verifyKeyContentIncrementally AlwaysVerify k $ \iv -> 
-		void $ liftIO $ fileCopier cow src dest p iv
+		void $ liftIO $ fileCopier cow fastcopy src dest p iv
   where
 	src = exportPath d loc
 
@@ -533,13 +534,13 @@ retrieveExportWithContentIdentifierM ii dir cow loc cids dest gk p =
 			=<< R.getSymbolicLinkStatus f'
 		guardSameContentIdentifiers cont cids currcid
 
-storeExportWithContentIdentifierM :: IgnoreInodes -> OsPath -> CopyCoWTried -> OsPath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex ContentIdentifier
-storeExportWithContentIdentifierM ii dir cow src _k loc overwritablecids p = do
+storeExportWithContentIdentifierM :: IgnoreInodes -> OsPath -> CopyCoWTried -> FastCopy -> OsPath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex ContentIdentifier
+storeExportWithContentIdentifierM ii dir cow fastcopy src _k loc overwritablecids p = do
 	liftIO $ createDirectoryUnder [dir] destdir
 	withTmpFileIn destdir template $ \tmpf tmph -> do
 		let tmpf' = fromOsPath tmpf
 		liftIO $ hClose tmph
-		void $ liftIO $ fileCopier cow src tmpf p Nothing
+		void $ liftIO $ fileCopier cow fastcopy src tmpf p Nothing
 		resetAnnexFilePerm tmpf
 		liftIO (R.getSymbolicLinkStatus tmpf') >>= liftIO . mkContentIdentifier ii tmpf >>= \case
 			Nothing -> giveup "unable to generate content identifier"

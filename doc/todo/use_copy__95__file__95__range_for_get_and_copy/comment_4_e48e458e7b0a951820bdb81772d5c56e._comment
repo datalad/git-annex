@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2025-06-03T18:43:21Z"
+ content="""
+Implemented `remote.<name>.annex-fastcopy` and `annex.fastcopy`
+config settings.
+
+These do just run `cp --reflink=auto`. So when a copy was interrupted,
+it won't resume where it left off. It would be possible to improve that,
+by making git-annex use `copy_file_range` itself, starting at the point it
+was interrupted. At least for keys where isStableKey is True, since
+git-annex won't be verifying when using this. But for the
+NFS use case, if the server is doing a server-side CoW copy, it's atomic
+anyway, so no need to handle resuming.
+
+Since I don't currently know of a haskell binding to `copy_file_range` and
+since it's a low-level OS-specific thing, I have punted on handling
+resuming. This could be revisited, I just don't see the benefit in the
+current use case, and wanted to start from something relatively simple.
+"""]]

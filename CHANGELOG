@@ -10,6 +10,10 @@ git-annex (10.20250521) UNRELEASED; urgency=medium
   * map: Improve display of remote names.
   * Windows: Fix duplicate file bug that could occur when files were
     supposed to be moved across devices.
+  * Added annex.fastcopy and remote.name.annex-fastcopy config setting.
+    When set, this allows the copy_file_range syscall to be used, which
+    can eg allow for server-side copies on NFS. (For fastest copying, 
+    also disable annex.verify or remote.name.annex-verify.)
 
  -- Joey Hess <id@joeyh.name>  Thu, 22 May 2025 12:43:38 -0400
 

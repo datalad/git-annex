@@ -1596,6 +1596,25 @@ Remotes are configured using these settings in `.git/config`.
   in some edge cases, where it's likely the case than an
   object was downloaded incorrectly, or when needed for security.
 
+* `remote.<name>.annex-fastcopy`, `annex.fastcopy`
+
+  Set to "true" to optimize copying files to/from a remote.
+
+  Setting this allows `cp` to use the `copy_file_range` system call. (When
+  the `cp` command supports it.) The benefit depends on the filesystem.
+  For example, on NFS, this can allow a server-side copy to be done. On
+  ext4, this avoids some memory transfer overhead, but the file still
+  needs to be copied. There is no benefit on btrfs, since git-annex does
+  the equivilantly fast CoW reflinking on btrfs by default.
+
+  This will do little to improve copy speed when git-annex needs to read
+  the copied file in order to verify it. So for maximum speed, as well 
+  as setting this option, set `remote.<name>.annex-verify` or `annex.verify`
+  to false.
+
+  Currently, setting this prevents resuming interrupted copies where
+  they left off. An interrupted copy will be re-run from the beginning.
+
 * `remote.<name>.annex-tracking-branch`
 
   This is for use with special remotes that support exports and imports.
@@ -1790,7 +1809,7 @@ Remotes are configured using these settings in `.git/config`.
   content of any file, even though its normal location tracking does not
   indicate that it does. This will cause git-annex to try to get all file
   contents from the remote. Can be useful in setting up a caching remote.
-	
+
 * `remote.<name>.annex-proxy`
 
   Set to "true" to make the local repository able to act as a proxy to this

@@ -43,7 +43,12 @@ copyMetaDataParams meta = map snd $ filter fst
 
 {- The cp command is used, because I hate reinventing the wheel,
  - and because this allows easy access to features like cp --reflink
- - and preserving metadata. -}
+ - and preserving metadata.
+ -
+ - This uses --reflink=auto when supported, which allows for fast copies
+ - using reflinks or the copy_file_range syscall. Whatever cp thinks is
+ - best. --reflink=auto is the default of recent versions of cp, but is
+ - used explicitly to support older versions. -}
 copyFileExternal :: CopyMetaData -> OsPath -> OsPath -> IO Bool
 copyFileExternal meta src dest = do
 	-- Delete any existing dest file because an unwritable file
@@ -81,8 +86,8 @@ copyCoW meta src dest
 	| otherwise = return False
   where
  	-- Note that in coreutils 9.0, cp uses CoW by default,
-	-- without needing an option. This s only needed to support 
-	-- older versions.
+	-- without needing an option. But, this makes it fail if it is
+	-- unable to make a CoW copy.
 	params = Param "--reflink=always" : copyMetaDataParams meta
 
 {- Create a hard link if the filesystem allows it, and fall back to copying

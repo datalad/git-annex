@@ -9,14 +9,11 @@ or EXDEV when not supported. Then git-annex could use `cp --reflink=always`
 as a fallback.
 
 However, `copy_file_range` is not necessarily inexpensive. Depending on the
-filesystem it can still need to read and write the whole file. And, rather
-than a single syscall copying the whole file, git-annex would need to call
-it repeatedly in chunks in order to display a progress bar. But, making a
-lot of syscalls against a NFS filesystem would be its own overhead.
-
-So there seems to be a tradeoff between progress display and efficiency on
-NFS. And if the goal is to maximize speed for NFS with server-side copy,
-maybe progress bars are not important enough to have in that case?
+filesystem it can still need to read and write the whole file. So when
+using it, git-annex would need to poll the size of the file in order to
+update the progress bar. Or it could call the syscall repeatedly on 
+chunks of the file, but on eg NFS that would add a lot of syscalls, so
+probably more overhead.
 
 Also, it seems likely to me that you would certainly want to turn off
 annex.verify along with using `copy_file_range`, which is already a manual

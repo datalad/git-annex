@@ -440,7 +440,7 @@ inAnnex rmt st key = do
 	inAnnex' repo rmt st key
 
 inAnnex' :: Git.Repo -> Remote -> State -> Key -> Annex Bool
-inAnnex' repo rmt st@(State connpool duc _ _ _) key
+inAnnex' repo rmt st@(State connpool duc _ _ _ _) key
 	| isP2PHttp rmt = checkp2phttp
 	| Git.repoIsHttp repo = checkhttp
 	| Git.repoIsUrl repo = checkremote
@@ -482,7 +482,7 @@ dropKey r st proof key = do
 	dropKey' repo r st proof key
 
 dropKey' :: Git.Repo -> Remote -> State -> Maybe SafeDropProof -> Key -> Annex ()
-dropKey' repo r st@(State connpool duc _ _ _) proof key
+dropKey' repo r st@(State connpool duc _ _ _ _) proof key
 	| isP2PHttp r = 
 		clientRemoveWithProof proof key unabletoremove r >>= \case
 			RemoveResultPlus True fanoutuuids ->
@@ -531,7 +531,7 @@ lockKey r st key callback = do
 	lockKey' repo r st key callback
 
 lockKey' :: Git.Repo -> Remote -> State -> Key -> (VerifiedCopy -> Annex r) -> Annex r
-lockKey' repo r st@(State connpool duc _ _ _) key callback
+lockKey' repo r st@(State connpool duc _ _ _ _) key callback
 	| isP2PHttp r = do	
 		showLocking r
 		p2pHttpClient r giveup (clientLockContent key) >>= \case
@@ -566,7 +566,7 @@ copyFromRemote r st key file dest meterupdate vc = do
 	copyFromRemote'' repo r st key file dest meterupdate vc
 
 copyFromRemote'' :: Git.Repo -> Remote -> State -> Key -> AssociatedFile -> OsPath -> MeterUpdate -> VerifyConfig -> Annex Verification
-copyFromRemote'' repo r st@(State connpool _ _ _ _) key af dest meterupdate vc
+copyFromRemote'' repo r st@(State connpool _ _ _ _ _) key af dest meterupdate vc
 	| isP2PHttp r = copyp2phttp
 	| Git.repoIsHttp repo = verifyKeyContentIncrementally vc key $ \iv -> do
 		gc <- Annex.getGitConfig
@@ -642,7 +642,7 @@ copyToRemote r st key af o meterupdate = do
 	copyToRemote' repo r st key af o meterupdate
 
 copyToRemote' :: Git.Repo -> Remote -> State -> Key -> AssociatedFile -> Maybe OsPath -> MeterUpdate -> Annex ()
-copyToRemote' repo r st@(State connpool duc _ _ _) key af o meterupdate
+copyToRemote' repo r st@(State connpool duc _ _ _ _) key af o meterupdate
 	| isP2PHttp r = prepsendwith copyp2phttp
 	| not $ Git.repoIsUrl repo = ifM duc
 		( guardUsable repo (giveup "cannot access remote") $ commitOnCleanup repo r st $
@@ -753,7 +753,7 @@ mkLocalRemoteAnnex repo = LocalRemoteAnnex repo <$> liftIO (newMVar [])
  - when possible.
  -}
 onLocal :: State -> Annex a -> Annex a
-onLocal (State _ _ _ _ lra) = onLocal' lra
+onLocal (State _ _ _ _ _ lra) = onLocal' lra
 
 onLocalRepo :: Git.Repo -> Annex a -> Annex a
 onLocalRepo repo a = do
@@ -830,7 +830,7 @@ type FileCopier = OsPath -> OsPath -> Key -> MeterUpdate -> Annex Bool -> Verify
 -- done. Also returns Verified if the key's content is verified while
 -- copying it.
 mkFileCopier :: Bool -> State -> Annex FileCopier
-mkFileCopier remotewanthardlink (State _ _ copycowtried _ _) = do
+mkFileCopier remotewanthardlink (State _ _ copycowtried fastcopy _ _) = do
 	localwanthardlink <- wantHardLink
 	let linker = \src dest -> R.createLink (fromOsPath src) (fromOsPath dest) >> return True
 	if remotewanthardlink || localwanthardlink
@@ -848,7 +848,7 @@ mkFileCopier remotewanthardlink (State _ _ copycowtried _ _) = do
   where
 	copier src dest k p check verifyconfig = do
 		iv <- startVerifyKeyContentIncrementally verifyconfig k
-		liftIO (fileCopier copycowtried src dest p iv) >>= \case
+		liftIO (fileCopier copycowtried fastcopy src dest p iv) >>= \case
 			Copied -> ifM check
 				( finishVerifyKeyContentIncrementally iv
 				, do
@@ -864,24 +864,25 @@ mkFileCopier remotewanthardlink (State _ _ copycowtried _ _) = do
  - This returns False when the repository UUID is not as expected. -}
 type DeferredUUIDCheck = Annex Bool
 
-data State = State Ssh.P2PShellConnectionPool DeferredUUIDCheck CopyCoWTried (Annex (Git.Repo, GitConfig)) LocalRemoteAnnex
+data State = State Ssh.P2PShellConnectionPool DeferredUUIDCheck CopyCoWTried FastCopy (Annex (Git.Repo, GitConfig)) LocalRemoteAnnex
 
 getRepoFromState :: State -> Annex Git.Repo
-getRepoFromState (State _ _ _ a _) = fst <$> a
+getRepoFromState (State _ _ _ _ a _) = fst <$> a
 
 #ifndef mingw32_HOST_OS
 {- The config of the remote git repository, cached for speed. -}
 getGitConfigFromState :: State -> Annex GitConfig
-getGitConfigFromState (State _ _ _ a _) = snd <$> a
+getGitConfigFromState (State _ _ _ _ a _) = snd <$> a
 #endif
 
 mkState :: Git.Repo -> UUID -> RemoteGitConfig -> Annex State
 mkState r u gc = do
 	pool <- Ssh.mkP2PShellConnectionPool
 	copycowtried <- liftIO newCopyCoWTried
+	fastcopy <- getFastCopy gc
 	lra <- mkLocalRemoteAnnex r
 	(duc, getrepo) <- go
-	return $ State pool duc copycowtried getrepo lra
+	return $ State pool duc copycowtried fastcopy getrepo lra
   where
 	go
 		| remoteAnnexCheckUUID gc = return

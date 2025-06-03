@@ -1,6 +1,6 @@
 {- Copying files.
  -
- - Copyright 2011-2022 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -10,6 +10,7 @@
 module Annex.CopyFile where
 
 import Annex.Common
+import qualified Annex
 import Utility.Metered
 import Utility.CopyFile
 import Utility.FileMode
@@ -77,6 +78,23 @@ tryCopyCoW (CopyCoWTried copycowtried) src dest meterupdate =
 
 data CopyMethod = CopiedCoW | Copied
 
+-- Should cp be allowed to copy the file with --reflink=auto?
+--
+-- The benefit is that this lets it use the copy_file_range
+-- syscall, which is not used with --reflink=always. The drawback is that
+-- the IncrementalVerifier is not updated, so verification, if it is done,
+-- will need to re-read the whole content of the file. And, interrupted
+-- copies are not resumed but are restarted from the beginning.
+-- 
+-- Using this will result in CopiedCow being returned even in cases
+-- where cp fell back to a slow copy.
+newtype FastCopy = FastCopy Bool
+
+getFastCopy :: RemoteGitConfig -> Annex FastCopy
+getFastCopy gc = case remoteAnnexFastCopy gc of
+	False -> FastCopy . annexFastCopy <$> Annex.getGitConfig
+	True -> return (FastCopy True)
+
 {- Copies from src to dest, updating a meter. Preserves mode and mtime.
  - Uses copy-on-write if it is supported. If the the destination already
  - exists, an interrupted copy will resume where it left off.
@@ -94,38 +112,49 @@ data CopyMethod = CopiedCoW | Copied
  - (eg when isStableKey is false), and doing this avoids getting a
  - corrupted file in such cases.
  -}
-fileCopier :: CopyCoWTried -> OsPath -> OsPath -> MeterUpdate -> Maybe IncrementalVerifier -> IO CopyMethod
+fileCopier :: CopyCoWTried -> FastCopy -> OsPath -> OsPath -> MeterUpdate -> Maybe IncrementalVerifier -> IO CopyMethod
+fileCopier copycowtried (FastCopy True) src dest meterupdate iv = do
+	ok <- watchFileSize dest meterupdate $ const $
+		copyFileExternal CopyTimeStamps src dest
+	if ok
+		then do
+			maybe noop unableIncrementalVerifier iv
+			return CopiedCoW
+		else fileCopier copycowtried (FastCopy False) src dest meterupdate iv
 #ifdef mingw32_HOST_OS
-fileCopier _ src dest meterupdate iv = docopy
+fileCopier _ _ src dest meterupdate iv =
+	fileCopier' src dest meterupdate iv
 #else
-fileCopier copycowtried src dest meterupdate iv =
+fileCopier copycowtried _ src dest meterupdate iv =
 	ifM (tryCopyCoW copycowtried src dest meterupdate)
 		( do
 			maybe noop unableIncrementalVerifier iv
 			return CopiedCoW
-		, docopy
+		, fileCopier' src dest meterupdate iv
 		)
 #endif
-  where
-	docopy = do
-		-- The file might have had the write bit removed,
-		-- so make sure we can write to it.
-		void $ tryIO $ allowWrite dest
 
-		F.withBinaryFile src ReadMode $ \hsrc ->
-			fileContentCopier hsrc dest meterupdate iv
+fileCopier' :: OsPath -> OsPath -> MeterUpdate -> Maybe IncrementalVerifier -> IO CopyMethod
+fileCopier' src dest meterupdate iv = do
+	-- The file might have had the write bit removed,
+	-- so make sure we can write to it.
+	void $ tryIO $ allowWrite dest
+
+	F.withBinaryFile src ReadMode $ \hsrc ->
+		fileContentCopier hsrc dest meterupdate iv
 		
-		-- Copy src mode and mtime.
-		mode <- fileMode <$> R.getFileStatus (fromOsPath src)
-		mtime <- utcTimeToPOSIXSeconds <$> getModificationTime src
-		let dest' = fromOsPath dest
-		R.setFileMode dest' mode
-		touch dest' mtime False
+	-- Copy src mode and mtime.
+	mode <- fileMode <$> R.getFileStatus (fromOsPath src)
+	mtime <- utcTimeToPOSIXSeconds <$> getModificationTime src
+	let dest' = fromOsPath dest
+	R.setFileMode dest' mode
+	touch dest' mtime False
 
-		return Copied
+	return Copied
 
 {- Copies content from a handle to a destination file. Does not
  - use copy-on-write, and does not copy file mode and mtime.
+ - Updates the IncementalVerifier with the content it copies.
  -}
 fileContentCopier :: Handle -> OsPath -> MeterUpdate -> Maybe IncrementalVerifier -> IO ()
 fileContentCopier hsrc dest meterupdate iv =
