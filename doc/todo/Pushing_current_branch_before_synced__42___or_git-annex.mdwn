@@ -14,3 +14,5 @@ However, `git annex assist|sync|push` seem to push `git-annex`, `synced/git-anne
 Of course the solution is to just `git push` manually before `git annex assist`. But `git annex assist` is already such a brilliant command that does it all, and telling people to just run that to "do the git stuff" is very comfortable and easily accepted. Could the current branch be pushed first? Or is there a reason for pushing all the meta-branches first?
 
 > [[fixed|done]] --[[Joey]]
+
+[[!tag projects/INM7]]
