@@ -83,7 +83,6 @@ import Types.Availability
 import qualified Database.Export as Export
 import Utility.Bloom
 import Utility.OptParse
-import Utility.Process.Transcript
 import Utility.Tuple
 import Utility.Matcher
 
@@ -706,19 +705,12 @@ pushRemote o remote (Just branch, _) = do
  - Git offers no way to tell if a remote is bare or not, so both methods
  - are tried.
  -
- - The direct push is likely to spew an ugly error message, so its stderr is
- - often elided. Since git progress display goes to stderr too, the 
- - sync push is done first, and actually sends the data. Then the
- - direct push is tried, with stderr discarded, to update the branch ref
- - on the remote.
+ - The direct push is done first, because some hosting providers like
+ - github may treat the first branch pushed to a new repository as the
+ - default branch for that repository.
  -
  - The sync push first sends the synced/master branch,
  - and then forces the update of the remote synced/git-annex branch.
- -
- - Since some providers like github may treat the first branch sent
- - as the default branch, it's better to make that be synced/master than
- - synced/git-annex. (Although neither is ideal, it's the best that
- - can be managed given the constraints on order.)
  -
  - The forcing is necessary if a transition has rewritten the git-annex branch.
  - Normally any changes to the git-annex branch get pulled and merged before
@@ -728,34 +720,59 @@ pushRemote o remote (Just branch, _) = do
  - But overwriting of data on synced/git-annex can happen, in a race.
  - The only difference caused by using a forced push in that case is that
  - the last repository to push wins the race, rather than the first to push.
+ -
+ - The git-annex branch is pushed last. This push may fail if the remote
+ - has other changes in the git-annex branch, and that is not treated as an
+ - error, since the synced/git-annex branch has been sent already. Since no
+ - new data is usually sent in this push (due to synced/git-annex already
+ - having been pushed), it's ok to hide git's output to avoid displaying
+ - a push error.
  -}
 pushBranch :: Remote -> Maybe Git.Branch -> MessageState -> Git.Repo -> IO Bool
-pushBranch remote mbranch ms g = directpush `after` annexpush `after` syncpush
+pushBranch remote mbranch ms g = do
+	directpush
+	annexpush `after` syncpush
   where
-	syncpush = flip Git.Command.runBool g $ pushparams $ catMaybes
-		[ (refspec . origBranch) <$> mbranch
-		, Just $ Git.Branch.forcePush $ refspec Annex.Branch.name
-		]
-	annexpush = void $ tryIO $ flip Git.Command.runQuiet g $ pushparams
-		[ Git.fromRef $ Git.Ref.base $ Annex.Branch.name ]
 	directpush = case mbranch of
-		Nothing -> noop
-		-- Git prints out an error message when this fails.
-		-- In the default configuration of receive.denyCurrentBranch,
-		-- the error message mentions that config setting
-		-- (and should even if it is localized), and is quite long,
-		-- and the user was not intending to update the checked out
-		-- branch, so in that case, avoid displaying the error
-		-- message. Do display other error messages though,
-		-- including the error displayed when
-		-- receive.denyCurrentBranch=updateInstead -- the user
-		-- will want to see that one.
 		Just branch -> do
 			let p = flip Git.Command.gitCreateProcess g $ pushparams
 				[ Git.fromRef $ Git.Ref.base $ origBranch branch ]
-			(transcript, ok) <- processTranscript' p Nothing
-			when (not ok && not ("denyCurrentBranch" `isInfixOf` transcript)) $
-				hPutStr stderr transcript
+			let p' = p { std_err = CreatePipe }
+			bracket (createProcess p') cleanupProcess $ \h -> do
+				filterstderr [] (stderrHandle h) (processHandle h)
+				void $ waitForProcess (processHandle h)
+		Nothing -> noop
+				
+	syncpush = flip Git.Command.runBool g $ pushparams $ catMaybes
+		[ (syncrefspec . origBranch) <$> mbranch
+		, Just $ Git.Branch.forcePush $ syncrefspec Annex.Branch.name
+		]
+	
+	annexpush = void $ tryIO $ flip Git.Command.runQuiet g $ pushparams
+		[ Git.fromRef $ Git.Ref.base $ Annex.Branch.name ]
+	
+	-- In the default configuration of receive.denyCurrentBranch,
+	-- git's stderr message mentions that config setting
+	-- (and should even if it is localized), and is quite long,
+	-- and the user was not intending to update the checked out
+	-- branch, so in that case, avoid displaying the error
+	-- message. Do display other error messages though,
+	-- including the error displayed when
+	-- receive.denyCurrentBranch=updateInstead; the user
+	-- will want to see that one. Also display progress messages.
+	filterstderr buf herr pid = hGetLineUntilExitOrEOF pid herr >>= \case
+		Just l
+			| "remote: " `isPrefixOf` l || not (null buf)-> 
+				filterstderr (l:buf) herr pid
+			| otherwise -> do
+				hPutStrLn stderr l
+				filterstderr [] herr pid
+		Nothing -> displaybuf
+	  where
+		displaybuf = 
+			unless (any ("receive.denyCurrentBranch" `isInfixOf`) buf) $
+				mapM_ (hPutStrLn stderr) (reverse buf)
+	
 	pushparams branches = catMaybes
 		[ Just $ Param "push"
 		, if commandProgressDisabled' ms
@@ -763,7 +780,8 @@ pushBranch remote mbranch ms g = directpush `after` annexpush `after` syncpush
 			else Nothing
 		, Just $ Param $ Remote.name remote
 		] ++ map Param branches
-	refspec b = concat 
+	
+	syncrefspec b = concat 
 		[ Git.fromRef $ Git.Ref.base b
 		,  ":"
 		, Git.fromRef $ Git.Ref.base $ syncBranch b

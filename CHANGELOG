@@ -14,6 +14,10 @@ git-annex (10.20250521) UNRELEASED; urgency=medium
     When set, this allows the copy_file_range syscall to be used, which
     can eg allow for server-side copies on NFS. (For fastest copying, 
     also disable annex.verify or remote.name.annex-verify.)
+  * sync: Push the current branch first, rather than a synced branch,
+    to better support git forges (gitlab, gitea, forgejo, etc.) which
+    use push-to-create with the first pushed branch becoming the default
+    branch.
 
  -- Joey Hess <id@joeyh.name>  Thu, 22 May 2025 12:43:38 -0400
 

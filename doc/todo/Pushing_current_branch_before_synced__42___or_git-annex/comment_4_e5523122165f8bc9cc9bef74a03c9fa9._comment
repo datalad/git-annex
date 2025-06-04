@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2025-06-04T15:40:46Z"
+ content="""
+For filtering, the best approach I can see to do that is to look for lines
+starting with "remote:", and buffer blocks of those lines. At the end of a
+"remote:" block, look for "receive.denyCurrentBranch" in it to decide
+whether to filter it out or display it. Pass other lines through.
+
+Note that the remote may choose to display anything at all to stderr, and
+it would probably all come in the same block, so that might filter out
+messages that the user legitimatly would expect to see. But I suppose in
+that case, the other git push that is run for the sync branches, which does
+not get filtered, would still let such messages be displayed.
+
+Currently, git does not localize the "remote:" even when the message itself
+is localized. This might just be bad/missing localization; some other parts
+also don't get localized:
+
+	remote: error: refusing to update checked out branch: refs/heads/master
+	remote: error: Standardmäßig wird die Aktualisierung des aktuellen Branches in einem
+	...
+	 ! [remote rejected] master -> master (branch is currently checked out)
+	Fehler: Fehler beim Versenden einiger Referenzen nach '../c'
+
+I suppose if git localizes "remote:" later, it will only prevent the
+filtering, so not the end of the world.
+
+Implemented this.
+"""]]

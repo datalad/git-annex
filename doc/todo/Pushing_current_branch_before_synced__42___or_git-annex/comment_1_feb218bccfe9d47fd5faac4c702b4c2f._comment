@@ -8,14 +8,19 @@ Basically:
 
 * We don't know if the remote is bare or non-bare. git does not generally 
   provide a way to tell.
-* Pushing to the checked out branch of a non-bare repo will complain on stderr.
+* Pushing to the checked out branch of a non-bare repo will complain on
+  stderr, and the overall git push will fail even if other branches were
+  successfully pushed.
   But this is a fairly common use case for `git-annex sync`, and that
   complaint would be unwanted noise. git progress output also goes to stderr,
   so /dev/null of stderr is not desirable.
 * So instead push the synced branches, which doesn't have that problem, and lets
-  git display progress for the main data transfer.
-* Then the current branch is pushed, with stderr collected and displayed
-  after filtering out denyCurrentBranch error messages.
+  git display progress for the main data transfer. As long as the
+  synced/master branch is pushed, the overall push part of sync can be
+  considered to succeed.
+* Then the current branch is pushed, with stderr collected and displayed,
+  unless it contains the denyCurrentBranch warning message. A failure of this
+  push is not treated as an error.
 
 Also this was previously considered and partly addressed in 
 [[!commit 1cc7b2661e5ec60f73f04dbe91940d2602df6246]] which made it push
@@ -25,6 +30,7 @@ using a version from before that change. At that point I thought this was a
 github specific problem, mind.
 
 I think that to improve this, git-annex would need to run git push of master
-with stderr intercepted and the denyCurrentBranch error message filtered out.
+with stderr intercepted and the denyCurrentBranch error message filtered
+out, but the rest of stderr (progress, etc) still displayed.
 Which does seem doable.
 """]]

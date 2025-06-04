@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2025-06-04T15:26:18Z"
+ content="""
+If the remote is brand-new, there will be no remote tracking refs.
+git-annex could detect that as a special case, and push the
+current branch first then. Since that would only be done one time,
+the user would only see any receive.denyCurrentBranch message once.
+So it wouldn't be appreciable clutter.
+
+And in the common case where a user has cloned a repo to another drive,
+there would already be a tracking remote ref, so the special case wouldn't
+happen. And that's the kind of case where a clone of a non-bare repository
+is typically done.
+
+This approach does have an edge case where the wrong
+thing is done: If the user had origin pointing to one repository, but then
+changed the url to a new, empty repository, sync would do the usual push, not
+the special case. And so if the new origin url was github or whatever has
+this problem, they would still end up pushing the "wrong" branch first.
+
+That is an unlikely edge case, but it's also the kind of edge case that
+makes it hard to reason about software, IMHO.
+"""]]
