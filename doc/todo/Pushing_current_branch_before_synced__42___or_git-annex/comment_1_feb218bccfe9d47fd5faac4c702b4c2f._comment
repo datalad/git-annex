@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-06-04T13:45:18Z"
+ content="""
+Command/Sync.hs has a big comment on pushBranch about push order considerations.
+Basically:
+
+* We don't know if the remote is bare or non-bare. git does not generally 
+  provide a way to tell.
+* Pushing to the checked out branch of a non-bare repo will complain on stderr.
+  But this is a fairly common use case for `git-annex sync`, and that
+  complaint would be unwanted noise. git progress output also goes to stderr,
+  so /dev/null of stderr is not desirable.
+* So instead push the synced branches, which doesn't have that problem, and lets
+  git display progress for the main data transfer.
+* Then the current branch is pushed, with stderr collected and displayed
+  after filtering out denyCurrentBranch error messages.
+
+Also this was previously considered and partly addressed in 
+[[!commit 1cc7b2661e5ec60f73f04dbe91940d2602df6246]] which made it push
+synced/master before synced/git-annex, to at least avoid the git-annex branch
+becoming the default branch. The varying behavior you're seeing may be due to
+using a version from before that change. At that point I thought this was a
+github specific problem, mind.
+
+I think that to improve this, git-annex would need to run git push of master
+with stderr intercepted and the denyCurrentBranch error message filtered out.
+Which does seem doable.
+"""]]
