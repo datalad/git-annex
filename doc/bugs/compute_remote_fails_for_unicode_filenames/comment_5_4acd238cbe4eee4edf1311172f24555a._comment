@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="datawraith"
+ avatar="http://cdn.libravatar.org/avatar/e36c82a2b6f3150ad14a24eb7eb85826"
+ subject="comment 5"
+ date="2025-06-04T19:26:29Z"
+ content="""
+> What are the versions of git-annex in the VM where it worked vs where it didn't?
+
+The version on the VM is the same one I reported in the initial post: 10.20250520, installed via Homebrew. git-annex wasn't originally installed on that VM, so I installed it at that version to test it.
+
+When everything worked at first, I updated the VM to the Bluefin version I was running on my laptop, thinking that might be the problem, and then had the strange results I reported above.
+
+Since the git-annex installation itself had not changed between when things worked and when they stopped, I started to suspect something like the kernel bug I mentioned (because the Kernel *had* changed).
+
+I'm now also having trouble reproducing the problem in the VM at all. The files that were failing before are now added without problems again, as are newly created files -- though I had had to shut down and later restart the VM. I wish I had thought of making a full snapshot when I started experimenting, but I didn't. :-/ 
+
+The only machine that exhibits the problem consistently now is my laptop.
+
+> And, if you can possibly download and unpack the linuxstandalone tarball, and use that to run git-annex in the bad VM, that would be a useful check that the problem does not somehow involve the homebrew build. https://git-annex.branchable.com/install/Linux_standalone/
+
+With the standalone tarball (`10.20250521-g1a9e6bf26b56c39429d4a096bf733e57e5684e1b`, using the `./runshell`) `addcomputed` works as expected on my laptop -- Unicode characters are shown with the backslash escape, whereas the Homebrew build alone fails by stripping the unicode characters.
+
+Hm.
+
+Running the `git-annex` executable from `/home/linuxbrew/.linuxbrew/bin/` inside of the runshell works as well -- it doesn't strip the characters. That might mean that it is not the Homebrew build that is broken, but that something about my environment is simply screwed up.
+
+"""]]
