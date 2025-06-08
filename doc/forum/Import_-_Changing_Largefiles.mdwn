@@ -1,0 +1,20 @@
+# Changing Largefile Specification for Imported Trees
+
+If you want files to be large/small *after* already importing a tree from an `importtree` enabled remote, well, it appears you can't.
+
+I tried removing the imported branch via `git branch -d --remote <tree>/<branch>`.
+While this produces a new clean import commit upon running `import` again, it does *not* respect changes to `.gitattributes`.
+Instead, `git-annex` seems to hold onto information about which files were large/small in a given special remote.
+So, the only way to change what are considered large files and small files is to create a new special remote entirely :/
+
+For most people, this should not be too problematic since the history of imported trees isn't too important, but for some diffs on an external tree may be valuable.
+Is there any interest in addressing this issue?
+For a better understanding, here is a MWE to reproduce this:
+
+1. Create an `importtree` enabled special remote for a fresh repo without a `.gitattributes` file (or at least one without `annex.largefiles` attributes)
+1. Import (e.g. `gx import -f tree main`) from this tree and note that all files are considered large (e.g. `git log --raw tree/main` -> `git show <hash>`)
+1. Modify/create a local `.gitattributes` file (and add it to the index) that would specify one of the tree files as small (i.e. `annex.largefiles` does *not* match)
+1. Attempt new import, or do `git branch -d --remote tree/main` and perform new import.
+1. Note that all files are still considered large.
+
+Maybe there's another way of fixing this that I don't know about, but as far as I know, from this point you have to delete the special remote and redo the above now with the desired `.gitattributes` file staged for files in this external tree to be imported as small.
