@@ -1,3 +1,5 @@
+[[!meta author="Spencer"]]
+
 # Changing Largefile Specification for Imported Trees
 
 If you want files to be large/small *after* already importing a tree from an `importtree` enabled remote, well, it appears you can't.
