@@ -1,0 +1,58 @@
+[[!comment format=mdwn
+ username="beryllium@5bc3c32eb8156390f96e363e4ba38976567425ec"
+ nickname="beryllium"
+ avatar="http://cdn.libravatar.org/avatar/62b67d68e918b381e7e9dd6a96c16137"
+ subject="comment 6"
+ date="2025-06-09T13:09:25Z"
+ content="""
+I'm getting acquainted with this special remote. I cannot praise it enough. It is brilliant.
+
+This is my first cut git-annex-compute-stripexif:
+
+[[!format  bash \"\"\"
+#!/bin/bash
+
+set -e
+
+if [ -z \"$1\" ]; then
+        echo \"Specify the input image file, followed by the output image file.\" >&2
+        echo \"Example: foo.jpg foo.gif\" >&2
+        exit 1
+fi
+
+echo REPRODUCIBLE
+echo \"INPUT $1\"
+read input
+
+if [ -n \"$input\" ]; then
+        tf=$(mktemp)
+        cp \"$input\" \"$tf\" >&2
+        exiftool -overwrite_original -ALL= \"$tf\" >&2
+        outfile=\"SANSEXIF-\"$(git-annex calckey \"$tf\")
+fi
+echo \"OUTPUT $outfile\"
+read output
+
+cp -v \"$tf\" \"$outfile\" >&2
+rm -v \"$tf\" >&2
+\"\"\"]]
+
+Along the way, I've learnt that EXIF metadata isn't the only metadata stored in a jpeg, so the name is now a bit of a misnomer. Also, as it was more proof-of-concept, the target name and location is not well thought out, and there's no preservation of file extension. It's indicative for now.
+
+The aim is to aid (only) in the identifying two copies of the same jpeg, where only the metadata has been changed (eg. either by adjustments I made by script eons ago, or by apps like Microsoft photoviewer where orientation changes were made via metadata). I say aid only, because it's not going to help if the image is resized, etc. and I understand that.
+
+To that end, I do have some questions. The first is... is it wise (or possible) to try to set metadata on the source files whilst in the script? (since writing this, I have come to understand that the compute script is not run within the working directory, and the implication is that you're not meant to run any git-annex commands)
+
+Obviously, the idea would be to tag the source file with the computed key. I have already verified that if two copies of a jpeg that differ only by metadata, the computed file and key will be the same.
+
+But what I found is, if I don't have that option to set metadata, then respectfully, git-annex-findcomputed may have some deficiencies.
+
+From what I can gather, git-annex-findcomputed will not list the subsequent input file that when added, computes it. Only the first one.
+
+So trying to post process the computed files to perform the setting of metadata on the source files would likely not work.
+
+Also, I was curious about what happens if the input file moves within the archive? I haven't tried... but from what I can see, you wouldn't be able to backtrack from the computed file, because you won't know the key of the input file, in turn to go searching for it (eg. git-annex-whereused).
+
+Is my use case way off base as to why you should use the compute remote?
+
+"""]]
