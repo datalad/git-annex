@@ -1,0 +1,57 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="Now the current branch is pushed first! 🥳"
+ date="2025-06-07T09:39:27Z"
+ content="""
+Thank you very much joey, I can confirm that the current branch is now pushed first and thus used as the default branch of the newly created repo:
+
+## New version
+
+[[!format  bash \"\"\"
+$ git annex version --raw
+10.20250605-gb9e3cf8780a04c8b1ac0cf4768c9ec510483477c$ 
+$ git init repo
+Initialized empty Git repository in /home/yann/Downloads/git-annex.linux/repo/.git/
+$ cd repo
+$ git annex init
+init  ok
+(recording state in git...)
+$ git remote add homelab ssh://.../yann/testrepo
+$ touch bla
+$ git annex assist
+add bla ok
+(recording state in git...)
+commit  (recording state in git...)
+ok
+pull homelab ok
+push homelab ok
+$ git remote show homelab | grep HEAD
+  HEAD branch: main ✅✅✅✅✅✅✅✅✅✅✅✅✅
+\"\"\"]]
+
+## Old version
+
+[[!format  bash \"\"\"
+🐟 ❯ git annex version --raw
+10.20250521-g1a9e6bf26b56c39429d4a096bf733e57e5684e1b
+🐟 ❯ git init repo2
+Leeres Git-Repository in /home/yann/Downloads/repo2/.git/ initialisiert
+🐟 ❯ cd repo2/
+🐟 ❯ git annex init
+init  ok
+(recording state in git...)
+🐟 ❯ git remote add homelab ssh://.../yann/testrepo2
+🐟 ❯ touch bla
+🐟 ❯ git annex assist
+add bla ok
+(recording state in git...)
+commit  (recording state in git...)
+ok
+pull homelab ok
+push homelab ok
+🐟 ❯ LC_ALL=C.UTF-8 git remote show homelab | grep HEAD
+  HEAD branch: synced/main  ⚠️⚠️⚠️⚠️⚠️
+\"\"\"]]
+
+"""]]

@@ -1,0 +1,4 @@
+I'm trying to write a special remote protocol in which it would be really helpful to have the exact size for a particular key. I was thinking of something like the special remote asking git-annex `GETKEYINFO <key-id>` and git annex responds with some useful info (Something like a dictionary of useful values maybe?)
+
+I considered doing something like `git annex info ..` to figure this out but realized it's a bad idea(That'll be very brittle, plus it won't work well with chunked/encrypted remotes at all). Does git annex typically have this info available? It would even be helpful if it only gives responses in specific cases (eg: no encryption since it'll presumably be hard to keep track of that case)
+
