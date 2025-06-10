@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="beryllium@5bc3c32eb8156390f96e363e4ba38976567425ec"
+ nickname="beryllium"
+ avatar="http://cdn.libravatar.org/avatar/62b67d68e918b381e7e9dd6a96c16137"
+ subject="comment 7"
+ date="2025-06-10T12:01:14Z"
+ content="""
+I've realised that... I'm overlooking that the input filename itself is metadata. I have a methodology that I like now.
+
+As per: `git-annex addcomputed --to=imageconvert foo.jpeg foo.gif`, where foo. is linking metadata, I can just generate a filename (and as I've learnt, path), that links back to the source by retaining it.
+
+I also see now that there is no need to avoid duplication of pointer files to the same computed file by key.
+
+The uncomplicated existing approach is more than sufficient.
+
+"""]]
