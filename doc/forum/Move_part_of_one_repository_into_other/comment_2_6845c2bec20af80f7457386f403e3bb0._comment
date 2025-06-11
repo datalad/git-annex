@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="Spencer"
+ avatar="http://cdn.libravatar.org/avatar/2e0829f36a68480155e09d0883794a55"
+ subject="OK I may have overcomplicated things"
+ date="2025-06-11T21:47:32Z"
+ content="""
+Turns out, the answer is simple:
+
+1. `git rm --cached \"B\"`
+1. (in `B`):
+  1. `git add`
+  1. `git remote add tmp.parent <relpath/from/B/root/to/A/root>`
+  1. `git annex get`
+  1. `git remote remove tmp.parent`
+
+***if you need just the files moved around***
+
+I haven't used metadata so I can't comment on how to move that around but you might have to rely on something akin to my first comment.
+In my brief testing, because metadata is stored in the `git-annex` branch on a per-key level, it does in fact require merging of the git-annex branch somehow to transfer.
+
+In short: `git-annex` can get file content in both an *informed* and *uninformed* way.
+If `git-annex` knows about content in a repo because of historic moves/copies-to or merging of `git-annex` branches,
+it has *informed* knowledge of what's in certain remotes.
+If it does not, then it can still do an *uninformed* query for potential file content.
+In this way, e.g. `git annex info` and `git annex list` may show file content as not in a particular remote,
+but a `git annex get` or `git annex move` *may actually still work*.
+
+
+"""]]
