@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="confirm, but not all non-ascii characters are a problem"
+ date="2025-06-11T11:11:19Z"
+ content="""
+I can confirm this behaviour. But it's not precisely \"non-ascii characters\" that cause this, emojis and greek letters for example are no problem.
+
+[[!format bash \"\"\"
+🐟 ❯ touch \"墨漬 Ink Stains.pdf\"
+🐟 ❯ touch 📝.txt
+🐟 ❯ touch σ.txt
+🐟 ❯ git annex add
+add 📝.txt ok
+add 墨漬 Ink Stains.pdf 
+git-annex: createSymbolicLink '.git/annex/objects/7x/w0/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.pdf/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.pdf' to '.git/annex/othertmp/.0': already exists (File exists)
+failed
+add σ.txt ok
+(recording state in git...)
+add: 1 failed
+\"\"\"]]
+"""]]
