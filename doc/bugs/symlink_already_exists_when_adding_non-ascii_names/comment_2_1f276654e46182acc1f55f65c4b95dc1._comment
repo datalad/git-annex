@@ -1,0 +1,85 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="wait, something's up with the suffix!"
+ date="2025-06-11T11:25:03Z"
+ content="""
+Hm, Just the non-ascii characters can't be the problem. Only with the suff `.pdf` or `.pdff` it fails. Without the suffix or just `.pd` or longer extensions `.pdfff` it works 🤪
+
+[[!format bash \"\"\"
+yann in yann-desktop-nixos in …/nonascii on  main as 🧙 
+🐟 ❮ touch 🌸.txt 🎶.txt ★.txt α.txt β.txt δ.txt 乙.txt 山.txt 川.txt 空.txt 愛.txt 心.txt 学.txt 数.txt 詩.txt 韓.txt 北.txt 南.txt 墨.txt 漬.txt 墨漬.txt \"墨漬 \" \"墨漬 Ink\" \"墨漬 Ink Stains\" \"墨漬 Ink Stains.pdf\" \"墨漬 Ink Stains.\" \"墨漬 Ink Stains.p\" \"墨漬 Ink Stains.pd\" \"墨漬 Ink Stains.pdf\" \"墨漬 Ink Stains.pdff\" \"墨漬 Ink Stains.pdfff\" \"墨漬 Ink Stains.pdffff\"
+yann in yann-desktop-nixos in …/nonascii on  main [?] as 🧙 
+🐟 ❯ git annex add --jobs 1
+add α.txt 
+ok
+add β.txt 
+ok
+add δ.txt 
+ok
+add ★.txt 
+ok
+add 乙.txt 
+ok
+add 北.txt 
+ok
+add 南.txt 
+ok
+add 墨.txt 
+ok
+add 墨漬  
+ok
+add 墨漬 Ink 
+ok
+add 墨漬 Ink Stains 
+ok
+add 墨漬 Ink Stains. 
+ok
+add 墨漬 Ink Stains.p 
+ok
+add 墨漬 Ink Stains.pd 
+ok
+add 墨漬 Ink Stains.pdf 
+
+git-annex: createSymbolicLink '.git/annex/objects/7x/w0/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.pdf/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.pdf' to '.git/annex/othertmp/.0': already exists (File exists)
+failed
+add 墨漬 Ink Stains.pdff 
+
+git-annex: createSymbolicLink '.git/annex/objects/7p/22/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.pdff/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.pdff' to '.git/annex/othertmp/.0': already exists (File exists)
+failed
+add 墨漬 Ink Stains.pdfff 
+ok
+add 墨漬 Ink Stains.pdffff 
+ok
+add 墨漬.txt 
+ok
+add 学.txt 
+ok
+add 山.txt 
+ok
+add 川.txt 
+ok
+add 心.txt 
+ok
+add 愛.txt 
+ok
+add 数.txt 
+ok
+add 漬.txt 
+ok
+add 空.txt 
+ok
+add 詩.txt 
+ok
+add 韓.txt 
+ok
+add 🌸.txt 
+ok
+add 🎶.txt 
+ok
+(recording state in git...)
+add: 2 failed
+yann in yann-desktop-nixos in …/nonascii on  main [+?] as 🧙 
+❌1 🐟 ❯ 
+\"\"\"]]
+"""]]
