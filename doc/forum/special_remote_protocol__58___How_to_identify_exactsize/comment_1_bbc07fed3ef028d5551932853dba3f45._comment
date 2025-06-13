@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-06-13T12:35:50Z"
+ content="""
+`git-annex examinekey --format='${bytesize}\n'`
+
+Or `git-annex examinekey --json` and use the `bytesize` field.
+
+(You will probably want to use `--batch` to keep a single examinekey
+process running, for speed.)
+
+Note that not all keys have a known size. Usually keys without a known size
+were added with eg `git-anex addurl --fast`. Encrypted keys also won't have
+a size field. 
+
+Also, when chunking is used with a special remote (without
+encryption), each chunk is a key, with its size field set to the total size
+of the original key. In that case there is a separate chunk size field,
+although the last chunk may be smaller than its chunk size field.
+If it would be useful, examinekey could have something added to it to
+indicate when a key is a chunk key, and show the chunk size.
+"""]]
