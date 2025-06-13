@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-06-13T12:27:35Z"
+ content="""
+git-annex has to maintain a considerable amount of state about the content
+of a special remote in order to efficiently import trees from it, and this
+caching is what is preventing the new configuration of annex.largefiles
+from being used.
+
+In particular, git-annex knows the content identifier associated with the
+file you imported before. And the key associated with that content
+identifier is present in the repository. So it uses the existing content
+rather than download it again.
+
+While it would be possible to either remove enough information from the
+git-annex branch to defeat that, or modify git-annex to have a mode where
+it redoes expensive work, it seems to me to be easier to just treat this as
+a case of an annexed file that you want to change to be stored in git
+instead. Since that is a general problem, with a general solution. See
+[[tips/largefiles]], "converting annexed to git".
+"""]]
