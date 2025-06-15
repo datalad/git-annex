@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="ruka"
+ avatar="http://cdn.libravatar.org/avatar/8844137c8ca327cdd49ed692f0a30e02"
+ subject="Ignoring files on directory special remote"
+ date="2025-06-15T14:41:28Z"
+ content="""
+Is there a way for git-annex to completely ignore some files on a directory special remote? I'm managing files on my MP3 player's SD card using a directory special remote, but git-annex also tries to manage the player's database files, which I don't want. If I exclude them from wanted or put them in .gitignore, git-annex tries to delete them on sync or export.
+"""]]
