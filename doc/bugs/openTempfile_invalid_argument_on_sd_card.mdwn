@@ -1,0 +1,45 @@
+### Please describe the problem.
+
+I am using a directory special remote with "exporttree=yes" and "importtree=yes" to manage my music collection on the SD card for my Tangara. Some filenames produce an "invalid argument" error when git-annex tries to export them to the card even though the filename is perfectly valid for vfat. The main commonality seems to be multiple dots in the filename, though other files with multiple dots work fine.
+
+
+### What steps will reproduce the problem?
+
+1. Create a repository with a bunch of files that have multiple dots in them in different places
+2. Create a directory special remote on a vfat filesystem with "exporttree=yes" and "importtree=yes" and no encryption
+3. Attempt to export or sync files to the directory special remote
+
+### What version of git-annex are you using? On what operating system?
+
+10.20250605-gb9e3cf8780a04c8b1ac0cf4768c9ec510483477c
+Linux Mint
+
+### Please provide any additional information below.
+
+[[!format sh """
+$ git annex sync --content
+commit  
+On branch main
+nothing to commit, working tree clean
+ok
+list tangara ok
+update refs/remotes/tangara/main ok
+unexport tangara Music/Cloudpunk/City of Ghosts/07. Home is Now.mp3 ok
+...
+unexport tangara .git-annex-tmp-content-SHA256E-s7284686--102594598eea9c5e7fd96ef20e9d5fd0485244716a1b5e95a528ca887a81ae59.mp3 ok
+...
+export tangara Music/Cloudpunk/City of Ghosts/01 - Bandit Queens.mp3 ok
+...
+export tangara Music/KIRA/KIRA - The Introduction (Deluxe Edition)/KIRA - The Introduction (Deluxe Edition) - 05 Games (feat. Ruby & Gumi).ogg 
+  /media/ciara/F0F5-1E76/Music/KIRA/KIRA - The Introduction (Deluxe Edition)/: openTempFile template KIRA - The Introduction (Deluxe Edition) - 05 Games (feat. : invalid argument (Invalid argument)
+failed
+export tangara Music/KIRA/KIRA ft. GUMI - Burn Me Down.ogg 
+  /media/ciara/F0F5-1E76/Music/KIRA/: openTempFile template KIRA ft. GUMI - : invalid argument (Invalid argument)
+failed
+...
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I use it quite successfully to archive media on removable spinning hard drives.
