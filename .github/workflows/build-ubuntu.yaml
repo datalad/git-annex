@@ -27,7 +27,7 @@ env:
 
 jobs:
   build-package:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     outputs:
       build-version: ${{ steps.build-version.outputs.version }}
     steps:
@@ -245,7 +245,7 @@ jobs:
     strategy:
       matrix:
         flavor: ["normal", "crippled-tmp", "crippled-home", "nfs-home", "custom-config1"]
-        os: [ubuntu-latest]
+        os: [ubuntu-22.04]
       fail-fast: false
     steps:
       - name: Checkout this repository
@@ -372,7 +372,7 @@ jobs:
             See <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}> for more information.
 
   test-annex-more:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: build-package
     steps:
       - name: Checkout this repository
@@ -422,7 +422,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   test-datalad:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: build-package
     strategy:
       matrix:

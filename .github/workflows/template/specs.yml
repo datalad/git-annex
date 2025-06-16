@@ -1,7 +1,7 @@
 - ostype: ubuntu
   osname: Ubuntu
   cron_hour: '02'
-  runs_on: ubuntu-latest
+  runs_on: ubuntu-22.04
   env:
     LANG: C
     DEB_SIGN_KEYID: 13A1093296154584245E0300C98FC49D36DAB17F
