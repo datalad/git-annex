@@ -20,3 +20,9 @@ For a better understanding, here is a MWE to reproduce this:
 1. Note that all files are still considered large.
 
 Maybe there's another way of fixing this that I don't know about, but as far as I know, from this point you have to delete the special remote and redo the above now with the desired `.gitattributes` file staged for files in this external tree to be imported as small.
+
+[[done]]
+
+---
+
+Conclusion: Don't just delete the imported branch, update it with a commit to force small/large the files as desired.
