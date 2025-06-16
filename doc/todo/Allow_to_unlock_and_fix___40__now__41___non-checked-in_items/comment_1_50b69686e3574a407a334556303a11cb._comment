@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="Spencer"
+ avatar="http://cdn.libravatar.org/avatar/2e0829f36a68480155e09d0883794a55"
+ subject="Solutions"
+ date="2025-06-16T20:33:03Z"
+ content="""
+While I agree that being unable to fix symlinks can sometimes be a bit annoying your examples have straightforward solutions using existing tools:
+
+1. `g add -f <symlink>` - [`gx fix`] - `gx unannex`. \"Unlocks\" and `rm`'s in one go. Does still leave a copy in annex (as did your `git rm --cached`) so you still have to contend with that.
+1. `diff` before moving the file. You have to type the relpath anyway to move the file so might as well just type the relpath into diff instead of mv.
+
+It's unfortunately fairly antithetical to modify any untracked file by `git`. This includes modifying symlink paths. Therefore the existing friction is actually helping new users figure out the proper way of doing things in a git environment IMHO.
+"""]]
