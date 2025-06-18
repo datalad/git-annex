@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="Spencer"
+ avatar="http://cdn.libravatar.org/avatar/2e0829f36a68480155e09d0883794a55"
+ subject="Easy Approach"
+ date="2025-06-18T04:27:16Z"
+ content="""
+Here's how to remove a worktree:
+
+```bash
+echo \"gitdir: $(readlink .git)\" > .git0;
+rm .git;
+mv .git0 .git;
+git worktree remove .;
+```
+
+as done inside the worktree itself. Update paths if you want to remove the worktree from outside of it.
+So long as you don't run another `git annex` command after replacing the symlink with a file, `worktree remove` should work!
+"""]]
