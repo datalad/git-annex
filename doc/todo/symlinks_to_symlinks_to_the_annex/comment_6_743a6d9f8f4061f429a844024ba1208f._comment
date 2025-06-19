@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="Spencer"
+ avatar="http://cdn.libravatar.org/avatar/2e0829f36a68480155e09d0883794a55"
+ subject="A (Mildly) Compelling Reason"
+ date="2025-06-19T01:34:17Z"
+ content="""
+This feature would alleviate one problem I have with annex in that the path stored in annex symlinks depends on the tree a file sits in.
+This makes each *`git`* object of a annexed file in a different folder unique.
+If annexed files ever move, we now have a fairly useless new git object introduced into the repo.
+Not at all a problem for one file but if you have tens of thousands of annexed files and you refactor, you start to notice that.
+
+Unlocked files don't have this problem because their blobs point agnostically to the annex and key.
+But, of course, unlocking large amounts of files mean content copies so that's not great.
+
+Symlink chains alleviate this because if I have a chain like `.root -> ./` in the root and `.root -> ../.root` in essentially every directory, then annex symlinks become agnostic too.
+And on the git side, that's two new objects to add, and only a new tree object when performing a move.
+
+Again this is only relevant when the number of files becomes massive.
+For sense of scale, let's assume a symlink payload is on the order of 100 bytes.
+So 10,000 files generates roughly a Mb of git objects, meaning if I had 100,000 files and moved them around once, I'd have 20 Mb of data dedicated to locating these files w/ 10 Mb of what I would deem as waste.
+Honestly, annex and git slow down appreciably at that scale for other reasons (pull/push/checkout, especially on slower file systems), so I say this is a non-issue by comparison.
+For those who had similar concerns, there's your benchmark: 10Mb of bloat per 10,000 files per move!
+"""]]
