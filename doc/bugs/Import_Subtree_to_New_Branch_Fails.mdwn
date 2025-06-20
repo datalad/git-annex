@@ -58,3 +58,4 @@ local repository version: 10
 
 OSX (brew)
 
+[[!meta author="Spencer"]]
