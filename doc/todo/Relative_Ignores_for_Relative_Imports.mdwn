@@ -1,0 +1,49 @@
+[[!meta author="Spencer"]]
+
+I have discovered that what is meant by `Any files that are gitignored will not be included in the import, but will be left on the remote.` in the [import doc](https://git-annex.branchable.com/git-annex-import) is `Any files that are [locally] gitignored [relative to the repo's root] will not be included in the import`. This is to say that when importing, only `.gitignore` paths from the root repo are used to exclude paths in the imported tree as if the tree were imported relative to root, regardless if a subtree is specified. This means that the repo gitignores must include ignores as desired to import the correct files from an import tree.
+
+This makes it challenging to import special remotes into subtrees. Ignores must be written to match the trees' roots but this might lead to clobbering of paths/names which overlap with other trees or the main repo.
+
+Therefore I suggest that imports to a subtree respect ignores as if the files in the tree were already adjusted to their new destination.
+I suspect that annex is listing the tree, comparing the list to ignores, then importing what doesn't match.
+So, instead, this would involve listing, moving the list to its subtree path, then comparing to ignores.
+
+A similar argument could be made for attributes in general.
+I haven't done the testing on import attributes (namely `largefiles`), but I would want these to respect subtree paths as well.
+
+<details>
+<summary>Testing Notes</summary>
+
+I made various .gitignore files in a fresh repo with a tree at `../tree` relative to fresh repo.
+The tree had files `a`-`g`.
+The ignores all began from this template:
+
+```gitignore
+# -- Import into ROOT
+# -- tree ignore
+a
+
+# -- root ignore
+b
+
+# -- root ignore in root
+root-ignore/c
+
+# -- relative ignore in relative
+d
+
+# -- root ignore in relative
+root-ignore/e
+
+# -- relative ignore in root
+f
+
+# -- tree ignore relative to root
+root-ignore/g
+```
+
+Then I commented out certain lines for each location. E.g. only try ignoring `a` and `root-ignore/g` in the tree, `b`, `root-ignore/c` in root, and `f` in root.
+
+Regardless of import or ignore, only `b` and `f` were ignored pertaining to the root `.gitignore` matching these files in the tree, even when the tree was imported to subtree `rel-ignore` or `root-ignore`.
+
+</details>
