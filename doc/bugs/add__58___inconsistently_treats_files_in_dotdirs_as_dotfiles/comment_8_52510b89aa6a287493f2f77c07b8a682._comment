@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 8"
+ date="2025-06-22T03:53:19Z"
+ content="""
+I did spend some time now trying to figure FTW and why git-annex (version from end of last year) says \"non-large file; adding content to git repository\" whenever `check-attr` insists that `largefile` should apply to my huge `.dandi/assets.json`.  Only trying newer git-annex I think I got the reason which it finally announced as \"dotfile; adding content to git repository\" and I was able to recover this discussion!
+
+Re 
+
+> But, .config/ seems to me to perfectly match what dotfiles are, which is files that are configuration that are named with a name starting with a dot in order to keep them from cluttering up ls. 
+
+As far as I know, having leading dot just a convention for **hidden** and not config, and even not neccessarily text files. 
+Even though, `dotfile` files (not folders) are most of the time are text files, I would not generalize that to dot-folders:
+content of `.cache/` or `.venv/` (created by `uv`) etc are unlikely to be text files to even start with.  Those folder names start with dot to signal \"hidden\" not \"text\" or \"small\".
+
+That is why I retain that it remains confusing and inconsistent to have any special treatment and need for extra configuration (`git annex config --set annex.dotfiles true`) for content of dot-folders.  I appreciate that such change would likely change behavior but IMHO it might just be \"for the best\".
+"""]]
