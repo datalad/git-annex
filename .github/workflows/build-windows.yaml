@@ -360,6 +360,19 @@ jobs:
         shell: cmd
         run: powershell.exe -ExecutionPolicy Bypass -File downloads\OpenSSH-Win32\install-sshd.ps1
 
+      - name: Fix SSH host key permissions
+        shell: powershell
+        run: |
+          # Download and run permission fix script
+          Invoke-WebRequest -Uri https://raw.githubusercontent.com/PowerShell/openssh-portable/latestw_all/contrib/win32/openssh/FixHostFilePermissions.ps1 -OutFile FixHostFilePermissions.ps1
+          # Run with -Force parameter to skip confirmation prompts
+          powershell.exe -ExecutionPolicy Bypass -File FixHostFilePermissions.ps1 -Force
+
+      - name: Configure service startup
+        shell: powershell
+        run: |
+          Get-Service -Name sshd | Set-Service -StartupType Manual
+
       - name: Configure service
         shell: cmd
         run: powershell.exe New-NetFirewallRule -Name sshd -DisplayName 'OpenSSH Server (sshd)' -Enabled True -Direction Inbound -Protocol TCP -Action Allow -LocalPort 22
@@ -384,7 +397,28 @@ jobs:
           ) > "$USERPROFILE"/.ssh/config
 
       - name: Fire up service
-        run: net start sshd
+        shell: powershell
+        run: |
+          # Try to start the service with retries
+          $maxRetries = 3
+          $retryCount = 0
+          while ($retryCount -lt $maxRetries) {
+            try {
+              Start-Service sshd
+              Write-Host "SSH daemon started successfully"
+              break
+            } catch {
+              $retryCount++
+              Write-Host "Failed to start SSH daemon (attempt $retryCount/$maxRetries): $_"
+              if ($retryCount -lt $maxRetries) {
+                Write-Host "Waiting 5 seconds before retry..."
+                Start-Sleep -Seconds 5
+              }
+            }
+          }
+          if ($retryCount -eq $maxRetries) {
+            throw "Failed to start SSH daemon after $maxRetries attempts"
+          }
 
       - name: Test login
         run: |
