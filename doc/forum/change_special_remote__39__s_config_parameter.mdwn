@@ -1,0 +1,49 @@
+Hey there,
+
+I have a couple of special remotes I use as storage. In one of them I had to
+relocate the path of the directory. 
+
+## Setup
+
+It was first initalized with something along the lines
+
+```sh
+git annex initremote annexA type=rsync rsyncurl=host:/old/path encryption=none
+```
+
+Enabling it on other repositories worked without any additional
+parameters, since all have access to same host names through ssh.
+
+Some time later I tweaked the `/old/path` to `/new/path`. For an existing repo
+I could handle this via changing the necessary value in `.git/config`.
+
+## Problem
+
+Much later I was setting up a new repository on a new host and I did
+
+```sh
+git annex enableremote annexA
+```
+
+Since I forgot the path tweak I did weeks ago, I couldn't give meaning to why
+none of the files were getting found, and `fsck --from annexA` was failing. 
+
+As soon as I remembered the path change I fixed the issue but I was curious if
+I can somehow change the default url for this remote permanently for new repos.
+
+## Attempts
+
+I tried the following to no avail
+
+```sh
+$ git annex configremote annexA rsyncurl=host:/new/path
+configremote annexA
+git-annex: Cannot change field "rsyncurl" with this command. Use git-annex enableremote instead.
+failed
+configremote: 1 failed
+```
+
+And I can't see the `/old/path` in `git annex vicfg` to change.
+
+Thanks in advance,  
+C.
