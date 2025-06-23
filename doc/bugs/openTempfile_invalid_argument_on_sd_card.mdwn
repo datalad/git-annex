@@ -43,3 +43,5 @@ failed
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I use it quite successfully to archive media on removable spinning hard drives.
+
+> [[fixed|done]] --[[Joey]]

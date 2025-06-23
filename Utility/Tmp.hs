@@ -117,13 +117,15 @@ relatedTemplate' :: RawFilePath -> RawFilePath
 relatedTemplate' f
 	| len > templateAddedLength = 
 		{- Some filesystems like FAT have issues with filenames
-		 - ending in ".", so avoid truncating a filename to end
-		 - that way. -}
-		B.dropWhileEnd (== dot) $
+		 - ending in ".", and others like VFAT don't allow a
+		 - filename to end with trailing whitespace, so avoid
+		 - truncating a filename to end that way. -}
+		B.dropWhileEnd disallowed $
 			truncateFilePath (len - templateAddedLength) f
 	| otherwise = f
   where
 	len = B.length f
+	disallowed c = c == dot || isSpace (chr (fromIntegral c))
 	dot = fromIntegral (ord '.')
 #else
 -- Avoids a test suite failure on windows, reason unknown, but
