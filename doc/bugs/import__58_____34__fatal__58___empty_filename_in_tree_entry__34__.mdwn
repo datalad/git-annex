@@ -44,3 +44,5 @@ the version from pypi @mih started to build recently
 
 [[!meta author=yoh]]
 [[!tag projects/dandi]]
+
+> [[fixed|done]] --[[Joey]]

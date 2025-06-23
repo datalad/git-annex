@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-06-23T14:32:13Z"
+ content="""
+Your hypothesis is right, it's items in the bucket with names ending in "/".
+
+After fixing git-annex to skip and warn about those, it looks like this:
+
+	list s3-origin
+	  Cannot import a file with a name that appears to be a directory: models/smartspim_production_models/
+	
+	  Cannot import a file with a name that appears to be a directory: models/smartspim_production_models/model_2_12202024/
+	
+	  Cannot import a file with a name that appears to be a directory: point_annotations/
+	
+	  Cannot import a file with a name that appears to be a directory: point_annotations/06-21-2024/
+	ok
+
+Note that "models/smartspim_production_models/config.json" is a file in the
+bucket located "inside" the first path. So this is not a case of an empty
+directory being somehow stored to a S3 bucket as a file, but of something else.
+I have not looked at the contents of these objects, as I would likely not
+understand them anyway.
+
+I couldn't think of a better method than to warn and skip them. Any name mangling
+would take a name that could be used by some other file. And not warning risks the user
+being surprised when all the data in the bucket does not get imported.
+"""]]

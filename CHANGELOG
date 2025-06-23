@@ -1,3 +1,10 @@
+git-annex (10.20250606) UNRELEASED; urgency=medium
+
+  * Skip and warn when a tree import includes empty filenames,
+    which can happen with eg a S3 bucket.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 23 Jun 2025 11:11:29 -0400
+
 git-annex (10.20250605) upstream; urgency=medium
 
   * sync: Push the current branch first, rather than a synced branch,

@@ -1,6 +1,6 @@
 {- git-annex import from remotes
  -
- - Copyright 2019-2024 Joey Hess <id@joeyh.name>
+ - Copyright 2019-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -64,6 +64,7 @@ import qualified Utility.Matcher
 import qualified Database.Export as Export
 import qualified Database.ContentIdentifier as CIDDb
 import qualified Logs.ContentIdentifier as CIDLog
+import qualified Utility.OsString as OS
 import Backend.Utilities
 
 import Control.Concurrent.STM
@@ -1048,6 +1049,10 @@ pruneImportMatcher = Utility.Matcher.pruneMatcher matchNeedsKey
  - write a git tree that contains that, git will complain and refuse to
  - check it out.
  -
+ - Filters out any paths that contain an empty filename, because git cannot
+ - represent an empty filename in a tree, but some special remotes do
+ - support empty filenames.
+ -
  - Filters out new things not matching the FileMatcher or that are
  - gitignored. However, files that are already in git get imported
  - regardless. (Similar to how git add behaves on gitignored files.)
@@ -1094,19 +1099,35 @@ getImportableContents r importtreeconfig ci matcher = do
 
 	wanted dbhandle (loc, (_cid, sz))
 		| ingitdir = pure False
+		| OS.null (fromImportLocation loc) = do
+			warning $ UnquotedString "Cannot import a file with an empty filename"
+			return False
+		| isdirectory = do
+			warning $ UnquotedString "Cannot import a file with a name that appears to be a directory: "
+				<> QuotedPath (fromImportLocation loc)
+			return False
 		| otherwise =
 			isknown <||> (matches <&&> notignored)
 	  where
 		-- Checks, from least to most expensive.
 #ifdef mingw32_HOST_OS
-		ingitdir = ".git" `elem` Posix.splitDirectories (fromOsPath (fromImportLocation loc))
+		ingitdir = ".git" `elem` Posix.splitDirectories loc'
 #else
 		ingitdir = literalOsPath ".git" `elem` splitDirectories (fromImportLocation loc)
+#endif
+#ifdef mingw32_HOST_OS
+		isdirectory = Posix.dropFileName loc' == loc'
+#else
+		isdirectory = dropFileName (fromImportLocation loc) == fromImportLocation loc
 #endif
 		matches = matchesImportLocation matcher loc sz
 		isknown = isKnownImportLocation dbhandle loc
 		notignored = notIgnoredImportLocation importtreeconfig ci loc
-	
+
+#ifdef mingw32_HOST_OS
+	loc' = fromOsPath (fromImportLocation loc)
+#endif
+
 	wantedunder dbhandle root (loc, v) = 
 		wanted dbhandle (importableContentsChunkFullLocation root loc, v)
 
