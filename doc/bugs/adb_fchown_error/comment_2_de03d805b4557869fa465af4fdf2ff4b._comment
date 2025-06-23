@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2025-06-23T14:11:10Z"
+ content="""
+This is the `adb push` command itself failing. Since git-annex has to use
+that command with an adb special remote, I don't see how this could be
+fixed in git-annex.
+
+It seems likely that the Android device is configured to allow adb to read
+files in `Android/data/org.opencpn.opencpn` but not write to files there. 
+You might be able to change the permissions with root access.
+"""]]

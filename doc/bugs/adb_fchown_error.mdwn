@@ -43,3 +43,5 @@ failed
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I use git-annex to back up photos, videos, and all sorts of stuff! It's really cool!
+
+> not a bug in git-annex, [[closed|done]] --[[Joey]]
