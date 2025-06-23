@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-06-23T17:11:25Z"
+ content="""
+Reproduced this, and found the filename it's using with strace:
+
+	joey@darkstar:~/tmp/annex>touch '/home/joey/mnt/Music/KIRA/KIRA - The Introduction (Deluxe Edition)/KIRA - The Introduction (Deluxe Edition) - 05 Games (feat566f1-3-1a21815. '
+	touch: cannot touch '/home/joey/mnt/Music/KIRA/KIRA - The Introduction (Deluxe Edition)/KIRA - The Introduction (Deluxe Edition) - 05 Games (feat566f1-3-1a21815. ': Invalid argument
+
+The problem is the trailing space in the filename, which VFAT does not support:
+
+	joey@darkstar:~/tmp/annex>touch '/home/joey/mnt/Music/KIRA/foo '
+	touch: cannot touch '/home/joey/mnt/Music/KIRA/foo ': Invalid argument
+
+There was already a similar workaround for of not allowing a filename to
+end with ".", so I made it also check for whitespace.
+"""]]
