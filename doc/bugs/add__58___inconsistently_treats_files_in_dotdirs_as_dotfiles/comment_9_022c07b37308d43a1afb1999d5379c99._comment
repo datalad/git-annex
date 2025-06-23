@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2025-06-23T14:20:44Z"
+ content="""
+(Note that this is a bug that has already been closed.)
+
+While yes, leading dot just means "hide it from ls", people *do* have a
+legitimate complaint when `git-annex add` annexes .gitattributes or a file
+like that. Since we don't have any other general semantic information about
+config files besides leading dot, this seems to be to be the best that can
+be done to avoid what would otherwise be a common complaint, and turn it
+into an uncommon complaint.
+
+The only other good approach seems to be the git-lfs approach, of requiring
+that the user configure explicitly which files they consider large, with eg
+`git lfs track "*.iso"`
+"""]]
