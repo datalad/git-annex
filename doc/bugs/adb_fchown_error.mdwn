@@ -1,0 +1,45 @@
+### Please describe the problem.
+When I try to use an adb special remote with exporttree and importtree set on my samsung tab active5, it's able to transfer the files but then fails trying to fchown them, then deletes the files so a sync never completes.
+
+### What steps will reproduce the problem?
+Set up an adb remote using a command like this: `git annex initremote tablet1 type=adb androiddirectory=/sdcard encryption=none exporttree=yes importtree=yes androidserial=R52X6055Z2K`. Then only track certain directories like this: `git annex wanted tablet1 "include=Android/data/org.opencpn.opencpn/files/Charts/* or include=Audiobooks/* or present"`. Finally sync some data like this: `git annex sync --content tablet1`.
+
+### What version of git-annex are you using? On what operating system?
+```
+git-annex version: 10.20241031-1~ndall+1
+build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Servant Benchmark Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22.1 bloomfilter-2.0.1.0 cryptonite-0.29 DAV-1.3.4 feed-1.3.2.1 ghc-9.0.2 http-client-0.7.13.1 persistent-sqlite-2.13.1.0 torrent-10000.1.1 uuid-1.3.15 yesod-1.6.2.1
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL GITBUNDLE GITMANIFEST VURL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg rclone hook external
+operating system: linux x86_64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
+local repository version: 10
+```
+
+Ubuntu 24.04.2 LTS
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+Error logs look like this
+
+```
+export tablet1 Android/data/org.opencpn.opencpn/files/Charts/ChartLocker/South Pacific/Fiji Navionics/PLEASE_README_TheChartLocker_2024-05-27.pdf 
+adb: error: failed to copy '.git/annex/objects/56/XF/SHA256E-s741697--c5b4490a3cb04d0d5127c9294e7f337582a97d0f40e709b8144b76fda3732378.pdf/SHA256E-s741697--c5b4490a3cb04d0d5127c9294e7f337582a97d0f40e709b8144b76fda3732378.pdf' to '/sdcard/Android/data/org.opencpn.opencpn/files/Charts/ChartLocker/South Pacific/Fiji Navionics/PLEASE_README_TheChartLocker_2024-05-27.pdf': remote fchown() failed uid: 0 gid: 0: Operation not permitted
+.git/annex/objects/56/XF/SHA256E-s741697--c5b4490a3cb04d0d...file pushed, 0 skipped. 41.7 MB/s (741697 bytes in 0.017s)
+
+  adb failed to store file
+failed
+```
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I use git-annex to back up photos, videos, and all sorts of stuff! It's really cool!
