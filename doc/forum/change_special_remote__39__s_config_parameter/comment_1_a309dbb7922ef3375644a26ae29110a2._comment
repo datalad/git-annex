@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-06-23T14:07:38Z"
+ content="""
+This is the solution:
+
+	git annex enableremote annexA rsyncurl=host:/new/path
+
+The configremote command changes the configuration of a remote that does
+not have to be enabled for use at all, and is currently only used to change
+the autoenable=true configuration. For changing other configuration the
+enableremote command is the thing to use.
+"""]]
