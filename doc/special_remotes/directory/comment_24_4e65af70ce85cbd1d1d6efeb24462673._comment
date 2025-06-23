@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: Ignoring files on directory special remote"""
+ date="2025-06-23T17:32:23Z"
+ content="""
+If you exclude them from wanted or gitignore them before ever importing
+from the special remote, it won't delete them. But if you already imported
+a tree containing the files, and then exclude them, and then export a tree,
+git-annex will see that the old tree contained the file, and the new tree
+did not, and so will delete the file.
+"""]]
