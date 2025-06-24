@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="xentac"
+ avatar="http://cdn.libravatar.org/avatar/773b6c7b0dc34f10b66aa46d2730a5b3"
+ subject="comment 3"
+ date="2025-06-23T18:24:47Z"
+ content="""
+The weirdest part is this actually did work previously. A few months ago I was able to get files into that directory. I'll start looking into it as an adb problem.
+"""]]
