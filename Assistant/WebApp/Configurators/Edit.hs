@@ -291,9 +291,9 @@ encrypted using gpg key:
 |]
 getRepoEncryption _ _ = return () -- local repo
 
-getUpgradeRepositoryR  :: RepoId -> Handler ()
-getUpgradeRepositoryR (RepoUUID _) = redirect DashboardR
-getUpgradeRepositoryR r = go =<< liftAnnex (repoIdRemote r)
+getConvertRepositoryR  :: RepoId -> Handler ()
+getConvertRepositoryR (RepoUUID _) = redirect DashboardR
+getConvertRepositoryR r = go =<< liftAnnex (repoIdRemote r)
   where
 	go Nothing = redirect DashboardR
 	go (Just rmt) = do

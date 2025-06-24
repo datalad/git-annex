@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-06-24T16:27:05Z"
+ content="""
+This sets `remote.<name>.annex-ignore` to false in the git config.
+
+You would normally only see this if the remote server didn't have
+git-annex-shell installed so was only a git repository with no annex. 
+If it then got installed, so you were able to use git-annex to store
+files there, this makes git-annex try again to use git-annex-shell in
+that repository.
+
+The naming is unfortunate since it's not related to upgrading the
+repository version at all. I'll rename it to "Convert Repository".
+"""]]

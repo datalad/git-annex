@@ -4,6 +4,8 @@ git-annex (10.20250606) UNRELEASED; urgency=medium
     which can happen with eg a S3 bucket.
   * Avoid a problem with temp file names ending in whitespace on
     filesystems like VFAT that don't support such filenames.
+  * webapp: Rename "Upgrade Repository" to "Convert Repository"
+    to avoid confusion with git-annex upgrade.
 
  -- Joey Hess <id@joeyh.name>  Mon, 23 Jun 2025 11:11:29 -0400
 

@@ -36,7 +36,7 @@
 /config/repository/edit/new/cloud/#UUID EditNewCloudRepositoryR GET POST
 /config/repository/sync/disable/#RepoId DisableSyncR GET
 /config/repository/sync/enable/#RepoId EnableSyncR GET
-/config/repository/upgrade/#RepoId UpgradeRepositoryR GET
+/config/repository/convert/#RepoId ConvertRepositoryR GET
 
 /config/repository/add/drive AddDriveR GET POST
 /config/repository/add/drive/confirm/#RemovableDrive ConfirmAddDriveR GET
