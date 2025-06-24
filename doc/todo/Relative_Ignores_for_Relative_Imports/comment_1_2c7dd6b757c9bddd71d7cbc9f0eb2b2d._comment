@@ -1,0 +1,55 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-06-24T14:55:03Z"
+ content="""
+As far as I can see, this works correctly already.
+
+	joey@darkstar:~/tmp/bench5/r>cat .gitignore
+	foo/*.c
+	joey@darkstar:~/tmp/bench5/r>git-annex initremote d type=directory importtree=yes encryption=none directory=../d
+	joey@darkstar:~/tmp/bench5/r>echo hi > ../d/y.c
+	joey@darkstar:~/tmp/bench5/r>echo hi2 > ../d/y.d
+	joey@darkstar:~/tmp/bench5/r>git-annex import master:foo --from d
+	list d ok
+	import d y.d
+	ok
+	update refs/remotes/d/master ok
+	(recording state in git...)
+	joey@darkstar:~/tmp/bench5/r>git merge d/master
+	Merge made by the 'ort' strategy.
+	 foo/y.d | 1 +
+	 1 file changed, 1 insertion(+)
+	 create mode 120000 foo/y.d
+
+So the .gitignore of `foo/*.c` applied when importing from `d` into a `foo`
+subdirectory, with the `.c` file not being imported, and other files being
+imported. When I import from `d` into a different subdirectory, the
+.gitignore does not match, and those files are imported:
+
+	joey@darkstar:~/tmp/bench5/r>git-annex import master:bar --from d
+	list d ok
+	import d x.c
+	ok
+	import d y.c
+	ok
+	update refs/remotes/d/master ok
+
+> Therefore I suggest that imports to a subtree respect ignores as if the files in the tree were already adjusted to their new
+> destination.
+
+The above shows this does happen. Also I can confirm it by inspection of
+the code, particularly `notIgnoredImportLocation` adds the ImportSubTree
+location to the filepath.
+
+> A similar argument could be made for attributes in general.
+> I haven't done the testing on import attributes (namely `largefiles`), but I would want these to respect subtree paths as well.
+
+Based on my inspection of the code, it already does.
+
+----
+
+So, I suspect I am either misunderstanding what you are trying to do, or you are
+confused. In either case, it would be helpful if you show a complete
+example of what you're trying to do.
+"""]]
