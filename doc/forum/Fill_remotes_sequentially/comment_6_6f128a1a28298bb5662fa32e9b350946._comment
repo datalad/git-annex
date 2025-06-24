@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2025-06-24T16:13:56Z"
+ content="""
+> It seems like that the remote's cost could be a way to define the order in which the remotes are filled?
+
+Yes because git-annex always tries to use the lowest cost remote first when
+storing or retrieving a file. So using eg the standard archive group
+preferred content setting, it would store a file on the lowest cost remote,
+and then the other remotes would no longer want a copy of the file since it
+was already stored to one.
+
+`GETCOST` defines the default cost for a special remote. So rather than
+configuring `remote.<name>.annex-cost-command`, your special remote could
+check if the expected tape is currently in the drive, and return a lower cost.
+
+If the cost needs to change while git-annex is running, due eg to a tape
+being swapped, it could re-query `GETCOST` after every file. Which would
+be less expensive than running a cost command. I think that a config
+setting to make it do that is a feasible change to make to git-annex.
+
+(Ignore `GETAVAILABILITY`, it's barely used and only by the assistant.)
+"""]]
