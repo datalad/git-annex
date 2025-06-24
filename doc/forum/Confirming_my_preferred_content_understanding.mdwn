@@ -1,0 +1,14 @@
+I've been using git-annex for a little while now to keep two copies of my data backed up across three and soon to be four external hard drives.  I recently came across the preferred content expressions and realized that they could make my life a lot easier, but I want to make sure I understand them correctly first. 
+
+As I mentioned, I want two copies of my data stored across several external hard drives.  Right now I keep track of this manually and I don't try to balance the data between drives.  From what I understand, I can add the repository from each drive to the archive group.  And then call 
+
+```
+   git annex groupwanted archive (not (copies=archive:2 and balanced=archive:lackingcopies))
+   git annex wanted here groupwanted
+```
+
+And then when I sync the repositories it will try and balance the data between themselves while ensuring there are at least two copies of the data.  I can also easily add hard drives to the system by cloning a repository on them and then adding it to the group.  
+
+Do I have the correct understanding here or am I missing something?  Are there any suggestions or advice you have for this setup?  Is using `fullybalanced` or `sizebalanced` better?  
+
+
