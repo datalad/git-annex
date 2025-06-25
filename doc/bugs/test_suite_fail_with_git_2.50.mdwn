@@ -82,3 +82,15 @@ So, something that reconcileStaged does is making git unhappy when it
 runs the smudge clean filter while creating a stash. It seems logical that
 the problem would involve the index file, which `reconcileStaged` touches,
 and which gets updated when stashing..
+
+> Made reconcileStaged run `git write-tree` but not do anything else, and
+> that is sufficient to make git stash fail. This must be a bug in git,
+> `git write-tree` should be able to be run at any time, even if it exits
+> 1 due to the index being in conflict. Having `git write-tree` affect
+> another process that was already running is not good behavior for git.
+> Since `git write-tree` does need to sometimes update the index,
+> this feels like lacking locking.
+> 
+> I have worked around this by making reconcileStaged avoid doing anything
+> when called by the smudge clean filter. Which I don't think will cause
+> any other problems, fingers crossed. [[done]] --[[Joey]]

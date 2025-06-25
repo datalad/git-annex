@@ -1,6 +1,6 @@
 {- Sqlite database of information about Keys
  -
- - Copyright 2015-2022 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -260,7 +260,7 @@ isInodeKnown i s = or <$> runReaderIO ContentTable
  - is an associated file.
  -}
 reconcileStaged :: Bool -> H.DbQueue -> Annex DbTablesChanged
-reconcileStaged dbisnew qh = ifM isBareRepo
+reconcileStaged dbisnew qh = ifM notneeded
 	( return mempty
 	, do
 		gitindex <- inRepo currentIndexFile
@@ -334,6 +334,14 @@ reconcileStaged dbisnew qh = ifM isBareRepo
 	-- index or on the tree that gets written from it.
 	getindextree = inRepo $ \r -> writeTreeQuiet $ r
 		{ gitGlobalOpts = gitGlobalOpts r ++ bypassSmudgeConfig }
+	
+	notneeded = isBareRepo
+		-- Avoid doing anything when run by the 
+	 	-- smudge clean filter. When that happens in a conflicted
+		-- merge situation, running git write-tree
+		-- here would cause git merge to fail with an internal
+		-- error. This works around around that bug in git.
+		<||> Annex.getState Annex.insmudgecleanfilter
 	
 	diff old new =
 		-- Avoid running smudge clean filter, since we want the
