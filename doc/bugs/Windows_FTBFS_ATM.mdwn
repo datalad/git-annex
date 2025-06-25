@@ -1,0 +1,20 @@
+### Please describe the problem.
+
+
+```
+[741 of 750] Compiling Assistant.DeleteRemote
+
+Error: [S-7282]
+       Stack failed to execute the build plan.
+       
+       While executing the build plan, Stack encountered the error:
+       
+       [S-7011]
+       While building package git-annex-10.20250605 (scroll up to its section to see the error)
+       using:
+       D:\a\git-annex\git-annex\.stack-work\dist\8850645a\setup\setup --verbose=1 --builddir=.stack-work\dist\8850645a build exe:git-annex --ghc-options ""
+       Process exited with code: ExitFailure 1 
+Error: Process completed with exit code 1.
+```
+
+[https://github.com/datalad/git-annex/actions/runs/15867028000/job/44735747787](https://github.com/datalad/git-annex/actions/runs/15867028000/job/44735747787)
