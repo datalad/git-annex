@@ -1,0 +1,84 @@
+With git 2.50, there are several test suite failures, all involving
+`git-annex sync` run in a situation with a conflict. 
+
+git pull or merge fails with "fatal: stash failed"
+
+git has a known bug with the same symptom, that affected older versions too,
+and was reported upstream with a test case, but never fixed. 
+See [[bugs/resolvemerge_fails_when_unlocked_empty_files_exist]].
+
+That bug only affects unlocked empty annexed files.
+The failing parts of the test suite use unlocked files, but not empty
+files.
+
+To run one of the failing tests, without running the rest of the test
+suite:
+
+    git-annex test -p '$0=="Tests.Repo Tests v10 unlocked.conflict resolution"' 
+
+The failure is somewhat intermittent.
+
+Comparing with the same test case run with git 2.47.2, with `GIT_TRACE=1`
+and `--test-debug`, the new git has this:
+
+    [2025-06-25 10:55:00.363063271] (Utility.Process) process [3665269] call: git ["--git-dir=.git","--work-tree=.","-c","merge.directoryRenames=false","--literal-pathspecs","-c","annex.debug=true","merge","--no-edit","refs/remotes/r2/master"]
+    ...
+    10:55:00.492909 run-command.c:673       trace: run_command: git stash create
+    10:55:00.492924 run-command.c:765       trace: start_command: /usr/lib/git-core/git stash create
+    10:55:00.494550 git.c:476               trace: built-in: git stash create
+    10:55:00.495283 run-command.c:673       trace: run_command: 'git-annex smudge --clean -- '\''conflictor'\'''
+    10:55:00.495304 run-command.c:765       trace: start_command: /bin/sh -c 'git-annex smudge --clean -- '\''conflictor'\''' 'git-annex smudge --clean -- '\''conflictor'\'''
+    10:55:00.510128 git.c:476               trace: built-in: git config --null --list
+    [2025-06-25 10:55:00.514560172] (Utility.Process) process [3665339] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+    10:55:00.514833 git.c:476               trace: built-in: git cat-file '--batch-check=%(objectname) %(objecttype) %(objectsize)'
+    10:55:00.517739 git.c:476               trace: built-in: git cat-file --batch
+    [2025-06-25 10:55:00.519817243] (Utility.Process) process [3665342] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+    [2025-06-25 10:55:00.524719227] (Utility.Process) process [3665344] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","filter.annex.smudge=","-c","filter.annex.clean=","-c","filter.annex.process=","write-tree"]
+    [2025-06-25 10:55:00.525956861] (Utility.Process) process [3665344] done ExitFailure 128
+    [2025-06-25 10:55:00.526033972] (Database.Keys) reconcileStaged start (in conflict)
+    [2025-06-25 10:55:00.529125922] (Utility.Process) process [3665346] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/annex/last-index"]
+    10:55:00.530711 git.c:476               trace: built-in: git show-ref --hash refs/annex/last-index
+    [2025-06-25 10:55:00.531264053] (Utility.Process) process [3665346] done ExitSuccess
+    [2025-06-25 10:55:00.531808824] (Utility.Process) process [3665347] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)","--buffer"]
+    [2025-06-25 10:55:00.534102268] (Utility.Process) process [3665348] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch=%(objectname) %(objecttype) %(objectsize)","--buffer"]
+    10:55:00.534260 git.c:476               trace: built-in: git cat-file '--batch-check=%(objectname) %(objecttype) %(objectsize)' --buffer
+    [2025-06-25 10:55:00.537040154] (Utility.Process) process [3665349] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","filter.annex.smudge=","-c","filter.annex.clean=","-c","filter.annex.process=","-c","diff.external=","diff","0fbd88293710b6a33cda68626d317e6ee0e991d5","--staged","--raw","-z","--no-abbrev","-G/annex/objects/","--no-renames","--ignore-submodules=all","--no-textconv","--no-ext-diff"]
+    10:55:00.537633 git.c:476               trace: built-in: git cat-file '--batch=%(objectname) %(objecttype) %(objectsize)' --buffer
+    10:55:00.537839 git.c:476               trace: built-in: git diff 0fbd88293710b6a33cda68626d317e6ee0e991d5 --staged --raw -z --no-abbrev-G/annex/objects/ --no-renames --ignore-submodules=all --no-textconv --no-ext-diff
+    [2025-06-25 10:55:00.539717016] (Utility.Process) process [3665349] done ExitSuccess
+    [2025-06-25 10:55:00.540326407] (Utility.Process) process [3665348] done ExitSuccess
+    [2025-06-25 10:55:00.540404379] (Utility.Process) process [3665347] done ExitSuccess
+    [2025-06-25 10:55:00.540459121] (Database.Keys) reconcileStaged end
+    [2025-06-25 10:55:00.541662584] (Utility.Process) process [3665342] done ExitSuccess
+    [2025-06-25 10:55:00.542107582] (Utility.Process) process [3665339] done ExitSuccess
+    fatal: stash failed
+    [2025-06-25 10:55:00.555752855] (Utility.Process) process [3665269] done ExitFailure 128
+
+The old git has:
+
+	10:52:18.580330 run-command.c:666       trace: run_command: git stash create
+	10:52:18.580348 run-command.c:758       trace: start_command: /usr/lib/git-core/git stash create
+	10:52:18.581939 git.c:479               trace: built-in: git stash create
+	10:52:18.583737 run-command.c:666       trace: run_command: 'git-annex smudge -- '\''conflictor'\'''
+	10:52:18.583751 run-command.c:758       trace: start_command: /bin/sh -c 'git-annex smudge -- '\''conflictor'\''' 'git-annex smudge -- '\''conflictor'\'''
+	10:52:18.589604 git.c:479               trace: built-in: git config --null --list
+	Auto-merging conflictor
+
+So, `git merge` has changed to run the smudge clean hook, on the conflicted
+file.
+
+It seemed possible that git is feeding in a different version of the file
+than the one in the working tree, which would make git-annex's smudge clean
+filter use the working tree version of the file, which would not be good.
+(Why that would cause git to explode I don't know.) So, I instrumented
+`git-annex smudge`, and verified that in each case where it uses the
+content of the file on disk, that is the same as the file content that was
+provided to it on stdin. So that seems to rule out this theory.
+
+Noticing that `reconcileStaged` is getting run in the new log and not in
+the old log, I replaced it with a noop. **That avoids the problem.**
+
+So, something that reconcileStaged does is making git unhappy when it
+runs the smudge clean filter while creating a stash. It seems logical that
+the problem would involve the index file, which `reconcileStaged` touches,
+and which gets updated when stashing..
