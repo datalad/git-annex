@@ -1125,7 +1125,7 @@ getImportableContents r importtreeconfig ci matcher = do
 		notignored = notIgnoredImportLocation importtreeconfig ci loc
 
 #ifdef mingw32_HOST_OS
-	loc' = fromOsPath (fromImportLocation loc)
+		loc' = fromOsPath (fromImportLocation loc)
 #endif
 
 	wantedunder dbhandle root (loc, v) = 
