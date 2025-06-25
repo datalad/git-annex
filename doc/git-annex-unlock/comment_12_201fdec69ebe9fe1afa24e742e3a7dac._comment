@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="Cletip"
+ avatar="http://cdn.libravatar.org/avatar/246315cf8f80f70f9b400c24df275806"
+ subject="We don’t need a 'git annex lock' after a 'git annex add', right?"
+ date="2025-06-25T22:12:57Z"
+ content="""
+Hi there!
+
+I'm learning how to use `unlock`, and I'm relatively new to `git-annex`.
+
+I think I’ve understood the concept behind this feature, but I don’t get why, in the example, the `git annex lock` command is used after `git annex add`:
+
+```bash
+git annex unlock photo.jpg
+gimp photo.jpg
+git annex add photo.jpg
+git annex lock photo.jpg   <------ This one
+git commit -m \"redeye removal\"
+```
+
+Isn’t the file already locked by the `git annex add` ?
+
+Thank you in advance.
+"""]]
