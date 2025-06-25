@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="xentac"
+ avatar="http://cdn.libravatar.org/avatar/773b6c7b0dc34f10b66aa46d2730a5b3"
+ subject="comment 5"
+ date="2025-06-24T20:54:16Z"
+ content="""
+To close the loop (for anyone searching for this later), I had to setgid (`chown g+s <directory`) on the directories created by git annex so that `adb push` could successfully fchown them. It was able to write the contents of the file (the percentage went up and I could see the file being written from an `adb shell` but once adb tried to `fchown` it would fail and delete the file from the filesystem. Now my files are uploading successfully again.
+"""]]
