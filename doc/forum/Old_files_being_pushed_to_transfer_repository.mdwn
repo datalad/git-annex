@@ -1,0 +1,15 @@
+Hello,
+
+could someone please help me understand why old files are being pushed to `transfer`-type repository on `git annex sync --content`? The command is executed from a `client`-type repository. The goal is to have new photos downloaded from `transfer`, not the other way around.
+
+With `--explain` I am seeing:
+
+```
+[ 20210428_164158.jpg matches preferred content: standard[TRUE] ]
+copy 20210428_164158.jpg (to transfer_repository...) 
+ok
+```
+
+`transfer_repository` is put into `transfer` group and wanted is set to `standard` hence it *should* not want the old files (there is a client repo that already has them).
+
+Thanks, jose
