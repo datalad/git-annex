@@ -42,3 +42,13 @@ will fail.
 | [openmind7](https://datalad.github.io/git-annex-ci-reports/#openmind7) | ![Overall test status](https://github.com/datalad/git-annex-ci-client-jobs/raw/master/badges/openmind7.svg) ![git-annex-home test status](https://github.com/datalad/git-annex-ci-client-jobs/raw/master/badges/openmind7/git-annex-home.svg) ![git-annex-om2 test status](https://github.com/datalad/git-annex-ci-client-jobs/raw/master/badges/openmind7/git-annex-om2.svg) |
 | [ndoli](https://datalad.github.io/git-annex-ci-reports/#ndoli) | ![Overall test status](https://github.com/datalad/git-annex-ci-client-jobs/raw/master/badges/ndoli.svg) ![git-annex-home test status](https://github.com/datalad/git-annex-ci-client-jobs/raw/master/badges/ndoli/git-annex-home.svg) ![git-annex-tmp test status](https://github.com/datalad/git-annex-ci-client-jobs/raw/master/badges/ndoli/git-annex-tmp.svg) |
 | [smaug](https://datalad.github.io/git-annex-ci-reports/#smaug) | ![Overall test status](https://github.com/datalad/git-annex-ci-client-jobs/raw/master/badges/smaug.svg) ![git-annex test status](https://github.com/datalad/git-annex-ci-client-jobs/raw/master/badges/smaug/git-annex.svg) |
+
+## Builds of whls for PyPI (by @psychoinformatics-de)
+
+[![Linux](https://github.com/psychoinformatics-de/git-annex-wheel/actions/workflows/build-linux.yaml/badge.svg)](https://github.com/psychoinformatics-de/git-annex-wheel/actions/workflows/build-linux.yaml)
+[![MacOS (13, Intel)](https://github.com/psychoinformatics-de/git-annex-wheel/actions/workflows/build-macos-intel.yaml/badge.svg)](https://github.com/psychoinformatics-de/git-annex-wheel/actions/workflows/build-macos-intel.yaml)
+[![MacOS (14, M1)](https://github.com/psychoinformatics-de/git-annex-wheel/actions/workflows/build-macos-m1.yaml/badge.svg)](https://github.com/psychoinformatics-de/git-annex-wheel/actions/workflows/build-macos-m1.yaml)
+[![Windows](https://github.com/psychoinformatics-de/git-annex-wheel/actions/workflows/build-windows.yaml/badge.svg)](https://github.com/psychoinformatics-de/git-annex-wheel/actions/workflows/build-windows.yaml)
+
+[![Test git-annex wheel from PyPi](https://github.com/psychoinformatics-de/git-annex-wheel/actions/workflows/test-pypi-wheel.yaml/badge.svg)](https://github.com/psychoinformatics-de/git-annex-wheel/actions/workflows/test-pypi-wheel.yaml)
+
