@@ -1,0 +1,76 @@
+### Please describe the problem.
+
+The git-annex package in Guix fails the test suite since git was updated to 2.50.0 (from 2.49.0). Since this was a simple version bump I assume it is not guix-specific.
+
+
+### What steps will reproduce the problem?
+
+Run git-annex' tests with git==2.50.0 installed.
+
+
+### What version of git-annex are you using? On what operating system?
+
+10.20250605 using Guix
+
+
+### Please provide any additional information below.
+
+Log excerpt from one of the failing tests:
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+Tests
+  Repo Tests v10 unlocked
+    Init Tests
+      init:                             OK (0.15s)
+      add:                              OK (0.50s)
+    preferred content:                  OK (2.07s)
+    conflict resolution (removed file): FAIL (2.31s)
+      ./Test/Framework.hs:92:
+      sync failed with unexpected exit code (transcript follows)
+      commit  
+      [master 11f1990] git-annex in tmprepo2
+       1 file changed, 1 insertion(+), 1 deletion(-)
+      ok
+      merge synced/master 
+      fatal: stash failed
+      failed
+      pull r1 
+      From ../tmprepo1
+         7080688..2926879  git-annex     -> r1/git-annex
+         b7efeee..c72d963  master        -> r1/master
+         b7efeee..c72d963  synced/master -> r1/synced/master
+      
+      CONFLICT (modify/delete): conflictor deleted in refs/remotes/r1/master and modified in HEAD.  Version HEAD of conflictor left in tree.
+      Automatic merge failed; fix conflicts and then commit the result.
+      (recording state in git...)
+      
+        Merge conflict was automatically resolved; you may want to examine the result.
+      [master 873369e] git-annex automatic merge conflict fix
+      
+      Already up to date.
+      ok
+      (recording state in git...)
+      push r1 
+      remote: (merging synced/git-annex into git-annex...)        
+      To ../tmprepo1
+         7080688..ed3fd17  git-annex -> synced/git-annex
+         c72d963..873369e  master -> synced/master
+      ok
+      sync: 1 failed
+      
+      Use -p '/conflict resolution (removed file)/' to rerun this test only.
+    find:                               OK (0.87s)
+    edit (no pre-commit):               OK (0.70s)
+    magic:                              OK (0.75s)
+
+1 out of 7 tests failed (7.35s)
+
+# End of transcript or log.
+"""]]
+All failing tests seem to be related to conflict resolution.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes, it's awesome!
