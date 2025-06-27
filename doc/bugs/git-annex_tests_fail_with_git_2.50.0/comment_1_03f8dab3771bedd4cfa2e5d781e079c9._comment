@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/cd1c0b3be1af288012e49197918395f0"
+ subject="comment 1"
+ date="2025-06-27T07:11:58Z"
+ content="""
+This is reproducible on alpine edge (which also packages git 2.50.0 and git-annex 10.20250605), so definitely not guix-specific. To reproduce in an alpine container with docker:
+
+```
+docker run --rm -it alpine:edge
+apk update
+apk add git-annex
+git annex test
+```
+"""]]
