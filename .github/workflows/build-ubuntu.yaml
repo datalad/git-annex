@@ -225,7 +225,7 @@ jobs:
 
       - name: Send e-mail on failed run
         if: failure() && contains(fromJSON('["schedule", "workflow_dispatch"]'), github.event_name)
-        uses: dawidd6/action-send-mail@v6
+        uses: dawidd6/action-send-mail@v4
         with:
           server_address: ${{ secrets.NOTIFY_SMTP_HOST }}
           server_port: ${{ secrets.NOTIFY_SMTP_PORT }}
@@ -244,7 +244,7 @@ jobs:
     needs: build-package
     strategy:
       matrix:
-        flavor: ["normal", "crippled-tmp", "crippled-home", "nfs-home", "custom-config1"]
+        flavor: ["normal", "crippled-tmp", "crippled-home", "nfs-home", "custom-config1", "encfs-repo"]
         os: [ubuntu-22.04]
       fail-fast: false
     steps:
@@ -297,6 +297,11 @@ jobs:
             sudo exportfs -a
             sudo mount -t nfs localhost:/tmp/nfsmount_ /tmp/nfsmount
           fi
+          if [[ "${{ matrix.flavor }}" == *encfs* ]] ; then
+            mkdir /tmp/encfsmount_ /tmp/encfsmount
+            sudo apt-get install -y encfs
+            encfs --standard --extpass="echo 123" /tmp/encfsmount_ /tmp/encfsmount
+          fi
 
           case "${{ matrix.flavor }}" in
             # For git-annex it causes only few temporary directories to be on the crippled FS,
@@ -316,7 +321,7 @@ jobs:
             nfs-home)
               export HOME=/tmp/nfsmount
               ;;
-            normal|custom-config1)
+            normal|custom-config1|encfs-repo)
               ;;
             *)
               echo "Unknown flavor ${{ matrix.flavor }}"
@@ -339,8 +344,18 @@ jobs:
               ;;
           esac
 
-          cd $HOME
+          case "${{ matrix.flavor }}" in
+            # Perform testing only (leaving TMP or HOME) aside in --repo flavors
+            # and generally under $HOME
+            encfs-repo) cd /tmp/encfsmount;;
+            *) cd $HOME;;
+          esac
+
           export | grep -e crippledfs || :
+
+          # Report basic info about current path given that we might cd away
+          stat $PWD
+          df . || :
 
           timeout 3600 git annex test "${test_opts[@]:-}"
 
@@ -357,7 +372,7 @@ jobs:
 
       - name: Send e-mail on failed run
         if: failure() && contains(fromJSON('["schedule", "workflow_dispatch"]'), github.event_name)
-        uses: dawidd6/action-send-mail@v6
+        uses: dawidd6/action-send-mail@v4
         with:
           server_address: ${{ secrets.NOTIFY_SMTP_HOST }}
           server_port: ${{ secrets.NOTIFY_SMTP_PORT }}

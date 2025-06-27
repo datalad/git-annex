@@ -7,7 +7,7 @@
     DEB_SIGN_KEYID: 13A1093296154584245E0300C98FC49D36DAB17F
     DEB_BUILD_OPTIONS: nocheck
     bbuild_log: git-annex-build.log
-  test_annex_flavors: [normal, crippled-tmp, crippled-home, nfs-home, custom-config1]
+  test_annex_flavors: [normal, crippled-tmp, crippled-home, nfs-home, custom-config1, encfs-repo]
     # nfs-tmp was removed/replaced with nfs-home since annex started to use TMPDIR for gpg, and tests started to fail
   artifact_basename: git-annex-debianstandalone-packages
   artifact_install_steps:
