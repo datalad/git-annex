@@ -74,3 +74,6 @@ All failing tests seem to be related to conflict resolution.
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes, it's awesome!
+
+> This was fixed in [[!commit fb155b1e3e59cc1f9cf8a4fe7d47cba49d1c81af]]
+> (made before this bug report was filed) [[done]] --[[Joey]]
