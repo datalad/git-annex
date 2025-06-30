@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 1"""
- date="2025-06-30T13:56:50Z"
- content="""
-The Windows build is succeeding in Appveyor, so this is probably a toolchain
-problem with the build on github.
-"""]]

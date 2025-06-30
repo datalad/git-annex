@@ -18,3 +18,6 @@ Error: Process completed with exit code 1.
 ```
 
 [https://github.com/datalad/git-annex/actions/runs/15867028000/job/44735747787](https://github.com/datalad/git-annex/actions/runs/15867028000/job/44735747787)
+
+> Fixed in [[!commit f3ad9fbe9ec21b8ec66763f0861c87203b8cb8af]] (12 hours
+> before this bug report was filed) [[done]] --[[Joey]]
