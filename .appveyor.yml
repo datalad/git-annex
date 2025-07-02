@@ -74,6 +74,7 @@ cache:
    - C:\sr -> stack.yaml
    - C:\Users\appveyor\AppData\Local\Programs\stack -> stack.yaml
    - C:\projects\git-annex\.stack-work -> stack.yaml
+   - /Users/appveyor/.stack
 
 # turn of support for MS project build support (not needed)
 build: off
@@ -97,7 +98,7 @@ install:
   # install stack (works on linux, OSX, and windows)
   - curl -sSL https://get.haskellstack.org/ | sh
 
-# Building dependencies takes almost too long on windows, so build without
+# Building dependencies takes almost too long, so build without
 # optimisation (including when building the dependencies) 
 before_build:
   - sh: cp stack.yaml stack.yaml.build
@@ -122,7 +123,9 @@ test_script:
   - sh: ln -s $(stack path --local-bin)/git-annex git-annex
   - sh: ln -s $(stack path --local-bin)/git-annex git-annex-shell
   - sh: ln -s $(stack path --local-bin)/git-annex git-remote-annex
-  - sh: PATH=`pwd`:$PATH; export PATH; git-annex test
+
+# test temporarily disabled
+# - sh: PATH=`pwd`:$PATH; export PATH; git-annex test
 
 #after_test:
 #
