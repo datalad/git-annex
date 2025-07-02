@@ -1,0 +1,6 @@
+Hello.
+
+I'm using `git annex export` to export files to my android. It works, but sometimes I accidentally remove files from special remotes and want to get them back.
+I repeat `git annex export master --to android` command, it says everything OK, but it doesn't actually transfer anything.
+
+How to force export of a tree to existing special remote?
