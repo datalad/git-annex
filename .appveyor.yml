@@ -123,9 +123,7 @@ test_script:
   - sh: ln -s $(stack path --local-bin)/git-annex git-annex
   - sh: ln -s $(stack path --local-bin)/git-annex git-annex-shell
   - sh: ln -s $(stack path --local-bin)/git-annex git-remote-annex
-
-# test temporarily disabled
-# - sh: PATH=`pwd`:$PATH; export PATH; git-annex test
+  - sh: PATH=`pwd`:$PATH; export PATH; git-annex test
 
 #after_test:
 #
