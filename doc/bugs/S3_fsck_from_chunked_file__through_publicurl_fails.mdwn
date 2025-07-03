@@ -1,0 +1,33 @@
+### Please describe the problem.
+
+When running fsck (fast or slow) from an S3 remote that has anonymous access and git-annex publicurl set, it fails only on the files that get chunked into multiple parts because they exceed the configured chunk size for the remote.
+
+
+### What steps will reproduce the problem?
+
+- create repo
+- annex a file
+- set AWS creds as env vars
+- initremote S3 special remote with chunk size smaller than the file size and publicurl
+- push data (authenticated) to the S3 remote, ensure it get chunked.
+- unset AWS auth vars (and remote .git/annex/creds if necessary)
+- fsck from remote should fail on chunked file
+
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 10.20250417-gfd493804c004f7facb4b99d4bf21ed49a081c5cf
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes indeed! :D 
