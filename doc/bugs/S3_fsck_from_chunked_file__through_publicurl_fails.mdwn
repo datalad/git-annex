@@ -10,7 +10,7 @@ When running fsck (fast or slow) from an S3 remote that has anonymous access and
 - set AWS creds as env vars
 - initremote S3 special remote with chunk size smaller than the file size and publicurl
 - push data (authenticated) to the S3 remote, ensure it get chunked.
-- unset AWS auth vars (and remote .git/annex/creds if necessary)
+- unset AWS auth vars (and remove .git/annex/creds if necessary)
 - fsck from remote should fail on chunked file
 
 
