@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/cd1c0b3be1af288012e49197918395f0"
+ subject="comment 2"
+ date="2025-07-03T11:07:06Z"
+ content="""
+Unfortunately I wasn't able to make use of the multiple repositories feature because Forgejo stores repositories in nested directories (`<username-or-organisation>/<repository>`). Even if I was able to use that feature, using unix sockets would still feel cleaner and avoid some security concerns around running the p2phttp server with `--wideopen` (as-is it is accessible to all local users, with unix sockets permissions could be used to restrict it; but this is more of a theoretical concern, I am not aware of anyone running a Forgejo-aneksajo server on a host with untrusted users).
+
+According to <https://stackoverflow.com/questions/22621623/warp-binding-to-unix-domain-sockets> it should be possible to use warp's runSettingsSocket with a unix socket, instead of runSettings. I am not familiar enough with Haskell or git-annex to judge if there are other obstacles though...
+"""]]
