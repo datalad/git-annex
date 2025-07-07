@@ -168,7 +168,6 @@ serveUnixSocket unixsocket serveconn = do
 	S.bind soc (S.SockAddrUnix (fromOsPath unixsocket))
 	-- Allow everyone to read and write to the socket,
 	-- so a daemon like tor, that is probably running as a different
-	-- de sock $ addModes
 	-- user, can access it.
 	-- 
         -- Connections have to authenticate to do anything,
