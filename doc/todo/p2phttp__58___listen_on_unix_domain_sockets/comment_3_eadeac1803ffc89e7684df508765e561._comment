@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2025-07-07T19:26:56Z"
+ content="""
+I've made it support nested directories, which was easy.
+
+Should be possible to make it use runSettingsSocket indeed though.
+"""]]

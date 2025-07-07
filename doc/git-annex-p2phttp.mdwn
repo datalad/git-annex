@@ -103,6 +103,12 @@ convenient way to download the content of any key, by using the path
 
   What address to bind to. The default is to bind to all addresses.
 
+* `--socket=path`
+
+  Rather than binding to an address, create and listen to a unix domain
+  socket at the specified location. This can be useful when proxying
+  to `git-annex p2phttp`.
+
 * `--certfile=filename` 
 
   TLS certificate file to use. Combining this with `--privatekeyfile`

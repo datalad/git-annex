@@ -1,6 +1,7 @@
 git-annex (10.20250631) UNRELEASED; urgency=medium
 
   * p2phttp: Scan multilevel directories with --directory.
+  * p2phttp: Added --socket option.
 
  -- Joey Hess <id@joeyh.name>  Mon, 07 Jul 2025 15:59:42 -0400
 

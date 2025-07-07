@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2025-07-07T20:28:38Z"
+ content="""
+Implemented a --socket option. I have not tried connecting to it as a
+client, but it seems to be listening to it, so I assume all is good.
+
+Note that it still checks for authentication when using the socket,
+so you will probably want to combine it with --wideopen. The socket mode
+allows only the current user to access it.
+"""]]

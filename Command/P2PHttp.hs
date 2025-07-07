@@ -22,11 +22,13 @@ import qualified Git.Construct
 import qualified Annex
 import Types.Concurrency
 import qualified Utility.RawFilePath as R
+import Utility.FileMode
 
 import Servant
 import qualified Network.Wai.Handler.Warp as Warp
 import qualified Network.Wai.Handler.WarpTLS as Warp
 import Network.Socket (PortNumber)
+import qualified Network.Socket as Socket
 import System.PosixCompat.Files (isSymbolicLink)
 import qualified Data.Map as M
 import Data.String
@@ -42,6 +44,7 @@ cmd = noMessages $ dontCheck repoExists $
 data Options = Options
 	{ portOption :: Maybe PortNumber
 	, bindOption :: Maybe String
+	, socketOption :: Maybe FilePath
 	, certFileOption :: Maybe FilePath
 	, privateKeyFileOption :: Maybe FilePath
 	, chainFileOption :: [FilePath]
@@ -66,6 +69,10 @@ optParser _ = Options
 	<*> optional (strOption
 		( long "bind" <> metavar paramAddress
 		<> help "specify address to bind to"
+		))
+	<*> optional (strOption
+		( long "socket" <> metavar paramPath
+		<> help "bind to unix domain socket"
 		))
 	<*> optional (strOption
 		( long "certfile" <> metavar paramFile
@@ -174,12 +181,20 @@ runServer o mst = go `finally` serverShutdownCleanup mst
 		let settings = Warp.setPort port $ Warp.setHost host $
 			Warp.defaultSettings
 		mstv <- newTMVarIO mst
+		let app = p2pHttpApp mstv
 		case (certFileOption o, privateKeyFileOption o) of
-			(Nothing, Nothing) -> Warp.runSettings settings (p2pHttpApp mstv)
-			(Just certfile, Just privatekeyfile) -> do
-				let tlssettings = Warp.tlsSettingsChain
-					certfile (chainFileOption o) privatekeyfile
-				Warp.runTLS tlssettings settings (p2pHttpApp mstv)
+			(Nothing, Nothing) -> case socketOption o of
+				Nothing -> Warp.runSettings settings app
+				Just socketpath -> 
+					withsocket socketpath $ \sock ->
+						Warp.runSettingsSocket settings sock app
+			(Just certfile, Just privatekeyfile) ->
+				case socketOption o of
+					Nothing -> do
+						let tlssettings = Warp.tlsSettingsChain
+							certfile (chainFileOption o) privatekeyfile
+						Warp.runTLS tlssettings settings app
+					Just _socketpath -> giveup "HTTPS is not supported with --socket"
 			_ -> giveup "You must use both --certfile and --privatekeyfile options to enable HTTPS."
 	port = maybe
 		(fromIntegral defaultP2PHttpProtocolPort)
@@ -189,6 +204,13 @@ runServer o mst = go `finally` serverShutdownCleanup mst
 		(fromString "*") -- both ipv4 and ipv6
 		fromString
 		(bindOption o)
+	withsocket socketpath =
+		bracket (opensocket socketpath) Socket.close
+	opensocket socketpath = protectedOutput $ do
+		sock <- Socket.socket Socket.AF_UNIX Socket.Stream 0
+		Socket.bind sock $ Socket.SockAddrUnix socketpath
+		Socket.listen sock Socket.maxListenQueue
+		return sock
 
 mkServerState :: Options -> M.Map Auth P2P.ServerMode -> Annex P2PHttpServerState
 mkServerState o authenv = 
