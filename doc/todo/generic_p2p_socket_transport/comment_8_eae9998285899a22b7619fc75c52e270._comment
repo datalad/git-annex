@@ -1,0 +1,69 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""AuthTokens"""
+ date="2025-07-07T14:54:36Z"
+ content="""
+I wrote:
+
+> If the P2P protocol's AUTH is provided with an AuthToken, there would
+> need to be an interface to record the one to use for a given p2p
+> connection.
+
+But, as implemented `git-annex remotedaemon` will accept
+any of the authtokens in its list for any p2p connection. So if there are
+2 onion services for the same repository for some reason, there will be 2
+authtokens, but either can be used with either.
+
+If there are 2 P2P connections and you decide to stop listening to one of
+them, it does mean that authtoken needs to be removed from the list,
+otherwise someone could still use it with the other P2P connection. If we
+think about 2 different P2P protocols, one might turn out to be insecure,
+so you stop using it. But then if the insecurity allowed someone else to
+observe the authtoken that was used with it, and you didn't remove it from
+the list, they could use that to connect via the other P2P service.
+
+And the user does not know about authtokens, they're an implementation
+detail currently. So expecting the user to remove them from the list isn't
+really sufficient.
+
+So it seems better for each P2P address to have its own unique authtoken,
+that is not accepted for any other address. Or at least each P2P address
+that needs an authtoken; perhaps some don't. (I don't think it's a problem
+that for tor each hidden service accepts all listed authtokens though.)
+
+@matrrs wrote:
+
+> A configuration option annex.start-p2psocket=true would instruct
+> remotedaemon to listen on .git/annex/p2psocket (I think a hardcoded
+> location is fine, as there only really needs to be one such socket even
+> with multiple networks
+
+That single socket wouldn't work if each P2P address has its own unique
+authtoken. Because remotedaemon would have no way to know what P2P address
+that socket was connected with.
+
+It also could be that some P2P protocol is 100% certain not to need an
+authtoken for security. That would need a separate socket where
+remotedaemon does not require AUTH with a valid authtoken. Or, setting up
+a P2P connection for such a network would need to exchange authtokens, even
+though there is no security benefit in doing so.
+
+I don't know if I would want to make the determination of whether or not
+some P2P protocol needs an authtoken or not. It may be that the security
+situation of a P2P protocol evolves over time. 
+Consider the case of tor, where it used to be fairly trivially possible to
+enumerate onion addresses. See for example
+[this paper](https://pure.port.ac.uk/ws/files/11523722/paper.pdf).
+(Which is why I made tor use AuthTokens in the first place IIRC.)
+Apparently changes were later made to tor to prevent that. I don't know
+how secure it is considered to be in this area now though.
+
+If `git-annex p2p` is used to set up the P2P connection, it handles
+generating the authtokens and exchanging them, fairly transparently to the
+user. So maybe it would be simplest to always require authtokens.
+
+There is another reason for the authtoken: The socket file may be
+accessible by other users of the system. This is the case with the tor
+socket, since tor runs as another user, and so the socket file is made
+world writable.
+"""]]

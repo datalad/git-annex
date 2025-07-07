@@ -1,0 +1,38 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2025-07-07T17:29:16Z"
+ content="""
+I had suggested using the remote's configuration to determine the socket
+that remotedaemon listens on.
+
+> Eg, a remote with uuid U could use .git/annex/p2p/U as its socket file.
+
+But it may be that only incoming connections are wanted to be served,
+without having any remotes configured that use a P2P network. (And there
+could be multiple remotes that use the same P2P network.)
+
+Instead, I think that remotedaemon should use socket files in the form 
+`.git/annex/p2p/$address`, for each P2P address that loadP2PAddresses
+returns (except tor ones).
+
+There could be a `git-annex p2p --enable` command, which is passed
+the P2P address to enable. Eg:
+
+	git-annex p2p --enable p2p-annex::yggstack+somepubkey.pk.ygg
+
+That is similar to `git-annex enable-tor` in that it would run 
+`storeP2PAddress`. And so configure remotedaemon to listen on the socket
+file for that address.
+
+It could also generate an AuthToken and output a version of the address
+with the AuthToken included, similar to `git-annex p2p --gen-addresses`.
+
+That would let its output be communicated to the remote users, who can feed
+it into `git-annex p2p --link`. For that matter, I think that `git-annex
+p2p --pair` would also work.
+
+The address passed to `git-annex p2p --enable` could be anything,
+but using a p2p-annex::foo address makes a `git-annex-p2p-foo` command be
+used when connecting to the address.
+"""]]

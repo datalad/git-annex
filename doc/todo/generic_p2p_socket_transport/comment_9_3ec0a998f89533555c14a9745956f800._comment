@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2025-07-07T16:00:45Z"
+ content="""
+> A configuration option annex.expose-p2p-via=foo that could be supplied
+> zero, one, or multiple times, and each of these configurations would
+> instruct remotedaemon to start the external program
+> git-annex-p2ptransport-foo after the p2p socket is ready
+
+Hmm, I don't know if it would generally make sense for remotedaemon to
+start up external programs that run P2P networks. That might be something
+that runs system-wide, like tor (often) does. Or the user might expect to
+run it themselves and only have git-annex use it when it's running.
+
+It seems to me that in your yggstack example, there's no real need
+for remotedaemon to be responsible for running
+`git-annex-p2ptransport-yggstack`. You could run that yourself first.
+Then the remotedaemon can create the socket file and listen to it.
+
+If a tcp connection comes in before the socket file exists, socat handles
+it by closing that connection, and keeps  listening for further
+connections.
+"""]]
