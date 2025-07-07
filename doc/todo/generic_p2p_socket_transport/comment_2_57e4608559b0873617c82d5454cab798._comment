@@ -20,8 +20,9 @@ the generic one could be "p2p-annex::<path-to-socket-file>". Or it could be
 `git-annex-p2p-foo <bar>` and talk to its stdin and stdout.
 
 That's for outgoing connections. For incoming connections, 
-for tor, the remotedaemon looks to see if the socket file exists and
-if so it accepts connections from it. (That tor socket is not used for
+for tor, the remotedaemon creates the socket file that tor is configured to
+use for the hidden service, and listens to it
+to accept connections from tor. (That tor socket is not used for
 outgoing connections.) It would be easy to generalize this
 to additional socket filenames. Eg, a remote with uuid U could use
 `.git/annex/p2p/U` as its socket file.
