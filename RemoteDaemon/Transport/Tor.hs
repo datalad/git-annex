@@ -109,7 +109,7 @@ serveClient th@(TransportHandle _ _ rd) u r q = bracket setup cleanup start
 		((), (st', _rd)) <- Annex.run (st, rd) $ do
 			-- Load auth tokens for every connection, to notice
 			-- when the allowed set is changed.
-			allowed <- loadP2PAuthTokens
+			allowed <- loadP2PAuthTokensTor
 			let conn = P2PConnection
 				{ connRepo = Just r
 				, connCheckAuth = (`isAllowedAuthToken` allowed)

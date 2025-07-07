@@ -1,6 +1,6 @@
 {- P2P authtokens
  -
- - Copyright 2016 Joey Hess <id@joeyh.name>
+ - Copyright 2016-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -18,24 +18,49 @@ import Utility.Env
 
 import qualified Data.Text as T
 
--- | Load authtokens that are accepted by this repository.
-loadP2PAuthTokens :: Annex AllowedAuthTokens
-loadP2PAuthTokens = allowedAuthTokens <$> loadP2PAuthTokens'
+-- | Load authtokens that are accepted by this repository for tor.
+loadP2PAuthTokensTor :: Annex AllowedAuthTokens
+loadP2PAuthTokensTor = allowedAuthTokens 
+	. map fst . filter istor
+	<$> loadP2PAuthTokens'
+  where
+	istor (_, Nothing) = True
+	istor _ = False
 
-loadP2PAuthTokens' :: Annex [AuthToken]
-loadP2PAuthTokens' = mapMaybe toAuthToken
-        . map T.pack
+-- | Load authtokens that are accepted for a given P2PAddress.
+loadP2PAuthTokens :: P2PAddress -> Annex AllowedAuthTokens
+loadP2PAuthTokens addr = allowedAuthTokens 
+	. map fst . filter ((== Just addr) . snd)
+	<$> loadP2PAuthTokens'
+
+loadP2PAuthTokens' :: Annex [(AuthToken, Maybe P2PAddress)]
+loadP2PAuthTokens' = mapMaybe parse
         . lines
         . fromMaybe []
         <$> readCreds p2pAuthCredsFile
+  where
+	parse l = 
+		let (tok, addr) = separate (== ' ') l
+		in do
+			tok' <- toAuthToken (T.pack tok) 
+			return (tok', unformatP2PAddress addr)
 
 -- | Stores an AuthToken, making it be accepted by this repository.
-storeP2PAuthToken :: AuthToken -> Annex ()
-storeP2PAuthToken t = do
+storeP2PAuthToken :: P2PAddress -> AuthToken -> Annex ()
+storeP2PAuthToken addr t = do
 	ts <- loadP2PAuthTokens'
-	unless (t `elem` ts) $ do
-		let d = unlines $ map (T.unpack . fromAuthToken) (t:ts)
+	unless (v `elem` ts) $ do
+		let d = unlines $ map fmt (v:ts)
 		writeCreds d p2pAuthCredsFile
+  where
+	v = case addr of
+		TorAnnex _ _ -> (t, Nothing)
+		-- _ -> (t, Just addr)
+	
+	fmt (tok, Nothing) = T.unpack (fromAuthToken tok)
+  	fmt (tok, Just addr') = T.unpack (fromAuthToken tok) 
+		++ " " ++ formatP2PAddress addr'
+
 
 p2pAuthCredsFile :: OsPath
 p2pAuthCredsFile = literalOsPath "p2pauth"

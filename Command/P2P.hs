@@ -90,12 +90,16 @@ unusedPeerRemoteName = go (1 :: Integer) =<< usednames
 genAddresses :: [P2PAddress] -> Annex ()
 genAddresses [] = giveup "No P2P networks are currently available."
 genAddresses addrs = do
-	authtoken <- liftIO $ genAuthToken 128
-	storeP2PAuthToken authtoken
+	addrauths <- forM addrs go
 	earlyWarning "These addresses allow access to this git-annex repository. Only share them with people you trust with that access, using trusted communication channels!"
 	liftIO $ putStr $ safeOutput $ unlines $
-		map formatP2PAddress $
-			map (`P2PAddressAuth` authtoken) addrs
+		map formatP2PAddress addrauths
+	
+  where
+	go addr = do
+		authtoken <- liftIO $ genAuthToken 128
+		storeP2PAuthToken addr authtoken
+		return $ P2PAddressAuth addr authtoken
 
 -- Address is read from stdin, to avoid leaking it in shell history.
 linkRemote :: RemoteName -> CommandStart
@@ -268,20 +272,20 @@ finishPairing retries remotename (HalfAuthToken ourhalf) (PairData (HalfAuthToke
 	case (toAuthToken (ourhalf <> theirhalf), toAuthToken (theirhalf <> ourhalf)) of
 		(Just ourauthtoken, Just theirauthtoken) -> do
 			liftIO $ putStrLn $ "Successfully exchanged pairing data. Connecting to " ++ remotename ++  "..."
-			storeP2PAuthToken ourauthtoken
-			go retries theiraddrs theirauthtoken
+			go retries theiraddrs theirauthtoken ourauthtoken
 		_ -> return ReceiveFailed
   where
-	go 0 [] _ = return $ LinkFailed $ "Unable to connect to " ++ remotename ++ "."
-	go n [] theirauthtoken = do
+	go 0 [] _ _ = return $ LinkFailed $ "Unable to connect to " ++ remotename ++ "."
+	go n [] theirauthtoken ourauthtoken = do
 		liftIO $ threadDelaySeconds (Seconds 2)
 		liftIO $ putStrLn $ "Unable to connect to " ++ remotename ++ ". Retrying..."
-		go (n-1) theiraddrs theirauthtoken
-	go n (addr:rest) theirauthtoken = do
+		go (n-1) theiraddrs theirauthtoken ourauthtoken
+	go n (addr:rest) theirauthtoken ourauthtoken = do
+		storeP2PAuthToken addr ourauthtoken
 		r <- setupLink remotename (P2PAddressAuth addr theirauthtoken)
 		case r of
 			LinkSuccess -> return PairSuccess
-			_ -> go n rest theirauthtoken
+			_ -> go n rest theirauthtoken ourauthtoken
 
 data LinkResult
 	= LinkSuccess
