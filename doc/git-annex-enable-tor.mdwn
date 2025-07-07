@@ -29,7 +29,7 @@ give other users access to your repository via the tor hidden service.
 
 [[git-annex]](1)
 
-[[git-annex-p2p-auth]](1)
+[[git-annex-p2p]](1)
 
 [[git-annex-remotedaemon]](1)
 
