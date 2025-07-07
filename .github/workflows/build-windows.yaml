@@ -24,7 +24,7 @@ env:
 
 jobs:
   build-package:
-    runs-on: windows-2019
+    runs-on: windows-2022
     outputs:
       build-version: ${{ steps.build-version.outputs.version }}
     steps:
@@ -212,7 +212,7 @@ jobs:
     strategy:
       matrix:
         flavor: ["normal", "custom-config1"]
-        os: [windows-2019]
+        os: [windows-2022]
       fail-fast: false
     steps:
       - name: Checkout this repository
@@ -311,7 +311,7 @@ jobs:
             See <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}> for more information.
 
   test-datalad:
-    runs-on: windows-2019
+    runs-on: windows-2022
     needs: build-package
     strategy:
       matrix:
