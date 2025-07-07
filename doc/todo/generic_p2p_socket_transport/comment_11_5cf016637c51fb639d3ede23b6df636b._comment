@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2025-07-07T19:20:36Z"
+ content="""
+I did some necessary groundwork for this in
+[[!commit 46ee651c9438a5dfc430b231089d3ac1e0d09e3c]].
+
+I am about ready to really start implementing this, I think. The design
+seems to be ready.
+"""]]
