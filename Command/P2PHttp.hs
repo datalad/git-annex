@@ -188,13 +188,14 @@ runServer o mst = go `finally` serverShutdownCleanup mst
 				Just socketpath -> 
 					withsocket socketpath $ \sock ->
 						Warp.runSettingsSocket settings sock app
-			(Just certfile, Just privatekeyfile) ->
+			(Just certfile, Just privatekeyfile) -> do
+				let tlssettings = Warp.tlsSettingsChain
+					certfile (chainFileOption o) privatekeyfile
 				case socketOption o of
-					Nothing -> do
-						let tlssettings = Warp.tlsSettingsChain
-							certfile (chainFileOption o) privatekeyfile
-						Warp.runTLS tlssettings settings app
-					Just _socketpath -> giveup "HTTPS is not supported with --socket"
+					Nothing -> Warp.runTLS tlssettings settings app
+					Just socketpath -> 
+						withsocket socketpath $ \sock ->
+							Warp.runTLSSocket tlssettings settings sock app
 			_ -> giveup "You must use both --certfile and --privatekeyfile options to enable HTTPS."
 	port = maybe
 		(fromIntegral defaultP2PHttpProtocolPort)
