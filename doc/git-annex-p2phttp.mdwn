@@ -41,8 +41,10 @@ convenient way to download the content of any key, by using the path
 
 * `--directory=path`
 
-  Serve each git-annex repository found in immediate 
-  subdirectories of a directory.
+  Serve each git-annex repository found in subdirectories of the directory.
+  For example, `--directory=/foo` will find git-annex repositories
+  in `/foo/bar`, `/foo/user/bar`, and so on. Note that a git-annex
+  repository located within another git-annex repository will not be found.
 
   This option can be provided more than once to serve several directories
   full of git-annex repositories.

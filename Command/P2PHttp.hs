@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2024 Joey Hess <id@joeyh.name>
+ - Copyright 2024-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -21,11 +21,13 @@ import qualified Git
 import qualified Git.Construct
 import qualified Annex
 import Types.Concurrency
+import qualified Utility.RawFilePath as R
 
 import Servant
 import qualified Network.Wai.Handler.Warp as Warp
 import qualified Network.Wai.Handler.WarpTLS as Warp
 import Network.Socket (PortNumber)
+import System.PosixCompat.Files (isSymbolicLink)
 import qualified Data.Map as M
 import Data.String
 import Control.Concurrent.STM
@@ -268,6 +270,20 @@ findRepos :: Options -> IO [Git.Repo]
 findRepos o = do
 	files <- concat
 		<$> mapM (dirContents . toOsPath) (directoryOption o)
-	map Git.Construct.newFrom . catMaybes 
-		<$> mapM Git.Construct.checkForRepo files
-
+	concat <$> mapM go files
+  where
+	go f = Git.Construct.checkForRepo f >>= \case
+		Just loc -> return [Git.Construct.newFrom loc]
+		Nothing -> 
+			-- Avoid following symlinks, both to avoid
+			-- cycles and in case there is an unexpected
+			-- symlink to some other directory we are not
+			-- supposed to serve.
+			ifM (isSymbolicLink <$> R.getSymbolicLinkStatus f)
+				( return []
+				-- Ignore any errors getting the contents of a
+				-- subdirectory.
+				, catchNonAsync
+					(concat <$> (mapM go =<< dirContents f))
+					(const (return []))
+				)

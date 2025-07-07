@@ -1,3 +1,9 @@
+git-annex (10.20250631) UNRELEASED; urgency=medium
+
+  * p2phttp: Scan multilevel directories with --directory.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 07 Jul 2025 15:59:42 -0400
+
 git-annex (10.20250630) upstream; urgency=medium
 
   * Work around git 2.50 bug that caused it to crash when there is a merge
