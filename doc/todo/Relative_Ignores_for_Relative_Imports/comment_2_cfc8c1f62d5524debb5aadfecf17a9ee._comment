@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Spencer"
+ avatar="http://cdn.libravatar.org/avatar/2e0829f36a68480155e09d0883794a55"
+ subject="We'll call this solved..."
+ date="2025-07-08T07:01:21Z"
+ content="""
+OK, I verified that what you accomplished also works on my end. This must be yet another gotcha related to my [previous issue regarding imports](https://git-annex.branchable.com/forum/Import_-_Changing_Largefiles/): once something is imported it is not possible to attempt a \"clean\" re-import. At some point in my initial testing I must have accidentally imported the files ignored at `foo/*.c` (`root-ignore/c` in my case) and from there I could not get those files not to import once again.
+"""]]
