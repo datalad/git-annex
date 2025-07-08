@@ -1,0 +1,98 @@
+### Please describe the problem.
+
+In a secondary worktree on Windows, pointer files remain even with keys being available.
+A git annex get fails with "not available", even though "whereis" reports "[here]".
+
+I would expect the behavior to be internally consistent (keys being available in the
+worktree when they are found to be available in the repository).
+
+This report assumes that secondary worktrees are, in principle, a supported use case,
+based on the statement at https://git-annex.branchable.com/tips/Using_git-worktree_with_annex/:
+"Getting, dropping and syncing content works fine in a worktree".
+
+### What steps will reproduce the problem?
+
+```
+C:\Users\mih>md demo
+C:\Users\mih>cd demo
+C:\Users\mih\demo>git init
+Initialized empty Git repository in C:/Users/mih/demo/.git/
+
+C:\Users\mih\demo>git annex init
+init
+  Detected a filesystem without fifo support.
+  Disabling ssh connection caching.
+  Detected a crippled filesystem.
+  Entering an adjusted branch where files are unlocked as this filesystem does not support locked files.
+Switched to branch 'adjusted/master(unlocked)'
+ok
+(recording state in git...)
+
+C:\Users\mih\demo>echo "onetwothree" > 123.txt
+C:\Users\mih\demo>git annex add 123.txt
+add 123.txt
+ok
+(recording state in git...)
+C:\Users\mih\demo>git commit -m Demo
+[adjusted/master(unlocked) abf6dc4] Demo
+ 1 file changed, 1 insertion(+)
+ create mode 100644 123.txt
+
+C:\Users\mih\demo>git status
+On branch adjusted/master(unlocked)
+nothing to commit, working tree clean
+
+C:\Users\mih\demo>git worktree add ..\demo-wt2
+Preparing worktree (new branch 'demo-wt2')
+HEAD is now at abf6dc4 Demo
+
+C:\Users\mih\demo>cd ..\demo-wt2
+C:\Users\mih\demo-wt2>dir
+ Volume in drive C is Windows
+ Volume Serial Number is ECB5-B3C0
+
+ Directory of C:\Users\mih\demo-wt2
+
+08/07/2025  12:30    <DIR>          .
+08/07/2025  12:30    <DIR>          ..
+08/07/2025  12:30                98 123.txt
+               1 File(s)             98 bytes
+               2 Dir(s)  384.871.727.104 bytes free
+
+C:\Users\mih\demo-wt2>type 123.txt
+/annex/objects/SHA256E-s16--7091a3bb554a96356db798ae528b2eb2ec9ca6ef99daa0263e6f0af65b17bd5c.txt
+
+C:\Users\mih\demo-wt2>git annex get 123.txt
+get 123.txt (not available)
+  No other repository is known to contain the file.
+failed
+get: 1 failed
+
+C:\Users\mih\demo-wt2>git annex whereis 123.txt
+whereis 123.txt (1 copy)
+        a4127935-16c9-4d81-98c6-9fd65461293c -- mih@bnbnb67:~/demo [here]
+ok
+```
+
+
+### What version of git-annex are you using? On what operating system?
+
+```
+git-annex version: 10.20250630-gc6b6be2eab17fd5d8921f3af9376d15f2cf917f5
+build flags: Assistant Webapp Pairing TorrentParser MagicMime Servant Benchmark Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.24.4 bloomfilter-2.0.1.2 crypton-1.0.4 DAV-1.3.4 feed-1.3.2.1 ghc-9.10.1 http-client-0.7.19 persistent-sqlite-2.13.3.0 torrent-10000.1.3 uuid-1.3.16 yesod-1.6.2.1
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL GITBUNDLE GITMANIFEST VURL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg rclone hook external compute mask
+operating system: mingw32 x86_64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 2 3 4 5 6 7 8 9 10
+local repository version: 10
+```
+
+This is on win11.
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Absolutely! Approaching 15 years of bigger, better, faster, more ;-)
+
