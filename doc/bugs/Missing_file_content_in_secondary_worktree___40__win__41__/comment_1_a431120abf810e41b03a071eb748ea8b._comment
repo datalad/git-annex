@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-07-11T16:05:53Z"
+ content="""
+I reproduced the same behavior on linux, when using a FAT filesystem. 
+
+So, this has something to do with automatic entry of an unlocked adjusted
+branch on a crippled filesystem.
+
+Interestingly, doing the same on ext4, and manually using `git-annex
+unlock` on the file and committing before checking out the worktree does
+not replicate the problem. The unlocked file is automatically populated on
+worktree checkout there. And manual `git-annex adjust --unlock` before
+worktree creation also doesn't have the problem, even though the worktree
+does end up in an adjusted unlocked branch.
+
+(The output of `git-annex get` is also weird. I think what's happening is
+that, since the unlocked file is not populated, it is enumerated as a file
+that `get` can operate on. But then when it runs, since there is no other
+location, it displays that message. The command does not have anything to
+handle this unusual case of the file being a pointer file but its content
+being present in the repisitory. And, usually there is no way that can
+happen, eg even writing a pointer file manually followed by `git add` of it
+populates it. So I think this unusual behavior of `git-annex get` doesn't
+need to change, once this bug is fixed it should not be possible to see
+that behavior.)
+"""]]
