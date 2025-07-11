@@ -11,7 +11,7 @@ which is not the right path to the object file. Should be
 (In the ext4 case that does not happen, instead the reconcileStaged `git diff`
 does not include the new file. So that is a different problem.)
 
-It seems that `.git/worktrees/foo/annex` is a symlink when the filesystem
+Turns out that `.git/worktrees/foo/annex` is a symlink when the filesystem
 supports symlinks. But, when symlinks are not supported, that symlink is
 not made. And so it looks for objects there, but they're not there. 
 This could also cause other behavior differences, since other state files
@@ -23,7 +23,20 @@ But git-annex shouldn't rely on the symlink in things like
 `gitAnnexLocation`.
 
 Luckily, `annexDir` exists, and I've checked and it is the *only* thing
-that produces "annex" as a path to the annex directory. So `annexDir` will
-need to be made into a function that is passed the git repository and
-handles this special case.
+that produces "annex" as a path to the annex directory. So `annexDir` could
+be made into a function that is passed the git repository and
+handles this special case, by returning a path like "../../annex", which
+when combined with the git directory in a linked worktree, ends up pointing
+to the main repository's ".git/annex".
+
+Except, `annexDir` is not only used to find the paths to object files. It's
+also used to *generate* the symlink target. When `git-annex add` is run in
+a linked worktree, and symlinks are supported, the symlink target needs to
+be of the form ".git/annex/". With this `annexDir` change, it would not be
+right.
+
+So, it seems that `annexDir`, and some functions that call it need to behave
+differently when they're generating a path into the annex directory, vs
+when they're generating a symlink target or other similar thing. 
+Which is a subtle distinction to introduce.
 """]]
