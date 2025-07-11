@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2025-07-11T16:18:16Z"
+ content="""
+In a FAT filesystem after reproducing this bug with initial file `foo`,
+the following thing also happens:
+
+	joey@darkstar:~/mnt/demo-wt3#demo-wt3>cat foo
+	/annex/objects/SHA256E-s30--dcf81122854db210a12a47851a3430b6ab000e3f981b5266f0873b94d130c999
+	joey@darkstar:~/mnt/demo-wt3#demo-wt3>cp foo bar
+	joey@darkstar:~/mnt/demo-wt3#demo-wt3>git add bar
+	joey@darkstar:~/mnt/demo-wt3#demo-wt3>cat bar
+	/annex/objects/SHA256E-s30--dcf81122854db210a12a47851a3430b6ab000e3f981b5266f0873b94d130c999
+
+This seems to be another case of the bug, because the content of the object
+is present in the repository, so usually `git add` of a pointer file
+should result in the smudge filter populating it.
+
+`git-annex add` behaves the same as well.
+"""]]
