@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2025-07-11T18:38:59Z"
+ content="""
+When a secondary worktree is used on a filesystem not supporting symlinks,
+it would be possible for `git-annex move` to move an object from another
+repository. And store it to the wrong location, under
+`.git/worktrees/foo/annex/objects/`. The object would still be accessible,
+and a later `git-annex copy --to remote`, if run in the same worktree,
+would be able to send the object on to a remote.
+
+But if this bug gets fixed, then the misplaced object file will be left,
+and won't be used any longer. Which could appear to the user as data loss
+in some situations. Eg, the copy to the remote would fail. (There might be
+situations where the populated worktree file would be used as a copy of the
+object, but that assumes the worktree file is still populated.)
+
+Also, `git-annex drop` would not delete such misplaced object files, so the
+user would be left with bloated repository.
+
+So, `git-annex fsck` will need to be made to search out such misplaced
+object files and move them to the correct objects directory.
+"""]]
