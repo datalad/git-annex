@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2025-07-11T17:41:03Z"
+ content="""
+Apparently in the FAT case `gitAnnexLocation` is returning something like 
+`../demo/.git/worktrees/demo-wt3/annex/objects/d13/2dd/SHA256E-s30--dcf81122854db210a12a47851a3430b6ab000e3f981b5266f0873b94d130c999/SHA256E-s30--dcf81122854db210a12a47851a3430b6ab000e3f981b5266f0873b94d130c999`
+which is not the right path to the object file. Should be 
+`../demo/.git/annex/objects/d13/2dd/SHA256E-s30--dcf81122854db210a12a47851a3430b6ab000e3f981b5266f0873b94d130c999/SHA256E-s30--dcf81122854db210a12a47851a3430b6ab000e3f981b5266f0873b94d130c999`
+
+(In the ext4 case that does not happen, instead the reconcileStaged `git diff`
+does not include the new file. So that is a different problem.)
+
+It seems that `.git/worktrees/foo/annex` is a symlink when the filesystem
+supports symlinks. But, when symlinks are not supported, that symlink is
+not made. And so it looks for objects there, but they're not there. 
+This could also cause other behavior differences, since other state files
+that go in the annex directory get written there, so git-annex inside
+and outside the worktree, or in different worktrees, can have different states.
+
+That symlink is needed to make annex symlinks point to the object files.
+But git-annex shouldn't rely on the symlink in things like
+`gitAnnexLocation`.
+
+Luckily, `annexDir` exists, and I've checked and it is the *only* thing
+that produces "annex" as a path to the annex directory. So `annexDir` will
+need to be made into a function that is passed the git repository and
+handles this special case.
+"""]]
