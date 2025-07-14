@@ -270,10 +270,10 @@ gitAnnexLink file key r config = do
 	toInternalGitPath <$> relPathDirToFile (parentDir absfile) loc
   where
 	getgitdir currdir
-		{- This special case is for git submodules on filesystems not
-		 - supporting symlinks; generate link target that will
-		 - work portably. -}
-		| not (coreSymlinks config) && needsSubmoduleFixup r =
+		{- This special case is for git submodules and worktrees
+		 - on filesystems not supporting symlinks; generate link
+		 - target that will work portably. -}
+		| not (coreSymlinks config) && (needsSubmoduleFixup r || isJust (Git.mainWorkTreePath r)) =
 			absNormPathUnix currdir (Git.repoPath r </> literalOsPath ".git")
 		| otherwise = Git.localGitDir r
 	absNormPathUnix d p = toInternalGitPath $

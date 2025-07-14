@@ -6,6 +6,8 @@ git-annex (10.20250631) UNRELEASED; urgency=medium
     symlinks, that caused annexed file content to be stored in the wrong
     location inside the git directory, and also caused pointer files to not
     get populated.
+  * Fix symlinks generated to annexed content when in adjusted unlocked
+    branch in a linked worktree on a filesystem not supporting symlinks.
 
  -- Joey Hess <id@joeyh.name>  Mon, 07 Jul 2025 15:59:42 -0400
 
