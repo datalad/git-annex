@@ -104,7 +104,7 @@ fixupUnusualRepos r@(Repo { location = l@(Local { worktree = Just w, gitdir = d 
 			(replacedotgit >> unsetcoreworktree)
 				`catchNonAsync` \e -> hPutStrLn stderr $
 					"warning: unable to convert submodule to form that will work with git-annex: " ++ show e
-		return $ r'
+		return $ r
 			{ config = M.delete "core.worktree" (config r)
 			}
 	| otherwise = ifM (needsGitLinkFixup r)
@@ -114,8 +114,8 @@ fixupUnusualRepos r@(Repo { location = l@(Local { worktree = Just w, gitdir = d 
 					(replacedotgit >> worktreefixup)
 						`catchNonAsync` \e -> hPutStrLn stderr $
 							"warning: unable to convert .git file to symlink that will work with git-annex: " ++ show e
-					setworktreepath r'
-				else setworktreepath r'
+					setworktreepath r
+				else setworktreepath r
 		, return r
 		)
   where
@@ -138,11 +138,11 @@ fixupUnusualRepos r@(Repo { location = l@(Local { worktree = Just w, gitdir = d 
 		fmap toOsPath . headMaybe . lines
 			<$> readFile commondirfile
 
-	setworktreepath r'' = readcommondirfile >>= \case
-		Just gd -> return $ r''
+	setworktreepath r' = readcommondirfile >>= \case
+		Just gd -> return $ r'
 			{ mainWorkTreePath = Just gd
 			}
-		Nothing -> return r''
+		Nothing -> return r'
 
 	worktreefixup = readcommondirfile >>= \case
 		Just gd -> do
@@ -153,13 +153,6 @@ fixupUnusualRepos r@(Repo { location = l@(Local { worktree = Just w, gitdir = d 
 			R.createSymbolicLink (fromOsPath linktarget) $
 				fromOsPath $ dotgit </> literalOsPath "annex"
 		Nothing -> return ()
-
-	-- Repo adjusted, so that symlinks to objects that get checked
-	-- in will have the usual path, rather than pointing off to the
-	-- real .git directory.
-	r'
-		| coreSymlinks c = r { location = l { gitdir = dotgit } }
-		| otherwise = r
 fixupUnusualRepos r _ = return r
 
 needsSubmoduleFixup :: Repo -> Bool
