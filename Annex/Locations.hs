@@ -160,7 +160,7 @@ objectDir :: OsPath
 objectDir = addTrailingPathSeparator $ annexDir </> literalOsPath "objects"
 
 {- Annexed file's possible locations relative to the .git directory
- - in a non-bare eepository.
+ - in a non-bare repository.
  - 
  - Normally it is hashDirMixed. However, it's always possible that a
  - bare repository was converted to non-bare, or that the cripped
