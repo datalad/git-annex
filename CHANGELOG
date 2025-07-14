@@ -2,6 +2,10 @@ git-annex (10.20250631) UNRELEASED; urgency=medium
 
   * p2phttp: Scan multilevel directories with --directory.
   * p2phttp: Added --socket option.
+  * Fix bug in handling of linked worktrees on filesystems not supporting
+    symlinks, that caused annexed file content to be stored in the wrong
+    location inside the git directory, and also caused pointer files to not
+    get populated.
 
  -- Joey Hess <id@joeyh.name>  Mon, 07 Jul 2025 15:59:42 -0400
 

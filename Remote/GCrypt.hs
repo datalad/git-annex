@@ -303,7 +303,7 @@ setupRepo gcryptid r
 	 - which is needed for rsync of objects to it to work.
 	 -}
 	rsyncsetup = Remote.Rsync.withRsyncScratchDir $ \tmp -> do
-		createAnnexDirectory (tmp </> objectDir)
+		createAnnexDirectory (tmp </> objectDir standardGitLocationMaker)
 		dummycfg <- liftIO dummyRemoteGitConfig
 		let (rsynctransport, rsyncurl, _) = rsyncTransport r dummycfg
 		let tmpconfig = fromOsPath $ tmp </> literalOsPath "config"
@@ -466,7 +466,8 @@ checkKey' repo r rsyncopts accessmethod k
 	checkshell = Ssh.inAnnex repo k
 
 gCryptTopDir :: Git.Repo -> OsPath
-gCryptTopDir repo = toOsPath (Git.repoLocation repo) </> objectDir
+gCryptTopDir repo = 
+	toOsPath (Git.repoLocation repo) </> objectDir standardGitLocationMaker
 
 {- Annexed objects are hashed using lower-case directories for max
  - portability. -}

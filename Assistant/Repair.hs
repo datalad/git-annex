@@ -133,7 +133,7 @@ repairStaleGitLocks r = do
 	repairStaleLocks lockfiles
 	return $ not $ null lockfiles
   where
-	findgitfiles = dirContentsRecursiveSkipping (== dropTrailingPathSeparator annexDir) True . Git.localGitDir
+	findgitfiles = dirContentsRecursiveSkipping (== dropTrailingPathSeparator (annexDir standardGitLocationMaker)) True . Git.localGitDir
 	islock f
 		| literalOsPath "gc.pid" `OS.isInfixOf` f = False
 		| literalOsPath ".lock" `OS.isSuffixOf` f = True

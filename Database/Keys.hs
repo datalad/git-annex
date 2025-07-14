@@ -365,7 +365,7 @@ reconcileStaged dbisnew qh = ifM notneeded
 		-- prefilter so that's ok.
 		, Param $ "-G" ++ 
 			fromOsPath (toInternalGitPath $
-				pathSeparator `OS.cons` objectDir)
+				pathSeparator `OS.cons` objectDir standardGitLocationMaker)
 		-- Disable rename detection.
 		, Param "--no-renames"
 		-- Avoid other complications.

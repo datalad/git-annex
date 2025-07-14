@@ -304,5 +304,6 @@ newFrom l = Repo
 	, gitGlobalOpts = []
 	, gitDirSpecifiedExplicitly = False
 	, repoPathSpecifiedExplicitly = False
+	, mainWorkTreePath = Nothing
 	}
 

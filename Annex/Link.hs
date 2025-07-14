@@ -407,7 +407,8 @@ parseLinkTargetOrPointerLazy' b =
 formatPointer :: Key -> S.ByteString
 formatPointer k = fromOsPath prefix <> fromOsPath (keyFile k) <> nl
   where
-	prefix = toInternalGitPath $ pathSeparator `OS.cons` objectDir
+	prefix = toInternalGitPath $
+		pathSeparator `OS.cons` objectDir standardGitLocationMaker
 	nl = S8.singleton '\n'
 
 {- Maximum size of a file that could be a pointer to a key.
@@ -475,7 +476,7 @@ isLinkToAnnex s = p `OS.isInfixOf` s'
 #endif
   where
 	s' = toOsPath s
-	p = pathSeparator `OS.cons` objectDir
+	p = pathSeparator `OS.cons` objectDir standardGitLocationMaker
 #ifdef mingw32_HOST_OS
 	p' = toInternalGitPath p
 #endif

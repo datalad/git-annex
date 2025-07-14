@@ -69,9 +69,14 @@ fixupDirect r = r
  - whether a repo is used as a submodule or not, and wheverever the
  - submodule is mounted.
  -
- - git-worktree directories have a .git file.
- - That needs to be converted to a symlink, and .git/annex made a symlink
- - to the main repository's git-annex directory.
+ - git-worktree directories have a .git file which points to a different
+ - git directory than the main git directory. That needs to be converted to
+ - a symlink, and .git/annex made a symlink to the main repository's 
+ - git-annex directory so that annex symlinks in the git repository point
+ - to the object files. When the filesystem does not support symlinks, the
+ - mainWorkTreePath of the repository is set, so that the git-annex
+ - directory of the main repository will still be used.
+ -
  - The worktree shares git config with the main repository, so the same
  - annex uuid and other configuration will be used in the worktree as in
  - the main repository.
@@ -85,11 +90,15 @@ fixupDirect r = r
  - unlocked branches.
  -
  - Don't do any of this if the repo has not been initialized for git-annex
- - use yet.
+ - use yet. Except, do set mainWorkTreePath.
  -}
 fixupUnusualRepos :: Repo -> GitConfig -> IO Repo
 fixupUnusualRepos r@(Repo { location = l@(Local { worktree = Just w, gitdir = d }) }) c
-	| isNothing (annexVersion c) = return r
+	| isNothing (annexVersion c) =
+		ifM (needsGitLinkFixup r)
+			( setworktreepath r
+			, return r
+			)
 	| needsSubmoduleFixup r = do
 		when (coreSymlinks c) $
 			(replacedotgit >> unsetcoreworktree)
@@ -100,11 +109,13 @@ fixupUnusualRepos r@(Repo { location = l@(Local { worktree = Just w, gitdir = d 
 			}
 	| otherwise = ifM (needsGitLinkFixup r)
 		( do
-			when (coreSymlinks c) $
-				(replacedotgit >> worktreefixup)
-					`catchNonAsync` \e -> hPutStrLn stderr $
-						"warning: unable to convert .git file to symlink that will work with git-annex: " ++ show e
-			return r'
+			if coreSymlinks c
+				then do
+					(replacedotgit >> worktreefixup)
+						`catchNonAsync` \e -> hPutStrLn stderr $
+							"warning: unable to convert .git file to symlink that will work with git-annex: " ++ show e
+					setworktreepath r'
+				else setworktreepath r'
 		, return r
 		)
   where
@@ -117,21 +128,31 @@ fixupUnusualRepos r@(Repo { location = l@(Local { worktree = Just w, gitdir = d 
 	
 	-- Unsetting a config fails if it's not set, so ignore failure.
 	unsetcoreworktree = void $ Git.Config.unset "core.worktree" r
+		
+	-- git-worktree sets up a "commondir" file that contains
+	-- the path to the main git directory.
+	-- Using --separate-git-dir does not.
+	commondirfile = fromOsPath (d </> literalOsPath "commondir")
 	
-	worktreefixup = do
-		-- git-worktree sets up a "commondir" file that contains
-		-- the path to the main git directory.
-		-- Using --separate-git-dir does not.
-		let commondirfile = fromOsPath (d </> literalOsPath "commondir")
-		catchDefaultIO Nothing (headMaybe . lines <$> readFile commondirfile) >>= \case
-			Just gd -> do
-				-- Make the worktree's git directory
-				-- contain an annex symlink to the main
-				-- repository's annex directory.
-				let linktarget = toOsPath gd </> literalOsPath "annex"
-				R.createSymbolicLink (fromOsPath linktarget) $
-					fromOsPath $ dotgit </> literalOsPath "annex"
-			Nothing -> return ()
+	readcommondirfile = catchDefaultIO Nothing $
+		fmap toOsPath . headMaybe . lines
+			<$> readFile commondirfile
+
+	setworktreepath r'' = readcommondirfile >>= \case
+		Just gd -> return $ r''
+			{ mainWorkTreePath = Just gd
+			}
+		Nothing -> return r''
+
+	worktreefixup = readcommondirfile >>= \case
+		Just gd -> do
+			-- Make the worktree's git directory
+			-- contain an annex symlink to the main
+			-- repository's annex directory.
+			let linktarget = gd </> literalOsPath "annex"
+			R.createSymbolicLink (fromOsPath linktarget) $
+				fromOsPath $ dotgit </> literalOsPath "annex"
+		Nothing -> return ()
 
 	-- Repo adjusted, so that symlinks to objects that get checked
 	-- in will have the usual path, rather than pointing off to the

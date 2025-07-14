@@ -1027,9 +1027,10 @@ keyExportLocations :: Remote -> Key -> GitConfig -> UUID -> Maybe [ExportLocatio
 keyExportLocations rmt k cfg uuid
 	| exportTree (Remote.config rmt) || importTree (Remote.config rmt) = 
 		Just $ map (\p -> mkExportLocation (literalOsPath ".git" </> p)) $
-			concatMap (`annexLocationsBare` k) cfgs
+			concatMap (`mkloc` k) cfgs
 	| otherwise = Nothing
   where
+	mkloc = annexLocationsBare standardGitLocationMaker
 	-- When git-annex has not been initialized yet (eg, when cloning), 
 	-- the Differences are unknown, so make a version of the GitConfig
 	-- with and without the OneLevelObjectHash difference.

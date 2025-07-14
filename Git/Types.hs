@@ -62,6 +62,9 @@ data Repo = Repo
 	-- -c safe.directory=* and -c safe.bareRepository=all 
 	-- when using this repository.
 	, repoPathSpecifiedExplicitly :: Bool
+	-- When a Repo is a linked git worktree, this is the path
+	-- from its gitdir to the git directory of the main worktree.
+	, mainWorkTreePath :: Maybe OsPath
 	} deriving (Show, Eq, Ord)
 	
 type RepoConfig = M.Map ConfigKey ConfigValue

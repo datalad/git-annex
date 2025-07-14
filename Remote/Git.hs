@@ -467,14 +467,16 @@ keyUrls gc repo r key = map tourl locs'
 	-- If the remote is known to not be bare, try the hash locations
 	-- used for non-bare repos first, as an optimisation.
 	locs
-		| remoteAnnexBare remoteconfig == Just False = annexLocationsNonBare gc key
-		| otherwise = annexLocationsBare gc key
+		| remoteAnnexBare remoteconfig == Just False = 
+			annexLocationsNonBare glm gc key
+		| otherwise = annexLocationsBare glm gc key
 #ifndef mingw32_HOST_OS
 	locs' = map fromOsPath locs
 #else
 	locs' = map (replace "\\" "/" . fromOsPath) locs
 #endif
 	remoteconfig = gitconfig r
+	glm = repoGitLocationMaker repo
 
 dropKey :: Remote -> State -> Maybe SafeDropProof -> Key -> Annex ()
 dropKey r st proof key = do

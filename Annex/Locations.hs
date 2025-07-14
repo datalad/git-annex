@@ -1,6 +1,6 @@
 {- git-annex file locations
  -
- - Copyright 2010-2024 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -9,6 +9,9 @@
 {-# LANGUAGE CPP #-}
 
 module Annex.Locations (
+	GitLocationMaker(..),
+	standardGitLocationMaker,
+	repoGitLocationMaker,
 	keyFile,
 	fileKey,
 	keyPaths,
@@ -136,6 +139,24 @@ import Git.FilePath
 import Annex.DirHashes
 import Annex.Fixup
 
+{- When constructing a path that is usually relative to the
+ - .git directory, this can be used to relocate the path to
+ - elsewhere.
+ -
+ - This is used when in a linked git worktree, which has its own
+ - git directory, to make the git-annex directory be located in the
+ - git directory of the main worktree.
+ -}
+newtype GitLocationMaker = GitLocationMaker (OsPath -> OsPath)
+
+standardGitLocationMaker :: GitLocationMaker
+standardGitLocationMaker = GitLocationMaker id
+
+repoGitLocationMaker :: Git.Repo -> GitLocationMaker
+repoGitLocationMaker r = case Git.mainWorkTreePath r of
+	Nothing -> standardGitLocationMaker
+	Just p -> GitLocationMaker (p </>)
+
 {- Conventions:
  -
  - Functions ending in "Dir" should always return values ending with a
@@ -151,13 +172,15 @@ import Annex.Fixup
 
 {- The directory git annex uses for local state, relative to the .git
  - directory -}
-annexDir :: OsPath
-annexDir = addTrailingPathSeparator (literalOsPath "annex")
+annexDir :: GitLocationMaker -> OsPath
+annexDir (GitLocationMaker glm) = addTrailingPathSeparator $
+	glm $ literalOsPath "annex"
 
 {- The directory git annex uses for locally available object content,
  - relative to the .git directory -}
-objectDir :: OsPath
-objectDir = addTrailingPathSeparator $ annexDir </> literalOsPath "objects"
+objectDir :: GitLocationMaker -> OsPath
+objectDir glm = addTrailingPathSeparator $
+	annexDir glm </> literalOsPath "objects"
 
 {- Annexed file's possible locations relative to the .git directory
  - in a non-bare repository.
@@ -165,24 +188,26 @@ objectDir = addTrailingPathSeparator $ annexDir </> literalOsPath "objects"
  - Normally it is hashDirMixed. However, it's always possible that a
  - bare repository was converted to non-bare, or that the cripped
  - filesystem setting changed, so still need to check both. -}
-annexLocationsNonBare :: GitConfig -> Key -> [OsPath]
-annexLocationsNonBare config key = 
-	map (annexLocation config key) [hashDirMixed, hashDirLower]
+annexLocationsNonBare :: GitLocationMaker -> GitConfig -> Key -> [OsPath]
+annexLocationsNonBare glm config key = 
+	map (annexLocation glm config key) [hashDirMixed, hashDirLower]
 
 {- Annexed file's possible locations relative to a bare repository. -}
-annexLocationsBare :: GitConfig -> Key -> [OsPath]
-annexLocationsBare config key = 
-	map (annexLocation config key) [hashDirLower, hashDirMixed]
+annexLocationsBare :: GitLocationMaker -> GitConfig -> Key -> [OsPath]
+annexLocationsBare glm config key = 
+	map (annexLocation glm config key) [hashDirLower, hashDirMixed]
 
-annexLocation :: GitConfig -> Key -> (HashLevels -> Hasher) -> OsPath
-annexLocation config key hasher = objectDir </> keyPath key (hasher $ objectHashLevels config)
+annexLocation :: GitLocationMaker -> GitConfig -> Key -> (HashLevels -> Hasher) -> OsPath
+annexLocation glm config key hasher = 
+	objectDir glm </> keyPath key (hasher $ objectHashLevels config)
 
 {- For exportree remotes with annexobjects=true, objects are stored
  - in this location as well as in the exported tree. -}
 exportAnnexObjectLocation :: GitConfig -> Key -> ExportLocation
 exportAnnexObjectLocation gc k =
 	mkExportLocation $
-		literalOsPath ".git" </> annexLocation gc k hashDirLower
+		literalOsPath ".git" 
+			</> annexLocation standardGitLocationMaker gc k hashDirLower
 
 {- Number of subdirectories from the gitAnnexObjectDir
  - to the gitAnnexLocation. -}
@@ -203,14 +228,17 @@ gitAnnexLocation :: Key -> Git.Repo -> GitConfig -> IO OsPath
 gitAnnexLocation = gitAnnexLocation' doesPathExist
 
 gitAnnexLocation' :: (OsPath -> IO Bool) -> Key -> Git.Repo -> GitConfig -> IO OsPath
-gitAnnexLocation' checker key r config = gitAnnexLocation'' key r config
-	(annexCrippledFileSystem config)
-	(coreSymlinks config)
-	checker
-	(Git.localGitDir r)
+gitAnnexLocation' checker key r config = 
+	gitAnnexLocation'' key glm r config
+		(annexCrippledFileSystem config)
+		(coreSymlinks config)
+		checker
+		(Git.localGitDir r)
+  where
+	glm = repoGitLocationMaker r
 
-gitAnnexLocation'' :: Key -> Git.Repo -> GitConfig -> Bool -> Bool -> (OsPath -> IO Bool) -> OsPath -> IO OsPath
-gitAnnexLocation'' key r config crippled symlinkssupported checker gitdir
+gitAnnexLocation'' :: Key -> GitLocationMaker -> Git.Repo -> GitConfig -> Bool -> Bool -> (OsPath -> IO Bool) -> OsPath -> IO OsPath
+gitAnnexLocation'' key glm r config crippled symlinkssupported checker gitdir
 	{- Bare repositories default to hashDirLower for new
 	 - content, as it's more portable. But check all locations. -}
 	| Git.repoIsLocalBare r = checkall annexLocationsBare
@@ -225,8 +253,8 @@ gitAnnexLocation'' key r config crippled symlinkssupported checker gitdir
 		else checkall annexLocationsBare
 	| otherwise = checkall annexLocationsNonBare
   where
-	only = return . inrepo . annexLocation config key
-	checkall f = check $ map inrepo $ f config key
+	only = return . inrepo . annexLocation glm config key
+	checkall f = check $ map inrepo $ f glm config key
 
 	inrepo d = gitdir </> d
 	check locs@(l:_) = fromMaybe l <$> firstM checker locs
@@ -238,7 +266,7 @@ gitAnnexLink file key r config = do
 	currdir <- getCurrentDirectory
 	let absfile = absNormPathUnix currdir file
 	let gitdir = getgitdir currdir
-	loc <- gitAnnexLocation'' key r config False False (\_ -> return True) gitdir
+	loc <- gitAnnexLocation'' key standardGitLocationMaker r config False False (\_ -> return True) gitdir
 	toInternalGitPath <$> relPathDirToFile (parentDir absfile) loc
   where
 	getgitdir currdir
@@ -299,16 +327,22 @@ gitAnnexInodeSentinal :: Git.Repo -> OsPath
 gitAnnexInodeSentinal r = gitAnnexDir r </> literalOsPath "sentinal"
 
 gitAnnexInodeSentinalCache :: Git.Repo -> OsPath
-gitAnnexInodeSentinalCache r = gitAnnexInodeSentinal r <> literalOsPath ".cache"
+gitAnnexInodeSentinalCache r = 
+	gitAnnexInodeSentinal r <> literalOsPath ".cache"
 
 {- The annex directory of a repository. -}
 gitAnnexDir :: Git.Repo -> OsPath
-gitAnnexDir r = addTrailingPathSeparator $ Git.localGitDir r </> annexDir
+gitAnnexDir r = addTrailingPathSeparator $
+	Git.localGitDir r </> annexDir glm
+  where
+	glm = repoGitLocationMaker r
 
 {- The part of the annex directory where file contents are stored. -}
 gitAnnexObjectDir :: Git.Repo -> OsPath
 gitAnnexObjectDir r = addTrailingPathSeparator $
-	Git.localGitDir r </> objectDir
+	Git.localGitDir r </> objectDir glm
+  where
+	glm = repoGitLocationMaker r
 
 {- .git/annex/tmp/ is used for temp files for key's contents -}
 gitAnnexTmpObjectDir :: Git.Repo -> OsPath
@@ -337,7 +371,8 @@ gitAnnexTmpWatcherDir r = addTrailingPathSeparator $
 
 {- The temp file to use for a given key's content. -}
 gitAnnexTmpObjectLocation :: Key -> Git.Repo -> OsPath
-gitAnnexTmpObjectLocation key r = gitAnnexTmpObjectDir r </> keyFile key
+gitAnnexTmpObjectLocation key r =
+	gitAnnexTmpObjectDir r </> keyFile key
 
 {- Given a temp file such as gitAnnexTmpObjectLocation, makes a name for a
  - subdirectory in the same location, that can be used as a work area
@@ -373,13 +408,12 @@ gitAnnexKeysDbDir r c =
 
 {- Lock file for the keys database. -}
 gitAnnexKeysDbLock :: Git.Repo -> GitConfig -> OsPath
-gitAnnexKeysDbLock r c = gitAnnexKeysDbDir r c <> literalOsPath ".lck"
+gitAnnexKeysDbLock  r c = gitAnnexKeysDbDir r c <> literalOsPath ".lck"
 
 {- Contains the stat of the last index file that was
  - reconciled with the keys database. -}
 gitAnnexKeysDbIndexCache :: Git.Repo -> GitConfig -> OsPath
-gitAnnexKeysDbIndexCache r c =
-	gitAnnexKeysDbDir r c <> literalOsPath ".cache"
+gitAnnexKeysDbIndexCache r c = gitAnnexKeysDbDir r c <> literalOsPath ".cache"
 
 {- .git/annex/fsck/uuid/ is used to store information about incremental
  - fscks. -}
@@ -392,19 +426,23 @@ gitAnnexFsckDir u r mc = case annexDbDir =<< mc of
 
 {- used to store information about incremental fscks. -}
 gitAnnexFsckState :: UUID -> Git.Repo -> OsPath
-gitAnnexFsckState u r = gitAnnexFsckDir u r Nothing </> literalOsPath "state"
+gitAnnexFsckState u r = 
+	gitAnnexFsckDir u r Nothing </> literalOsPath "state"
 
 {- Directory containing database used to record fsck info. -}
 gitAnnexFsckDbDir :: UUID -> Git.Repo -> GitConfig -> OsPath
-gitAnnexFsckDbDir u r c = gitAnnexFsckDir u r (Just c) </> literalOsPath "fsckdb"
+gitAnnexFsckDbDir u r c = 
+	gitAnnexFsckDir u r (Just c) </> literalOsPath "fsckdb"
 
 {- Directory containing old database used to record fsck info. -}
 gitAnnexFsckDbDirOld :: UUID -> Git.Repo -> GitConfig -> OsPath
-gitAnnexFsckDbDirOld u r c = gitAnnexFsckDir u r (Just c) </> literalOsPath "db"
+gitAnnexFsckDbDirOld u r c =
+	gitAnnexFsckDir u r (Just c) </> literalOsPath "db"
 
 {- Lock file for the fsck database. -}
 gitAnnexFsckDbLock :: UUID -> Git.Repo -> GitConfig -> OsPath
-gitAnnexFsckDbLock u r c = gitAnnexFsckDir u r (Just c) </> literalOsPath "fsck.lck"
+gitAnnexFsckDbLock u r c =
+	gitAnnexFsckDir u r (Just c) </> literalOsPath "fsck.lck"
 
 {- .git/annex/fsckresults/uuid is used to store results of git fscks -}
 gitAnnexFsckResultsLog :: UUID -> Git.Repo -> OsPath
