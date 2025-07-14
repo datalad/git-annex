@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2025-07-14T17:35:14Z"
+ content="""
+I have fixed this bug.
+
+I still need to make `git-annex fsck` clean up repositories that
+encountered this bug.
+"""]]
