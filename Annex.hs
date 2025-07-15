@@ -12,6 +12,7 @@ module Annex (
 	AnnexState(..),
 	AnnexRead(..),
 	new,
+	new',
 	run,
 	eval,
 	makeRunner,
@@ -291,10 +292,13 @@ newAnnexState c r = do
  - Ensures the config is read, if it was not already, and performs
  - any necessary git repo fixups. -}
 new :: Git.Repo -> IO (AnnexState, AnnexRead)
-new r = do
+new = new' fixupRepo
+
+new' :: (Git.Repo -> GitConfig -> IO Git.Repo) -> Git.Repo -> IO (AnnexState, AnnexRead)
+new' f r = do
 	r' <- Git.Config.read r
 	let c = extractGitConfig FromGitConfig r'
-	st <- newAnnexState c =<< fixupRepo r' c
+	st <- newAnnexState c =<< f r' c
 	rd <- newAnnexRead c
 	return (st, rd)
 

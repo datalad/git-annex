@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2025-07-15T17:07:43Z"
+ content="""
+Running `git-annex fsck` in the affected worktree will clean up from this
+bug.
+"""]]

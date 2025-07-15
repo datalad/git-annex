@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -15,6 +15,7 @@ import qualified Annex
 import qualified Remote
 import qualified Types.Backend
 import qualified Backend
+import qualified Git
 import Annex.Content
 import Annex.Verify
 #ifndef mingw32_HOST_OS
@@ -24,6 +25,7 @@ import Annex.Content.Presence
 import Annex.Content.Presence.LowLevel
 import Annex.Perms
 import Annex.Link
+import Annex.Fixup
 import Logs.Location
 import Logs.Trust
 import Logs.Activity
@@ -102,6 +104,8 @@ seek o = startConcurrency commandStages $ do
 	from <- maybe (pure Nothing) (Just <$$> getParsed) (fsckFromOption o)
 	u <- maybe getUUID (pure . Remote.uuid) from
 	checkDeadRepo u
+	when (isNothing from) $
+		cleanupLinkedWorkTreeBug
 	i <- prepIncremental u (incrementalOpt o)
 	let seeker = AnnexedFileSeeker
 		{ startAction = const $ start from i
@@ -768,4 +772,38 @@ withFsckDb (ContIncremental h) a = a h
 withFsckDb (StartIncremental h) a = a h
 withFsckDb (NonIncremental mh) a = maybe noop a mh
 withFsckDb (ScheduleIncremental _ _ i) a = withFsckDb i a
-
+ 
+-- A bug caused linked worktrees on filesystems not supporting symlinks
+-- to not use the common annex directory, but one annex directory per
+-- linked worktree. Object files could end up stored in those directories.
+--
+-- When run in a linked worktree with its own annex directory that is not a
+-- symlink, move any object files to the right location, and delete the
+-- annex directory.
+cleanupLinkedWorkTreeBug :: Annex ()
+cleanupLinkedWorkTreeBug = 
+	whenM (Annex.inRepo needsGitLinkFixup) $ do
+		r <- Annex.gitRepo
+		-- mainWorkTreePath is set by fixupUnusualRepos.
+		-- Unsetting it makes a version of the Repo that uses
+		-- the wrong object location.
+		let r' = r { Git.mainWorkTreePath = Nothing }
+		let dir = gitAnnexDir r'
+		whenM (liftIO $ dirnotsymlink dir) $ do
+			showSideAction $ "Cleaning up directory " 
+				<> QuotedPath dir
+				<> " created by buggy version of git-annex"
+			(st, rd) <- liftIO $ Annex.new' (\r'' _c -> pure r'') r'
+			ks <- liftIO $ Annex.eval (st, rd) $
+				listKeys InAnnex
+			forM_ ks $ \k -> void $ tryNonAsync $ do
+				loc <- liftIO $ gitAnnexLocation k r'
+					(Annex.gitconfig st)
+				moveAnnex k loc
+			void $ tryNonAsync $ liftIO $
+				removeDirectoryRecursive dir
+  where
+	dirnotsymlink dir = 
+		tryIO (R.getSymbolicLinkStatus (fromOsPath dir)) >>= \case
+			Right st -> return $ not (isSymbolicLink st)
+			Left _ -> return False
