@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="mih"
+ avatar="http://cdn.libravatar.org/avatar/f881df265a423e4f24eff27c623148fd"
+ subject="Thanks!"
+ date="2025-07-17T06:58:01Z"
+ content="""
+Thanks for the fix! I tried to confirm it in my original test case, but currently it FTBFS with
+
+```
+[570 of 755] Compiling Command.P2PHttp
+/git-annex-wheel/git-annex/Command/P2PHttp.hs:305:73: error: [GHC-83865]
+[571 of 755] Compiling Command.P2P
+    • Couldn't match type ‘OsString’
+```
+"""]]
