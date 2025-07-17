@@ -1,0 +1,16 @@
+Some of my files suddenly have a content like this:
+
+
+    <<<<<<< HEAD
+    /annex/objects/SHA256E-s761469--0311429015097e62e392d8c0c7c8250a07eadbf9670f8396286024ebc7b2d9ec.svg
+    =======
+    /annex/objects/SHA256E-s744177--4b9dce2dc6a6933defa7b69e5ebbd8f4fd653246c31891b7fb9b27ffec038f22.svg
+    >>>>>>> refs/remotes/singapore/master
+
+or just
+
+    /annex/objects/SHA256E-s1155603--95cefc864632f441029328e96414b026492718789941377f59b1a4bf6694be69.jpg
+
+instead of the actual content. These are not links or something.
+
+What happened?
