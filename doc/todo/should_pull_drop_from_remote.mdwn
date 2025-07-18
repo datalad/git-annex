@@ -1,0 +1,42 @@
+Currently, `git-annex pull` drops unwanted files from the remote it pulls
+from. I wonder if this is a good choice?
+
+I was surprised by this behavior today myself. I was thinking of pull as
+conceptually not modifying the state of the remote, only getting data from
+it. That's what `git pull` does after all.
+
+My use case was that I knew the remote didn't want a file, but I wanted to
+leave the file on the remote for a little while longer. So I did a pull,
+rather than a full sync.
+
+It's also the case that `git-annex push` drops unwanted files from the
+local repository. The same analogy to `git push` would say it should not do
+that.
+
+Separating out these behaviors would have pull drop unwanted files from the
+local repository, while push drops unwanted files from the remote. The
+latter seems unambiguously what the user would want; the former might be
+surprising to some, but one of pull/push needs to drop from local in order
+for them combined to be the same as sync.
+
+Looking at [[!commit 5df89d58c7d43b5cd26829cb8c4699e02fc352f3]] that
+implemented pull and push, I think this behavior was emergent, not
+designed. The existing `git-annex sync --pull` happened to drop unwanted
+content from the remote and `git-annex pull` inherited that behavior.
+Looking back to [[!commit 1cc1f9f4e5e3e974ddec069b2a6a3edf0893c369]] that
+implemented `--pull`, it also doesn't seem to have considered what to do
+about dropping.
+
+Note that there is some risk of a wider behavior change than expected if
+implementing this. `handleDropsFrom` drops from remotes first, and from the
+local repository last. So if a file is unwanted by both local and remote,
+and both start with a copy, `git-annex pull` will drop it from the remote,
+then be unable to drop it from the local, and so it will stay on the local
+repo. If it were changed to only drop from the local repo, it would be able
+to drop it from local, and the file would stay on the remote. It's not
+clear to me that either behavior is better than the other; both are legal
+solutions to that preferred content situation of course. It might be
+possible to only document this behavior change, and if a user has set up
+such a preferred content, they can of course change it to something that
+picks the repository they want to keep the copy.
+--[[Joey]]
