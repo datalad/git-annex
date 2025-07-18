@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="jose1711"
+ avatar="http://cdn.libravatar.org/avatar/bca6c53d89f86ddae44aa62f99c670a4"
+ subject="fs type?"
+ date="2025-07-18T09:10:50Z"
+ content="""
+does the underlying filesystem support symlinks?
+"""]]
