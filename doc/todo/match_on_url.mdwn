@@ -1,0 +1,12 @@
+Add a matching option that matches on the recorded url of a file.
+
+My use case is eg using, `git-annex find` to list files that were addurled 
+from a given host. So I want a way to match on the url with a glob, eg
+`--url=*/example.com/*`
+
+Seems likely that there would also be a corresponding preferred content
+expression if adding that.
+
+An alternative way could be to populate a metadata field with the url,
+if that were done without increasing the size of the git repository.
+--[[Joey]]
