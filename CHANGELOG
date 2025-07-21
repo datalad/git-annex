@@ -12,6 +12,10 @@ git-annex (10.20250631) UNRELEASED; urgency=medium
     branch in a linked worktree on a filesystem not supporting symlinks.
   * Add --url option and url= preferred content expression, to match
     content that is recorded as present in an url.   
+  * Improved workaround for git 2.50 bug, avoding an occasional test suite
+    failure, as well as some situations where an unlocked file did not get
+    populated when adding another file to the repository with the same
+    content.
 
  -- Joey Hess <id@joeyh.name>  Mon, 07 Jul 2025 15:59:42 -0400
 

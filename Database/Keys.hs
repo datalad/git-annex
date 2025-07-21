@@ -260,7 +260,7 @@ isInodeKnown i s = or <$> runReaderIO ContentTable
  - is an associated file.
  -}
 reconcileStaged :: Bool -> H.DbQueue -> Annex DbTablesChanged
-reconcileStaged dbisnew qh = ifM notneeded
+reconcileStaged dbisnew qh = ifM isBareRepo
 	( return mempty
 	, do
 		gitindex <- inRepo currentIndexFile
@@ -299,12 +299,12 @@ reconcileStaged dbisnew qh = ifM notneeded
 			inRepo $ update' lastindexref newtree
 			fastDebug "Database.Keys" "reconcileStaged end"
 		return (DbTablesChanged True True)
-	-- git write-tree will fail if the index is locked or when there is
-	-- a merge conflict. To get up-to-date with the current index, 
-	-- diff --staged with the old index tree. The current index tree
-	-- is not known, so not recorded, and the inode cache is not updated,
-	-- so the next time git-annex runs, it will diff again, even
-	-- if the index is unchanged.
+	-- Was not able to run git write-tree, or it failed due to the
+	-- index being locked or a merge conflict. To get up-to-date with
+	-- the current index, diff --staged with the old index tree. The
+	-- current index tree is not known, so not recorded, and the inode
+	-- cache is not updated, so the next time git-annex runs, it will
+	-- diff again, even if the index is unchanged.
 	--
 	-- When there is a merge conflict, that will not see the new local
 	-- version of the files that are conflicted. So a second diff
@@ -327,21 +327,22 @@ reconcileStaged dbisnew qh = ifM notneeded
 		processor l False
 			`finally` void cleanup
 	
-	-- Avoid running smudge clean filter, which would block trying to
-	-- access the locked database. git write-tree sometimes calls it,
-	-- even though it is not adding work tree files to the index,
-	-- and so the filter cannot have an effect on the contents of the
-	-- index or on the tree that gets written from it.
-	getindextree = inRepo $ \r -> writeTreeQuiet $ r
-		{ gitGlobalOpts = gitGlobalOpts r ++ bypassSmudgeConfig }
-	
-	notneeded = isBareRepo
-		-- Avoid doing anything when run by the 
-	 	-- smudge clean filter. When that happens in a conflicted
-		-- merge situation, running git write-tree
-		-- here would cause git merge to fail with an internal
-		-- error. This works around around that bug in git.
-		<||> Annex.getState Annex.insmudgecleanfilter
+	-- This avoids running git write-tree when run by the smudge clean
+	-- filter, in order to work around a bug in git. That causes
+	-- git merge to fail with an internal error when git write-tree is
+	-- run by the smudge clean filter in conflicted merge situation.
+	--
+	-- When running git write-tree, avoid it running the smudge clean
+	-- filter, which would block trying to access the locked database. 
+	-- git write-tree sometimes calls it, even though it is not adding
+	-- work tree files to the index, and so the filter cannot have an 
+	-- effect on the contents of the index or on the tree that gets
+	-- written from it.
+	getindextree = ifM (Annex.getState Annex.insmudgecleanfilter)
+		( return Nothing
+		, inRepo $ \r -> writeTreeQuiet $ r
+			{ gitGlobalOpts = gitGlobalOpts r ++ bypassSmudgeConfig }
+		)
 	
 	diff old new =
 		-- Avoid running smudge clean filter, since we want the

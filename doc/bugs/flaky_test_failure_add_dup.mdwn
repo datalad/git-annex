@@ -1,0 +1,74 @@
+    Repo Tests v10 unlocked
+    [...]
+	add dup: FAIL (0.25s)
+	./Test/Framework.hs:393:
+	checkcontent foo
+	expected: "annexed file content"
+	but got: "/annex/objects/SHA256E-s20--e394a389d787383843decc5d3d99b6d184ffa5fddeec23b911f9ee7fc8b9ea77\n"
+	Use -p '/add dup/' to rerun this test only.
+
+I am able to produce this failure after about a minute of running the
+test in a loop with:
+
+	while git-annex test -p '/add dup/' ; do :;done
+
+Inside the test repo, file "foo" indeed is an unpopulated pointer file,
+despite the file "foodup", which has the same git-annex key, being populated.
+
+Reverting [[!commit fb155b1e3e59cc1f9cf8a4fe7d47cba49d1c81af]] avoids
+this test suite failure. (Or at least if it is flaky, it's much mess likely to
+fail. I ran the loop for 10 minutes.)
+
+---
+
+What the test suite is doing is a `git add` and is using the smudge filter
+to add the new file as an unlocked annexed file. 
+
+I have reproduced the problem doing the same outside the test suite.
+
+----
+
+It seems that the keys database does not always get updated to indicate the
+key used by file "foo". As shown here looking at the keys db in a failed
+testcase dir:
+
+	sqlite> select * from associated;
+	1|SHA256E-s20--e394a389d787383843decc5d3d99b6d184ffa5fddeec23b911f9ee7fc8b9ea77|foodup
+	sqlite>
+
+That happens in a fresh clone of the repository. So, `reconcileStaged` never
+gets a chance to do anything, because it's only ever called from inside the
+smudge filter. And [[!commit fb155b1e3e59cc1f9cf8a4fe7d47cba49d1c81af]] made it
+not run in the smudge filter.
+
+This particular failure could be avoided if `git-annex init` called
+`reconcileStaged`. Then it would learn about pointer files in the tree.
+
+But would that be a complete fix for all situations? If the user is
+only running git-annex via `git add` (the smudge clean filter), 
+but is making other changes to the tree too, I don't think
+it would. Consider for example:
+
+	git clone r r2
+	cd r2
+	git-annex fsck
+	git mv foo bar
+    git config annex.largefiles anything
+    echo hi > baz
+    git add baz
+
+In the above example, the `git-annex fsck` updates the associated files,
+so it know that the file foo has the key. But then foo is renamed to bar
+and when `git add` is run on a file, generating the same key,
+`reconcileStaged` does not update the associated files, so it does not
+know about the rename to baz. So it leaves bar unpopulated.
+
+Conclusion: `reconcileStaged` needs to run even in the smudge clean filter.
+But to avoid the git bug worked around by 
+[[!commit fb155b1e3e59cc1f9cf8a4fe7d47cba49d1c81af]], it must avoid
+running `git write-tree` when called in smudge clean, at least when
+in a conflicted merge situation. Luckily, `reconcileStaged` does contain
+code to update things when it is unable to run `git write-tree`, so that
+only needs to be used when in the smudge clean filter.
+
+> [[fixed|done]] and confirmed the fix works with git 2.50. --[[Joey]]
