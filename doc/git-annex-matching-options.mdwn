@@ -178,6 +178,11 @@ in either of two repositories.
   (Note that you will need to quote the second parameter to avoid
   the shell doing redirection.)
 
+* `--url=glob`
+
+  Matches when the content is recorded as being present in an url that
+  matches the glob.
+
 * `--want-get`
 
   Matches only when the preferred content settings for the local repository

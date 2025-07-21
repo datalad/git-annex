@@ -1,6 +1,6 @@
 {- git-annex file matching
  -
- - Copyright 2012-2024 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -194,6 +194,7 @@ preferredContentTokens pcd =
 	, ValueToken "approxlackingcopies" (usev $ limitLackingCopies "approxlackingcopies" True)
 	, ValueToken "inbackend" (usev limitInBackend)
 	, ValueToken "metadata" (usev limitMetaData)
+	, ValueToken "url" (usev limitUrl)
 	, ValueToken "inallgroup" (usev $ limitInAllGroup $ getGroupMap pcd)
 	, ValueToken "onlyingroup" (usev $ limitOnlyInGroup $ getGroupMap pcd)
 	, ValueToken "balanced" (usev $ limitBalanced (repoUUID pcd) (getGroupMap pcd))

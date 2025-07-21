@@ -348,6 +348,11 @@ keyMatchingOptions' =
 		<> help "match files with attached metadata"
 		<> hidden
 		)
+	, annexOption (setAnnexState . Limit.addUrl) $ strOption
+		( long "url" <> metavar paramGlob
+		<> help "match files by url"
+		<> hidden
+		)
 	, annexFlag (setAnnexState Limit.Wanted.addWantGet)
 		( long "want-get"
 		<> help "match files the local repository wants to get"

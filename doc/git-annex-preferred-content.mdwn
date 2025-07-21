@@ -166,6 +166,11 @@ content not being configured.
   To match PDFs with between 100 and 200 pages (assuming something has set
   that metadata), use `metadata=pagecount>=100 and metadata=pagecount<=200`
 
+* `url=glob`
+
+  Matches when the content is recorded as being present in an url that
+  matches the glob. 
+
 * `present`
 
   Makes content be wanted if it's present, but not otherwise.

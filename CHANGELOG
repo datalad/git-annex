@@ -10,6 +10,8 @@ git-annex (10.20250631) UNRELEASED; urgency=medium
     that have experienced the above bug.
   * Fix symlinks generated to annexed content when in adjusted unlocked
     branch in a linked worktree on a filesystem not supporting symlinks.
+  * Add --url option and url= preferred content expression, to match
+    content that is recorded as present in an url.   
 
  -- Joey Hess <id@joeyh.name>  Mon, 07 Jul 2025 15:59:42 -0400
 

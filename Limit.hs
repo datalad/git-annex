@@ -31,6 +31,7 @@ import Types.FileMatcher
 import Types.MetaData
 import Annex.MetaData
 import Logs.MetaData
+import Logs.Web
 import Logs.Group
 import Logs.Unused
 import Logs.Location
@@ -866,6 +867,26 @@ limitMetaData s = case parseMetaDataMatcher s of
 	check f matching k = not . S.null 
 		. S.filter matching
 		. metaDataValues f <$> getCurrentMetaData k
+
+addUrl :: String -> Annex ()
+addUrl = addLimit . limitUrl
+
+limitUrl :: MkLimit Annex
+limitUrl glob = Right $ MatchFiles
+	{ matchAction = const $ const $ checkKey check
+	, matchNeedsFileName = False
+	, matchNeedsFileContent = False
+	, matchNeedsKey = True
+	, matchNeedsLocationLog = False
+	, matchNeedsLiveRepoSize = False
+	, matchNegationUnstable = False
+	, matchDesc = "url" =? glob
+	}
+  where
+	check k = any (matchGlob cglob)
+		. map (fst . getDownloader)
+		<$> getUrls k
+	cglob = compileGlob glob CaseSensitive (GlobFilePath False) -- memoized
 
 addAccessedWithin :: Duration -> Annex ()
 addAccessedWithin duration = do
