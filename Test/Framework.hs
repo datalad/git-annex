@@ -196,8 +196,10 @@ withtmpclonerepo' cfg a = do
 	case r of
 		Right () -> return ()
 		Left e -> do
-			whenM (keepFailuresOption . testOptions <$> getTestMode) $
-				putStrLn $ "** Preserving repo for failure analysis in " ++ clone
+			whenM (keepFailuresOption . testOptions <$> getTestMode) $ do
+				topdir <- Utility.Env.getEnvDefault "TOPDIR" ""
+				putStrLn $ "** Preserving repo for failure analysis in " ++ 
+					fromOsPath (toOsPath topdir </> toOsPath clone)
 			throwM e
 
 disconnectOrigin :: Assertion
