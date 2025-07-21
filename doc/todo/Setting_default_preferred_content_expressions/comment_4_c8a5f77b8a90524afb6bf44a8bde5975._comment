@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="Workaround for default wanted content?"
+ date="2025-07-21T18:12:59Z"
+ content="""
+I am trying to work around this, but can't really find a solution. Any of the following for one-off overriding of the preferred content would help, but apparently something like this doesn't exist, right? One has to go through `git annex wanted . present`?
+
+- `git -c annex.wanted=present annex assist`
+- `GIT_ANNEX_WANTED=present git annex assist`
+- `git annex assist|sync --wanted=present`
+
+[[preferred_content]] and [[git-annex-common-options]] don't list anything obvious in that direction.
+
+An environment variable would be particularly great as that's easy to deploy globally.
+"""]]
