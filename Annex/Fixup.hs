@@ -93,7 +93,7 @@ fixupDirect r = r
  - use yet. Except, do set mainWorkTreePath.
  -}
 fixupUnusualRepos :: Repo -> GitConfig -> IO Repo
-fixupUnusualRepos r@(Repo { location = l@(Local { worktree = Just w, gitdir = d }) }) c
+fixupUnusualRepos r@(Repo { location = Local { worktree = Just w, gitdir = d } }) c
 	| isNothing (annexVersion c) =
 		ifM (needsGitLinkFixup r)
 			( setworktreepath r
