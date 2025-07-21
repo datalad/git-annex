@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2025-07-21T16:15:37Z"
+ content="""
+These are pointer files, which are what is stored in git to represent an
+unlocked annexed file, rather than the symlink that is stored to represent
+a locked file.
+
+You would usually see these if the file's content is not present in the
+repository; running `git-annex get` should get it and populate it with the
+actual file content.
+
+The "<<<<<<< HEAD" is a git conflict marker; somehow or other you have gotten
+two versions of an unlocked annexed file in conflict. This can be resolved the
+usual way a git conflict would be resolved, by editing it to contain one
+pointer or the other. Or you can run `git-annex resolvemerge` to resolve
+the conflict the same way `git-annex sync` does, by checking in both
+versions of the file with different filenames.
+"""]]
