@@ -302,7 +302,7 @@ findRepos o = do
 			-- cycles and in case there is an unexpected
 			-- symlink to some other directory we are not
 			-- supposed to serve.
-			ifM (isSymbolicLink <$> R.getSymbolicLinkStatus f)
+			ifM (isSymbolicLink <$> R.getSymbolicLinkStatus (fromOsPath f))
 				( return []
 				-- Ignore any errors getting the contents of a
 				-- subdirectory.
