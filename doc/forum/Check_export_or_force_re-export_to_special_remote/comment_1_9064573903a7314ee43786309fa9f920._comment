@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="apoelstra"
+ avatar="http://cdn.libravatar.org/avatar/e0256d19738263aece2b0016e401864d"
+ subject="fsck can do this"
+ date="2025-07-24T14:44:52Z"
+ content="""
+If you run
+
+```
+git annex fsck --from=android --fast  # don't forget the =
+```
+
+then it will report a bunch of errors for all missing files. You can then run
+
+```
+git annex export master --to android
+```
+
+again and it'll work.
+
+(`git-annex-fsck --fast` will just check the presence of files; without it, it will actually checksum the files, which might be what you want.)
+
+`fsck` is smart enough to understand that files are missing even if you exported some weird treeish; e.g. if you had done `git annex export master:photos/ --to android`, even though the paths would all be relative to `photos/` rather than the root, it'll still realize they're missing and do the right thing. In this case you might want to add `photos/` to your `git-annex-fsck` command to save yourself the time of confirming that files aren't there that aren't supposed to be.
+"""]]
