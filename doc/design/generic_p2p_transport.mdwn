@@ -20,8 +20,9 @@ connection, the command can exit zero.
 To handle incoming connections from peers, `git-annex remotedaemon`
 runs `git-annex-p2p-<netname>` with the parameter "socket", followed 
 by the P2P address of the local repository. The command
-should output the path of a unix socket file. When it does, `git-annex
-remotedaemon` will use that socket file to listen for connections from
+should output a single line, the path of a unix socket file. 
+(Any subsequent output is ignored.)
+When it does, `git-annex remotedaemon` will use that socket file to listen for connections from
 peers, and service them. (The [[P2P_protocol]] is spoken over these
 connections.)
 
@@ -32,9 +33,9 @@ to convert the P2P network's own equivilant into a unix socket file.
 To configure `git-annex remotedaemon` to listen on a given P2P network,
 the user runs `git-annex p2p --enable <netname>`. That also
 runs `git-annex-p2p-<netname>`, this time with the parameter "address".
-That should output the P2P network address that can be used by peers
-to connect to the repository. It can first do whatever it needs to do to
-set up the P2P networl.
+That should output a single line, the P2P network address that can be used
+by peers to connect to the repository. It can first do whatever it needs to
+do to set up the P2P network.
 
 The program [[git-remote-p2p-annex]] is included in git-annex as a git
 remote helper program. git will use that program to handle `pull` and
