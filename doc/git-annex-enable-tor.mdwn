@@ -18,7 +18,8 @@ that file. If you run it as root, pass it your non-root user id number,
 as output by `id -u`
 
 After this command is run, `git annex remotedaemon` can be run to serve the
-tor hidden service, and then `git-annex p2p --gen-addresses` can be run to
+tor hidden service, and then `git-annex p2p --pair` or 
+`git-annex p2p --gen-addresses` can be run to
 give other users access to your repository via the tor hidden service.
 
 # OPTIONS

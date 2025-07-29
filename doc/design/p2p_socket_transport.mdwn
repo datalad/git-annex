@@ -33,7 +33,8 @@ To configure `git-annex remotedaemon` to listen on a given P2P network,
 the user runs `git-annex p2p --enable <netname>`. That also
 runs `git-annex-p2p-<netname>`, this time with the parameter "address".
 That should output the P2P network address that can be used by peers
-to connect to the repository.
+to connect to the repository. It can first do whatever it needs to do to
+set up the P2P networl.
 
 The program [[git-remote-p2p-annex]] is included in git-annex as a git
 remote helper program. git will use that program to handle `pull` and

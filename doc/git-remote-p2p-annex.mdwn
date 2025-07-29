@@ -1,0 +1,37 @@
+# NAME
+
+git-remote-p2p-annex - remote helper program to talk to git-annex over a P2P network
+
+# SYNOPSIS
+
+git fetch p2p-annex::netname+address
+
+git remote add foo p2p-annex::netname+address
+
+# DESCRIPTION
+
+This is a git remote helper program that allows git to pull and push
+over a P2P network.
+
+This uses a command `git-annex-p2p-<netname>` to communicate with
+the P2P network.
+
+# SEE ALSO
+
+gitremote-helpers(1)
+
+[[git-annex]](1)
+
+[[git-annex-p2p]](1)
+
+[[git-annex-remotedaemon]](1)
+
+[[git-remote-tor-annex]](1)
+
+<https://git-annex.branchable.com/design/p2p_socket_transport/>
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

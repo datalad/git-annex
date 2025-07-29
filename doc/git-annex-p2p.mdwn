@@ -11,10 +11,26 @@ git annex p2p [options]
 This command can be used to link git-annex repositories over peer-2-peer
 networks.
 
-Currently, the only P2P network supported by git-annex is Tor hidden
-services.
+git-annex includes built-in support to use Tor hidden services as a P2P
+network. (This needs Tor to be installed.)
+
+git-annex can also support other P2P networks, using a helper program
+that you can install. These programs have names of the form
+`git-annex-p2p-<netname>`. See
+<https://git-annex.branchable.com/design/p2p_socket_transport/>
+for documentation about how to create such a program.
 
 # OPTIONS
+
+* `--enable <netname>`
+
+  Enable using the P2P network with the specified name.
+  This needs the helper program `git-annex-p2p-<netname>` to be installed.
+
+  After this command is run, `git annex remotedaemon` can be run to serve
+  incoming connections from peers, and `git-annex p2p --pair` or
+  `git-annex p2p --gen-addresses` can be run to give other users access
+  to your repository via the P2P network.
 
 * `--pair`
 
