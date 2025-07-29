@@ -28,7 +28,7 @@ gitremote-helpers(1)
 
 [[git-remote-tor-annex]](1)
 
-<https://git-annex.branchable.com/design/p2p_socket_transport/>
+<https://git-annex.branchable.com/design/generic_p2p_transport/>
 
 # AUTHOR
 

@@ -3,7 +3,7 @@
  subject="""comment 12"""
  date="2025-07-29T16:41:07Z"
  content="""
-I have started a design document at [[design/p2p_socket_transport]],
+I have started a design document at [[design/generic_p2p_transport]],
 to collect all the scattered decisions here into a coherent document that
 can be used by someone implementing support for one of these networks.
 
