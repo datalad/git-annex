@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 12"""
+ date="2025-07-29T16:41:07Z"
+ content="""
+I have started a design document at [[design/p2p_socket_transport]],
+to collect all the scattered decisions here into a coherent document that
+can be used by someone implementing support for one of these networks.
+
+In the process, I realized that rather than defining a path where git-annex
+expects the socket file to be, it could run the same `git-annex-p2p-foo`
+command in a mode where the command outputs the path to the socket file.
+That also lets the command run socat to connect up the socket, for example.
+
+I also put in there that `git-annex p2p --enable <netname>` will run
+`git-annex-p2p-<netname> address`, which will output the P2P address that
+peers will use to connect the the repository. That seemed nicer than
+requiring the user to somehow come up with the P2P address on their own.
+
+I have started writing the user-level documentation too, on the
+`genericp2p` branch.
+"""]]
