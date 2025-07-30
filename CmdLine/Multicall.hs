@@ -1,6 +1,6 @@
 {- git-annex multicall binary
  -
- - Copyright 2024 Joey Hess <id@joeyh.name>
+ - Copyright 2024-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -17,12 +17,14 @@ import qualified Data.Map as M
 data OtherMultiCallCommand
 	= GitAnnexShell
 	| GitRemoteAnnex
+	| GitRemoteP2PAnnex
 	| GitRemoteTorAnnex
 
 otherMulticallCommands :: M.Map String OtherMultiCallCommand
 otherMulticallCommands = M.fromList
 	[ ("git-annex-shell", GitAnnexShell)
 	, ("git-remote-annex", GitRemoteAnnex)
+	, ("git-remote-p2p-annex", GitRemoteP2PAnnex)
 	, ("git-remote-tor-annex", GitRemoteTorAnnex)
 	]
 

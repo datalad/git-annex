@@ -16,6 +16,7 @@ import CmdLine.Multicall
 import qualified CmdLine.GitAnnex
 import qualified CmdLine.GitAnnexShell
 import qualified CmdLine.GitRemoteAnnex
+import qualified CmdLine.GitRemoteP2PAnnex
 import qualified CmdLine.GitRemoteTorAnnex
 import qualified Test
 import qualified Benchmark
@@ -39,6 +40,7 @@ main = sanitizeTopLevelExceptionMessages $ withSocketsDo $ do
 	run ps n = case M.lookup (takeFileName n) otherMulticallCommands of
 		Just GitAnnexShell -> CmdLine.GitAnnexShell.run ps
 		Just GitRemoteAnnex -> CmdLine.GitRemoteAnnex.run ps
+		Just GitRemoteP2PAnnex -> CmdLine.GitRemoteP2PAnnex.run ps
 		Just GitRemoteTorAnnex -> CmdLine.GitRemoteTorAnnex.run ps
 		Nothing -> CmdLine.GitAnnex.run
 			Test.optParser

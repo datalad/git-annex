@@ -222,6 +222,7 @@ installGitAnnex topdir = go (topdir </> literalOsPath "bin")
 		unlessM (boolSystem "strip" [File (fromOsPath (bindir </> literalOsPath "git-annex"))]) $
 			error "strip failed"
 		createSymbolicLink "git-annex" (fromOsPath (bindir </> literalOsPath "git-annex-shell"))
+		createSymbolicLink "git-annex" (fromOsPath (bindir </> literalOsPath "git-remote-p2p-annex"))
 		createSymbolicLink "git-annex" (fromOsPath (bindir </> literalOsPath "git-remote-tor-annex"))
 		createSymbolicLink "git-annex" (fromOsPath (bindir </> literalOsPath "git-remote-annex"))
 

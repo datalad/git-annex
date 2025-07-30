@@ -649,6 +649,7 @@ Executable git-annex
     CmdLine.AnnexSetter
     CmdLine.Multicall
     CmdLine.GitRemoteAnnex
+    CmdLine.GitRemoteP2PAnnex
     CmdLine.GitRemoteTorAnnex
     CmdLine.Option
     CmdLine.Seek
