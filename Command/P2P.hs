@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2016 Joey Hess <id@joeyh.name>
+ - Copyright 2016-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -13,6 +13,7 @@ import Command
 import P2P.Address
 import P2P.Auth
 import P2P.IO
+import P2P.Generic
 import qualified P2P.Protocol as P2P
 import Git.Types
 import qualified Git.Remote
@@ -27,6 +28,7 @@ import Utility.ThreadScheduler
 import Utility.SafeOutput
 import qualified Utility.FileIO as F
 import qualified Utility.MagicWormhole as Wormhole
+import qualified Command.EnableTor as EnableTor
 
 import Control.Concurrent.Async
 import qualified Data.Text as T
@@ -40,10 +42,11 @@ data P2POpts
 	= GenAddresses
 	| LinkRemote
 	| Pair
+	| Enable P2PNetName
 
 optParser :: CmdParamsDesc -> Parser (P2POpts, Maybe RemoteName)
 optParser _ = (,)
-	<$> (pair <|> linkremote <|> genaddresses)
+	<$> (pair <|> linkremote <|> genaddresses <|> enable)
 	<*> optional name
   where
 	genaddresses = flag' GenAddresses
@@ -58,6 +61,10 @@ optParser _ = (,)
 		( long "pair"
 		<> help "pair with another repository"
 		)
+	enable = Enable . P2PNetName <$> strOption
+                ( long "enable" <> metavar paramName
+                <> help "enable using a P2P network"
+                )
 	name = Git.Remote.makeLegalName <$> strOption
 		( long "name"
 		<> metavar paramName
@@ -75,6 +82,8 @@ seek (Pair, Just name) = commandAction $
 seek (Pair, Nothing) = commandAction $ do
 	name <- unusedPeerRemoteName
 	startPairing name =<< loadP2PAddresses
+seek (Enable netname, _) = commandAction $
+	enableNetwork netname
 
 unusedPeerRemoteName :: Annex RemoteName
 unusedPeerRemoteName = go (1 :: Integer) =<< usednames
@@ -316,3 +325,16 @@ setupLink remotename (P2PAddressAuth addr authtoken) = do
 		return LinkSuccess
 	go (Right Nothing) = return $ AuthenticationError "Unable to authenticate with peer. Please check the address and try again."
 	go (Left e) = return $ AuthenticationError $ "Unable to authenticate with peer: " ++ describeProtoFailure e
+
+enableNetwork :: P2PNetName -> CommandStart
+enableNetwork netname@(P2PNetName name)
+	| name == "tor" = EnableTor.start Nothing
+	| otherwise = starting "p2p enable" ai si $ next $ do
+		addrs <- liftIO $ getAddressGenericP2P netname
+		when (null addrs) $
+			giveup $ genericP2PCommand netname ++ " did not output any P2P addresses" 
+		mapM_ storeP2PAddress addrs
+		return True
+  where
+	ai = ActionItemOther (Just (UnquotedString name))
+	si = SeekInput []

@@ -38,11 +38,11 @@ cmd = noCommit $ dontCheck repoExists $
 		"uid" (withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek = withWords (commandAction . start)
+seek = withWords (commandAction . start . Just)
 
 -- This runs as root, so avoid making any commits or initializing
 -- git-annex, or doing other things that create root-owned files.
-start :: [String] -> CommandStart
+start :: Maybe [String] -> CommandStart
 #ifndef mingw32_HOST_OS
 start os = do
 #else
@@ -53,9 +53,11 @@ start _os = do
 	let si = SeekInput []
 	curruserid <- liftIO getEffectiveUserID
 	if curruserid == 0
-		then case readish =<< headMaybe os of
-			Nothing -> giveup "Need user-id parameter."
-			Just userid -> go userid
+		then case os of
+			Just os' -> case readish =<< headMaybe os' of
+				Nothing -> giveup "Need user-id parameter."
+				Just userid -> go userid
+			Nothing -> giveup "Cannot run this command as root."
 		else starting "enable-tor" ai si $ do
 			gitannex <- fromOsPath <$> liftIO programPath
 			let ps = [Param (cmdname cmd), Param (show curruserid)]

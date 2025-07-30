@@ -33,8 +33,9 @@ data ExternalAddonStartError
 	= ProgramNotInstalled String
 	| ProgramFailure String
 
-startExternalAddonProcess :: String -> [CommandParam] -> ExternalAddonPID -> Annex (Either ExternalAddonStartError ExternalAddonProcess)
-startExternalAddonProcess basecmd ps pid = do
+-- | Starts an external addon process that speaks a protocol over stdio.
+startExternalAddonProcessProtocol :: String -> [CommandParam] -> ExternalAddonPID -> Annex (Either ExternalAddonStartError ExternalAddonProcess)
+startExternalAddonProcessProtocol basecmd ps pid = do
 	errrelayer <- mkStderrRelayer
 	g <- Annex.gitRepo
 	cmdpath <- liftIO $ searchPath basecmd

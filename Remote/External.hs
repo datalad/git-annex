@@ -673,7 +673,7 @@ startExternal' external = do
 		n <- succ <$> readTVar (externalLastPid external)
 		writeTVar (externalLastPid external) n
 		return n
-	AddonProcess.startExternalAddonProcess externalcmd externalparams pid >>= \case
+	AddonProcess.startExternalAddonProcessProtocol externalcmd externalparams pid >>= \case
 		Left (AddonProcess.ProgramFailure err) -> do
 			unusable err
 		Left (AddonProcess.ProgramNotInstalled err) ->

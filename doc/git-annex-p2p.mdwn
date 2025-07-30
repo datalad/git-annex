@@ -25,7 +25,9 @@ for documentation about how to create such a program.
 * `--enable <netname>`
 
   Enable using the P2P network with the specified name.
-  This needs the helper program `git-annex-p2p-<netname>` to be installed.
+
+  For networks other than tor, this needs the helper program
+  `git-annex-p2p-<netname>` to be installed.
 
   After this command is run, `git annex remotedaemon` can be run to serve
   incoming connections from peers, and `git-annex p2p --pair` or

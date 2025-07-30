@@ -25,18 +25,18 @@ connectGenericP2P netname (UnderlyingP2PAddress address) =
 socketGenericP2P :: P2PNetName -> UnderlyingP2PAddress -> CreateProcess
 socketGenericP2P netname (UnderlyingP2PAddress address) =
 	(proc (genericP2PCommand netname) ["socket", address])
-		{ std_in = CreatePipe
+		{ std_out = CreatePipe
 		}
 
 addressGenericP2P :: P2PNetName -> CreateProcess
 addressGenericP2P netname =
 	(proc (genericP2PCommand netname) ["address"])
-		{ std_in = CreatePipe
+		{ std_out = CreatePipe
 		}
 
 getSocketGenericP2P :: P2PNetName -> UnderlyingP2PAddress -> IO (Maybe (OsPath, ProcessHandle))
 getSocketGenericP2P netname address = do
-	(Just hin, Nothing, Nothing, pid) <- createProcess $
+	(Nothing, Just hin, Nothing, pid) <- createProcess $
 		socketGenericP2P netname address
 	hGetLineUntilExitOrEOF pid hin >>= \case
 		Just l | not (null l) -> return $ Just (toOsPath l, pid)
@@ -44,7 +44,7 @@ getSocketGenericP2P netname address = do
 
 getAddressGenericP2P :: P2PNetName -> IO [P2PAddress]
 getAddressGenericP2P netname = do
-	(Just hin, Nothing, Nothing, pid) <- createProcess $
+	(Nothing, Just hin, Nothing, pid) <- createProcess $
 		addressGenericP2P netname
 	go [] hin pid
   where
