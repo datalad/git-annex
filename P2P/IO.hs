@@ -148,8 +148,7 @@ connectPeer g (TorAnnex onionaddress onionport) = do
 		, connIdent = ConnIdent Nothing
 		}
 connectPeer g (P2PAnnex netname address) = do
-	(Just hin, Just hout, Nothing, pid) <- createProcess $
-		connectGenericP2P netname address
+	(hin, hout, pid) <- connectGenericP2P netname address
 	return $ P2PConnection
 		{ connRepo = g
 		, connCheckAuth = const False
