@@ -1,6 +1,6 @@
 {- P2P protocol, IO implementation
  -
- - Copyright 2016-2024 Joey Hess <id@joeyh.name>
+ - Copyright 2016-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -20,7 +20,6 @@ module P2P.IO
 	, connectPeer
 	, closeConnection
 	, serveUnixSocket
-	, setupHandle
 	, ProtoFailure(..)
 	, describeProtoFailure
 	, runNetProto
@@ -31,6 +30,7 @@ module P2P.IO
 import Common
 import P2P.Protocol
 import P2P.Address
+import P2P.Generic
 import Git
 import Git.Command
 import Utility.AuthToken
@@ -138,13 +138,24 @@ stdioP2PConnectionDupped g = do
 -- Opens a connection to a peer. Does not authenticate with it.
 connectPeer :: Maybe Git.Repo -> P2PAddress -> IO P2PConnection
 connectPeer g (TorAnnex onionaddress onionport) = do
-	h <- setupHandle =<< connectHiddenService onionaddress onionport
+	h <- setupHandleFromSocket =<< connectHiddenService onionaddress onionport
 	return $ P2PConnection
 		{ connRepo = g
 		, connCheckAuth = const False
 		, connIhdl = P2PHandle h
 		, connOhdl = P2PHandle h
 		, connProcess = Nothing
+		, connIdent = ConnIdent Nothing
+		}
+connectPeer g (P2PAnnex netname address) = do
+	(Just hin, Just hout, Nothing, pid) <- createProcess $
+		connectGenericP2P netname address
+	return $ P2PConnection
+		{ connRepo = g
+		, connCheckAuth = const False
+		, connIhdl = P2PHandle hout
+		, connOhdl = P2PHandle hin
+		, connProcess = Just pid
 		, connIdent = ConnIdent Nothing
 		}
 
@@ -185,10 +196,10 @@ serveUnixSocket unixsocket serveconn = do
 	S.listen soc 2
 	forever $ do
 		(conn, _) <- S.accept soc
-		setupHandle conn >>= serveconn
+		setupHandleFromSocket conn >>= serveconn
 
-setupHandle :: Socket -> IO Handle
-setupHandle s = do
+setupHandleFromSocket :: Socket -> IO Handle
+setupHandleFromSocket s = do
 	h <- socketToHandle s ReadWriteMode
 	hSetBuffering h LineBuffering
 	hSetBinaryMode h False
