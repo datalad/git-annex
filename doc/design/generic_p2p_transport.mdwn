@@ -7,7 +7,7 @@ Such a P2P network has some form of address, which can be
 used to connect to a given peer by address across the network.
 
 A git remote using the P2P network has an url of the form
-`p2p-annex::<netname>+<address>`
+`p2p-annex::<netname>:<address>`
 
 To connect to that remote, git-annex runs the command
 `git-annex-p2p-<netname>`, giving it the P2P network address as its only

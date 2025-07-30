@@ -102,6 +102,7 @@ checkHiddenService = bracket setup cleanup go
 	go _ = check (150 :: Int) =<< filter istoraddr <$> loadP2PAddresses
 	
 	istoraddr (TorAnnex _ _) = True
+	istoraddr _ = False
 
 	check 0 _ = giveup "Still unable to connect to hidden service. It might not yet be usable by others. Please check Tor's logs for details."
 	check _ [] = giveup "Somehow didn't get an onion address."

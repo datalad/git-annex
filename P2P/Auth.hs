@@ -16,6 +16,8 @@ import Utility.AuthToken
 import Utility.Tor
 import Utility.Env
 
+import Network.URI
+import Data.Char
 import qualified Data.Text as T
 
 -- | Load authtokens that are accepted by this repository for tor.
@@ -55,7 +57,7 @@ storeP2PAuthToken addr t = do
   where
 	v = case addr of
 		TorAnnex _ _ -> (t, Nothing)
-		-- _ -> (t, Just addr)
+		_ -> (t, Just addr)
 	
 	fmt (tok, Nothing) = T.unpack (fromAuthToken tok)
   	fmt (tok, Just addr') = T.unpack (fromAuthToken tok) 
@@ -86,9 +88,13 @@ storeP2PRemoteAuthToken addr t = writeCreds
 	(T.unpack $ fromAuthToken t)
 	(addressCredsFile addr)
 
+-- | Unusual characters in the address are url encoded.
 addressCredsFile :: P2PAddress -> OsPath
--- We can omit the port and just use the onion address for the creds file,
--- because any given tor hidden service runs on a single port and has a
--- unique onion address.
-addressCredsFile (TorAnnex (OnionAddress onionaddr) _port) =
-	toOsPath onionaddr
+addressCredsFile addr = toOsPath $ escapeURIString isAlphaNum $ case addr of
+	-- We can omit the port and just use the onion address for the
+	-- creds file, because any given tor hidden service runs on a
+	-- single port and has a unique onion address.
+	TorAnnex (OnionAddress onionaddr) _port ->
+		onionaddr
+	P2PAnnex (P2PNetName netname) (UnderlyingP2PAddress address) ->
+		netname ++ ":" ++ address
