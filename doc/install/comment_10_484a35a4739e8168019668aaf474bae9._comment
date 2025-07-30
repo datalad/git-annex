@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="Use an older version e.g. from archive.org"
+ date="2025-07-30T16:17:44Z"
+ content="""
+This happens sometimes and will eventually get fixed when joey notices it. Currently the binary is only on his laptop apparently.
+
+You can use an older version which is eventually available on archive.org:
+
+[[!format  bash \"\"\"
+yann in yann-desktop-nixos in …/OSX/current/10.15_Catalina on  master took 2s123ms 
+🐟 ❯ git co d8a7d5d54d24d17810f07c0756e7334e998650fe
+HEAD ist jetzt bei d8a7d5d54d publishing git-annex 10.20250630 10.20250606
+yann in yann-desktop-nixos in …/OSX/current/10.15_Catalina on  HEAD (d8a7d5d) 
+🐟 ❯ git annex whereis
+whereis git-annex.dmg (1 copy) 
+  	5dc2ccd1-e534-4dae-8e8c-f31c8015e26e -- archive.org via S3
+
+  The following untrusted locations may also have copies:
+  	00000000-0000-0000-0000-000000000001 -- web
+
+  web: http://archive.org/download/git-annex-builds/SHA256E-s28610967--7fc0dbf3f0a1f275a95730899327694b90dcd60c4ba8d8070a3efde44983a719.dmg
+ok
+\"\"\"]]
+
+So for example [this link](http://archive.org/download/git-annex-builds/SHA256E-s28610967--7fc0dbf3f0a1f275a95730899327694b90dcd60c4ba8d8070a3efde44983a719.dmg):
+"""]]
