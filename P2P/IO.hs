@@ -97,6 +97,7 @@ data P2PConnection = P2PConnection
 	, connCheckAuth :: (AuthToken -> Bool)
 	, connIhdl :: P2PHandle
 	, connOhdl :: P2PHandle
+	, connProcess :: Maybe ProcessHandle
 	, connIdent :: ConnIdent
 	}
 
@@ -115,6 +116,7 @@ stdioP2PConnection g = P2PConnection
 	, connCheckAuth = const False
 	, connIhdl = P2PHandle stdin
 	, connOhdl = P2PHandle stdout
+	, connProcess = Nothing
 	, connIdent = ConnIdent Nothing
 	}
 
@@ -129,6 +131,7 @@ stdioP2PConnectionDupped g = do
 		, connCheckAuth = const False
 		, connIhdl = P2PHandle readh
 		, connOhdl = P2PHandle writeh
+		, connProcess = Nothing
 		, connIdent = ConnIdent Nothing
 		}
 
@@ -141,6 +144,7 @@ connectPeer g (TorAnnex onionaddress onionport) = do
 		, connCheckAuth = const False
 		, connIhdl = P2PHandle h
 		, connOhdl = P2PHandle h
+		, connProcess = Nothing
 		, connIdent = ConnIdent Nothing
 		}
 
@@ -148,6 +152,9 @@ closeConnection :: P2PConnection -> IO ()
 closeConnection conn = do
 	closehandle (connIhdl conn)
 	closehandle (connOhdl conn)
+	case connProcess conn of
+		Nothing -> noop
+		Just ph -> void $ waitForProcess ph
   where
 	closehandle (P2PHandle h) = hClose h
 	closehandle (P2PHandleTMVar _ _ closedv) = 

@@ -406,10 +406,10 @@ mkP2PConnectionPair connparams (n1, n2) = do
 		(if connectionWaitVar connparams then Just wait2 else Nothing)
 		closed2
 	let clientconn = P2PConnection Nothing
-		(const True) h2 h1
+		(const True) h2 h1 Nothing
 		(ConnIdent (Just n1))
 	let serverconn = P2PConnection Nothing
-		(const True) h1 h2
+		(const True) h1 h2 Nothing
 		(ConnIdent (Just n2))
 	return (clientconn, serverconn)
 

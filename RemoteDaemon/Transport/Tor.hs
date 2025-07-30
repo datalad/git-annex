@@ -115,6 +115,7 @@ serveClient th@(TransportHandle _ _ rd) u r q = bracket setup cleanup start
 				, connCheckAuth = (`isAllowedAuthToken` allowed)
 				, connIhdl = P2PHandle h
 				, connOhdl = P2PHandle h
+				, connProcess = Nothing
 				, connIdent = ConnIdent $ Just "tor remotedaemon"
 				}
 			-- not really Client, but we don't know their uuid yet

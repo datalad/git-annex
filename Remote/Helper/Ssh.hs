@@ -270,6 +270,7 @@ openP2PShellConnection' r maxprotoversion bypass = do
 			, P2P.connCheckAuth = const False
 			, P2P.connIhdl = P2P.P2PHandle to
 			, P2P.connOhdl = P2P.P2PHandle from
+			, P2P.connProcess = Nothing
 			, P2P.connIdent = P2P.ConnIdent $
 				Just $ "git-annex-shell connection " ++ show pidnum
 			}

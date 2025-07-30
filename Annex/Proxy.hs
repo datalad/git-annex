@@ -90,6 +90,7 @@ proxySpecialRemoteSide clientmaxversion r = mkRemoteSide r $ do
 		, connCheckAuth = const False
 		, connIhdl = P2PHandleTMVar ihdl (Just iwaitv) iclosedv
 		, connOhdl = P2PHandleTMVar ohdl (Just owaitv) oclosedv
+		, connProcess = Nothing
 		, connIdent = ConnIdent (Just (Remote.name r))
 		}
 	let closeremoteconn = do
