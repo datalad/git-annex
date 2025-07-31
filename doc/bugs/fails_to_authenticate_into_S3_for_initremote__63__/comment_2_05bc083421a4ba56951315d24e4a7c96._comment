@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2025-07-31T19:07:57Z"
+ content="""
+- adding `signature=v4` brought a different error which mentioned `s3ErrorMessage = \"The authorization header is malformed; the region 'us-east-1' is wrong; expecting 'us-east-2'\"`
+- adding `region=us-east-2` while running older `10.20241031-1~ndall+1` version of git-annex seems resulted in no change
+- running newer `10.20250721-g8867e7590a3a70afa8a93d2fefab94adc9a176d0` installed from pypi seems took that into account and worked
+
+```
+(venv-annex) dandi@drogon:/mnt/backup/dandi/tmp/dandisets/test-importtree-s3$ git annex initremote s3-origin type=S3 importtree=yes encryption=none autoenable=true bucket=dandiarchive fileprefix=zarr-checksums/2ac71edb-738c-40ac-bd8c-8ca985adaa12/ signature=v4 region=us-east-2
+initremote s3-origin (checking bucket...) ok
+(recording state in git...)
+```
+
+and then `import` worked.
+
+- couldn't it figure out which signature to use?
+- it definitely could/should retry automagically with a correct zone or even start with it
+
+
+"""]]
