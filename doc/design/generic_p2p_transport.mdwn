@@ -1,4 +1,6 @@
 This is a generic interface that allows git-annex to use a P2P network.
+The [[P2P_protocol]] is used, to allow accessing a peer's git-annex
+repository as a git remote.
 
 Examples of such networks are tor, yggstack or fowl. (git-annex has a
 built-in integration with tor which does not use this interface.)
@@ -17,25 +19,23 @@ the peer, and data received from the peer should be output to stdout. If it
 is unable to connect, the command can exit nonzero. When the peer closes
 connection, the command can exit zero.
 
-To handle incoming connections from peers, `git-annex remotedaemon`
-runs `git-annex-p2p-<netname>` with the parameter "socket", followed 
-by the P2P address of the local repository. The command
-should output a single line, the path of a unix socket file. 
-(Any subsequent output is ignored.)
-When it does, `git-annex remotedaemon` will use that socket file to listen for connections from
-peers, and service them. (The [[P2P_protocol]] is spoken over these
-connections.)
-
-Note that, if the P2P network does not natively use a unix socket file,
-a command like `socat` can be run by `git-annex-p2p-<netname> socket` 
-to convert the P2P network's own equivilant into a unix socket file.
-
 To configure `git-annex remotedaemon` to listen on a given P2P network,
 the user runs `git-annex p2p --enable <netname>`. That also
 runs `git-annex-p2p-<netname>`, this time with the parameter "address".
 That should output one or more lines, the P2P network address (or addresses) 
 that can be used by peers to connect to the repository. It can first do
 whatever it needs to do to set up the P2P network.
+
+To handle incoming connections from peers, `git-annex remotedaemon` runs
+`git-annex-p2p-<netname>`, with two parameters. The first parameter is the
+P2P address of the local repository, obtained earlier as described above.
+The second parameter is the path to a unix socket file, which git-annex
+will have already created. git-annex listens for connections from peers
+that are made to the socket, and services them.
+
+Note that, if the P2P network does not natively use a unix socket file,
+a command like `socat` can be run by `git-annex-p2p-<netname> socket` 
+to convert the P2P network's own equivilant into a unix socket file.
 
 The program [[git-remote-p2p-annex]] is included in git-annex as a git
 remote helper program. git will use that program to handle `pull` and
