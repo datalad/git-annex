@@ -1,0 +1,6 @@
+Yann Büchau's (German) talk „Das Leben in Git (Annex)” („Life in Git (Annex)”) at the [Tage der Digitalen Freiheit](https://tdf.cttue.de/) in Tübingen, Germany:
+
+- [on media.ccc.de](https://media.ccc.de/v/tdf4-26-das-leben-in-git-annex-)
+
+[[!meta date="26 Jul 2025"]]
+[[!meta title="'life in git annex' talk by Yann Büchau at TdF2025"]]
