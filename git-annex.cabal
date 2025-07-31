@@ -980,6 +980,7 @@ Executable git-annex
     RemoteDaemon.Core
     RemoteDaemon.Transport
     RemoteDaemon.Transport.GCrypt
+    RemoteDaemon.Transport.P2PGeneric
     RemoteDaemon.Transport.Tor
     RemoteDaemon.Transport.Ssh
     RemoteDaemon.Transport.Ssh.Types

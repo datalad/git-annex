@@ -28,13 +28,13 @@ import System.PosixCompat.Files (fileOwner, fileGroup)
 data P2PAddress
 	= TorAnnex OnionAddress OnionPort
 	| P2PAnnex P2PNetName UnderlyingP2PAddress
-	deriving (Eq, Show)
+	deriving (Eq, Show, Ord)
 
 newtype P2PNetName = P2PNetName String
-	deriving (Eq, Show)
+	deriving (Eq, Show, Ord)
 
 newtype UnderlyingP2PAddress = UnderlyingP2PAddress String
-	deriving (Eq, Show)
+	deriving (Eq, Show, Ord)
 
 -- | A P2P address, with an AuthToken.
 --

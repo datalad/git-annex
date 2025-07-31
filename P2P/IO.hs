@@ -20,6 +20,8 @@ module P2P.IO
 	, connectPeer
 	, closeConnection
 	, serveUnixSocket
+	, serveUnixSocket'
+	, listenUnixSocket
 	, ProtoFailure(..)
 	, describeProtoFailure
 	, runNetProto
@@ -180,6 +182,17 @@ closeConnection conn = do
 -- the callback.
 serveUnixSocket :: OsPath -> (Handle -> IO ()) -> IO ()
 serveUnixSocket unixsocket serveconn = do
+	sock <- listenUnixSocket unixsocket
+	serveUnixSocket' sock serveconn
+
+serveUnixSocket' :: S.Socket -> (Handle -> IO ()) -> IO ()
+serveUnixSocket' soc serveconn =
+	forever $ do
+		(conn, _) <- S.accept soc
+		setupHandleFromSocket conn >>= serveconn
+
+listenUnixSocket :: OsPath -> IO S.Socket
+listenUnixSocket unixsocket = do
 	removeWhenExistsWith removeFile unixsocket
 	soc <- S.socket S.AF_UNIX S.Stream S.defaultProtocol
 	S.bind soc (S.SockAddrUnix (fromOsPath unixsocket))
@@ -193,9 +206,7 @@ serveUnixSocket unixsocket serveconn = do
 	modifyFileMode unixsocket $ addModes
 		[groupReadMode, groupWriteMode, otherReadMode, otherWriteMode]
 	S.listen soc 2
-	forever $ do
-		(conn, _) <- S.accept soc
-		setupHandleFromSocket conn >>= serveconn
+	return soc
 
 setupHandleFromSocket :: Socket -> IO Handle
 setupHandleFromSocket s = do

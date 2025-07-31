@@ -1,38 +1,25 @@
 {- git-remote-daemon, tor hidden service server and transport
  -
- - Copyright 2016 Joey Hess <id@joeyh.name>
+ - Copyright 2016-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
 {-# LANGUAGE CPP #-}
-{-# LANGUAGE OverloadedStrings #-}
 
 module RemoteDaemon.Transport.Tor (server, transport, torSocketFile) where
 
-import Common
-import qualified Annex
-import Annex.Concurrent
-import Annex.ChangedRefs
+import Annex.Common
 import RemoteDaemon.Types
 import RemoteDaemon.Common
-import Utility.AuthToken
 import Utility.Tor
-import P2P.Protocol as P2P
 import P2P.IO
-import P2P.Annex
 import P2P.Auth
 import P2P.Address
 import Annex.UUID
-import Types.UUID
-import Messages
-import Git
-import Git.Command
-import Utility.Debug
+import qualified RemoteDaemon.Transport.P2PGeneric as P2PGeneric
 
-import Control.Concurrent
 import Control.Concurrent.STM
-import Control.Concurrent.STM.TBMQueue
 import Control.Concurrent.Async
 #ifndef mingw32_HOST_OS
 import System.Posix.User
@@ -48,30 +35,19 @@ server ichan th@(TransportHandle (LocalRepo r) _ _) = go
 		u <- liftAnnex th getUUID
 		msock <- liftAnnex th torSocketFile
 		case msock of
-			Nothing -> do
-				debugTor "Tor hidden service not enabled"
+			Nothing ->
 				return False
-			Just sock -> do
-				void $ async $ startservice sock u
+			Just socketfile -> do
+				void $ async $ startservice socketfile u
 				return True
 	
-	startservice sock u = do
-		q <- newTBMQueueIO maxConnections
-		replicateM_ maxConnections $
-			forkIO $ forever $ serveClient th u r q
+	startservice socketfile u = do
+		sock <- listenUnixSocket socketfile
+		P2PGeneric.serveConnections
+			loadP2PAuthTokensTor
+			(P2PNetName "tor")
+			th u r sock
 
-		debugTor "Tor hidden service running"
-		serveUnixSocket sock $ \conn -> do
-			ok <- atomically $ ifM (isFullTBMQueue q)
-				( return False
-				, do
-					writeTBMQueue q conn
-					return True
-				)
-			unless ok $ do
-				hClose conn
-				liftAnnex th $ warning "dropped Tor connection, too busy"
-	
 	handlecontrol servicerunning = do
 		msg <- atomically $ readTChan ichan
 		case msg of
@@ -84,115 +60,12 @@ server ichan th@(TransportHandle (LocalRepo r) _ _) = go
 			-- changes as tor takes care of all that.
 			_ -> handlecontrol servicerunning
 
--- How many clients to serve at a time, maximum. This is to avoid DOS attacks.
-maxConnections :: Int
-maxConnections = 100
-
-serveClient :: TransportHandle -> UUID -> Repo -> TBMQueue Handle -> IO ()
-serveClient th@(TransportHandle _ _ rd) u r q = bracket setup cleanup start
-  where
-	setup = do
-		h <- atomically $ readTBMQueue q
-		debugTor "serving a Tor connection"
-		return h
-	
-	cleanup Nothing = return ()
-	cleanup (Just h) = do
-		debugTor "done with Tor connection"
-		hClose h
-
-	start Nothing = return ()
-	start (Just h) = do
-		-- Avoid doing any work in the liftAnnex, since only one
-		-- can run at a time.
-		st <- liftAnnex th dupState
-		((), (st', _rd)) <- Annex.run (st, rd) $ do
-			-- Load auth tokens for every connection, to notice
-			-- when the allowed set is changed.
-			allowed <- loadP2PAuthTokensTor
-			let conn = P2PConnection
-				{ connRepo = Just r
-				, connCheckAuth = (`isAllowedAuthToken` allowed)
-				, connIhdl = P2PHandle h
-				, connOhdl = P2PHandle h
-				, connProcess = Nothing
-				, connIdent = ConnIdent $ Just "tor remotedaemon"
-				}
-			-- not really Client, but we don't know their uuid yet
-			runstauth <- liftIO $ mkRunState Client
-			v <- liftIO $ runNetProto runstauth conn $ P2P.serveAuth u
-			case v of
-				Right (Just theiruuid) -> authed conn theiruuid
-				Right Nothing -> liftIO $ debugTor
-					"Tor connection failed to authenticate"
-				Left e -> liftIO $ debugTor $
-					"Tor connection error before authentication: " ++ describeProtoFailure e
-		-- Merge the duplicated state back in.
-		liftAnnex th $ mergeState st'
-	
-	authed conn theiruuid = 
-		bracket watchChangedRefs (liftIO . maybe noop stopWatchingChangedRefs) $ \crh -> do
-			runst <- liftIO $ mkRunState (Serving theiruuid crh)
-			v' <- runFullProto runst conn $
-				P2P.serveAuthed P2P.ServeReadWrite u
-			case v' of
-				Right () -> return ()
-				Left e -> liftIO $ debugTor $ 
-					"Tor connection error: " ++ describeProtoFailure e
-
--- Connect to peer's tor hidden service.
+-- Connect to peer's tor hidden service. P2PGeneric can do this,
+-- since it uses connectPeer which also supports tor.
 transport :: Transport
-transport (RemoteRepo r gc) url@(RemoteURI uri) th ichan ochan =
-	case unformatP2PAddress (show uri) of
-		Nothing -> return ()
-		Just addr -> robustConnection 1 $ do
-			g <- liftAnnex th Annex.gitRepo
-			bracket (connectPeer (Just g) addr) closeConnection (go addr)
-  where
-	go addr conn = do
-		myuuid <- liftAnnex th getUUID
-		authtoken <- fromMaybe nullAuthToken
-			<$> liftAnnex th (loadP2PRemoteAuthToken addr)
-		runst <- mkRunState Client
-		res <- runNetProto runst conn $ P2P.auth myuuid authtoken noop
-		case res of
-			Right (Just theiruuid) -> do
-				expecteduuid <- liftAnnex th $ getRepoUUID r
-				if expecteduuid == theiruuid
-					then do
-						send (CONNECTED url)
-						status <- handlecontrol
-							`race` handlepeer runst conn
-						send (DISCONNECTED url)
-						return $ either id id status
-					else return ConnectionStopping
-			_ -> return ConnectionClosed
-	
-	send msg = atomically $ writeTChan ochan msg
-	
-	handlecontrol = do
-		msg <- atomically $ readTChan ichan
-		case msg of
-			STOP -> return ConnectionStopping
-			LOSTNET -> return ConnectionStopping
-			_ -> handlecontrol
+transport = P2PGeneric.transport
 
-	handlepeer runst conn = do
-		v <- runNetProto runst conn P2P.notifyChange
-		case v of
-			Right (Just (ChangedRefs shas)) -> do
-				whenM (checkShouldFetch gc th shas) $
-					fetch
-				handlepeer runst conn
-			_ -> return ConnectionClosed
-	
-	fetch = do
-		send (SYNCING url)
-		ok <- inLocalRepo th $
-			runBool [Param "fetch", Param $ Git.repoDescribe r]
-		send (DONESYNCING url ok)
-
-torSocketFile :: Annex.Annex (Maybe OsPath)
+torSocketFile :: Annex (Maybe OsPath)
 torSocketFile = do
 	u <- getUUID
 	let ident = fromUUID u
@@ -202,6 +75,3 @@ torSocketFile = do
 	let uid = 0
 #endif
 	liftIO $ getHiddenServiceSocketFile torAppName uid ident
-
-debugTor :: String -> IO ()
-debugTor = debug "RemoteDaemon.Transport.Tor"

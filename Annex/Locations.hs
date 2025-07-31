@@ -110,6 +110,7 @@ module Annex.Locations (
 	gitAnnexUrlFile,
 	gitAnnexTmpCfgFile,
 	gitAnnexSshDir,
+	gitAnnexP2PDir,
 	gitAnnexRemotesDir,
 	gitAnnexAssistantDefaultDir,
 	gitAnnexSimDir,
@@ -715,6 +716,11 @@ gitAnnexTmpCfgFile r = gitAnnexDir r </> literalOsPath "config.tmp"
 gitAnnexSshDir :: Git.Repo -> OsPath
 gitAnnexSshDir r = addTrailingPathSeparator $
 	gitAnnexDir r </> literalOsPath "ssh"
+
+{- .git/annex/p2p/ is used for p2p network sockets -}
+gitAnnexP2PDir :: Git.Repo -> OsPath
+gitAnnexP2PDir r = addTrailingPathSeparator $
+	gitAnnexDir r </> literalOsPath "p2p"
 
 {- .git/annex/remotes/ is used for remote-specific state. -}
 gitAnnexRemotesDir :: Git.Repo -> OsPath

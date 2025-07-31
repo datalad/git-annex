@@ -31,16 +31,13 @@ connectGenericP2P netname (UnderlyingP2PAddress address) =
 			Left (ProgramNotInstalled msg) -> giveup msg
 			Left (ProgramFailure msg) -> giveup msg
 
-getSocketGenericP2P :: P2PNetName -> UnderlyingP2PAddress -> IO (Maybe (OsPath, ProcessHandle))
-getSocketGenericP2P netname (UnderlyingP2PAddress address) = do
-	startExternalAddonProcess
-		(\p -> p { std_out = CreatePipe })
-		(genericP2PCommand netname) [Param "socket", Param address]
+socketGenericP2P :: P2PNetName -> UnderlyingP2PAddress -> OsPath -> IO ProcessHandle
+socketGenericP2P netname (UnderlyingP2PAddress address) socketfile = do
+	startExternalAddonProcess id
+		(genericP2PCommand netname) [Param address, File (fromOsPath socketfile)]
 		>>= \case
-			Right (_, (Nothing, Just hin, Nothing, pid)) ->
-				hGetLineUntilExitOrEOF pid hin >>= \case
-					Just l | not (null l) -> return $ Just (toOsPath l, pid)
-					_ -> return Nothing
+			Right (_, (Nothing, Nothing, Nothing, pid)) ->
+				return pid
 			Right _ -> giveup "internal"
 			Left (ProgramNotInstalled msg) -> giveup msg
 			Left (ProgramFailure msg) -> giveup msg
@@ -63,4 +60,7 @@ getAddressGenericP2P netname =
 				let addr = P2PAnnex netname (UnderlyingP2PAddress l)
 				in go (addr:addrs) hin pid
 			| otherwise -> go addrs hin pid
-		Nothing -> return addrs
+		Nothing -> do
+			waitForProcess pid >>= \case
+				ExitSuccess -> return addrs
+				ExitFailure _ -> giveup $ genericP2PCommand netname ++ " failed"

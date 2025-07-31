@@ -36,7 +36,7 @@ import qualified System.Random as R
 type OnionPort = Int
 
 newtype OnionAddress = OnionAddress String
-	deriving (Show, Eq)
+	deriving (Show, Eq, Ord)
 
 type OnionSocket = OsPath
 
