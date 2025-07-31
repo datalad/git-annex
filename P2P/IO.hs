@@ -162,8 +162,9 @@ connectPeer g (P2PAnnex netname address) = do
 
 closeConnection :: P2PConnection -> IO ()
 closeConnection conn = do
-	closehandle (connIhdl conn)
-	closehandle (connOhdl conn)
+	-- hClose can fail if the handle is connected to a broken pipe
+	void $ tryNonAsync $ closehandle (connIhdl conn)
+	void $ tryNonAsync $ closehandle (connOhdl conn)
 	case connProcess conn of
 		Nothing -> noop
 		Just ph -> void $ waitForProcess ph
