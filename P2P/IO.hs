@@ -349,7 +349,7 @@ debugMessage conn prefix m = do
 		]
   where
 	safem = case m of
-		AUTH u _ -> AUTH u nullAuthToken
+		AUTH u _ -> AUTH u displayAuthToken
 		_ -> m
 	ConnIdent mident = connIdent conn
 

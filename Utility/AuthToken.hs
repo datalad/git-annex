@@ -1,6 +1,6 @@
 {- authentication tokens
  -
- - Copyright 2016 Joey Hess <id@joeyh.name>
+ - Copyright 2016-2025 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -12,6 +12,7 @@ module Utility.AuthToken (
 	toAuthToken,
 	fromAuthToken,
 	nullAuthToken,
+	displayAuthToken,
 	genAuthToken,
 	AllowedAuthTokens,
 	allowedAuthTokens,
@@ -68,6 +69,10 @@ toAuthToken t
 -- | The empty AuthToken, for those times when you don't want any security.
 nullAuthToken :: AuthToken
 nullAuthToken = AuthToken $ secureMemFromByteString $ TE.encodeUtf8 T.empty
+
+-- | Display in place of a real AuthToken in protocol dumps.
+displayAuthToken :: AuthToken
+displayAuthToken = AuthToken $ secureMemFromByteString $ TE.encodeUtf8 $ T.pack "<AUTHTOKEN>"
 
 -- | Generates an AuthToken of a specified length. This is done by
 -- generating a random bytestring, hashing it with sha2 512, and truncating
