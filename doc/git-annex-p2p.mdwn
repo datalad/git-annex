@@ -17,8 +17,8 @@ network. (This needs Tor to be installed.)
 git-annex can also support other P2P networks, using a helper program
 that you can install. These programs have names of the form
 `git-annex-p2p-<netname>`. See
-<https://git-annex.branchable.com/design/generic_p2p_transport/>
-for documentation about how to create such a program.
+<https://git-annex.branchable.com/special_remotes/p2p/>
+for details.
 
 # OPTIONS
 
