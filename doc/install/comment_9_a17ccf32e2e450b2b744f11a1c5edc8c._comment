@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="h0b0"
+ avatar="http://cdn.libravatar.org/avatar/bf8483b4623b379c3443d63ecdff22a2"
+ subject="Cataline build missing"
+ date="2025-07-30T15:19:06Z"
+ content="""
+Somehow [the Catalina binary got lost](https://downloads.kitenet.net/git-annex/OSX/current/10.15_Catalina/). Considering that homebrew also fails due to the old OS this is a problem. I'd be happy if this was made available again.
+"""]]

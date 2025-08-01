@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 13"""
+ date="2025-07-31T19:16:43Z"
+ content="""
+The `genericp2p` branch now has what seems to be a fully working
+implementation of this. I have not fully tested it because I don't
+have a real git-annex-p2p-foo command to test it with. Still I can see the
+remotedaemon handling connections, and also making outgoing connections
+seems to work.
+
+There have been some changes to the design, especially around how the
+socket file is set up.
+"""]]
