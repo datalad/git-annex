@@ -49,4 +49,4 @@ Here's a simple shell script example. While this avoids using any real
 P2P network and dummys it up by symlinking unix socket files together,
 its skeleton should be a good starting point.
 
-[[!inline pages="special_remotes/p2p/git-annex-p2p-unix-sockets" feeds=no]]
+[[special_remotes/p2p/git-annex-p2p-unix-sockets]]
