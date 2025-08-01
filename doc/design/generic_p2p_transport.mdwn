@@ -11,7 +11,13 @@ used to connect to a given peer by address across the network.
 A git remote using the P2P network has an url of the form
 `p2p-annex::<netname>:<address>`
 
-To connect to that remote, git-annex runs the command
+The program [[git-remote-p2p-annex]] is included in git-annex as a git
+remote helper program. git will use that program to handle `pull` and
+`push` with git remotes that use the `p2p-annex::` url scheme.
+
+## program interface
+
+To connect to a P2P remote, git-annex runs the command
 `git-annex-p2p-<netname>`, giving it the P2P network address as its only
 parameter. The command is responsible for connecting to that peer, and
 relaying data to it. Data fed into the command on stdin should be sent to
@@ -37,6 +43,10 @@ Note that, if the P2P network does not natively use a unix socket file,
 a command like `socat` can be run by `git-annex-p2p-<netname> socket` 
 to convert the P2P network's own equivilant into a unix socket file.
 
-The program [[git-remote-p2p-annex]] is included in git-annex as a git
-remote helper program. git will use that program to handle `pull` and
-`push` with git remotes that use the `p2p-annex::` url scheme.
+## example
+
+Here's a simple shell script example. While this avoids using any real
+P2P network and dummys it up by symlinking unix socket files together,
+its skeleton should be a good starting point.
+
+[[!inline pages="special_remotes/p2p/git-annex-p2p-unix-sockets" feeds=no]]

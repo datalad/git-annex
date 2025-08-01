@@ -1,4 +1,4 @@
-There are three ways to implement a new special remote:
+There are four ways to implement a new special remote:
 
 1. Using the [[hook]] special remote to tell git-annex what commands
    to run to store and retrieve data. This is the easiest way, and

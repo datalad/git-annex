@@ -1,0 +1,57 @@
+A P2P network can be used to connect together git-annex repositories. This
+lets a regular git remote have an url that points to another peer on the
+network. Both git fetch/push and git-annex can be used with that remote
+the same as any other remote.
+
+The [[tor]] support is a special case of this, which is built into
+git-annex.
+
+For other P2P networks, a fairly simple program is used to connect
+git-annex up with the network. Install one of these programs to use the P2P
+network of your choice:
+
+* [[git-annex-p2p-unix-sockets]] This is only a demo, using unix
+  sockets in `/tmp` rather than a real P2P network. Not for real world
+  use.
+
+To write your own program to use the P2P network of your choice,
+see [[design/generic_p2p_transport]]. Edit this page to add more programs!
+
+## setup
+
+Once you have the program installed, the next step is to run this in your
+git-annex repository to enable the P2P network:
+
+    git-annex p2p --enable <netname>
+
+Replace `<netname>` with the name of the program after the
+"git-annex-p2p-".
+
+Then [[git-annex remotedaemon|git-annex-remotedaemon]] can be used to serve
+incoming connections from peers, and [[git-annex p2p|git-annex-p2p]] can be
+used to set up connections to peers on the network. For example, you and a
+friend could run these commands in your repositories to pair them:
+
+    git-annex remotedaemon
+    git-annex p2p --pair
+
+Once a connection with a peer is set up, you have a git remote that can be
+used like any other remote. Including `git pull`, `git push`, and using
+git-annex commands to store content on it, etc.
+
+## security
+
+This is only as secure as the underlying P2P network, and it should only be
+used with P2P networks that at least encrypt all traffic sent over them.
+
+It's a good idea, but not mandatory, for the P2P network to
+cryptographically verify the identity of peers. Any modern encrypted P2P
+network should do that. That prevents you from connecting to an
+impersonator, and perhaps leaking data from your repository to them.
+However, even if the P2P network does not verify the identity of peers,
+git-annex only allows people you have paired with to connect to your
+repository.
+
+Anyone you give access to your git-annex repository using this can get any
+of the files stored in it, and can also drop the content of any annexed file
+from it.

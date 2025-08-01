@@ -14,3 +14,5 @@ This should also make it possible to build e.g. a `git annex enable-yggstack` an
 What do you think?
 
 [[!tag projects/INM7]]
+
+> [[done]] --[[Joey]]

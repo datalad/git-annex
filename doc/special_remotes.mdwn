@@ -20,6 +20,7 @@ the content of files.
 * [[git]]
 * [[hook]]
 * [[httpalso]]
+* [[p2p]]
 * [[rclone]]
 * [[rsync]]
 * [[S3]] (Amazon S3, and other compatible services)

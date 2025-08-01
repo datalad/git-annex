@@ -1,0 +1,36 @@
+#!/bin/sh
+# Example P2P network transit program for git-annex.
+#
+# This simulates a multi-node P2P network using unix 
+# socket files in /tmp.
+#
+# Copyright 2025 Joey Hess; icenced under the GNU GPL version 3 or higher.
+
+set -e
+
+if [ "$1" = address ]; then
+	# Output the local P2P network address.
+	#
+	# For the purposes of this example, a new address is made up each
+	# time this is run. Using the current unix second to get a fairly
+	# unique address.
+	myaddress=$(date +%s)
+	echo "$myaddress"
+else
+	socketfile="$2"
+	if [ -z "$socketfile" ]; then
+		# Connect to the peer's address and relay stdin and stdout.
+		peeraddress="$1"
+		# For the purposes of this demo, socat is used, and simply
+		# connects stdio to the unix socket file in /tmp.
+		socat - UNIX-CONNECT:"/tmp/$peeraddress"
+	else
+		# Arrange for incoming connections from peers to connect to
+		# the unix socket provided by git-annex. The local
+		# P2P network address is also available to use.
+		myaddress="$1"
+		# For the purposes of this demo, the socket file provided
+		# by git-annex is symlinked to the location in /tmp.
+		ln -sf $(realpath "$socketfile") "/tmp/$myaddress"
+	fi
+fi
