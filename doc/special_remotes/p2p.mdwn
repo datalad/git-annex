@@ -10,9 +10,9 @@ For other P2P networks, a fairly simple program is used to connect
 git-annex up with the network. Install one of these programs to use the P2P
 network of your choice:
 
-* [[git-annex-p2p-unix-sockets]] This is only a demo, using unix
-  sockets in `/tmp` rather than a real P2P network. Not for real world
-  use.
+* [[git-annex-p2p-unix-sockets]]  
+  This is only a demo, using unix sockets in `/tmp` rather than a real
+  P2P network. Not for real world use.
 
 To write your own program to use the P2P network of your choice,
 see [[design/generic_p2p_transport]]. Edit this page to add more programs!
