@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2025-08-01T17:56:23Z"
+ content="""
+It should be possible to implement this with a small shell script now I
+think. See [[special_remotes/p2p]] and [[design/generic_p2p_transport]].
+
+I am leaving this todo open at least temporarily, but it does seem better
+to implement this as addon commands rather than directly in git-annex.
+"""]]
