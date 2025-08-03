@@ -13,10 +13,21 @@ choices:
 
   Here is how to set up the special remote:
 
-        git annex initremote backblaze type=S3 signature=v4 host=$endpoint bucket=$bucketid protocol=https
+        export AWS_ACCESS_KEY_ID=$appKeyId
+        export AWS_SECRET_ACCESS_KEY=$appKeySecret
+        git annex initremote backblaze type=S3 signature=v4 host=$endpoint bucket=$bucketname protocol=https encryption=$encryption
 
-  Remember to replace $endpoint with the actual backblaze endpoint and $bucketid with
-  the bucketid.
+  Remember to replace:
+
+  - `$appKeyId` and `$appKeySecret` with the values displayed by B2 when you created an "Application Key".
+  - `$endpoint` with the B2 endpoint to which your account has an affinity.
+    - An easy way to find the correct value is to create a temporary bucket in the service's web UI, and then use the "endpoint" field displayed for *that* bucket (before deleting the temporary bucket!).
+  - `$bucketname` with the name of the bucket you wish to use
+    - This is **not** the opaque B2 "Bucket ID".
+  - `$encryption` with the [[encryption]] setting you want git-annex to apply to the files it stores in the bucket.
+    - This is **unrelated** to the B2 server-side bucket encryption setting. 
+
+  If a bucket with the specified name does not already exist then git-annex will attempt to create it. If the access key provided does not permit bucket creation then the `initremote` command will fail. The bucket will be created in the unchangeable region that the access key's account is pinned to, with **infinite versioning enabled** and **server-side encryption disabled**. Given that you're probably using some form of git-annex [[encryption]], and that files with server-side encryption enabled are not included in a server-side bucket-level snapshot, you may wish to leave the server-side encryption disabled. 
 
 * A dedicated special remote, <https://github.com/encryptio/git-annex-remote-b2>  
   (Last updated 2016)
