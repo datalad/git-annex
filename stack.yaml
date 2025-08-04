@@ -14,9 +14,4 @@ flags:
     ospath: true
 packages:
 - '.'
-resolver: nightly-2025-04-04
-extra-deps:
-- feed-1.3.2.1
-allow-newer: true
-allow-newer-deps:
-- feed
+resolver: lts-24.2
