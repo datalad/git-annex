@@ -48,6 +48,7 @@ Here are specific instructions for using git-annex with various services:
 * [[Google Drive|tips/using_Google_Drive]]
 * [[hubiC|tips/using_Hubic]]
 * [[IMAP|forum/special_remote_for_IMAP]]
+* [Internxt Drive](https://pypi.org/project/git-annex-remote-internxt/)
 * [[tips/Internet_Archive_via_S3]]
 * [[ipfs]]
 * [[Jottacloud|rclone]]
