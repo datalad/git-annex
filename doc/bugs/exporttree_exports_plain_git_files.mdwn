@@ -1,0 +1,30 @@
+### Please describe the problem.
+
+### What steps will reproduce the problem?
+
+
+git-annex initremote 2gt type=directory directory=/Volumes/2gt/photos encryption=none importtree=yes exporttree=yes
+
+git annex export  HEAD  -t 2gt
+
+.gitignore and .gitattributes (plain git, not annexed) make it to the export. 
+
+Tried to limit this with (inbackend=SHA256E or inbackend=SHA512E) , did not help.
+
+### What version of git-annex are you using? On what operating system?
+
+10.20250721 , homebrew on Mac
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
