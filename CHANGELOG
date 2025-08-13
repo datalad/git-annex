@@ -5,6 +5,11 @@ git-annex (10.20250722) UNRELEASED; urgency=medium
   * Added git-remote-p2p-annex, which allows git pull and push to
     P2P networks provided by commands git-annex-p2p-<netname>
   * stack.yaml: Update to lts-24.2.
+  * S3: Default to signature=v4 when using an AWS endpoint, since some
+    AWS regions need v4 and all support it. When host= is used to specify
+    a different S3 host, the default remains signature=v2.
+  * webapp: Support setting up S3 buckets in regions that need v4
+    signatures.
 
  -- Joey Hess <id@joeyh.name>  Wed, 30 Jul 2025 13:45:42 -0400
 

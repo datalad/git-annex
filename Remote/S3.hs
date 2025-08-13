@@ -163,19 +163,18 @@ signatureField = Accepted "signature"
 
 data SignatureVersion 
 	= SignatureVersion Int
+	| DefaultSignatureVersion
 	| Anonymous
 
 signatureVersionParser :: RemoteConfigField -> FieldDesc -> RemoteConfigFieldParser
 signatureVersionParser f fd =
-	genParser go f (Just defver) fd
+	genParser go f (Just DefaultSignatureVersion) fd
 		(Just (ValueDesc "v2 or v4 or anonymous"))
   where
 	go "v2" = Just (SignatureVersion 2)
 	go "v4" = Just (SignatureVersion 4)
 	go "anonymous" = Just Anonymous
 	go _ = Nothing
-
-	defver = SignatureVersion 2
 
 isAnonymous :: ParsedRemoteConfig -> Bool
 isAnonymous c = 
@@ -984,16 +983,25 @@ s3Configuration _ua c = cfg
 		Nothing
 			| port == 443 -> AWS.HTTPS
 			| otherwise -> AWS.HTTP
-	cfg = case getRemoteConfigValue signatureField c of
-		Just (SignatureVersion 4) -> 
-			(S3.s3v4 proto endpoint False S3.SignWithEffort)
+	cfg = if usev4 $ getRemoteConfigValue signatureField c
+		then (S3.s3v4 proto endpoint False S3.SignWithEffort)
 #if MIN_VERSION_aws(0,24,0)
-				{ S3.s3Region = r }
+			{ S3.s3Region = r }
 #endif
-		_ -> (S3.s3 proto endpoint False)
+		else (S3.s3 proto endpoint False)
 #if MIN_VERSION_aws(0,24,0)
-				{ S3.s3Region = r }
+			{ S3.s3Region = r }
 	
+	-- Use signature v4 for all AWS hosts by default, but don't use it by
+	-- default for other S3 hosts, which may not support it.
+	usev4 (Just DefaultSignatureVersion)
+		| h == AWS.s3DefaultHost = True
+		| otherwise = False
+	usev4 (Just (SignatureVersion 4)) = True
+	usev4 (Just (SignatureVersion _)) = False
+	usev4 (Just Anonymous) = False
+	usev4 Nothing = False
+
 	r = encodeBS <$> getRemoteConfigValue regionField c
 #endif
 

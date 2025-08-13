@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2025-08-13T17:03:47Z"
+ content="""
+Made signature=v4 be used by default for AWS endpoints. Note that,
+if you want a special remote to be able to be used by an older version
+of git-annex, it would still make sense to explicitly specify signature=v4.
+"""]]

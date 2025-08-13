@@ -87,9 +87,8 @@ the S3 remote.
   indication that you need to use this.
 
 * `signature` - This controls the S3 signature version to use.
-  "v2" is currently the default, "v4" is needed to use some S3 services.
-  If you get some kind of authentication error, try "v4".
-  To access a S3 bucket anonymously, use "anonymous".
+  The default is "v4" when using Amazon S3, but "v2" when using other
+  hosts. To access a S3 bucket anonymously, use "anonymous".
 
 * `bucket` - S3 requires that buckets have a globally unique name, 
   so by default, a bucket name is chosen based on the remote name

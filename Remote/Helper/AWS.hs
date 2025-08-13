@@ -52,20 +52,40 @@ regionInfo service = map (\(t, r) -> (t, fromServiceRegion r)) $
 	concatMap (\(t, l) -> map (t,) l) regions
   where
 	regions =
-		[ ("US East (N. Virginia)", [S3Region "US", GlacierRegion "us-east-1"])
-		, ("US West (Oregon)", [BothRegion "us-west-2"])
+		-- Based on the list at https://docs.aws.amazon.com/general/latest/gr/s3.html
+		[ ("US East (Ohio)", [S3Region "us-east-2"])
+		, ("US East (N. Virginia)", [S3Region "US", GlacierRegion "us-east-1"])
 		, ("US West (N. California)", [BothRegion "us-west-1"])
-		, ("EU (Ireland)", [S3Region "EU", GlacierRegion "eu-west-1"])
+		, ("US West (Oregon)", [BothRegion "us-west-2"])
+		, ("Africa (Cape Town)", [S3Region "af-south-1"])
+		, ("Asia Pacific (Hong Kong)", [S3Region "ap-east-1"])
+		, ("Asia Pacific (Hyderabad)", [S3Region "ap-south-2"])
+		, ("Asia Pacific (Jakarta)", [S3Region "ap-southeast-3"])
+		, ("Asia Pacific (Malaysia)", [S3Region "ap-southeast-5"])
+		, ("Asia Pacific (Melbourne)", [S3Region "ap-southeast-4"])
+		, ("Asia Pacific (Mumbai)", [S3Region "ap-south-1"])
+		, ("Asia Pacific (Osaka)", [S3Region "ap-northeast-3"])
+		, ("Asia Pacific (Seoul)", [S3Region "ap-northeast-2"])
 		, ("Asia Pacific (Singapore)", [S3Region "ap-southeast-1"])
-		, ("Asia Pacific (Tokyo)", [BothRegion "ap-northeast-1"])
 		, ("Asia Pacific (Sydney)", [S3Region "ap-southeast-2"])
+		, ("Asia Pacific (Taipei)", [S3Region "ap-east-2"])
+		, ("Asia Pacific (Thailand)", [S3Region "ap-southeast-7"])
+		, ("Asia Pacific (Tokyo)", [BothRegion "ap-northeast-1"])
+		, ("Canada (Central)", [S3Region "ca-central-1"])
+		, ("Canada West (Calgary)", [S3Region "ca-west-1"])
+		, ("EU (Frankfurt)", [BothRegion "eu-central-1"])
+		, ("EU (Ireland)", [S3Region "EU", GlacierRegion "eu-west-1"])
+		, ("Europe (London)", [S3Region "eu-west-2"])
+		, ("Europe (Milan)", [S3Region "eu-south-1"])
+		, ("Europe (Paris)", [S3Region "eu-west-3"])
+		, ("Europe (Spain)", [S3Region "eu-south-2"])
+		, ("Europe (Stockholm)", [S3Region "eu-north-1"])
+		, ("Europe (Zurich)", [S3Region "eu-central-2"])
+		, ("Israel (Tel Aviv)", [S3Region "il-central-1"])
+		, ("Mexico (Central)", [S3Region "mx-central-1"])
+		, ("Middle East (Bahrain)", [S3Region "me-south-1"])
+		, ("Middle East (UAE)", [S3Region "me-central-1"])
 		, ("South America (São Paulo)", [S3Region "sa-east-1"])
-		-- These need signature V4 to be used, and currently v2 is
-		-- the default, so to add these would need other changes.
-		-- , ("EU (Frankfurt)", [BothRegion "eu-central-1"])
-		-- , ("Asia Pacific (Seoul)", [S3Region "ap-northeast-2"])
-		-- , ("Asia Pacific (Mumbai)", [S3Region "ap-south-1"])
-		-- , ("US East (Ohio)", [S3Region "us-east-2"])
 		]
 
 	fromServiceRegion (BothRegion s) = s
