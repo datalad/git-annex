@@ -1,6 +1,6 @@
 {- Amazon Web Services common infrastructure.
  -
- - Copyright 2011-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -40,7 +40,8 @@ regionMap :: Service -> M.Map Text Region
 regionMap = M.fromList . regionInfo
 
 defaultRegion :: Service -> Region
-defaultRegion = snd . fromMaybe (error "internal") . headMaybe . regionInfo
+defaultRegion S3 = "US"
+defaultRegion Glacier = "us-east-1"
 
 data ServiceRegion = BothRegion Region | S3Region Region | GlacierRegion Region
 
