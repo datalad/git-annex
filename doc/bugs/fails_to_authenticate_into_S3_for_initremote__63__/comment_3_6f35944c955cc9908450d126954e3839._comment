@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2025-08-13T16:23:48Z"
+ content="""
+I can replicate that behavior here with the command given, leaving off
+"region=us-east-2", which is handy for
+testing (needs AWS credentials in the environment).
+
+It would be possible for git-annex to use GetBucketLocation to determine
+the location of an existing bucket, rather than requiring it to be manually
+specified. I don't see much downside in making it do that. It would of
+course fail for a new bucket, and it might be that some existing buckets
+are not configured to allow that API call. Or another S3 server might not
+support it. But as long as it falls back to current behavior it seems it
+would only avoid a problem.
+
+As for determining which signature version to use, the problem is that
+a S3 implementation might not support signature v4 yet. So using it by
+default could break existing setups. It seems likely that there are plenty
+of third party S3 servers out there that only support v2.
+[According to AWS documentation](https://docs.aws.amazon.com/AmazonS3/latest/API/specify-signature-version.html),
+every region supports v4 now, while some
+regions do not support v2. So git-annex could have a special case for AWS
+to use v4 by default.
+
+While AWS tried and failed to deprecate v2 entirely around 2019,
+they ended up keeping it for those regions. That could still change I
+suppose, and so it might be good for git-annex to proactively use v4 for
+all AWS buckets.
+"""]]
