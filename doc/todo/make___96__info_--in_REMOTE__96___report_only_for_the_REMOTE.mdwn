@@ -1,0 +1,40 @@
+I would like to discover how much data is stored in a special remote across repositories.  But it might take annex many minutes to figure out other stats  like size of the files in the tree etc, which I do not care.  So I wondered if for e.g. 
+
+```
+(venv-annex) dandi@drogon:/mnt/backup/dandi/dandisets$ git -C 000003 annex info --in dandi-dandisets-dropbox
+trusted repositories: 0
+semitrusted repositories: 3
+        00000000-0000-0000-0000-000000000001 -- web
+        00000000-0000-0000-0000-000000000002 -- bittorrent
+        b7fcf214-e492-4f2c-8789-708af9fd4656 -- dandi@drogon:/mnt/backup/dandi/dandisets/000003 [here]
+untrusted repositories: 1
+        727f466f-60c3-4778-90b2-b2332856c2f8 -- [dandi-dandisets-dropbox]
+transfers in progress: none
+available local disk space: 24.88 terabytes (+100 megabytes reserved)
+local annex keys: 101
+local annex size: 2.56 terabytes
+annexed files in working tree: 101
+size of annexed files in working tree: 2.56 terabytes
+combined annex size of all repositories: 7.68 terabytes
+annex sizes of repositories:
+        2.56 TB: 00000000-0000-0000-0000-000000000001 -- web
+        2.56 TB: 727f466f-60c3-4778-90b2-b2332856c2f8 -- [dandi-dandisets-dropbox]
+        2.56 TB: b7fcf214-e492-4f2c-8789-708af9fd4656 -- dandi@drogon:/mnt/backup/dandi/dandisets/000003 [here]
+backend usage:
+        SHA256E: 101
+bloom filter size: 32 mebibytes (0% full)
+```
+
+I could just (quickly) get
+
+```
+untrusted repositories:
+        727f466f-60c3-4778-90b2-b2332856c2f8 -- [dandi-dandisets-dropbox]
+annex sizes of repositories:
+        2.56 TB: 727f466f-60c3-4778-90b2-b2332856c2f8 -- [dandi-dandisets-dropbox]
+```
+
+with `--json` also correspondingly trimmed up.  Or it could potentially be a different record output entirely, concentrating on that remote?
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]
