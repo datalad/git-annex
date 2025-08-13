@@ -35,11 +35,10 @@ the S3 remote.
   embedcreds without gpg encryption.
 
 * `datacenter` - Specifies which Amazon datacenter
-  to use for the bucket. Defaults to "US". Other values include "EU"
-  (which is EU/Ireland), "us-west-1", "us-west-2", "ap-southeast-1",
-  "ap-southeast-2", and "sa-east-1". See Amazon's documentation for a
-  complete list. Configuring this is equivilant to configuring both
-  `host` and `region`.
+  to use when creating a bucket. Defaults to "US". Other values include "EU"
+  (which is EU/Ireland), "us-west-1", "us-west-2", etc. See Amazon's
+  documentation for a complete list. Configuring this is equivilant to
+  configuring both `host` and `region`.
 
 * `storageclass` - Default is "STANDARD".  
   Consult S3 provider documentation for pricing details and available

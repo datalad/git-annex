@@ -10,6 +10,9 @@ git-annex (10.20250722) UNRELEASED; urgency=medium
     a different S3 host, the default remains signature=v2.
   * webapp: Support setting up S3 buckets in regions that need v4
     signatures.
+  * S3: When initremote is given the name of a bucket that already exists,
+    automatically set datacenter to the right value, rather than needing it
+    to be explicitly set. (This needs aws-0.23)
 
  -- Joey Hess <id@joeyh.name>  Wed, 30 Jul 2025 13:45:42 -0400
 

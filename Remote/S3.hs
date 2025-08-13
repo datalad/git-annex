@@ -193,7 +193,7 @@ gen r u rc gc rs = do
 	c <- parsedRemoteConfig remote rc
 	cst <- remoteCost gc c expensiveRemoteCost
 	info <- extractS3Info c
-	hdl <- mkS3HandleVar c gc u
+	hdl <- mkS3HandleVar False c gc u
 	magic <- liftIO initMagicMime
 	return $ new c cst info hdl magic
   where
@@ -287,7 +287,17 @@ s3Setup'  ss u mcreds c gc
 			=<< configParser remote c'
 		c'' <- if isAnonymous pc
 			then pure c'
-			else setRemoteCredPair ss encsetup pc gc (AWS.creds u) mcreds
+			else do
+				v <- setRemoteCredPair ss encsetup pc gc (AWS.creds u) mcreds
+				if M.member datacenterField c || M.member regionField c
+					then return v
+					-- Check if a bucket with this name
+					-- already exists, and if so, use
+					-- that location, rather than the
+					-- default datacenterField.
+					else getBucketLocation pc gc u >>= return . \case
+						Nothing -> v
+						Just loc -> M.insert datacenterField (Proposed $ T.unpack loc) v
 		pc' <- either giveup return . parseRemoteConfig c''
 			=<< configParser remote c''
 		info <- extractS3Info pc'
@@ -322,7 +332,7 @@ s3Setup'  ss u mcreds c gc
 			=<< configParser remote archiveconfig
 		info <- extractS3Info pc'
 		checkexportimportsafe pc' info
-		hdl <- mkS3HandleVar pc' gc u
+		hdl <- mkS3HandleVar False pc' gc u
 		withS3HandleOrFail u hdl $
 			writeUUIDFile pc' u info
 		use archiveconfig pc' info
@@ -775,6 +785,22 @@ checkPresentExportWithContentIdentifierS3 hv r info _k loc knowncids =
   where
 	o = T.pack $ bucketExportLocation info loc
 
+getBucketLocation :: ParsedRemoteConfig -> RemoteGitConfig -> UUID -> Annex (Maybe S3.LocationConstraint)
+getBucketLocation c gc u = do
+#if MIN_VERSION_aws(0,23,0)
+	info <- extractS3Info c
+	let info' = info { region = Nothing, host = Nothing }
+	-- Force anonymous access, because this API call does not work
+	-- when used in an authenticated context.
+	hdl <- mkS3HandleVar True c gc u
+	withS3HandleOrFail u hdl $ \h -> do
+		r <- liftIO $ tryNonAsync $ runResourceT $
+			sendS3Handle h (S3.getBucketLocation $ bucket info')
+		return $ either (const Nothing) (Just . S3.gblrLocationConstraint) r
+#else
+	return Nothing
+#endif
+
 {- Generate the bucket if it does not already exist, including creating the
  - UUID file within the bucket.
  -
@@ -786,7 +812,7 @@ genBucket :: ParsedRemoteConfig -> RemoteGitConfig -> UUID -> Annex ()
 genBucket c gc u = do
 	showAction "checking bucket"
 	info <- extractS3Info c
-	hdl <- mkS3HandleVar c gc u
+	hdl <- mkS3HandleVar False c gc u
 	withS3HandleOrFail u hdl $ \h ->
 		go info h =<< checkUUIDFile c u info h
   where
@@ -896,9 +922,9 @@ giveupS3HandleProblem S3HandleAnonymousOldAws _ =
 
 {- Prepares a S3Handle for later use. Does not connect to S3 or do anything
  - else expensive. -}
-mkS3HandleVar :: ParsedRemoteConfig -> RemoteGitConfig -> UUID -> Annex S3HandleVar
-mkS3HandleVar c gc u = liftIO $ newTVarIO $ Left $
-	if isAnonymous c
+mkS3HandleVar :: Bool -> ParsedRemoteConfig -> RemoteGitConfig -> UUID -> Annex S3HandleVar
+mkS3HandleVar forceanonymous c gc u = liftIO $ newTVarIO $ Left $
+	if forceanonymous || isAnonymous c
 		then 
 #if MIN_VERSION_aws(0,23,0)
 			go =<< liftIO AWS.anonymousCredentials
@@ -1380,7 +1406,7 @@ enableBucketVersioning ss info c gc u = do
   where
 	enableversioning b = do
 		showAction "checking bucket versioning"
-		hdl <- mkS3HandleVar c gc u
+		hdl <- mkS3HandleVar False c gc u
 		let setversioning = S3.putBucketVersioning b S3.VersioningEnabled
 		withS3HandleOrFail u hdl $ \h ->
 #if MIN_VERSION_aws(0,24,3)

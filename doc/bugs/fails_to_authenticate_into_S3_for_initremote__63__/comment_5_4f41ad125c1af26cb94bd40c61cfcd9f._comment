@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2025-08-13T18:22:53Z"
+ content="""
+I got GetBucketLocation to work, although only when git-annex is built with
+aws-0.23 or newer.
+
+	joey@darkstar:~/tmp/a9>git-annex initremote s3-originnew  type=S3 importtree=yes encryption=none autoenable=true bucket=dandiarchive fileprefix=zarr-checksums/2ac71edb-738c-40ac-bd8c-8ca985adaa12/
+	initremote s3-originnew (checking bucket...) ok
+	(recording state in git...)
+"""]]
