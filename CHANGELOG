@@ -12,6 +12,8 @@ git-annex (10.20250722) UNRELEASED; urgency=medium
   * S3: When initremote is given the name of a bucket that already exists,
     automatically set datacenter to the right value, rather than needing it
     to be explicitly set. (This needs aws-0.23)
+  * info: Added --show option to pick which parts of the info to calculate
+    and display.
   * Bump aws build dependency to 0.24.1.
   * stack.yaml: Update to lts-24.2.
 

@@ -35,6 +35,14 @@ information.
 
 # OPTIONS
 
+* `--show=name`
+
+  Avoid info doing work to calculate things you don't need by specifying
+  what to show. This option can be specified more than once.
+
+  The name is the text before the ":" in the info output, eg
+  "local annex size" and "annex sizes of repositories".
+
 * `--fast`
 
   Only show the information that can be gathered quickly.
@@ -76,7 +84,8 @@ information.
 * matching options
 
   The [[git-annex-matching-options]](1) can be used to select what
-  to include in the statistics.
+  files to consider when operating on a directory. These options are
+  ignored when operating on other items.
 
 * Also the [[git-annex-common-options]](1) can be used.
 

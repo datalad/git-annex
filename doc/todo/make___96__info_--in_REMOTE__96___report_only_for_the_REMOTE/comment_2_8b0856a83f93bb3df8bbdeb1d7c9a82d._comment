@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2025-08-13T20:48:13Z"
+ content="""
+Implemented `info --show`
+"""]]

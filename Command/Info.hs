@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2011-2024 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -55,7 +55,10 @@ import qualified Command.Unused
 import qualified Utility.RawFilePath as R
 
 -- a named computation that produces a statistic
-type Stat = StatState (Maybe (String, StatState String))
+data Stat = Stat
+	{ statDesc :: String
+	, statComp :: StatState (Maybe (StatState String))
+	}
 
 -- data about a set of keys
 data KeyInfo = KeyInfo
@@ -116,6 +119,7 @@ data InfoOptions = InfoOptions
 	, batchOption :: BatchMode
 	, autoenableOption :: Bool
 	, deadrepositoriesOption :: Bool
+	, showOption :: [String]
 	}
 
 optParser :: CmdParamsDesc -> Parser InfoOptions
@@ -134,6 +138,10 @@ optParser desc = InfoOptions
 		( long "dead-repositories"
 		<> help "list repositories that have been marked as dead"
 		)
+	<*> many (strOption
+		( long "show" <> metavar paramName
+		<> help "limit info output"
+		))
 
 seek :: InfoOptions -> CommandSeek
 seek o = case batchOption o of
@@ -158,7 +166,7 @@ globalInfo o = do
 	u <- getUUID
 	whenM ((==) DeadTrusted <$> lookupTrust u) $
 		earlyWarning "Warning: This repository is currently marked as dead."
-	stats <- selStats global_fast_stats global_slow_stats
+	stats <- selStats o global_fast_stats global_slow_stats
 	showCustom "info" (SeekInput []) $ do
 		evalStateT (mapM_ showStat stats) (emptyStatInfo o)
 		return True
@@ -211,7 +219,7 @@ noInfo s si msg = do
 
 dirInfo :: InfoOptions -> FilePath -> SeekInput -> Annex ()
 dirInfo o dir si = showCustom (unwords ["info", dir]) si $ do
-	stats <- selStats
+	stats <- selStats o
 		(tostats (dir_name:tree_fast_stats True))
 		(tostats tree_slow_stats)
 	evalStateT (mapM_ showStat stats) =<< getDirStatInfo o dir
@@ -226,7 +234,7 @@ treeishInfo o t si = do
 		Nothing -> noInfo t si
 			"not a directory or an annexed file or a treeish or a remote or a uuid"
 		Just i -> showCustom (unwords ["info", t]) si $ do
-			stats <- selStats 
+			stats <- selStats o
 				(tostats (tree_name:tree_fast_stats False)) 
 				(tostats tree_slow_stats)
 			evalStateT (mapM_ showStat stats) i
@@ -247,7 +255,7 @@ remoteInfo :: InfoOptions -> Remote -> SeekInput -> Annex ()
 remoteInfo o r si = showCustom (unwords ["info", Remote.name r]) si $ do
 	i <- map (\(k, v) -> simpleStat k (pure v)) <$> Remote.getInfo r
 	let u = Remote.uuid r
-	l <- selStats 
+	l <- selStats o
 		(uuid_fast_stats u ++ remote_fast_stats r ++ i)
 		(uuid_slow_stats u)
 	evalStateT (mapM_ showStat l) (emptyStatInfo o)
@@ -255,16 +263,21 @@ remoteInfo o r si = showCustom (unwords ["info", Remote.name r]) si $ do
 
 uuidInfo :: InfoOptions -> UUID -> SeekInput -> Annex ()
 uuidInfo o u si = showCustom (unwords ["info", fromUUID u]) si $ do
-	l <- selStats (uuid_fast_stats u) (uuid_slow_stats u)
+	l <- selStats o (uuid_fast_stats u) (uuid_slow_stats u)
 	evalStateT (mapM_ showStat l) (emptyStatInfo o)
 	return True
 
-selStats :: [Stat] -> [Stat] -> Annex [Stat]
-selStats fast_stats slow_stats = do
-	fast <- Annex.getRead Annex.fast
-	return $ if fast
-		then fast_stats
-		else fast_stats ++ slow_stats
+selStats :: InfoOptions -> [Stat] -> [Stat] -> Annex [Stat]
+selStats o fast_stats slow_stats
+	| null (showOption o) = do
+		fast <- Annex.getRead Annex.fast
+		return $ if fast
+			then fast_stats
+			else fast_stats ++ slow_stats
+	| otherwise = return $
+		let wanted = S.fromList (showOption o)
+		in filter (\s -> S.member (statDesc s) wanted)
+			(fast_stats ++ slow_stats)
 
 {- Order is significant. Less expensive operations, and operations
  - that share data go together.
@@ -337,14 +350,14 @@ uuid_slow_stats u = map (\s -> s u)
 	]
 
 stat :: String -> (String -> StatState String) -> Stat
-stat desc a = return $ Just (desc, a desc)
+stat desc a = Stat desc $ return $ Just $ a desc
 
 -- The json simply contains the same string that is displayed.
 simpleStat :: String -> StatState String -> Stat
 simpleStat desc getval = stat desc $ json id getval
 
-nostat :: Stat
-nostat = return Nothing
+nostat :: String -> Stat
+nostat desc = Stat desc $ return Nothing
 
 json :: ToJSON' j => (j -> String) -> StatState j -> String -> StatState String
 json fmt a desc = do
@@ -356,10 +369,10 @@ nojson :: StatState String -> String -> StatState String
 nojson a _ = a
 
 showStat :: Stat -> StatState ()
-showStat s = maybe noop calc =<< s
+showStat s = maybe noop calc =<< statComp s
   where
-	calc (desc, a) = do
-		(lift . showHeader . encodeBS) desc
+	calc a = do
+		(lift . showHeader . encodeBS) (statDesc s)
 		lift . showRaw . encodeBS =<< a
 
 repo_list :: TrustLevel -> Stat
@@ -557,15 +570,16 @@ numcopies_stats = stat "numcopies stats" $ json fmt $
 
 reposizes_stats_tree :: Stat
 reposizes_stats_tree = reposizes_stats True "repositories containing these files"
-	=<< cachedRepoData
+	cachedRepoData
 
 reposizes_stats_global :: Stat
 reposizes_stats_global = reposizes_stats False "annex sizes of repositories" 
-	. repoData =<< cachedAllRepoData
+	(repoData <$> cachedAllRepoData)
 
-reposizes_stats :: Bool -> String -> M.Map UUID KeyInfo -> Stat
-reposizes_stats count desc m = stat desc $ nojson $ do
+reposizes_stats :: Bool -> String -> StatState (M.Map UUID KeyInfo) -> Stat
+reposizes_stats count desc getm = stat desc $ nojson $ do
 	sizer <- mkSizer
+	m <- getm
 	let l = map (\(u, kd) -> (u, sizer storageUnits True (sizeKeys kd))) $
 		sortBy (flip (comparing (sizeKeys . snd))) $
 		M.toList m
@@ -818,15 +832,16 @@ showSizeKeys d = do
 			" unknown size"
 
 staleSize :: String -> (Git.Repo -> OsPath) -> Stat
-staleSize label dirspec = go =<< lift (dirKeys dirspec)
+staleSize label dirspec = Stat label $ do
+	keys <- lift $ dirKeys dirspec	
+	onsize =<< sum <$> keysizes keys
   where
-	go [] = nostat
-	go keys = onsize =<< sum <$> keysizes keys
-	onsize 0 = nostat
-	onsize size = stat label $
-		json (++ aside "clean up with git-annex unused") $ do
+	onsize 0 = return Nothing
+	onsize size = return $ Just $
+		let val = do
 			sizer <- mkSizer
 			return $ sizer storageUnits False size
+		in json (++ aside "clean up with git-annex unused") val label
 	keysizes keys = do
 		dir <- lift $ fromRepo dirspec
 		liftIO $ forM keys $ \k -> 
