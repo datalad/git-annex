@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-08-13T19:34:26Z"
+ content="""
+The "annex sizes of repositories" table is indeed what you want.
+Since about a year ago, git-annex maintains a running total of the sizes
+of all repositories. So it can generally get that information very fast.
+
+In cases where it needs to do work to update the running total,
+it has to replay changes to the location log, which is the expensive bit.
+Updating the running totals for all repositories does not really impact
+the speed. So focusing on the size of a specific remote doesn't seem useful.
+
+(Using `--in` to do it would also overload the meaning of that option in a
+confusing way, bearing in mind that it can already be used with a command
+like `git-annex info --in=here .`)
+
+I think that what is needed is a way to make git-annex info only generate
+specific parts that you request, and skip the work to calculate other
+parts. Eg:
+
+	git-annex info --show "untrusted repositories" --show "annex sizes of repositories"
+
+The --fast option kind of does this, for things that can be generated
+really quickly. The annex sizes of repositories does not quite fit in
+--fast though, since it could take a long time in some edge cases to update
+the running totals.
+
+I think this --show option would be easy to add to info.
+"""]]
