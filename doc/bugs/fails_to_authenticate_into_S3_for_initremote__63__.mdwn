@@ -28,5 +28,5 @@ AWS_ACCESS_KEY_ID=AKIA?GIMZPVVE??Y?NKH AWS_SECRET_ACCESS_KEY=/??U??TV?LH?L???KZJ
 ```
 
 [[!meta author=yoh]]
-[[!tag projects/dandi]]
-[[!tag moreinfo]]
+
+> [[fixed|done]] --[[Joey]]
