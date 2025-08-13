@@ -47,7 +47,7 @@ the S3 remote.
   When using Amazon S3,
   if the remote will be used for backup or archival,
   and so its files are Infrequently Accessed, `STANDARD_IA` is a
-  good choice to save money (requires a git-annex built with aws-0.13.0).
+  good choice to save money.
   If you have configured git-annex to preserve
   multiple [[copies]], also consider setting this to `ONEZONE_IA`
   to save even more money.
@@ -56,7 +56,7 @@ the S3 remote.
   use the [[glacier]] special remote, rather than this one.
 
   When using Google Cloud Storage, to make a nearline bucket, set this to
-  `NEARLINE`. (Requires a git-annex built with aws-0.13.0)
+  `NEARLINE`.
 
   Note that changing the storage class of an existing S3 remote will
   affect new objects sent to the remote, but not objects already
@@ -67,7 +67,6 @@ the S3 remote.
 
 * `region` - Specify the region to use. Only makes sense to use when
   you also set `host`.
-  (Requires a git-annex built with aws-0.24.)
 
 * `protocol` - Either "http" (the default) or "https". Setting
   protocol=https implies port=443. 

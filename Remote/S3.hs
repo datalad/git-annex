@@ -438,7 +438,6 @@ retrieve hv r rs c info = fileRetriever' $ \f k p iv -> withS3Handle hv $ \case
 				giveup "cannot download content"
 			Right us -> unlessM (withUrlOptions Nothing $ downloadUrl False k p iv us f) $
 				giveup "failed to download content"
-	Left S3HandleAnonymousOldAws -> giveupS3HandleProblem S3HandleAnonymousOldAws (uuid r)
 
 retrieveHelper :: S3Info -> S3Handle -> (Either S3.Object S3VersionID) -> OsPath -> MeterUpdate -> Maybe IncrementalVerifier -> Annex ()
 retrieveHelper info h loc f p iv = retrieveHelper' h f p iv $
@@ -487,7 +486,6 @@ checkKey hv r rs c info k = withS3Handle hv $ \case
 				let check u = withUrlOptions Nothing $ 
 					Url.checkBoth u (fromKey keySize k)
 				anyM check us
-	Left S3HandleAnonymousOldAws -> giveupS3HandleProblem S3HandleAnonymousOldAws (uuid r)
 
 checkKeyHelper :: S3Info -> S3Handle -> (Either S3.Object S3VersionID) -> Annex Bool
 checkKeyHelper info h loc = checkKeyHelper' info h o limit
@@ -528,7 +526,6 @@ retrieveExportS3 hv r info k loc f p = verifyKeyContentIncrementally AlwaysVerif
 				withUrlOptions Nothing
 					(Url.download' p iv (geturl exportloc) f)
 			Nothing -> giveup $ needS3Creds (uuid r)
-		Left S3HandleAnonymousOldAws -> giveupS3HandleProblem S3HandleAnonymousOldAws (uuid r)
   where
 	exportloc = bucketExportLocation info loc
 
@@ -549,7 +546,6 @@ checkPresentExportS3 hv r info k loc = withS3Handle hv $ \case
 		Just geturl -> withUrlOptions Nothing $
 			Url.checkBoth (geturl $ bucketExportLocation info loc) (fromKey keySize k)
 		Nothing -> giveupS3HandleProblem S3HandleNeedCreds (uuid r)
-	Left S3HandleAnonymousOldAws -> giveupS3HandleProblem S3HandleAnonymousOldAws (uuid r)
 
 -- S3 has no move primitive; copy and delete.
 renameExportS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> Key -> ExportLocation -> ExportLocation -> Annex (Maybe ())
@@ -787,7 +783,6 @@ checkPresentExportWithContentIdentifierS3 hv r info _k loc knowncids =
 
 getBucketLocation :: ParsedRemoteConfig -> RemoteGitConfig -> UUID -> Annex (Maybe S3.LocationConstraint)
 getBucketLocation c gc u = do
-#if MIN_VERSION_aws(0,23,0)
 	info <- extractS3Info c
 	let info' = info { region = Nothing, host = Nothing }
 	-- Force anonymous access, because this API call does not work
@@ -797,9 +792,6 @@ getBucketLocation c gc u = do
 		r <- liftIO $ tryNonAsync $ runResourceT $
 			sendS3Handle h (S3.getBucketLocation $ bucket info')
 		return $ either (const Nothing) (Just . S3.gblrLocationConstraint) r
-#else
-	return Nothing
-#endif
 
 {- Generate the bucket if it does not already exist, including creating the
  - UUID file within the bucket.
@@ -909,28 +901,19 @@ sendS3Handle h r = AWS.pureAws (hawscfg h) (hs3cfg h) (hmanager h) r
 
 type S3HandleVar = TVar (Either (Annex (Either S3HandleProblem S3Handle)) (Either S3HandleProblem S3Handle))
 
-data S3HandleProblem
-	= S3HandleNeedCreds
-	| S3HandleAnonymousOldAws
+data S3HandleProblem = S3HandleNeedCreds
 
 giveupS3HandleProblem :: S3HandleProblem -> UUID -> Annex a
 giveupS3HandleProblem S3HandleNeedCreds u = do
 	warning $ UnquotedString $ needS3Creds u
 	giveup "No S3 credentials configured"
-giveupS3HandleProblem S3HandleAnonymousOldAws _ =
-	giveup "This S3 special remote is configured with signature=anonymous, but git-annex is built with too old a version of the aws library to support that."
 
 {- Prepares a S3Handle for later use. Does not connect to S3 or do anything
  - else expensive. -}
 mkS3HandleVar :: Bool -> ParsedRemoteConfig -> RemoteGitConfig -> UUID -> Annex S3HandleVar
 mkS3HandleVar forceanonymous c gc u = liftIO $ newTVarIO $ Left $
 	if forceanonymous || isAnonymous c
-		then 
-#if MIN_VERSION_aws(0,23,0)
-			go =<< liftIO AWS.anonymousCredentials
-#else
-			return (Left S3HandleAnonymousOldAws)
-#endif
+		then go =<< liftIO AWS.anonymousCredentials
 		else do
 			mcreds <- getRemoteCredPair c gc (AWS.creds u)
 			case mcreds of
@@ -1011,11 +994,8 @@ s3Configuration _ua c = cfg
 			| otherwise -> AWS.HTTP
 	cfg = if usev4 $ getRemoteConfigValue signatureField c
 		then (S3.s3v4 proto endpoint False S3.SignWithEffort)
-#if MIN_VERSION_aws(0,24,0)
 			{ S3.s3Region = r }
-#endif
 		else (S3.s3 proto endpoint False)
-#if MIN_VERSION_aws(0,24,0)
 			{ S3.s3Region = r }
 	
 	-- Use signature v4 for all AWS hosts by default, but don't use it by
@@ -1029,7 +1009,6 @@ s3Configuration _ua c = cfg
 	usev4 Nothing = False
 
 	r = encodeBS <$> getRemoteConfigValue regionField c
-#endif
 
 data S3Info = S3Info
 	{ bucket :: S3.Bucket
@@ -1209,11 +1188,9 @@ s3Info :: ParsedRemoteConfig -> S3Info -> [(String, String)]
 s3Info c info = catMaybes
 	[ Just ("bucket", fromMaybe "unknown" (getBucketName c))
 	, Just ("endpoint", decodeBS (S3.s3Endpoint s3c))
-#if MIN_VERSION_aws(0,24,0)
 	, case S3.s3Region s3c of
 		Nothing -> Nothing
 		Just r -> Just ("region", decodeBS r)
-#endif
 	, Just ("port", show (S3.s3Port s3c))
 	, Just ("protocol", map toLower (show (S3.s3Protocol s3c)))
 	, Just ("storage class", showstorageclass (getStorageClass c))
