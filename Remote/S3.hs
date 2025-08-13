@@ -168,7 +168,7 @@ data SignatureVersion
 signatureVersionParser :: RemoteConfigField -> FieldDesc -> RemoteConfigFieldParser
 signatureVersionParser f fd =
 	genParser go f (Just defver) fd
-		(Just (ValueDesc "v2 or v4"))
+		(Just (ValueDesc "v2 or v4 or anonymous"))
   where
 	go "v2" = Just (SignatureVersion 2)
 	go "v4" = Just (SignatureVersion 4)
