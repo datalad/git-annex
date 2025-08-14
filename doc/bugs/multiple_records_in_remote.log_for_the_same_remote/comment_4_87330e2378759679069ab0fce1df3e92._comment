@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2025-08-14T14:58:11Z"
+ content="""
+I've added a warning in these cases, and it will avoid autoenabling a special
+remote when there is already a remote with the same name. 
+
+In the case of two special remotes with the same name that are both set to
+autoenable, it's essentially random which gets enabled first and so "wins".
+
+Decided against autoenabling it with a different name, because: a) There's
+the potential that the name it comes up with is actually the name of
+another special remote that is also due to be autoenabled. b) It seems like
+potentially confusing behavior for there to be a remote with a different
+name than that usually used for a particular special remote.
+"""]]

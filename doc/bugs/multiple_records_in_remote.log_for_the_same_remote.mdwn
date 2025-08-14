@@ -71,3 +71,6 @@ ATM 10.20240430+git26-g5f61667f27-1~ndall+1 but I guess it is unrelated.
 [[!meta author=yoh]]
 [[!tag projects/openneuro]]
 [[!meta title="warn when two special remotes with the same name are both configured to autoenable, and avoid one overwriting the git config of the other"]]
+
+> I think I have explained what happened here, and the behavior change is
+> enough to prevent the confusing behavior. [[done]] --[[Joey]]

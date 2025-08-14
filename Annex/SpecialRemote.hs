@@ -96,12 +96,7 @@ autoEnable = do
 			Just (Sameas u') -> u'
 			Nothing -> cu
 		case (lookupName c, findType c) of
-			-- Avoid auto-enabling when the name contains a
-			-- control character, because git does not avoid
-			-- displaying control characters in the name of a
-			-- remote, and an attacker could leverage
-			-- autoenabling it as part of an attack.
-			(Just name, Right t) | safeOutput name == name -> do
+			(Just name, Right t) -> checkcanenable u name $ do
 				showSideAction $ UnquotedString $ "Auto enabling special remote " ++ name
 				dummycfg <- liftIO dummyRemoteGitConfig
 				tryNonAsync (setup t (AutoEnable c) (Just u) Nothing c dummycfg) >>= \case
@@ -117,6 +112,19 @@ autoEnable = do
 	getcu r = fromMaybe
 		(Remote.uuid r)
 		(remoteAnnexConfigUUID (Remote.gitconfig r))
+	checkcanenable u name cont
+		-- Avoid auto-enabling when the name contains a control
+		-- character, because git does not avoid displaying control
+		-- characters in the name of a remote, and an attacker could
+		-- leverage autoenabling it as part of an attack.
+		| safeOutput name /= name = return ()
+		| otherwise = do
+			rs <- remoteList' False
+			case filter (\rmt -> Remote.name rmt == name) rs of
+				(rmt:_) | Remote.uuid rmt /= u -> warning $ 
+					UnquotedString $ "Cannot auto enable special remote " 
+						++ name ++ " because there is another remote with the same name."
+				_ -> cont
 
 autoEnableable :: Annex (M.Map UUID RemoteConfig)
 autoEnableable = do
