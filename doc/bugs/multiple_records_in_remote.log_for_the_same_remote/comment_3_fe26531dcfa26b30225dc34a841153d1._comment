@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2025-08-14T14:03:08Z"
+ content="""
+Beyond a warning, it would be possible two autoenable both, but use a new
+name for the second one.
+
+It occurs to me that it's also possible for autoenable of a special remote
+to overwrite/change the git config of a regular git remote that has the
+same name. This would be unlikely except in the case of one named "origin",
+but it could happen, just needs the git remote to have been added before
+git-annex inits. That seems like a problem that ought to be avoided too.
+"""]]
