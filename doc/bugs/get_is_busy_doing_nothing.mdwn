@@ -81,3 +81,6 @@ Is there any diagnostic information I should collect to help troubleshooting the
 [[!tag projects/datalad]]
 
 [[!meta title="SQLite3 returned ErrorBusy while attempting to perform step: database is locked"]]
+
+> It seems that this bug has been taken as far as it can be toward a fix.
+> So I'm going to call this [[done]] --[[Joey]]
