@@ -1,0 +1,3 @@
+`git-annex get -J10` of a bunch of files that were all addurled from the
+same torrent will fail. It uses the same temp file for the torrent file
+that each thread tries to download, resulting in "file does not exist" errors. --[[Joey]]
