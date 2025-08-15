@@ -12,3 +12,7 @@ A warning was added in August 2023 when it's run in a way that will change
 behavior. It would be good to wait until all git-annex users have gotten
 the version with the warning, and used it for a while, before finishing the
 transition.
+
+> Using the August 2025 debian stable release that included the warning as the
+> start point, I suggest September 2026 as the transition end date.
+> --[[Joey]]
