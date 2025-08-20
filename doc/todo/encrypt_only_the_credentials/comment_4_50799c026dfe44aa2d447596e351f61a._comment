@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="stv0g"
+ avatar="http://cdn.libravatar.org/avatar/6faa6cc783a165b25fc1c8f3154ba449"
+ subject="encryption=credsonly"
+ date="2025-08-18T17:07:40Z"
+ content="""
+Hi Joey,
+
+> I agree it would make sense to have some way to embedcreds without encrypting content stored on the remote.
+> I suppose one way to express it is as encryption=onlycreds embedcreds=yes with one or more keyids.
+
+I am also in need of the `encryption=credsonly` option for the LTO tape special remote on which I am currently working.
+
+LTO tape drives provide hardware-based AES encryption which I would like to use. However, to enable this HW-accellerated encryption, I need to initialize the tape drive with an appropriate key, which I would like to store in the annex using credentials.
+"""]]
