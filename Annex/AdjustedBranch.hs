@@ -579,8 +579,7 @@ rebaseOnTopMsg = "rebasing adjusted branch on top of updated original branch"
  - will be lost, and any other headers are not copied either. -}
 reverseAdjustedCommit :: Sha -> Adjustment -> (Sha, Commit) -> OrigBranch -> Annex Sha
 reverseAdjustedCommit commitparent adj (csha, basiscommit) origbranch
-	| length (commitParent basiscommit) > 1 = giveup $
-		"unable to propagate merge commit " ++ show csha ++ " back to " ++ show origbranch
+	| length (commitParent basiscommit) > 1 = giveup mergeerror
 	| otherwise = do
 		cmode <- annexCommitMode <$> Annex.getGitConfig
 		treesha <- reverseAdjustedTree commitparent adj csha
@@ -591,6 +590,12 @@ reverseAdjustedCommit commitparent adj (csha, basiscommit) origbranch
 					[commitMessage basiscommit]
 					[commitparent] treesha
 		return revadjcommit
+  where
+	mergeerror = "Unable to propagate merge commit " ++ fromRef csha ++
+		" back to " ++ fromRef origbranch ++
+		" from this adjusted branch." ++
+		" To fix this, reset back to before the merge commit, " ++
+		" and use: git-annex merge <branch>"
 
 {- Adjusts the tree of the basis, changing only the files that the
  - commit changed, and reverse adjusting those changes.
