@@ -16,6 +16,10 @@ git-annex (10.20250722) UNRELEASED; urgency=medium
     and display.
   * Improve behavior when there are special remotes configured with
     autoenable=yes with names that conflict with other remotes.
+  * adjust: When another branch has been manually merged into the adjusted
+    branch, re-adjusting errors out, rather than losing that merge commit.
+  * sync: When another branch has been manually merged into an adjusted
+    branch, error out rather than only displaying a warning.
   * Bump aws build dependency to 0.24.1.
   * stack.yaml: Update to lts-24.2.
 

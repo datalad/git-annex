@@ -524,15 +524,12 @@ propigateAdjustedCommits'
 propigateAdjustedCommits' warnwhendiverged origbranch adj _commitsprevented =
 	inRepo (Git.Ref.sha basis) >>= \case
 		Just origsha -> catCommit currbranch >>= \case
-			Just currcommit ->
-				newcommits >>= go origsha origsha False >>= \case
-					Left e -> do
-						warning (UnquotedString e)
-						return (Nothing, return ())
-					Right newparent -> return
-						( Just newparent
-						, rebase currcommit newparent
-						)
+			Just currcommit -> do
+				newparent <- newcommits >>= go origsha origsha False
+				return
+					( Just newparent
+					, rebase currcommit newparent
+					)
 			Nothing -> return (Nothing, return ())
 		Nothing -> do
 			warning $ UnquotedString $ 
@@ -553,16 +550,14 @@ propigateAdjustedCommits' warnwhendiverged origbranch adj _commitsprevented =
 					warning $ UnquotedString $ 
 						"Original branch " ++ fromRef origbranch ++ " has diverged from current adjusted branch " ++ fromRef currbranch
 			_ -> inRepo $ Git.Branch.update' origbranch parent
-		return (Right parent)
+		return parent
 	go origsha parent pastadjcommit (sha:l) = catCommit sha >>= \case
 		Just c
 			| hasAdjustedBranchCommitMessage c ->
 				go origsha parent True l
-			| pastadjcommit ->
-				reverseAdjustedCommit parent adj (sha, c) origbranch
-					>>= \case
-						Left e -> return (Left e)
-						Right commit -> go origsha commit pastadjcommit l
+			| pastadjcommit -> do
+				commit <- reverseAdjustedCommit parent adj (sha, c) origbranch
+				go origsha commit pastadjcommit l
 		_ -> go origsha parent pastadjcommit l
 	rebase currcommit newparent = do
 		-- Reuse the current adjusted tree, and reparent it
@@ -582,10 +577,10 @@ rebaseOnTopMsg = "rebasing adjusted branch on top of updated original branch"
  - The commit message, and the author and committer metadata are
  - copied over from the basiscommit. However, any gpg signature
  - will be lost, and any other headers are not copied either. -}
-reverseAdjustedCommit :: Sha -> Adjustment -> (Sha, Commit) -> OrigBranch -> Annex (Either String Sha)
+reverseAdjustedCommit :: Sha -> Adjustment -> (Sha, Commit) -> OrigBranch -> Annex Sha
 reverseAdjustedCommit commitparent adj (csha, basiscommit) origbranch
-	| length (commitParent basiscommit) > 1 = return $
-		Left $ "unable to propagate merge commit " ++ show csha ++ " back to " ++ show origbranch
+	| length (commitParent basiscommit) > 1 = giveup $
+		"unable to propagate merge commit " ++ show csha ++ " back to " ++ show origbranch
 	| otherwise = do
 		cmode <- annexCommitMode <$> Annex.getGitConfig
 		treesha <- reverseAdjustedTree commitparent adj csha
@@ -595,7 +590,7 @@ reverseAdjustedCommit commitparent adj (csha, basiscommit) origbranch
 				Git.Branch.commitTree cmode
 					[commitMessage basiscommit]
 					[commitparent] treesha
-		return (Right revadjcommit)
+		return revadjcommit
 
 {- Adjusts the tree of the basis, changing only the files that the
  - commit changed, and reverse adjusting those changes.

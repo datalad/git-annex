@@ -21,7 +21,7 @@ to a public branch with commands like `git-annex unlock`.
 
 While in the adjusted branch, you can use git-annex and git commands as
 usual. Any commits that you make will initially only be made to the
-adjusted branch. 
+adjusted branch.
 
 To propagate commits from the adjusted branch back to the original branch,
 and to other repositories, as well as to merge in changes from other
@@ -31,8 +31,9 @@ made by this command.
 
 When in an adjusted branch, using `git merge otherbranch` is often not
 ideal, because merging a non-adjusted branch may lead to unnecessary
-merge conflicts, or add files in non-adjusted form. To avoid those
-problems, use `git annex merge otherbranch`.
+merge conflicts, or add files in non-adjusted form. And such merges
+cannot be propagated from the adjusted branch back to the original branch.
+To avoid those problems, use `git annex merge otherbranch`.
 
 Re-running this command with the same options
 while inside the adjusted branch will update the adjusted branch

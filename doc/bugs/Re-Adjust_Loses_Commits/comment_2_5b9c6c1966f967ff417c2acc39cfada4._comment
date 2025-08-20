@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2025-08-20T16:34:25Z"
+ content="""
+Thanks for bumping this. It was in my backlog. I've taken a look at it now.
+
+Note that you can use the reflog to get back to the missing commits.
+
+The [[git-annex-adjust]] warns about merging into an adjusted branch. And
+suggests to use `git-annex merge` to merge a branch into an adjusted
+branch. Which avoids this problem.
+
+Probably the best thing for it to do in this situation is to fail in a way
+that leaves the adjusted branch as-is. The user can then address the
+problem, eg by resetting the adjusted branch to a point before the merge
+and doing the merge some other way.
+
+It would be difficult to handle propagating a merge commit back to the
+original branch. Usually when on an adjusted branch, any commit of annexed
+files can be assumed to have the adjustment (eg unlocking) applied to the
+files. And so reversing the adjustment will yield the desired state (eg
+locked files). But a merge commit may not be of another adjusted branch,
+it could be a non-adjusted branch. Or it could be a branch with a different
+adjustment applied to it. Reversing the adjustment would then do the wrong
+thing.
+
+Consider for example, if the --unlock adjustment were used. But then a
+branch adjusted with --hide-missing were merged in. This is basically
+indistingushable from merging in a branch where some unwanted annexed file
+is removed.
+
+Also, it looks at the diff of changes made in a commit to know which
+annexed files were changed and reverse adjusts those files. In a merge
+commit, it's not clear which of the multiple parents it should diff
+against.
+"""]]
