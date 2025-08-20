@@ -25,7 +25,7 @@ the S3 remote.
 * `chunk` - Enables [[chunking]] when storing large files.
   `chunk=1MiB` is a good starting point for chunking.
 
-* `embedcreds` - Optional. Set to "yes" embed the login credentials inside
+* `embedcreds` - Optional. Set to "yes" to embed the login credentials inside
   the git repository, which allows other clones to also access them. This is
   the default when gpg encryption is enabled; the credentials are stored
   encrypted and only those with the repository's keys can access them.
@@ -33,6 +33,10 @@ the S3 remote.
   It is not the default when using shared encryption, or no encryption.
   Think carefully about who can access your repository before using
   embedcreds without gpg encryption.
+
+* `onlyencryptcreds` - Optional. Set to "yes" to make the `encryption`
+  only be used for the embedded login credentials, but not used to encrypt
+  the content stored on the special remote.
 
 * `datacenter` - Specifies which Amazon datacenter
   to use when creating a bucket. Defaults to "US". Other values include "EU"

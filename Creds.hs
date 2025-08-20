@@ -33,7 +33,7 @@ import Annex.Perms
 import Utility.FileMode
 import Crypto
 import Types.ProposedAccepted
-import Remote.Helper.Encryptable (remoteCipher, remoteCipher', embedCreds, EncryptionIsSetup, extractCipher)
+import Remote.Helper.Encryptable (remoteCipher, remoteCipher', CipherPurpose(..), embedCreds, EncryptionIsSetup, extractCipher)
 import Utility.Env (getEnv)
 import Utility.Base64
 import qualified Utility.FileIO as F
@@ -95,14 +95,19 @@ setRemoteCredPair' pc encsetup gc storage mcreds = case mcreds of
   where
 	localcache creds = writeCacheCredPair creds storage
 
-	storeconfig creds key (Just cipher) = do
+	storeconfig creds key (Just (CipherAllPurpose cipher)) = 
+		storeconfigcipher creds key cipher
+	storeconfig creds key (Just (CipherOnlyCreds cipher)) = 
+		storeconfigcipher creds key cipher
+	storeconfig creds key Nothing =
+		storeconfig' key (Accepted (decodeBS $ toB64 $ encodeBS $ encodeCredPair creds))
+	
+	storeconfigcipher creds key cipher = do
 		cmd <- gpgCmd <$> Annex.getGitConfig
 		s <- liftIO $ encrypt cmd (pc, gc) cipher
 			(feedBytes $ L8.pack $ encodeCredPair creds)
 			(readBytesStrictly return)
 		storeconfig' key (Accepted (decodeBS (toB64 s)))
-	storeconfig creds key Nothing =
-		storeconfig' key (Accepted (decodeBS $ toB64 $ encodeBS $ encodeCredPair creds))
 	
 	storeconfig' key val = return $ pc
 		{ parsedRemoteConfigMap = M.insert key (RemoteConfigValue val) (parsedRemoteConfigMap pc)
@@ -127,14 +132,16 @@ getRemoteCredPair c gc storage = maybe fromcache (return . Just) =<< fromenv
 			<|> getRemoteConfigValue key c			
 		case (getval, mcipher) of
 			(Nothing, _) -> return Nothing
-			(Just enccreds, Just (cipher, storablecipher)) ->
-				fromenccreds (encodeBS enccreds) cipher storablecipher
+			(Just enccreds, Just ((CipherAllPurpose cipher, storablecipher))) ->
+				fromenccreds enccreds cipher storablecipher
+			(Just enccreds, Just ((CipherOnlyCreds cipher, storablecipher))) ->
+				fromenccreds enccreds cipher storablecipher
 			(Just bcreds, Nothing) ->
 				fromcreds $ decodeBS $ fromB64 $ encodeBS bcreds
 	fromenccreds enccreds cipher storablecipher = do
 		cmd <- gpgCmd <$> Annex.getGitConfig
 		mcreds <- liftIO $ catchMaybeIO $ decrypt cmd (c, gc) cipher
-			(feedBytes $ L8.fromStrict $ fromB64 enccreds)
+			(feedBytes $ L8.fromStrict $ fromB64 $ encodeBS enccreds)
 			(readBytesStrictly $ return . S8.unpack)
 		case mcreds of
 			Just creds -> fromcreds creds
@@ -145,7 +152,7 @@ getRemoteCredPair c gc storage = maybe fromcache (return . Just) =<< fromenv
 				case storablecipher of
 					SharedCipher {} -> showLongNote "gpg error above was caused by an old git-annex bug in credentials storage. Working around it.."
 					_ -> giveup "*** Insecure credentials storage detected for this remote! See https://git-annex.branchable.com/upgrades/insecure_embedded_creds/"
-				fromcreds $ decodeBS $ fromB64 enccreds
+				fromcreds $ decodeBS $ fromB64 $ encodeBS enccreds
 	fromcreds creds = case decodeCredPair creds of
 		Just credpair -> do
 			writeCacheCredPair credpair storage

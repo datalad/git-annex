@@ -35,6 +35,10 @@ the Glacier remote.
   Think carefully about who can access your repository before using
   embedcreds without gpg encryption.
 
+* `onlyencryptcreds` - Optional. Set to "yes" to make the `encryption`
+  only be used for the embedded login credentials, but not used to encrypt
+  the content stored on the special remote.
+
 * `datacenter` - Defaults to "us-east-1".
 
 * `vault` - By default, a vault name is chosen based on the remote name

@@ -24,6 +24,10 @@ the webdav remote.
   Think carefully about who can access your repository before using
   embedcreds without gpg encryption.
 
+* `onlyencryptcreds` - Optional. Set to "yes" to make the `encryption`
+  only be used for the embedded login credentials, but not used to encrypt
+  the content stored on the special remote.
+
 * `url` - Required. The URL to the WebDAV directory where files will be
   stored. This can be a subdirectory of a larger WebDAV repository, and will
   be created as needed. Use of a https URL is strongly

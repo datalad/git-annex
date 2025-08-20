@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2025-08-20T19:07:50Z"
+ content="""
+I've implemented onlyencryptcreds=yes.
+
+Note that this bug needs to be addressed to avoid some foot shooting
+with this new option: [[bugs/prevent_enableremote_changing_encryption]]
+Since the foot shooting is no worse that previously possible foot shooting
+shown in that bug, I went ahead and added this new feature before
+addressing that bug.
+"""]]

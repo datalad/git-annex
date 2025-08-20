@@ -85,6 +85,9 @@ chunksizeField = Accepted "chunksize"
 embedCredsField :: RemoteConfigField
 embedCredsField = Accepted "embedcreds"
 
+onlyEncryptCredsField :: RemoteConfigField
+onlyEncryptCredsField = Accepted "onlyencryptcreds"
+
 preferreddirField :: RemoteConfigField
 preferreddirField = Accepted "preferreddir"
 

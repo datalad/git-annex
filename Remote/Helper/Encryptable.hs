@@ -15,6 +15,7 @@ module Remote.Helper.Encryptable (
 	encryptionConfigParsers,
 	parseEncryptionConfig,
 	parseEncryptionMethod,
+	CipherPurpose(..),
 	remoteCipher,
 	remoteCipher',
 	embedCreds,
@@ -63,6 +64,8 @@ encryptionConfigParsers =
 	, optionalStringParser pubkeysField HiddenField
 	, yesNoParser embedCredsField Nothing
 		(FieldDesc "embed credentials into git repository")
+	, yesNoParser onlyEncryptCredsField Nothing
+		(FieldDesc "only encrypt embedded credentials, not annexed files")
 	, macFieldParser
 	, optionalStringParser (Accepted "keyid")
 		(FieldDesc "gpg key id")
@@ -217,12 +220,14 @@ encryptionSetup c gc = do
 		-- remotes (while being backward-compatible).
 		(map Accepted ["keyid", "keyid+", "keyid-", "highRandomQuality"])
 
-remoteCipher :: ParsedRemoteConfig -> RemoteGitConfig -> Annex (Maybe Cipher)
-remoteCipher c gc = fmap fst <$> remoteCipher' c gc
+data CipherPurpose t = CipherAllPurpose t | CipherOnlyCreds t
 
 {- Gets encryption Cipher. The decrypted Ciphers are cached in the Annex
  - state. -}
-remoteCipher' :: ParsedRemoteConfig -> RemoteGitConfig -> Annex (Maybe (Cipher, StorableCipher))
+remoteCipher :: ParsedRemoteConfig -> RemoteGitConfig -> Annex (Maybe (CipherPurpose Cipher))
+remoteCipher c gc = fmap fst <$> remoteCipher' c gc
+
+remoteCipher' :: ParsedRemoteConfig -> RemoteGitConfig -> Annex (Maybe (CipherPurpose Cipher, StorableCipher))
 remoteCipher' c gc = case extractCipher c of
 	Nothing -> return Nothing
 	Just encipher -> do
@@ -230,7 +235,7 @@ remoteCipher' c gc = case extractCipher c of
 		cachedciper <- liftIO $ atomically $ 
 			M.lookup encipher <$> readTMVar cachev
 		case cachedciper of
-			Just cipher -> return $ Just (cipher, encipher)
+			Just cipher -> return $ Just (purpose cipher, encipher)
 			-- Not cached; decrypt it, making sure
 			-- to only decrypt one at a time. Avoids
 			-- prompting for decrypting the same thing twice
@@ -245,7 +250,10 @@ remoteCipher' c gc = case extractCipher c of
 		cipher <- liftIO $ decryptCipher gpgcmd (c, gc) encipher
 		liftIO $ atomically $ putTMVar cachev $
 			M.insert encipher cipher cache
-		return $ Just (cipher, encipher)
+		return $ Just (purpose cipher, encipher)
+	purpose
+		| onlyEncryptCreds c = CipherOnlyCreds
+		| otherwise = CipherAllPurpose
 
 {- Checks if the remote's config allows storing creds in the remote's config.
  - 
@@ -262,11 +270,19 @@ embedCreds c = case getRemoteConfigValue embedCredsField c of
 		(Just (_ :: String), Just (_ :: String)) -> True
 		_ -> False
 
-{- Gets encryption Cipher, and key encryptor. -}
+onlyEncryptCreds :: ParsedRemoteConfig -> Bool
+onlyEncryptCreds c = case getRemoteConfigValue onlyEncryptCredsField c of
+	Just v -> v
+	Nothing -> False
+
+{- Gets key data encryption Cipher, and key encryptor. -}
 cipherKey :: ParsedRemoteConfig -> RemoteGitConfig -> Annex (Maybe (Cipher, EncKey))
-cipherKey c gc = fmap make <$> remoteCipher c gc
+cipherKey c gc = go <$> remoteCipher c gc
   where
-	make ciphertext = (ciphertext, encryptKey mac ciphertext)
+	go (Just (CipherAllPurpose ciphertext)) = 
+		Just (ciphertext, encryptKey mac ciphertext)
+	go (Just (CipherOnlyCreds _)) = Nothing
+	go Nothing = Nothing
 	mac = fromMaybe defaultMac $ getRemoteConfigValue macField c
 
 {- Stores an StorableCipher in a remote's configuration. -}
@@ -297,7 +313,7 @@ extractCipher c = case (getRemoteConfigValue cipherField c,
 	readkeys = KeyIds . splitc ','
 
 isEncrypted :: ParsedRemoteConfig -> Bool
-isEncrypted = isJust . extractCipher
+isEncrypted c = isJust (extractCipher c) && not (onlyEncryptCreds c)
 
 -- Check if encryption is enabled. This can be done before encryption
 -- is fully set up yet, so the cipher might not be present yet.
@@ -305,12 +321,16 @@ encryptionIsEnabled :: ParsedRemoteConfig -> Bool
 encryptionIsEnabled c = case getRemoteConfigValue encryptionField c of
 	Nothing -> False
 	Just NoneEncryption -> False
-	Just _ -> True
+	Just _ -> not (onlyEncryptCreds c)
 
 describeEncryption :: ParsedRemoteConfig -> String
 describeEncryption c = case extractCipher c of
 	Nothing -> "none"
-	Just cip -> nameCipher cip ++ " (" ++ describeCipher cip ++ ")"
+	Just cip
+		| onlyEncryptCreds c -> "creds only; " ++ desc cip
+		| otherwise -> desc cip
+  where
+	desc cip = nameCipher cip ++ " (" ++ describeCipher cip ++ ")"
 
 nameCipher :: StorableCipher -> String
 nameCipher (SharedCipher _) = "shared"

@@ -7,4 +7,8 @@ encryption for such a remote:
 	enableremote d (encryption setup) (encryption key stored in git repository) ok
 	(recording state in git...)
 
-This config change should not be allowed. --[[Joey]]
+This config change should not be allowed.
+
+Also, the new onlyencryptcreds=yes setting can passed to enableremote,
+which changes a previously encrypted remote to not use encryption for the
+data stored on it. That should also not be allowed. --[[Joey]]

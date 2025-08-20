@@ -20,6 +20,10 @@ git-annex (10.20250722) UNRELEASED; urgency=medium
     branch, re-adjusting errors out, rather than losing that merge commit.
   * sync: When another branch has been manually merged into an adjusted
     branch, error out rather than only displaying a warning.
+  * initremote: When onlyencryptcreds=yes is used along with
+    embedcreds=yes, and encryption is enabled, only encrypt the embedded
+    creds, without encrypting the content of the special remote. Useful
+    for exporttree=yes/importtree=yes remotes.
   * Bump aws build dependency to 0.24.1.
   * stack.yaml: Update to lts-24.2.
 
