@@ -199,9 +199,9 @@ gen r u rc gc rs = do
   where
 	new c cst info hdl magic = Just $ specialRemote c
 		(store hdl this info magic)
-		(retrieve hdl this rs c info)
+		(retrieve hdl rs c info)
 		(remove hdl this info)
-		(checkKey hdl this rs c info)
+		(checkKey hdl rs c info)
 		this
 	  where
 		this = Remote
@@ -423,8 +423,8 @@ storeHelper info h magic f object p = liftIO $ case partSize info of
 {- Implemented as a fileRetriever, that uses conduit to stream the chunks
  - out to the file. Would be better to implement a byteRetriever, but
  - that is difficult. -}
-retrieve :: S3HandleVar -> Remote -> RemoteStateHandle -> ParsedRemoteConfig -> S3Info -> Retriever
-retrieve hv r rs c info = fileRetriever' $ \f k p iv -> withS3Handle hv $ \case
+retrieve :: S3HandleVar -> RemoteStateHandle -> ParsedRemoteConfig -> S3Info -> Retriever
+retrieve hv rs c info = fileRetriever' $ \f k p iv -> withS3Handle hv $ \case
 	Right h -> 
 		eitherS3VersionID info rs c k (T.pack $ bucketObject info k) >>= \case
 			Left failreason -> do
@@ -464,14 +464,14 @@ lockContentS3 hv r rs c info
 	-- beyond a sanity check that the content is in fact present.
 	| versioning info = Just $ \k callback -> do
 		checkVersioning info rs k
-		ifM (checkKey hv r rs c info k)
+		ifM (checkKey hv rs c info k)
 			( withVerifiedCopy LockedCopy (uuid r) (return (Right True)) callback
 			, giveup $ "content seems to be missing from " ++ name r ++ " despite S3 versioning being enabled"
 			)
 	| otherwise = Nothing
 
-checkKey :: S3HandleVar -> Remote -> RemoteStateHandle -> ParsedRemoteConfig -> S3Info -> CheckPresent
-checkKey hv r rs c info k = withS3Handle hv $ \case
+checkKey :: S3HandleVar -> RemoteStateHandle -> ParsedRemoteConfig -> S3Info -> CheckPresent
+checkKey hv rs c info k = withS3Handle hv $ \case
 	Right h -> eitherS3VersionID info rs c k (T.pack $ bucketObject info k) >>= \case
 		Left failreason -> do
 			warning (UnquotedString failreason)
