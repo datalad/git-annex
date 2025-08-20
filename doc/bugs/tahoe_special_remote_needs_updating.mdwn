@@ -1,0 +1,15 @@
+After `apt-get install tahoe-lafs` installed version 1.20.0-6, this fails
+
+    TAHOE_FURL=foo git-annex initremote t type=tahoe embedcreds=yes
+
+    /usr/bin/tahoe:  Unknown command: start
+
+The tahoe man page says:
+
+	CONTROLLING NODES
+	       In  the  past,  the 'tahoe' command offered service watching (with start, restart, stop commands), but this was not very portable
+	       and has been deprecated.
+	
+	   COMMANDS
+	       run    Run a node without daemonizing.  This is the only command for running nodes.
+
