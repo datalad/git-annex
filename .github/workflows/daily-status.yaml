@@ -51,6 +51,8 @@ jobs:
           server_port: ${{ secrets.NOTIFY_SMTP_PORT }}
           username: ${{ secrets.NOTIFY_SMTP_USERNAME }}
           password: ${{ secrets.NOTIFY_SMTP_PASSWORD }}
+          secure: ${{ secrets.NOTIFY_SMTP_SECURE }}
+          ignore_cert: ${{ secrets.NOTIFY_SMTP_IGNORE_CERT }}
           from: GitHub Actions Notifications
           to: ${{ secrets.DAILY_STATUS_RECIPIENTS }}
           subject: ${{ steps.content.outputs.subject }}
