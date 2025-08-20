@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2025-08-20T17:44:07Z"
+ content="""
+I think I was assuming that encryption=onlycreds would use the same scheme as
+encryption=hybrid, so new gpg keys can later be given access to the creds.
+
+It might be possible that someone would want the equivilant of 
+encryption=pubkey instead. (encryption=sharedpubkey is the same as
+encryption=pubkey as far as encryption of creds goes).
+
+In future there might be some other, better encryption scheme that might be
+desirable to use only for creds. Eg, something other than gpg..
+
+An alternative to support such would be to use:
+
+	encryption=<whatever> embedcreds=yes onlyencryptcreds=yes
+"""]]
