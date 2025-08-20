@@ -78,3 +78,5 @@ Git-annex is such a great piece of software, thanks for creating it. I use it to
 But now I started using some SW that cannot deal with symlinks, so I use an adjusted branch of main. Merging the new import branch into the adjusted branch leads to the described issue.
 
 Many thanks and have a great day!
+
+> [[fixed|done]] --[[Joey]]

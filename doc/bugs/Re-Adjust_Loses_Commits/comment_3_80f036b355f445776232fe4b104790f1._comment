@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2025-08-20T17:08:24Z"
+ content="""
+I've made `git-annex sync` and also `git-annex adjust` error out in this
+situation, rather than treating it as a warning.
+
+I also improved the error message a bit. And improved the documentation
+to warn against getting into this situation.
+"""]]
