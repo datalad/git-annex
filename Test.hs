@@ -370,6 +370,7 @@ repoTests note numparts = map mk $ sep
 	, testCase "add subdirs" test_add_subdirs
 	, testCase "addurl" test_addurl
 	, testCase "repair" test_repair
+	, testCase "enableremote encryption changes" test_enableremote_encryption_changes
 	]
   where
 	mk l = testGroup groupname (initTests : map adddep l)
@@ -2186,3 +2187,26 @@ test_repair :: Assertion
 test_repair = intmpclonerepo $
 	-- Simply running repair used to fail on Windows.
 	git_annex "repair" [] "repair"
+
+test_enableremote_encryption_changes :: Assertion
+test_enableremote_encryption_changes = intmpclonerepo $ do
+	createDirectory (literalOsPath "dir")
+	let dirparam="directory=dir"
+	git_annex "initremote" ["foo", "type=directory", "encryption=none", dirparam] 
+		"initremote"
+	git_annex_shouldfail "enableremote" ["foo", "encryption=shared", dirparam]
+		"enableremote adding new encryption"
+	git_annex "initremote" ["bar", "type=directory", "encryption=shared", dirparam] 
+		"initremote"
+	git_annex "enableremote" ["bar", "encryption=shared", dirparam] 
+		"enableremote with same encryption"
+	git_annex_shouldfail "enableremote" ["bar", "encryption=none", dirparam]
+		"enableremote disabling encryption"
+	git_annex_shouldfail "enableremote" ["bar", "onlyencryptcreds=yes", dirparam]
+		"enableremote with onlyencryptcreds"
+	git_annex "initremote" ["baz", "type=directory", "encryption=shared", "onlyencryptcreds=yes", dirparam]
+		"initremote"
+	git_annex_shouldfail "enableremote" ["baz", "onlyencryptcreds=no", dirparam]
+		"enableremote disabling onlyencryptcreds"
+	git_annex "enableremote" ["baz", "onlyencryptcreds=yes", dirparam]
+		"enableremote enabling already enabled onlyencryptcreds"
