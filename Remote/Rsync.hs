@@ -200,12 +200,12 @@ rsyncTransport gc url
 	fromNull as xs = if null xs then as else xs
 
 rsyncSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-rsyncSetup _ mu _ c gc = do
+rsyncSetup ss mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 	-- verify configuration is sane
 	let url = maybe (giveup "Specify rsyncurl=") fromProposedAccepted $
 		M.lookup rsyncUrlField c
-	(c', _encsetup) <- encryptionSetup c gc
+	(c', _encsetup) <- encryptionSetup ss c gc
 
 	-- The rsyncurl is stored in git config, not only in this remote's
 	-- persistent state, so it can vary between hosts.

@@ -115,13 +115,13 @@ gen r u rc gc rs = do
 	ddarrepo = maybe (giveup "missing ddarrepo") (DdarRepo gc) (remoteAnnexDdarRepo gc)
 
 ddarSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-ddarSetup _ mu _ c gc = do
+ddarSetup ss mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 
 	-- verify configuration is sane
 	let ddarrepo = maybe (giveup "Specify ddarrepo=") fromProposedAccepted $
 		M.lookup ddarrepoField c
-	(c', _encsetup) <- encryptionSetup c gc
+	(c', _encsetup) <- encryptionSetup ss c gc
 
 	-- The ddarrepo is stored in git config, as well as this repo's
 	-- persistent state, so it can vary between hosts.

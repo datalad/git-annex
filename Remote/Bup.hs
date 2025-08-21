@@ -124,13 +124,13 @@ gen r u rc gc rs = do
 	buprepo = fromMaybe (giveup "missing buprepo") $ remoteAnnexBupRepo gc
 
 bupSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-bupSetup _ mu _ c gc = do
+bupSetup ss mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 
 	-- verify configuration is sane
 	let buprepo = maybe (giveup "Specify buprepo=") fromProposedAccepted $
 		M.lookup buprepoField c
-	(c', _encsetup) <- encryptionSetup c gc
+	(c', _encsetup) <- encryptionSetup ss c gc
 
 	-- bup init will create the repository.
 	-- (If the repository already exists, bup init again appears safe.)

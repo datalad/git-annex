@@ -111,12 +111,12 @@ cannotModify = giveup "httpalso special remote is read only"
 httpAlsoSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
 httpAlsoSetup _ Nothing _ _ _ =
 	giveup "Must use --sameas when initializing a httpalso remote."
-httpAlsoSetup _ (Just u) _ c gc = do
+httpAlsoSetup ss (Just u) _ c gc = do
 	_url <- maybe (giveup "Specify url=")
 		(return . fromProposedAccepted)
 		(M.lookup urlField c)
 	c' <- if isJust (M.lookup encryptionField c)
-		then fst <$> encryptionSetup c gc
+		then fst <$> encryptionSetup ss c gc
 		else pure c
 	gitConfigSpecialRemote u c' [("httpalso", "true")]
 	return (c', u)

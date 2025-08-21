@@ -134,7 +134,7 @@ webdavSetup ss mu mcreds c gc = do
 	url <- maybe (giveup "Specify url=")
 		(return . fromProposedAccepted)
 		(M.lookup urlField c)
-	(c', encsetup) <- encryptionSetup c gc
+	(c', encsetup) <- encryptionSetup ss c gc
 	pc <- either giveup return . parseRemoteConfig c' =<< configParser remote c'
 	creds <- maybe (getCreds pc gc u) (return . Just) mcreds
 	case ss of

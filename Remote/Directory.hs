@@ -151,7 +151,7 @@ gen r u rc gc rs = do
 		(remoteAnnexDirectory gc)
 
 directorySetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-directorySetup _ mu _ c gc = do
+directorySetup ss mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 	-- verify configuration is sane
 	let dir = maybe (giveup "Specify directory=") fromProposedAccepted $
@@ -159,7 +159,7 @@ directorySetup _ mu _ c gc = do
 	absdir <- liftIO $ absPath (toOsPath dir)
 	liftIO $ unlessM (doesDirectoryExist absdir) $
 		giveup $ "Directory does not exist: " ++ fromOsPath absdir
-	(c', _encsetup) <- encryptionSetup c gc
+	(c', _encsetup) <- encryptionSetup ss c gc
 
 	-- The directory is stored in git config, not in this remote's
 	-- persistent state, so it can vary between hosts.

@@ -140,7 +140,7 @@ gen r u rc gc rs = do
 		(remoteAnnexAndroidSerial gc)
 
 adbSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-adbSetup _ mu _ c gc = do
+adbSetup ss mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 
 	-- verify configuration
@@ -151,7 +151,7 @@ adbSetup _ mu _ c gc = do
 	serial <- getserial =<< enumerateAdbConnected
 	let c' = M.insert androidserialField (Proposed (fromAndroidSerial serial)) c
 
-	(c'', _encsetup) <- encryptionSetup c' gc
+	(c'', _encsetup) <- encryptionSetup ss c' gc
 
 	ok <- adbShellBool serial
 		[Param "mkdir", Param "-p", File (fromAndroidPath adir)]

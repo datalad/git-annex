@@ -124,7 +124,7 @@ glacierSetup ss mu mcreds c gc = do
 	glacierSetup' ss u mcreds c gc
 glacierSetup' :: SetupStage -> UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
 glacierSetup' ss u mcreds c gc = do
-	(c', encsetup) <- encryptionSetup (c `M.union` defaults) gc
+	(c', encsetup) <- encryptionSetup ss (c `M.union` defaults) gc
 	pc <- either giveup return . parseRemoteConfig c'
 		=<< configParser remote c'
 	c'' <- setRemoteCredPair ss encsetup pc gc (AWS.creds u) mcreds

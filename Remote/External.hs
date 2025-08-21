@@ -172,7 +172,7 @@ gen rt externalprogram r u rc gc rs
 				(remoteAnnexExternalType gc)
 
 externalSetup :: Maybe ExternalProgram -> Maybe (String, String) -> SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-externalSetup externalprogram setgitconfig _ mu _ c gc = do
+externalSetup externalprogram setgitconfig ss mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 	pc <- either giveup return $ parseRemoteConfig c (lenientRemoteConfigParser externalprogram)
 	let readonlyconfig = getRemoteConfigValue readonlyField pc == Just True
@@ -180,7 +180,7 @@ externalSetup externalprogram setgitconfig _ mu _ c gc = do
 		then "readonly"
 		else fromMaybe (giveup "Specify externaltype=") $
 			getRemoteConfigValue externaltypeField pc
-	(c', _encsetup) <- encryptionSetup c gc
+	(c', _encsetup) <- encryptionSetup ss c gc
 
 	c'' <- if readonlyconfig
 		then do

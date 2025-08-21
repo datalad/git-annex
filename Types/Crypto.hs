@@ -33,7 +33,7 @@ data EncryptionMethod
 	| PubKeyEncryption
 	| SharedPubKeyEncryption
 	| HybridEncryption
-	deriving (Typeable, Eq)
+	deriving (Typeable, Eq, Show)
 
 -- A base-64 encoded random value used for encryption.
 -- XXX ideally, this would be a locked memory region
@@ -44,6 +44,7 @@ data StorableCipher
 	| SharedCipher ByteString
 	| SharedPubKeyCipher ByteString KeyIds
 	deriving (Ord, Eq)
+
 data EncryptedCipherVariant = Hybrid | PubKey
 	deriving (Ord, Eq)
 

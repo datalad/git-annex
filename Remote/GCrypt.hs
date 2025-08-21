@@ -220,12 +220,12 @@ unsupportedUrl :: a
 unsupportedUrl = giveup "unsupported repo url for gcrypt"
 
 gCryptSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-gCryptSetup _ mu _ c gc = go $ fromProposedAccepted <$> M.lookup gitRepoField c
+gCryptSetup ss mu _ c gc = go $ fromProposedAccepted <$> M.lookup gitRepoField c
   where
 	remotename = fromJust (lookupName c)
 	go Nothing = giveup "Specify gitrepo="
 	go (Just gitrepo) = do
-		(c', _encsetup) <- encryptionSetup c gc
+		(c', _encsetup) <- encryptionSetup ss c gc
 
 		let url = Git.GCrypt.urlPrefix ++ gitrepo
 		rs <- Annex.getGitRemotes

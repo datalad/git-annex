@@ -163,8 +163,9 @@ parseMac (Just (Proposed s)) = case readMac s of
  - an encryption key, or not encrypt. An encrypted cipher is created, or is
  - updated to be accessible to an additional encryption key. Or the user
  - could opt to use a shared cipher, which is stored unencrypted. -}
-encryptionSetup :: RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, EncryptionIsSetup)
-encryptionSetup c gc = do
+encryptionSetup :: SetupStage -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, EncryptionIsSetup)
+encryptionSetup setupstage c gc = do
+	checkallowedchange
 	pc <- either giveup return $ parseEncryptionConfig c
 	gpgcmd <- gpgCmd <$> Annex.getGitConfig
 	maybe (genCipher pc gpgcmd) (updateCipher pc gpgcmd) (extractCipher pc)
@@ -219,6 +220,23 @@ encryptionSetup c gc = do
 		-- public-key encryption, hence we leave it on newer
 		-- remotes (while being backward-compatible).
 		(map Accepted ["keyid", "keyid+", "keyid-", "highRandomQuality"])
+	oldpc = either (const Nothing) Just $ parseEncryptionConfig $
+		case setupstage of
+			Init -> mempty
+			Enable oldc -> oldc
+			AutoEnable oldc -> oldc
+	checkallowedchange = case oldpc of
+		Nothing -> return ()
+		Just oldpc' -> case extractCipher oldpc' of
+			Nothing -> req NoneEncryption
+			Just (EncryptedCipher _ Hybrid _) -> req HybridEncryption
+			Just (EncryptedCipher _ PubKey _) -> req PubKeyEncryption
+			Just (SharedCipher _) -> req SharedEncryption
+			Just (SharedPubKeyCipher _ _) -> req SharedPubKeyEncryption
+	  where
+		req v
+			| encryption /= Right v = cannotchange
+			| otherwise = return ()
 
 data CipherPurpose t = CipherAllPurpose t | CipherOnlyCreds t
 

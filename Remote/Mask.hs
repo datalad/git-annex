@@ -116,7 +116,7 @@ maskSetup setupstage mu _ c gc = do
 	setupremote r = do
 		let c' = M.insert remoteUUIDField
 			(Proposed (fromUUID (uuid r) :: String)) c
-		(c'', encsetup) <- encryptionSetup c' gc
+		(c'', encsetup) <- encryptionSetup setupstage c' gc
 		verifyencryptionok encsetup r
 		
 		u <- maybe (liftIO genUUID) return mu
@@ -137,7 +137,7 @@ maskSetup setupstage mu _ c gc = do
 				-- get autoenabled later, or need to be
 				-- manually enabled.
 				_ -> do
-					(c', _) <- encryptionSetup c gc
+					(c', _) <- encryptionSetup setupstage c gc
 					u <- maybe (liftIO genUUID) return mu
 					gitConfigSpecialRemote u c' [ ("mask", "true") ]
 					return (c', u)

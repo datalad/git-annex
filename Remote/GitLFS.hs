@@ -148,7 +148,7 @@ mySetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteG
 mySetup ss mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 
-	(c', _encsetup) <- encryptionSetup c gc
+	(c', _encsetup) <- encryptionSetup ss c gc
 	pc <- either giveup return . parseRemoteConfig c' =<< configParser remote c'
 	let failinitunlessforced msg = case ss of
 		Init -> unlessM (Annex.getRead Annex.force) (giveup msg)
