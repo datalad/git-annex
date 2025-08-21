@@ -813,7 +813,6 @@ Executable git-annex
     Git
     Git.AutoCorrect
     Git.Branch
-    Git.BuildVersion
     Git.Bundle
     Git.CatFile
     Git.CheckAttr

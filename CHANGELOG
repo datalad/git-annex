@@ -26,6 +26,7 @@ git-annex (10.20250722) UNRELEASED; urgency=medium
     for exporttree=yes/importtree=yes remotes.
   * Bump aws build dependency to 0.24.1.
   * stack.yaml: Update to lts-24.2.
+  * Removed support for git versions older than 2.5.
 
  -- Joey Hess <id@joeyh.name>  Wed, 30 Jul 2025 13:45:42 -0400
 

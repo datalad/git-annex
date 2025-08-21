@@ -19,7 +19,6 @@ import Annex.WorkTree
 import Logs.Smudge
 import Logs.Location
 import qualified Database.Keys
-import qualified Git.BuildVersion
 import Git.FilePath
 import Git.Types
 import Git.HashObject
@@ -97,15 +96,7 @@ clean file = do
 	Annex.BranchState.disableUpdate -- optimisation
 	b <- liftIO $ L.hGetContents stdin
 	let passthrough = liftIO $ L.hPut stdout b
-	-- Before git 2.5, failing to consume all stdin here would
-	-- cause a SIGPIPE and crash it.
-	-- Newer git catches the signal and stops sending, which is
-	-- much faster. (Also, git seems to forget to free memory
-	-- when sending the file, so the less we let it send, the
-	-- less memory it will waste.)
-	let discardreststdin = if Git.BuildVersion.older "2.5"
-		then L.length b `seq` return ()
-		else liftIO $ hClose stdin
+	let discardreststdin = liftIO $ hClose stdin
 	let emitpointer = liftIO . S.hPut stdout . formatPointer
 	clean' file (parseLinkTargetOrPointerLazy' b)
 		passthrough
