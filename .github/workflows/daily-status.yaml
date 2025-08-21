@@ -53,7 +53,7 @@ jobs:
           password: ${{ secrets.NOTIFY_SMTP_PASSWORD }}
           secure: ${{ secrets.NOTIFY_SMTP_SECURE }}
           ignore_cert: ${{ secrets.NOTIFY_SMTP_IGNORE_CERT }}
-          from: GitHub Actions Notifications
+          from: "GitHub Actions Notifications <${{ secrets.NOTIFY_SMTP_USERNAME }}@${{ secrets.NOTIFY_SMTP_HOST }}>"
           to: ${{ secrets.DAILY_STATUS_RECIPIENTS }}
           subject: ${{ steps.content.outputs.subject }}
           html_body: file://git-annex-ci-reports/index.html
