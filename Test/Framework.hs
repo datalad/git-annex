@@ -535,6 +535,9 @@ testMode opts v = TestMode
 hasUnlockedFiles :: TestMode -> Bool
 hasUnlockedFiles m = unlockedFiles m || adjustedUnlockedBranch m
 
+onAdjustedBranch :: IO Bool
+onAdjustedBranch = adjustedUnlockedBranch <$> getTestMode
+
 withTestMode :: TestMode -> TestTree -> TestTree
 withTestMode testmode = withResource prepare release . const
   where

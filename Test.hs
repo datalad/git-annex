@@ -2085,7 +2085,12 @@ test_export_import = intmpclonerepo $ do
 	removeWhenExistsWith removeFile (literalOsPath "import")
 	writecontent "import" (content "newimport3")
 	git_annex "add" ["import"] "add of import"
-	commitchanges
+	ifM onAdjustedBranch
+		-- On an adjusted branch, sync fails when there is a merge
+		-- commit in history.
+		( git_annex_shouldfail "sync" commitchangesparams "sync"
+		, commitchanges
+		)
 	git_annex "export" [origbranch, "--to", "foo"] "export after import conflict"
 	dircontains "import" (content "newimport3")
   where
@@ -2097,7 +2102,8 @@ test_export_import = intmpclonerepo $ do
 	-- When on an adjusted branch, this updates the master branch
 	-- to match it, which is necessary since the master branch is going
 	-- to be exported.
-	commitchanges = git_annex "sync" ["--no-pull", "--no-push", "--no-content"] "sync"
+	commitchanges = git_annex "sync" commitchangesparams "sync"
+	commitchangesparams = ["--no-pull", "--no-push", "--no-content"]
 
 test_export_import_subdir :: Assertion
 test_export_import_subdir = intmpclonerepo $ do
