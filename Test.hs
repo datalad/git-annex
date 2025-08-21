@@ -98,7 +98,7 @@ import qualified Utility.Gpg
 
 optParser :: Parser TestOptions
 optParser = TestOptions
-	<$> snd (tastyParser (tests 1 False (TestOptions mempty False False Nothing mempty False mempty)))
+	<$> snd (tastyParser (tests 1 False defaulttos))
 	<*> switch
 		( long "keep-failures"
 		<> help "preserve repositories on test failure"
@@ -129,6 +129,15 @@ optParser = TestOptions
 			( Git.Types.ConfigKey (encodeBS k)
 			, Git.Types.ConfigValue (encodeBS (drop 1 v))
 			)
+	defaulttos = TestOptions
+		{ tastyOptionSet = mempty
+		, keepFailuresOption = False
+		, fakeSsh = False
+		, concurrentJobs = Nothing
+		, testGitConfig = mempty
+		, testDebug = False
+		, internalData = mempty
+		}
 
 runner :: TestOptions -> IO ()
 runner opts = parallelTestRunner opts tests
