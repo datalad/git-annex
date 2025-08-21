@@ -17,7 +17,6 @@ module Git.Merge (
 import Common
 import Git
 import Git.Command
-import qualified Git.Version
 import Git.Branch (CommitMode(..))
 
 data MergeConfig
@@ -50,20 +49,14 @@ merge' extraparams branch mergeconfig commitmode r
 
 merge'' :: [CommandParam] -> [MergeConfig] -> Repo -> IO Bool
 merge'' ps mergeconfig r
-	| MergeUnrelatedHistories `elem` mergeconfig = do
-		up <- mergeUnrelatedHistoriesParam
-		go (ps ++ maybeToList up)
+	| MergeUnrelatedHistories `elem` mergeconfig =
+		go (ps ++ [mergeUnrelatedHistoriesParam])
 	| otherwise = go ps
   where
 	go ps' = runBool ps' r
 
-{- Git used to default to merging unrelated histories; newer versions need
- - an option. -}
-mergeUnrelatedHistoriesParam :: IO (Maybe CommandParam)
-mergeUnrelatedHistoriesParam = ifM (Git.Version.older "2.9.0")
-	( return Nothing
-	, return (Just (Param "--allow-unrelated-histories"))
-	)
+mergeUnrelatedHistoriesParam :: CommandParam
+mergeUnrelatedHistoriesParam = Param "--allow-unrelated-histories"
 
 {- Stage the merge into the index, but do not commit it.-}
 stageMerge :: Ref -> [MergeConfig] -> Repo -> IO Bool
