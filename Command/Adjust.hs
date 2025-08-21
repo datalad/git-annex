@@ -69,7 +69,6 @@ seek :: Adjustment -> CommandSeek
 seek = commandAction . start
 
 start :: Adjustment -> CommandStart
-start adj = do
-	checkVersionSupported
+start adj = 
 	starting "adjust" (ActionItemOther Nothing) (SeekInput []) $
 		next $ enterAdjustedBranch adj

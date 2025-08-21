@@ -37,8 +37,6 @@ module Annex.AdjustedBranch (
 	preventCommits,
 	AdjustedClone(..),
 	checkAdjustedClone,
-	checkVersionSupported,
-	isGitVersionSupported,
 ) where
 
 import Annex.Common
@@ -58,7 +56,6 @@ import Git.Env
 import Git.Index
 import Git.FilePath
 import qualified Git.LockFile
-import qualified Git.Version
 import Annex.CatFile
 import Annex.Link
 import Annex.Content.Presence
@@ -366,7 +363,6 @@ adjustedBranchRefreshFull' adj origbranch = do
 adjustToCrippledFileSystem :: Annex ()
 adjustToCrippledFileSystem = do
 	warning "Entering an adjusted branch where files are unlocked as this filesystem does not support locked files."
-	checkVersionSupported
 	whenM (isNothing <$> inRepo Git.Branch.current) $
 		commitForAdjustedBranch []
 	inRepo Git.Branch.current >>= \case
@@ -673,13 +669,3 @@ checkAdjustedClone = ifM isBareRepo
 						setBasisBranch basis p
 					_ -> giveup $ "Unable to clean up from clone of adjusted branch; perhaps you should check out " ++ Git.Ref.describe origbranch
 			return InAdjustedClone
-
-checkVersionSupported :: Annex ()
-checkVersionSupported =
-	unlessM (liftIO isGitVersionSupported) $
-		giveup "Your version of git is too old; upgrade it to 2.2.0 or newer to use adjusted branches."
-
--- git 2.2.0 needed for GIT_COMMON_DIR which is needed
--- by updateAdjustedBranch to use withWorkTreeRelated.
-isGitVersionSupported :: IO Bool
-isGitVersionSupported = not <$> Git.Version.older "2.2.0"

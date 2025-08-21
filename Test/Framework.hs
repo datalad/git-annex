@@ -229,9 +229,6 @@ inpath path a = do
 		Right v -> return v
 		Left e -> throwM e
 
-adjustedbranchsupported :: FilePath -> IO Bool
-adjustedbranchsupported repo = intopdir repo $ Annex.AdjustedBranch.isGitVersionSupported
-
 setuprepo :: FilePath -> IO FilePath
 setuprepo dir = do
 	cleanup dir
@@ -746,7 +743,7 @@ runFakeSsh ps = error $ "fake ssh option parse error: " ++ show ps
  - leave open are closed before finalCleanup is run at the end. This
  - prevents some failures to clean up after the test suite.
  -}
-parallelTestRunner :: TestOptions -> (Int -> Bool -> Bool -> TestOptions -> [TestTree]) -> IO ()
+parallelTestRunner :: TestOptions -> (Int -> Bool -> TestOptions -> [TestTree]) -> IO ()
 parallelTestRunner opts mkts = do
 	numjobs <- case concurrentJobs opts of
 		Just NonConcurrent -> pure 1
@@ -755,7 +752,7 @@ parallelTestRunner opts mkts = do
 		Nothing -> getNumProcessors
 	parallelTestRunner' numjobs opts mkts
 
-parallelTestRunner' :: Int -> TestOptions -> (Int -> Bool -> Bool -> TestOptions -> [TestTree]) -> IO ()
+parallelTestRunner' :: Int -> TestOptions -> (Int -> Bool -> TestOptions -> [TestTree]) -> IO ()
 parallelTestRunner' numjobs opts mkts
 	| fakeSsh opts = runFakeSsh (internalData opts)
 	| otherwise = go =<< Utility.Env.getEnv subenv
@@ -810,8 +807,7 @@ parallelTestRunner' numjobs opts mkts
 			<$> Annex.Init.probeCrippledFileSystem'
 				(toOsPath tmpdir)
 				Nothing Nothing False
-		adjustedbranchok <- Annex.AdjustedBranch.isGitVersionSupported
-		let ts = mkts numparts crippledfilesystem adjustedbranchok opts
+		let ts = mkts numparts crippledfilesystem opts
 		let warnings = fst (tastyParser ts)
 		unless (null warnings) $ do
 			hPutStrLn stderr "warnings from tasty:"
@@ -827,7 +823,7 @@ parallelTestRunner' numjobs opts mkts
 			let subdir = fromOsPath $ toOsPath tmpdir </> toOsPath (show n)
 			ensuredir subdir
 			let p = (proc pp ps)
-				{ env = Just ((subenv, show (n, crippledfilesystem, adjustedbranchok)):environ)
+				{ env = Just ((subenv, show (n, crippledfilesystem)):environ)
 				, cwd = Just subdir
 				}
 			(_, _, _, pid) <- createProcessConcurrent p
@@ -839,8 +835,8 @@ parallelTestRunner' numjobs opts mkts
 		return (length ts, exitcodes)
 	go (Just subenvval) = case readish subenvval of
 		Nothing -> error ("Bad " ++ subenv)
-		Just (n, crippledfilesystem, adjustedbranchok) -> setTestEnv $ do
-			let ts = mkts numparts crippledfilesystem adjustedbranchok opts
+		Just (n, crippledfilesystem) -> setTestEnv $ do
+			let ts = mkts numparts crippledfilesystem opts
 			let t = topLevelTestGroup [ ts !! (n - 1) ]
 			case tryIngredients ingredients tastyopts t of
 				Nothing -> error "No tests found!?"

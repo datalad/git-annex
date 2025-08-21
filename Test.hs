@@ -98,7 +98,7 @@ import qualified Utility.Gpg
 
 optParser :: Parser TestOptions
 optParser = TestOptions
-	<$> snd (tastyParser (tests 1 False True (TestOptions mempty False False Nothing mempty False mempty)))
+	<$> snd (tastyParser (tests 1 False (TestOptions mempty False False Nothing mempty False mempty)))
 	<*> switch
 		( long "keep-failures"
 		<> help "preserve repositories on test failure"
@@ -133,14 +133,14 @@ optParser = TestOptions
 runner :: TestOptions -> IO ()
 runner opts = parallelTestRunner opts tests
 
-tests :: Int -> Bool -> Bool -> TestOptions -> [TestTree]
-tests numparts crippledfilesystem adjustedbranchok opts = 
+tests :: Int -> Bool -> TestOptions -> [TestTree]
+tests numparts crippledfilesystem opts = 
 	properties 
 		: withTestMode remotetestmode testRemotes
 		: concatMap mkrepotests testmodes
   where
 	testmodes = catMaybes
-		[ canadjust ("v10 adjusted unlocked branch", (testMode opts (RepoVersion 10)) { adjustedUnlockedBranch = True })
+		[ Just ("v10 adjusted unlocked branch", (testMode opts (RepoVersion 10)) { adjustedUnlockedBranch = True })
 		, unlesscrippled ("v10 unlocked", (testMode opts (RepoVersion 10)) { unlockedFiles = True })
 		, unlesscrippled ("v10 locked", testMode opts (RepoVersion 10))
 		]
@@ -148,9 +148,6 @@ tests numparts crippledfilesystem adjustedbranchok opts =
 	unlesscrippled v
 		| crippledfilesystem = Nothing
 		| otherwise = Just v
-	canadjust v
-		| adjustedbranchok = Just v
-		| otherwise = Nothing
 	mkrepotests (d, te) = map 
 		(\uts -> withTestMode te uts)
 		(repoTests d numparts)
@@ -1370,7 +1367,7 @@ test_conflict_resolution =
 test_conflict_resolution_adjusted_branch :: Assertion
 test_conflict_resolution_adjusted_branch =
 	withtmpclonerepo $ \r1 ->
-		withtmpclonerepo $ \r2 -> whenM (adjustedbranchsupported r2) $ do
+		withtmpclonerepo $ \r2 -> do
 			intopdir r1 $ do
 				disconnectOrigin
 				writecontent conflictor "conflictor1"
@@ -1687,7 +1684,7 @@ test_mixed_lock_conflict_resolution =
 test_adjusted_branch_merge_regression :: Assertion
 test_adjusted_branch_merge_regression = do
 	withtmpclonerepo $ \r1 ->
-		withtmpclonerepo $ \r2 -> whenM (adjustedbranchsupported r1) $ do
+		withtmpclonerepo $ \r2 -> do
 			pair r1 r2
 			setup r1
 			setup r2
@@ -1715,7 +1712,7 @@ test_adjusted_branch_merge_regression = do
  - a subtree to an existing tree lost files. -}
 test_adjusted_branch_subtree_regression :: Assertion
 test_adjusted_branch_subtree_regression = 
-	withtmpclonerepo $ \r -> whenM (adjustedbranchsupported r) $ do
+	withtmpclonerepo $ \r -> do
 		intopdir r $ do
 			disconnectOrigin
 			origbranch <- annexeval origBranch
