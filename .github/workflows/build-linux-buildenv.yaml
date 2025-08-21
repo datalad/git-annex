@@ -37,7 +37,7 @@ jobs:
         if: github.ref_name == 'master'
         run: |
           # TODO: switch to some datalad bot account
-          docker login -u jwodder --password-stdin <<<"$DOCKER_TOKEN"
+          docker login -u yarikoptic --password-stdin <<<"$DOCKER_TOKEN"
           docker push --all-tags datalad/buildenv-git-annex
         env:
           DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
