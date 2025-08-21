@@ -24,13 +24,13 @@ git-annex (10.20250722) UNRELEASED; urgency=medium
     embedcreds=yes, and encryption is enabled, only encrypt the embedded
     creds, without encrypting the content of the special remote. Useful
     for exporttree=yes/importtree=yes remotes.
-  * Bump aws build dependency to 0.24.1.
-  * stack.yaml: Update to lts-24.2.
-  * Removed support for git versions older than 2.22.
   * Don't allow the type of encryption of an existing special remote to be
     changed. Fixes reversion introduced in version 7.20191230.
+  * Removed support for git versions older than 2.22.
+  * Bump aws build dependency to 0.24.1.
+  * stack.yaml: Update to lts-24.2.
 
- -- Joey Hess <id@joeyh.name>  Wed, 30 Jul 2025 13:45:42 -0400
+ -- Joey Hess <id@joeyh.name>  Thu, 21 Aug 2025 16:37:41 -0400
 
 git-annex (10.20250721) upstream; urgency=medium
 
