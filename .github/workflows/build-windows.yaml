@@ -192,13 +192,16 @@ jobs:
 
       - name: Send e-mail on failed run
         if: failure() && contains(fromJSON('["schedule", "workflow_dispatch"]'), github.event_name)
-        uses: dawidd6/action-send-mail@v6
+        # freeze to v6
+        uses: dawidd6/action-send-mail@6d98ae34d733f9a723a9e04e94f2f24ba05e1402
         with:
           server_address: ${{ secrets.NOTIFY_SMTP_HOST }}
           server_port: ${{ secrets.NOTIFY_SMTP_PORT }}
           username: ${{ secrets.NOTIFY_SMTP_USERNAME }}
           password: ${{ secrets.NOTIFY_SMTP_PASSWORD }}
-          from: GitHub Actions Notifications
+          secure: ${{ secrets.NOTIFY_SMTP_SECURE }}
+          ignore_cert: ${{ secrets.NOTIFY_SMTP_IGNORE_CERT }}
+          from: "GitHub Actions Notifications <${{ secrets.NOTIFY_SMTP_USERNAME }}@${{ secrets.NOTIFY_SMTP_HOST }}>"
           to: ${{ secrets.NOTIFY_RECIPIENT }}
           subject: '[${{ github.repository }}] Build on Windows failed!'
           body: |
@@ -296,13 +299,16 @@ jobs:
 
       - name: Send e-mail on failed run
         if: failure() && contains(fromJSON('["schedule", "workflow_dispatch"]'), github.event_name)
-        uses: dawidd6/action-send-mail@v6
+        # freeze to v6
+        uses: dawidd6/action-send-mail@6d98ae34d733f9a723a9e04e94f2f24ba05e1402
         with:
           server_address: ${{ secrets.NOTIFY_SMTP_HOST }}
           server_port: ${{ secrets.NOTIFY_SMTP_PORT }}
           username: ${{ secrets.NOTIFY_SMTP_USERNAME }}
           password: ${{ secrets.NOTIFY_SMTP_PASSWORD }}
-          from: GitHub Actions Notifications
+          secure: ${{ secrets.NOTIFY_SMTP_SECURE }}
+          ignore_cert: ${{ secrets.NOTIFY_SMTP_IGNORE_CERT }}
+          from: "GitHub Actions Notifications <${{ secrets.NOTIFY_SMTP_USERNAME }}@${{ secrets.NOTIFY_SMTP_HOST }}>"
           to: ${{ secrets.NOTIFY_RECIPIENT }}
           subject: '[${{ github.repository }}] Tests of Windows build failed!'
           body: |
