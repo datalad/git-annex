@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout this repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Checkout ci-reports repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: datalad/git-annex-ci-reports
           token: ${{ secrets.DATALAD_GITHUB_TOKEN }}
