@@ -1,6 +1,6 @@
 {- common functions for encryptable remotes
  -
- - Copyright 2011-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -165,8 +165,8 @@ parseMac (Just (Proposed s)) = case readMac s of
  - could opt to use a shared cipher, which is stored unencrypted. -}
 encryptionSetup :: SetupStage -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, EncryptionIsSetup)
 encryptionSetup setupstage c gc = do
-	checkallowedchange
 	pc <- either giveup return $ parseEncryptionConfig c
+	checkallowedchange pc
 	gpgcmd <- gpgCmd <$> Annex.getGitConfig
 	maybe (genCipher pc gpgcmd) (updateCipher pc gpgcmd) (extractCipher pc)
   where
@@ -220,23 +220,24 @@ encryptionSetup setupstage c gc = do
 		-- public-key encryption, hence we leave it on newer
 		-- remotes (while being backward-compatible).
 		(map Accepted ["keyid", "keyid+", "keyid-", "highRandomQuality"])
-	oldpc = either (const Nothing) Just $ parseEncryptionConfig $
+	moldpc = either (const Nothing) Just $ parseEncryptionConfig $
 		case setupstage of
 			Init -> mempty
 			Enable oldc -> oldc
 			AutoEnable oldc -> oldc
-	checkallowedchange = case oldpc of
+	checkallowedchange pc = case moldpc of
 		Nothing -> return ()
-		Just oldpc' -> case extractCipher oldpc' of
-			Nothing -> req NoneEncryption
-			Just (EncryptedCipher _ Hybrid _) -> req HybridEncryption
-			Just (EncryptedCipher _ PubKey _) -> req PubKeyEncryption
-			Just (SharedCipher _) -> req SharedEncryption
-			Just (SharedPubKeyCipher _ _) -> req SharedPubKeyEncryption
+		Just oldpc -> do
+			case extractCipher oldpc of
+				Nothing -> req NoneEncryption
+				Just (EncryptedCipher _ Hybrid _) -> req HybridEncryption
+				Just (EncryptedCipher _ PubKey _) -> req PubKeyEncryption
+				Just (SharedCipher _) -> req SharedEncryption
+				Just (SharedPubKeyCipher _ _) -> req SharedPubKeyEncryption
+			when (onlyEncryptCreds oldpc /= onlyEncryptCreds pc) $
+				giveup "Cannot change onlyencryptcreds of existing remotes."
 	  where
-		req v
-			| encryption /= Right v = cannotchange
-			| otherwise = return ()
+		req v = when (encryption /= Right v) cannotchange
 
 data CipherPurpose t = CipherAllPurpose t | CipherOnlyCreds t
 

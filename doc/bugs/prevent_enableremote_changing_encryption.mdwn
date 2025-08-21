@@ -7,9 +7,15 @@ encryption for such a remote:
 	enableremote d (encryption setup) (encryption key stored in git repository) ok
 	(recording state in git...)
 
-This config change should not be allowed. This is a reversion,
-probably introduced around [[!commit 71f78fe45dc91dbef0bedd79b33d6a9fed85704d]]
+This config change should not be allowed.
+
+Indeed, changing encryption type of an existing special remote should never
+be allowed, whether or not it uses exporttree. This is a reversion, 
+probably introduced around
+[[!commit 71f78fe45dc91dbef0bedd79b33d6a9fed85704d]]
 
 Also, the new onlyencryptcreds=yes setting can passed to enableremote,
 which changes a previously encrypted remote to not use encryption for the
 data stored on it. That should also not be allowed. --[[Joey]]
+
+> [[fixed|done]] --[[Joey]]
