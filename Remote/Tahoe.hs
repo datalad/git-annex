@@ -164,7 +164,7 @@ retrieve rs hdl k _f d _p _ = do
 	go (Just cap) = do
 		showOutput
 		unlessM (liftIO $ requestTahoe hdl "get" [Param cap, File (fromOsPath d)]) $
-			giveup "tahoe failed to reteieve content"
+			giveup "tahoe failed to retrieve content"
 
 remove :: Maybe SafeDropProof -> Key -> Annex ()
 remove _ _ = giveup "content cannot be removed from tahoe remote"
