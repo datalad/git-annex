@@ -58,7 +58,7 @@ type IntroducerFurl = String
 type Capability = String
 
 remote :: RemoteType
-remote = specialRemoteType $ RemoteType
+remote = RemoteType
 	{ typename = "tahoe"
 	, enumerate = const (findSpecialRemotes "tahoe")
 	, generate = gen

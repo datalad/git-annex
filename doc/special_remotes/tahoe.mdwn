@@ -35,10 +35,6 @@ the tahoe remote.
   whether you want to give them access to your tahoe system before
   using embedcreds!
 
-* `onlyencryptcreds` - Optional. Set to "yes" to make the `encryption`
-  only be used for the embedded tahoe credentials, but not used to encrypt
-  the content stored on the special remote.
-
 Setup example:
 
 	# TAHOE_FURL=... git annex initremote tahoe type=tahoe embedcreds=yes

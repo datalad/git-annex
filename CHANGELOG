@@ -27,6 +27,9 @@ git-annex (10.20250722) UNRELEASED; urgency=medium
   * Don't allow the type of encryption of an existing special remote to be
     changed. Fixes reversion introduced in version 7.20191230.
   * tahoe: Support tahoe-lafs command versions newer than 1.16.
+  * tahoe: Fix bug that made initremote require an encryption= parameter,
+    despite git-annex encryption not being used with this special remote.
+    Fixes reversion introduced in version 7.20191230.
   * Removed support for git versions older than 2.22.
   * Bump aws build dependency to 0.24.1.
   * stack.yaml: Update to lts-24.2.
