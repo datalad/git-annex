@@ -1,4 +1,4 @@
-FROM neurodebian:bookworm
+FROM debian:trixie
 
 # Apparently snapshots.debian.org has heavy rate limiting policy so we better
 # provide some apt conf tune ups with hope to make apt more robust in talking to it
@@ -17,17 +17,15 @@ RUN echo 'Acquire::http::Dl-Limit "200";' >| /etc/apt/apt.conf.d/20snapshots \
 #   use of snapshot url there (we might implement support that way).
 #   Remove after https://github.com/neurodebian/neurodebian/issues/90 is fixed/released
 #   for the used date of nd_freeze.
+# - Originally used neurodebian, now switched to debian based for trixie
 RUN set -ex; \
     apt update; \
     apt install neurodebian-freeze; \
-    nd_freeze 20230829; \
+    nd_freeze 20250819; \
     f=/etc/apt/sources.list.d/debian.sources; if [ -e "$f" ] && ! grep -q "^URIs:.*snapshot\." "$f"; then mv "$f" "$f.disabled"; fi; \
-    sed -i -e 's,/debian-devel ,/debian ,g' -e 's,^#deb-src,deb-src,g' /etc/apt/sources.list.d/neurodebian.sources.list; \
     apt-get update -qq; \
     export DEBIAN_FRONTEND=noninteractive; \
-    apt-get build-dep -y -q git-annex-standalone; \
-    # Needed additional build-depends which might have not yet in "released" version
-    apt-get install -y libghc-criterion-dev libghc-http-client-restricted-dev libghc-git-lfs-dev libghc-servant-dev libghc-servant-server-dev libghc-servant-client-dev libghc-servant-client-core-dev; \
+    apt-get build-dep -y -q git-annex; \
     # Needed additional tools
     apt-get install -y devscripts quilt; \
     # Some helper utilities just in case
