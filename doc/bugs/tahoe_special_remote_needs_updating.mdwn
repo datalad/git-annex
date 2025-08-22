@@ -13,3 +13,4 @@ The tahoe man page says:
 	   COMMANDS
 	       run    Run a node without daemonizing.  This is the only command for running nodes.
 
+> [[done]] --[[Joey]]

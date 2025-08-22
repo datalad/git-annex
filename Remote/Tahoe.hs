@@ -13,7 +13,7 @@
  -
  - Tahoe has its own encryption, so git-annex's encryption is not used.
  -
- - Copyright 2014-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -45,6 +45,9 @@ import Utility.UserInfo
 import Utility.Metered
 import Utility.Env
 import Utility.ThreadScheduler
+import Utility.Process.Transcript
+
+import Control.Concurrent
 
 {- The TMVar is left empty until tahoe has been verified to be running. -}
 data TahoeHandle = TahoeHandle TahoeConfigDir (TMVar ())
@@ -233,8 +236,42 @@ convergenceFile :: TahoeConfigDir -> OsPath
 convergenceFile configdir = 
 	configdir </> literalOsPath "private" </> literalOsPath "convergence"
 
+{- tahoe run stays in the foreground, but behaves as a daemon, servicing
+ - requests. Attempting to start a second tahoe run process will fail. So,
+ - in order to support multiple git-annex processes, it is run in the
+ - background, and left running on exit.
+ -
+ - It can take a while for tahoe to begin accepting connections.
+ - This function waits for it to get ready.
+ -}
 startTahoeDaemon :: TahoeConfigDir -> IO ()
-startTahoeDaemon configdir = void $ boolTahoe configdir "start" []
+startTahoeDaemon configdir = withNullHandle $ \nullh -> do
+	let ps = tahoeParams configdir "run" [Param "--allow-stdin-close"]
+	let p = (proc "tahoe" $ toCommand ps)
+		{ std_in = UseHandle nullh
+		, std_out = UseHandle nullh
+		, std_err = UseHandle nullh
+		}
+	void $ forkIO $ void $ createProcess p
+	waitready (5 :: Int)
+	hClose nullh
+  where
+	waitready n
+		| n <= 0 = giveup "The tahoe run process is not responding to requests. Waited 5 seconds for it to start."
+		| otherwise = do
+			-- Need something that will always succeed
+			-- once the server has started and is accepting
+			-- requests, and this seems to do the trick.
+			let ps = tahoeParams configdir "check"
+				[ Param "--raw", Param "URI:LIT:"]
+			(_, ok) <- processTranscript "tahoe" 
+				(toCommand ps)
+				Nothing
+			if ok
+				then return ()
+				else do
+					threadDelaySeconds (Seconds 1)
+					waitready (pred n)
 
 {- Ensures that tahoe has been started, before running an action
  - that uses it. -}
