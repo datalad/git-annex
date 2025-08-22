@@ -14,7 +14,7 @@ Typically you will have an account on a Tahoe-LAFS storage grid, which
 is represented by an "introducer furl". You need to supply this to
 git-annex in the `TAHOE_FURL` environment variable when initializing the
 remote. git-annex will then generate a tahoe configuration directory for
-the remote under `~/.tahoe/git-annex/`, and automatically start the tahoe
+the remote under `~/.tahoe-git-annex/`, and automatically start the tahoe
 daemon as needed.
 
 ## configuration
