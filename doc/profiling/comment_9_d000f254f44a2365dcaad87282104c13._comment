@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2025-08-22T00:19:41Z"
+ content="""
+3x more allocations now than before. This is probably due to the switch to
+OsPath, which means extra copying from ByteString.
+
+		Thu Aug 21 20:18 2025 Time and Allocation Profiling Report  (Final)
+	
+		   git-annex +RTS -p -RTS find
+	
+		total time  =        0.99 secs   (989 ticks @ 1000 us, 1 processor)
+		total alloc = 1,514,545,208 bytes  (excludes profiling overheads)
+	
+	COST CENTRE                        MODULE                         SRC                                                 %time %alloc
+	
+	keyFile                            Annex.Locations                Annex/Locations.hs:(790,1)-(806,44)                   7.1   12.9
+	>>=.\                              Data.Attoparsec.Internal.Types Data/Attoparsec/Internal/Types.hs:(148,9)-(149,44)    6.9    2.4
+	>>=.\.succ'                        Data.Attoparsec.Internal.Types Data/Attoparsec/Internal/Types.hs:148:13-76           5.6    0.7
+	keyFile.esc                        Annex.Locations                Annex/Locations.hs:(796,9)-(801,32)                   5.3   10.7
+	ifM                                Utility.Monad                  Utility/Monad.hs:(62,1)-(64,44)                       5.1    8.7
+	ifM.\                              Utility.Monad                  Utility/Monad.hs:64:9-44                              3.5    8.6
+	hashUpdates.processBlocks          Crypto.Hash                    Crypto/Hash.hs:(103,5)-(112,76)                       3.1    0.3
+	inAnnex'.\                         Annex.Content.Presence         Annex/Content/Presence.hs:(53,61)-(68,31)             3.1    8.5
+	keyFile.anyneedesc                 Annex.Locations                Annex/Locations.hs:806:9-44                           3.1    1.0
+	seekFilteredKeys.exists            CmdLine.Seek                   CmdLine/Seek.hs:465:9-92                              2.8    0.4
+	fileKey                            Annex.Locations                Annex/Locations.hs:(814,1)-(824,41)                   2.1    1.0
+	keyPath                            Annex.Locations                Annex/Locations.hs:(834,1)-(836,23)                   1.8    5.9
+"""]]
