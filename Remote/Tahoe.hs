@@ -147,7 +147,8 @@ tahoeSetup _ mu _ c _ = do
 	missingfurl = giveup "Set TAHOE_FURL to the introducer furl to use."
 
 store :: RemoteStateHandle -> TahoeHandle -> Key -> AssociatedFile -> Maybe OsPath -> MeterUpdate -> Annex ()
-store rs hdl k _af o _p = sendAnnex k o noop $ \src _sz ->
+store rs hdl k _af o _p = sendAnnex k o noop $ \src _sz -> do
+	showOutput
 	parsePut <$> liftIO (readTahoe hdl "put" [File (fromOsPath src)]) >>= maybe
 		(giveup "tahoe failed to store content")
 		(\cap -> storeCapability rs k cap)
@@ -160,8 +161,10 @@ retrieve rs hdl k _f d _p _ = do
 	return Verified
   where
 	go Nothing = giveup "tahoe capability is not known"
-	go (Just cap) = unlessM (liftIO $ requestTahoe hdl "get" [Param cap, File (fromOsPath d)]) $
-		giveup "tahoe failed to reteieve content"
+	go (Just cap) = do
+		showOutput
+		unlessM (liftIO $ requestTahoe hdl "get" [Param cap, File (fromOsPath d)]) $
+			giveup "tahoe failed to reteieve content"
 
 remove :: Maybe SafeDropProof -> Key -> Annex ()
 remove _ _ = giveup "content cannot be removed from tahoe remote"
