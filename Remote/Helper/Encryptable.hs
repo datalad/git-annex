@@ -166,6 +166,10 @@ parseMac (Just (Proposed s)) = case readMac s of
 encryptionSetup :: SetupStage -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, EncryptionIsSetup)
 encryptionSetup setupstage c gc = do
 	pc <- either giveup return $ parseEncryptionConfig c
+	when (onlyEncryptCreds pc && encryption == Right SharedEncryption) $
+		giveup "There is no security benefit to using onlyencryptcreds=yes with encryption=shared"
+	when (onlyEncryptCreds pc && encryption == Right NoneEncryption) $
+		giveup "There is no security benefit to using onlyencryptcreds=yes with encryption=none"
 	checkallowedchange pc
 	gpgcmd <- gpgCmd <$> Annex.getGitConfig
 	maybe (genCipher pc gpgcmd) (updateCipher pc gpgcmd) (extractCipher pc)
