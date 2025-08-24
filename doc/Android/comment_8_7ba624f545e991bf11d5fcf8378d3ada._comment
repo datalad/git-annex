@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="waldi1985@90ec1a42d21b8182257f7a16ba8b8b08c51a0b6e"
+ nickname="waldi1985"
+ avatar="http://cdn.libravatar.org/avatar/128c0f882560337aad72a15ab7ee3766"
+ subject="Download with the git-annex-install script fail"
+ date="2025-08-24T11:10:50Z"
+ content="""
+	Downloading git-annex...
+	--2025-08-24 12:49:08--  https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-arm64-ancient.tar.gz
+	Resolving downloads.kitenet.net (downloads.kitenet.net)... 66.228.36.95, 2600:3c03::f03c:91ff:fe73:b0d2
+	Connecting to downloads.kitenet.net (downloads.kitenet.net)|66.228.36.95|:443... connected.
+	HTTP request sent, awaiting response... 403 Forbidden
+	2025-08-24 12:49:09 ERROR 403: Forbidden.
+
+The Download with the git-annex-install script fail, I guess because the build is failed. see: https://downloads.kitenet.net/git-annex/autobuild/arm64-ancient/
+
+	enableremote encryption changes: FAIL (0.73s)
+	./Test/Framework.hs:92:
+	initremote failed with unexpected exit code (transcript follows)
+	initremote baz
+	git-annex: There is no security benefit to using onlyencryptcreds=yes with encryption=shared
+	failed
+	initremote: 1 failed
+
+It would be grate if you could fix that. Thanks in advance.
+"""]]
