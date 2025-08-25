@@ -23,6 +23,7 @@ RUN set -ex; \
     apt install neurodebian-freeze; \
     nd_freeze 20250819; \
     f=/etc/apt/sources.list.d/debian.sources; if [ -e "$f" ] && ! grep -q "^URIs:.*snapshot\." "$f"; then mv "$f" "$f.disabled"; fi; \
+    sed -i -e 's,\(^deb\) \(.*\),\1 \2\ndeb-src \2,g' /etc/apt/sources.list.d/*.list; \
     apt-get update -qq; \
     export DEBIAN_FRONTEND=noninteractive; \
     apt-get build-dep -y -q git-annex; \
