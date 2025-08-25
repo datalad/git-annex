@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2025-08-25T16:56:00Z"
+ content="""
+similarly, if I try to `get` into server from the originally the client -- similar stall at
+
+```
+[2025-08-25 12:54:34.537964095] (Utility.Process) process [875925] done ExitSuccess
+[2025-08-25 12:54:34.538354083] (Utility.Process) process [875929] read: git [\"--git-dir=/home/yoh/proj/dandi/zarr-manifests/.git\",\"--work-tree=/home/yoh/proj/dandi/zarr-manifests\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"show-ref\",\"--hash\",\"refs/annex/last-index\"]
+[2025-08-25 12:54:34.541389023] (Utility.Process) process [875929] done ExitSuccess
+[2025-08-25 12:54:34.542713902] (P2P.IO) [ThreadId 4] P2P > DATA 24576
+[2025-08-25 12:54:34.512358033] (P2P.IO) [git-annex-shell connection Just 551102] [ThreadId 4] P2P < DATA 24576
+
+```
+"""]]
