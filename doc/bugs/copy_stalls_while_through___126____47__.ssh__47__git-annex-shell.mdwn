@@ -175,3 +175,6 @@ git-annex version: 10.20250416
 [[!meta author=yoh]]
 [[!tag projects/dandi]]
 
+> [[fixed|done]] --[[yoh]]
+
+It was an issue with jumbo MTU on the server side!
