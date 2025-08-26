@@ -27,8 +27,8 @@ RUN set -ex; \
     apt-get update -qq; \
     export DEBIAN_FRONTEND=noninteractive; \
     apt-get build-dep -y -q git-annex; \
-    # Needed additional tools
-    apt-get install -y devscripts quilt; \
+    # Needed additional tools etc
+    apt-get install -y devscripts quilt locales; \
     # Some helper utilities just in case
     apt-get install -y vim wget strace time ncdu gnupg curl procps datalad pigz less tree; \
     apt-get clean; \
