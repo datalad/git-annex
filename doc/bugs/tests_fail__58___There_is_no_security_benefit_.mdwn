@@ -1,0 +1,52 @@
+### Please describe the problem.
+
+I have fixed up build env for https://github.com/datalad/git-annex/ -- now just a pure Debian stable (no neurodebian), [Dockerfile](https://github.com/datalad/git-annex/blob/master/.github/workflows/tools/containers/buildenv-git-annex/Dockerfile)
+
+
+but then [testing of the build](https://github.com/datalad/git-annex/actions/runs/17227039565/job/48874015218) fails with
+
+```
+Tests
+  Repo Tests v10 locked
+    Init Tests
+      init:                                         OK (0.21s)
+      add:                                          OK (0.61s)
+    enableremote encryption changes:                FAIL (0.63s)
+      ./Test/Framework.hs:92:
+      initremote failed with unexpected exit code (transcript follows)
+      initremote baz 
+      git-annex: There is no security benefit to using onlyencryptcreds=yes with encryption=shared
+      failed
+      initremote: 1 failed
+      
+      Use -p '/enableremote encryption changes/' to rerun this test only.
+    borg remote:                                    OK
+    uninit:                                         OK (0.57s)
+    conflict resolution (mixed directory and file): OK (3.57s)
+    concurrent get of dup key regression:           OK (0.69s)
+    migrate (via gitattributes):                    OK (1.87s)
+    fsck (basics):                                  OK (0.82s)
+    copy:                                           OK (1.39s)
+    drop (no remote):                               OK (0.59s)
+    shared clone:                                   OK (0.18s)
+    add moved link:                                 OK (0.56s)
+
+1 out of 13 tests failed (11.68s)
+```
+
+
+
+### What version of git-annex are you using? On what operating system?
+
+
+```
+git-annex version: 10.20250721+git92-g481504db36-1~ndall+1
+build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Servant Benchmark Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.24.1 bloomfilter-2.0.1.2 crypton-0.34 DAV-1.3.4 feed-1.3.2.1 ghc-9.6.6 http-client-0.7.17 persistent-sqlite-2.13.3.0 torrent-10000.1.3 uuid-1.3.15 yesod-1.6.2.1
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL GITBUNDLE GITMANIFEST VURL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg rclone hook external compute mask
+operating system: linux x86_64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
+```
+
