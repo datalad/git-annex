@@ -1,11 +1,11 @@
 {- git-annex test suite framework
  -
- - Copyright 2010-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, CPP #-}
 
 module Test.Framework where
 
@@ -67,6 +67,9 @@ import qualified Utility.Metered
 import qualified Utility.HumanTime
 import qualified Command.Uninit
 import qualified Utility.OsString as OS
+#ifndef mingw32_HOST_OS
+import qualified Utility.Gpg
+#endif
 
 -- Run a process. The output and stderr is captured, and is only
 -- displayed if the process does not return the expected value.
@@ -516,6 +519,33 @@ add_annex f faildesc = ifM (unlockedFiles <$> getTestMode)
 	( git "add" [f] faildesc
 	, git_annex "add" [f] faildesc
 	)
+
+#ifndef mingw32_HOST_OS
+test_with_gpg :: (Utility.Gpg.GpgCmd -> [(String, String)] -> Assertion) -> Assertion
+test_with_gpg a = Utility.Tmp.Dir.withTmpDir (literalOsPath "gpgtmp") $ \gpgtmp -> do
+	-- Use the system temp directory as gpg temp directory because 
+	-- it needs to be able to store the agent socket there,
+	-- which can be problematic when testing some filesystems.
+	absgpgtmp <- absPath gpgtmp
+	res <- go absgpgtmp
+	-- gpg may still be running and would prevent
+	-- removeDirectoryRecursive from succeeding, so
+	-- force removal of the temp directory.
+	liftIO $ removeDirectoryForCleanup (fromOsPath gpgtmp)
+	return res
+  where
+	gpgcmd = Utility.Gpg.mkGpgCmd Nothing
+	go absgpgtmp = do
+		-- Since gpg uses a unix socket, which is limited to a
+		-- short path, use whichever is shorter of absolute
+		-- or relative path.
+		relgpgtmp <- relPathCwdToFile absgpgtmp
+		let gpgtmp = if OS.length relgpgtmp < OS.length absgpgtmp
+			then relgpgtmp 
+			else absgpgtmp
+		void $ Utility.Gpg.testHarness (fromOsPath gpgtmp) gpgcmd $ \environ ->
+			a gpgcmd environ
+#endif
 
 data TestMode = TestMode
 	{ unlockedFiles :: Bool

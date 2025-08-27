@@ -90,7 +90,6 @@ import qualified Utility.MoveFile
 import qualified Utility.StatelessOpenPGP
 import qualified Types.Remote
 #ifndef mingw32_HOST_OS
-import qualified Utility.OsString as OS
 import qualified Remote.Helper.Encryptable
 import qualified Types.Crypto
 import qualified Utility.Gpg
@@ -1917,64 +1916,44 @@ test_gpg_crypto = do
 	testscheme "hybrid"
 	testscheme "pubkey"
   where
-	gpgcmd = Utility.Gpg.mkGpgCmd Nothing
-	testscheme scheme = Utility.Tmp.Dir.withTmpDir (literalOsPath "gpgtmp") $ \gpgtmp -> do
-		-- Use the system temp directory as gpg temp directory because 
-		-- it needs to be able to store the agent socket there,
-		-- which can be problematic when testing some filesystems.
-		absgpgtmp <- absPath gpgtmp
-		res <- testscheme' scheme absgpgtmp
-		-- gpg may still be running and would prevent
-		-- removeDirectoryRecursive from succeeding, so
-		-- force removal of the temp directory.
-		liftIO $ removeDirectoryForCleanup (fromOsPath gpgtmp)
-		return res
-	testscheme' scheme absgpgtmp = intmpclonerepo $ do
-		-- Since gpg uses a unix socket, which is limited to a
-		-- short path, use whichever is shorter of absolute
-		-- or relative path.
-		relgpgtmp <- relPathCwdToFile absgpgtmp
-		let gpgtmp = if OS.length relgpgtmp < OS.length absgpgtmp
-			then relgpgtmp 
-			else absgpgtmp
-		void $ Utility.Gpg.testHarness (fromOsPath gpgtmp) gpgcmd $ \environ -> do
-			createDirectory (literalOsPath "dir")
-			let initps =
-				[ "foo"
-				, "type=directory"
-				, "encryption=" ++ scheme
-				, "directory=dir"
-				, "highRandomQuality=false"
-				] ++ if scheme `elem` ["hybrid","pubkey"]
-					then ["keyid=" ++ Utility.Gpg.testKeyId]
-					else []
-			git_annex' "initremote" initps (Just environ) "initremote"
-			git_annex_shouldfail' "initremote" initps (Just environ) "initremote should not work when run twice in a row"
-			git_annex' "enableremote" initps (Just environ) "enableremote"
-			git_annex' "enableremote" initps (Just environ) "enableremote when run twice in a row"
-			git_annex' "get" [annexedfile] (Just environ) "get of file"
-			annexed_present annexedfile
-			git_annex' "copy" [annexedfile, "--to", "foo"] (Just environ) "copy --to encrypted remote"
-			(c,k) <- annexeval $ do
-				uuid <- Remote.nameToUUID "foo"
-				rs <- Logs.Remote.readRemoteLog
-				Just k <- Annex.WorkTree.lookupKey (toOsPath annexedfile)
-				return (fromJust $ M.lookup uuid rs, k)
-			let key = if scheme `elem` ["hybrid","pubkey"]
-					then Just $ Utility.Gpg.KeyIds [Utility.Gpg.testKeyId]
-					else Nothing
-			testEncryptedRemote environ scheme key c [k] @? "invalid crypto setup"
+	testscheme scheme = intmpclonerepo $ test_with_gpg $ \gpgcmd environ -> do
+		createDirectory (literalOsPath "dir")
+		let initps =
+			[ "foo"
+			, "type=directory"
+			, "encryption=" ++ scheme
+			, "directory=dir"
+			, "highRandomQuality=false"
+			] ++ if scheme `elem` ["hybrid","pubkey"]
+				then ["keyid=" ++ Utility.Gpg.testKeyId]
+				else []
+		git_annex' "initremote" initps (Just environ) "initremote"
+		git_annex_shouldfail' "initremote" initps (Just environ) "initremote should not work when run twice in a row"
+		git_annex' "enableremote" initps (Just environ) "enableremote"
+		git_annex' "enableremote" initps (Just environ) "enableremote when run twice in a row"
+		git_annex' "get" [annexedfile] (Just environ) "get of file"
+		annexed_present annexedfile
+		git_annex' "copy" [annexedfile, "--to", "foo"] (Just environ) "copy --to encrypted remote"
+		(c,k) <- annexeval $ do
+			uuid <- Remote.nameToUUID "foo"
+			rs <- Logs.Remote.readRemoteLog
+			Just k <- Annex.WorkTree.lookupKey (toOsPath annexedfile)
+			return (fromJust $ M.lookup uuid rs, k)
+		let key = if scheme `elem` ["hybrid","pubkey"]
+			then Just $ Utility.Gpg.KeyIds [Utility.Gpg.testKeyId]
+			else Nothing
+		testEncryptedRemote gpgcmd environ scheme key c [k] @? "invalid crypto setup"
 	
-			annexed_present annexedfile
-			git_annex' "drop" [annexedfile, "--numcopies=2"] (Just environ) "drop"
-			annexed_notpresent annexedfile
-			git_annex' "move" [annexedfile, "--from", "foo"] (Just environ) "move --from encrypted remote"
-			annexed_present annexedfile
-			git_annex_shouldfail' "drop" [annexedfile, "--numcopies=2"] (Just environ) "drop should not be allowed with numcopies=2"
-			annexed_present annexedfile
+		annexed_present annexedfile
+		git_annex' "drop" [annexedfile, "--numcopies=2"] (Just environ) "drop"
+		annexed_notpresent annexedfile
+		git_annex' "move" [annexedfile, "--from", "foo"] (Just environ) "move --from encrypted remote"
+		annexed_present annexedfile
+		git_annex_shouldfail' "drop" [annexedfile, "--numcopies=2"] (Just environ) "drop should not be allowed with numcopies=2"
+		annexed_present annexedfile
 	{- Ensure the configuration complies with the encryption scheme, and
 	 - that all keys are encrypted properly for the given directory remote. -}
-	testEncryptedRemote environ scheme ks c keys = case Remote.Helper.Encryptable.extractCipher pc of
+	testEncryptedRemote gpgcmd environ scheme ks c keys = case Remote.Helper.Encryptable.extractCipher pc of
 		Just cip@Crypto.SharedCipher{} | scheme == "shared" && isNothing ks ->
 			checkKeys cip Nothing
 		Just cip@(Crypto.EncryptedCipher encipher v ks')
@@ -2210,9 +2189,26 @@ test_enableremote_encryption_changes = intmpclonerepo $ do
 		"enableremote disabling encryption"
 	git_annex_shouldfail "enableremote" ["bar", "onlyencryptcreds=yes", dirparam]
 		"enableremote with onlyencryptcreds"
-	git_annex "initremote" ["baz", "type=directory", "encryption=shared", "onlyencryptcreds=yes", dirparam]
-		"initremote"
-	git_annex_shouldfail "enableremote" ["baz", "onlyencryptcreds=no", dirparam]
-		"enableremote disabling onlyencryptcreds"
-	git_annex "enableremote" ["baz", "onlyencryptcreds=yes", dirparam]
-		"enableremote enabling already enabled onlyencryptcreds"
+	git_annex_shouldfail "initremote" ["baz", "type=directory", "encryption=shared", "onlyencryptcreds=yes", dirparam]
+		"initremote with onlyencryptcreds not allowed with shared encryption"
+	git_annex_shouldfail "initremote" ["baz", "type=directory", "encryption=none", "onlyencryptcreds=yes", dirparam]
+		"initremote with onlyencryptcreds not allowed with no encryption"
+#ifndef mingw32_HOST_OS
+	test_with_gpg $ \_gpgcmd environ -> do
+		git_annex' "initremote"
+			["baz"
+			, "type=directory"
+			, "encryption=hybrid"
+			, "onlyencryptcreds=yes"
+			, "highRandomQuality=false"
+			, "keyid=" ++ Utility.Gpg.testKeyId
+			, dirparam]
+			(Just environ)
+			"initremote with onlyencryptcreds and hybrid encryption"
+		git_annex_shouldfail' "enableremote" ["baz", "onlyencryptcreds=no", dirparam]
+			(Just environ)
+			"enableremote disabling onlyencryptcreds"
+		git_annex' "enableremote" ["baz", "onlyencryptcreds=yes", dirparam]
+			(Just environ)
+			"enableremote enabling already enabled onlyencryptcreds"
+#endif
