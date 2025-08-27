@@ -1,0 +1,8 @@
+Hi,
+
+Not sure why but current git annex downloads aren't available on [kitenet](https://downloads.kitenet.net/git-annex/linux/current/):
+![Screenstho](https://i.imgur.com/7mthe7F.png)
+
+(only `.sig` and `.info` are present, `.tar.gz` are missing)
+
+Is it a temporary issue or something else?
