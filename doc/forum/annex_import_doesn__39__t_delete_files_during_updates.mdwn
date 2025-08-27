@@ -1,0 +1,477 @@
+## git annex import does not delete files that have not been imported before, even if they were exported
+
+It looks like an import after each export is required in order to keep proper track of files, at least in the case of special remote `type=directory`.
+
+A full reproducer is below, but the abbreviated version is the following:
+
+1. Create a file, add it to the annex
+2. Export the file to the directory special remote
+3. Remove the file from the directory using `rm`
+4. Import the changes from the directory
+5. The deletion of the file is never detected and the file stays hanging locally indefinitely
+
+### Full reproducer
+
+First, we initialize an empty git-annex repo and a directory that will serve as the special remote:
+
+```
+$ mkdir git-annex
+$ cd git-annex/
+$ mkdir repository directory
+$ ls
+directory  repository
+$ cd repository^C
+$ cd repository/
+$ ls
+$ git init
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint:
+hint:   git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint:   git branch -m <name>
+hint:
+hint: Disable this message with "git config set advice.defaultBranchName false"
+Initialized empty Git repository in /tmp/git-annex/repository/.git/
+$ git annex init
+init  ok
+(recording state in git...)
+```
+
+We add initial content. Note that removing a file that was added in the initial export is correctly detected on subsequent import:
+
+```
+$ echo one > one; sleep 1; echo two > two
+$ git annex add *
+add one
+ok
+add two
+ok
+(recording state in git...)
+$  hh
+git commit -m "Initial content"
+$ git commit -m "Initial content"
+[master (root-commit) e3cfdea] Initial content
+ 2 files changed, 2 insertions(+)
+ create mode 120000 one
+ create mode 120000 two
+$ git annex initremote homeserver type=directory directory=/tmp/git-annex/directory exporttree=yes import
+tree=yes encryption=none
+initremote homeserver ok
+(recording state in git...)
+$ git annex export master --to homeserver
+export homeserver one ok
+export homeserver two ok
+(recording state in git...)
+$ rm ../directory/two
+$ git annex -d import master --from homeserver -m "Deleted two, this works"
+[2025-08-25 17:42:17.549242346] (Utility.Process) process [1346542] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+show-ref","git-annex"]
+[2025-08-25 17:42:17.551512992] (Utility.Process) process [1346542] done ExitSuccess
+[2025-08-25 17:42:17.551977656] (Utility.Process) process [1346543] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+show-ref","--hash","refs/heads/git-annex"]
+[2025-08-25 17:42:17.554079617] (Utility.Process) process [1346543] done ExitSuccess
+[2025-08-25 17:42:17.554859544] (Utility.Process) process [1346544] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+log","refs/heads/git-annex..673de1e45f8751c3ac0066b4c827e3a046051c4f","--pretty=%H","-n1"]
+[2025-08-25 17:42:17.557950381] (Utility.Process) process [1346544] done ExitSuccess
+[2025-08-25 17:42:17.559947735] (Utility.Process) process [1346545] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+cat-file","--batch"]
+[2025-08-25 17:42:17.563916375] (Utility.Process) process [1346546] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+show-ref","--hash","refs/remotes/homeserver/master"]
+[2025-08-25 17:42:17.566239833] (Utility.Process) process [1346546] done ExitSuccess
+list homeserver ok
+[2025-08-25 17:42:17.57127565] (Utility.Process) process [1346548] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","m
+ktree","--missing","--batch","-z"]
+[2025-08-25 17:42:17.574520441] (Utility.Process) process [1346548] done ExitSuccess
+[2025-08-25 17:42:17.577872901] (Utility.Process) process [1346549] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+rev-parse","--verify","--quiet","refs/heads/git-annex:"]
+[2025-08-25 17:42:17.580406091] (Utility.Process) process [1346549] done ExitSuccess
+[2025-08-25 17:42:17.581051093] (Utility.Process) process [1346550] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+diff-tree","-z","--raw","--no-renames","-l0","-r","9ab60e3cc17c42b13c16a28ae4c59f3716502756","fcf471e16d0105550406a29e13f9d385447cbd31","--"]
+[2025-08-25 17:42:17.584953927] (Utility.Process) process [1346550] done ExitSuccess
+[2025-08-25 17:42:17.585114599] (Database.Handle) commitDb start
+[2025-08-25 17:42:17.585975051] (Database.Handle) commitDb done
+update refs/remotes/homeserver/master [2025-08-25 17:42:17.588322083] (Utility.Process) process [1346551] read: git ["--git-dir=.git","--work-tree=.","--litera
+l-pathspecs","-c","annex.debug=true","rev-parse","--verify","--quiet","e3cfdead06d04f4df78a01a309a1831af4961858:"]
+[2025-08-25 17:42:17.590642005] (Utility.Process) process [1346551] done ExitSuccess
+[2025-08-25 17:42:17.59120988] (Utility.Process) process [1346552] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","m
+ktree","--missing","--batch","-z"]
+[2025-08-25 17:42:17.591563939] (Messages.explain) [ one does not match annex.addunlocked: nothing[FALSE] ]
+
+[2025-08-25 17:42:17.592509593] (Utility.Process) process [1346553] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+hash-object","-w","--no-filters","--stdin-paths"]
+[2025-08-25 17:42:17.59575411] (Utility.Process) process [1346552] done ExitSuccess
+[2025-08-25 17:42:17.596285972] (Utility.Process) process [1346554] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+log","e3cfdead06d04f4df78a01a309a1831af4961858","--full-history","--no-abbrev","--format=%T %H %P"]
+[2025-08-25 17:42:17.598755905] (Utility.Process) process [1346554] done ExitSuccess
+[2025-08-25 17:42:17.600719334] (Utility.Process) process [1346555] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+commit-tree","a2c2f21679a7c0864f7ca486c5d39998abb1f33f","--no-gpg-sign","-m","Deleted two, this works"]
+[2025-08-25 17:42:17.603747862] (Utility.Process) process [1346555] done ExitSuccess
+[2025-08-25 17:42:17.604331351] (Utility.Process) process [1346556] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+commit-tree","a2c2f21679a7c0864f7ca486c5d39998abb1f33f","--no-gpg-sign","-p","e3cfdead06d04f4df78a01a309a1831af4961858","-p","9344862d2a1be0162dfc63c2dcc5c1dd7
+c7406a3","-m","remote tracking branch"]
+[2025-08-25 17:42:17.607310455] (Utility.Process) process [1346556] done ExitSuccess
+[2025-08-25 17:42:17.609644622] (Utility.Process) process [1346557] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+diff-tree","-z","--raw","--no-renames","-l0","-r","6987476211346060b533f824472f34bd92602ccd","a2c2f21679a7c0864f7ca486c5d39998abb
+1f33f","--"]
+[2025-08-25 17:42:17.612718435] (Utility.Process) process [1346558] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2025-08-25 17:42:17.615267805] (Utility.Process) process [1346559] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+cat-file","--batch"]
+[2025-08-25 17:42:17.617452533] (Utility.Process) process [1346557] done ExitSuccess
+[2025-08-25 17:42:17.6175722] (Database.Handle) commitDb start
+[2025-08-25 17:42:17.618291237] (Database.Handle) commitDb done
+[2025-08-25 17:42:17.619671807] (Utility.Process) process [1346560] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+show-ref","--hash","refs/heads/git-annex"]
+[2025-08-25 17:42:17.622156138] (Utility.Process) process [1346560] done ExitSuccess
+[2025-08-25 17:42:17.622664547] (Utility.Process) process [1346561] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+rev-parse","--verify","--quiet","673de1e45f8751c3ac0066b4c827e3a046051c4f:"]
+[2025-08-25 17:42:17.624898473] (Utility.Process) process [1346561] done ExitSuccess
+[2025-08-25 17:42:17.625451325] (Utility.Process) process [1346562] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+mktree","--missing","--batch","-z"]
+[2025-08-25 17:42:17.625953724] (Utility.Process) process [1346563] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+ls-tree","--full-tree","-z","-t","--","fcf471e16d0105550406a29e13f9d385447cbd31"]
+[2025-08-25 17:42:17.628045705] (Utility.Process) process [1346563] done ExitSuccess
+[2025-08-25 17:42:17.629385044] (Utility.Process) process [1346562] done ExitSuccess
+[2025-08-25 17:42:17.629801349] (Utility.Process) process [1346564] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+commit-tree","becfcef63bb6e2521c4a66e41bdd1f867eda5d62","--no-gpg-sign","-p","673de1e45f8751c3ac0066b4c827e3a046051c4f","-m","graft"]
+[2025-08-25 17:42:17.632644385] (Utility.Process) process [1346564] done ExitSuccess
+[2025-08-25 17:42:17.633131506] (Utility.Process) process [1346565] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+commit-tree","fcf471e16d0105550406a29e13f9d385447cbd31","--no-gpg-sign","-p","d8a2fbef419e45b925d61363326a062bd31911ae","-m","graft cleanup"]
+[2025-08-25 17:42:17.635853854] (Utility.Process) process [1346565] done ExitSuccess
+[2025-08-25 17:42:17.63629057] (Utility.Process) process [1346566] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","u
+pdate-ref","refs/heads/git-annex","7cf4ac7abbfd7e4e8be1a9af024ffafd230f7d71"]
+[2025-08-25 17:42:17.63888163] (Utility.Process) process [1346566] done ExitSuccess
+[2025-08-25 17:42:17.639467114] (Annex.Branch) read export.log
+[2025-08-25 17:42:17.640240661] (Annex.Branch) set export.log
+[2025-08-25 17:42:17.640651989] (Utility.Process) process [1346567] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+diff-tree","-z","--raw","--no-renames","-l0","-r","6987476211346060b533f824472f34bd92602ccd","a2c2f21679a7c0864f7ca486c5d39998abb1f33f","--"]
+[2025-08-25 17:42:17.643916998] (Annex.Branch) read 5a2/b05/SHA256E-s4--27dd8ed44a83ff94d557f9fd0412ed5a8cbca69ea04922d88c01184a07300a5a.log
+[2025-08-25 17:42:17.644707405] (Annex.Branch) set 5a2/b05/SHA256E-s4--27dd8ed44a83ff94d557f9fd0412ed5a8cbca69ea04922d88c01184a07300a5a.log
+[2025-08-25 17:42:17.644810572] (Utility.Process) process [1346567] done ExitSuccess
+[2025-08-25 17:42:17.645419226] (Utility.Process) process [1346568] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+update-ref","refs/remotes/homeserver/master","26a7015330e6151489ca0589b49196e39412c3b7"]
+[2025-08-25 17:42:17.648061306] (Utility.Process) process [1346568] done ExitSuccess
+ok
+[2025-08-25 17:42:17.649157468] (Utility.Process) process [1346569] feed: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+update-index","-z","--index-info"]
+[2025-08-25 17:42:17.651518366] (Utility.Process) process [1346569] done ExitSuccess
+[2025-08-25 17:42:17.652234078] (Utility.Process) process [1346570] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+show-ref","--hash","refs/heads/git-annex"]
+[2025-08-25 17:42:17.654342885] (Utility.Process) process [1346570] done ExitSuccess
+(recording state in git...)
+[2025-08-25 17:42:17.655106125] (Utility.Process) process [1346571] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+write-tree"]
+[2025-08-25 17:42:17.658098143] (Utility.Process) process [1346571] done ExitSuccess
+[2025-08-25 17:42:17.658856276] (Utility.Process) process [1346572] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+commit-tree","4f8232e80d243df0cbd416864d9edc84ec29f5a8","--no-gpg-sign","-p","refs/heads/git-annex","-m","update"]
+[2025-08-25 17:42:17.661406143] (Utility.Process) process [1346572] done ExitSuccess
+[2025-08-25 17:42:17.662077275] (Utility.Process) process [1346573] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+update-ref","refs/heads/git-annex","61a5a7339eca80f146446f670aa12dc743cd3c0a"]
+[2025-08-25 17:42:17.664587914] (Utility.Process) process [1346573] done ExitSuccess
+[2025-08-25 17:42:17.66604483] (Utility.Process) process [1346559] done ExitSuccess
+[2025-08-25 17:42:17.666703705] (Utility.Process) process [1346545] done ExitSuccess
+[2025-08-25 17:42:17.667383399] (Utility.Process) process [1346558] done ExitSuccess
+[2025-08-25 17:42:17.667864184] (Utility.Process) process [1346553] done ExitSuccess
+
+$ git annex merge homeserver/master
+merge homeserver/master
+Updating e3cfdea..26a7015
+Fast-forward
+ two | 1 -
+ 1 file changed, 1 deletion(-)
+ delete mode 120000 two
+ok
+```
+
+However, adding a new file, exporting it, and immediatelly deleting it before ever importing from the remote leads to file hanging locally:
+
+```
+$ echo three > three
+$ git annex add three
+add three
+ok
+(recording state in git...)
+$ git commit -m "new file three"
+[master 88e42eb] new file three
+ 1 file changed, 1 insertion(+)
+ create mode 120000 three
+$ git annex export master --to homeserver
+export homeserver three ok
+(recording state in git...)
+$ ls ../directory/
+one  three
+$ rm ../directory/three
+$ git annex -d import master --from homeserver -m "Deleted three, this does not work"
+
+[2025-08-25 17:43:20.721884761] (Utility.Process) process [1347676] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+show-ref","git-annex"]
+[2025-08-25 17:43:20.725072189] (Utility.Process) process [1347676] done ExitSuccess
+[2025-08-25 17:43:20.725909233] (Utility.Process) process [1347677] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+show-ref","--hash","refs/heads/git-annex"]
+[2025-08-25 17:43:20.729002355] (Utility.Process) process [1347677] done ExitSuccess
+[2025-08-25 17:43:20.729877369] (Utility.Process) process [1347678] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+log","refs/heads/git-annex..61d3e245460b5a09d1b0233a3b596c48e6857600","--pretty=%H","-n1"]
+[2025-08-25 17:43:20.733238387] (Utility.Process) process [1347678] done ExitSuccess
+[2025-08-25 17:43:20.735576275] (Utility.Process) process [1347679] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+cat-file","--batch"]
+[2025-08-25 17:43:20.740385186] (Utility.Process) process [1347680] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+show-ref","--hash","refs/remotes/homeserver/master"]
+[2025-08-25 17:43:20.742855206] (Utility.Process) process [1347680] done ExitSuccess
+list homeserver ok
+[2025-08-25 17:43:20.747928386] (Utility.Process) process [1347682] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+mktree","--missing","--batch","-z"]
+[2025-08-25 17:43:20.750834743] (Utility.Process) process [1347682] done ExitSuccess
+[2025-08-25 17:43:20.75154573] (Utility.Process) process [1347683] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","c
+at-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2025-08-25 17:43:20.755297232] (Utility.Process) process [1347684] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+diff-tree","-z","--raw","--no-renames","-l0","-r","1ea76d6d5ecb8da6d8393869969d825f9001abf2","1ea76d6d5ecb8da6d8393869969d825f9001abf2","--"]
+[2025-08-25 17:43:20.759607467] (Utility.Process) process [1347685] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+rev-parse","--verify","--quiet","refs/heads/git-annex:"]
+[2025-08-25 17:43:20.768218823] (Utility.Process) process [1347685] done ExitSuccess
+[2025-08-25 17:43:20.769138294] (Utility.Process) process [1347686] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+diff-tree","-z","--raw","--no-renames","-l0","-r","15ecfe9a7eb3c59d04e8e2de924379d411331a75","cca5f5247e71cfdb8e35c5946a15934e002a8796","--"]
+[2025-08-25 17:43:20.772913224] (Utility.Process) process [1347686] done ExitSuccess
+[2025-08-25 17:43:20.773084122] (Database.Handle) commitDb start
+[2025-08-25 17:43:20.773884714] (Database.Handle) commitDb done
+[2025-08-25 17:43:20.774909682] (Utility.Process) process [1347684] done ExitSuccess
+update refs/remotes/homeserver/master [2025-08-25 17:43:20.775790131] (Utility.Process) process [1347687] read: git ["--git-dir=.git","--work-tree=.","--litera
+l-pathspecs","-c","annex.debug=true","rev-parse","--verify","--quiet","e4af02f668cdb9d3e68c2319c818d1e29af15a1d:"]
+[2025-08-25 17:43:20.778402792] (Utility.Process) process [1347687] done ExitSuccess
+[2025-08-25 17:43:20.779018945] (Utility.Process) process [1347688] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+mktree","--missing","--batch","-z"]
+[2025-08-25 17:43:20.780375279] (Utility.Process) process [1347688] done ExitSuccess
+[2025-08-25 17:43:20.780847778] (Utility.Process) process [1347689] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+log","e4af02f668cdb9d3e68c2319c818d1e29af15a1d","--full-history","--no-abbrev","--format=%T %H %P"]
+[2025-08-25 17:43:20.782709401] (Utility.Process) process [1347689] done ExitSuccess
+[2025-08-25 17:43:20.783210539] (Utility.Process) process [1347690] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+update-ref","refs/remotes/homeserver/master","e4af02f668cdb9d3e68c2319c818d1e29af15a1d"]
+[2025-08-25 17:43:20.785238061] (Utility.Process) process [1347690] done ExitSuccess
+ok
+[2025-08-25 17:43:20.78637699] (Utility.Process) process [1347679] done ExitSuccess
+[2025-08-25 17:43:20.786806376] (Utility.Process) process [1347683] done ExitSuccess
+$ git annex merge homeserver/master
+merge homeserver/master
+Updating 88e42eb..e4af02f
+Fast-forward
+ok
+$ ls
+one  three
+$ ls ../directory/
+one
+```
+
+If an import is performed after the export, but before the file is deleted, the deletion is picked up correctly upon subsequent import.
+
+```
+$ echo four > four
+$ git annex add four
+add four
+ok
+(recording state in git...)
+$  hh
+git commit -m "new file three"
+$ git commit -m "new file four"
+
+[master 35fc3d7] new file four
+ 1 file changed, 1 insertion(+)
+ create mode 120000 four
+$ git annex export master --to homeserver
+export homeserver four ok
+(recording state in git...)
+$ ls ../directory/
+four  one
+$ git annex -d import master --from homeserver -m "Import after exporting four"
+
+[2025-08-25 17:44:33.999354115] (Utility.Process) process [1348897] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+show-ref","git-annex"]
+[2025-08-25 17:44:34.001774931] (Utility.Process) process [1348897] done ExitSuccess
+[2025-08-25 17:44:34.002566611] (Utility.Process) process [1348898] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+show-ref","--hash","refs/heads/git-annex"]
+[2025-08-25 17:44:34.004925904] (Utility.Process) process [1348898] done ExitSuccess
+[2025-08-25 17:44:34.005494407] (Utility.Process) process [1348899] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+log","refs/heads/git-annex..88d00143d45d024413caaf040f55963c4ab3e4ae","--pretty=%H","-n1"]
+[2025-08-25 17:44:34.008297546] (Utility.Process) process [1348899] done ExitSuccess
+[2025-08-25 17:44:34.010077776] (Utility.Process) process [1348900] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+cat-file","--batch"]
+[2025-08-25 17:44:34.015763102] (Utility.Process) process [1348901] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+show-ref","--hash","refs/remotes/homeserver/master"]
+[2025-08-25 17:44:34.018228379] (Utility.Process) process [1348901] done ExitSuccess
+list homeserver ok
+[2025-08-25 17:44:34.023621968] (Utility.Process) process [1348903] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+mktree","--missing","--batch","-z"]
+[2025-08-25 17:44:34.026700608] (Utility.Process) process [1348903] done ExitSuccess
+[2025-08-25 17:44:34.027223349] (Utility.Process) process [1348904] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2025-08-25 17:44:34.031377716] (Utility.Process) process [1348905] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+diff-tree","-z","--raw","--no-renames","-l0","-r","1ea76d6d5ecb8da6d8393869969d825f9001abf2","66db953ea75a691f127fe00e0b1019138dba8699","--"]
+[2025-08-25 17:44:34.034514724] (Utility.Process) process [1348906] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+rev-parse","--verify","--quiet","refs/heads/git-annex:"]
+[2025-08-25 17:44:34.036739498] (Utility.Process) process [1348906] done ExitSuccess
+[2025-08-25 17:44:34.037450893] (Utility.Process) process [1348907] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+diff-tree","-z","--raw","--no-renames","-l0","-r","71b1a99fc40fc839cc60999966bb7d6f5b074846","db326dbffec899ad34ec5e351ba1fadf0d66540f","--"]
+[2025-08-25 17:44:34.042721487] (Utility.Process) process [1348907] done ExitSuccess
+[2025-08-25 17:44:34.042881474] (Database.Handle) commitDb start
+[2025-08-25 17:44:34.043663249] (Database.Handle) commitDb done
+[2025-08-25 17:44:34.04472475] (Utility.Process) process [1348905] done ExitSuccess
+update refs/remotes/homeserver/master [2025-08-25 17:44:34.045692663] (Utility.Process) process [1348908] read: git ["--git-dir=.git","--work-tree=.","--litera
+l-pathspecs","-c","annex.debug=true","rev-parse","--verify","--quiet","74e5fededf914de5c712e4c63371280954d9f14a:"]
+[2025-08-25 17:44:34.048366527] (Utility.Process) process [1348908] done ExitSuccess
+[2025-08-25 17:44:34.048913177] (Messages.explain) [ four does not match annex.addunlocked: nothing[FALSE] ]
+
+[2025-08-25 17:44:34.049545741] (Utility.Process) process [1348909] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+hash-object","-w","--no-filters","--stdin-paths"]
+[2025-08-25 17:44:34.051881794] (Utility.Process) process [1348910] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+mktree","--missing","--batch","-z"]
+[2025-08-25 17:44:34.052464796] (Utility.Process) process [1348911] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+ls-tree","--full-tree","-z","-r","-t","--","a251ef5b0300b5945e286c997dcce6bd3c305aa4"]
+[2025-08-25 17:44:34.055613158] (Utility.Process) process [1348911] done ExitSuccess
+[2025-08-25 17:44:34.056316227] (Utility.Process) process [1348910] done ExitSuccess
+[2025-08-25 17:44:34.056912317] (Utility.Process) process [1348912] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+mktree","--missing","--batch","-z"]
+[2025-08-25 17:44:34.058594444] (Utility.Process) process [1348912] done ExitSuccess
+[2025-08-25 17:44:34.059277917] (Utility.Process) process [1348913] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+log","74e5fededf914de5c712e4c63371280954d9f14a","--full-history","--no-abbrev","--format=%T %H %P"]
+[2025-08-25 17:44:34.061597915] (Utility.Process) process [1348913] done ExitSuccess
+[2025-08-25 17:44:34.062147929] (Utility.Process) process [1348914] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+update-ref","refs/remotes/homeserver/master","74e5fededf914de5c712e4c63371280954d9f14a"]
+[2025-08-25 17:44:34.064480253] (Utility.Process) process [1348914] done ExitSuccess
+ok
+[2025-08-25 17:44:34.065340096] (Utility.Process) process [1348900] done ExitSuccess
+[2025-08-25 17:44:34.065942544] (Utility.Process) process [1348904] done ExitSuccess
+[2025-08-25 17:44:34.06639766] (Utility.Process) process [1348909] done ExitSuccess
+
+$ git annex merge homeserver/master
+merge homeserver/master
+Updating 35fc3d7..74e5fed
+Fast-forward
+ok
+
+$ rm ../directory/four
+$ git annex -d import master --from homeserver -m "Import after deleting four"
+
+[2025-08-25 17:45:35.562785356] (Utility.Process) process [1349714] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+show-ref","git-annex"]
+[2025-08-25 17:45:35.570713533] (Utility.Process) process [1349714] done ExitSuccess
+[2025-08-25 17:45:35.571637215] (Utility.Process) process [1349715] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+show-ref","--hash","refs/heads/git-annex"]
+[2025-08-25 17:45:35.574371134] (Utility.Process) process [1349715] done ExitSuccess
+[2025-08-25 17:45:35.576151818] (Utility.Process) process [1349716] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+cat-file","--batch"]
+[2025-08-25 17:45:35.580828079] (Utility.Process) process [1349717] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+show-ref","--hash","refs/remotes/homeserver/master"]
+[2025-08-25 17:45:35.583350714] (Utility.Process) process [1349717] done ExitSuccess
+list homeserver ok
+[2025-08-25 17:45:35.587517868] (Utility.Process) process [1349719] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+mktree","--missing","--batch","-z"]
+[2025-08-25 17:45:35.59002766] (Utility.Process) process [1349719] done ExitSuccess
+[2025-08-25 17:45:35.590670439] (Utility.Process) process [1349720] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2025-08-25 17:45:35.597573457] (Utility.Process) process [1349721] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+diff-tree","-z","--raw","--no-renames","-l0","-r","66db953ea75a691f127fe00e0b1019138dba8699","1ea76d6d5ecb8da6d8393869969d825f9001abf2","--"]
+[2025-08-25 17:45:35.603615421] (Utility.Process) process [1349722] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+rev-parse","--verify","--quiet","refs/heads/git-annex:"]
+[2025-08-25 17:45:35.605764975] (Utility.Process) process [1349722] done ExitSuccess
+[2025-08-25 17:45:35.606692087] (Utility.Process) process [1349721] done ExitSuccess
+update refs/remotes/homeserver/master [2025-08-25 17:45:35.608018812] (Utility.Process) process [1349723] read: git ["--git-dir=.git","--work-tree=.","--litera
+l-pathspecs","-c","annex.debug=true","rev-parse","--verify","--quiet","74e5fededf914de5c712e4c63371280954d9f14a:"]
+[2025-08-25 17:45:35.610474181] (Utility.Process) process [1349723] done ExitSuccess
+[2025-08-25 17:45:35.61103309] (Utility.Process) process [1349724] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","m
+ktree","--missing","--batch","-z"]
+[2025-08-25 17:45:35.611483916] (Utility.Process) process [1349725] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+ls-tree","--full-tree","-z","-r","-t","--","a251ef5b0300b5945e286c997dcce6bd3c305aa4"]
+[2025-08-25 17:45:35.614028694] (Utility.Process) process [1349725] done ExitSuccess
+[2025-08-25 17:45:35.614455934] (Utility.Process) process [1349724] done ExitSuccess
+[2025-08-25 17:45:35.614929374] (Utility.Process) process [1349726] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+mktree","--missing","--batch","-z"]
+[2025-08-25 17:45:35.616634463] (Utility.Process) process [1349726] done ExitSuccess
+[2025-08-25 17:45:35.617086825] (Utility.Process) process [1349727] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+log","74e5fededf914de5c712e4c63371280954d9f14a","--full-history","--no-abbrev","--format=%T %H %P"]
+[2025-08-25 17:45:35.619724885] (Utility.Process) process [1349727] done ExitSuccess
+[2025-08-25 17:45:35.62149562] (Utility.Process) process [1349728] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","c
+ommit-tree","aa2d0a0c5eecd0d219e96ec8adfa45f34912e7bb","--no-gpg-sign","-p","9344862d2a1be0162dfc63c2dcc5c1dd7c7406a3","-m","Import after deleting four"]
+[2025-08-25 17:45:35.624405276] (Utility.Process) process [1349728] done ExitSuccess
+[2025-08-25 17:45:35.625523555] (Utility.Process) process [1349729] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+commit-tree","aa2d0a0c5eecd0d219e96ec8adfa45f34912e7bb","--no-gpg-sign","-p","74e5fededf914de5c712e4c63371280954d9f14a","-p","6e3895d021ce65dc1937df12e846e2c41
+24b19a9","-m","remote tracking branch"]
+[2025-08-25 17:45:35.628438152] (Utility.Process) process [1349729] done ExitSuccess
+[2025-08-25 17:45:35.630352889] (Utility.Process) process [1349730] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+diff-tree","-z","--raw","--no-renames","-l0","-r","a251ef5b0300b5945e286c997dcce6bd3c305aa4","aa2d0a0c5eecd0d219e96ec8adfa45f34912e7bb","--"]
+[2025-08-25 17:45:35.634376891] (Utility.Process) process [1349731] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+cat-file","--batch"]
+[2025-08-25 17:45:35.63684034] (Utility.Process) process [1349730] done ExitSuccess
+[2025-08-25 17:45:35.637039719] (Database.Handle) commitDb start
+[2025-08-25 17:45:35.638071945] (Database.Handle) commitDb done
+[2025-08-25 17:45:35.641662199] (Utility.Process) process [1349732] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+show-ref","--hash","refs/heads/git-annex"]
+[2025-08-25 17:45:35.644780873] (Utility.Process) process [1349732] done ExitSuccess
+[2025-08-25 17:45:35.645581789] (Utility.Process) process [1349733] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+rev-parse","--verify","--quiet","88d00143d45d024413caaf040f55963c4ab3e4ae:"]
+[2025-08-25 17:45:35.648321013] (Utility.Process) process [1349733] done ExitSuccess
+[2025-08-25 17:45:35.648949554] (Utility.Process) process [1349734] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+mktree","--missing","--batch","-z"]
+[2025-08-25 17:45:35.649695186] (Utility.Process) process [1349735] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+ls-tree","--full-tree","-z","-t","--","db326dbffec899ad34ec5e351ba1fadf0d66540f"]
+[2025-08-25 17:45:35.651649441] (Utility.Process) process [1349735] done ExitSuccess
+[2025-08-25 17:45:35.653404059] (Utility.Process) process [1349734] done ExitSuccess
+[2025-08-25 17:45:35.653847047] (Utility.Process) process [1349736] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+commit-tree","df7cca1de781d2ccd4e86ee62653e3dab3592e70","--no-gpg-sign","-p","88d00143d45d024413caaf040f55963c4ab3e4ae","-m","graft"]
+[2025-08-25 17:45:35.6564886] (Utility.Process) process [1349736] done ExitSuccess
+[2025-08-25 17:45:35.656997582] (Utility.Process) process [1349737] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+commit-tree","db326dbffec899ad34ec5e351ba1fadf0d66540f","--no-gpg-sign","-p","806d6d415c67a89516f04f8c2a03f944d4f4c132","-m","graft cleanup"]
+[2025-08-25 17:45:35.659796486] (Utility.Process) process [1349737] done ExitSuccess
+[2025-08-25 17:45:35.660221785] (Utility.Process) process [1349738] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+update-ref","refs/heads/git-annex","ee2951298ca11e1b50bcd5e304040625afb69d45"]
+[2025-08-25 17:45:35.66275966] (Utility.Process) process [1349738] done ExitSuccess
+[2025-08-25 17:45:35.663427624] (Annex.Branch) read export.log
+[2025-08-25 17:45:35.664289432] (Annex.Branch) set export.log
+[2025-08-25 17:45:35.664856921] (Utility.Process) process [1349739] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+diff-tree","-z","--raw","--no-renames","-l0","-r","a251ef5b0300b5945e286c997dcce6bd3c305aa4","aa2d0a0c5eecd0d219e96ec8adfa45f34912e7bb","--"]
+[2025-08-25 17:45:35.668310542] (Annex.Branch) read 0cb/730/SHA256E-s5--ab929fcd5594037960792ea0b98caf5fdaf6b60645e4ef248c28db74260f393e.log
+[2025-08-25 17:45:35.669418661] (Annex.Branch) set 0cb/730/SHA256E-s5--ab929fcd5594037960792ea0b98caf5fdaf6b60645e4ef248c28db74260f393e.log
+[2025-08-25 17:45:35.669585077] (Utility.Process) process [1349739] done ExitSuccess
+[2025-08-25 17:45:35.670216197] (Utility.Process) process [1349740] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+update-ref","refs/remotes/homeserver/master","472c145e8b1fe22d288b80763626f696b359dd8f"]
+[2025-08-25 17:45:35.672832623] (Utility.Process) process [1349740] done ExitSuccess
+ok
+[2025-08-25 17:45:35.674012635] (Utility.Process) process [1349741] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+hash-object","-w","--no-filters","--stdin-paths"]
+[2025-08-25 17:45:35.674552296] (Utility.Process) process [1349742] feed: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+update-index","-z","--index-info"]
+[2025-08-25 17:45:35.677236195] (Utility.Process) process [1349742] done ExitSuccess
+[2025-08-25 17:45:35.677925721] (Utility.Process) process [1349743] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+show-ref","--hash","refs/heads/git-annex"]
+[2025-08-25 17:45:35.680188269] (Utility.Process) process [1349743] done ExitSuccess
+(recording state in git...)
+[2025-08-25 17:45:35.681207934] (Utility.Process) process [1349744] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+write-tree"]
+[2025-08-25 17:45:35.683963887] (Utility.Process) process [1349744] done ExitSuccess
+[2025-08-25 17:45:35.684675731] (Utility.Process) process [1349745] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+commit-tree","f98686e36684143111d45f6c6b11b1caba197369","--no-gpg-sign","-p","refs/heads/git-annex","-m","update"]
+[2025-08-25 17:45:35.687547184] (Utility.Process) process [1349745] done ExitSuccess
+[2025-08-25 17:45:35.688171407] (Utility.Process) process [1349746] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","
+update-ref","refs/heads/git-annex","d7eb9eb6e508564af2460235f87725387f8ec29a"]
+[2025-08-25 17:45:35.690589668] (Utility.Process) process [1349746] done ExitSuccess
+[2025-08-25 17:45:35.692072084] (Utility.Process) process [1349731] done ExitSuccess
+[2025-08-25 17:45:35.692580851] (Utility.Process) process [1349716] done ExitSuccess
+[2025-08-25 17:45:35.693098915] (Utility.Process) process [1349720] done ExitSuccess
+[2025-08-25 17:45:35.693523534] (Utility.Process) process [1349741] done ExitSuccess
+
+$ git annex merge homeserver/master
+merge homeserver/master
+Updating 74e5fed..472c145
+Fast-forward
+ four | 1 -
+ 1 file changed, 1 deletion(-)
+ delete mode 120000 four
+ok
+
+$ ls
+one  three
+$ ls ../directory/
+one
+```

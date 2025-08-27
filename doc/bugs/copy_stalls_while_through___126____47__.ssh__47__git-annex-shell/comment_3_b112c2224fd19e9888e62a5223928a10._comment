@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 3"
+ date="2025-08-25T21:30:55Z"
+ content="""
+FWIW: might be not git-annex specific since I also observe now some stalls with `git push` as well, gets stuck on `Writing objects:  96% (1855/1932)`. Using newer git (2.45.1) from within a singularity env on client didn't help, so must be connection or target git (running `git receive-pack`) related... heh - the costs of upgrades! ;-)
+"""]]

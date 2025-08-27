@@ -1,0 +1,180 @@
+### Please describe the problem.
+
+I think it was working and likely on the server (receiver) end upgrade changed the situation.
+
+I have on receiver (server)
+
+```
+$> cat ~/.ssh/git-annex-shell
+#!/bin/sh
+set -e
+exec git-annex-shell -c "$SSH_ORIGINAL_COMMAND"
+
+$> grep git-annex-shell ~/.ssh/authorized_keys| sed -e 's, AAAA.*, SENSORED,g'
+command="~/.ssh/git-annex-shell",no-agent-forwarding,no-port-forwarding,no-X11-forwarding ssh-ed25519 SENSORED
+
+$> git-annex version
+git-annex version: 10.20250416
+...
+```
+
+
+And when I try to copy to it, it goes like
+
+```shell
+yoh@typhon:~/proj/dandi/zarr-manifests$ git annex --debug copy --to falkor zarr-manifests-v2-sorted/d09/7af/d097af6b-8fd8-4d83-b649-fc6518e95d25/f56bc8e1854433d03cc766d2955823f6-65602--139477698137.json
+[2025-08-25 12:36:01.478893077] (Utility.Process) process [848930] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","git-annex"]
+[2025-08-25 12:36:01.482045477] (Utility.Process) process [848930] done ExitSuccess
+[2025-08-25 12:36:01.482373437] (Utility.Process) process [848931] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","--hash","refs/heads/git-annex"]
+[2025-08-25 12:36:01.48528802] (Utility.Process) process [848931] done ExitSuccess
+[2025-08-25 12:36:01.486194791] (Utility.Process) process [848932] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch"]
+[2025-08-25 12:36:01.499961366] (Utility.Process) process [848932] done ExitSuccess
+[2025-08-25 12:36:01.502100538] (Utility.Process) process [848941] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","ls-files","--stage","-z","--error-unmatch","--","zarr-manifests-v2-sorted/d09/7af/d097af6b-8fd8-4d83-b649-fc6518e95d25/f56bc8e1854433d03cc766d2955823f6-65602--139477698137.json"]
+[2025-08-25 12:36:01.502508594] (Utility.Process) process [848942] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)","--buffer"]
+[2025-08-25 12:36:01.502927219] (Utility.Process) process [848943] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch=%(objectname) %(objecttype) %(objectsize)","--buffer"]
+[2025-08-25 12:36:01.503216764] (Utility.Process) process [848944] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch=%(objectname) %(objecttype) %(objectsize)","--buffer"]
+copy zarr-manifests-v2-sorted/d09/7af/d097af6b-8fd8-4d83-b649-fc6518e95d25/f56bc8e1854433d03cc766d2955823f6-65602--139477698137.json 
+[2025-08-25 12:36:01.51405112] (Utility.Process) process [848944] done ExitSuccess
+[2025-08-25 12:36:01.514176808] (Utility.Process) process [848943] done ExitSuccess
+[2025-08-25 12:36:01.514249119] (Utility.Process) process [848942] done ExitSuccess
+[2025-08-25 12:36:01.514296537] (Utility.Process) process [848941] done ExitSuccess
+[2025-08-25 12:36:01.51498527] (Utility.Process) process [848948] read: ssh ["-O","stop","-S","falkor","-o","ControlMaster=auto","-o","ControlPersist=yes","localhost"] in ".git/annex/ssh/"
+[2025-08-25 12:36:01.520461531] (Utility.Process) process [848948] done ExitSuccess
+[2025-08-25 12:36:01.5209307] (Utility.Process) process [848949] read: ssh ["-o","BatchMode=true","-S",".git/annex/ssh/falkor","-o","ControlMaster=auto","-o","ControlPersist=yes","-n","-T","falkor","true"]
+[2025-08-25 12:36:01.821918754] (Utility.Process) process [848949] done ExitFailure 1
+[2025-08-25 12:36:01.82311226] (Utility.Process) process [848953] chat: ssh ["falkor","-S",".git/annex/ssh/falkor","-o","ControlMaster=auto","-o","ControlPersist=yes","-T","git-annex-shell 'p2pstdio' '/srv/datasets.datalad.org/www/dandi/zarr-manifests' '--debug' 'a5788908-4791-4455-834f-5eca0617a767' --uuid 1bdcbd2c-f8d0-496f-bbc1-22a8fea21c34"]
+[2025-08-25 12:36:01.849110609] (P2P.IO) [ThreadId 4] P2P > AUTH-SUCCESS 1bdcbd2c-f8d0-496f-bbc1-22a8fea21c34
+[2025-08-25 12:36:01.880523039] (P2P.IO) [git-annex-shell connection Just 848953] [ThreadId 19] P2P < AUTH-SUCCESS 1bdcbd2c-f8d0-496f-bbc1-22a8fea21c34
+[2025-08-25 12:36:01.880770574] (P2P.IO) [git-annex-shell connection Just 848953] [ThreadId 19] P2P > VERSION 4
+[2025-08-25 12:36:01.850796001] (P2P.IO) [ThreadId 4] P2P < VERSION 4
+[2025-08-25 12:36:01.850927368] (P2P.IO) [ThreadId 4] P2P > VERSION 4
+[2025-08-25 12:36:01.881853888] (P2P.IO) [git-annex-shell connection Just 848953] [ThreadId 19] P2P < VERSION 4
+[2025-08-25 12:36:01.882131352] (P2P.IO) [git-annex-shell connection Just 848953] [ThreadId 19] P2P > CHECKPRESENT SHA256E-s8174019--5e92a791cf536c40c7b783d1cabd4ce484f909400d917439bf3a8b67e8c2f97f.json
+[2025-08-25 12:36:01.852139336] (P2P.IO) [ThreadId 4] P2P < CHECKPRESENT SHA256E-s8174019--5e92a791cf536c40c7b783d1cabd4ce484f909400d917439bf3a8b67e8c2f97f.json
+[2025-08-25 12:36:01.85256798] (P2P.IO) [ThreadId 4] P2P > FAILURE
+[2025-08-25 12:36:01.883482037] (P2P.IO) [git-annex-shell connection Just 848953] [ThreadId 19] P2P < FAILURE
+[2025-08-25 12:36:01.88500046] (P2P.IO) [git-annex-shell connection Just 848953] [ThreadId 19] P2P > PUT zarr-manifests-v2-sorted/d09/7af/d097af6b-8fd8-4d83-b649-fc6518e95d25/f56bc8e1854433d03cc766d2955823f6-65602--139477698137.json SHA256E-s8174019--5e92a791cf536c40c7b783d1cabd4ce484f909400d917439bf3a8b67e8c2f97f.json
+[2025-08-25 12:36:01.855064436] (P2P.IO) [ThreadId 4] P2P < PUT zarr-manifests-v2-sorted/d09/7af/d097af6b-8fd8-4d83-b649-fc6518e95d25/f56bc8e1854433d03cc766d2955823f6-65602--139477698137.json SHA256E-s8174019--5e92a791cf536c40c7b783d1cabd4ce484f909400d917439bf3a8b67e8c2f97f.json
+[2025-08-25 12:36:01.855407835] (P2P.IO) [ThreadId 4] P2P > PUT-FROM 0                                                               (to falkor...) 
+[2025-08-25 12:36:01.886302441] (P2P.IO) [git-annex-shell connection Just 848953] [ThreadId 19] P2P < PUT-FROM 0
+[2025-08-25 12:36:01.88807408] (Utility.Process) process [848956] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","-c","filter.annex.smudge=","-c","filter.annex.clean=","-c","filter.annex.process=","write-tree"]
+[2025-08-25 12:36:01.90475146] (Utility.Process) process [848956] done ExitSuccess
+[2025-08-25 12:36:01.905302296] (Utility.Process) process [848957] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","--hash","refs/annex/last-index"]
+[2025-08-25 12:36:01.909254395] (Utility.Process) process [848957] done ExitSuccess
+[2025-08-25 12:36:01.90983123] (P2P.IO) [git-annex-shell connection Just 848953] [ThreadId 19] P2P > DATA 8174019
+0%    31.98 KiB         1 MiB/s 6s
+[2025-08-25 12:36:01.879890247] (P2P.IO) [ThreadId 4] P2P < DATA 8174019
+[2025-08-25 12:36:01.88445232] (Annex.Perms) thawing content /srv/datasets.datalad.org/www/dandi/zarr-manifests/.git/annex/tmp/SHA256E-s8174019--5e92a791cf536c40c7b783d1cabd4ce484f909400d917439bf3a8b67e8c2f97f.json
+```
+
+and stalls! eventually would die with smth like
+
+```
+Lost connection (fd:54: hPutBuf: resource vanished (Broken pipe))
+Transfer failed
+```
+
+removing `command` from the `~/.ssh/authorized_keys` reveals:
+
+```
+[2025-08-25 12:41:20.349423229] (P2P.IO) [git-annex-shell connection Just 856869] [ThreadId 19] P2P > DATA 8174019
+0%    31.98 KiB         2 MiB/s 4s
+[2025-08-25 12:41:20.319241906] (P2P.IO) [ThreadId 4] P2P < DATA 8174019
+  transfer already in progress, or unable to take transfer lock
+git-annex: transfer already in progress, or unable to take transfer lock
+p2pstdio: 1 failed
+  Lost connection (fd:32: hPutBuf: resource vanished (Broken pipe))done ExitFailure 1
+
+  Transfer failed
+[2025-08-25 12:41:20.367078689] (Utility.Process) process [856874] chat: ssh ["falkor","-S",".git/annex/ssh/falkor","-o","ControlMaster=auto","-o","ControlPersist=yes","-T","git-annex-shell 'p2pstdio' '/srv/datasets.datalad.org/www/dandi/zarr-manifests' '--debug' 'a5788908-4791-4455-834f-5eca0617a767' --uuid 1bdcbd2c-f8d0-496f-bbc1-22a8fea21c34"]
+```
+
+killing all the already running git-annex-shell on server, and restarting leads to the similar stall 
+
+```
+yoh@typhon:~/proj/dandi/zarr-manifests$ git annex --debug copy --to falkor zarr-manifests-v2-sorted/d09/7af/d097af6b-8fd8-4d83-b649-fc6518e95d25/f56bc8e1854433d03cc766d2955823f6-65602--139477698137.json
+[2025-08-25 12:46:05.59881201] (Utility.Process) process [863109] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","git-annex"]
+[2025-08-25 12:46:05.601854318] (Utility.Process) process [863109] done ExitSuccess
+[2025-08-25 12:46:05.602156266] (Utility.Process) process [863110] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","--hash","refs/heads/git-annex"]
+[2025-08-25 12:46:05.604225437] (Utility.Process) process [863110] done ExitSuccess
+[2025-08-25 12:46:05.605009464] (Utility.Process) process [863111] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch"]
+[2025-08-25 12:46:05.618808813] (Utility.Process) process [863111] done ExitSuccess
+[2025-08-25 12:46:05.620762155] (Utility.Process) process [863120] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","ls-files","--stage","-z","--error-unmatch","--","zarr-manifests-v2-sorted/d09/7af/d097af6b-8fd8-4d83-b649-fc6518e95d25/f56bc8e1854433d03cc766d2955823f6-65602--139477698137.json"]
+[2025-08-25 12:46:05.621103669] (Utility.Process) process [863121] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)","--buffer"]
+[2025-08-25 12:46:05.621369628] (Utility.Process) process [863122] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch=%(objectname) %(objecttype) %(objectsize)","--buffer"]
+[2025-08-25 12:46:05.621925833] (Utility.Process) process [863123] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch=%(objectname) %(objecttype) %(objectsize)","--buffer"]
+[2025-08-25 12:46:05.631302214] (Utility.Process) process [863123] done ExitSuccess
+[2025-08-25 12:46:05.631359154] (Utility.Process) process [863122] done ExitSuccess
+[2025-08-25 12:46:05.631398574] (Utility.Process) process [863121] done ExitSuccess
+[2025-08-25 12:46:05.6314255] (Utility.Process) process [863120] done ExitSuccess
+copy zarr-manifests-v2-sorted/d09/7af/d097af6b-8fd8-4d83-b649-fc6518e95d25/f56bc8e1854433d03cc766d2955823f6-65602--139477698137.json 
+[2025-08-25 12:46:05.632555017] (Utility.Process) process [863127] read: ssh ["-O","stop","-S","falkor","-o","ControlMaster=auto","-o","ControlPersist=yes","localhost"] in ".git/annex/ssh/"
+[2025-08-25 12:46:05.640975166] (Utility.Process) process [863127] done ExitSuccess
+[2025-08-25 12:46:05.641706877] (Utility.Process) process [863128] read: ssh ["-o","BatchMode=true","-S",".git/annex/ssh/falkor","-o","ControlMaster=auto","-o","ControlPersist=yes","-n","-T","falkor","true"]
+[2025-08-25 12:46:05.9354612] (Utility.Process) process [863128] done ExitSuccess
+[2025-08-25 12:46:05.936449504] (Utility.Process) process [863132] chat: ssh ["falkor","-S",".git/annex/ssh/falkor","-o","ControlMaster=auto","-o","ControlPersist=yes","-T","git-annex-shell 'p2pstdio' '/srv/datasets.datalad.org/www/dandi/zarr-manifests' '--debug' 'a5788908-4791-4455-834f-5eca0617a767' --uuid 1bdcbd2c-f8d0-496f-bbc1-22a8fea21c34"]
+[2025-08-25 12:46:05.92909402] (P2P.IO) [ThreadId 4] P2P > AUTH-SUCCESS 1bdcbd2c-f8d0-496f-bbc1-22a8fea21c34
+[2025-08-25 12:46:05.960402757] (P2P.IO) [git-annex-shell connection Just 863132] [ThreadId 19] P2P < AUTH-SUCCESS 1bdcbd2c-f8d0-496f-bbc1-22a8fea21c34
+[2025-08-25 12:46:05.960640816] (P2P.IO) [git-annex-shell connection Just 863132] [ThreadId 19] P2P > VERSION 4
+[2025-08-25 12:46:05.930712551] (P2P.IO) [ThreadId 4] P2P < VERSION 4
+[2025-08-25 12:46:05.93086669] (P2P.IO) [ThreadId 4] P2P > VERSION 4
+[2025-08-25 12:46:05.961883105] (P2P.IO) [git-annex-shell connection Just 863132] [ThreadId 19] P2P < VERSION 4
+[2025-08-25 12:46:05.962098313] (P2P.IO) [git-annex-shell connection Just 863132] [ThreadId 19] P2P > CHECKPRESENT SHA256E-s8174019--5e92a791cf536c40c7b783d1cabd4ce484f909400d917439bf3a8b67e8c2f97f.json
+[2025-08-25 12:46:05.932143998] (P2P.IO) [ThreadId 4] P2P < CHECKPRESENT SHA256E-s8174019--5e92a791cf536c40c7b783d1cabd4ce484f909400d917439bf3a8b67e8c2f97f.json
+[2025-08-25 12:46:05.932621567] (P2P.IO) [ThreadId 4] P2P > FAILURE
+[2025-08-25 12:46:05.963717617] (P2P.IO) [git-annex-shell connection Just 863132] [ThreadId 19] P2P < FAILURE                        (to falkor...) 
+[2025-08-25 12:46:05.965729174] (P2P.IO) [git-annex-shell connection Just 863132] [ThreadId 19] P2P > PUT zarr-manifests-v2-sorted/d09/7af/d097af6b-8fd8-4d83-b649-fc6518e95d25/f56bc8e1854433d03cc766d2955823f6-65602--139477698137.json SHA256E-s8174019--5e92a791cf536c40c7b783d1cabd4ce484f909400d917439bf3a8b67e8c2f97f.json
+[2025-08-25 12:46:05.935798091] (P2P.IO) [ThreadId 4] P2P < PUT zarr-manifests-v2-sorted/d09/7af/d097af6b-8fd8-4d83-b649-fc6518e95d25/f56bc8e1854433d03cc766d2955823f6-65602--139477698137.json SHA256E-s8174019--5e92a791cf536c40c7b783d1cabd4ce484f909400d917439bf3a8b67e8c2f97f.json
+[2025-08-25 12:46:05.936090726] (P2P.IO) [ThreadId 4] P2P > PUT-FROM 0
+[2025-08-25 12:46:05.96690746] (P2P.IO) [git-annex-shell connection Just 863132] [ThreadId 19] P2P < PUT-FROM 0
+[2025-08-25 12:46:05.968560686] (Utility.Process) process [863135] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","-c","filter.annex.smudge=","-c","filter.annex.clean=","-c","filter.annex.process=","write-tree"]
+[2025-08-25 12:46:05.98374097] (Utility.Process) process [863135] done ExitSuccess
+[2025-08-25 12:46:05.984179335] (Utility.Process) process [863136] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","--hash","refs/annex/last-index"]
+[2025-08-25 12:46:05.988648755] (Utility.Process) process [863136] done ExitSuccess
+[2025-08-25 12:46:05.989018015] (P2P.IO) [git-annex-shell connection Just 863132] [ThreadId 19] P2P > DATA 8174019
+0%    31.98 KiB         1 MiB/s 5s
+[2025-08-25 12:46:05.958862911] (P2P.IO) [ThreadId 4] P2P < DATA 8174019
+[2025-08-25 12:46:05.960530955] (Annex.Perms) thawing content /srv/datasets.datalad.org/www/dandi/zarr-manifests/.git/annex/tmp/SHA256E-s8174019--5e92a791cf536c40c7b783d1cabd4ce484f909400d917439bf3a8b67e8c2f97f.json
+
+```
+
+and eventually clearing screen and showing
+
+```
+copy zarr-manifests-v2-sorted/d09/7af/d097af6b-8fd8-4d83-b649-fc6518e95d25/f56bc8e1854433d03cc766d2955823f6-65602--139477698137.json (to falkor...) 
+0%    31.98 KiB         1 MiB/s 5s
+```
+
+with the process on the server
+
+```
+$> ps auxw | grep git-annex
+yoh       549790  0.3  0.0 1074142528 49344 ?    Ssl  12:46   0:00 git-annex-shell p2pstdio /srv/datasets.datalad.org/www/dandi/zarr-manifests --debug a5788908-4791-4455-834f-5eca0617a767 --uuid 1bdcbd2c-f8d0-496f-bbc1-22a8fea21c34
+
+
+$> ls -l /proc/549790/fd/ | grep annex/
+lrwx------ 1 yoh yoh 64 Aug 25 12:47 11 -> /srv/datasets.datalad.org/www/dandi/zarr-manifests/.git/annex/transfer/download/lck/lck.SHA256E-s8174019--5e92a791cf536c40c7b783d1cabd4ce484f909400d917439bf3a8b67e8c2f97f.json
+lrwx------ 1 yoh yoh 64 Aug 25 12:47 12 -> /srv/datasets.datalad.org/www/dandi/zarr-manifests/.git/annex/transfer/download/a5788908-4791-4455-834f-5eca0617a767/lck.SHA256E-s8174019--5e92a791cf536c40c7b783d1cabd4ce484f909400d917439bf3a8b67e8c2f97f.json
+lrwx------ 1 yoh yoh 64 Aug 25 12:47 13 -> /srv/datasets.datalad.org/www/dandi/zarr-manifests/.git/annex/tmp/SHA256E-s8174019--5e92a791cf536c40c7b783d1cabd4ce484f909400d917439bf3a8b67e8c2f97f.json
+1 9886 [1].....................................:Mon 25 Aug 2025 12:47:39 PM EDT:.
+falkor:~
+$> ls -Ll /proc/549790/fd/{11,12,13}             
+-rw-rw-r-- 1 yoh datalad 0 Aug 25 12:36 /proc/549790/fd/11
+-rw-rw-r-- 1 yoh datalad 0 Aug 25 12:36 /proc/549790/fd/12
+-rw-rw-r-- 1 yoh datalad 0 Aug 22 11:31 /proc/549790/fd/13
+
+```
+
+### What version of git-annex are you using? On what operating system?
+
+```
+$ git annex version
+git-annex version: 10.20250416
+```
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]
+
+> [[fixed|done]] --[[yoh]]
+
+It was an issue with jumbo MTU on the server side!

@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="stv0g"
+ avatar="http://cdn.libravatar.org/avatar/6faa6cc783a165b25fc1c8f3154ba449"
+ subject="Feedback on encryptonlycreds=yes"
+ date="2025-08-24T11:20:23Z"
+ content="""
+Hi Joey,
+
+thank you very mich for the quick implementation of this feature! I have tested it already successfully :)
+
+There seems to be an minor issue when I am trying to set `encryptonlycreds=yes` via `SETCONFIG`, followed by a subsequent `SETCREDS`:
+
+```
+(Annex.ExternalAddonProcess) git-annex-remote-tape[1] --> VERSION 2
+(Annex.ExternalAddonProcess) git-annex-remote-tape[1] <-- EXTENSIONS INFO GETGITREMOTENAME UNAVAILABLERESPONSE ASYNC
+(Annex.ExternalAddonProcess) git-annex-remote-tape[1] --> EXTENSIONS INFO
+(Annex.ExternalAddonProcess) git-annex-remote-tape[1] <-- LISTCONFIGS
+(Annex.ExternalAddonProcess) git-annex-remote-tape[1] --> CONFIGEND
+(Annex.ExternalAddonProcess) git-annex-remote-tape[1] <-- INITREMOTE
+(Annex.ExternalAddonProcess) git-annex-remote-tape[1] --> GETCONFIG encryption
+(Annex.ExternalAddonProcess) git-annex-remote-tape[1] <-- VALUE hybrid
+(Annex.ExternalAddonProcess) git-annex-remote-tape[1] --> GETCONFIG onlyencryptcreds
+(Annex.ExternalAddonProcess) git-annex-remote-tape[1] <-- VALUE 
+(Annex.ExternalAddonProcess) git-annex-remote-tape[1] --> SETCONFIG onlyencryptcreds yes
+(Annex.ExternalAddonProcess) git-annex-remote-tape[1] --> SETCREDS key aes256 70482ccb1e0a0b8f8bf6f2603174d2d6f40d940033285d3ae94e7258595dca26
+git-annex: getRemoteConfigValue onlyencryptcreds found value of unexpected type PassedThrough. This is a bug in git-annex!
+CallStack (from HasCallStack):
+  error, called at ./Annex/SpecialRemote/Config.hs:209:28 in main:Annex.SpecialRemote.Config
+  getRemoteConfigValue, called at ./Remote/Helper/Encryptable.hs:297:27 in main:Remote.Helper.Encryptable
+failed
+initremote: 1 failed
+``` 
+
+I am not sure if this is even supposed to be supported? Let me know if I am using it in the wrong way :)
+"""]]
