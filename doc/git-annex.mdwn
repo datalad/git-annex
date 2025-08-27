@@ -2110,8 +2110,8 @@ Remotes are configured using these settings in `.git/config`.
 
 * `annex.youtube-dl-options`
 
-  Options to pass to yt-dlp when using it to find the url to download
-  for a video.
+  Options to pass to yt-dlp. For example if youtube is requiring cookies
+  to download from it, use something like "--cookies-from-browser firefox"
 
   Some options may break git-annex's integration with yt-dlp. For
   example, the --output option could cause it to store files somewhere
