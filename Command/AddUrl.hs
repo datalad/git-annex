@@ -376,8 +376,7 @@ downloadWeb addunlockedmatcher o url urlinfo file =
 	  where
 		dl dest = withTmpWorkDir mediakey $ \workdir -> do
 			let cleanuptmp = pruneTmpWorkDirBefore tmp (liftIO . removeWhenExistsWith removeFile)
-			dlcmd <- youtubeDlCommand
-			showNote ("using " <> UnquotedString dlcmd)
+			showNote ("using " <> UnquotedString youtubeDlCommand)
 			Transfer.notifyTransfer Transfer.Download url $
 				Transfer.download' webUUID mediakey (AssociatedFile Nothing) Nothing Transfer.noRetry $ \p -> do
 					showDestinationFile dest
@@ -393,7 +392,7 @@ downloadWeb addunlockedmatcher o url urlinfo file =
 							return Nothing
 						Right Nothing -> do
 							cleanuptmp
-							warning (UnquotedString dlcmd <> " did not download anything")
+							warning (UnquotedString youtubeDlCommand <> " did not download anything")
 							return Nothing
 		mediaurl = setDownloader url YoutubeDownloader
 		mediakey = Backend.URL.fromUrl mediaurl Nothing (verifiableOption o)

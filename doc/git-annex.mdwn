@@ -2110,8 +2110,8 @@ Remotes are configured using these settings in `.git/config`.
 
 * `annex.youtube-dl-options`
 
-  Options to pass to yt-dlp (or deprecated youtube-dl) when using it to
-  find the url to download for a video.
+  Options to pass to yt-dlp when using it to find the url to download
+  for a video.
 
   Some options may break git-annex's integration with yt-dlp. For
   example, the --output option could cause it to store files somewhere
@@ -2121,8 +2121,8 @@ Remotes are configured using these settings in `.git/config`.
 
 * `annex.youtube-dl-command`
 
-  Default is to use "yt-dlp" or if that is not available in the PATH, 
-  to use "youtube-dl".
+  Deprecated and unused. git-annex always runs "yt-dlp", since the
+  "youtube-dl" command has been deprecated.
 
 * `annex.aria-torrent-options`
 

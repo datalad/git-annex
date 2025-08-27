@@ -1,6 +1,6 @@
-{- yt-dlp (and deprecated youtube-dl) integration for git-annex
+{- yt-dlp integration for git-annex
  -
- - Copyright 2017-2024 Joey Hess <id@joeyh.name>
+ - Copyright 2017-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -41,7 +41,7 @@ import qualified Data.Aeson as Aeson
 import GHC.Generics
 import qualified Data.ByteString.Char8 as B8
 
--- youtube-dl can follow redirects to anywhere, including potentially
+-- yt-dlp can follow redirects to anywhere, including potentially
 -- localhost or a private address. So, it's only allowed to download
 -- content if the user has allowed access to all addresses.
 youtubeDlAllowed :: Annex Bool
@@ -52,25 +52,21 @@ youtubeDlNotAllowedMessage = unwords
 	[ "This url is supported by yt-dlp, but"
 	, "yt-dlp could potentially access any address, and the"
 	, "configuration of annex.security.allowed-ip-addresses"
-	, "does not allow that. Not using yt-dlp (or youtube-dl)."
+	, "does not allow that. Not using yt-dlp."
 	]
 
--- Runs youtube-dl in a work directory, to download a single media file
+-- Runs yt-dlp in a work directory, to download a single media file
 -- from the url. Returns the path to the media file in the work directory.
 --
--- Displays a progress meter as youtube-dl downloads.
+-- Displays a progress meter as yt-dlp downloads.
 --
 -- If no file is downloaded, returns Right Nothing.
 --
--- youtube-dl can write to multiple files, either temporary files, or
+-- yt-dlp can write to multiple files, either temporary files, or
 -- multiple videos found at the url, and git-annex needs only one file.
 -- So we need to find the destination file, and make sure there is not
 -- more than one. With yt-dlp use --print-to-file to make it record the 
--- file(s) it downloads. With youtube-dl, the best that can be done is
--- to require that the work directory end up with only 1 file in it.
--- (This can fail, but youtube-dl is deprecated, and they closed my
--- issue requesting something like --print-to-file; 
--- <https://github.com/rg3/youtube-dl/issues/14864>)
+-- file(s) it downloads.
 youtubeDl :: URLString -> OsPath -> MeterUpdate -> Annex (Either String (Maybe OsPath))
 youtubeDl url workdir p = ifM ipAddressesUnlimited
 	( withUrlOptions Nothing $ youtubeDl' url workdir p
@@ -79,52 +75,48 @@ youtubeDl url workdir p = ifM ipAddressesUnlimited
 
 youtubeDl' :: URLString -> OsPath -> MeterUpdate -> UrlOptions -> Annex (Either String (Maybe OsPath))
 youtubeDl' url workdir p uo
-	| supportedScheme uo url = do
-		cmd <- youtubeDlCommand
-		ifM (liftIO $ inSearchPath cmd)
-			( runcmd cmd >>= \case
-				Right True -> downloadedfiles cmd >>= \case
+	| supportedScheme uo url =
+		ifM (liftIO $ inSearchPath youtubeDlCommand)
+			( runcmd >>= \case
+				Right True -> downloadedfiles >>= \case
 					(f:[]) -> return $ 
 						Right (Just (toOsPath f))
-					[] -> return (nofiles cmd)
-					fs -> return (toomanyfiles cmd fs)
+					[] -> return nofiles
+					fs -> return (toomanyfiles fs)
 				Right False -> workdirfiles >>= \case
 					[] -> return (Right Nothing)
-					_ -> return (Left $ cmd ++ " download is incomplete. Run the command again to resume.")
+					_ -> return (Left $ youtubeDlCommand ++ " download is incomplete. Run the command again to resume.")
 				Left msg -> return (Left msg)
-			, return (Left $ cmd ++ " is not installed.")
+			, return (Left $ youtubeDlCommand ++ " is not installed.")
 			)
 	| otherwise = return (Right Nothing)
   where
-	nofiles cmd = Left $ cmd ++ " did not put any media in its work directory, perhaps it's been configured to store files somewhere else?"
-	toomanyfiles cmd fs = Left $ cmd ++ " downloaded multiple media files; git-annex is only able to deal with one per url: " ++ show fs
-	downloadedfiles cmd
-		| isytdlp cmd = liftIO $ 
-			(nub . lines <$> readFile (fromOsPath filelistfile))
-				`catchIO` (pure . const [])
-		| otherwise = map fromOsPath <$> workdirfiles
+	nofiles = Left $ youtubeDlCommand ++ " did not put any media in its work directory, perhaps it's been configured to store files somewhere else?"
+	toomanyfiles fs = Left $ youtubeDlCommand ++ " downloaded multiple media files; git-annex is only able to deal with one per url: " ++ show fs
+	downloadedfiles = liftIO $ 
+		(nub . lines <$> readFile (fromOsPath filelistfile))
+			`catchIO` (pure . const [])
 	workdirfiles = liftIO $ filter (/= filelistfile) 
 		<$> (filterM doesFileExist =<< dirContents workdir)
 	filelistfile = workdir </> filelistfilebase
 	filelistfilebase = literalOsPath "git-annex-file-list-file"
-	isytdlp cmd = cmd == "yt-dlp"
-	runcmd cmd = youtubeDlMaxSize workdir >>= \case
+	runcmd = youtubeDlMaxSize workdir >>= \case
 		Left msg -> return (Left msg)
 		Right maxsize -> do
-			opts <- youtubeDlOpts (dlopts cmd ++ maxsize)
+			opts <- youtubeDlOpts (dlopts ++ maxsize)
 			oh <- mkOutputHandlerQuiet
-			-- The size is unknown to start. Once youtube-dl
+			-- The size is unknown to start. Once yt-dlp
 			-- outputs some progress, the meter will be updated
 			-- with the size, which is why it's important the
 			-- meter is passed into commandMeter'
 			let unknownsize = Nothing :: Maybe FileSize
 			ok <- metered (Just p) unknownsize Nothing $ \meter meterupdate ->
 				liftIO $ commandMeter'
-					(if isytdlp cmd then parseYtdlpProgress else parseYoutubeDlProgress)
-					oh (Just meter) meterupdate cmd opts
+					parseYtdlpProgress
+					oh (Just meter) meterupdate youtubeDlCommand opts
 					(\pr -> pr { cwd = Just (fromOsPath workdir) })
 			return (Right ok)
-	dlopts cmd = 
+	dlopts = 
 		[ Param url
 		-- To make it only download one file when given a
 		-- page with a video and a playlist, download only the video.
@@ -134,22 +126,17 @@ youtubeDl' url workdir p uo
 		-- somewhat stable, but this is the only way to prevent
 		-- it from downloading the whole playlist.)
 		, Param "--playlist-items", Param "0"
-		] ++
-			if isytdlp cmd
-				then
-					-- Avoid warnings, which go to
-					-- stderr and may mess up
-					-- git-annex's display.
-					[ Param "--no-warnings"
-					, Param "--progress-template"
-					, Param progressTemplate
-					, Param "--print-to-file"
-					, Param "after_move:filepath"
-					, Param (fromOsPath filelistfilebase)
-					]
-				else []
+		-- Avoid warnings, which go to stderr and may
+		-- mess up git-annex's display.
+		, Param "--no-warnings"
+		, Param "--progress-template"
+		, Param progressTemplate
+		, Param "--print-to-file"
+		, Param "after_move:filepath"
+		, Param (fromOsPath filelistfilebase)
+		]
 
--- To honor annex.diskreserve, ask youtube-dl to not download too
+-- To honor annex.diskreserve, ask yt-dlp to not download too
 -- large a media file. Factors in other downloads that are in progress,
 -- and any files in the workdir that it may have partially downloaded
 -- before.
@@ -188,22 +175,22 @@ youtubeDlTo key url dest p = do
 				return Nothing
 	return (fromMaybe False res)
 
--- youtube-dl supports downloading urls that are not html pages,
+-- yt-dlp supports downloading urls that are not html pages,
 -- but we don't want to use it for such urls, since they can be downloaded
 -- without it. So, this first downloads part of the content and checks 
--- if it's a html page; only then is youtube-dl used.
+-- if it's a html page; only then is yt-dlp used.
 htmlOnly :: URLString -> a -> Annex a -> Annex a
 htmlOnly url fallback a = withUrlOptions Nothing $ \uo -> 
 	liftIO (downloadPartial url uo htmlPrefixLength) >>= \case
 		Just bs | isHtmlBs bs -> a
 		_ -> return fallback
 
--- Check if youtube-dl supports downloading content from an url.
+-- Check if yt-dlp supports downloading content from an url.
 youtubeDlSupported :: URLString -> Annex Bool
 youtubeDlSupported url = either (const False) id
 	<$> withUrlOptions Nothing (youtubeDlCheck' url)
 
--- Check if youtube-dl can find media in an url.
+-- Check if yt-dlp can find media in an url.
 --
 -- While this does not download anything, it checks youtubeDlAllowed
 -- for symmetry with youtubeDl; the check should not succeed if the
@@ -218,11 +205,10 @@ youtubeDlCheck' :: URLString -> UrlOptions -> Annex (Either String Bool)
 youtubeDlCheck' url uo
 	| supportedScheme uo url = catchMsgIO $ htmlOnly url False $ do
 		opts <- youtubeDlOpts [ Param url, Param "--simulate" ]
-		cmd <- youtubeDlCommand
-		liftIO $ snd <$> processTranscript cmd (toCommand opts) Nothing
+		liftIO $ snd <$> processTranscript youtubeDlCommand (toCommand opts) Nothing
 	| otherwise = return (Right False)
 
--- Ask youtube-dl for the filename of media in an url.
+-- Ask yt-dlp for the filename of media in an url.
 --
 -- (This is not always identical to the filename it uses when downloading.)
 youtubeDlFileName :: URLString -> Annex (Either String OsPath)
@@ -245,10 +231,11 @@ youtubeDlFileNameHtmlOnly' url uo
 	| otherwise = return nomedia
   where
 	go = do
-		-- Sometimes youtube-dl will fail with an ugly backtrace
+		-- Sometimes yt-dlp will fail with an ugly backtrace
 		-- (eg, http://bugs.debian.org/874321)
 		-- so catch stderr as well as stdout to avoid the user
-		-- seeing it. --no-warnings avoids warning messages that
+		-- seeing it. 
+		-- --no-warnings avoids warning messages that
 		-- are output to stdout.
 		opts <- youtubeDlOpts
 			[ Param url
@@ -256,8 +243,7 @@ youtubeDlFileNameHtmlOnly' url uo
 			, Param "--no-warnings"
 			, Param "--no-playlist"
 			]
-		cmd <- youtubeDlCommand
-		let p = (proc cmd (toCommand opts))
+		let p = (proc youtubeDlCommand (toCommand opts))
 			{ std_out = CreatePipe
 			, std_err = CreatePipe
 			}
@@ -284,22 +270,17 @@ youtubeDlOpts addopts = do
 	opts <- map Param . annexYoutubeDlOptions <$> Annex.getGitConfig
 	return (opts ++ addopts)
 
-youtubeDlCommand :: Annex String
-youtubeDlCommand = annexYoutubeDlCommand <$> Annex.getGitConfig >>= \case
-	Just c -> pure c
-	Nothing -> ifM (liftIO $ inSearchPath "yt-dlp")
-		( return "yt-dlp"
-		, return "youtube-dl"
-		)
+youtubeDlCommand :: String
+youtubeDlCommand = "yt-dlp"
 
 supportedScheme :: UrlOptions -> URLString -> Bool
 supportedScheme uo url = case parseURIRelaxed url of
 	Nothing -> False
 	Just u -> case uriScheme u of
-		-- avoid ugly message from youtube-dl about not supporting file:
+		-- avoid ugly message from yt-dlp about not supporting file:
 		"file:" -> False
 		-- ftp indexes may look like html pages, and there's no point
-		-- involving youtube-dl in a ftp download
+		-- involving yt-dlp in a ftp download
 		"ftp:" -> False
 		_ -> allowedScheme uo u
 
@@ -346,16 +327,9 @@ parseYoutubeDlProgress _ = (Nothing, Nothing, "")
  - download content.
  -}
 youtubePlaylist :: URLString -> Annex (Either String [YoutubePlaylistItem])
-youtubePlaylist url = do
-	cmd <- youtubeDlCommand
-	if cmd == "yt-dlp"
-		then liftIO $ youtubePlaylist' url cmd
-		else return $ Left $ "Scraping needs yt-dlp, but git-annex has been configured to use " ++ cmd
-
-youtubePlaylist' :: URLString -> String -> IO (Either String [YoutubePlaylistItem])
-youtubePlaylist' url cmd = withTmpFile (literalOsPath "yt-dlp") $ \tmpfile h -> do
+youtubePlaylist url = liftIO $ withTmpFile (literalOsPath "yt-dlp") $ \tmpfile h -> do
 	hClose h
-	(outerr, ok) <- processTranscript cmd
+	(outerr, ok) <- processTranscript youtubeDlCommand
 		[ "--simulate"
 		, "--flat-playlist"
 		-- Skip live videos in progress

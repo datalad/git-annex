@@ -32,6 +32,8 @@ git-annex (10.20250722) UNRELEASED; urgency=medium
     Fixes reversion introduced in version 7.20191230.
   * Improved error message when yt-dlp is not installed and is needed to
     get a file from the web.
+  * The annex.youtube-dl-command git config is no longer used, git-annex
+    always runs the yt-dlp command, rather than the old youtube-dl command.
   * Removed support for git versions older than 2.22.
   * Bump aws build dependency to 0.24.1.
   * stack.yaml: Update to lts-24.2.
