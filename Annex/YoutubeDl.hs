@@ -60,8 +60,7 @@ youtubeDlNotAllowedMessage = unwords
 --
 -- Displays a progress meter as youtube-dl downloads.
 --
--- If no file is downloaded, or the program is not installed,
--- returns Right Nothing.
+-- If no file is downloaded, returns Right Nothing.
 --
 -- youtube-dl can write to multiple files, either temporary files, or
 -- multiple videos found at the url, and git-annex needs only one file.
@@ -93,7 +92,7 @@ youtubeDl' url workdir p uo
 					[] -> return (Right Nothing)
 					_ -> return (Left $ cmd ++ " download is incomplete. Run the command again to resume.")
 				Left msg -> return (Left msg)
-			, return (Right Nothing)
+			, return (Left $ cmd ++ " is not installed.")
 			)
 	| otherwise = return (Right Nothing)
   where
