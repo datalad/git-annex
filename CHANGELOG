@@ -1,4 +1,4 @@
-git-annex (10.20250722) UNRELEASED; urgency=medium
+git-annex (10.20250828) upstream; urgency=medium
 
   * p2p: Added --enable option, which can be used to enable P2P networks
     provided by external commands git-annex-p2p-<netname>
@@ -38,7 +38,7 @@ git-annex (10.20250722) UNRELEASED; urgency=medium
   * Bump aws build dependency to 0.24.1.
   * stack.yaml: Update to lts-24.2.
 
- -- Joey Hess <id@joeyh.name>  Thu, 21 Aug 2025 16:37:41 -0400
+ -- Joey Hess <id@joeyh.name>  Thu, 28 Aug 2025 12:33:18 -0400
 
 git-annex (10.20250721) upstream; urgency=medium
 
