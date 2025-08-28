@@ -316,11 +316,6 @@ parseYtdlpProgress = go [] . reverse . progresschunks
 					_ -> go (remainder++x) xs
 			_ -> go (remainder++x) xs
 
-{- youtube-dl is deprecated, parsing its progress was attempted before but
- - was buggy and is no longer done. -}
-parseYoutubeDlProgress :: ProgressParser
-parseYoutubeDlProgress _ = (Nothing, Nothing, "")
-
 {- List the items that yt-dlp can download from an url.
  - 
  - Note that this does not check youtubeDlAllowed because it does not
