@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2025-08-29T15:31:42Z"
+ content="""
+I'm not familiar with beegfs, but its documentation such as this
+<https://doc.beegfs.io/latest/architecture/overview.html> makes me wonder if it
+manages to behave consistently as we would expect a filesystem to behave.
+
+In particular, we have a file being moved from one directory to another
+directory. Beegfs's docs says it will pick a random metadata node for each
+directory. So there can be two metadata nodes that have to be updated for a
+move. If one node somehow lags seeing the update, could that result in the file
+not appearing as present in the destination directory after the move?
+
+I'm only speculating about how beegfs might work, but it seems unlikely that
+git-annex has a bug that causes it to lose an annexed file when all it's done is
+move it to the objects directory, that only manifests on this one filesystem.
+
+A good next step might be to try manually adding an annexed file and see
+if there is some lag between `git-annex add` and being able to read the content
+of the symlink. Eg, compare:
+
+	echo foo > foo
+	git-annex add foo; cat foo
+	echo bar > bar
+	git-annex add bar; sleep 1m; cat bar
+"""]]

@@ -1,0 +1,41 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-08-29T15:16:00Z"
+ content="""
+The failures are mostly of two varieties.
+
+type A:
+
+      add:                            FAIL (2.20s)
+        ./Test/Framework.hs:395:
+        checkcontent foo
+        expected: "annexed file content"
+         but got: "could not read file"
+
+type B:
+
+      init:              OK (1.98s)
+      add:               FAIL (5.90s)
+        ./Test/Framework.hs:92:
+        unlock failed with unexpected exit code (transcript follows)
+	unlock sha1foo cp: cannot open '.git/annex/objects/3j/xV/SHA1-s25--ee80d2cec57a3810db83b80e1b320df3a3721ffa/SHA1-s25--ee80d2cec57a3810db83b80e1b320df3a3721ffa' for reading: No such file or directory
+
+In both cases, a `git-annex add` is succeeding, but the annex objects
+directory is somehow not getting populated. Or at least, a subsequent read
+of a file in it has the filesystem not knowing the file that the add put
+there is there.
+
+It seems quite likely a lot of other tests would also fail, but they are being
+skipped because the add tests fail.
+
+In one case, the add tests are succeeding (on an adjusted unlocked branch), 
+but then a subsequent test fails:
+
+    git-remote-annex exporttree:      FAIL (8.45s)
+      ./Test/Framework.hs:92:
+      export failed with unexpected exit code (transcript follows)
+      mv: cannot move '.git/annex/othertmp/89ddefa4-a04c-11.0/89ddefa4-a04c-11' to '.git/annex/export.ex/89ddefa4-a04c-11ef-818d8a-1-c6223d6': Device or resource busy
+      mv: cannot move '.git/annex/othertmp/89ddefa4-a04c-11.0/89ddefa4-a04c-11' to '.git/annex/export.ex/89ddefa4-a04c-11ef-818d8a-2-c718026': Device or resource busy
+      git-annex: renamePath:rename '.git/annex/othertmp/89ddefa4-a04c-11.0/89ddefa4-a04c-11' to '.git/annex/export.ex/89ddefa4-a04c-11ef-87b5-e880882a4f98': resource busy (Device or resource busy)
+"""]]
