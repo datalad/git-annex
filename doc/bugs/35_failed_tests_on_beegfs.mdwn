@@ -1,0 +1,81 @@
+### Please describe the problem.
+
+links: [prior report/fix of testing on beegfs 4 years ago; different site/version](https://git-annex.branchable.com/projects/dandi/bugs-done/beegfs__58___init_tests_FAIL_resource_busy/)
+
+Currently I observed 35 tests failing
+
+```
+yarick@ducky:/data/mri_dicom/tmp/test-git-annex
+*$> grep FAIL .duct/logs/2025.08.28T21.04.10-56898_stdout  | nl | tail
+    26        add:                           FAIL (2.30s)
+    27        add:                                 FAIL (2.34s)
+    28        add:                              FAIL (2.80s)
+    29        add:                                 FAIL (2.21s)
+    30        add:                                    FAIL (1.98s)
+    31        add:               FAIL (3.16s)
+    32        add:                                                FAIL (4.27s)
+    33      git-remote-annex exporttree:      FAIL (8.45s)
+    34      export and import:                     FAIL (10.40s)
+    35      export and import of subdir:           FAIL (15.99s)
+```
+
+full log: [http://www.oneukrainian.com/tmp/2025.08.28T21.04.10-56898_stdout](http://www.oneukrainian.com/tmp/2025.08.28T21.04.10-56898_stdout)
+
+some info:
+
+```
+$> modinfo beegfs
+filename:       /lib/modules/5.15.0-122-generic/updates/fs/beegfs_autobuild/beegfs.ko
+version:        7.4.6
+alias:          fs-beegfs
+author:         ThinkParQ GmbH
+description:    BeeGFS parallel file system client (https://www.beegfs.io)
+license:        GPL v2
+srcversion:     9F666198EABF0EB756ED3AC
+depends:        ib_core,rdma_cm
+retpoline:      Y
+name:           beegfs
+vermagic:       5.15.0-122-generic SMP mod_unload modversions 
+
+$> mount | grep data/mri_dicom
+beegfs_nodev on /data/mri_dicom type beegfs (rw,nodev,relatime,cfgFile=/etc/beegfs/beegfs-client.conf)
+
+
+```
+
+### What steps will reproduce the problem?
+
+Run tests on beegfs?
+
+### What version of git-annex are you using? On what operating system?
+
+```
+*$> git annex version
+git-annex version: 10.20250721-g8867e7590a3a70afa8a93d2fefab94adc9a176d0
+build flags: Assistant Webapp Pairing Inotify TorrentParser MagicMime Servant Benchmark Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.24.4 bloomfilter-2.0.1.2 crypton-1.0.4 DAV-1.3.4 feed-1.3.2.1 ghc-9.10.1 http-client-0.7.19 persistent
+-sqlite-2.13.3.0 torrent-10000.1.3 uuid-1.3.16 yesod-1.6.2.1
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E S
+HA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2
+B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S
+224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL GITBUNDLE GITMANIFEST VURL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg rclone hoo
+k external compute mask
+operating system: linux x86_64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
+```
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
