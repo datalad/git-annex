@@ -1,0 +1,18 @@
+Doing `git-annex drop --from foo`, I noticed it was first locking files on
+another remote (bar) before proceeding to do nothing, as it turned out the files
+were not on remote foo. Since the bar remote was accessed over a slow
+ssh, that took a lot of time. The foo remote had only a few files, but it
+would have needed to lock thousands of files.
+
+Using `git-annex drop --from foo --in foo` avoided the problem.
+
+The reason drop behaves this way is that it's intended to
+remove content from a remote even when the local repository's location log
+is out of sync with it. Still, it's somewhat surprising and annoying that
+it can need to do so much extra work.
+
+Note that checking if the remote actually has the content would be about as
+slow as locking files on the other remote(s) (assuming a small numcopies).
+
+`--fast` could be made to deal with this, making it check the location log.
+--[[Joey]]
