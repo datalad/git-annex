@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -109,8 +109,17 @@ startLocal lu pcc afile ai si numcopies mincopies key preverified ud =
 		performLocal lu pcc key afile numcopies mincopies preverified ud
 
 startRemote :: LiveUpdate -> PreferredContentChecked -> AssociatedFile -> ActionItem -> SeekInput -> NumCopies -> MinCopies -> Key -> DroppingUnused -> Remote -> CommandStart
-startRemote lu pcc afile ai si numcopies mincopies key ud remote = 
-	starting "drop" (OnlyActionOn key ai) si $ do
+startRemote lu pcc afile ai si numcopies mincopies key ud remote = do
+	fast <- Annex.getRead Annex.fast
+	if fast
+		then do
+			remotes <- Remote.keyPossibilities (Remote.IncludeIgnored True) key
+			if remote `elem` remotes
+				then go
+				else stop
+		else go
+  where
+	go = starting "drop" (OnlyActionOn key ai) si $ do
 		showAction $ UnquotedString $ "from " ++ Remote.name remote
 		performRemote lu pcc key afile numcopies mincopies remote ud
 

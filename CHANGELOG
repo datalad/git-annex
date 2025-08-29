@@ -1,3 +1,9 @@
+git-annex (10.20250829) UNRELEASED; urgency=medium
+
+  * drop: --fast support when dropping from a remote.
+
+ -- Joey Hess <id@joeyh.name>  Fri, 29 Aug 2025 12:34:06 -0400
+
 git-annex (10.20250828) upstream; urgency=medium
 
   * p2p: Added --enable option, which can be used to enable P2P networks

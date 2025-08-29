@@ -42,6 +42,13 @@ Paths of files or directories to drop can be specified.
   this option can specify a remote from which the files'
   contents should be removed.
 
+* `--fast`
+
+  When dropping from a remote, avoid doing anything when the remote is not
+  believed to contain a file. Usually each file is attempted to be dropped
+  from the remote. This can be faster, but might leave some files on the
+  remote in some cases.
+
 * `--auto`
 
   Rather than trying to drop all specified files, drop only those that
