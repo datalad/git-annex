@@ -38,7 +38,7 @@ git-annex (10.20250828) upstream; urgency=medium
   * Bump aws build dependency to 0.24.1.
   * stack.yaml: Update to lts-24.2.
 
- -- Joey Hess <id@joeyh.name>  Thu, 28 Aug 2025 12:33:18 -0400
+ -- Joey Hess <id@joeyh.name>  Fri, 29 Aug 2025 11:42:37 -0400
 
 git-annex (10.20250721) upstream; urgency=medium
 
