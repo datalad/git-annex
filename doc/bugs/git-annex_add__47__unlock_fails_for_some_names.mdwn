@@ -1,0 +1,75 @@
+# What version of git-annex are you using? On what operating system?
+```
+    git-annex version: 10.20250721 (broken)
+    OS: Manjaro Linux, ext4 filesystem
+    git config: core.quotepath=false
+```
+Note: Same files work perfectly in git-annex 10.20220121 (tested on WSL Ubuntu).
+
+[[!format sh """
+Complete test showing the pattern:
+
+$ git init && git annex init
+init ok
+(recording state in git...)
+Create test files - working examples:
+
+$ echo "test" > "ИА_2222.07.xlsx" # 2-char Cyrillic prefix - WORKS
+$ echo "test" > "ЦППП_202206.xlsx" # no dot in date - WORKS
+$ echo "test" > "ААА_55.22.xlsx" # different date format - WORKS
+$ echo "test" > "IOIO_2222.07.xlsx" # Latin letters - WORKS
+Create test files - failing examples:
+
+$ echo "test" > "ЦППП_2022.06.xlsx" # 4-char prefix + YYYY.MM - FAILS
+$ echo "test" > "ИАИА_2222.07.xlsx" # 4-char prefix + YYYY.MM - FAILS
+
+$ git annex add *.xlsx
+add ААА_55.22.xlsx ok
+add IOIO_2222.07.xlsx ok
+add ИА_2222.07.xlsx ok
+add ЦППП_202206.xlsx ok
+add ЦППП_2022.06.xlsx
+git-annex: .git/annex/othertmp/.0: createSymbolicLink: already exists (File exists)
+failed
+add ИАИА_2222.07.xlsx
+git-annex: .git/annex/othertmp/.1: createSymbolicLink: already exists (File exists)
+failed
+add: 2 failed
+
+$ git annex status
+A ./ААА_55.22.xlsx
+A ./IOIO_2222.07.xlsx
+A ./ИА_2222.07.xlsx
+A ./ЦППП_202206.xlsx
+? ./ИАИА_2222.07.xlsx
+? ./ЦППП_2022.06.xlsx
+Debug output shows escaped Cyrillic conversion:
+
+$ git annex --debug whereis "ЦППП_2022.06.xlsx" 2>&1 | grep ls-files
+[...] git [...] ls-files [...] "\1062\1055\1055\1055_2022.06.xlsx"
+For files that were added successfully, unlock also fails:
+
+$ git annex unlock "ЦППП_2022.06.xlsx" # if we force-add it first
+mv: cannot overwrite non-directory './ЦП72447-0' with directory '../.git/annex/othertmp/.22'
+git-annex: ../.git/annex/othertmp/.22/SHA256E-s...: removeDirectoryRecursive: permission denied (Permission denied)
+failed
+Workaround - add special character:
+
+$ mv "ЦППП_2022.06.xlsx" "ЦППП_2022.06—.xlsx" # em-dash
+$ git annex add "ЦППП_2022.06—.xlsx"
+add ЦППП_2022.06—.xlsx ok
+End of transcript.
+
+"""]]
+
+Root cause: The temp filename generation algorithm appears to create conflicts when processing escaped Cyrillic sequences (\1062\1055\1055\1055) for filenames with 4+ character prefixes followed by YYYY.MM date patterns. It tries to create temp names like ЦП{PID}-{counter} which conflict with existing operations.
+
+# Workarounds found:
+    Shorten Cyrillic prefix to 2-3 characters
+    Remove dots from dates (ЦППП_202206.xlsx)
+    Add special characters (ЦППП_2022.06—.xlsx)
+    Use different date separators (ЦППП_2022-06.xlsx)
+
+# Have you had any luck using git-annex before?
+
+Absolutely! git-annex has been fantastic for managing large datasets across multiple machines. The same repository works perfectly with the older version (10.20220121) on Ubuntu WSL, and I've been using git-annex successfully for years. This appears to be a regression in the newer version, but the tool itself remains incredibly valuable for distributed file management. Thanks for all the great work on this project!
