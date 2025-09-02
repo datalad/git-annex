@@ -120,9 +120,5 @@ Originally reported YYYY.MM pattern (confirmed):
     ЦППП_2022.01.xlsx, ЦППП_2022.02.xlsx, etc.
 ```
 
-Revised pattern analysis
-
-Failing pattern: [ANY_CYRILLIC_CHARACTERS].[ANY_EXTENSION]
-
 Working pattern: Latin-only filenames work fine. Some non-latin works some not.
-This regression affects ANY non latin filename, making git-annex 10.20250721 essentially barely usable for repositories containing non-latin filenames.
+This regression can affects ANY non latin filename, making git-annex 10.20250721 essentially barely usable for repositories containing non-latin filenames.
