@@ -82,37 +82,47 @@ Expanded problem scope
 ALL of these Cyrillic filename patterns fail:
 
 Simple Cyrillic names:
+```
     пожелания.md
     обучение.xlsx
     Протокол.xlsx
     Согласие.docx
     Грейдинг.pptx
+```
 
 Names with numbers/dashes:
+```
     ДПК_2021.06-2.xlsx
     Скрипты_3.xlsx
     РТ МВНП v1.docx
     РТ МВНП v2.docx
-
+```
 Names with spaces:
+```
     ВУП Авто .pptx
     Ваш юрист.pdf
-Names with underscores/special chars:
+```
 
+Names with underscores/special chars:
+```
     ВУП_видео.mp4
     Ачох_кейс.dat
+```
 
 Various file extensions affected:
-
+```
     .docx, .pptx, .xlsx (originally reported)
     .md, .pdf, .mp4, .dat (newly discovered)
+```
 
 Originally reported YYYY.MM pattern (confirmed):
+```
     ЦППП_2022.01.xlsx, ЦППП_2022.02.xlsx, etc.
+```
 
 Revised pattern analysis
 
 Failing pattern: [ANY_CYRILLIC_CHARACTERS].[ANY_EXTENSION]
 
-Working pattern: Latin-only filenames work fine
+Working pattern: Latin-only filenames work fine. Some non-latin works some not.
 This regression affects ANY non latin filename, making git-annex 10.20250721 essentially barely usable for repositories containing non-latin filenames.
