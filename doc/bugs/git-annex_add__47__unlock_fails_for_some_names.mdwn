@@ -56,6 +56,13 @@ In git-annex version 10.20250721, certain non-Latin filenames, specifically thos
   * "ВУП Авто .pptx" (Cyrillic with spaces) — **fails**
   * "Ачох\_кейс.dat" (Cyrillic with underscore and special characters) — **fails**
 
+* ** Even Simple Non-Latin names**:
+  *  пожелания.md  — **fails**
+  *  обучение.xlsx  — **fails**
+  *  Протокол.xlsx  — **fails**
+  *  Согласие.docx  — **fails**
+  *  Грейдинг.pptx  — **fails**
+
 * **Working Examples**:
 
   * "ИА\_2222.07.xlsx" (2-char Cyrillic prefix)
