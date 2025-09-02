@@ -1,0 +1,67 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="odd odd filesystem"
+ date="2025-09-02T15:06:43Z"
+ content="""
+eh, it is indeed quite a f...un filesystem: even `chmod` might endup unhappy
+
+```
+chmod +w -R test-repo
+chmod: changing permissions of 'test-repo/.git/annex/objects/91/9x/SHA256E-s4--b5bb9d8014a0f9b1d61e21e796d78dccdf1352f23cd32812f4850b878ae4944c/SHA256E-s4--b5bb9d8014a0f9b1d61e21e796d78dccdf1352f23cd32812f4850b878ae4944c': No such file or directory
+chmod: changing permissions of 'test-repo/.git/annex/objects/g7/9v/SHA256E-s4--7d865e959b2466918c9863afca942d0fb89d7c9ac0c99bafc3749504ded97730/SHA256
+E-s4--7d865e959b2466918c9863afca942d0fb89d7c9ac0c99bafc3749504ded97730': No such file or directory
+```
+
+and it might indeed take minute(s) for filesytem to become \"consistent\" with expected state.  And it seems that even a minute might not be enough!!!
+
+```
+ok
+(recording state in git...)
+(test_script.sh:14):
+sleep 1m
+(test_script.sh:14):
+cat bar
+cat: bar: No such file or directory
+```
+
+<details>
+<summary>with this full tune up script</summary> 
+
+```
+#!/bin/bash
+
+if [ -e test-repo ]; then 
+    chmod +w -R test-repo; 
+    rm -rf test-repo;  
+fi
+mkdir test-repo; cd test-repo; git init; git annex init;
+
+echo foo > foo
+git-annex add foo; cat foo
+echo bar > bar
+# git-annex add bar; sleep 1m; cat bar
+git-annex add bar
+start_time=$(date +%s)
+while ! cat bar 2>/dev/null; do
+    sleep 1
+    echo -n .
+done
+end_time=$(date +%s)
+wait_time=$((end_time - start_time))
+cat bar
+echo \"Waited ${wait_time} seconds for bar to appear\"
+```
+
+</details> 
+
+it `Waited 450 seconds for bar to appear`... and on this funny system bash would report that file is available so symlink would not be broken to those tests:
+
+```
+$> test -e bar || echo fail
+$> cat bar
+cat: bar: No such file or directory
+```
+
+I will report to sysadmins -- may be they have ideas/feedback ;-)
+"""]]
