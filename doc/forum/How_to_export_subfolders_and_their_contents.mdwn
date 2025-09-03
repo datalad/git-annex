@@ -1,0 +1,11 @@
+Following the process explained in [[special_remotes/adb/]], I tried exporting a subfolder to the sdcard of my phone.
+
+    git annex initremote android type=adb androiddirectory=/sdcard/Music encryption=none exporttree=yes
+
+The annex repository I am exporting from contains several subfolders with music albums. Using 
+
+    git annex export master:album --to=android
+
+results in the contents of the album folder going to the root Music folder on the remote, instead of in the Music/album folder.
+
+How do I create a tree that contains the subfolder itself too?
