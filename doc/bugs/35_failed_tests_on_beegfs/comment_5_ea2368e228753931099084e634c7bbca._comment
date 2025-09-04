@@ -14,7 +14,7 @@ In that report I hypothesized that Beegfs might not like an open file to be
 renamed. I'm not sure if we ever verified my fixes in that one fixed a
 problem with Beegfs, but it still seems like a good hypothesis.
 
-`export.ex/<uuid>` is a log file that git-annex uses to keep track of files
+"export.ex/<uuid>" is a log file that git-annex uses to keep track of files
 that were part of a tree exported to a special remote, but that were excluded
 from the export by its preferred content settings. To populate that file,
 git-annex opens a temp file, writes to it as the export runs, then closes it
@@ -25,17 +25,37 @@ and renames it.
 	close(14)                               = 0
 	rename(".git/annex/othertmp/cfd9e482-a5cc-42.0/cfd9e482-a5cc-42", ".git/annex/export.ex/cfd9e482-a5cc-4277-8ec1-954c5e95060f") = 0
 
-If the rename() fails, it falls back to trying mv, which is why
-there are also mv errors in the transcript above. Anyway, I've verified
+If the rename() fails, it falls back to trying "mv", which is why
+there are also "mv" errors in the transcript above. Anyway, I've verified
 the FD is closed before that point.
 
 But, the "..." includes some fork and exec. And this FD is never set
 close-on-exec! And the processes started while it's open include
-`git cat-file --batch`, which is a long-running process that will
+"git cat-file --batch", which is a long-running process that will
 still be left running when the rename happens.
 
 This was pretty surprising to me, I did not realize git-annex was generally
-leaking FDs to child processes in this way.
+leaking FDs to child processes in this way. It's easy to demonstrate with
+a simpler program:
+
+	joey@darkstar:~>cat >foo.hs <<EOF
+	import System.Process
+	import System.IO
+	
+	main = do
+	        h <- openFile "foo.x" WriteMode
+		hPutStrLn h "hello"
+	        callProcess "sh" ["-c", "ls -l /proc/self/fd"]
+	        hClose h
+	EOF
+	joey@darkstar:~>runghc foo.hs
+	total 0
+	lrwx------ 1 joey joey 64 Sep  4 14:11 0 -> /dev/pts/8
+	lrwx------ 1 joey joey 64 Sep  4 14:11 1 -> /dev/pts/8
+	l-wx------ 1 joey joey 64 Sep  4 14:11 11 -> /dev/tty
+	l-wx------ 1 joey joey 64 Sep  4 14:11 12 -> /home/joey/foo.x
+	lrwx------ 1 joey joey 64 Sep  4 14:11 2 -> /dev/pts/8
+	lr-x------ 1 joey joey 64 Sep  4 14:11 3 -> /proc/516659/fd
 
 So, really supporting this would mean auditing every file git-annex
 opens with openFile to see if the handle is ever passed to a child process,
