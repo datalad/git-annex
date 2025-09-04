@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-09-04T16:00:49Z"
+ content="""
+Reproduced. Thank you for an excellent bug report.
+
+And it is the temp filename generation causing the problem.
+
+	mkdir(".git/annex/othertmp/.0", 0777)   = 0
+	unlink(".git/annex/othertmp/.0")        = -1 EISDIR (Is a directory)
+	symlink(".git/annex/objects/k8/wf/SHA256E-s3--98ea6e4f216f2fb4b69fff9b3a44842c38686ca685f3f55dc48c5d3fb1107be4.md/SHA256E-s3--98ea6e4f216f2fb4b69fff9b3a44842c38686ca685f3f55dc48c5d3fb1107be4.md", ".git/annex/othertmp/.0") = -1 EEXIST (File exists)
+
+The cause is that relatedTemplate is returning "", which is not something the code
+is prepared for. That results in the ".0" directory name, and `".0" </> "" == ".0"`
+so it uses the same path for the temp file as for the subdirectory.
+
+Not all cyrllic names are affected though. Only ones that are exactly 21
+bytes long. Longer or shorter are both ok.
+
+The reason is that relatedTemplate wants to reserve 20 bytes for the random
+part of the temp filename. With a 21 byte filename, that means it wants to
+truncate it to 1 byte. But it that lands in the middle of the first unicode
+character, which is not allowed, so it truncates it to 0 bytes instead.
+
+I've fixed this bug.
+"""]]

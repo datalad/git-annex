@@ -93,3 +93,5 @@ Yes, git-annex has been fantastic for managing large datasets across multiple ma
 ---
 
 This issue appears to affect **all Cyrillic filenames**, not just the initially identified patterns, making the current version of git-annex barely usable for repositories containing non-Latin filenames.
+
+> [[fixed|done]] --[[Joey]]

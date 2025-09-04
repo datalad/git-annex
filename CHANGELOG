@@ -1,6 +1,8 @@
 git-annex (10.20250829) UNRELEASED; urgency=medium
 
   * drop: --fast support when dropping from a remote.
+  * add: Fix crash adding filenames that are exactly 21 bytes long and
+    begin with a utf-8 character.
 
  -- Joey Hess <id@joeyh.name>  Fri, 29 Aug 2025 12:34:06 -0400
 

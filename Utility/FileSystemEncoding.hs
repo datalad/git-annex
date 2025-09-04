@@ -119,11 +119,14 @@ fromRawFilePath = decodeBS
 toRawFilePath :: FilePath -> RawFilePath
 toRawFilePath = encodeBS
 
-{- Truncates a FilePath to the given number of bytes (or less),
+{- Truncates a path to the given number of bytes (or less),
  - as represented on disk.
  -
  - Avoids returning an invalid part of a unicode byte sequence, at the
  - cost of efficiency when running on a large FilePath.
+ -
+ - Note that this may return ""! That can happen if it is asked to truncate
+ - to eg 1 byte, but the input path starts with a unicode byte sequence.
  -}
 truncateFilePath :: Int -> RawFilePath -> RawFilePath
 #ifndef mingw32_HOST_OS

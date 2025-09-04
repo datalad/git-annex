@@ -120,8 +120,11 @@ relatedTemplate' f
 		 - ending in ".", and others like VFAT don't allow a
 		 - filename to end with trailing whitespace, so avoid
 		 - truncating a filename to end that way. -}
-		B.dropWhileEnd disallowed $
+		let p = B.dropWhileEnd disallowed $
 			truncateFilePath (len - templateAddedLength) f
+		in if B.null p
+			then "t"
+			else p
 	| otherwise = f
   where
 	len = B.length f
