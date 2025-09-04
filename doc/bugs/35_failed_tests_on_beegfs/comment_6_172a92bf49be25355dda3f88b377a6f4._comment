@@ -19,8 +19,4 @@ inherit the close-on-exec flag. So it should be safe to just write new
 versions of all of those.
 
 Also there are a few uses of `openFd` that don't set CloseOnExec.
-
-There is also the problem that any haskell library that does anything
-with a file might use any of the above internally without setting
-close-on-exec.
 """]]

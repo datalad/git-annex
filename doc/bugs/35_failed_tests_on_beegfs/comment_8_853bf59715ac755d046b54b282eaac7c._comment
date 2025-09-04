@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2025-09-04T20:56:54Z"
+ content="""
+There is also the problem that any haskell library that does anything
+with a file might use any of the above internally without setting
+close-on-exec.
+
+For example, opening a https connection can result in readFile opening a
+handle to a file in /etc/ssl/certs/, which will not be closed on exec. And
+which can leak out via another thread doing an exec at just the right time.
+
+But inheriting a single FD like that is not going to cause problems for beegfs
+or anything else.
+
+The ones I'd worry about is if a haskell library is doing something 
+with a file in the git-annex repo.
+
+Most dependencies of git-annex clearly don't open files there, and most open no
+files at all. Ones I need to check:
+
+* persistent-sqlite
+* feed (parseFeedFromFile)
+* concurrent-output (addOutputBuffer uses openTempFile; emitOutputBuffer uses T.readFile)
+* magic
+"""]]
