@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 4"
+ date="2025-09-04T02:06:22Z"
+ content="""
+admins tamed the beast down (disabled some \"optimization\" options which were enabled) and the beast started to behave better -- now just
+
+```
+yarick@ducky:/data/mri_dicom/tmp/test-git-annex
+*$> grep FAIL .duct/logs/2025.09.03T16.49.11-104855_* | nl
+     1  .duct/logs/2025.09.03T16.49.11-104855_stdout:    git-remote-annex exporttree:      FAIL (23.37s)
+     2  .duct/logs/2025.09.03T16.49.11-104855_stdout:    git-remote-annex exporttree:      FAIL (14.14s)
+     3  .duct/logs/2025.09.03T16.49.11-104855_stdout:    export and import of subdir:           FAIL (39.09s)
+     4  .duct/logs/2025.09.03T16.49.11-104855_stdout:    export and import of subdir:           FAIL (22.57s)
+     5  .duct/logs/2025.09.03T16.49.11-104855_stdout:    export and import:                     FAIL (11.14s)
+     6  .duct/logs/2025.09.03T16.49.11-104855_stdout:    export and import:                     FAIL (28.20s)
+     7  .duct/logs/2025.09.03T16.49.11-104855_stdout:    export and import:                     FAIL (17.36s)
+     8  .duct/logs/2025.09.03T16.49.11-104855_stdout:    export and import of subdir:           FAIL (24.52s)
+```
+
+fails.  [Full log link](http://www.oneukrainian.com/tmp/2025.09.03T16.49.11-104855_stdout). That is still with the same 10.20250721-g8867e7590a3a70afa8a93d2fefab94adc9a176d0
+"""]]
