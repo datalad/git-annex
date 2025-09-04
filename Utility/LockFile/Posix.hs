@@ -5,6 +5,8 @@
  - License: BSD-2-clause
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Utility.LockFile.Posix (
 	LockHandle,
 	lockShared,
@@ -76,8 +78,13 @@ tryLock lockreq mode lockfile = uninterruptibleMask_ $ do
 openLockFile :: LockRequest -> Maybe ModeSetter -> LockFile -> IO Fd
 openLockFile lockreq filemode lockfile = do
 	l <- applyModeSetter filemode lockfile $ \filemode' ->
-		openFdWithMode (fromOsPath lockfile) openfor filemode' defaultFileFlags
+		openFdWithMode (fromOsPath lockfile) openfor filemode' $
+#if MIN_VERSION_unix(2,8,0)
+			defaultFileFlags { cloexec = True }
+#else
+			defaultFileFlags
 	setFdOption l CloseOnExec True
+#endif
 	return l
   where
 	openfor = case lockreq of
