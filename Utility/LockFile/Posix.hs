@@ -5,8 +5,6 @@
  - License: BSD-2-clause
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Utility.LockFile.Posix (
 	LockHandle,
 	lockShared,
@@ -76,16 +74,10 @@ tryLock lockreq mode lockfile = uninterruptibleMask_ $ do
 
 -- Close on exec flag is set so child processes do not inherit the lock.
 openLockFile :: LockRequest -> Maybe ModeSetter -> LockFile -> IO Fd
-openLockFile lockreq filemode lockfile = do
-	l <- applyModeSetter filemode lockfile $ \filemode' ->
-		openFdWithMode (fromOsPath lockfile) openfor filemode' $
-#if MIN_VERSION_unix(2,8,0)
-			defaultFileFlags { cloexec = True }
-#else
-			defaultFileFlags
-	setFdOption l CloseOnExec True
-#endif
-	return l
+openLockFile lockreq filemode lockfile =
+	applyModeSetter filemode lockfile $ \filemode' ->
+		openFdWithMode (fromOsPath lockfile) openfor filemode'
+			defaultFileFlags (CloseOnExecFlag True)
   where
 	openfor = case lockreq of
 		ReadLock -> ReadOnly

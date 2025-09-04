@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2025-09-04T19:42:44Z"
+ content="""
+I've checked all uses of openFd and made CloseOnExec be used where
+appropriate. Also checked all the fd dupping.
+
+This won't fix the problem, but is necessary goundwork for fixing
+openFile and the rest.
+"""]]

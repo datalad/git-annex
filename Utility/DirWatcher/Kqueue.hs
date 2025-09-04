@@ -111,7 +111,9 @@ scanRecursive topdir prune = M.fromList <$> walk [] [topdir]
 				Nothing -> walk c rest
 				Just info -> do
 					mfd <- catchMaybeIO $
-						openFdWithMode (toRawFilePath dir) Posix.ReadOnly Nothing Posix.defaultFileFlags
+						openFdWithMode (toRawFilePath dir) Posix.ReadOnly Nothing
+							Posix.defaultFileFlags
+							(CloseOnExecFlag True)
 					case mfd of
 						Nothing -> walk c rest
 						Just fd -> do

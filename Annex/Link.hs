@@ -448,7 +448,7 @@ isPointerFile f = catchDefaultIO Nothing $
 #if MIN_VERSION_unix(2,8,0)
 	let open = do
 		fd <- openFd (fromOsPath f) ReadOnly 
-			(defaultFileFlags { nofollow = True })
+			(defaultFileFlags { nofollow = True, cloexec = True })
 		fdToHandle fd
 	in bracket open hClose readhandle
 #else

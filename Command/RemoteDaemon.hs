@@ -31,7 +31,9 @@ run o
 #ifndef mingw32_HOST_OS
 		git_annex <- fromOsPath <$> liftIO programPath
 		ps <- gitAnnexDaemonizeParams
-		let logfd = openFdWithMode (toRawFilePath "/dev/null") ReadOnly Nothing defaultFileFlags
+		let logfd = openFdWithMode (toRawFilePath "/dev/null") ReadOnly Nothing 
+			defaultFileFlags
+			(CloseOnExecFlag True)
 		liftIO $ daemonize git_annex ps logfd Nothing False runNonInteractive
 #else
 		liftIO $ foreground Nothing runNonInteractive	

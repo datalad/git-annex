@@ -52,7 +52,8 @@ daemonize cmd params openlogfd pidfile changedirectory a = do
 			maybe noop lockPidFile pidfile 
 			a
 		_ -> do
-			nullfd <- openFdWithMode (toRawFilePath "/dev/null") ReadOnly Nothing defaultFileFlags
+			nullfd <- openFdWithMode (toRawFilePath "/dev/null") ReadOnly Nothing defaultFileFlags 
+				(CloseOnExecFlag True)
 			redir nullfd stdInput
 			redirLog =<< openlogfd
 			environ <- getEnvironment
@@ -91,7 +92,8 @@ foreground pidfile a = do
 #endif
 
 {- Locks the pid file, with an exclusive, non-blocking lock,
- - and leaves it locked on return.
+ - and leaves it locked on return. The lock file is not closed on exec, so
+ - when daemonize runs the process again, it inherits it.
  -
  - Writes the pid to the file, fully atomically.
  - Fails if the pid file is already locked by another process. -}
@@ -99,9 +101,11 @@ lockPidFile :: OsPath -> IO ()
 lockPidFile pidfile = do
 #ifndef mingw32_HOST_OS
 	fd <- openFdWithMode (fromOsPath pidfile) ReadWrite (Just stdFileMode) defaultFileFlags
+		(CloseOnExecFlag False)
 	locked <- catchMaybeIO $ setLock fd (WriteLock, AbsoluteSeek, 0, 0)
-	fd' <- openFdWithMode (fromOsPath newfile) ReadWrite (Just stdFileMode) defaultFileFlags
-		{ trunc = True }
+	fd' <- openFdWithMode (fromOsPath newfile) ReadWrite (Just stdFileMode)
+		(defaultFileFlags { trunc = True })
+		(CloseOnExecFlag True)
 	locked' <- catchMaybeIO $ setLock fd' (WriteLock, AbsoluteSeek, 0, 0)
 	case (locked, locked') of
 		(Nothing, _) -> alreadyRunning
@@ -135,7 +139,10 @@ checkDaemon :: OsPath -> IO (Maybe PID)
 checkDaemon pidfile = bracket setup cleanup go
   where
 	setup = catchMaybeIO $
-		openFdWithMode (fromOsPath pidfile) ReadOnly (Just stdFileMode) defaultFileFlags
+		openFdWithMode (fromOsPath pidfile) ReadOnly
+			(Just stdFileMode) 
+			defaultFileFlags
+			(CloseOnExecFlag True)
 	cleanup (Just fd) = closeFd fd
 	cleanup Nothing = return ()
 	go (Just fd) = catchDefaultIO Nothing $ do

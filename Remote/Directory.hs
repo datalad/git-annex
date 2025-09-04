@@ -471,9 +471,11 @@ retrieveExportWithContentIdentifierM ii dir cow loc cids dest gk p =
 	docopynoncow iv = do
 #ifndef mingw32_HOST_OS
 		let open = do
+			fd <- openFdWithMode f' ReadOnly Nothing
+				defaultFileFlags (CloseOnExecFlag True)
 			-- Need a duplicate fd for the post check.
-			fd <- openFdWithMode f' ReadOnly Nothing defaultFileFlags
 			dupfd <- dup fd
+			setFdOption dupfd CloseOnExec True
 			h <- fdToHandle fd
 			return (h, dupfd)
 		let close (h, dupfd) = do

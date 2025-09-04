@@ -1,6 +1,6 @@
 {- openFd wrapper to support old versions of unix package.
  -
- - Copyright 2023 Joey Hess <id@joeyh.name>
+ - Copyright 2023-2025 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -17,12 +17,17 @@ import System.Posix.Types
 
 import Utility.RawFilePath
 
-openFdWithMode :: RawFilePath -> OpenMode -> Maybe FileMode -> OpenFileFlags -> IO Fd
+newtype CloseOnExecFlag = CloseOnExecFlag Bool
+
+openFdWithMode :: RawFilePath -> OpenMode -> Maybe FileMode -> OpenFileFlags -> CloseOnExecFlag -> IO Fd
+openFdWithMode f openmode filemode flags (CloseOnExecFlag closeonexec) = do
 #if MIN_VERSION_unix(2,8,0)
-openFdWithMode f openmode filemode flags = 
-	openFd f openmode (flags { creat = filemode })
+	openFd f openmode (flags { creat = filemode, cloexec = closeonexec })
 #else
-openFdWithMode = openFd
+	fd <- openFd f openmode filemode flags
+	when closeonexec $
+		setFdOption fd CloseOnExec True
+	return fd
 #endif
 
 #endif

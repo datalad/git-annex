@@ -31,7 +31,7 @@ import Utility.FileSystemEncoding
  -}
 openFileBeingWritten :: RawFilePath -> IO Handle
 openFileBeingWritten f = do
-	fd <- openFdWithMode f ReadOnly Nothing defaultFileFlags
+	fd <- openFdWithMode f ReadOnly Nothing defaultFileFlags (CloseOnExecFlag True)
 	(fd', fdtype) <- mkFD (fromIntegral fd) ReadMode (Just (Stream, 0, 0)) False False
 	mkHandleFromFD fd' fdtype (fromRawFilePath f) ReadMode False Nothing
 

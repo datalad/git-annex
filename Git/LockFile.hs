@@ -53,12 +53,7 @@ openLock' lck = do
 #ifndef mingw32_HOST_OS
 	-- On unix, git simply uses O_EXCL
 	h <- openFdWithMode (fromOsPath lck) ReadWrite (Just 0O666)
-#if MIN_VERSION_unix(2,8,0)
-		(defaultFileFlags { exclusive = True, cloexec = True })
-#else
-		(defaultFileFlags { exclusive = True })
-	setFdOption h CloseOnExec True
-#endif
+		(defaultFileFlags { exclusive = True }) (CloseOnExecFlag True)
 #else
 	-- It's not entirely clear how git manages locking on Windows,
 	-- since it's buried in the portability layer, and different

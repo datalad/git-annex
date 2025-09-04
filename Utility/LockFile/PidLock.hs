@@ -210,7 +210,8 @@ linkToLock (Just _) src dest = do
 			let setup = do
 				fd <- openFdWithMode dest' WriteOnly
 					(Just $ combineModes readModes)
-					(defaultFileFlags {exclusive = True})
+					(defaultFileFlags { exclusive = True })
+					(CloseOnExecFlag True)
 				fdToHandle fd
 			let cleanup = hClose
 			let go h = readFile (fromOsPath src) >>= hPutStr h
