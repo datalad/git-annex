@@ -1,0 +1,70 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2025-09-04T17:37:56Z"
+ content="""
+All the fails now look like this:
+
+      mv: cannot move '.git/annex/othertmp/e3d80b70-6bfe-47.0/e3d80b70-6bfe-47' to '.git/annex/export.ex/e3d80b70-6bfe-47a1-830396-0-22d0f933': Device or resource busy
+      mv: cannot move '.git/annex/othertmp/e3d80b70-6bfe-47.0/e3d80b70-6bfe-47' to '.git/annex/export.ex/e3d80b70-6bfe-47a1-830396-1-22dea399': Device or resource busy
+      git-annex: renamePath:rename '.git/annex/othertmp/e3d80b70-6bfe-47.0/e3d80b70-6bfe-47' to '.git/annex/export.ex/e3d80b70-6bfe-47a1-8288-cf07f7e8bd7d': resource busy (Device or resource busy)
+
+This is the same kind of EBUSY problem as on the previous Beegfs bug report.
+In that report I hypothesized that Beegfs might not like an open file to be
+renamed. I'm not sure if we ever verified my fixes in that one fixed a
+problem with Beegfs, but it still seems like a good hypothesis.
+
+"export.ex/<uuid>" is a log file that git-annex uses to keep track of files
+that were part of a tree exported to a special remote, but that were excluded
+from the export by its preferred content settings. To populate that file,
+git-annex opens a temp file, writes to it as the export runs, then closes it
+and renames it.
+
+	openat(AT_FDCWD, ".git/annex/othertmp/cfd9e482-a5cc-42.0/cfd9e482-a5cc-42", O_WRONLY|O_CREAT|O_NOCTTY|O_NONBLOCK, 0666) = 14
+	...
+	close(14)                               = 0
+	rename(".git/annex/othertmp/cfd9e482-a5cc-42.0/cfd9e482-a5cc-42", ".git/annex/export.ex/cfd9e482-a5cc-4277-8ec1-954c5e95060f") = 0
+
+If the rename() fails, it falls back to trying "mv", which is why
+there are also "mv" errors in the transcript above. Anyway, I've verified
+the FD is closed before that point.
+
+But, the "..." includes some fork and exec. And this FD is never set
+close-on-exec! And the processes started while it's open include
+"git cat-file --batch", which is a long-running process that will
+still be left running when the rename happens.
+
+This was pretty surprising to me, I did not realize git-annex was generally
+leaking FDs to child processes in this way. It's easy to demonstrate with
+a simpler program:
+
+	joey@darkstar:~>cat >foo.hs <<EOF
+	import System.Process
+	import System.IO
+	
+	main = do
+	        h <- openFile "foo.x" WriteMode
+		hPutStrLn h "hello"
+	        callProcess "sh" ["-c", "ls -l /proc/self/fd"]
+	        hClose h
+	EOF
+	joey@darkstar:~>runghc foo.hs
+	total 0
+	lrwx------ 1 joey joey 64 Sep  4 14:11 0 -> /dev/pts/8
+	lrwx------ 1 joey joey 64 Sep  4 14:11 1 -> /dev/pts/8
+	l-wx------ 1 joey joey 64 Sep  4 14:11 11 -> /dev/tty
+	l-wx------ 1 joey joey 64 Sep  4 14:11 12 -> /home/joey/foo.x
+	lrwx------ 1 joey joey 64 Sep  4 14:11 2 -> /dev/pts/8
+	lr-x------ 1 joey joey 64 Sep  4 14:11 3 -> /proc/516659/fd
+
+So, really supporting this would mean auditing every file git-annex
+opens with openFile to see if the handle is ever passed to a child process,
+and otherwise making it use CloseOnExec. Probably openFile is never actually used to
+send a handle to a child process, so a version that just sets CloseOnExec could be
+written and switched to.
+
+I don't care a great deal about supporting Beegfs; it would be nice to support
+it in some of its less crazy configurations if possible. But not leaking FDs
+while running child processes seems like something that ought to be fixed for
+other reasons.
+"""]
