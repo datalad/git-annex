@@ -2,7 +2,7 @@
 
 links: [prior report/fix of testing on beegfs 4 years ago; different site/version](https://git-annex.branchable.com/projects/dandi/bugs-done/beegfs__58___init_tests_FAIL_resource_busy/)
 
-Currently I observed 35 tests failing
+Currently I observed 35 tests failing (now at a potential repronim reprocenter location)
 
 ```
 yarick@ducky:/data/mri_dicom/tmp/test-git-annex
@@ -79,3 +79,5 @@ upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 
+[[!meta author=yoh]]
+[[!tag projects/repronim]]
