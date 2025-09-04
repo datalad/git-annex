@@ -3,11 +3,14 @@
  subject="""comment 6"""
  date="2025-09-04T18:24:33Z"
  content="""
-Note that `openFile` is not the only one that would need to be dealt with.
-Also `withFile`, `openBinaryFile`, and `withBinaryFile`.
+`openFile` is not the only one that would need to be dealt with.
+Also `withFile`, `openBinaryFile`, `withBinaryFile`, `appendFile`,
+and `openTempFile`, `readFile, and `writeFile` (including `L.` versions).
 
-And, since none of those provide a way to set CloseOnExec, they would have
-to be changed to use `openFd` with CloseOnExec, and then mkHandleFromFD.
+Since none of those provide a way to set CloseOnExec, they would have
+to be changed to be implemented using `openFd` with CloseOnExec, and
+then mkHandleFromFD. Or rewritten to use
+<https://hackage.haskell.org/package/file-io-0.1.5/docs/src/System.File.OsPath.Internal.html#openFileWithCloseOnExec>
 
 I have checked and none of those are ever used to create a handle that is
 intentionally passed to a child process. The only uses of `handleToFd`
@@ -17,5 +20,7 @@ versions of all of those.
 
 Also there are a few uses of `openFd` that don't set CloseOnExec.
 
-And possibly also some libraries might open files, I don't know.
+There is also the problem that any haskell library that does anything
+with a file might use any of the above internally without setting
+close-on-exec.
 """]]

@@ -36,6 +36,7 @@ import Utility.FileMode
 import Utility.InodeCache
 import Utility.Tmp.Dir
 import Utility.CopyFile
+import Utility.OpenFd
 import qualified Database.Keys.Handle
 import qualified Utility.RawFilePath as R
 import qualified Utility.FileIO as F
@@ -447,8 +448,9 @@ isPointerFile f = catchDefaultIO Nothing $
 #else
 #if MIN_VERSION_unix(2,8,0)
 	let open = do
-		fd <- openFd (fromOsPath f) ReadOnly 
-			(defaultFileFlags { nofollow = True, cloexec = True })
+		fd <- openFdWithMode (fromOsPath f) ReadOnly Nothing
+			(defaultFileFlags { nofollow = True })
+			(CloseOnExecFlag True)
 		fdToHandle fd
 	in bracket open hClose readhandle
 #else
