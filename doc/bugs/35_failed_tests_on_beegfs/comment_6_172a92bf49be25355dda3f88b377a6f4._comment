@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2025-09-04T18:24:33Z"
+ content="""
+Note that `openFile` is not the only one that would need to be dealt with.
+Also `withFile`, `openBinaryFile`, and `withBinaryFile`.
+
+And, since none of those provide a way to set CloseOnExec, they would have
+to be changed to use `openFd` with CloseOnExec, and then mkHandleFromFD.
+
+I have checked and none of those are ever used to create a handle that is
+intentionally passed to a child process. The only uses of `handleToFd`
+result in a FD that gets dupped to another FD number, and dup() does not
+inherit the close-on-exec flag. So it should be safe to just write new
+versions of all of those.
+
+Also there are a few uses of `openFd` that don't set CloseOnExec.
+
+And possibly also some libraries might open files, I don't know.
+"""]]

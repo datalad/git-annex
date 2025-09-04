@@ -59,9 +59,7 @@ a simpler program:
 
 So, really supporting this would mean auditing every file git-annex
 opens with openFile to see if the handle is ever passed to a child process,
-and otherwise making it use CloseOnExec. Probably openFile is never actually used to
-send a handle to a child process, so a version that just sets CloseOnExec could be
-written and switched to.
+and otherwise making it use CloseOnExec.
 
 I don't care a great deal about supporting Beegfs; it would be nice to support
 it in some of its less crazy configurations if possible. But not leaking FDs
