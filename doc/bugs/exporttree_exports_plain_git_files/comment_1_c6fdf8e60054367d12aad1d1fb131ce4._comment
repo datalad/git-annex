@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-09-04T17:14:38Z"
+ content="""
+If I recall correctly, export initially only exported annexed files, but
+that was very surprising behavior to some people who use a mixture of
+files.
+
+And this is documented behavior:
+
+> Any files in the treeish that are stored on git will also be exported to
+> the special remote.
+
+The docs also say that the preferred content expression allows exluding
+annexed files, not that it does anything for non-annexed files.
+
+So I don't see how this is a bug. At most, it might be a feature request
+to have a way to exclude non-annexed files from the export.
+
+(I was curious if a preferred content of "not inbackend=GIT" happened to work,
+since internally these files are treated as a "GIT" backend type. It happens
+not to work as currently implemented. It could be made to work pretty easily,
+but "GIT" is currently an undocumented implementation detail and I don't know
+if I want to expose it as part of the interface.)
+
+Also, consider that import works symmetrically to export, and so if such a
+feature were implemented, it would make import skip files that annex.largefiles
+does not match.
+"""]]
