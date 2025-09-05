@@ -206,7 +206,7 @@ custom-setup
     time (>= 1.9.1),
     directory (>= 1.2.7.0),
     async,
-    utf8-string,
+    utf8-string (>= 1.0.0),
     Cabal (< 4.0)
 
 Executable git-annex
@@ -234,7 +234,7 @@ Executable git-annex
    IfElse,
    monad-logger (>= 0.3.10),
    free,
-   utf8-string,
+   utf8-string (>= 1.0.0),
    bytestring,
    text,
    sandi,

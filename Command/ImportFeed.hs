@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2013-2024 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -22,6 +22,7 @@ import Data.Time.Format
 import Data.Time.Calendar
 import Data.Time.LocalTime
 import Control.Concurrent.STM
+import Codec.Binary.UTF8.String (decodeString)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.ByteString as B
@@ -48,6 +49,7 @@ import Logs.MetaData
 import Annex.MetaData
 import Annex.FileMatcher
 import Annex.UntrustedFilePath
+import qualified Utility.FileIO as F
 import qualified Utility.RawFilePath as R
 import qualified Database.ImportFeed as Db
 
@@ -158,19 +160,16 @@ getFeed o url st =
 		| otherwise = get
 
 	get = withTmpFile (literalOsPath "feed") $ \tmpf h -> do
-		let tmpf' = fromRawFilePath $ fromOsPath tmpf
 		liftIO $ hClose h
-		ifM (downloadFeed url tmpf')
-			( parse tmpf'
+		ifM (downloadFeed url tmpf)
+			( parse tmpf
 			, do
 				recordfail
 				next $ feedProblem url
 					"downloading the feed failed"
 			)
 
-	-- Use parseFeedFromFile rather than reading the file
-	-- ourselves because it goes out of its way to handle encodings.
-	parse tmpf = liftIO (parseFeedFromFile tmpf) >>= \case
+	parse tmpf = liftIO (parseFeedFromFile' tmpf) >>= \case
 		Nothing -> debugfeedcontent tmpf "parsing the feed failed"
 		Just f -> do
 			case decodeBS $ fromFeedText $ getFeedTitle f of
@@ -183,7 +182,7 @@ getFeed o url st =
 					next $ return True
 	
 	debugfeedcontent tmpf msg = do
-		feedcontent <- liftIO $ readFileString (toOsPath tmpf)
+		feedcontent <- liftIO $ readFileString tmpf
 		fastDebug "Command.ImportFeed" $ unlines
 			[ "start of feed content"
 			, feedcontent
@@ -265,11 +264,11 @@ findDownloads u f = catMaybes $ map mk (feedItems f)
 		}
 
 {- Feeds change, so a feed download cannot be resumed. -}
-downloadFeed :: URLString -> FilePath -> Annex Bool
+downloadFeed :: URLString -> OsPath -> Annex Bool
 downloadFeed url f
 	| Url.parseURIRelaxed url == Nothing = giveup "invalid feed url"
 	| otherwise = Url.withUrlOptions Nothing $
-		Url.download nullMeterUpdate Nothing url (toOsPath f)
+		Url.download nullMeterUpdate Nothing url f
 
 startDownload :: AddUnlockedMatcher -> ImportFeedOptions -> Cache -> TMVar Bool -> ToDownload -> CommandStart
 startDownload addunlockedmatcher opts cache cv todownload = case location todownload of
@@ -645,3 +644,11 @@ feedState url = fromRepo $ gitAnnexFeedState $ fromUrl url Nothing False
  -}
 fromFeedText :: T.Text -> B.ByteString
 fromFeedText = TE.encodeUtf8
+
+{- Like Test.Feed.parseFeedFromFile, but ensures the close-on-exec bit is
+ - set when opening the file. -}
+parseFeedFromFile' :: OsPath -> IO (Maybe Feed)
+parseFeedFromFile' fp = parseFeedString <$> utf8readfile fp
+  where
+  	utf8readfile :: OsPath -> IO String
+	utf8readfile f = fmap decodeString (hGetContents =<< F.openBinaryFile f ReadMode)
