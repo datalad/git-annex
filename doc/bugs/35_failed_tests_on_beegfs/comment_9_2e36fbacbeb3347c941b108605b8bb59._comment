@@ -9,4 +9,7 @@ it does not need to be addressed for Beegfs.
 As far as general correctness goes, I've reported a bug upstream about it
 <https://github.com/haskell/directory/issues/203>, which I suspect they'll
 fix eventually since they have fixed similar problems before.
+
+Also filed <https://github.com/haskell/file-io/issues/44> which would avoid
+git-annex needing to reimplement a lot of this stuff.
 """]]
