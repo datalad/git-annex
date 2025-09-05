@@ -1,7 +1,10 @@
 {- This is a subset of the functions provided by file-io.
  -
+ - All exported functions set the close-on-exec flag.
+ -
  - When not building with file-io, this provides equvilant
- - RawFilePath versions.
+ - RawFilePath versions. Note that those versions do not currently
+ - set the close-on-exec flag.
  -
  - Since Prelude exports many of these as well, this needs to be imported
  - qualified.
@@ -33,7 +36,7 @@ module Utility.FileIO
 #ifdef WITH_OSPATH
 
 #ifndef mingw32_HOST_OS
-import System.File.OsPath
+import Utility.FileIO.CloseOnExec
 #else
 -- On Windows, System.File.OsPath does not handle UNC-style conversion itself,
 -- so that has to be done when calling it. See 
@@ -42,7 +45,7 @@ import Utility.Path.Windows
 import Utility.OsPath
 import System.IO (IO, Handle, IOMode)
 import Prelude (return)
-import qualified System.File.OsPath as O
+import qualified Utility.FileIO.CloseOnExec as O
 import qualified Data.ByteString as B
 import Control.Applicative
 
@@ -106,8 +109,7 @@ openTempFile p s = do
 #endif
 
 #else
--- When not building with OsPath, export RawFilePath versions
--- instead.
+-- RawFilePath versions
 import Utility.OsPath
 import Utility.FileSystemEncoding
 import System.IO (IO, Handle, IOMode)
