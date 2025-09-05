@@ -253,7 +253,7 @@ class AppveyorJob(BaseModel):
 class AppveyorBuild(BaseModel):
     buildId: int
     finished: datetime | None
-    started: datetime
+    started: datetime | None = None  # could have been canceled thus never started
     version: str
     status: str
     jobs: List[AppveyorJob]
@@ -272,7 +272,7 @@ class AppveyorBuild(BaseModel):
         return Counter(j.outcome for j in self.jobs)
 
     def as_html(self) -> str:
-        s = f'<p>{self.outcome.as_html()} <a href="{self.url}">{self.version}</a> {self.started}</p>\n<ul>\n'
+        s = f'<p>{self.outcome.as_html()} <a href="{self.url}">{self.version}</a> {self.started or self.status}</p>\n<ul>\n'
         for j in self.jobs:
             s += "<li>" + j.as_html(self.buildId) + "</li>\n"
         return s + "</ul>\n"
