@@ -213,7 +213,7 @@ createClient configdir furl = do
 
 writeSharedConvergenceSecret :: TahoeConfigDir -> SharedConvergenceSecret -> IO ()
 writeSharedConvergenceSecret configdir scs = 
-	writeFile (fromOsPath (convergenceFile configdir))
+	writeFileString (convergenceFile configdir)
 		(unlines [scs])
 
 {- The tahoe daemon writes the convergenceFile shortly after it starts
@@ -223,11 +223,11 @@ writeSharedConvergenceSecret configdir scs =
 getSharedConvergenceSecret :: TahoeConfigDir -> IO SharedConvergenceSecret
 getSharedConvergenceSecret configdir = go (60 :: Int)
   where
-	f = fromOsPath $ convergenceFile configdir
+	f = convergenceFile configdir
 	go n
-		| n == 0 = giveup $ "tahoe did not write " ++ f ++ " after 1 minute. Perhaps the daemon failed to start?"
+		| n == 0 = giveup $ "tahoe did not write " ++ fromOsPath f ++ " after 1 minute. Perhaps the daemon failed to start?"
 		| otherwise = do
-			v <- catchMaybeIO (readFile f)
+			v <- catchMaybeIO (readFileString f)
 			case v of
 				Just s | "\n" `isSuffixOf` s || "\r" `isSuffixOf` s ->
 					return $ takeWhile (`notElem` ("\n\r" :: String)) s

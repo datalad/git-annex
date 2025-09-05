@@ -79,7 +79,7 @@ newAssistantUrl repo = do
 		r <- Git.Config.read =<< Git.Construct.fromPath repo
 		waiturl $ gitAnnexUrlFile r
 	waiturl urlfile = do
-		v <- tryIO $ readFile (fromOsPath urlfile)
+		v <- tryIO $ readFileString urlfile
 		case v of
 			Left _ -> delayed $ waiturl urlfile
 			Right url -> ifM (assistantListening url)

@@ -224,8 +224,8 @@ genSshKeyPair = withTmpDir (literalOsPath "git-annex-keygen") $ \dir -> do
 	unless ok $
 		giveup "ssh-keygen failed"
 	SshKeyPair
-		<$> readFile (fromOsPath (dir </> literalOsPath "key.pub"))
-		<*> readFile (fromOsPath (dir </> literalOsPath "key"))
+		<$> readFileString (dir </> literalOsPath "key.pub")
+		<*> readFileString (dir </> literalOsPath "key")
 
 {- Installs a ssh key pair, and sets up ssh config with a mangled hostname
  - that will enable use of the key. This way we avoid changing the user's
@@ -255,7 +255,7 @@ installSshKeyPair sshkeypair sshdata = do
 		writeFileProtected (sshdir </> sshPrivKeyFile sshdata)
 			(sshPrivKey sshkeypair)
 	unlessM (doesFileExist $ sshdir </> sshPubKeyFile sshdata) $
-		writeFile (fromOsPath (sshdir </> sshPubKeyFile sshdata))
+		writeFileString (sshdir </> sshPubKeyFile sshdata)
 			(sshPubKey sshkeypair)
 
 	setSshConfig sshdata
@@ -277,8 +277,10 @@ sshPubKeyFile sshdata = sshPrivKeyFile sshdata <> literalOsPath ".pub"
 setupSshKeyPair :: SshData -> IO (SshData, SshKeyPair)
 setupSshKeyPair sshdata = do
 	sshdir <- sshDir
-	mprivkey <- catchMaybeIO $ readFile (fromOsPath (sshdir </> sshPrivKeyFile sshdata))
-	mpubkey <- catchMaybeIO $ readFile (fromOsPath (sshdir </> sshPubKeyFile sshdata))
+	mprivkey <- catchMaybeIO $ readFileString
+		(sshdir </> sshPrivKeyFile sshdata)
+	mpubkey <- catchMaybeIO $ readFileString
+		(sshdir </> sshPubKeyFile sshdata)
 	keypair <- case (mprivkey, mpubkey) of
 		(Just privkey, Just pubkey) -> return $ SshKeyPair
 			{ sshPubKey = pubkey
@@ -330,15 +332,15 @@ setSshConfig :: SshData -> [(String, String)] -> IO SshData
 setSshConfig sshdata config = do
 	sshdir <- sshDir
 	createDirectoryIfMissing True sshdir
-	let configfile = fromOsPath (sshdir </> literalOsPath "config")
-	unlessM (catchBoolIO $ isInfixOf mangledhost <$> readFile configfile) $ do
-		appendFile configfile $ unlines $
+	let configfile = sshdir </> literalOsPath "config"
+	unlessM (catchBoolIO $ isInfixOf mangledhost <$> readFileString configfile) $ do
+		appendFileString configfile $ unlines $
 			[ ""
 			, "# Added automatically by git-annex"
 			, "Host " ++ mangledhost
 			] ++ map (\(k, v) -> "\t" ++ k ++ " " ++ v)
 				(settings ++ config)
-		setSshConfigMode (toOsPath configfile)
+		setSshConfigMode configfile
 
 	return $ sshdata
 		{ sshHostName = T.pack mangledhost

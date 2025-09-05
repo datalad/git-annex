@@ -160,7 +160,7 @@ upgradeToDistribution newdir cleanup distributionfile = do
 		unlessM (boolSystem (fromOsPath program) [Param "version"]) $
 			giveup "New git-annex program failed to run! Not using."
 		pf <- programFile
-		liftIO $ writeFile (fromOsPath pf) (fromOsPath program)
+		liftIO $ writeFileString pf (fromOsPath program)
 	
 #ifdef darwin_HOST_OS
 	{- OS X uses a dmg, so mount it, and copy the contents into place. -}
@@ -281,7 +281,7 @@ installBase = "git-annex." ++
 deleteFromManifest :: OsPath -> IO ()
 deleteFromManifest dir = do
 	fs <- map (\f -> dir </> toOsPath f) . lines 
-		<$> catchDefaultIO "" (readFile (fromOsPath manifest))
+		<$> catchDefaultIO "" (readFileString manifest)
 	mapM_ (removeWhenExistsWith removeFile) fs
 	removeWhenExistsWith removeFile manifest
 	removeEmptyRecursive dir

@@ -71,7 +71,7 @@ connectHiddenService (OnionAddress address) port = do
 addHiddenService :: AppName -> UserID -> UniqueIdent -> IO (OnionAddress, OnionPort)
 addHiddenService appname uid ident = do
 	prepHiddenServiceSocketDir appname uid ident
-	ls <- lines <$> (readFile . fromOsPath =<< findTorrc)
+	ls <- lines <$> (readFileString =<< findTorrc)
 	let portssocks = mapMaybe (parseportsock . separate isSpace) ls
 	case filter (\(_, s) -> s == fromOsPath sockfile) portssocks of
 		((p, _s):_) -> waithiddenservice 1 p
@@ -80,7 +80,7 @@ addHiddenService appname uid ident = do
 			let newport = fromMaybe (error "internal") $ headMaybe $
 				filter (`notElem` map fst portssocks) highports
 			torrc <- findTorrc
-			writeFile (fromOsPath torrc) $ unlines $
+			writeFileString torrc $ unlines $
 				ls ++
 				[ ""
 				, "HiddenServiceDir " ++ fromOsPath (hiddenServiceDir appname uid ident)
@@ -112,7 +112,7 @@ addHiddenService appname uid ident = do
 	waithiddenservice :: Int -> OnionPort -> IO (OnionAddress, OnionPort)
 	waithiddenservice 0 _ = giveup "tor failed to create hidden service, perhaps the tor service is not running"
 	waithiddenservice n p = do
-		v <- tryIO $ readFile $ fromOsPath $
+		v <- tryIO $ readFileString $
 			hiddenServiceHostnameFile appname uid ident
 		case v of
 			Right s | ".onion\n" `isSuffixOf` s ->
@@ -152,7 +152,7 @@ hiddenServiceSocketFile appname uid ident =
 getHiddenServiceSocketFile :: AppName -> UserID -> UniqueIdent -> IO (Maybe OsPath)
 getHiddenServiceSocketFile _appname uid ident = 
 	parse . map words . lines <$> catchDefaultIO "" 
-		(readFile . fromOsPath =<< findTorrc)
+		(readFileString =<< findTorrc)
   where
 	parse [] = Nothing
 	parse (("HiddenServiceDir":hsdir:[]):("HiddenServicePort":_hsport:hsaddr:[]):rest)

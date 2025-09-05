@@ -263,7 +263,7 @@ writeTransferInfoFile info tfile = writeLogFile tfile $ writeTransferInfo info
 -- after it's been created with the right perms by writeTransferInfoFile.
 updateTransferInfoFile :: TransferInfo -> OsPath -> IO ()
 updateTransferInfoFile info tfile = 
-	writeFile (fromOsPath tfile) $ writeTransferInfo info
+	writeFileString tfile $ writeTransferInfo info
 
 {- File format is a header line containing the startedTime and any
  - bytesComplete value. Followed by a newline and the associatedFile.

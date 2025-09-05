@@ -110,7 +110,7 @@ fileLines' = map stripCR . S8.lines
 fileLines' = S8.lines
 #endif
 
--- One windows, writeFile does NewlineMode translation,
+-- On windows, writeFile does NewlineMode translation,
 -- adding CR before LF. When converting to ByteString, use this to emulate that.
 linesFile :: L.ByteString -> L.ByteString
 #ifndef mingw32_HOST_OS

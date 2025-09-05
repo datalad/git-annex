@@ -1,6 +1,7 @@
 {- Tests the system and generates SysConfig. -}
 
 {-# OPTIONS_GHC -fno-warn-tabs #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Build.TestConfig where
 
@@ -9,6 +10,7 @@ import Utility.Monad
 import Utility.SafeCommand
 import Utility.SystemDirectory
 import Utility.OsPath
+import qualified Utility.FileIO as F
 
 import System.IO
 
@@ -42,7 +44,7 @@ instance Show Config where
 		valuetype (MaybeBoolConfig _) = "Maybe Bool"
 
 writeSysConfig :: [Config] -> IO ()
-writeSysConfig config = writeFile "Build/SysConfig" body
+writeSysConfig config = F.writeFileString (literalOsPath "Build/SysConfig") body
   where
 	body = unlines $ header ++ map show config ++ footer
 	header = [
@@ -100,12 +102,16 @@ findCmdPath k command = do
 	ifM (inSearchPath command)
 		( return $ Config k $ MaybeStringConfig $ Just command
 		, do
-			r <- getM find ["/usr/sbin", "/sbin", "/usr/local/sbin"]
+			r <- getM find
+				[ literalOsPath "/usr/sbin"
+				, literalOsPath "/sbin"
+				, literalOsPath "/usr/local/sbin"
+				]
 			return $ Config k $ MaybeStringConfig r
 		)
   where
 	find d =
-		let f = toOsPath d </> toOsPath command
+		let f = d </> toOsPath command
 		in ifM (doesFileExist f)
 			( return (Just (fromOsPath f))
 			, return Nothing

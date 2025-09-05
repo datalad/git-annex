@@ -43,6 +43,7 @@ import Utility.Exception
 import Utility.Directory
 import Utility.SystemDirectory
 import Utility.OsPath
+import qualified Utility.FileIO as F
 import Build.BundledPrograms
 
 main = do
@@ -55,11 +56,11 @@ main = do
 		mustSucceed "sh" [Param "-c", Param $ "zcat standalone/licences.gz > '" ++ license ++ "'"]
 		webappscript <- vbsLauncher tmpdir "git-annex-webapp" "git annex webapp"
 		autostartscript <- vbsLauncher tmpdir "git-annex-autostart" "git annex assistant --autostart"
-		let htmlhelp = fromOsPath $ tmpdir </> literalOsPath "git-annex.html"
-		writeFile htmlhelp htmlHelpText
-		let gitannexcmd = fromOsPath $ tmpdir </> literalOsPath "git-annex.cmd"
-		writeFile gitannexcmd "git annex %*"
-		writeFile nsifile $ makeInstaller
+		let htmlhelp = tmpdir </> literalOsPath "git-annex.html"
+		F.writeFileString htmlhelp htmlHelpText
+		let gitannexcmd = tmpdir </> literalOsPath "git-annex.cmd"
+		F.writeFileString gitannexcmd "git annex %*"
+		F.writeFileString (toOsPath nsifile) $ makeInstaller
 			gitannex gitannexcmd license htmlhelp (winPrograms ++ magicDLLs') magicShare'
 			[ webappscript, autostartscript ]
 		mustSucceed "makensis" [File nsifile]
@@ -85,13 +86,13 @@ main = do
  - box. It expects to be passed the directory where git-annex is installed. -}
 vbsLauncher :: OsPath -> String -> String -> IO String
 vbsLauncher tmpdir basename cmd = do
-	let f = fromOsPath $ tmpdir </> toOsPath (basename ++ ".vbs")
-	writeFile f $ unlines
+	let f = tmpdir </> toOsPath (basename ++ ".vbs")
+	F.writeFileString f $ unlines
 		[ "Set objshell=CreateObject(\"Wscript.Shell\")"
 		, "objShell.CurrentDirectory = Wscript.Arguments.item(0)"
 		, "objShell.Run(\"" ++ cmd ++ "\"), 0, False"
 		]
-	return f
+	return (fromOsPath f)
 
 gitannexprogram :: FilePath
 gitannexprogram = "git-annex.exe"

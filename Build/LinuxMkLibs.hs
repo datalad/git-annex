@@ -29,6 +29,7 @@ import Utility.FileMode
 import Utility.CopyFile
 import Utility.SystemDirectory
 import qualified Utility.OsString as OS
+import qualified Utility.FileIO as F
 
 mklibs :: OsPath -> a -> IO Bool
 mklibs top _installedbins = do
@@ -47,9 +48,9 @@ mklibs top _installedbins = do
 
 	-- Various files used by runshell to set up env vars used by the
 	-- linker shims.
-	writeFile (fromOsPath (top </> literalOsPath "libdirs"))
+	F.writeFileString (top </> literalOsPath "libdirs")
 		(unlines (map fromOsPath libdirs'))
-	writeFile (fromOsPath (top </> literalOsPath "gconvdir")) $
+	F.writeFileString (top </> literalOsPath "gconvdir") $
 		case gconvlibs of
 			[] -> ""
 			(p:_) -> fromOsPath (parentDir p)
@@ -171,7 +172,7 @@ installLinkerShim top linker exe = do
 	link <- relPathDirToFile (top </> exedir) (top <> linker)
 	unlessM (doesFileExist (top </> exelink)) $
 		createSymbolicLink (fromOsPath link) (fromOsPath (top </> exelink))
-	writeFile (fromOsPath exe) $ unlines
+	F.writeFileString exe $ unlines
 		[ "#!/bin/sh"
 		, "exec \"$GIT_ANNEX_DIR/" ++ fromOsPath exelink ++ "\" --library-path \"$GIT_ANNEX_LD_LIBRARY_PATH\" \"$GIT_ANNEX_DIR/shimmed/" ++ fromOsPath base ++ "/" ++ fromOsPath base ++ "\" \"$@\""
 		]

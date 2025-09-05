@@ -55,7 +55,7 @@ start = startingNoMessage (ActionItemOther Nothing) $ do
 				<$> fromRepo gitAnnexDir
 				<*> pure (literalOsPath "map.dot")
 
-			liftIO $ writeFile (fromOsPath file) (drawMap rs trustmap umap)
+			liftIO $ writeFileString file (drawMap rs trustmap umap)
 			next $
 				ifM (Annex.getRead Annex.fast)
 					( runViewer file []

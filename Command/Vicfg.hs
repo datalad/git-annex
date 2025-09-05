@@ -49,7 +49,7 @@ start = do
 	createAnnexDirectory $ parentDir f
 	cfg <- getCfg
 	descs <- uuidDescriptions
-	liftIO $ writeFile (fromOsPath f) $ genCfg cfg descs
+	liftIO $ writeFileString f $ genCfg cfg descs
 	vicfg cfg f
 	stop
 
@@ -65,7 +65,7 @@ vicfg curcfg f = do
 	liftIO $ removeWhenExistsWith removeFile f
 	case r of
 		Left s -> do
-			liftIO $ writeFile (fromOsPath f) s
+			liftIO $ writeFileString f s
 			vicfg curcfg f
 		Right newcfg -> setCfg curcfg newcfg
   where

@@ -23,7 +23,7 @@ installAutoStart :: String -> OsPath -> IO ()
 installAutoStart command file = do
 #ifdef darwin_HOST_OS
 	createDirectoryIfMissing True (parentDir file)
-	writeFile (fromOsPath file) $ genOSXAutoStartFile osxAutoStartLabel command
+	writeFileString file $ genOSXAutoStartFile osxAutoStartLabel command
 		["assistant", "--autostart"]
 #else
 	writeDesktopMenuFile (fdoAutostart command) file

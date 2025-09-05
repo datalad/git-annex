@@ -49,13 +49,13 @@ openTmpFileIn dir template = F.openTempFile dir template
 		let loc = ioeGetLocation e ++ " template " ++ decodeBS (fromOsPath template)
 		in annotateIOError e loc Nothing Nothing
 
-{- Runs an action like writeFile, writing to a temp file first and
+{- Runs an action like writeFileString, writing to a temp file first and
  - then moving it into place. The temp file is stored in the same
  - directory as the final file to avoid cross-device renames.
  -
  - While this uses a temp file, the file will end up with the same
- - mode as it would when using writeFile, unless the writer action changes
- - it.
+ - mode as it would when using writeFileString, unless the writer action
+ - changes it.
  -}
 viaTmp :: (MonadMask m, MonadIO m) => (OsPath -> v -> m ()) -> OsPath -> v -> m ()
 viaTmp a file content = bracketIO setup cleanup use

@@ -148,7 +148,7 @@ makeinfos updated changelogversion = do
 					, distributionReleasedate = now
 					, distributionUrgentUpgrade = Just "6.20180626"
 					}
-				liftIO $ writeFile (fromOsPath infofile) $ formatInfoFile d
+				liftIO $ writeFileString infofile $ formatInfoFile d
 				void $ inRepo $ runBool [Param "add", File (fromOsPath infofile)]
 				signFile infofile
 				signFile f
@@ -173,7 +173,7 @@ makeinfos updated changelogversion = do
 	-- Check for out of date info files.
 	infos <- liftIO $ filter (literalOsPath ".info" `OS.isSuffixOf`)
 		<$> emptyWhenDoesNotExist (dirContentsRecursive $ literalOsPath "git-annex")
-	ds <- liftIO $ forM infos (readish <$$> readFile . fromOsPath)
+	ds <- liftIO $ forM infos (readish <$$> readFileString)
 	let dis = zip infos ds
 	let ood = filter outofdate dis
 	return ood

@@ -32,4 +32,4 @@ programFile = userConfigFile (literalOsPath "program")
 noAnnexFileContent :: Maybe OsPath -> IO (Maybe String)
 noAnnexFileContent repoworktree = case repoworktree of
 	Nothing -> return Nothing
-	Just wt -> catchMaybeIO (readFile (fromOsPath (wt </> literalOsPath ".noannex")))
+	Just wt -> catchMaybeIO (readFileString (wt </> literalOsPath ".noannex"))

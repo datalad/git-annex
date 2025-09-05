@@ -34,7 +34,7 @@ getLicenseR = do
 		Just f -> customPage (Just About) $ do
 			-- no sidebar, just pages of legalese..
 			setTitle "License"
-			license <- liftIO $ readFile (fromOsPath f)
+			license <- liftIO $ readFileString f
 			$(widgetFile "documentation/license")
 
 getRepoGroupR :: Handler Html

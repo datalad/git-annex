@@ -55,7 +55,7 @@ streamRestageLog finalizer processor = do
 			ifM (doesPathExist oldf)
 				( do
 					h <- F.openFile oldf AppendMode
-					hPutStr h =<< readFile (fromOsPath logf)
+					hPutStr h =<< readFileString logf
 					hClose h
 					liftIO $ removeWhenExistsWith removeFile logf
 				, moveFile logf oldf

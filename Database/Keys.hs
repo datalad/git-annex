@@ -264,7 +264,7 @@ reconcileStaged dbisnew qh = ifM isBareRepo
 	( return mempty
 	, do
 		gitindex <- inRepo currentIndexFile
-		indexcache <- fromOsPath <$> calcRepo' gitAnnexKeysDbIndexCache
+		indexcache <- calcRepo' gitAnnexKeysDbIndexCache
 		withTSDelta (liftIO . genInodeCache gitindex) >>= \case
 			Just cur -> readindexcache indexcache >>= \case
 				Nothing -> go cur indexcache =<< getindextree
@@ -278,7 +278,7 @@ reconcileStaged dbisnew qh = ifM isBareRepo
 	lastindexref = Ref "refs/annex/last-index"
 
 	readindexcache indexcache = liftIO $ maybe Nothing readInodeCache
-		<$> catchMaybeIO (readFile indexcache)
+		<$> catchMaybeIO (readFileString indexcache)
 
 	getoldtree = fromMaybe emptyTree <$> inRepo (Git.Ref.sha lastindexref)
 	
@@ -292,7 +292,7 @@ reconcileStaged dbisnew qh = ifM isBareRepo
 					(Just (fromRef oldtree)) 
 					(fromRef newtree)
 					(procdiff mdfeeder)
-			liftIO $ writeFile indexcache $ showInodeCache cur
+			liftIO $ writeFileString indexcache $ showInodeCache cur
 			-- Storing the tree in a ref makes sure it does not
 			-- get garbage collected, and is available to diff
 			-- against next time.

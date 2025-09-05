@@ -41,6 +41,7 @@ import Utility.Env.Set
 import Utility.Tmp
 import Utility.RawFilePath
 import Utility.OsPath
+import qualified Utility.FileIO as F
 import qualified Utility.LockFile.Posix as Posix
 
 import System.IO
@@ -77,7 +78,7 @@ mkPidLock = PidLock
 
 readPidLock :: PidLockFile -> IO (Maybe PidLock)
 readPidLock lockfile = (readish =<<)
-	<$> catchMaybeIO (readFile (fromOsPath lockfile))
+	<$> catchMaybeIO (F.readFileString lockfile)
 
 -- To avoid races when taking over a stale pid lock, a side lock is used.
 -- This is a regular posix exclusive lock.
@@ -214,7 +215,7 @@ linkToLock (Just _) src dest = do
 					(CloseOnExecFlag True)
 				fdToHandle fd
 			let cleanup = hClose
-			let go h = readFile (fromOsPath src) >>= hPutStr h
+			let go h = F.readFileString src >>= hPutStr h
 			bracket setup cleanup go
 			getFileStatus dest'
   where

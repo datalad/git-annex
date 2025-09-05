@@ -65,7 +65,7 @@ programPath = go =<< getEnv "GIT_ANNEX_DIR"
 readProgramFile :: IO (Maybe OsPath)
 readProgramFile = catchDefaultIO Nothing $ do
 	programfile <- programFile
-	fmap toOsPath . headMaybe . lines <$> readFile (fromOsPath programfile)
+	fmap toOsPath . headMaybe . lines <$> readFileString programfile
 
 cannotFindProgram :: IO a
 cannotFindProgram = do

@@ -136,7 +136,7 @@ updateSmudgeFilter = do
 		<$> catchDefaultIO "" (F.readFile' lf)
 	let ls' = removedotfilter ls
 	when (ls /= ls') $
-		liftIO $ writeFile (fromOsPath lf) (unlines ls')
+		liftIO $ writeFileString lf (unlines ls')
   where
 	removedotfilter ("* filter=annex":".* !filter":rest) =
 		"* filter=annex" : removedotfilter rest

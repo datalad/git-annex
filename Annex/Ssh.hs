@@ -484,4 +484,4 @@ sshAskPassEnv :: String
 sshAskPassEnv = "GIT_ANNEX_SSHASKPASS"
 
 runSshAskPass :: FilePath -> IO ()
-runSshAskPass passfile = putStrLn =<< readFile passfile
+runSshAskPass passfile = putStrLn =<< readFileString (toOsPath passfile)

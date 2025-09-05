@@ -234,7 +234,7 @@ noTSDelta = TSDelta (pure 0)
 writeSentinalFile :: SentinalFile -> IO ()
 writeSentinalFile s = do
 	F.writeFile' (sentinalFile s) mempty
-	maybe noop (writeFile (fromOsPath (sentinalCacheFile s)) . showInodeCache)
+	maybe noop (writeFileString (sentinalCacheFile s) . showInodeCache)
 		=<< genInodeCache (sentinalFile s) noTSDelta
 
 data SentinalStatus = SentinalStatus
@@ -263,7 +263,7 @@ checkSentinalFile s = do
 				Just new -> return $ calc old new
   where
 	loadoldcache = catchDefaultIO Nothing $
-		readInodeCache <$> readFile (fromOsPath (sentinalCacheFile s))
+		readInodeCache <$> readFileString (sentinalCacheFile s)
 	gennewcache = genInodeCache (sentinalFile s) noTSDelta
 	calc (InodeCache (InodeCachePrim oldinode oldsize oldmtime)) (InodeCache (InodeCachePrim newinode newsize newmtime)) =
 		SentinalStatus (not unchanged) tsdelta

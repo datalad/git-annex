@@ -280,7 +280,7 @@ adjustGitDirFile loc = fromMaybe loc <$> adjustGitDirFile' loc
 adjustGitDirFile' :: RepoLocation -> IO (Maybe RepoLocation)
 adjustGitDirFile' loc@(Local {}) = do
 	let gd = gitdir loc
-	c <- firstLine <$> catchDefaultIO "" (readFile (fromOsPath gd))
+	c <- firstLine <$> catchDefaultIO "" (readFileString gd)
 	if gitdirprefix `isPrefixOf` c
 		then do
 			top <- takeDirectory <$> absPath gd

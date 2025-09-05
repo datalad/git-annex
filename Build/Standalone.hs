@@ -180,19 +180,19 @@ installSkel topdir _basedir = do
 installSkelRest :: OsPath -> OsPath -> Bool -> IO ()
 #ifdef darwin_HOST_OS
 installSkelRest _topdir basedir _hwcaplibs = do
-	plist <- lines <$> readFile "standalone/osx/Info.plist.template"
+	plist <- lines <$> F.readFileString (literalOsPath "standalone/osx/Info.plist.template")
 	version <- getVersion
-	writeFile (fromOsPath (basedir </> literalOsPath "Contents" </> literalOsPath "Info.plist"))
+	F.writeFileString (basedir </> literalOsPath "Contents" </> literalOsPath "Info.plist")
 		(unlines (map (expandversion version) plist))
   where
 	expandversion v l = replace "GIT_ANNEX_VERSION" v l
 #else
 installSkelRest topdir _basedir hwcaplibs = do
-	runshell <- lines <$> readFile "standalone/linux/skel/runshell"
+	runshell <- lines <$> F.readFileString (literalOsPath "standalone/linux/skel/runshell")
 	-- GIT_ANNEX_PACKAGE_INSTALL can be set by a distributor and
 	-- runshell will be modified
 	gapi <- getEnv "GIT_ANNEX_PACKAGE_INSTALL"
-	writeFile (fromOsPath (topdir </> literalOsPath "runshell"))
+	F.writeFileString (topdir </> literalOsPath "runshell")
 		(unlines (map (expandrunshell gapi) runshell))
 	modifyFileMode
 		(topdir </> literalOsPath "runshell")

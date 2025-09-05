@@ -269,7 +269,7 @@ explodePackedRefsFile r = do
 		let dest = gitd </> toOsPath (fromRef' ref)
 		createDirectoryUnder [gitd] (parentDir dest)
 		unlessM (doesFileExist dest) $
-			writeFile (fromOsPath dest) (fromRef sha)
+			writeFileString dest (fromRef sha)
 
 packedRefsFile :: Repo -> OsPath
 packedRefsFile r = localGitDir r </> literalOsPath "packed-refs"
@@ -472,7 +472,7 @@ preRepair :: Repo -> IO ()
 preRepair g = do
 	unlessM (validhead <$> catchDefaultIO "" (decodeBS <$> safeReadFile headfile)) $ do
 		removeWhenExistsWith removeFile headfile
-		writeFile (fromOsPath headfile) "ref: refs/heads/master"
+		writeFileString headfile "ref: refs/heads/master"
 	explodePackedRefsFile g
 	unless (repoIsLocalBare g) $
 		void $ tryIO $ allowWrite $ indexFile g

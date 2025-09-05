@@ -74,7 +74,7 @@ install command = do
 		, do
 			programfile <- inDestDir =<< programFile
 			createDirectoryIfMissing True (parentDir programfile)
-			writeFile (fromOsPath programfile) command
+			writeFileString programfile command
 		)
 
 installUser :: FilePath -> IO ()

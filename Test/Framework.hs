@@ -391,7 +391,7 @@ checkexists f =
 
 checkcontent :: FilePath -> Assertion
 checkcontent f = do
-	c <- Utility.Exception.catchDefaultIO "could not read file" $ readFile f
+	c <- Utility.Exception.catchDefaultIO "could not read file" $ readFileString (toOsPath f)
 	assertEqual ("checkcontent " ++ f) (content f) c
 
 checkunwritable :: FilePath -> Assertion
@@ -415,7 +415,7 @@ checkdangling :: FilePath -> Assertion
 checkdangling f = ifM (annexeval Config.crippledFileSystem)
 	( return () -- probably no real symlinks to test
 	, do
-		r <- tryIO $ readFile f
+		r <- tryIO $ readFileString (toOsPath f)
 		case r of
 			Left _ -> return () -- expected; dangling link
 			Right _ -> assertFailure $ f ++ " was not a dangling link as expected"
@@ -675,9 +675,10 @@ writecontent :: FilePath -> String -> IO ()
 writecontent f c = go (10000000 :: Integer)
   where
 	go ticsleft = do
-		oldmtime <- catchMaybeIO $ getModificationTime (toOsPath f)
-		writeFile f c
-		newmtime <- getModificationTime (toOsPath f)
+		let f' = toOsPath f
+		oldmtime <- catchMaybeIO $ getModificationTime f'
+		writeFileString f' c
+		newmtime <- getModificationTime f'
 		if Just newmtime == oldmtime
 			then do
 				threadDelay 100000

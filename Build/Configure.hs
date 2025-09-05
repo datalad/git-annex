@@ -12,6 +12,7 @@ import Utility.Env.Basic
 import qualified Git.Version
 import Utility.SystemDirectory
 import Utility.OsPath
+import qualified Utility.FileIO as F
 
 import Control.Monad
 import Control.Applicative
@@ -93,7 +94,7 @@ getSshConnectionCaching = Config "sshconnectioncaching" . BoolConfig <$>
 setup :: IO ()
 setup = do
 	createDirectoryIfMissing True (toOsPath tmpDir)
-	writeFile testFile "test file contents"
+	F.writeFileString (toOsPath testFile) "test file contents"
 
 cleanup :: IO ()
 cleanup = removeDirectoryRecursive (toOsPath tmpDir)

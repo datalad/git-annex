@@ -18,7 +18,7 @@ readAutoStartFile :: IO [OsPath]
 readAutoStartFile = do
 	f <- autoStartFile
 	filter valid . nub . map (dropTrailingPathSeparator . toOsPath) . lines
-		<$> catchDefaultIO "" (readFile (fromOsPath f))
+		<$> catchDefaultIO "" (readFileString f)
   where
 	-- Ignore any relative paths; some old buggy versions added eg "."
 	valid = isAbsolute
@@ -30,7 +30,7 @@ modifyAutoStartFile func = do
 	when (dirs' /= dirs) $ do
 		f <- autoStartFile
 		createDirectoryIfMissing True (parentDir f)
-		viaTmp (writeFile . fromRawFilePath . fromOsPath) f
+		viaTmp writeFileString f
 			(unlines (map fromOsPath dirs'))
 
 {- Adds a directory to the autostart file. If the directory is already

@@ -178,7 +178,7 @@ runFuzzAction :: FuzzAction -> Annex ()
 runFuzzAction (FuzzAdd (FuzzFile f)) = do
 	createWorkTreeDirectory (parentDir (toOsPath f))
 	n <- liftIO (getStdRandom random :: IO Int)
-	liftIO $ writeFile f $ show n ++ "\n"
+	liftIO $ writeFileString (toOsPath f) $ show n ++ "\n"
 runFuzzAction (FuzzDelete (FuzzFile f)) = liftIO $
 	removeWhenExistsWith removeFile (toOsPath f)
 runFuzzAction (FuzzMove (FuzzFile src) (FuzzFile dest)) = liftIO $

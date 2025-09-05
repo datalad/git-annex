@@ -183,7 +183,7 @@ getFeed o url st =
 					next $ return True
 	
 	debugfeedcontent tmpf msg = do
-		feedcontent <- liftIO $ readFile tmpf
+		feedcontent <- liftIO $ readFileString (toOsPath tmpf)
 		fastDebug "Command.ImportFeed" $ unlines
 			[ "start of feed content"
 			, feedcontent
@@ -611,7 +611,7 @@ checkFeedBroken url = checkFeedBroken' url =<< feedState url
 checkFeedBroken' :: URLString -> OsPath -> Annex Bool
 checkFeedBroken' url f = do
 	prev <- maybe Nothing readish
-		<$> liftIO (catchMaybeIO $ readFile (fromOsPath f))
+		<$> liftIO (catchMaybeIO $ readFileString f)
 	now <- liftIO getCurrentTime
 	case prev of
 		Nothing -> do

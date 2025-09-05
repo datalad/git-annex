@@ -1356,16 +1356,15 @@ suspendSim st = do
 	let st'' = st'
 		{ simRepoState = M.map freeze (simRepoState st')
 		}
-	let statefile = fromOsPath $ 
-		toOsPath (simRootDirectory st'') </> literalOsPath "state"
-	writeFile statefile (show st'')
+	let statefile = toOsPath (simRootDirectory st'') </> literalOsPath "state"
+	writeFileString statefile (show st'')
   where
 	freeze :: SimRepoState SimRepo -> SimRepoState ()
 	freeze rst = rst { simRepo = Nothing }
 
 restoreSim :: OsPath -> IO (Either String (SimState SimRepo))
 restoreSim rootdir = 
-	tryIO (readFile statefile) >>= \case
+	tryIO (readFileString statefile) >>= \case
 		Left err -> return (Left (show err))
 		Right c -> case readMaybe c :: Maybe (SimState ()) of
 			Nothing -> return (Left "unable to parse sim state file")
@@ -1379,7 +1378,7 @@ restoreSim rootdir =
 					}
 				return (Right st'')
   where
-	statefile = fromOsPath $ rootdir </> literalOsPath "state"
+	statefile = rootdir </> literalOsPath "state"
 	thaw st (u, rst) = tryNonAsync (thaw' st u) >>= return . \case
 		Left _ -> (u, rst { simRepo = Nothing })
 		Right r -> (u, rst { simRepo = Just r })

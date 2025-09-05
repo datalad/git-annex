@@ -171,7 +171,7 @@ setSticky f = modifyFileMode f $ addModes [stickyMode]
  - When possible, this is done using the umask.
  -
  - On a filesystem that does not support file permissions, this is the same
- - as writeFile.
+ - as writeFileString.
  -}
 writeFileProtected :: OsPath -> String -> IO ()
 writeFileProtected file content = writeFileProtected' file 

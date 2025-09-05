@@ -38,7 +38,7 @@ writeLogFile :: OsPath -> String -> Annex ()
 writeLogFile f c = createDirWhenNeeded f $ viaTmp writelog f c
   where
 	writelog tmp c' = do
-		liftIO $ writeFile (fromOsPath tmp) c'
+		liftIO $ writeFileString tmp c'
 		setAnnexFilePerm tmp
 
 -- | Runs the action with a handle connected to a temp file.

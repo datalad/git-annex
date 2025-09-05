@@ -87,7 +87,7 @@ locationLogs = do
 inject :: OsPath -> OsPath -> Annex ()
 inject source dest = do
 	old <- fromRepo olddir
-	new <- liftIO (readFile $ fromOsPath $ old </> source)
+	new <- liftIO $ readFileString (old </> source)
 	Annex.Branch.change (Annex.Branch.RegardingUUID []) dest $ \prev -> 
 		encodeBL $ unlines $ nub $ lines (decodeBL prev) ++ lines new
 
@@ -141,7 +141,7 @@ gitAttributesUnWrite repo = do
 	whenM (doesFileExist attributes) $ do
 		c <- map decodeBS . fileLines'
 			<$> F.readFile' attributes
-		liftIO $ viaTmp (writeFile . fromOsPath) attributes 
+		liftIO $ viaTmp writeFileString attributes 
 			(unlines $ filter (`notElem` attrLines) c)
 		Git.Command.run [Param "add", File (fromOsPath attributes)] repo
 

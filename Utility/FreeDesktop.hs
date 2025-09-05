@@ -75,7 +75,7 @@ buildDesktopMenuFile d = unlines ("[Desktop Entry]" : map keyvalue d) ++ "\n"
 writeDesktopMenuFile :: DesktopEntry -> OsPath -> IO ()
 writeDesktopMenuFile d file = do
 	createDirectoryIfMissing True (takeDirectory file)
-	writeFile (fromOsPath file) $ buildDesktopMenuFile d
+	writeFileString file $ buildDesktopMenuFile d
 
 {- Path to use for a desktop menu file, in either the systemDataDir or
  - the userDataDir -}

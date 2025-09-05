@@ -45,7 +45,7 @@ readFsckResults :: UUID -> Annex FsckResults
 readFsckResults u = do
 	logfile <- fromRepo $ gitAnnexFsckResultsLog u
 	liftIO $ catchDefaultIO (FsckFoundMissing S.empty False) $
-		deserializeFsckResults <$> readFile (fromOsPath logfile)
+		deserializeFsckResults <$> readFileString logfile
 
 deserializeFsckResults :: String -> FsckResults
 deserializeFsckResults = deserialize . lines

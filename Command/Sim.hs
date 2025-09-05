@@ -70,7 +70,7 @@ startsim' simfile = do
 	let st = emptySimState rng (fromOsPath simdir)
 	case simfile of
 		Nothing -> startup simdir st []
-		Just f -> liftIO (readFile f) >>= \c -> 
+		Just f -> liftIO (readFileString (toOsPath f)) >>= \c -> 
 			case parseSimFile c of
 				Left err -> giveup err
 				Right cs -> startup simdir st cs

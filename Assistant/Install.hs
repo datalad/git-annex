@@ -57,7 +57,7 @@ ensureInstalled = ifM (isJust <$> getEnv "GIT_ANNEX_PACKAGE_INSTALL")
 		let program = base </> literalOsPath "git-annex"
 		programfile <- programFile
 		createDirectoryIfMissing True (parentDir programfile)
-		writeFile (fromOsPath programfile) (fromOsPath program)
+		writeFileString programfile (fromOsPath program)
 
 #ifdef darwin_HOST_OS
 		autostartfile <- userAutoStart osxAutoStartLabel
@@ -70,7 +70,7 @@ ensureInstalled = ifM (isJust <$> getEnv "GIT_ANNEX_PACKAGE_INSTALL")
 				let bootfile = toOsPath home </> literalOsPath ".termux" </> literalOsPath "boot" </> literalOsPath "git-annex"
 				unlessM (doesFileExist bootfile) $ do
 					createDirectoryIfMissing True (takeDirectory bootfile)
-					writeFile (fromOsPath bootfile) "git-annex assistant --autostart"
+					writeFileString bootfile "git-annex assistant --autostart"
 			, do
 				menufile <- desktopMenuFilePath "git-annex" <$> userDataDir
 				icondir <- iconDir <$> userDataDir
@@ -125,7 +125,7 @@ installFileManagerHooks program = unlessM osAndroid $ do
 	userdata <- userDataDir
 	let kdeServiceMenusdir = userdata </> literalOsPath "kservices5" </> literalOsPath "ServiceMenus"
 	createDirectoryIfMissing True kdeServiceMenusdir
-	writeFile (fromOsPath (kdeServiceMenusdir </> literalOsPath "git-annex.desktop"))
+	writeFileString (kdeServiceMenusdir </> literalOsPath "git-annex.desktop")
 		(kdeDesktopFile actions)
   where
 	genNautilusScript scriptdir action =
@@ -136,7 +136,7 @@ installFileManagerHooks program = unlessM osAndroid $ do
 			]
 	scriptname action = "git-annex " ++ action
 	installscript f c = whenM (safetoinstallscript f) $ do
-		writeFile (fromOsPath f) c
+		writeFileString f c
 		modifyFileMode f $ addModes [ownerExecuteMode]
 	safetoinstallscript f = catchDefaultIO True $
 		elem (encodeBS autoaddedcomment) . fileLines'

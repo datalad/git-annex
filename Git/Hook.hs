@@ -59,7 +59,7 @@ hookWrite h r = ifM (doesFileExist f)
 	f = hookFile h r
 	go = do
 		-- On Windows, using a ByteString as the file content
-		-- avoids the newline translation done by writeFile.
+		-- avoids the newline translation done by writeFileString.
 		-- Hook scripts on Windows could use CRLF endings, but
 		-- they typically use unix newlines, which does work there
 		-- and makes the repository more portable.
@@ -85,11 +85,11 @@ data ExpectedContent = UnexpectedContent | ExpectedContent | OldExpectedContent
 
 expectedContent :: Hook -> Repo -> IO ExpectedContent
 expectedContent h r = do
-	-- Note that on windows, this readFile does newline translation,
+	-- Note that on windows, this readFileString does newline translation,
 	-- and so a hook file that has CRLF will be treated the same as one
 	-- that has LF. That is intentional, since users may have a reason
 	-- to prefer one or the other.
-	content <- readFile $ fromOsPath $ hookFile h r
+	content <- readFileString $ hookFile h r
 	return $ if content == hookScript h
 		then ExpectedContent
 		else if any (content ==) (hookOldScripts h)

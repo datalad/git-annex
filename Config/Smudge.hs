@@ -70,7 +70,7 @@ deconfigureSmudgeFilter = do
 	lf <- Annex.fromRepo Git.attributesLocal
 	ls <- liftIO $ catchDefaultIO [] $ 
 		map decodeBS . fileLines' <$> F.readFile' lf
-	liftIO $ writeFile (fromOsPath lf) $ unlines $
+	liftIO $ writeFileString lf $ unlines $
 		filter (\l -> l `notElem` stdattr && not (null l)) ls
 	unsetConfig (ConfigKey "filter.annex.smudge")
 	unsetConfig (ConfigKey "filter.annex.clean")

@@ -50,7 +50,7 @@ looseObjectFile r sha = objectsDir r </> toOsPath prefix </> toOsPath rest
 
 listAlternates :: Repo -> IO [FilePath]
 listAlternates r = catchDefaultIO [] $
-	lines <$> readFile (fromOsPath alternatesfile)
+	lines <$> readFileString alternatesfile
   where
 	alternatesfile = objectsDir r </> literalOsPath "info" </> literalOsPath "alternates"
 

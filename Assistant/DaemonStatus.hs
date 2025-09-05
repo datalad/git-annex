@@ -132,7 +132,7 @@ writeDaemonStatusFile file status =
 		]
 
 readDaemonStatusFile :: FilePath -> IO DaemonStatus
-readDaemonStatusFile file = parse <$> newDaemonStatus <*> readFile file
+readDaemonStatusFile file = parse <$> newDaemonStatus <*> readFileString (toOsPath file)
   where
 	parse status = foldr parseline status . lines
 	parseline line status

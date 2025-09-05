@@ -94,7 +94,7 @@ youtubeDl' url workdir p uo
 	nofiles = Left $ youtubeDlCommand ++ " did not put any media in its work directory, perhaps it's been configured to store files somewhere else?"
 	toomanyfiles fs = Left $ youtubeDlCommand ++ " downloaded multiple media files; git-annex is only able to deal with one per url: " ++ show fs
 	downloadedfiles = liftIO $ 
-		(nub . lines <$> readFile (fromOsPath filelistfile))
+		(nub . lines <$> readFileString filelistfile)
 			`catchIO` (pure . const [])
 	workdirfiles = liftIO $ filter (/= filelistfile) 
 		<$> (filterM doesFileExist =<< dirContents workdir)

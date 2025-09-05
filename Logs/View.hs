@@ -54,8 +54,8 @@ removeView v = writeViews =<< filter (/= v) <$> recentViews
 
 recentViews :: Annex [View]
 recentViews = do
-	f <- fromOsPath <$> fromRepo gitAnnexViewLog
-	liftIO $ mapMaybe readish . lines <$> catchDefaultIO [] (readFile f)
+	f <- fromRepo gitAnnexViewLog
+	liftIO $ mapMaybe readish . lines <$> catchDefaultIO [] (readFileString f)
 
 {- Gets the currently checked out view, if there is one. 
  -

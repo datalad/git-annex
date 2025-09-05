@@ -90,7 +90,7 @@ start' allowauto o = do
 			( if isJust (listenAddress o) || isJust (listenPort o)
 				then giveup "The assistant is already running, so --listen and --port cannot be used."
 				else do
-					url <- liftIO . readFile . fromOsPath
+					url <- liftIO . readFileString
 						=<< fromRepo gitAnnexUrlFile
 					liftIO $ if isJust listenAddress'
 						then putStrLn url

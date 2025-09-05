@@ -33,7 +33,7 @@ withCheckedFiles check d locations k a = go $ locations d k
 		let chunkcount = f ++ Legacy.chunkCount
 		ifM (check chunkcount)
 			( do
-				chunks <- Legacy.listChunks f <$> readFile chunkcount
+				chunks <- Legacy.listChunks f <$> readFileString (toOsPath chunkcount)
 				ifM (allM check chunks)
 					( a chunks , return False )
 			, do
@@ -85,7 +85,7 @@ storeHelper repotop finalizer key storer tmpdir destdir = do
 	recorder f s = do
 		let f' = toOsPath f
 		void $ tryIO $ allowWrite f'
-		writeFile f s
+		writeFileString f' s
 		void $ tryIO $ preventWrite f'
 
 store :: FilePath -> ChunkSize -> (OsPath -> OsPath -> IO ()) -> Key -> L.ByteString -> MeterUpdate -> FilePath -> FilePath -> IO ()

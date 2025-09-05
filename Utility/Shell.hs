@@ -37,7 +37,7 @@ findShellCommand f = do
 #ifndef mingw32_HOST_OS
 	defcmd
 #else
-	l <- catchDefaultIO Nothing $ headMaybe . lines <$> readFile (fromOsPath f)
+	l <- catchDefaultIO Nothing $ headMaybe . lines <$> readFileString f
 	case l of
 		Just ('#':'!':rest) -> case words rest of
 			[] -> defcmd

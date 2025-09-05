@@ -556,8 +556,8 @@ test_magic = intmpclonerepo $ do
 #ifdef WITH_MAGICMIME
 	git "config" ["annex.largefiles", "mimeencoding=binary"]
 		"git config annex.largefiles"
-	writeFile "binary" "\127"
-	writeFile "text" "test\n" 
+	writeFileString (literalOsPath "binary") "\127"
+	writeFileString (literalOsPath "text") "test\n" 
 	git_annex "add" ["binary", "text"]
 		"git-annex add with mimeencoding in largefiles"
 	git_annex "sync" ["--no-content"]
@@ -879,7 +879,7 @@ test_lock = intmpclonerepo $ do
 	changecontent annexedfile
 	git "add" [annexedfile] "add of modified file"
 	runchecks [checkregularfile, checkwritable] annexedfile
-	c <- readFile annexedfile
+	c <- readFileString (toOsPath annexedfile)
 	assertEqual "content of modified file" c (changedcontent annexedfile)
 	git_annex_shouldfail "drop" [annexedfile]
 		"drop with no known copy of modified file should not be allowed"
@@ -921,7 +921,7 @@ test_edit' precommit = intmpclonerepo $ do
 		then git_annex "pre-commit" [] "pre-commit"
 		else git "commit" ["-q", "-m", "contentchanged"] "git commit of edited file"
 	runchecks [checkregularfile, checkwritable] annexedfile
-	c <- readFile annexedfile
+	c <- readFileString (toOsPath annexedfile)
 	assertEqual "content of modified file" c (changedcontent annexedfile)
 	git_annex_shouldfail "drop" [annexedfile] "drop no known copy of modified file should not be allowed"
 
@@ -947,7 +947,7 @@ test_fix = intmpclonerepo $ unlessM (hasUnlockedFiles <$> getTestMode) $ do
 	git "mv" [annexedfile, subdir] "git mv"
 	git_annex "fix" [newfile] "fix of moved file"
 	runchecks [checklink, checkunwritable] newfile
-	c <- readFile newfile
+	c <- readFileString (toOsPath newfile)
 	assertEqual "content of moved file" c (content annexedfile)
   where
 	subdir = "s"
@@ -1069,7 +1069,8 @@ test_migrate' usegitattributes = intmpclonerepo $ do
 	annexed_present sha1annexedfile
 	if usegitattributes
 		then do
-			writeFile ".gitattributes" "* annex.backend=SHA1"
+			writeFileString (literalOsPath ".gitattributes")
+				"* annex.backend=SHA1"
 			git_annex "migrate" [sha1annexedfile]
 				"migrate sha1annexedfile"
 			git_annex "migrate" [annexedfile]
@@ -1085,7 +1086,8 @@ test_migrate' usegitattributes = intmpclonerepo $ do
 	checkbackend sha1annexedfile backendSHA1
 
 	-- check that reversing a migration works
-	writeFile ".gitattributes" "* annex.backend=SHA256"
+	writeFileString (literalOsPath ".gitattributes")
+		"* annex.backend=SHA256"
 	git_annex "migrate" [sha1annexedfile] "migrate sha1annexedfile"
 	git_annex "migrate" [annexedfile] "migrate annexedfile"
 	annexed_present annexedfile
@@ -1531,7 +1533,7 @@ test_nonannexed_file_conflict_resolution = do
 		length v == 1
 			@? (what ++ " too many variant files in: " ++ show v)
 		conflictor `elem` l @? (what ++ " conflictor file missing in: " ++ show l)
-		s <- catchMaybeIO $ readFile $ fromOsPath $
+		s <- catchMaybeIO $ readFileString $
 			toOsPath d </> toOsPath conflictor
 		s == Just nonannexed_content
 			@? (what ++ " wrong content for nonannexed file: " ++ show s)
@@ -2074,9 +2076,9 @@ test_export_import = intmpclonerepo $ do
 	dircontains "import" (content "newimport3")
   where
 	dircontains f v = do
-		let df = fromOsPath (literalOsPath "dir" </> stringToOsPath f)
-		((v==) <$> readFile df)
-			@? ("did not find expected content of " ++ df)
+		let df = literalOsPath "dir" </> stringToOsPath f
+		((v==) <$> readFileString df)
+			@? ("did not find expected content of " ++ fromOsPath df)
 	writedir f = writecontent (fromOsPath (literalOsPath "dir" </> stringToOsPath f))
 	-- When on an adjusted branch, this updates the master branch
 	-- to match it, which is necessary since the master branch is going
@@ -2111,9 +2113,9 @@ test_export_import_subdir = intmpclonerepo $ do
 	testexport
   where
 	dircontains f v = do
-		let df = fromOsPath (literalOsPath "dir" </> toOsPath f)
-		((v==) <$> readFile df)
-			@? ("did not find expected content of " ++ df)
+		let df = literalOsPath "dir" </> toOsPath f
+		((v==) <$> readFileString df)
+			@? ("did not find expected content of " ++ fromOsPath df)
 	
 	subdir = "subdir"
 	subannexedfile = fromOsPath $

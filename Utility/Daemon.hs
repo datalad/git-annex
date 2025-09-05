@@ -121,9 +121,9 @@ lockPidFile pidfile = do
 	unlessM (isNothing <$> checkDaemon pidfile)
 		alreadyRunning
 	pid <- getPID
-	writeFile (fromOsPath pidfile) (show pid)
+	writeFileString pidfile (show pid)
 	lckfile <- winLockFile pid pidfile
-	writeFile (fromOsPath lckfile) ""
+	writeFileString lckfile ""
 	void $ lockExclusive lckfile
 #endif
 
@@ -147,7 +147,7 @@ checkDaemon pidfile = bracket setup cleanup go
 	cleanup Nothing = return ()
 	go (Just fd) = catchDefaultIO Nothing $ do
 		locked <- getLock fd (ReadLock, AbsoluteSeek, 0, 0)
-		p <- readish <$> readFile (fromOsPath pidfile)
+		p <- readish <$> readFileString pidfile
 		return (check locked p)
 	go Nothing = return Nothing
 
@@ -161,7 +161,7 @@ checkDaemon pidfile = bracket setup cleanup go
 			"; expected " ++ show pid ++ " )"
 #else
 checkDaemon pidfile = maybe (return Nothing) (check . readish)
-	=<< catchMaybeIO (readFile (fromOsPath pidfile))
+	=<< catchMaybeIO (readFileString pidfile)
   where
 	check Nothing = return Nothing
 	check (Just pid) = do

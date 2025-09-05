@@ -276,8 +276,7 @@ winLocker :: (LockFile -> IO (Maybe LockHandle)) -> ContentLocker
 winLocker takelock _ (Just lockfile) = 
 	let lck = do
 		modifyContentDir lockfile $
-			void $ liftIO $ tryIO $
-				writeFile (fromOsPath lockfile) ""
+			void $ liftIO $ tryIO $ writeFileString lockfile ""
 		liftIO $ takelock lockfile
 	in (lck, Nothing)
 -- never reached; windows always uses a separate lock file
@@ -991,7 +990,7 @@ withTmpWorkDir key action = do
 	-- clean up gitAnnexTmpWorkDir for those it finds.
 	obj <- prepTmp key
 	unlessM (liftIO $ doesFileExist obj) $ do
-		liftIO $ writeFile (fromOsPath obj) ""
+		liftIO $ writeFileString  obj ""
 		setAnnexFilePerm obj
 	let tmpdir = gitAnnexTmpWorkDir obj
 	createAnnexDirectory tmpdir
@@ -1083,7 +1082,7 @@ writeContentRetentionTimestamp key rt t = do
 		readContentRetentionTimestamp rt >>= \case
 			Just ts | ts >= t -> return ()
 			_ -> replaceFile (const noop) rt $ \tmp ->
-				liftIO $ writeFile (fromOsPath tmp) $ show t
+				liftIO $ writeFileString tmp $ show t
   where
 	lock = takeExclusiveLock
 	unlock = liftIO . dropLock

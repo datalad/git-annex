@@ -1,6 +1,6 @@
 {- git-annex repository fixups
  -
- - Copyright 2013-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -9,29 +9,14 @@
 
 module Annex.Fixup where
 
+import Common
 import Git.Types
 import Git.Config
 import Types.GitConfig
-import Utility.Path
-import Utility.Path.AbsRel
-import Utility.SafeCommand
-import Utility.Directory
-import Utility.Exception
-import Utility.Monad
-import Utility.SystemDirectory
-import Utility.OsPath
 import qualified Utility.RawFilePath as R
-import Utility.PartialPrelude
 import qualified Utility.OsString as OS
 
-import System.IO
-import Data.List
-import Data.Maybe
-import Control.Monad
-import Control.Monad.IfElse
 import qualified Data.Map as M
-import Control.Applicative
-import Prelude
 
 fixupRepo :: Repo -> GitConfig -> IO Repo
 fixupRepo r c = do
@@ -132,11 +117,11 @@ fixupUnusualRepos r@(Repo { location = Local { worktree = Just w, gitdir = d } }
 	-- git-worktree sets up a "commondir" file that contains
 	-- the path to the main git directory.
 	-- Using --separate-git-dir does not.
-	commondirfile = fromOsPath (d </> literalOsPath "commondir")
+	commondirfile = d </> literalOsPath "commondir"
 	
 	readcommondirfile = catchDefaultIO Nothing $
 		fmap toOsPath . headMaybe . lines
-			<$> readFile commondirfile
+			<$> readFileString commondirfile
 
 	setworktreepath r' = readcommondirfile >>= \case
 		Just gd -> return $ r'
