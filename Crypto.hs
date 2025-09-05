@@ -25,7 +25,6 @@ module Crypto (
 	decryptCipher',
 	encryptKey,
 	isEncKey,
-	feedFile,
 	feedBytes,
 	readBytes,
 	readBytesStrictly,
@@ -187,9 +186,6 @@ isEncKey k = case fromKey keyVariety k of
 
 type Feeder = Handle -> IO ()
 type Reader m a = Handle -> m a
-
-feedFile :: FilePath -> Feeder
-feedFile f h = L.hPut h =<< L.readFile f
 
 feedBytes :: L.ByteString -> Feeder
 feedBytes = flip L.hPut
