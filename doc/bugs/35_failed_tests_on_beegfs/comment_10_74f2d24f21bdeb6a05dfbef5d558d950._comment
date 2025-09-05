@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2025-09-05T17:42:02Z"
+ content="""
+I've made all OsPath operations in git-annex set the close-on-exec flag.
+
+This will largely fix the problem when git-annex is built with the OsPath build
+flag. Which has now become default, but it's still possible for git-annex
+to be built without that build flag. Check `git-annex version` for "OsPath"
+to know if your git-annex was built with this.
+I think it will probably pass the test suite on beegfs at this point.
+
+(However, the openTempFile implementation sets the flag only after opening
+the file, so is still vulnerable to a race where the fd can leak to an
+execed process. That could use more work, but at least is a quite
+narrow race window.)
+
+Also the few ByteString readFile/writeFile calls were converted to the OsPath
+operations.
+
+What remains to be done to fully fix this:
+
+* Checking haskell libraries as listed in comment #8
+* All the FilePath versions of readFile, writeFile, etc, still
+  don't set the close-on-exec flag. There are a few hundred such calls
+  still in of git-annex. Those will all have to be wrapped with versions
+  that do set the close-on-exec flag, or converted to the OsPath versions.
+
+So, this bug is now tied to [[OsPath conversion|todo/RawFilePath_conversion]]
+in 2 ways.
+"""]]
