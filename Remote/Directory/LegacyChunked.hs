@@ -59,7 +59,7 @@ storeLegacyChunked' :: MeterUpdate -> ChunkSize -> [FilePath] -> [S.ByteString] 
 storeLegacyChunked' _ _ [] _ _ = error "ran out of dests"
 storeLegacyChunked' _ _  _ [] c = return $ reverse c
 storeLegacyChunked' meterupdate chunksize (d:dests) bs c = do
-	bs' <- withFile d WriteMode $
+	bs' <- F.withFile (toOsPath d) WriteMode $
 		feed zeroBytesProcessed chunksize bs
 	storeLegacyChunked' meterupdate chunksize dests bs' (d:c)
   where

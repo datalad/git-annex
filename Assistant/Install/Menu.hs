@@ -13,6 +13,7 @@ module Assistant.Install.Menu where
 
 import Common
 import Utility.FreeDesktop
+import qualified Utility.FileIO as F
 
 installMenu :: String -> OsPath -> OsPath -> OsPath -> IO ()
 #ifdef darwin_HOST_OS
@@ -40,8 +41,8 @@ fdoDesktopMenu command = genDesktopEntry
 installIcon :: OsPath -> OsPath -> IO ()
 installIcon src dest = do
 	createDirectoryIfMissing True (parentDir dest)
-	withBinaryFile (fromOsPath src) ReadMode $ \hin ->
-		withBinaryFile (fromOsPath dest) WriteMode $ \hout ->
+	F.withBinaryFile src ReadMode $ \hin ->
+		F.withBinaryFile dest WriteMode $ \hout ->
 			hGetContents hin >>= hPutStr hout
 
 iconBaseName :: String

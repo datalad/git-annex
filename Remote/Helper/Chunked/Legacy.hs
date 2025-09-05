@@ -10,6 +10,7 @@ module Remote.Helper.Chunked.Legacy where
 import Annex.Common
 import Remote.Helper.Chunked
 import Utility.Metered
+import qualified Utility.FileIO as F
 
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
@@ -116,6 +117,6 @@ storeChunked annexrunner chunksize dests storer content =
  -}
 meteredWriteFileChunks :: MeterUpdate -> FilePath -> [v] -> (v -> IO L.ByteString) -> IO ()
 meteredWriteFileChunks meterupdate dest chunks feeder =
-	withBinaryFile dest WriteMode $ \h ->
+	F.withBinaryFile (toOsPath dest) WriteMode $ \h ->
 		forM_ chunks $
 			meteredWrite meterupdate (S.hPut h) <=< feeder
