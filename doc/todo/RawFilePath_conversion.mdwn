@@ -12,10 +12,11 @@ But this conversion is not yet complete. This is a todo to keep track
 of the status.
 
 * The OsPath build flag makes git-annex build with OsPath. Otherwise,
-  it builds with RawFilePath. The plan is to make that build flag the
-  default where it is not already as time goes on. And then eventually
-  remove the build flag and simplify code in git-annex to not need to
-  support two different build methods.
+  it builds with RawFilePath. That build flag is now on by default,
+  and there is a build warning when it is not set.
+
+* The plan is to eventually remove the build flag and simplify code in
+  git-annex to not need to support two different build methods.
 
 * unix has modules that operate on RawFilePath but no OSPath versions yet.
   See https://github.com/haskell/unix/issues/240

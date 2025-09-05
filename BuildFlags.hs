@@ -69,6 +69,11 @@ buildFlags = filter (not . null)
 	, "Testsuite"
 	, "S3"
 	, "WebDAV"
+#ifdef WITH_OSPATH
+	, "OsPath"
+#else 
+#warning Building without the OsPath build flag set results in slower filename manipulation and is not recommended.
+#endif
 	]
 
 -- Not a complete list, let alone a listing transitive deps, but only

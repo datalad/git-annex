@@ -177,6 +177,7 @@ Flag Servant
 
 Flag OsPath
   Description: Use the os-string library and related libraries, for faster filename manipulation
+  Default: True
 
 Flag Benchmark
   Description: Enable benchmarking
