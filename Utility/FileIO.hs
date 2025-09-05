@@ -1,6 +1,8 @@
-{- This is a subset of the functions provided by file-io.
+{- This is a subset of the functions provided by file-io, supplimented with
+ - readFileString, writeFileString, and appendFileString.
  -
- - All exported functions set the close-on-exec flag.
+ - When building with file-io, all exported functions set the close-on-exec
+ - flag.
  -
  - When not building with file-io, this provides equvilant
  - RawFilePath versions. Note that those versions do not currently
@@ -31,12 +33,17 @@ module Utility.FileIO
 	appendFile,
 	appendFile',
 	openTempFile,
+
+	readFileString,
+	writeFileString,
+	appendFileString,
 ) where
 
 #ifdef WITH_OSPATH
 
 #ifndef mingw32_HOST_OS
 import Utility.FileIO.CloseOnExec
+import Utility.FileIO.String
 #else
 -- On Windows, System.File.OsPath does not handle UNC-style conversion itself,
 -- so that has to be done when calling it. See 
@@ -44,8 +51,9 @@ import Utility.FileIO.CloseOnExec
 import Utility.Path.Windows
 import Utility.OsPath
 import System.IO (IO, Handle, IOMode)
-import Prelude (return)
+import Prelude (String, return)
 import qualified Utility.FileIO.CloseOnExec as O
+import qualified Utility.FileIO.String as O
 import qualified Data.ByteString as B
 import Control.Applicative
 
@@ -106,6 +114,21 @@ openTempFile p s = do
 	-- Avoid returning mangled path from convertToWindowsNativeNamespace
 	let t' = p </> takeFileName t
 	return (t', h)
+
+readFileString :: OsPath -> IO String
+readFileString p = do
+	p' <- toOsPath <$> convertToWindowsNativeNamespace (fromOsPath p)
+	I.readFileString p'
+
+writeFileString :: OsPath -> String -> IO ()
+writeFileString f txt = do
+	f' <- toOsPath <$> convertToWindowsNativeNamespace (fromOsPath f)
+	I.writeFileString f' txt
+
+appendFileString :: OsPath -> String -> IO ()
+appendFileString f txt = do
+	f' <- toOsPath <$> convertToWindowsNativeNamespace (fromOsPath f)
+	I.appendFileString f' txt
 #endif
 
 #else
@@ -113,7 +136,8 @@ openTempFile p s = do
 import Utility.OsPath
 import Utility.FileSystemEncoding
 import System.IO (IO, Handle, IOMode)
-import Prelude ((.), return)
+import Prelude (String, (.), return)
+import qualified Prelude as P
 import qualified System.IO
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
@@ -154,4 +178,13 @@ openTempFile p s = do
 		(fromRawFilePath p)
 		(fromRawFilePath s)
 	return (toRawFilePath t, h)
+
+readFileString :: OsPath -> IO String
+readFileString = P.readFile . fromRawFilePath
+
+writeFileString :: OsPath -> String -> IO ()
+writeFileString = P.writeFile . fromRawFilePath
+
+appendFileString :: OsPath -> String -> IO ()
+appendFileString = P.appendFile . fromRawFilePath
 #endif
