@@ -96,7 +96,7 @@ mkRetrievalVerifiableKeysSecure gc
 fileStorer :: (Key -> OsPath -> MeterUpdate -> Annex ()) -> Storer
 fileStorer a k (FileContent f) m = a k f m
 fileStorer a k (ByteContent b) m = withTmp k $ \f -> do
-	liftIO $ L.writeFile (fromOsPath f) b
+	liftIO $ F.writeFile f b
 	a k f m
 
 -- A Storer that expects to be provided with a L.ByteString of

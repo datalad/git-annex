@@ -1,4 +1,7 @@
-{- File IO on OsPaths.
+{- This is a subset of the functions provided by file-io.
+ -
+ - When not building with file-io, this provides equvilant
+ - RawFilePath versions.
  -
  - Since Prelude exports many of these as well, this needs to be imported
  - qualified.
@@ -41,7 +44,6 @@ import System.IO (IO, Handle, IOMode)
 import Prelude (return)
 import qualified System.File.OsPath as O
 import qualified Data.ByteString as B
-import qualified Data.ByteString.Lazy as L
 import Control.Applicative
 
 withFile :: OsPath -> IOMode -> (Handle -> IO r) -> IO r 

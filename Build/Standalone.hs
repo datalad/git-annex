@@ -15,7 +15,6 @@ import System.Environment (getArgs)
 import Control.Monad.IfElse
 import System.Posix.Files
 import Control.Monad
-import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
 
 import Utility.SafeCommand
@@ -26,6 +25,7 @@ import Utility.Path.AbsRel
 import Utility.Directory
 import Utility.Env
 import Utility.SystemDirectory
+import qualified Utility.FileIO as F
 import Build.BundledPrograms
 #ifdef darwin_HOST_OS
 import System.IO
@@ -98,7 +98,7 @@ installGitLibs topdir = do
 						let linktarget' = progDir topdir </> takeFileName linktarget
 						unlessM (doesFileExist linktarget') $ do
 							createDirectoryIfMissing True (takeDirectory linktarget')
-							L.readFile f' >>= L.writeFile (fromOsPath linktarget')
+							F.readFile f >>= F.writeFile linktarget'
 						removeWhenExistsWith removeFile destf
 						rellinktarget <- relPathDirToFile
 							(takeDirectory destf)

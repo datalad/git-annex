@@ -52,7 +52,7 @@ storeLegacyChunked _ _ [] _ = error "bad storeLegacyChunked call"
 storeLegacyChunked meterupdate chunksize alldests@(firstdest:_) b
 	| L.null b = do
 		-- always write at least one file, even for empty
-		L.writeFile firstdest b
+		F.writeFile (toOsPath firstdest) b
 		return [firstdest]
 	| otherwise = storeLegacyChunked' meterupdate chunksize alldests (L.toChunks b) []
 storeLegacyChunked' :: MeterUpdate -> ChunkSize -> [FilePath] -> [S.ByteString] -> [FilePath] -> IO [FilePath]
@@ -103,7 +103,7 @@ retrieve locations d basek p _dest miv c = withOtherTmp $ \tmpdir -> do
 	let go = \k sink -> do
 		liftIO $ void $ withStoredFiles (fromOsPath d) (legacyLocations locations) k $ \fs -> do
 			forM_ fs $
-				F.appendFile' tmp <=< S.readFile
+				F.appendFile' tmp <=< F.readFile' . toOsPath
 			return True
 		b <- liftIO $ F.readFile tmp
 		liftIO $ removeWhenExistsWith removeFile tmp
