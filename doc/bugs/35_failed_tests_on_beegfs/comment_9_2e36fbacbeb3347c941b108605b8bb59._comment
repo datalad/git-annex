@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2025-09-05T15:15:03Z"
+ content="""
+copyFile also leaks a FD. git-annex only uses it on Windows though, so
+it does not need to be addressed for Beegfs.
+
+As far as general correctness goes, I've reported a bug upstream about it
+<https://github.com/haskell/directory/issues/203>, which I suspect they'll
+fix eventually since they have fixed similar problems before.
+"""]]
