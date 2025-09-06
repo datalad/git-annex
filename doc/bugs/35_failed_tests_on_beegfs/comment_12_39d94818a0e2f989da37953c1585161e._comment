@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 12"""
+ date="2025-09-06T17:11:55Z"
+ content="""
+There are a few other races where a FD can leak to a child process still,
+where `setFdOption` is used after dup()/pipe().
+
+These don't involve files, so won't affect beegfs. They should still be
+fixed. 
+
+----
+
+While dup3() and pipe2() allow setting the close-on-exec flag,
+I don't think they're portable enough to rely on.
+
+It may be possible to rewrite these handful of things to avoid the problem:
+
+* processTranscript should be able to read chunks from stdout and stderr
+  concurrently and interleave, not needing a pipe
+* Remote.Directory should be able to reuse the same handle passed to fileContentCopier
+  to get the FD for the postchecknoncow.
+* gpg feedRead may be able to use stdin as the passphrase-fd. If gpg reads
+  one line for that, and then continues to read the rest of stdin for the
+  content to encrypt/decrypt. I have not checked if gpg behaves that way.
+* Similar for StatelessOpenPGP
+
+Alternatively, it would be possible to solve all of these issues, as well
+as the openTempFile race, by making the wrappers in Utility.Process prevent
+starting a process when a global MVar is empty. And have a function that
+runs an action with the MVar emptied. Then the call to dup/pipe could run
+effectively atomically with the `setFdOption`. There would be a small
+overhead in checking the MVar on each exec, but probably too small to be
+noticable.
+"""]]

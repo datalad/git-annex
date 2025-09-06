@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 13"""
+ date="2025-09-06T17:28:57Z"
+ content="""
+There is some potential for any of these FD leaks to compromise security,
+in cases where a child process ends up running untrusted code in some kind
+of sandbox, that is sufficiently leaky that the leaked FD is accessible
+inside the sandbox.
+
+I don't think any existing special remote or other git-annex addons behave
+that way, so don't think this is an exploitable security hole. Arguably, if
+sandboxing untrusted code, it's on you to avoid exposing open Fds to it.
+
+However, since security is involved, it does need to be fixed comprehensively
+in git-annex, including the remaining races.
+
+And, I have decided that this fix can't be tied to the OsPath flag being
+set. It needs to be fixed when git-annex is built without that flag, or the
+flag needs to go away.
+"""]]
