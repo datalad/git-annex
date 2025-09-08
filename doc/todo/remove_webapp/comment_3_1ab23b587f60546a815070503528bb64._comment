@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="waldi5001"
+ avatar="http://cdn.libravatar.org/avatar/128c0f882560337aad72a15ab7ee3766"
+ subject="comment 3"
+ date="2025-09-08T08:47:56Z"
+ content="""
+Hello Joey,
+
+I agree completely with nobodyinperson and I can also understand why you want to retire the webapp. In my opinion there is one big advantage for the webapp: If you are a beginner, its so easy and a big help to create and configure your repositories. You do not know that much to start with git annex. No reading of the man pages, no understanding of git remotes and so on. 
+
+I think some convenient scripts can help to create repositories, like
+
+git annex init client_repo
+git annex init backup_repo
+git annex init transfer_repo
+"""]]
