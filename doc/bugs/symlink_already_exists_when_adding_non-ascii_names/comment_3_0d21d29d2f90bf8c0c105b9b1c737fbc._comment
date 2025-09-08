@@ -1,0 +1,81 @@
+[[!comment format=mdwn
+ username="babudarabu@232a9694ce5401143f6210561371f887dd15cd61"
+ nickname="babudarabu"
+ avatar="http://cdn.libravatar.org/avatar/b1563172cc335380f1582d960c44c7a4"
+ subject="comment 3"
+ date="2025-09-08T17:13:02Z"
+ content="""
+I'm experiencing this as well; mostly with filenames that have CJK characters in them, but also a couple using other non-ASCII symbols. I think nobodyinperson already confirmed this, but it seems like the contents of the file don't matter, just the filename. It also doesn't seem to matter whether or not it's in a subdirectory.
+
+```sh
+$ touch '♭5 01-010 Drive.mp3'
+$ git annex add '♭5 01-010 Drive.mp3'
+add \"\342\231\2555 01-010 Drive.mp3\"
+
+git-annex: .git/annex/othertmp/.0: createSymbolicLink: already exists (File exists)
+failed
+add: 1 failed
+
+$ mkdir flat\ 5
+$ touch 'flat 5/♭5 01-010 Drive.mp3'
+$ git annex add 'flat 5/♭5 01-010 Drive.mp3'
+add \"flat 5/\342\231\2555 01-010 Drive.mp3\"
+
+git-annex: .git/annex/othertmp/.0: createSymbolicLink: already exists (File exists)
+failed
+add: 1 failed
+```
+
+There's something to do with filename length, too? Changing the extension but keeping the character count the same doesn't fix the issue, but using a shorter extension does:
+
+```sh
+$ touch '♭5 01-010 Drive.mp4'
+$ git annex add '♭5 01-010 Drive.mp4'
+add \"\342\231\2555 01-010 Drive.mp4\"
+
+git-annex: .git/annex/othertmp/.0: createSymbolicLink: already exists (File exists)
+failed
+add: 1 failed
+
+$ touch '♭5 01-010 Drive.mp5'
+$ git annex add '♭5 01-010 Drive.mp5'
+add \"\342\231\2555 01-010 Drive.mp5\"
+
+git-annex: .git/annex/othertmp/.0: createSymbolicLink: already exists (File exists)
+failed
+add: 1 failed
+
+$ touch '♭5 01-010 Drive.mp'
+$ git annex add '♭5 01-010 Drive.mp'
+add \"\342\231\2555 01-010 Drive.mp\"
+ok
+(recording state in git...)
+
+$ touch '♭5 01-010 Drive.png'
+$ git annex add '♭5 01-010 Drive.png'
+add \"\342\231\2555 01-010 Drive.png\"
+
+git-annex: .git/annex/othertmp/.0: createSymbolicLink: already exists (File exists)
+failed
+add: 1 failed
+```
+
+Here are all the problematic filenames I've found so far. They all seem to *start* with a non-ASCII character, not sure if that's relevant.
+
+```
+⊿ 01-012 願い.mp3
+♭5 01-001 Stars.mp3
+♭5 01-003 Olive.mp3
+♭5 01-006 手紙.mp3
+♭5 01-009 追憶.mp3
+♭5 01-010 Drive.mp3
+何者 01-003 FREE.mp3
+何者 01-009 JET.mp3
+何者 01-014 POSE.mp3
+彩 01-001 Change.mp3
+彩 01-003 予言.mp3
+旅 01-003 微熱.mp3
+日常 01-007 Zzz.mp3
+落花 01-004 NITE.mp3
+```
+"""]]
