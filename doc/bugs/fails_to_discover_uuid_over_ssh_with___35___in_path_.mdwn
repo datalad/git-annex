@@ -1,0 +1,74 @@
+### Please describe the problem.
+
+if remote path has some folder name starting with `#`  (may be also anywhere, didn't check) -- annex fails to discover UUID
+
+<details>
+<summary>full reproducer which you can use to investigate more</summary> 
+
+```shell
+#!/bin/bash
+set -eux
+
+cd "$(mktemp -d ${TMPDIR:-/tmp}/dl-XXXXXXX)"
+
+pwd=$(pwd)
+(
+mkdir repo
+cd repo
+git init
+git annex init
+
+echo text1 > text
+git annex add text
+git commit -m 'initial small'
+)
+
+for d in 'clone1' '#clone2'; do
+    (
+    mkdir "$d"
+    cd "$d"
+    git init
+    git annex init
+    )
+
+    r="${d//#/}" 
+    (
+    cd repo
+    git remote add "$r" localhost:"$pwd/$d"
+    git annex sync
+    echo -n "!!!! Remote $d. annex uuid: " 
+    git config "remote.$r.annex-uuid"
+    )
+done 
+
+```
+</details>
+
+which shows
+
+```
++ git remote add clone2 localhost:/home/yoh/.tmp/dl-nD3k2cN/#clone2
++ git annex sync
+
+  Unable to parse git config from clone2
+
+  Remote clone2 does not have git-annex installed; setting annex-ignore
+
+  This could be a problem with the git-annex installation on the remote. Please make sure that git-annex-shell is available in PATH when you ssh into the remote. Once you have fixed the git-annex installation, run: git annex enableremote clone2
+...
+!!!! Remote #clone2. annex uuid: + git config remote.clone2.annex-uuid
+```
+
+### What version of git-annex are you using? On what operating system?
+
+Originally was a bit older, now tried with bleeding edge
+
+```
+❯ git annex version
+git-annex version: 10.20250828+git47-gab9bbeabd5-1~ndall+1
+```
+
+FTR: I was trying to backup some old behavioral videos (octopus) from the laptop under `#video` folder which was reproduced on remote end as well.
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]
