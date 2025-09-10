@@ -1,9 +1,11 @@
 {- git-annex multicast receive callback
  -
- - Copyright 2017 Joey Hess <id@joeyh.name>
+ - Copyright 2017-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
+
+{-# LANGUAGE CPP #-}
 
 module Annex.Multicast where
 
@@ -11,8 +13,11 @@ import Common
 import Annex.Path
 import Utility.Env
 
-import Utility.Process
-import GHC.IO.Handle.FD
+#ifndef mingw32_HOST_OS
+import System.Posix.IO
+#else
+import System.Process (createPipeFd)
+#endif
 
 multicastReceiveEnv :: String
 multicastReceiveEnv = "GIT_ANNEX_MULTICAST_RECEIVE"
@@ -20,8 +25,14 @@ multicastReceiveEnv = "GIT_ANNEX_MULTICAST_RECEIVE"
 multicastCallbackEnv :: IO (OsPath, [(String, String)], Handle)
 multicastCallbackEnv = do
 	gitannex <- programPath
-	-- This will even work on Windows
+#ifndef mingw32_HOST_OS
+	(rfd, wfd) <- noCreateProcessWhile $ do
+		(rfd, wfd) <- createPipe
+		setFdOption rfd CloseOnExec True
+		return (rfd, wfd)
+#else
 	(rfd, wfd) <- createPipeFd
+#endif
 	rh <- fdToHandle rfd
 	environ <- addEntry multicastReceiveEnv (show wfd) <$> getEnvironment
 	return (gitannex, environ, rh)

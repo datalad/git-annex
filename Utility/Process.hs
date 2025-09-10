@@ -1,5 +1,6 @@
 {- System.Process enhancements, including additional ways of running
- - processes, and logging.
+ - processes, logging, and amelorations for cases where FDs are not able to
+ - be opened with close-on-exec.
  -
  - Copyright 2012-2025 Joey Hess <id@joeyh.name>
  -
@@ -21,6 +22,7 @@ module Utility.Process (
 	forceSuccessProcess',
 	checkSuccessProcess,
 	withNullHandle,
+	noCreateProcessWhile,
 	createProcess,
 	withCreateProcess,
 	waitForProcess,
@@ -46,7 +48,9 @@ import System.Exit
 import System.IO
 import Control.Monad.IO.Class
 import Control.Concurrent.Async
+import Control.Concurrent
 import qualified Data.ByteString as S
+import System.IO.Unsafe (unsafePerformIO)
 
 data StdHandle = StdinHandle | StdoutHandle | StderrHandle
 	deriving (Eq)
@@ -173,9 +177,34 @@ startInteractiveProcess cmd args environ = do
 	(Just from, Just to, _, pid) <- createProcess p
 	return (pid, to, from)
 
--- | Wrapper around 'System.Process.createProcess' that does debug logging.
+-- | Runs an action, preventing any new processes from being started
+-- until it is finished.
+--
+-- Unfortunately, Haskell has a pervasive problem with the close-on-exec
+-- flag not being set when opening files. It's also difficult to portably
+-- dup or pipe a FD with the close-on-exec flag set. So, this can be used
+-- to run an action that opens a FD, and then calls setFdOption to set the
+-- close-on-exec flag, without risking a race with a process being forked
+-- at the same time.
+--
+-- Note that only one of these actions can run at a time, and long-duration
+-- actions are not advisable.
+noCreateProcessWhile :: (MonadIO m, MonadMask m) => (m a) -> m a
+noCreateProcessWhile = bracket setup cleanup . const
+  where
+	setup = liftIO $ takeMVar createProcessSem
+	cleanup () = liftIO $ putMVar createProcessSem ()
+
+-- | A shared global MVar. Processes are not created while it is empty.
+{-# NOINLINE createProcessSem #-}
+createProcessSem :: MVar ()
+createProcessSem = unsafePerformIO $ newMVar ()
+
+-- | Wrapper around 'System.Process.createProcess'. 
+-- This adds debug logging, and avoids starting a process when in a
+-- noCreateProcessWhile block.
 createProcess :: CreateProcess -> IO (Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle)
-createProcess p = do
+createProcess p = noCreateProcessWhile $ do
 	r@(_, _, _, h) <- Utility.Process.Shim.createProcess p
 	debugProcess p h
 	return r

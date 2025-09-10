@@ -42,6 +42,7 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
 #ifndef mingw32_HOST_OS
 import System.Posix.IO
+import Utility.Process
 #endif
 
 closeOnExec :: Bool
@@ -92,24 +93,22 @@ appendFile'
   :: OsPath -> BS.ByteString -> IO ()
 appendFile' fp contents = withFile fp AppendMode (`BS.hPut` contents)
 
-{- Unlike all other functions in this module, this only sets the
- - close-on-exec flag after opening the file. Thus, it is vulnerable to
- - races.
- -
- - Re-implementing openTempFile is difficult due to the current
+{- Re-implementing openTempFile is difficult due to the current
  - structure of file-io. See this issue for discussion about improving
  - that: https://github.com/haskell/file-io/issues/44
+ - So, instead this uses noCreateProcessWhile.
  - -}
 openTempFile :: OsPath -> OsString -> IO (OsPath, Handle)
-openTempFile tmp_dir template = do
-	(p, h) <- I.openTempFile tmp_dir template
-#ifndef mingw32_HOST_OS
-	fd <- handleToFd h
-	setFdOption fd CloseOnExec True
-	h' <- fdToHandle fd
-	pure (p, h')
+openTempFile tmp_dir template =
+#ifdef mingw32_HOST_OS
+	I.openTempFile tmp_dir template
 #else
-	pure (p, h)
+	noCreateProcessWhile $ do
+		(p, h) <- I.openTempFile tmp_dir template
+		fd <- handleToFd h
+		setFdOption fd CloseOnExec True
+		h' <- fdToHandle fd
+		pure (p, h')
 #endif
 
 #endif

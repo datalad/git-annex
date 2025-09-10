@@ -45,7 +45,7 @@ processTranscript'' cp input = do
 #ifndef mingw32_HOST_OS
 {- This implementation interleves stdout and stderr in exactly the order
  - the process writes them. -}
- 	let setup = do
+ 	let setup = noCreateProcessWhile $ do
 		(readf, writef) <- System.Posix.IO.createPipe
 		System.Posix.IO.setFdOption readf System.Posix.IO.CloseOnExec True
 		System.Posix.IO.setFdOption writef System.Posix.IO.CloseOnExec True

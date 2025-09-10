@@ -470,7 +470,7 @@ retrieveExportWithContentIdentifierM ii dir cow loc cids dest gk p =
 
 	docopynoncow iv = do
 #ifndef mingw32_HOST_OS
-		let open = do
+		let open = noCreateProcessWhile $ do
 			fd <- openFdWithMode f' ReadOnly Nothing
 				defaultFileFlags (CloseOnExecFlag True)
 			-- Need a duplicate fd for the post check.
