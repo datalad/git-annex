@@ -19,6 +19,7 @@ import Utility.SafeCommand
 import Utility.Path
 import Utility.Exception
 import Utility.PartialPrelude
+import Utility.FileIO (readFileString)
 #endif
 
 shellPath :: FilePath

@@ -55,6 +55,7 @@ import Prelude (String, return)
 import qualified Utility.FileIO.CloseOnExec as O
 import qualified Utility.FileIO.String as O
 import qualified Data.ByteString as B
+import qualified Data.ByteString.Lazy as L
 import Control.Applicative
 
 withFile :: OsPath -> IOMode -> (Handle -> IO r) -> IO r 
@@ -118,17 +119,17 @@ openTempFile p s = do
 readFileString :: OsPath -> IO String
 readFileString p = do
 	p' <- toOsPath <$> convertToWindowsNativeNamespace (fromOsPath p)
-	I.readFileString p'
+	O.readFileString p'
 
 writeFileString :: OsPath -> String -> IO ()
 writeFileString f txt = do
 	f' <- toOsPath <$> convertToWindowsNativeNamespace (fromOsPath f)
-	I.writeFileString f' txt
+	O.writeFileString f' txt
 
 appendFileString :: OsPath -> String -> IO ()
 appendFileString f txt = do
 	f' <- toOsPath <$> convertToWindowsNativeNamespace (fromOsPath f)
-	I.appendFileString f' txt
+	O.appendFileString f' txt
 #endif
 
 #else
