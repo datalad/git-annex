@@ -28,3 +28,5 @@ version.
   the same as the bug that the second transfer lock was added to fix.
   Still, it would make sense to put this in a v12 upgrade that is delayed
   some amount of time (eg 1 year) after v11.
+
+* Remove .git/annex/keysdb.cache, which is no longer used.

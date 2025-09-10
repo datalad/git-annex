@@ -47,7 +47,6 @@ import Git
 import Git.FilePath
 import Git.Command
 import Git.Types
-import Git.Index
 import Git.Sha
 import Git.CatFile
 import Git.Branch (writeTreeQuiet, update')
@@ -81,8 +80,8 @@ runReader t a = do
 			else return tableschanged
 		v <- a (SQL.ReadHandle qh)
 		return (v, DbOpen (qh, tableschanged'))
-	go DbClosed = do
-		st <- openDb False DbClosed
+	go startst@(DbClosed _) = do
+		st <- openDb False startst
 		v <- case st of
 			(DbOpen (qh, _)) -> a (SQL.ReadHandle qh)
 			_ -> return mempty
@@ -124,7 +123,11 @@ runWriterIO t a = runWriter t (liftIO . a)
 openDb :: Bool -> DbState -> Annex DbState
 openDb _ st@(DbOpen _) = return st
 openDb False DbUnavailable = return DbUnavailable
-openDb forwrite _ = do
+openDb forwrite (DbClosed wasopen) = openDb' forwrite wasopen
+openDb forwrite DbUnavailable = openDb' forwrite (DbWasOpen False) 
+
+openDb' :: Bool -> DbWasOpen -> Annex DbState
+openDb' forwrite wasopen = do
 	lck <- calcRepo' gitAnnexKeysDbLock
 	catchPermissionDenied permerr $ withExclusiveLock lck $ do
 		dbdir <- calcRepo' gitAnnexKeysDbDir
@@ -144,7 +147,7 @@ openDb forwrite _ = do
 	
 	open db dbisnew = do
 		qh <- liftIO $ H.openDbQueue db SQL.containedTable
-		tc <- reconcileStaged dbisnew qh
+		tc <- reconcileStaged dbisnew qh wasopen
 		return $ DbOpen (qh, tc)
 
 {- Closes the database if it was open. Any writes will be flushed to it.
@@ -238,8 +241,8 @@ isInodeKnown i s = or <$> runReaderIO ContentTable
  - This is run with a lock held, so only one process can be running this at
  - a time.
  -
- - To avoid unnecessary work, the index file is statted, and if it's not
- - changed since last time this was run, nothing is done.
+ - If the database gets closed and then reopened by the same process, this
+ - will avoid doing any repeated work.
  -
  - A tree is generated from the index, and the diff between that tree
  - and the last processed tree is examined for changes.
@@ -259,30 +262,19 @@ isInodeKnown i s = or <$> runReaderIO ContentTable
  - So when using getAssociatedFiles, have to make sure the file still
  - is an associated file.
  -}
-reconcileStaged :: Bool -> H.DbQueue -> Annex DbTablesChanged
-reconcileStaged dbisnew qh = ifM isBareRepo
+reconcileStaged :: Bool -> H.DbQueue -> DbWasOpen -> Annex DbTablesChanged
+reconcileStaged _ _ (DbWasOpen True) =
+	return (DbTablesChanged False False)
+reconcileStaged dbisnew qh _ = ifM isBareRepo
 	( return mempty
-	, do
-		gitindex <- inRepo currentIndexFile
-		indexcache <- calcRepo' gitAnnexKeysDbIndexCache
-		withTSDelta (liftIO . genInodeCache gitindex) >>= \case
-			Just cur -> readindexcache indexcache >>= \case
-				Nothing -> go cur indexcache =<< getindextree
-				Just prev -> ifM (compareInodeCaches prev cur)
-					( return mempty
-					, go cur indexcache =<< getindextree
-					)
-			Nothing -> return mempty
+	, go =<< getindextree
 	)
   where
 	lastindexref = Ref "refs/annex/last-index"
 
-	readindexcache indexcache = liftIO $ maybe Nothing readInodeCache
-		<$> catchMaybeIO (readFileString indexcache)
-
 	getoldtree = fromMaybe emptyTree <$> inRepo (Git.Ref.sha lastindexref)
 	
-	go cur indexcache (Just newtree) = do
+	go (Just newtree) = do
 		oldtree <- getoldtree
 		when (oldtree /= newtree) $ do
 			fastDebug "Database.Keys" "reconcileStaged start"
@@ -292,7 +284,6 @@ reconcileStaged dbisnew qh = ifM isBareRepo
 					(Just (fromRef oldtree)) 
 					(fromRef newtree)
 					(procdiff mdfeeder)
-			liftIO $ writeFileString indexcache $ showInodeCache cur
 			-- Storing the tree in a ref makes sure it does not
 			-- get garbage collected, and is available to diff
 			-- against next time.
@@ -309,7 +300,7 @@ reconcileStaged dbisnew qh = ifM isBareRepo
 	-- When there is a merge conflict, that will not see the new local
 	-- version of the files that are conflicted. So a second diff
 	-- is done, with --staged but no old tree.
-	go _ _ Nothing = do
+	go Nothing = do
 		fastDebug "Database.Keys" "reconcileStaged start (in conflict)"
 		oldtree <- getoldtree
 		g <- Annex.gitRepo

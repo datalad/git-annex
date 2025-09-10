@@ -9,6 +9,7 @@ module Database.Keys.Handle (
 	DbHandle,
 	newDbHandle,
 	DbState(..),
+	DbWasOpen(..),
 	withDbState,
 	flushDbQueue,
 	closeDbHandle,
@@ -30,10 +31,16 @@ newtype DbHandle = DbHandle (MVar DbState)
 
 -- The database can be closed or open, but it also may have been
 -- tried to open (for read) and didn't exist yet or is not readable.
-data DbState = DbClosed | DbOpen (H.DbQueue, DbTablesChanged) | DbUnavailable
+data DbState 
+	= DbClosed DbWasOpen
+	| DbOpen (H.DbQueue, DbTablesChanged)
+	| DbUnavailable
+
+-- Was the database previously opened by this process?
+data DbWasOpen = DbWasOpen Bool
 
 newDbHandle :: IO DbHandle
-newDbHandle = DbHandle <$> newMVar DbClosed
+newDbHandle = DbHandle <$> newMVar (DbClosed (DbWasOpen False))
 
 -- Runs an action on the state of the handle, which can change its state.
 -- The MVar is empty while the action runs, which blocks other users
@@ -65,5 +72,5 @@ closeDbHandle h = withDbState h go
   where
 	go (DbOpen (qh, _)) = do
 		H.closeDbQueue qh
-		return ((), DbClosed)
+		return ((), DbClosed (DbWasOpen True))
 	go st = return ((), st)
