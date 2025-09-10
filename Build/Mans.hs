@@ -13,8 +13,7 @@ import System.Directory
 import System.FilePath
 import Data.List
 import Control.Monad
-import System.Process
-import System.Exit
+import Utility.SafeCommand
 import Data.Maybe
 import Utility.Exception
 import Control.Applicative
@@ -37,16 +36,16 @@ buildMans = do
 		destm <- catchMaybeIO $ getModificationTime dest
 		if (Just srcm > destm)
 			then do
-				r <- system $ unwords
-					-- Run with per because in some
-					-- cases it may not be executable.
-					[ "perl", "./Build/mdwn2man"
-					, progName src
-					, "1"
-					, src
-					, "> " ++ dest
+				-- Run with perl because in some
+				-- cases it may not be executable.
+				r <- boolSystem "perl" $
+					[ Param "./Build/mdwn2man"
+					, Param $ progName src
+					, Param "1"
+					, Param src
+					, Param $ "> " ++ dest
 					]
-				if r == ExitSuccess
+				if r == True
 					then return (Just dest)
 					else return Nothing
 			else return (Just dest)

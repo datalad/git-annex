@@ -8,7 +8,6 @@ module Build.Version where
 import Data.List
 import System.Environment
 import Data.Char
-import System.Process
 import Control.Applicative
 import Prelude
 
@@ -16,6 +15,7 @@ import Utility.Monad
 import Utility.Exception
 import Utility.OsPath
 import Utility.FileSystemEncoding
+import Utility.Process
 import qualified Utility.FileIO as F
 
 type Version = String
@@ -39,7 +39,7 @@ getVersion = do
 			gitversion <- takeWhile (\c -> isAlphaNum c) <$> readProcess "sh"
 				[ "-c"
 				, "git log -n 1 --format=format:'%H'"
-				] ""
+				]
 			return $ if null gitversion
 				then changelogversion
 				else concat

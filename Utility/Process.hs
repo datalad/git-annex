@@ -1,7 +1,7 @@
 {- System.Process enhancements, including additional ways of running
  - processes, and logging.
  -
- - Copyright 2012-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2025 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -36,7 +36,7 @@ module Utility.Process (
 ) where
 
 import qualified Utility.Process.Shim
-import Utility.Process.Shim as X (CreateProcess(..), ProcessHandle, StdStream(..), CmdSpec(..), proc, getPid, getProcessExitCode, shell, terminateProcess, interruptProcessGroupOf)
+import Utility.Process.Shim as X (CreateProcess(..), ProcessHandle, StdStream(..), CmdSpec(..), proc, getPid, getProcessExitCode, shell, terminateProcess, interruptProcessGroupOf, Pid)
 import Utility.Misc
 import Utility.Exception
 import Utility.Monad

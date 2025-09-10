@@ -11,7 +11,7 @@ import Common
 import Annex.Path
 import Utility.Env
 
-import System.Process
+import Utility.Process
 import GHC.IO.Handle.FD
 
 multicastReceiveEnv :: String
