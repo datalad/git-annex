@@ -1,0 +1,5 @@
+reconcileStaged runs `git write-tree` to see if anything has changed, which
+can be slow in large repos.
+
+It should be possible for Remote.Git to cache the state so this doesn't
+happen once per file. --[[Joey]]
