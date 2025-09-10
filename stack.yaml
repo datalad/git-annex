@@ -9,7 +9,6 @@ flags:
     dbus: false
     debuglocks: false
     benchmark: true
-    crypton: true
     servant: true
     ospath: true
 packages:

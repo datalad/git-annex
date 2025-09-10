@@ -1,4 +1,4 @@
-{- Convenience wrapper around cryptonite's hashing.
+{- Convenience wrapper around crypton's hashing.
  -
  - Copyright 2013-2024 Joey Hess <id@joeyh.name>
  -
@@ -7,7 +7,6 @@
 
 {-# LANGUAGE BangPatterns, PackageImports #-}
 {-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE CPP #-}
 
 module Utility.Hash (
 	sha1,
@@ -78,13 +77,8 @@ import qualified Data.ByteString.Lazy as L
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import Data.IORef
-#ifdef WITH_CRYPTON
 import "crypton" Crypto.MAC.HMAC hiding (Context)
 import "crypton" Crypto.Hash
-#else
-import "cryptonite" Crypto.MAC.HMAC hiding (Context)
-import "cryptonite" Crypto.Hash
-#endif
 
 sha1 :: L.ByteString -> Digest SHA1
 sha1 = hashlazy

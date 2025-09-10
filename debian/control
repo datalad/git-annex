@@ -9,7 +9,7 @@ Build-Depends:
 	libghc-split-dev,
 	libghc-data-default-dev,
 	libghc-hslogger-dev,
-	libghc-cryptonite-dev,
+	libghc-crypton-dev,
 	libghc-memory-dev,
 	libghc-deepseq-dev,
 	libghc-attoparsec-dev,

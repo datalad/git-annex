@@ -169,9 +169,6 @@ Flag TorrentParser
 Flag MagicMime
   Description: Use libmagic to determine file MIME types
 
-Flag Crypton
-  Description: Use the crypton library rather than the no longer maintained cryptonite
-
 Flag Servant
   Description: Use the servant library, enabling using annex+http urls and git-annex p2phttp
 
@@ -284,7 +281,8 @@ Executable git-annex
    network (>= 3.0.0.0),
    network-bsd,
    git-lfs (>= 1.2.0),
-   clock (>= 0.3.0)
+   clock (>= 0.3.0),
+   crypton
   CC-Options: -Wall
   GHC-Options: -Wall -fno-warn-tabs  -Wincomplete-uni-patterns
   Default-Language: Haskell2010
@@ -310,12 +308,6 @@ Executable git-annex
   -- Avoid linking with unused dynamic libraries.
   if os(linux) || os(freebsd)
     GHC-Options: -optl-Wl,--as-needed
-
-  if flag(Crypton)
-    Build-Depends: crypton
-    CPP-Options: -DWITH_CRYPTON
-  else
-    Build-Depends: cryptonite (>= 0.23)
 
   if flag(Servant)
     Build-Depends:

@@ -12,6 +12,7 @@ git-annex (10.20250829) UNRELEASED; urgency=medium
     flag, these leaks can still happen.
   * Improve performance when used with a local git remote that has a
     large working tree.
+  * Removed support for building with cryptonite, use crypton.
 
  -- Joey Hess <id@joeyh.name>  Fri, 29 Aug 2025 12:34:06 -0400
 
