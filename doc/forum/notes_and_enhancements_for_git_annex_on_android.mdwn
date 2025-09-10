@@ -1,0 +1,31 @@
+I have the following setup:
+
+Git Annex on my laptop, Git Annex on my mobile phone via Termux and SSH.
+
+When I add my mobile phone using the web app ‘Adding a remote server using SSH’, it is not recognised. The reasons are:
+
+1: which is not installed. Git Annex apparently tries to check whether remote Git Annex is installed via ‘which git-annex’. I read this somewhere on the web, but I can't find the source right now. This problem can be easily solved: 
+
+    apt install which
+
+2: The Git Annex installation extends the PATH variable in the .profile file. The problem is, that this file is not evaluated when the following is executed:
+
+    ssh -p 8022 user@host 'which git-annex'
+
+If we look at the openSSH documentation, it says: 
+
+>When the user's identity has been accepted by the server, the server either executes the given command in a non-interactive session or, if no command has been specified, logs into the machine and gives the user a normal shell as an interactive session...
+
+Since no shell is started, .profile is not evaluated (my interpretation). I have now worked around this as follows:
+
+    ln -s /data/data/com.termux/files/home/git-annex.linux/git-annex $PREFIX/bin/git-annex
+    ln -s /data/data/com.termux/files/home/git-annex.linux/git-annex-shell $PREFIX/bin/git-annex-shell
+    ln -s /data/data/com.termux/files/home/git-annex.linux/git-annex-webapp $PREFIX/bin/git-annex-webapp
+
+I don't know if this is a mistake, but I think it could help some people. Perhaps the git-annex-install script could be improved?
+
+Another suggestion from me: If the test carried out as follows:
+
+    ssh -p 8022 hostname 'bash -l -c '\'which git-annex\'''
+
+Everything would works perfectly.
