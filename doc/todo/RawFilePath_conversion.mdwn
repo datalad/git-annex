@@ -48,4 +48,8 @@ of the status.
   there use of FilePath remains in odd corners. These are unlikely to cause
   any noticiable performance impact.
 
+The `require_OsPath` branch removes the OsPath build flag,
+and merging it would resolve this. That will need packagers to do some work
+to package the libraries though. --[[Joey]]
+
 [[!tag confirmed]]
