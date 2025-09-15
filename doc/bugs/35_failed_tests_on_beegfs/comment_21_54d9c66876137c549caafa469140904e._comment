@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 21"""
+ date="2025-09-15T20:12:04Z"
+ content="""
+I have enabled OsPath in the build at
+<https://downloads.kitenet.net/git-annex/autobuild/amd64/git-annex-standalone-amd64.tar.gz>
+"""]]
