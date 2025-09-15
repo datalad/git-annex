@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2025-09-15T15:18:15Z"
+ content="""
+Seems the bug is specific to LOCKCONTENT. When doing other operations,
+like CHECKPRESENT after the repo is deleted, the server returns
+FAILURE and continues being able to serve more requests for that repo.
+
+Ah, the problem is that serveLockContent is running a block of actions in
+a single inAnnexWorker call, which first sends on the LOCKCONTENT, then
+blocks waiting for the unlock to arrive. Which never happens, so it remains
+blocked there forever, consuming a worker thread.
+
+Fixed that, finally.
+"""]]

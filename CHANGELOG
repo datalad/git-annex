@@ -13,6 +13,8 @@ git-annex (10.20250829) UNRELEASED; urgency=medium
   * Improve performance when used with a local git remote that has a
     large working tree.
   * Removed support for building with cryptonite, use crypton.
+  * p2phttp: Fix a hang that could occur when used with --directory,
+    and a repository in the repository got removed.
 
  -- Joey Hess <id@joeyh.name>  Fri, 29 Aug 2025 12:34:06 -0400
 
