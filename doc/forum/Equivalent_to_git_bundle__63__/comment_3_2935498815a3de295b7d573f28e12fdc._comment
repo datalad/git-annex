@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="psxvoid"
+ avatar="http://cdn.libravatar.org/avatar/fde068fbdeabeea31e3be7aa9c55d84b"
+ subject="git annex bundle - questions"
+ date="2025-09-11T08:02:08Z"
+ content="""
+I'm also interested in this feature, because I'd got git annex repo corrupted a couple of times due to a power loss.
+
+But it's not clear enough yet how it's supposed to work. Should it create an archive containing a git-bundle + annexed files containing ONLY files in this bundle commit range?
+
+It might be possible to write a script that does exactly that, but having something integrated into git-annex itself could be a bonus with cross-platform support (available on both windows and linux), standardized and ready for archival (e.g. bundles can be written periodically onto m-discs).
+
+I'm also wondering what if a current repository get corrupted (at least partially), will git annex be able to \"restore\" it's state after git-bundle-restore?
+"""]]

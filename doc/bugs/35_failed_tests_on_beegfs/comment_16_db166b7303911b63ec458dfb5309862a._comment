@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 16"
+ date="2025-09-11T15:46:52Z"
+ content="""
+I have reran with freshish build 10.20250828+git58-g38786a4e5e-1~ndall+1 and still observe those FAILs as before IIRC
+
+```shell
+$> show-paths  -e FAIL -f full-lines .duct/logs/2025.09.11T11.15.27-2500297_stdout
+1016  Tests
+1017    Repo Tests v10 locked
+1025:     git-remote-annex exporttree:      FAIL (3.60s)
+1206  Tests
+1207    Repo Tests v10 locked
+1215:     export and import of subdir:           FAIL (7.19s)
+1225  Tests
+1226    Repo Tests v10 locked
+1234:     export and import:                     FAIL (4.91s)
+1268  Tests
+1269    Repo Tests v10 adjusted unlocked branch
+1277:     git-remote-annex exporttree:      FAIL (4.68s)
+1299  Tests
+1300    Repo Tests v10 unlocked
+1308:     export and import of subdir:           FAIL (10.38s)
+1330  Tests
+1331    Repo Tests v10 unlocked
+1339:     export and import:                     FAIL (10.19s)
+1373  Tests
+1374    Repo Tests v10 adjusted unlocked branch
+1382:     export and import:                     FAIL (6.96s)
+1428  Tests
+1429    Repo Tests v10 adjusted unlocked branch
+1437:     export and import of subdir:           FAIL (10.63s)
+```
+"""]]
