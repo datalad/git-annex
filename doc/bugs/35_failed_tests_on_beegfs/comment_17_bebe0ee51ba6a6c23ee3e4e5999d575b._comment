@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 17"""
+ date="2025-09-15T16:07:35Z"
+ content="""
+Drat. Reopened bug.
+
+Is the error for these still "export.ex [...] Device or resource busy"?
+
+If so, the problem must not be beegfs not liking an open file to be
+renamed, but something else. 
+
+I have verified that the temp file that gets renamed to the "export.ex"
+log file is now opened with `O_CLOEXEC`.
+"""]]
