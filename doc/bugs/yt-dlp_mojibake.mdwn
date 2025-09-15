@@ -1,0 +1,22 @@
+git-annex importfeed from an AvE video failed:
+
+	renamePath:rename '/home/joey/lib/big/.git/annex/tmp/work.URL--yt&chttps&c%%www.youtube.com%watch,63v,61HPajFNxnuN8/Ã¯Â¼ÂCorrectionÃ¯Â¼Â hydraulic spool motor [HPajFNxnuN8].webm' to '../.git/annex/tmp/URL--yt&chttps&c%%www.youtube.com%watch,63v,61HPajFNxnuN8': does not exist (No such file or directory)
+
+Here's the file list:
+
+	joey@darkstar:~/lib/big>cat .git/annex/tmp/work.URL--yt\&chttps\&c%%www.youtube.com%watch\,63v\,61HPajFNxnuN8/git-annex-file-list-file
+	/home/joey/lib/big/.git/annex/tmp/work.URL--yt&chttps&c%%www.youtube.com%watch,63v,61HPajFNxnuN8/＊Correction＊ hydraulic spool motor [HPajFNxnuN8].webm
+	/home/joey/lib/big/.git/annex/tmp/work.URL--yt&chttps&c%%www.youtube.com%watch,63v,61HPajFNxnuN8/＊Correction＊ hydraulic spool motor [HPajFNxnuN8].webm
+
+And the video was written to the file:
+ ".git/annex/tmp/work.URL--yt&chttps&c%%www.youtube.com%watch,63v,61HPajFNxnuN8/＊Correction＊ hydraulic spool motor [HPajFNxnuN8].webm"
+
+This only affects a git-annex built with OsPath, and only recently
+(not a released version).
+
+Unfortunatly, it is a bug in file-io:
+<https://github.com/haskell/file-io/issues/45>
+
+To fix it, git-annex will need to wrap file-io and call
+`getLocaleEncoding >>= hSetEncoding h` on each opened Handle. Or depend on
+a fixed version. --[[Joey]]
