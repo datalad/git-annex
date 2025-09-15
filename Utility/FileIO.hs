@@ -2,7 +2,8 @@
  - readFileString, writeFileString, and appendFileString.
  -
  - When building with file-io, all exported functions set the close-on-exec
- - flag.
+ - flag. Also, some other issues are handled that file-io does not handle
+ - correctly.
  -
  - When not building with file-io, this provides equvilant
  - RawFilePath versions. Note that those versions do not currently

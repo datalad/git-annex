@@ -20,3 +20,5 @@ Unfortunatly, it is a bug in file-io:
 To fix it, git-annex will need to wrap file-io and call
 `getLocaleEncoding >>= hSetEncoding h` on each opened Handle. Or depend on
 a fixed version. --[[Joey]]
+
+> [[done]] --[[Joey]]
