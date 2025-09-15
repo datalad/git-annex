@@ -478,7 +478,7 @@ serveLockContent mst su apiver (B64Key k) cu bypass sec auth = do
 		lockresv <- newEmptyTMVarIO
 		unlockv <- newEmptyTMVarIO
 		-- A single worker thread takes the lock, and keeps running
--		-- until unlock in order to keep the lock held.
+		-- until unlock in order to keep the lock held.
 		annexworker <- async $ inAnnexWorker st $ do
 			lockres <- runFullProto (clientRunState conn) (clientP2PConnection conn) $ do
 				net $ sendMessage (LOCKCONTENT k)
