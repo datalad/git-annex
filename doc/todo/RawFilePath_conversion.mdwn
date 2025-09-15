@@ -50,6 +50,8 @@ of the status.
 
 The `require_OsPath` branch removes the OsPath build flag,
 and merging it would resolve this. That will need packagers to do some work
-to package the libraries though. --[[Joey]]
+to package the libraries though. Or to upgrade ghc, since file-io and
+os-string are boot libraries since ghc 9.12.2 and 9.10.1 respectively.
+--[[Joey]]
 
 [[!tag confirmed]]
