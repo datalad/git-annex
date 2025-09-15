@@ -116,20 +116,29 @@ relatedTemplate' :: RawFilePath -> RawFilePath
 #ifndef mingw32_HOST_OS
 relatedTemplate' f
 	| len > templateAddedLength = 
-		{- Some filesystems like FAT have issues with filenames
-		 - ending in ".", and others like VFAT don't allow a
-		 - filename to end with trailing whitespace, so avoid
-		 - truncating a filename to end that way. -}
-		let p = B.dropWhileEnd disallowed $
-			truncateFilePath (len - templateAddedLength) f
+		let p = fixend $ truncateFilePath (len - templateAddedLength) f
 		in if B.null p
 			then "t"
 			else p
 	| otherwise = f
   where
 	len = B.length f
-	disallowed c = c == dot || isSpace (chr (fromIntegral c))
+	{- Some filesystems like FAT have issues with filenames
+	 - ending in ".", and others like VFAT don't allow a
+	 - filename to end with trailing whitespace, so avoid
+	 - truncating a filename to end that way. -}
+	fixend p =
+		{- B.dropWhileEnd doesn't take wide characters
+		 - into account, but is fast, so use it to check
+		 - the common case. -}
+		let p' = B.dropWhileEnd disallowed p
+		in if p' == p 
+			then p
+			else toRawFilePath $ reverse $
+				dropWhile (disallowed . fromIntegral . ord) $
+				reverse $ fromRawFilePath p
 	dot = fromIntegral (ord '.')
+	disallowed c = c == dot || isSpace (chr (fromIntegral c))
 #else
 -- Avoids a test suite failure on windows, reason unknown, but
 -- best to keep paths short on windows anyway.

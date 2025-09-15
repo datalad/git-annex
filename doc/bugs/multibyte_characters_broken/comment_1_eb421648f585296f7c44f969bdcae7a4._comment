@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-09-15T16:59:59Z"
+ content="""
+git-annex actually attempts to truncate the filename taking unicode
+character width into account.
+
+Here is the truncation on the wrong byte though:
+
+	ghci> :t x
+	x :: String
+	ghci> x
+	"ingest-01-06 \19977\30707\29748\20035\12539\23500\27810\32654\26234\24693\12539\20037\24029\32190\12539\31712\21407\24693\32654\12539\28145\35211 \26792\21152 - Tuxedo Mirage.flac"
+	ghci> toRawFilePath x
+	"ingest-01-06 \228\184\137\231\159\179\231\144\180\228\185\131\227\131\187\229\175\140\230\178\162\231\190\142\230\153\186\230\129\181\227\131\187\228\185\133\229\183\157\231\182\190\227\131\187\231\175\160\229\142\159\230\129\181\231\190\142\227\131\187\230\183\177\232\166\139 \230\162\168\229\138\160 - Tuxedo Mirage.flac"
+	ghci> relatedTemplate (toRawFilePath x)
+	"ingest-01-06 \228\184\137\231\159\179\231\144\180\228\185\131\227\131\187\229\175\140\230\178\162\231\190\142\230\153\186\230\129\181\227\131\187\228\185\133\229\183\157\231\182\190\227\131\187\231\175\160\229\142\159\230\129\181\231\190\142\227\131\187\230\183\177\232\166\139 \230\162\168\229\138"
+
+What is going on is that '\160` is a space character, and filesystems like
+FAT do not allow a filename to end with a space. So relatedTemplate trims
+off trailing spaces, and accidentially trimmed off this byte, despite it
+being part of a multibyte sequence.
+
+Aren't filesystems with arbitrary limitations on what valid filenames are fun?
+
+Fixed this.
+"""]]

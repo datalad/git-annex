@@ -31,3 +31,5 @@ The original file obviously has a correct encoding, but it seems that git annex 
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 I use git annex to manage my whole music collection successfully.
+
+> [[fixed|done]] --[[Joey]]

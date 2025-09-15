@@ -3,6 +3,8 @@ git-annex (10.20250829) UNRELEASED; urgency=medium
   * drop: --fast support when dropping from a remote.
   * Fix crash operating on filenames that are exactly 21 bytes long
     and begin with a utf-8 character.
+  * Fix bug that could cause an invalid utf-8 sequence to be used in a
+    temporary filename when the input filename was valid utf-8.
   * git-annex.cabal: Turn on the OsPath build flag by default.
   * Add build warnings when git-annex is built without the OsPath
     build flag.
