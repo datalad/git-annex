@@ -126,17 +126,20 @@ relatedTemplate' f
 	{- Some filesystems like FAT have issues with filenames
 	 - ending in ".", and others like VFAT don't allow a
 	 - filename to end with trailing whitespace, so avoid
-	 - truncating a filename to end that way. -}
-	fixend p =
-		{- B.dropWhileEnd doesn't take wide characters
-		 - into account, but is fast, so use it to check
-		 - the common case. -}
-		let p' = B.dropWhileEnd disallowed p
-		in if p' == p 
-			then p
-			else toRawFilePath $ reverse $
+	 - truncating a filename to end that way.
+	 -
+	 - Checking with unsnoc for the path to end with a disallowed
+	 - character doesn't take wide characters into account,
+	 - so will have false positives, but it is fast.
+	 -}
+	fixend p = case B.unsnoc p of
+		Just (_, c) | disallowed c -> 
+			-- Convert to String to take wide characters into
+			-- account.
+			toRawFilePath $ reverse $
 				dropWhile (disallowed . fromIntegral . ord) $
 				reverse $ fromRawFilePath p
+		_ -> p
 	dot = fromIntegral (ord '.')
 	disallowed c = c == dot || isSpace (chr (fromIntegral c))
 #else
