@@ -4,11 +4,10 @@ configured to add them locked.
 There are good reasons for that different behavior to be the default,
 but it would be worth having a config to override that.
 
-Eg, when annex.assistant.honor.addunlocked is set, honor the
-annex.addunlocked configuration, which defaults to adding files locked.
-Or perhaps a better name would be annex.assistant.allowaddlocked.
-
 See here for some motivating use cases
 <https://git-annex.branchable.com/forum/Is_there_a_way_to_have_assistant_add_files_locked__63__/>
 
 [[!tag projects/repronim]]
+
+> [[done]], git config annex.assistant.allowunlocked to true,
+> and then configure annex.addunlocked as desired. --[[Joey]]

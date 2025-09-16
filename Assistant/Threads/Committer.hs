@@ -62,6 +62,11 @@ commitThread = namedThread "Committer" $ do
 		fmap Seconds . annexDelayAdd <$> Annex.getGitConfig
 	largefilematcher <- liftAnnex largeFilesMatcher
 	annexdotfiles <- liftAnnex $ getGitConfigVal annexDotFiles
+	addunlockedmatcher <- liftAnnex $
+		ifM (annexSupportUnlocked <$> Annex.getGitConfig)
+			( Just <$> addUnlockedMatcher
+			, return Nothing
+			)
 	msg <- liftAnnex Command.Sync.commitMsg
 	lockdowndir <- liftAnnex $ fromRepo gitAnnexTmpWatcherDir
 	liftAnnex $ do
@@ -70,7 +75,7 @@ commitThread = namedThread "Committer" $ do
 		void $ liftIO $ tryIO $ removeDirectoryRecursive lockdowndir
 		void $ createAnnexDirectory lockdowndir
 	waitChangeTime $ \(changes, time) -> do
-		readychanges <- handleAdds lockdowndir havelsof largefilematcher annexdotfiles delayadd $
+		readychanges <- handleAdds lockdowndir havelsof largefilematcher annexdotfiles addunlockedmatcher delayadd $
 			simplifyChanges changes
 		if shouldCommit False time (length readychanges) readychanges
 			then do
@@ -275,8 +280,8 @@ commitStaged msg = do
  - Any pending adds that are not ready yet are put back into the ChangeChan,
  - where they will be retried later.
  -}
-handleAdds :: OsPath -> Bool -> GetFileMatcher -> Bool -> Maybe Seconds -> [Change] -> Assistant [Change]
-handleAdds lockdowndir havelsof largefilematcher annexdotfiles delayadd cs = returnWhen (null incomplete) $ do
+handleAdds :: OsPath -> Bool -> GetFileMatcher -> Bool -> Maybe AddUnlockedMatcher -> Maybe Seconds -> [Change] -> Assistant [Change]
+handleAdds lockdowndir havelsof largefilematcher annexdotfiles addunlockedmatcher delayadd cs = returnWhen (null incomplete) $ do
 	let (pending, inprocess) = partition isPendingAddChange incomplete
 	let lockdownconfig = LockDownConfig
 		{ lockingFile = False
@@ -340,9 +345,9 @@ handleAdds lockdowndir havelsof largefilematcher annexdotfiles delayadd cs = ret
 			Command.Add.addFile Command.Add.Small f
 				=<< liftIO (R.getSymbolicLinkStatus (fromOsPath f))
 
-	{- Avoid overhead of re-injesting a renamed unlocked file, by
-	 - examining the other Changes to see if a removed file has the
-	 - same InodeCache as the new file. If so, we can just update
+	{- When adding the file unlocked, avoid overhead of re-injesting a renamed
+	 - unlocked file, by examining the other Changes to see if a removed
+	 - file has the same InodeCache as the new file. If so, we can just update
 	 - bookkeeping, and stage the file in git.
 	 -}
 	addannexed :: [Change] -> Assistant [Maybe Change]
@@ -357,18 +362,36 @@ handleAdds lockdowndir havelsof largefilematcher annexdotfiles delayadd cs = ret
 			, checkWritePerms = True
 			}
 		if M.null m
-			then forM toadd (addannexed' cfg)
+			then forM toadd $ \c -> do
+				mcache <- liftIO $ genInodeCache (changeFile c) delta
+				addunlocked <- checkaddunlocked c
+				addannexed' cfg c addunlocked mcache
 			else forM toadd $ \c -> do
 				mcache <- liftIO $ genInodeCache (changeFile c) delta
-				case mcache of
-					Nothing -> addannexed' cfg c
-					Just cache ->
-						case M.lookup (inodeCacheToKey ct cache) m of
-							Nothing -> addannexed' cfg c
-							Just k -> fastadd c k
+				ifM (checkaddunlocked c)
+					( case mcache of
+						Nothing -> addannexed' cfg c True Nothing
+						Just cache ->
+							case M.lookup (inodeCacheToKey ct cache) m of
+								Nothing -> addannexed' cfg c True Nothing
+								Just k -> fastadd c k
+					, addannexed' cfg c False mcache
+					)
 
-	addannexed' :: LockDownConfig -> Change -> Assistant (Maybe Change)
-	addannexed' lockdownconfig change@(InProcessAddChange { lockedDown = ld }) = 
+	checkaddunlocked (InProcessAddChange { lockedDown = ld }) = 
+		case addunlockedmatcher of
+			Just addunlockedmatcher' -> do
+				let mi = MatchingFile $ FileInfo
+					{ contentFile = contentLocation (keySource ld)
+					, matchFile = keyFilename (keySource ld)
+					, matchKey = Nothing
+					}
+				liftAnnex $ addUnlocked addunlockedmatcher' mi True
+			Nothing -> return True
+	checkaddunlocked _ = return True
+
+	addannexed' :: LockDownConfig -> Change -> Bool -> Maybe InodeCache -> Assistant (Maybe Change)
+	addannexed' lockdownconfig change@(InProcessAddChange { lockedDown = ld }) addunlocked mcache = 
 		catchDefaultIO Nothing <~> doadd
 	  where
 	  	ks = keySource ld
@@ -376,14 +399,14 @@ handleAdds lockdowndir havelsof largefilematcher annexdotfiles delayadd cs = ret
 			(mkey, _mcache) <- liftAnnex $ do
 				showStartMessage (StartMessage "add" (ActionItemOther (Just (QuotedPath (keyFilename ks)))) (SeekInput []))
 				ingest nullMeterUpdate (Just $ LockedDown lockdownconfig ks) Nothing
-			maybe (failedingest change) (done change $ keyFilename ks) mkey
-	addannexed' _ _ = return Nothing
+			maybe (failedingest change) (done change addunlocked mcache $ keyFilename ks) mkey
+	addannexed' _ _ _ _ = return Nothing
 
 	fastadd :: Change -> Key -> Assistant (Maybe Change)
 	fastadd change key = do
 		let source = keySource $ lockedDown change
 		liftAnnex $ finishIngestUnlocked key source
-		done change (keyFilename source) key
+		done change True Nothing (keyFilename source) key
 
 	removedKeysMap :: InodeComparisonType -> [Change] -> Annex (M.Map InodeCacheKey Key)
 	removedKeysMap ct l = do
@@ -399,11 +422,14 @@ handleAdds lockdowndir havelsof largefilematcher annexdotfiles delayadd cs = ret
 		liftAnnex showEndFail
 		return Nothing
 
-	done change file key = liftAnnex $ do
+	done change addunlocked mcache file key = liftAnnex $ do
 		logStatus NoLiveUpdate key InfoPresent
-		mode <- liftIO $ catchMaybeIO $
-			fileMode <$> R.getFileStatus (fromOsPath file)
-		stagePointerFile file mode =<< hashPointerFile key
+		if addunlocked
+			then do
+				mode <- liftIO $ catchMaybeIO $
+					fileMode <$> R.getFileStatus (fromOsPath file)
+				stagePointerFile file mode =<< hashPointerFile key
+			else addSymlink file key mcache
 		showEndOk
 		return $ Just $ finishedChange change key
 
