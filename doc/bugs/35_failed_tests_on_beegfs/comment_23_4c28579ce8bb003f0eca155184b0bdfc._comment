@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 23"""
+ date="2025-09-16T14:36:24Z"
+ content="""
+Yay!
+
+OsPath needs the os-string and file-io haskell packages. Which are not
+currently in Debian. So either work will need to be done to package those,
+or when Debian upgrades ghc to 9.12.2, it will include those libraries
+automatically since they are bundled with ghc since that version.
+
+Maybe you know more than I do about the state of Debian's haskell support.
+
+The transition is being tracked at [[todo/RawFilePath_conversion]] but I
+don't know yet what the solution is to getting the dependencies broadly
+available.
+
+(Or I could implement the same fixes when not built with that flag of
+course. It is doable. Just annoying especially since that code will have to
+be carefully gotten just right, only to be thrown away later.)
+"""]]
