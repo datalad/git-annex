@@ -210,7 +210,7 @@ getRemoteConfigValue f (ParsedRemoteConfig m _) = case M.lookup f m of
 			-- Handle the case where an external special remote
 			-- tries to SETCONFIG a value belonging to git-annex,
 			-- resulting in a PassedThrough type being stored.
-			Just _ -> error $ unwords
+			Just _ -> giveup $ unwords
 				[ "Special remote config "
 				, fromProposedAccepted f
 				, "has been overwritten by SETCONFIG."
