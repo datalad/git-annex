@@ -16,7 +16,7 @@ git-annex (10.20250829) UNRELEASED; urgency=medium
     large working tree.
   * Removed support for building with cryptonite, use crypton.
   * p2phttp: Fix a hang that could occur when used with --directory,
-    and a repository in the repository got removed.
+    and a repository in the directory got removed.
   * Added annex.assistant.allowunlocked config.
 
  -- Joey Hess <id@joeyh.name>  Fri, 29 Aug 2025 12:34:06 -0400
