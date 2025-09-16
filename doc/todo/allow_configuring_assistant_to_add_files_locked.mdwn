@@ -10,3 +10,5 @@ Or perhaps a better name would be annex.assistant.allowaddlocked.
 
 See here for some motivating use cases
 <https://git-annex.branchable.com/forum/Is_there_a_way_to_have_assistant_add_files_locked__63__/>
+
+[[!tag projects/repronim]]
