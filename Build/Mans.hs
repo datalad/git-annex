@@ -1,6 +1,6 @@
 {- Build man pages.
  -
- - Copyright 2016 Joey Hess <id@joeyh.name>
+ - Copyright 2016-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -9,11 +9,12 @@
 
 module Build.Mans where
 
+import Utility.Process
 import System.Directory
 import System.FilePath
 import Data.List
 import Control.Monad
-import Utility.SafeCommand
+import System.Exit
 import Data.Maybe
 import Utility.Exception
 import Control.Applicative
@@ -36,16 +37,18 @@ buildMans = do
 		destm <- catchMaybeIO $ getModificationTime dest
 		if (Just srcm > destm)
 			then do
-				-- Run with perl because in some
-				-- cases it may not be executable.
-				r <- boolSystem "perl" $
-					[ Param "./Build/mdwn2man"
-					, Param $ progName src
-					, Param "1"
-					, Param src
-					, Param $ "> " ++ dest
+				(Nothing, Nothing, Nothing, pid) <- createProcess $ shell $ unwords $
+					-- Run with perl because in some
+					-- cases it may not be executable.
+					[ "perl"
+					, "./Build/mdwn2man"
+					, progName src
+					, "1"
+					, src
+					, "> " ++ dest
 					]
-				if r == True
+				r <- waitForProcess pid
+				if r == ExitSuccess
 					then return (Just dest)
 					else return Nothing
 			else return (Just dest)
