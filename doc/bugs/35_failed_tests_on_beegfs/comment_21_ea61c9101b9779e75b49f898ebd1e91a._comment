@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 21"
+ date="2025-09-16T00:40:21Z"
+ content="""
+that version had no errors: `All tests succeeded. (Ran 50 test groups in 11m54s)`
+
+So, this will be default option? any specific dependency requirements we need to add/constrain?
+"""]]
