@@ -56,6 +56,8 @@ import Annex.Path
 #ifdef mingw32_HOST_OS
 import Utility.Env
 import System.Environment (getArgs)
+#else
+import GHC.IO.Encoding (getLocaleEncoding)
 #endif
 import qualified Utility.Debug as Debug
 
@@ -82,10 +84,15 @@ startDaemon assistant foreground startdelay cannotrun listenhost listenport star
 	let logfd = handleToFd =<< openLog (fromOsPath logfile)
 	if foreground
 		then do
-			origout <- liftIO $ catchMaybeIO $ 
-				fdToHandle =<< dup stdOutput
-			origerr <- liftIO $ catchMaybeIO $ 
-				fdToHandle =<< dup stdError
+			enc <- liftIO getLocaleEncoding
+			origout <- liftIO $ catchMaybeIO $ do
+				h <- fdToHandle =<< dup stdOutput
+				hSetEncoding h enc
+				return h
+			origerr <- liftIO $ catchMaybeIO $ do
+				h <- fdToHandle =<< dup stdError
+				hSetEncoding h enc
+				return h
 			let undaemonize = Utility.Daemon.foreground logfd (Just pidfile)
 			start undaemonize $ 
 				case startbrowser of

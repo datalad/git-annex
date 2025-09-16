@@ -49,6 +49,7 @@ import System.Posix.Types
 import System.Posix.IO.ByteString
 import System.Posix.Files.ByteString
 import System.Posix.Process
+import GHC.IO.Encoding (getLocaleEncoding)
 import Control.Monad
 import Control.Monad.IO.Class (liftIO, MonadIO)
 import Data.Maybe
@@ -213,7 +214,9 @@ linkToLock (Just _) src dest = do
 					(Just $ combineModes readModes)
 					(defaultFileFlags { exclusive = True })
 					(CloseOnExecFlag True)
-				fdToHandle fd
+				h <- fdToHandle fd
+				getLocaleEncoding >>= hSetEncoding h
+				return h
 			let cleanup = hClose
 			let go h = F.readFileString src >>= hPutStr h
 			bracket setup cleanup go

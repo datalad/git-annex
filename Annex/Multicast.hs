@@ -18,6 +18,7 @@ import System.Posix.IO
 #else
 import System.Process (createPipeFd)
 #endif
+import GHC.IO.Encoding (getLocaleEncoding)
 
 multicastReceiveEnv :: String
 multicastReceiveEnv = "GIT_ANNEX_MULTICAST_RECEIVE"
@@ -34,6 +35,7 @@ multicastCallbackEnv = do
 	(rfd, wfd) <- createPipeFd
 #endif
 	rh <- fdToHandle rfd
+	getLocaleEncoding >>= hSetEncoding rh
 	environ <- addEntry multicastReceiveEnv (show wfd) <$> getEnvironment
 	return (gitannex, environ, rh)
 
@@ -46,6 +48,7 @@ runMulticastReceive :: [String] -> String -> IO ()
 runMulticastReceive ("-I":_sessionid:fs) hs = case readish hs of
 	Just fd -> do
 		h <- fdToHandle fd
+		getLocaleEncoding >>= hSetEncoding h
 		mapM_ (hPutStrLn h) fs
 		hClose h
 	Nothing -> return ()

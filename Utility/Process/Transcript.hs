@@ -23,6 +23,7 @@ import Control.Monad
 #ifndef mingw32_HOST_OS
 import Control.Exception
 import qualified System.Posix.IO
+import GHC.IO.Encoding (getLocaleEncoding)
 #else
 import Control.Applicative
 #endif
@@ -51,6 +52,9 @@ processTranscript'' cp input = do
 		System.Posix.IO.setFdOption writef System.Posix.IO.CloseOnExec True
 		readh <- System.Posix.IO.fdToHandle readf
 		writeh <- System.Posix.IO.fdToHandle writef
+		enc <- getLocaleEncoding
+		hSetEncoding readh enc
+		hSetEncoding writeh enc
 		return (readh, writeh)
 	let cleanup (readh, writeh) = do
 		hClose readh
