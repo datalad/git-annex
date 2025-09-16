@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 24"
+ date="2025-09-16T19:34:27Z"
+ content="""
+well, may be [at least Michael's pypi whl builds](https://github.com/psychoinformatics-de/git-annex-wheel/blob/main/.github/workflows/build-linux.yaml) which directly install stack (I do not think they use system pkgs) could be tuned as needed?
+"""]]
