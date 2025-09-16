@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: We don’t need a 'git annex lock' after a 'git annex add', right?"""
+ date="2025-09-16T17:28:49Z"
+ content="""
+Well spotted. `git-annex add` defaults to adding files locked, even when
+adding what was an unlocked file before.
+
+I've improved the example.
+"""]]
