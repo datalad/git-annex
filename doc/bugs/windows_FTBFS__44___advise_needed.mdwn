@@ -1,0 +1,46 @@
+### Please describe the problem.
+
+
+Our windows build was failing for a while
+
+[here is the recent log](https://github.com/datalad/git-annex/actions/runs/17753795690/job/50453300001)
+which shows
+
+```
+[336 of 754] Compiling Database.Init
+[337 of 754] Compiling Database.Benchmark
+D:\a\git-annex\git-annex\Annex\Multicast.hs:36:15: error: [GHC-88464]
+Error:     Variable not in scope:
+      fdToHandle
+        :: ghc-internal-9.1002.0:GHC.Internal.System.Posix.Internals.FD
+           -> IO Handle
+   |
+36 |         rh <- fdToHandle rfd
+   |               ^^^^^^^^^^
+
+D:\a\git-annex\git-annex\Annex\Multicast.hs:48:22: error: [GHC-88464]
+Error:     Variable not in scope: fdToHandle :: t0 -> IO Handle
+   |
+48 |                 h <- fdToHandle fd
+   |                      ^^^^^^^^^^
+
+[338 of 754] Compiling Creds
+...
+[752 of 754] Compiling Command.Assistant
+
+Error: [S-7282]
+       Stack failed to execute the build plan.
+       
+       While executing the build plan, Stack encountered the error:
+       
+       [S-7011]
+       While building package git-annex-10.20250828 (scroll up to its section to see the error)
+       using:
+       D:\a\git-annex\git-annex\.stack-work\dist\56bb250d\setup\setup --verbose=1 --builddir=.stack-work\dist\56bb250d build exe:git-annex --ghc-options ""
+       Process exited with code: ExitFailure 1 
+```
+
+### What steps will reproduce the problem?
+
+ CI action with all the steps is [here](https://github.com/datalad/git-annex/blob/master/.github/workflows/build-windows.yaml#L112)
+
