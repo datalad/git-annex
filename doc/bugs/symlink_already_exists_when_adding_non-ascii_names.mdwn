@@ -50,3 +50,4 @@ I'm running Arch Linux (kernel 6.15.1-arch1-2). The repo I'm running the command
 git-annex has been brilliant for managing my large media collection across several removable drives, and I'm confident it will continue to scale. This is the first issue I've run into with it.
 
 
+> [[fixed|done]] --[[Joey]]

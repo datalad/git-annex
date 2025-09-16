@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2025-09-16T16:44:16Z"
+ content="""
+There was another bug filed about the same problem, 
+[[bugs/git-annex_add__47__unlock_fails_for_some_names]].
+
+Cause is a filename that is 21 bytes long and begins with a utf-8
+character. Which AFAICS all the filenames mentioned here are.
+
+[[!commit 67f00027d1b326c979db8b81c973a61234c406d7]] fixes this.
+"""]]
