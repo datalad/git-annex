@@ -47,3 +47,5 @@ Then I commented out certain lines for each location. E.g. only try ignoring `a`
 Regardless of import or ignore, only `b` and `f` were ignored pertaining to the root `.gitignore` matching these files in the tree, even when the tree was imported to subtree `rel-ignore` or `root-ignore`.
 
 </details>
+
+> Closing as user error. [[done]] --[[Joey]]
