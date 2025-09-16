@@ -206,13 +206,23 @@ getRemoteConfigValue :: HasCallStack => Typeable v => RemoteConfigField -> Parse
 getRemoteConfigValue f (ParsedRemoteConfig m _) = case M.lookup f m of
 	Just (RemoteConfigValue v) -> case cast v of
 		Just v' -> Just v'
-		Nothing -> error $ unwords
-			[ "getRemoteConfigValue"
-			, fromProposedAccepted f
-			, "found value of unexpected type"
-			, show (typeOf v) ++ "."
-			, "This is a bug in git-annex!"
-			]
+		Nothing -> case cast v :: Maybe PassedThrough of
+			-- Handle the case where an external special remote
+			-- tries to SETCONFIG a value belonging to git-annex,
+			-- resulting in a PassedThrough type being stored.
+			Just _ -> error $ unwords
+				[ "Special remote config "
+				, fromProposedAccepted f
+				, "has been overwritten by SETCONFIG."
+				, "This is not supported."
+				]
+			Nothing -> error $ unwords
+				[ "getRemoteConfigValue"
+				, fromProposedAccepted f
+				, "found value of unexpected type"
+				, show (typeOf v) ++ "."
+				, "This is a bug in git-annex!"
+				]
 	Nothing -> Nothing
 
 {- Gets all fields that remoteConfigRestPassthrough matched. -}

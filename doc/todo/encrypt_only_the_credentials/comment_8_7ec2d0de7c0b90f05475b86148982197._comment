@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2025-09-16T16:57:11Z"
+ content="""
+SETCONFIG is limited to setting the external program's configuration,
+not to reaching inside git-annex and setting its own configuration.
+The docs say that, but could perhaps be more clear.
+
+I have improved the error message.
+
+git-annex sets up encryption for the remote based on the encryption= and
+encryptonlycreds= settings before it ever starts up the external program.
+That would need to change in order to support this.
+
+But I'm also doubtful it would be a good idea to support SETCONFIG
+of any of the things git-annex uses for encryption, chunking, etc.
+It's essentially monkey-patching git-annex from the external program.
+Some changes to git-annex's configs could lead to very unexpected behavior.
+
+If you really need the ability to turn on onlyencryptcreds by default
+with your special remote, there will need to be some other way implemented
+to do it. Please open a new todo about that.
+"""]]
