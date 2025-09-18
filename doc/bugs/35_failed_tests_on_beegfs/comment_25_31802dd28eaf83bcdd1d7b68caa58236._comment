@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 25"""
+ date="2025-09-18T15:53:27Z"
+ content="""
+The pypi whl builds should already have it, as all stack builds default to
+having the OsPath build flag enabled already.
+"""]]
