@@ -17,6 +17,7 @@ import Utility.Env
 import System.Posix.IO
 #else
 import System.Process (createPipeFd)
+import GHC.IO.Handle.FD (fdToHandle)
 #endif
 import GHC.IO.Encoding (getLocaleEncoding)
 

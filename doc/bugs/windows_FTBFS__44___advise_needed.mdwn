@@ -44,3 +44,4 @@ Error: [S-7282]
 
  CI action with all the steps is [here](https://github.com/datalad/git-annex/blob/master/.github/workflows/build-windows.yaml#L112)
 
+> [[fixed|done]] --[[Joey]]
