@@ -1,0 +1,28 @@
+### Please describe the problem.
+
+The standalone build is missing an entrypoint script for git-remote-p2p-annex. There is only the binary in bin/git-remote-p2p-annex, but that is missing the setup work for the environment that the other scripts in the top-level directory do.
+
+
+### What steps will reproduce the problem?
+
+Try to use git-remote-p2p-annex from the latest standalone build.
+
+
+### What version of git-annex are you using? On what operating system?
+
+10.20250828-gfe7ecf505146342fe8df2430a0bcaf5f02d89a80
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
