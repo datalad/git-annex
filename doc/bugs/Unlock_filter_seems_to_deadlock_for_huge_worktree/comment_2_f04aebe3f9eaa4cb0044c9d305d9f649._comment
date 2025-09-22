@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2025-09-22T15:18:32Z"
+ content="""
+I set annex.queuesize to 100, made 1000 files, and was able to reproduce
+the hang.
+"""]]
