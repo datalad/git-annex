@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: support for bulk write/read/test remote"""
+ date="2025-09-22T15:02:49Z"
+ content="""
+@psxvoid that's fundamentally different than how git-annex works, so there
+will need to be some kind of translation layer. And I think you could put
+it in your special remote.
+
+For example, you could store both the archive file, as well as annex object
+files that have not yet made it into the archive. So that when git-annex
+sends a file to your remote, the file is actually stored in the remote,
+rather than in a temporary location. Then you could periodically make a
+new archive file from the loose objects.
+"""]]
