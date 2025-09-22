@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-09-22T14:25:21Z"
+ content="""
+A better way to do this is to make a new special remote, but tell git-annex
+it's the same underlying storage as the old special remote.
+
+	git-annex initremote --sameas=oldremotename newremotename type=rclone ...
+"""]]
