@@ -221,6 +221,8 @@ installGitAnnex topdir = go (topdir </> literalOsPath "bin")
 			error "cp failed"
 		unlessM (boolSystem "strip" [File (fromOsPath (bindir </> literalOsPath "git-annex"))]) $
 			error "strip failed"
+		-- Note that when adding more commands here, wrapper
+		-- scripts also need to be added in standalone/
 		createSymbolicLink "git-annex" (fromOsPath (bindir </> literalOsPath "git-annex-shell"))
 		createSymbolicLink "git-annex" (fromOsPath (bindir </> literalOsPath "git-remote-p2p-annex"))
 		createSymbolicLink "git-annex" (fromOsPath (bindir </> literalOsPath "git-remote-tor-annex"))
