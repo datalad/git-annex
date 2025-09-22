@@ -40,3 +40,6 @@ Using the standalone amd64 build on Debian 12.
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I use git-annex for "everything". I have somewhere along the lines of 14TiB stored in various git-annex repositories, synced in various degrees to anywhere between 3 and 10 hosts, with repos dating back to 2012. It's awesome.
+
+> [[fixed|done]] the git-annex bug by providing a better error message when
+> this is attempted. --[[Joey]]

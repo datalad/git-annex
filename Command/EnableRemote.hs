@@ -59,8 +59,11 @@ start _ [] = unknownNameError "Specify the remote to enable."
 start o (name:rest) = go =<< filter matchingname <$> Annex.getGitRemotes
   where
 	matchingname r = Git.remoteName r == Just name
-	go [] = deadLast name $ 
-		startSpecialRemote o name (Logs.Remote.keyValToConfig Proposed rest)
+	go [] = deadLast name $
+		let config = Logs.Remote.keyValToConfig Proposed rest
+		in case M.lookup SpecialRemote.typeField config of
+			Nothing -> startSpecialRemote o name config
+			Just _ -> giveup "Cannot change type= of existing special remote. Instead, use: git-annex initremote --sameas"
 	go (r:_)
 		| not (null rest) = go []
 		| otherwise = do
