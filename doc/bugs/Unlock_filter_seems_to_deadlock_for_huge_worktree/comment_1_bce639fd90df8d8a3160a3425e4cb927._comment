@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-09-22T15:14:03Z"
+ content="""
+10240 is a very specific number, and is the *same* number that annex.queuesize
+default to.
+
+So, that seems very likely to be the root of the problem, and at least
+configuring annex.queuesize to something larger may work around the
+problem.
+"""]]
