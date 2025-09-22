@@ -5,4 +5,21 @@
  content="""
 I set annex.queuesize to 100, made 1000 files, and was able to reproduce
 the hang.
+
+A `git-annex smudge --update` process has open the `.git/annex/gitqueue.lck` file.
+It is the only process with that lock file open. So it is in the process of trying to
+flush the queued changes to the index that it is locking up.
+
+I removed .git/hooks/post-checkout, and then after the `git-annex adjust`,
+manually running `git-annex smudge --update` causes the same hang.
+
+Debugging the git queue flush, it is hanging while running a FlushAction, specifically
+restagePointerFileRunner.
+
+And the hang occurs when restagePointerFiles calls
+Database.Keys.Handle.closeDbHandle.
+
+I suspect this bug may not be specific to `git-annex smudge --update` at all. It may be
+that any time the git queue gets flushed with restagePointerFileRunner in the queue it
+hangs like this. This needs further investigation.
 """]]
