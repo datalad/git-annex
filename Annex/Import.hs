@@ -294,6 +294,7 @@ buildImportTrees
 buildImportTrees basetree msubdir addunlockedmatcher (ImportedFull imported) = 
 	buildImportTreesGeneric (convertImportTree addunlockedmatcher) basetree msubdir imported
 buildImportTrees basetree msubdir addunlockedmatcher (ImportedDiff (LastImportedTree oldtree) imported) = do
+	liftIO $ print $ importableContents imported
 	importtree <- if null (importableContents imported)
 		then pure oldtree
 		else applydiff
@@ -308,6 +309,7 @@ buildImportTrees basetree msubdir addunlockedmatcher (ImportedDiff (LastImported
 			(importableContents imported)
 		newtreeitems <- catMaybes <$> mapM mktreeitem new
 		let removedfiles = map (mkloc . fst) removed
+		liftIO $ print ("removed", removedfiles)
 		inRepo $ adjustTree
 			(pure . Just) 
 			-- ^ keep files that are not added/removed the same
@@ -507,7 +509,7 @@ data ImportResult t
 data Diffed t
 	= DiffChanged t
 	| DiffRemoved
-	deriving (Eq)
+	deriving (Eq, Show)
 
 data Imported
 	= ImportedFull (ImportableContentsChunkable Annex (Either Sha Key))
@@ -577,7 +579,9 @@ importChanges remote importtreeconfig importcontent thirdpartypopulated importab
 		(diff, cleanup) <- inRepo $ Git.DiffTree.diffTreeRecursive
 			prevcidtree
 			currcidtree
+		liftIO $ print (diff, prevcidtree, currcidtree)
 		let (removed, changed) = partition isremoval diff
+		liftIO $ print (removed, changed)
 		let mkicchanged ti = do
 			v <- M.lookup (Git.DiffTree.dstsha ti) cidtreemap
 			return (mkloc ti, v)
