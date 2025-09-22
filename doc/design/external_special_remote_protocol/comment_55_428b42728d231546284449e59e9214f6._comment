@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: Multi-line string in WHEREIS-SUCCESS?"""
+ date="2025-09-22T15:00:11Z"
+ content="""
+@matrss there is not currently a way to do that. If you need it, I suggest
+you open a todo so we can design one.
+"""]]
