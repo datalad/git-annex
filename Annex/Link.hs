@@ -7,7 +7,7 @@
  -
  - Pointer files are used instead of symlinks for unlocked files.
  -
- - Copyright 2013-2022 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -32,6 +32,7 @@ import Git.Config
 import Annex.HashObject
 import Annex.InodeSentinal
 import Annex.PidLock
+import Types.CleanupActions
 import Utility.FileMode
 import Utility.InodeCache
 import Utility.Tmp.Dir
@@ -160,7 +161,10 @@ writePointerFile file k mode = do
 	F.writeFile' file (formatPointer k)
 	maybe noop (R.setFileMode (fromOsPath file)) mode
 
-newtype Restage = Restage Bool
+data Restage
+	= NoRestage
+	| QueueRestage
+	| LaterRestage
 
 {- Restage pointer file. This is used after updating a worktree file
  - when content is added/removed, to prevent git status from showing
@@ -184,26 +188,27 @@ newtype Restage = Restage Bool
  - and will store it in the restage log. Displays a message to help the
  - user understand why the file will appear to be modified.
  -
- - This uses the git queue, so the update is not performed immediately,
- - and this can be run multiple times cheaply. Using the git queue also
- - prevents building up too large a number of updates when many files
- - are being processed. It's also recorded in the restage log so that,
- - if the process is interrupted before the git queue is fulushed, the
- - restage will be taken care of later.
+ - The update is not performed immediately, so and this can be run multiple
+ - times cheaply. It's also recorded in the restage log so that, if the
+ - process is interrupted before the git queue is fulushed, the restage
+ - will be taken care of later.
  -}
 restagePointerFile :: Restage -> OsPath -> InodeCache -> Annex ()
-restagePointerFile (Restage False) f orig = do
+restagePointerFile NoRestage f orig = do
 	flip writeRestageLog orig =<< inRepo (toTopFilePath f)
 	toplevelWarning True $ unableToRestage $ Just f
-restagePointerFile (Restage True) f orig = do
+{- Using the git queue prevents building up too large a number of updates
+ - when many files are being processed.  -}
+restagePointerFile QueueRestage f orig = do
 	flip writeRestageLog orig =<< inRepo (toTopFilePath f)
-	-- Avoid refreshing the index if run by the
-	-- smudge clean filter, because git uses that when
-	-- it's already refreshing the index, probably because
-	-- this very action is running. Running it again would likely
-	-- deadlock.
 	unlessM (Annex.getState Annex.insmudgecleanfilter) $
 		Annex.Queue.addFlushAction restagePointerFileRunner [f]
+{- Defer the restage until the end. -}
+restagePointerFile LaterRestage f orig = do
+	flip writeRestageLog orig =<< inRepo (toTopFilePath f)
+	unlessM (Annex.getState Annex.insmudgecleanfilter) $
+		Annex.addCleanupAction RestagePointerFiles $ 
+			restagePointerFiles =<< Annex.gitRepo
 
 restagePointerFileRunner :: Git.Queue.FlushActionRunner Annex
 restagePointerFileRunner = 
@@ -219,7 +224,7 @@ restagePointerFileRunner =
 -- to bypass the lock. Then replace the old index file with the new
 -- updated index file.
 restagePointerFiles :: Git.Repo -> Annex ()
-restagePointerFiles r = unlessM (Annex.getState Annex.insmudgecleanfilter) $ do
+restagePointerFiles r = checkcanrun $ do
 	-- Flush any queued changes to the keys database, so they
 	-- are visible to child processes.
 	-- The database is closed because that may improve behavior
@@ -329,6 +334,9 @@ restagePointerFiles r = unlessM (Annex.getState Annex.insmudgecleanfilter) $ do
 				void $ inRepo (Git.Config.unset ckd)
 		ck = ConfigKey "filter.annex.process"
 		ckd = ConfigKey "filter.annex.process-temp-disabled"
+
+	checkcanrun a = unlessM (Annex.getState Annex.insmudgecleanfilter) $
+		unlessM (Annex.getState Annex.inreconcilestaged) $ a
 
 unableToRestage :: Maybe OsPath -> StringContainingQuotedPath
 unableToRestage mf =

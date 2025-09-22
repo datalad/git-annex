@@ -226,6 +226,7 @@ data AnnexState = AnnexState
 	, cachedgitenv :: Maybe (AltIndexFile, OsPath, [(String, String)])
 	, urloptions :: Maybe UrlOptions
 	, insmudgecleanfilter :: Bool
+	, inreconcilestaged :: Bool
 	, getvectorclock :: IO CandidateVectorClock
 	, proxyremote :: Maybe (Either ClusterUUID (Types.Remote.RemoteA Annex))
 	, reposizehandle :: Maybe RepoSizeHandle
@@ -283,6 +284,7 @@ newAnnexState c r = do
 		, cachedgitenv = Nothing
 		, urloptions = Nothing
 		, insmudgecleanfilter = False
+		, inreconcilestaged = False
 		, getvectorclock = vc
 		, proxyremote = Nothing
 		, reposizehandle = Nothing

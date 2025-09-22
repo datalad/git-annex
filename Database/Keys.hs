@@ -267,7 +267,7 @@ reconcileStaged _ _ (DbWasOpen True) =
 	return (DbTablesChanged False False)
 reconcileStaged dbisnew qh _ = ifM isBareRepo
 	( return mempty
-	, go =<< getindextree
+	, inReconcileStaged $ go =<< getindextree
 	)
   where
 	lastindexref = Ref "refs/annex/last-index"
@@ -433,13 +433,19 @@ reconcileStaged dbisnew qh _ = ifM isBareRepo
 		filepopulated <- sameInodeCache p ics
 		case (keypopulated, filepopulated) of
 			(True, False) ->
-				populatePointerFile (Restage True) key obj p >>= \case
+				populatePointerFile restage key obj p >>= \case
 					Nothing -> return ()
 					Just ic -> addinodecaches key
 						(catMaybes [Just ic, mobjic])
-			(False, True) -> depopulatePointerFile key p
+			(False, True) -> depopulatePointerFile restage key p
 			_ -> return ()
 	
+	-- Cannot use QueueRestage here, because it could deadlock;
+	-- restagePointerFiles tries to close the database handle,
+	-- but the database handle is open while reconcileStaged 
+	-- is running.
+	restage = LaterRestage
+
 	send :: ((Maybe Key -> Annex a, Ref) -> IO ()) -> Ref -> (Maybe Key -> Annex a) -> IO ()
 	send feeder r withk = feeder (withk, r)
 
@@ -499,6 +505,15 @@ reconcileStaged dbisnew qh _ = ifM isBareRepo
 	addassociatedfile
 		| dbisnew = SQL.newAssociatedFile
 		| otherwise = SQL.addAssociatedFile
+
+-- Avoid a potential deadlock.
+inReconcileStaged :: Annex a -> Annex a
+inReconcileStaged = bracket setup cleanup . const
+    where
+          setup = Annex.changeState $ \s -> s
+                  { Annex.inreconcilestaged = True }
+          cleanup () = Annex.changeState $ \s -> s
+                  { Annex.inreconcilestaged = False }
 
 {- Normally the keys database is updated incrementally when opened,
  - by reconcileStaged. Calling this explicitly allows running the

@@ -82,3 +82,4 @@ Repeatedly calling this(and ctrl-c it when it inevitably get stuck) seems to eve
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 I really like git-annex, it allowed me to deduplicate the files in the big repository described above without much issues except for this bug.
 
+> [[fixed|done]] --[[Joey]]

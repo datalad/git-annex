@@ -21,6 +21,8 @@ git-annex (10.20250829) UNRELEASED; urgency=medium
   * Add git-remote-p2p-annex and git-remote-tor-annex to standalone builds.
   * enableremote: Disallow using type= to attempt to change the type of an
     existing remote.
+  * Fix hang that could occur when using git-annex adjust on a branch with
+    a number of files greater than annex.queuesize.
 
  -- Joey Hess <id@joeyh.name>  Fri, 29 Aug 2025 12:34:06 -0400
 

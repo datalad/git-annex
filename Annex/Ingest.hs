@@ -172,7 +172,7 @@ ingestAdd' meterupdate ld@(Just (LockedDown cfg source)) mk = do
 {- Ingests a locked down file into the annex. Does not update the working
  - tree or the index. -}
 ingest :: MeterUpdate -> Maybe LockedDown -> Maybe Key -> Annex (Maybe Key, Maybe InodeCache)
-ingest meterupdate ld mk = ingest' Nothing meterupdate ld mk (Restage True)
+ingest meterupdate ld mk = ingest' Nothing meterupdate ld mk QueueRestage
 
 ingest' :: Maybe Backend -> MeterUpdate -> Maybe LockedDown -> Maybe Key -> Restage -> Annex (Maybe Key, Maybe InodeCache)
 ingest' _ _ Nothing _ _ = return (Nothing, Nothing)
@@ -228,7 +228,7 @@ ingest' preferredbackend meterupdate (Just (LockedDown cfg source)) mk restage =
 finishIngestUnlocked :: Key -> KeySource -> Annex ()
 finishIngestUnlocked key source = do
 	cleanCruft source
-	finishIngestUnlocked' key source (Restage True) Nothing
+	finishIngestUnlocked' key source QueueRestage Nothing
 
 finishIngestUnlocked' :: Key -> KeySource -> Restage -> Maybe LinkAnnexResult -> Annex ()
 finishIngestUnlocked' key source restage lar = do

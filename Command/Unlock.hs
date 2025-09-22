@@ -67,6 +67,6 @@ perform dest key = do
 cleanup :: OsPath -> Maybe InodeCache -> Key -> Maybe FileMode -> CommandCleanup
 cleanup dest destic key destmode = do
 	stagePointerFile dest destmode =<< hashPointerFile key
-	maybe noop (restagePointerFile (Restage True) dest) destic
+	maybe noop (restagePointerFile QueueRestage dest) destic
 	Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath dest)
 	return True

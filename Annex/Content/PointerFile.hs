@@ -52,8 +52,8 @@ populatePointerFile restage k obj f = go =<< liftIO (isPointerFile f)
 {- Removes the content from a pointer file, replacing it with a pointer.
  -
  - Does not check if the pointer file is modified. -}
-depopulatePointerFile :: Key -> OsPath -> Annex ()
-depopulatePointerFile key file = do
+depopulatePointerFile :: Restage -> Key -> OsPath -> Annex ()
+depopulatePointerFile restage key file = do
 	st <- liftIO $ catchMaybeIO $ R.getFileStatus (fromOsPath file)
 	let mode = fmap fileMode st
 	secureErase file
@@ -68,4 +68,4 @@ depopulatePointerFile key file = do
 			(fmap Posix.modificationTimeHiRes st)
 #endif
 		withTSDelta (liftIO . genInodeCache tmp)
-	maybe noop (restagePointerFile (Restage True) file) ic
+	maybe noop (restagePointerFile restage file) ic

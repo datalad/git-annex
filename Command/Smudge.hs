@@ -173,7 +173,7 @@ clean' file mk passthrough discardreststdin emitpointer =
 	doingest preferredbackend = do
 		-- Can't restage associated files because git add
 		-- runs this and has the index locked.
-		let norestage = Restage False
+		let norestage = NoRestage
 		emitpointer
 			=<< postingest
 			=<< (\ld -> ingest' preferredbackend nullMeterUpdate ld Nothing norestage)
@@ -294,7 +294,7 @@ getMoveRaceRecovery k file = void $ tryNonAsync $
 		obj <- calcRepo (gitAnnexLocation k)
 		-- Cannot restage because git add is running and has
 		-- the index locked.
-		populatePointerFile (Restage False) k obj file >>= \case
+		populatePointerFile NoRestage k obj file >>= \case
 			Nothing -> return ()
 			Just ic -> Database.Keys.addInodeCaches k [ic]
 
@@ -305,7 +305,7 @@ update = do
 	-- Doing it explicitly here avoids a later pause in the middle of
 	-- some other action.
 	scanAnnexedFiles
-	updateSmudged (Restage True)
+	updateSmudged LaterRestage
 	stop
 
 updateSmudged :: Restage -> Annex ()

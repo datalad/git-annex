@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2025-09-22T17:04:39Z"
+ content="""
+> It may be that any time the git queue gets flushed with restagePointerFileRunner
+> in the queue it hangs like this. This needs further investigation.
+
+The deadlock occurs when restagePointerFiles calls closeDbHandle, which
+blocks due to opening the db handle having called reconcileStaged, which is
+still running.
+
+reconcileStaged itself calls populatePointerFile repeatedly. Which calls
+restagePointerFile, which adds restagePointerFileRunner to the git queue.
+
+If adding that happens to make the git queue full, then it will flush,
+which causes restagePointerFiles to run.
+
+Fixing this seems to need a way to avoid restagePointerFiles from being
+run by anything reconcileStaged does.
+
+All that `git-annex smudge --update` is doing to trigger this is
+calling populatePointerFile, which calls restagePointerFile. Other commands
+that call that in the same situation would probably also deadlock.
+"""]]

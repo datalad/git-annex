@@ -542,7 +542,7 @@ moveAnnex key src = ifM (checkSecureHashes' key)
 			unless (null fs) $ do
 				destic <- withTSDelta $
 					liftIO . genInodeCache dest
-				ics <- mapM (populatePointerFile (Restage True) key dest) fs
+				ics <- mapM (populatePointerFile QueueRestage key dest) fs
 				Database.Keys.addInodeCaches key
 					(catMaybes (destic:ics))
 		)
@@ -784,7 +784,7 @@ removeAnnex (ContentRemovalLock key) = withObjectLoc key $ \file ->
 	resetpointer file = unlessM (liftIO $ isSymbolicLink <$> R.getSymbolicLinkStatus (fromOsPath file)) $
 		ifM (isUnmodified key file)
 			( adjustedBranchRefresh $ 
-				depopulatePointerFile key file
+				depopulatePointerFile QueueRestage key file
 			-- Modified file, so leave it alone.
 			-- If it was a hard link to the annex object,
 			-- that object might have been frozen as part of the

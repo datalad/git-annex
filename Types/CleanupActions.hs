@@ -20,6 +20,7 @@ data CleanupAction
 	| AdjustedBranchUpdate
 	| TorrentCleanup URLString
 	| OtherTmpCleanup
+	| RestagePointerFiles
 	deriving (Eq, Ord)
 
 data SignalAction

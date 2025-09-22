@@ -42,7 +42,7 @@ seek ps = do
 			=<< isAnnexLink f
 	-- after a merge conflict or git cherry-pick or stash, pointer
 	-- files in the worktree won't be populated, so populate them here
-	Command.Smudge.updateSmudged (Restage False)
+	Command.Smudge.updateSmudged NoRestage
 	
 	runAnnexHook preCommitAnnexHook annexPreCommitCommand
 
