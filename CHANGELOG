@@ -23,6 +23,10 @@ git-annex (10.20250829) UNRELEASED; urgency=medium
     existing remote.
   * Fix hang that could occur when using git-annex adjust on a branch with
     a number of files greater than annex.queuesize.
+  * Fix bug that made changes to a special remote sometimes be missed when
+    importing a tree from it. After upgrading, any such missed changes
+    will be included in the next tree imported from a special remote.
+    Fixes reversion introduced in version 10.20230626.
 
  -- Joey Hess <id@joeyh.name>  Fri, 29 Aug 2025 12:34:06 -0400
 

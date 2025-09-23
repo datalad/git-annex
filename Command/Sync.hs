@@ -606,8 +606,8 @@ pullThirdPartyPopulated o remote
 		Command.Import.listContents' remote ImportTree (CheckGitIgnore False) go
   where
 	go (Just importable) = importChanges remote ImportTree False True importable >>= \case
-		ImportFinished imported -> do
-			(_t, updatestate) <- recordImportTree remote ImportTree Nothing imported
+		ImportFinished postexportlogupdate imported -> do
+			(_t, updatestate) <- recordImportTree remote ImportTree Nothing imported postexportlogupdate
 			next $ do
 				updatestate
 				return True

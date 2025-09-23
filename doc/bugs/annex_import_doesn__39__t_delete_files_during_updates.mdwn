@@ -475,3 +475,9 @@ one  three
 $ ls ../directory/
 one
 ```
+
+> [[fixed|done]]
+> 
+> When this has happened in a repository, after upgrading git-annex,
+> the next git-annex import will be a full import, so it will notice
+> whatever changes it failed to notice before. --[[Joey]]

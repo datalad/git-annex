@@ -21,6 +21,7 @@ module Annex.Import (
 	importKeys,
 	makeImportMatcher,
 	getImportableContents,
+	PostExportLogUpdate,
 ) where
 
 import Annex.Common
@@ -74,6 +75,8 @@ import qualified Data.ByteArray.Encoding as BA
 #ifdef mingw32_HOST_OS
 import qualified System.FilePath.Posix as Posix
 #endif
+import qualified Data.Semigroup as Sem
+import Prelude
 
 {- Configures how to build an import tree. -}
 data ImportTreeConfig
@@ -112,8 +115,9 @@ buildImportCommit
 	-> ImportCommitConfig
 	-> AddUnlockedMatcher
 	-> Imported
+	-> PostExportLogUpdate
 	-> Annex (Maybe Ref)
-buildImportCommit remote importtreeconfig importcommitconfig addunlockedmatcher imported =
+buildImportCommit remote importtreeconfig importcommitconfig addunlockedmatcher imported postexportlogupdate =
 	case importCommitTracking importcommitconfig of
 		Nothing -> go Nothing
 		Just trackingcommit -> inRepo (Git.Ref.tree trackingcommit) >>= \case
@@ -121,12 +125,14 @@ buildImportCommit remote importtreeconfig importcommitconfig addunlockedmatcher 
 			Just _ -> go (Just trackingcommit)
   where
 	go trackingcommit = do
-		(importedtree, updatestate) <- recordImportTree remote importtreeconfig (Just addunlockedmatcher) imported
+		(importedtree, updatestate) <- recordImportTree remote importtreeconfig (Just addunlockedmatcher) imported postexportlogupdate
 		buildImportCommit' remote importcommitconfig trackingcommit importedtree >>= \case
 			Just finalcommit -> do
 				updatestate
 				return (Just finalcommit)
-			Nothing -> return Nothing
+			Nothing -> do
+				postExportLogUpdate postexportlogupdate
+				return Nothing
 
 {- Builds a tree for an import from a special remote.
  -
@@ -138,8 +144,9 @@ recordImportTree
 	-> ImportTreeConfig
 	-> Maybe AddUnlockedMatcher
 	-> Imported
+	-> PostExportLogUpdate
 	-> Annex (History Sha, Annex ())
-recordImportTree remote importtreeconfig addunlockedmatcher imported = do
+recordImportTree remote importtreeconfig addunlockedmatcher imported postexportlogupdate = do
 	importedtree@(History finaltree _) <- buildImportTrees basetree subdir addunlockedmatcher imported
 	return (importedtree, updatestate finaltree)
   where
@@ -180,6 +187,7 @@ recordImportTree remote importtreeconfig addunlockedmatcher imported = do
 			{ oldTreeish = exportedTreeishes oldexport
 			, newTreeish = importedtree
 			}
+		postExportLogUpdate postexportlogupdate
 		return oldexport
 
 	-- importKeys takes care of updating the location log
@@ -498,11 +506,26 @@ canImportKeys remote importcontent =
   where
 	ia = Remote.importActions remote
 
--- Result of an import. ImportUnfinished indicates that some file failed to
--- be imported. Running again should resume where it left off.
+-- Result of an import. 
 data ImportResult t
-	= ImportFinished t
+	= ImportFinished PostExportLogUpdate t
 	| ImportUnfinished
+	-- ^ ImportUnfinished indicates that some file failed to
+	-- be imported. Running again should resume where it left off.
+
+-- An action to run after the export log has been updated to reflect an
+-- import.
+newtype PostExportLogUpdate = PostExportLogUpdate (Annex ())
+
+instance Sem.Semigroup PostExportLogUpdate where
+	PostExportLogUpdate a <> PostExportLogUpdate b =
+		PostExportLogUpdate (a >> b)
+
+noPostExportLogUpdate :: PostExportLogUpdate
+noPostExportLogUpdate = PostExportLogUpdate (return ())
+
+postExportLogUpdate :: PostExportLogUpdate -> Annex ()
+postExportLogUpdate (PostExportLogUpdate a) = a
 
 data Diffed t
 	= DiffChanged t
@@ -546,7 +569,10 @@ importChanges remote importtreeconfig importcontent thirdpartypopulated importab
 					Nothing -> fullimport currcidtree
 					Just lastimportedtree -> diffimport cidtreemap prevcidtree currcidtree lastimportedtree
   where
-	remember = recordContentIdentifierTree (Remote.uuid remote)
+  	-- Record the content identifier tree after the export log is
+	-- updated for the import.
+	remember = PostExportLogUpdate .
+		recordContentIdentifierTree (Remote.uuid remote)
 
 	-- In order to use a diff, the previous ContentIdentifier tree must
 	-- not have been garbage collected. Which can happen since there
@@ -567,11 +593,11 @@ importChanges remote importtreeconfig importcontent thirdpartypopulated importab
 						)
 
 	fullimport currcidtree = 
-		importKeys remote importtreeconfig importcontent thirdpartypopulated importablecontents >>= \case
-			ImportUnfinished -> return ImportUnfinished
-			ImportFinished r -> do
-				remember currcidtree
-	 			return $ ImportFinished $ ImportedFull r
+		importKeys remote importtreeconfig importcontent thirdpartypopulated importablecontents >>= return . \case
+			ImportUnfinished -> ImportUnfinished
+			ImportFinished a r -> 
+				ImportFinished (a <> remember currcidtree) $
+					ImportedFull r
 		
 	diffimport cidtreemap prevcidtree currcidtree lastimportedtree = do
 		(diff, cleanup) <- inRepo $ Git.DiffTree.diffTreeRecursive
@@ -589,17 +615,15 @@ importChanges remote importtreeconfig importcontent thirdpartypopulated importab
 			ImportUnfinished -> do
 				void $ liftIO cleanup
 				return ImportUnfinished
-			ImportFinished (ImportableContentsComplete ic') -> 
-				liftIO cleanup >>= \case
-					False -> return ImportUnfinished
-					True -> do
-						remember currcidtree
-						return $ ImportFinished $ 
-							ImportedDiff lastimportedtree
-								(mkdiff ic' removed)
+			ImportFinished a (ImportableContentsComplete ic') -> 
+				liftIO cleanup >>= return . \case
+					False -> ImportUnfinished
+					True -> ImportFinished (a <> remember currcidtree) $ 
+						ImportedDiff lastimportedtree
+							(mkdiff ic' removed)
 			-- importKeys is not passed ImportableContentsChunked
 			-- above, so it cannot return it
-			ImportFinished (ImportableContentsChunked {}) -> error "internal"
+			ImportFinished _ (ImportableContentsChunked {}) -> error "internal"
 		
 	isremoval ti = Git.DiffTree.dstsha ti `elem` nullShas
 	
@@ -685,12 +709,12 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 			ImportableContentsComplete ic ->
 				go False largematcher cidmap importing db ic >>= return . \case
 					Nothing -> ImportUnfinished
-					Just v -> ImportFinished $ ImportableContentsComplete v
+					Just v -> ImportFinished noPostExportLogUpdate $ ImportableContentsComplete v
 			ImportableContentsChunked {} -> do
 				c <- gochunked db (importableContentsChunk importablecontents)
 				gohistory largematcher cidmap importing db (importableHistoryComplete importablecontents) >>= return . \case
 					Nothing -> ImportUnfinished
-					Just h -> ImportFinished $ ImportableContentsChunked
+					Just h -> ImportFinished noPostExportLogUpdate $ ImportableContentsChunked
 						{ importableContentsChunk = c
 						, importableHistoryComplete = h
 						}

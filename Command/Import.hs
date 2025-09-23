@@ -349,9 +349,9 @@ seekRemote remote branch msubdir importcontent ci addunlockedmatcher importmessa
 				, Remote.name remote
 				, ". Re-run command to resume import."
 				]
-			ImportFinished imported -> void $
-				includeCommandAction $ 
-					commitimport imported
+			ImportFinished postexportlogupdate imported ->
+				void $ includeCommandAction $ 
+					commitimport imported postexportlogupdate
   where
 	importmessages'
 		| null importmessages = ["import from " ++ Remote.name remote]
@@ -383,10 +383,10 @@ listContents' remote importtreeconfig ci a =
 			, err
 			]
 
-commitRemote :: Remote -> Branch -> RemoteTrackingBranch -> Maybe Sha -> ImportTreeConfig -> ImportCommitConfig -> AddUnlockedMatcher -> Imported -> CommandStart
-commitRemote remote branch tb trackingcommit importtreeconfig importcommitconfig addunlockedmatcher imported =
+commitRemote :: Remote -> Branch -> RemoteTrackingBranch -> Maybe Sha -> ImportTreeConfig -> ImportCommitConfig -> AddUnlockedMatcher -> Imported -> PostExportLogUpdate -> CommandStart
+commitRemote remote branch tb trackingcommit importtreeconfig importcommitconfig addunlockedmatcher imported postexportlogupdate =
 	starting "update" ai si $ do
-		importcommit <- buildImportCommit remote importtreeconfig importcommitconfig addunlockedmatcher imported
+		importcommit <- buildImportCommit remote importtreeconfig importcommitconfig addunlockedmatcher imported postexportlogupdate
 		next $ updateremotetrackingbranch importcommit
   where
 	ai = ActionItemOther (Just $ UnquotedString $ fromRef $ fromRemoteTrackingBranch tb)
