@@ -38,8 +38,8 @@ import qualified Git.Types
 import qualified Git.Ref
 import qualified Git.LsTree
 import qualified Git.FilePath
-import qualified Annex.Locations
 #ifndef mingw32_HOST_OS
+import qualified Annex.Locations
 import qualified Git.Bundle
 import qualified Types.GitConfig
 #endif
