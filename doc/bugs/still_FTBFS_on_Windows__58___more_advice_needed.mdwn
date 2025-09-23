@@ -1,0 +1,60 @@
+### Please describe the problem.
+
+Continuation to https://git-annex.branchable.com/bugs/windows_FTBFS__44___advise_needed/ which was marked fixed but now FTBFS with 
+
+```
+[38 of 40] Compiling Utility.CopyFile ( Utility\CopyFile.hs, Utility\CopyFile.o )
+Utility\CopyFile.hs:9:1: warning: [GHC-94817] [-Wtabs]
+Warning:     Tab character found here, and in 84 further locations.
+    Suggested fix: Please use spaces instead.
+  |
+9 |         copyFileExternal,
+
+  | ^^^^^^^^
+
+[39 of 40] Compiling Main             ( Build\NullSoftInstaller.hs, Build\NullSoftInstaller.o )
+Build\NullSoftInstaller.hs:64:34: error: [GHC-83865]
+Error:     • Couldn't match type ‘bytestring-0.12.2.0:Data.ByteString.Internal.Type.ByteString’
+                     with ‘[Char]’
+      Expected: FilePath
+        Actual: System.FilePath.Windows.ByteString.RawFilePath
+    • In the second argument of ‘makeInstaller’, namely ‘gitannexcmd’
+      In the second argument of ‘($)’, namely
+        ‘makeInstaller
+           gitannex gitannexcmd license htmlhelp (winPrograms ++ magicDLLs')
+           magicShare' [webappscript, autostartscript]’
+      In a stmt of a 'do' block:
+        F.writeFileString (toOsPath nsifile)
+          $ makeInstaller
+              gitannex gitannexcmd license htmlhelp (winPrograms ++ magicDLLs')
+              magicShare' [webappscript, autostartscript]
+   |
+64 |                         gitannex gitannexcmd license htmlhelp (winPrograms ++ magicDLLs') magicShare'
+
+   |                                  ^^^^^^^^^^^
+
+Build\NullSoftInstaller.hs:64:54: error: [GHC-83865]
+Error:     • Couldn't match type ‘bytestring-0.12.2.0:Data.ByteString.Internal.Type.ByteString’
+                     with ‘[Char]’
+      Expected: FilePath
+        Actual: System.FilePath.Windows.ByteString.RawFilePath
+    • In the fourth argument of ‘makeInstaller’, namely ‘htmlhelp’
+      In the second argument of ‘($)’, namely
+        ‘makeInstaller
+           gitannex gitannexcmd license htmlhelp (winPrograms ++ magicDLLs')
+           magicShare' [webappscript, autostartscript]’
+      In a stmt of a 'do' block:
+        F.writeFileString (toOsPath nsifile)
+          $ makeInstaller
+              gitannex gitannexcmd license htmlhelp (winPrograms ++ magicDLLs')
+              magicShare' [webappscript, autostartscript]
+   |
+64 |                         gitannex gitannexcmd license htmlhelp (winPrograms ++ magicDLLs') magicShare'
+
+   |                                                      ^^^^^^^^
+
+Error: Process completed with exit code 1.
+```
+
+e.g. [here](https://github.com/datalad/git-annex/actions/runs/17903960530/job/50901925018)
+
