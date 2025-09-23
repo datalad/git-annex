@@ -61,7 +61,10 @@ main = do
 		let gitannexcmd = tmpdir </> literalOsPath "git-annex.cmd"
 		F.writeFileString gitannexcmd "git annex %*"
 		F.writeFileString (toOsPath nsifile) $ makeInstaller
-			gitannex gitannexcmd license htmlhelp (winPrograms ++ magicDLLs') magicShare'
+			gitannex (fromOsPath gitannexcmd) license
+			(fromOsPath htmlhelp)
+			(winPrograms ++ magicDLLs')
+			magicShare'
 			[ webappscript, autostartscript ]
 		mustSucceed "makensis" [File nsifile]
 	removeFile (toOsPath nsifile) -- left behind if makensis fails
