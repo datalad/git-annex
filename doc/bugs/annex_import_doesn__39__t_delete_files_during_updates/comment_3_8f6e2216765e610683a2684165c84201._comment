@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2025-09-23T03:52:45Z"
+ content="""
+Another way to think about this problem is that git-annex export does not
+update the remote tracking branch. If it did, there would be no need for
+git-annex import to learn about changes made by export, and its current
+diffing behavior would be ok.
+
+However, since one repository can export to a special remote, and a
+different repository import from the same special remote, updating the
+tracking branch would need to happen later, based on information the export
+records in the git-annex branch.
+
+Which is something that git-annex import could do. But it might not be any
+more efficient to do that than a non-diff based update.
+"""]]
