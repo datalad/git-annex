@@ -37,7 +37,6 @@ import Utility.FileMode
 import Utility.InodeCache
 import Utility.Tmp.Dir
 import Utility.CopyFile
-import Utility.OpenFd
 import qualified Database.Keys.Handle
 import qualified Utility.RawFilePath as R
 import qualified Utility.FileIO as F
@@ -46,8 +45,10 @@ import qualified Utility.OsString as OS
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Char8 as S8
 import qualified Data.ByteString.Lazy as L
+
 #ifndef mingw32_HOST_OS
 #if MIN_VERSION_unix(2,8,0)
+import Utility.OpenFd
 #else
 import System.PosixCompat.Files (isSymbolicLink)
 #endif
