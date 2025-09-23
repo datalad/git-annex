@@ -1,0 +1,23 @@
+    git annex fsck --quiet --fast --all
+      Only 2 of 3 trustworthy copies exist of SHA256E-s151552--fbffb0cb11ed636bff5ded57576601f97d375c2f4ab37e8c4ed72e9918e53f1b.pdf
+      Back it up with git-annex copy.
+      Only 2 of 3 trustworthy copies exist of SHA256E-s271--34654adac964ea7344753de2d6ce4385c8561abbc208bc73fd8e91ab6e97f53c.svg
+      Back it up with git-annex copy.
+      Only 2 of 3 trustworthy copies exist of SHA256E-s790305--4c1b2ba8088862f80f1cf40345715b7e3bed350245a4fb6808bfc928e8867feb.svg
+      Back it up with git-annex copy.
+      Only 2 of 3 trustworthy copies exist of SHA256E-s745093--8c0b45e513a55f2678c8a3bd2901a0f8673b43784a374f55c2646cfe41b6a11e.svg
+      Back it up with git-annex copy.
+      Only 2 of 3 trustworthy copies exist of SHA256E-s57327--663e9747669a3476cf14a697d715ac40d0da4d7c92df0ce42bed3c9c3eb77f96.pdf
+      Back it up with git-annex copy.
+    fsck: 5 failed
+
+
+Shouldn't this be automatically resolved by git annex assistant?
+
+I have three repositories in groups archive and backup. These five failes are on/in neither of the three.
+
+`git annex copy --auto --to ONE_OF_THE_ARCHIVE_BACKUP_REPOSITORIES` does not solve the problem.
+
+Just manually copying them to other repositories solved it.
+
+What did I miss or did not understand? Git assistant runs on all repositories and are ssh connected nearly 24/7 and all other syncing works fine.
