@@ -9,14 +9,12 @@
 
 module Build.LinuxMkLibs (mklibs) where
 
-import Data.Maybe
 import Control.Monad
-import Data.List
 import System.Posix.Files
 import Control.Monad.IfElse
-import Control.Applicative
 import qualified System.Info
-import Prelude
+import Data.List
+import Data.Maybe
 
 import Utility.LinuxMkLibs
 import Utility.OsPath

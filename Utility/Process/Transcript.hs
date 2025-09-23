@@ -24,11 +24,8 @@ import Control.Monad
 import Control.Exception
 import qualified System.Posix.IO
 import GHC.IO.Encoding (getLocaleEncoding)
-#else
-import Control.Applicative
 #endif
 import Data.Maybe
-import Prelude
 
 -- | Runs a process and returns a transcript combining its stdout and
 -- stderr, and whether it succeeded or failed.

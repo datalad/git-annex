@@ -31,7 +31,6 @@ module Messages.JSON (
 	module Utility.Aeson,
 ) where
 
-import Control.Applicative
 import qualified Data.Map as M
 import qualified Data.Vector as V
 import qualified Data.ByteString as S
@@ -41,8 +40,6 @@ import System.IO
 import System.IO.Unsafe (unsafePerformIO)
 import Control.Concurrent
 import Data.Maybe
-import Data.Monoid
-import Prelude
 
 import Types.Command (SeekInput(..))
 import Types.ActionItem

@@ -16,8 +16,6 @@ import Types.ProposedAccepted
 
 import Data.Maybe
 import qualified Data.Map as M
-import Control.Applicative
-import Prelude
 
 {- Generates a gpg user id that is not used by any existing secret key -}
 newUserId :: GpgCmd -> IO UserId

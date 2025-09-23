@@ -15,12 +15,9 @@ module Utility.Directory.Create (
 ) where
 
 import Control.Monad
-import Control.Applicative
 import Control.Monad.IO.Class
 import Control.Monad.IfElse
 import System.IO.Error
-import Data.Maybe
-import Prelude
 
 import Utility.SystemDirectory
 import Utility.Path.AbsRel

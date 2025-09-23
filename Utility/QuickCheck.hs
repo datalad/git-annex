@@ -24,7 +24,6 @@ import Data.Ratio
 import Data.Char
 import System.Posix.Types
 import Data.List.NonEmpty (NonEmpty(..))
-import Prelude
 
 {- A String, but Arbitrary is limited to ascii.
  -

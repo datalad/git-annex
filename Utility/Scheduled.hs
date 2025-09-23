@@ -40,8 +40,6 @@ import Data.Time.Calendar.WeekDate
 import Data.Time.Calendar.OrdinalDate
 import Data.Time.Format ()
 import Data.Char
-import Control.Applicative
-import Prelude
 
 {- Some sort of scheduled event. -}
 data Schedule = Schedule Recurrence ScheduledTime

@@ -13,9 +13,7 @@ module Utility.Env.Basic (
 ) where
 
 import Utility.Exception
-import Control.Applicative
 import Data.Maybe
-import Prelude
 import qualified System.Environment as E
 
 getEnv :: String -> IO (Maybe String)

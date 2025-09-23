@@ -15,7 +15,6 @@ module Utility.MoveFile (
 
 import Control.Monad
 import System.IO.Error
-import Prelude
 
 #ifndef mingw32_HOST_OS
 import System.PosixCompat.Files (isDirectory)

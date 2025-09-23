@@ -33,8 +33,6 @@ import Data.Maybe
 import System.Posix.Files (isSymbolicLink)
 import Data.Char
 import Control.Monad.IfElse
-import Control.Applicative
-import Prelude
 
 {- Installs a library. If the library is a symlink to another file,
  - install the file it links to, and update the symlink to be relative. -}

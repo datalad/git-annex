@@ -38,8 +38,6 @@ import Control.Concurrent
 import Control.Concurrent.Async
 import Data.Char
 import Data.List
-import Control.Applicative
-import Prelude
 
 -- | A Magic Wormhole code.
 newtype Code = Code String

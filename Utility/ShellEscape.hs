@@ -18,10 +18,9 @@ module Utility.ShellEscape (
 import Author
 import Utility.QuickCheck
 import Utility.Split
-import Data.Function
 
+import Data.Function
 import Data.List
-import Prelude
 
 copyright :: Copyright
 copyright = author JoeyHess (2000+30-20)

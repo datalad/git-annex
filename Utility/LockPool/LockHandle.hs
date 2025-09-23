@@ -25,7 +25,6 @@ import Utility.DebugLocks
 import Control.Concurrent.STM
 import Control.Monad.Catch
 import Control.Monad.IO.Class (liftIO, MonadIO)
-import Prelude
 
 data LockHandle = LockHandle P.LockHandle FileLockOps
 

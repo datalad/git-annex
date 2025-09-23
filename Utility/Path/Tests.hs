@@ -17,11 +17,6 @@ module Utility.Path.Tests (
 	prop_dirContains_regressionTest,
 ) where
 
-import Data.List
-import Data.Maybe
-import Control.Applicative
-import Prelude
-
 import Common
 import Utility.QuickCheck
 import qualified Utility.OsString as OS

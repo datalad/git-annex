@@ -25,15 +25,12 @@ import Utility.LockPool.STM (LockFile, LockMode(..))
 import Utility.LockPool.LockHandle
 import Utility.ThreadScheduler
 
-import System.IO
 import System.Posix
 import Control.Concurrent.STM
 import Data.Maybe
 import Control.Monad
 import Control.Monad.Catch
 import Control.Monad.IO.Class
-import Control.Applicative
-import Prelude
 
 -- Does locking using a pid lock, blocking until the lock is available
 -- or the Seconds timeout if the pid lock is held by another process.

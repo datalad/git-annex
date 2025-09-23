@@ -21,8 +21,6 @@ import qualified Data.Map as M
 import qualified Data.ByteString as S
 import qualified Data.List.NonEmpty as NE
 import System.Posix.Types
-import qualified Data.Semigroup as Sem
-import Prelude
 
 {- Support repositories on local disk, and repositories accessed via an URL.
  -
@@ -81,7 +79,7 @@ data ConfigValue
 	-- with an empty value
 	deriving (Ord, Eq)
 
-instance Sem.Semigroup ConfigValue where
+instance Semigroup ConfigValue where
 	ConfigValue a <> ConfigValue b = ConfigValue (a <> b)
 	a <> NoConfigValue = a
 	NoConfigValue <> b = b

@@ -31,8 +31,6 @@ import qualified Data.ByteString as B
 import Data.List
 import Data.Maybe
 import Control.Monad
-import Control.Applicative
-import Prelude
 
 import Author
 import Utility.Monad

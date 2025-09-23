@@ -44,8 +44,6 @@ import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 import Control.Concurrent.Async
 import Data.Time.Clock.POSIX
-import qualified Data.Semigroup as Sem
-import Prelude
 
 data P2PHttpServerState = P2PHttpServerState
 	{ servedRepos :: M.Map UUID PerRepoServerState
@@ -62,7 +60,7 @@ instance Monoid P2PHttpServerState where
 		, updateRepos = const mempty
 		}
 
-instance Sem.Semigroup P2PHttpServerState where
+instance Semigroup P2PHttpServerState where
 	a <> b = P2PHttpServerState
 		{ servedRepos = servedRepos a <> servedRepos b
 		, serverShutdownCleanup = do

@@ -18,8 +18,6 @@ module Utility.Path.AbsRel (
 ) where
 
 import qualified Data.ByteString as B
-import Control.Applicative
-import Prelude
 
 import Utility.Path
 import Utility.UserInfo

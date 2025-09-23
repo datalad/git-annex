@@ -22,8 +22,6 @@ module Annex.MetaData.StandardFields (
 import Types.MetaData
 
 import qualified Data.Text as T
-import Data.Monoid
-import Prelude
 
 tagMetaField :: MetaField
 tagMetaField = mkMetaFieldUnchecked "tag"

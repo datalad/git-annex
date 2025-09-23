@@ -8,8 +8,6 @@
 module Types.VectorClock where
 
 import Data.Time.Clock.POSIX
-import Control.Applicative
-import Prelude
 
 import Utility.QuickCheck
 

@@ -22,7 +22,6 @@ import Assistant.Install.Menu
 import System.Environment
 #ifndef mingw32_HOST_OS 
 import System.Posix.User
-import Prelude
 #endif
 
 systemwideInstall :: IO Bool

@@ -26,11 +26,8 @@ import qualified Git.Config
 import Git.Types
 
 import Data.Maybe
-import Data.Monoid
 import qualified Data.ByteString as B
 import qualified Data.Set as S
-import qualified Data.Semigroup as Sem
-import Prelude
 
 -- Describes differences from the standard repository format.
 --
@@ -85,7 +82,7 @@ appendDifferences a@(Differences {}) b@(Differences {}) = a
 	}
 appendDifferences _ _ = UnknownDifferences
 
-instance Sem.Semigroup Differences where
+instance Semigroup Differences where
 	(<>) = appendDifferences
 
 instance Monoid Differences where

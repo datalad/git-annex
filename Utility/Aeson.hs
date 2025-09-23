@@ -30,7 +30,6 @@ import qualified Data.ByteString as S
 import qualified Data.Set
 import qualified Data.Map
 import qualified Data.Vector
-import Prelude
 
 import Utility.FileSystemEncoding
 #ifdef WITH_OSPATH

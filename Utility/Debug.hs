@@ -23,8 +23,6 @@ import Data.IORef
 import Data.String
 import Data.Time
 import System.IO.Unsafe (unsafePerformIO)
-import qualified Data.Semigroup as Sem
-import Prelude
 
 import Utility.FileSystemEncoding
 
@@ -41,7 +39,7 @@ data DebugSelector
 	= DebugSelector (DebugSource -> Bool)
 	| NoDebugSelector
 
-instance Sem.Semigroup DebugSelector where
+instance Semigroup DebugSelector where
 	DebugSelector a <> DebugSelector b = DebugSelector (\v -> a v || b v)
 	NoDebugSelector <> NoDebugSelector = NoDebugSelector
 	NoDebugSelector <> b = b

@@ -42,11 +42,9 @@ import Data.List
 import Data.Char
 import System.Posix.Types
 import Foreign.C.Types
-import Data.Monoid
 import Control.Applicative
 import GHC.Generics
 import Control.DeepSeq
-import Prelude
 
 {- A Key has a unique name, which is derived from a particular backend,
  - and may contain other optional metadata. -}

@@ -14,9 +14,6 @@ import Key
 import Data.Time.Clock
 import Git.Config (isTrueFalse, boolConfig)
 
-import Control.Applicative
-import Prelude
-
 type GitAnnexVersion = String
 
 data GitAnnexDistribution = GitAnnexDistribution

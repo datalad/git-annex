@@ -26,11 +26,7 @@ import Utility.LockPool.STM (LockFile, LockMode(..))
 import Utility.LockPool.LockHandle
 import Utility.FileMode
 
-import System.IO
 import System.Posix
-import Data.Maybe
-import Control.Applicative
-import Prelude
 
 -- Takes a shared lock, blocking until the lock is available.
 lockShared :: Maybe ModeSetter -> LockFile -> IO LockHandle

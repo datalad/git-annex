@@ -26,8 +26,6 @@ import Utility.Batch
 
 import qualified Data.Set as S
 import Control.Concurrent.Async
-import qualified Data.Semigroup as Sem
-import Prelude
 
 data FsckResults 
 	= FsckFoundMissing
@@ -56,7 +54,7 @@ appendFsckOutput AllDuplicateEntriesWarning AllDuplicateEntriesWarning = AllDupl
 appendFsckOutput AllDuplicateEntriesWarning NoFsckOutput = AllDuplicateEntriesWarning
 appendFsckOutput NoFsckOutput AllDuplicateEntriesWarning = AllDuplicateEntriesWarning
 
-instance Sem.Semigroup FsckOutput where
+instance Semigroup FsckOutput where
 	(<>) = appendFsckOutput
 
 instance Monoid FsckOutput where

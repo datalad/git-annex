@@ -18,14 +18,11 @@ import Utility.Env.Basic
 import Utility.Exception
 #ifndef mingw32_HOST_OS
 import Utility.Data
-import Control.Applicative
 import System.Posix.User
 #if MIN_VERSION_unix(2,8,0)
 import System.Posix.User.ByteString (UserEntry)
 #endif
 #endif
-
-import Prelude
 
 {- Current user's home directory.
  -

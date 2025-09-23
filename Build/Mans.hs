@@ -17,8 +17,6 @@ import Control.Monad
 import System.Exit
 import Data.Maybe
 import Utility.Exception
-import Control.Applicative
-import Prelude
 
 buildMansOrWarn :: IO ()
 buildMansOrWarn = do

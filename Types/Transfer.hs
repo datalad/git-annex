@@ -23,8 +23,6 @@ import Utility.OsPath
 
 import Data.Time.Clock.POSIX
 import Control.Concurrent
-import Control.Applicative
-import Prelude
 
 {- Enough information to uniquely identify a transfer. -}
 data Transfer = Transfer

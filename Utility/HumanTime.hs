@@ -23,8 +23,6 @@ import qualified Data.Map as M
 import Data.Time.Clock
 import Data.Time.Clock.POSIX (POSIXTime)
 import Data.Char
-import Control.Applicative
-import Prelude
 
 newtype Duration = Duration { durationSeconds :: Integer }
 	deriving (Eq, Ord, Read, Show)

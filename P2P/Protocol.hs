@@ -44,9 +44,7 @@ import qualified Data.Set as S
 import Data.Char
 import Data.Maybe
 import Data.Time.Clock.POSIX
-import Control.Applicative
 import Control.DeepSeq
-import Prelude
 
 newtype Offset = Offset Integer
 	deriving (Show, Eq, NFData, Num, Real, Ord, Enum, Integral)

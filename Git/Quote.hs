@@ -28,8 +28,6 @@ import Data.Char
 import Data.Word
 import Data.String
 import qualified Data.ByteString as S
-import qualified Data.Semigroup as Sem
-import Prelude
 
 unquote :: S.ByteString -> RawFilePath
 unquote b = case S.uncons b of
@@ -108,7 +106,7 @@ instance Quoteable StringContainingQuotedPath where
 instance IsString StringContainingQuotedPath where
 	fromString = UnquotedByteString . encodeBS
 
-instance Sem.Semigroup StringContainingQuotedPath where
+instance Semigroup StringContainingQuotedPath where
 	UnquotedString a <> UnquotedString b = UnquotedString (a <> b)
 	UnquotedByteString a <> UnquotedByteString b = UnquotedByteString (a <> b)
 	a <> b = a :+: b

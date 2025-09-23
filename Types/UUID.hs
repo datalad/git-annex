@@ -20,7 +20,6 @@ import Data.Maybe
 import Data.String
 import Data.ByteString.Builder
 import Control.DeepSeq
-import qualified Data.Semigroup as Sem
 
 import Common
 import Git.Types (ConfigValue(..))
@@ -115,7 +114,7 @@ isUUID = isJust . U.fromString
 
 -- A description of a UUID.
 newtype UUIDDesc = UUIDDesc B.ByteString
-	deriving (Eq, Sem.Semigroup, Monoid, IsString)
+	deriving (Eq, Semigroup, Monoid, IsString)
 
 fromUUIDDesc :: UUIDDesc -> String
 fromUUIDDesc (UUIDDesc d) = decodeBS d

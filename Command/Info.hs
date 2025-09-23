@@ -17,8 +17,6 @@ import qualified Data.Vector as V
 import Data.ByteString.Short (fromShort)
 import System.PosixCompat.Files (isDirectory)
 import Data.Ord
-import qualified Data.Semigroup as Sem
-import Prelude
 
 import Command
 import qualified Git
@@ -68,7 +66,7 @@ data KeyInfo = KeyInfo
 	, backendsKeys :: M.Map KeyVariety Integer
 	}
 	
-instance Sem.Semigroup KeyInfo where
+instance Semigroup KeyInfo where
 	a <> b = KeyInfo
 		{ countKeys = countKeys a + countKeys b
 		, sizeKeys = sizeKeys a + sizeKeys b

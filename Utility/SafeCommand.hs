@@ -26,9 +26,6 @@ import Utility.Process
 import System.Exit
 import System.FilePath
 import Data.Char
-import Data.List
-import Control.Applicative
-import Prelude
 
 -- | Parameters that can be passed to a shell command.
 data CommandParam

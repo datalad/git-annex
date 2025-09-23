@@ -8,8 +8,6 @@ module Build.Version where
 import Data.List
 import System.Environment
 import Data.Char
-import Control.Applicative
-import Prelude
 
 import Utility.Monad
 import Utility.Exception

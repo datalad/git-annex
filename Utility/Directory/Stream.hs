@@ -21,7 +21,6 @@ module Utility.Directory.Stream (
 import Control.Monad
 import Control.Concurrent
 import Data.Maybe
-import Prelude
 
 #ifdef mingw32_HOST_OS
 import qualified System.Win32 as Win32

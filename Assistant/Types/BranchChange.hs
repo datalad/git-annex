@@ -8,8 +8,6 @@
 module Assistant.Types.BranchChange where
 
 import Control.Concurrent.MSampleVar
-import Control.Applicative
-import Prelude
 
 newtype BranchChangeHandle = BranchChangeHandle (MSampleVar ())
 

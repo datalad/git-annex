@@ -19,10 +19,7 @@ import Utility.SystemDirectory
 #endif
 import Control.Monad
 import System.PosixCompat.Files (isDirectory, isSymbolicLink)
-import Control.Applicative
 import System.IO.Unsafe (unsafeInterleaveIO)
-import Data.Maybe
-import Prelude
 
 import Utility.OsPath
 import Utility.Exception

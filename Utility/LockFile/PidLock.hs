@@ -55,8 +55,6 @@ import Control.Monad.IO.Class (liftIO, MonadIO)
 import Data.Maybe
 import Data.List
 import Network.BSD
-import Control.Applicative
-import Prelude
 
 type PidLockFile = OsPath
 

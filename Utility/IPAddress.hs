@@ -23,9 +23,7 @@ import Network.Socket
 import Data.Word
 import Data.Memory.Endian
 import Data.List
-import Control.Applicative
 import Text.Printf
-import Prelude
 
 extractIPAddress :: SockAddr -> Maybe String
 extractIPAddress (SockAddrInet _ ipv4) =

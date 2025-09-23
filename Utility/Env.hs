@@ -21,7 +21,6 @@ module Utility.Env (
 import Utility.Exception
 import Control.Applicative
 import Data.Maybe
-import Prelude
 import qualified System.Environment as E
 #else
 import qualified System.Posix.Env as PE

@@ -75,8 +75,6 @@ import qualified Data.ByteArray.Encoding as BA
 #ifdef mingw32_HOST_OS
 import qualified System.FilePath.Posix as Posix
 #endif
-import qualified Data.Semigroup as Sem
-import Prelude
 
 {- Configures how to build an import tree. -}
 data ImportTreeConfig
@@ -517,7 +515,7 @@ data ImportResult t
 -- import.
 newtype PostExportLogUpdate = PostExportLogUpdate (Annex ())
 
-instance Sem.Semigroup PostExportLogUpdate where
+instance Semigroup PostExportLogUpdate where
 	PostExportLogUpdate a <> PostExportLogUpdate b =
 		PostExportLogUpdate (a >> b)
 

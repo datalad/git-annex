@@ -22,8 +22,6 @@ import Utility.DebugLocks
 
 import Control.Concurrent
 import Control.Monad.IO.Class (liftIO, MonadIO)
-import Control.Applicative
-import Prelude
 
 -- The MVar is always left full except when actions are run
 -- that access the database.

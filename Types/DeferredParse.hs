@@ -12,8 +12,6 @@ module Types.DeferredParse where
 import Annex
 
 import Options.Applicative
-import qualified Data.Semigroup as Sem
-import Prelude
 
 -- Some values cannot be fully parsed without performing an action.
 -- The action may be expensive, so it's best to call finishParse on such a
@@ -47,7 +45,7 @@ data AnnexSetter = AnnexSetter
 	, annexReadSetter :: AnnexRead -> AnnexRead
 	}
 
-instance Sem.Semigroup AnnexSetter where
+instance Semigroup AnnexSetter where
 	a <> b = AnnexSetter
 		{ annexStateSetter = annexStateSetter a >> annexStateSetter b
 		, annexReadSetter = annexReadSetter b . annexReadSetter a

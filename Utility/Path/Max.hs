@@ -13,9 +13,6 @@ module Utility.Path.Max (fileNameLengthLimit) where
 #ifndef mingw32_HOST_OS
 import Utility.Exception
 import System.Posix.Files
-import Data.List
-import Control.Applicative
-import Prelude
 #endif
 
 {- Maximum size to use for a file in a specified directory.

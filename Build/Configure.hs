@@ -15,8 +15,6 @@ import Utility.OsPath
 import qualified Utility.FileIO as F
 
 import Control.Monad
-import Control.Applicative
-import Prelude
 
 tests :: [TestCase]
 tests =

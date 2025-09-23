@@ -16,7 +16,6 @@ import Control.Monad.IfElse
 import Data.List
 import Control.Applicative
 import System.Posix.Files
-import Prelude
 
 import Utility.PartialPrelude
 import Utility.OsPath

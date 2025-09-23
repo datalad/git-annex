@@ -28,8 +28,6 @@ import qualified Data.Attoparsec.ByteString as A
 import qualified Data.Attoparsec.ByteString.Lazy as AL
 import qualified Data.Attoparsec.ByteString.Char8 as A8
 import Data.ByteString.Builder
-import qualified Data.Semigroup as Sem
-import Prelude
 
 data LogEntry v = LogEntry
 	{ changed :: VectorClock
@@ -42,7 +40,7 @@ instance Arbitrary v => Arbitrary (LogEntry v) where
 newtype MapLog f v = MapLog (M.Map f (LogEntry v))
 	deriving (Show, Eq)
 
-instance Ord f => Sem.Semigroup (MapLog f v)
+instance Ord f => Semigroup (MapLog f v)
   where
 	a <> MapLog b = foldl' (\m (f, v) -> addMapLog f v m) a (M.toList b)
 

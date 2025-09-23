@@ -34,12 +34,10 @@ import Foreign
 import Data.Char
 import Data.List
 import System.Exit
-import Control.Applicative
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Char8 as S8
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Lazy.Char8 as L8
-import Prelude
 
 {- A version of hgetContents that is not lazy. Ensures file is 
  - all read before it gets closed. -}

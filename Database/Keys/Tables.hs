@@ -7,10 +7,6 @@
 
 module Database.Keys.Tables where
 
-import Data.Monoid
-import qualified Data.Semigroup as Sem
-import Prelude
-
 data DbTable = AssociatedTable | ContentTable
 	deriving (Eq, Show)
 
@@ -20,7 +16,7 @@ data DbTablesChanged = DbTablesChanged
 	}
 	deriving (Show)
 
-instance Sem.Semigroup DbTablesChanged where
+instance Semigroup DbTablesChanged where
 	a <> b = DbTablesChanged
 		{ associatedTable = associatedTable a || associatedTable b
 		, contentTable = contentTable a || contentTable b
