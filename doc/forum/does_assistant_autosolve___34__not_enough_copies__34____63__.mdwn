@@ -21,3 +21,5 @@ I have three repositories in groups archive and backup. These five failes are on
 Just manually copying them to other repositories solved it.
 
 What did I miss or did not understand? Git assistant runs on all repositories and are ssh connected nearly 24/7 and all other syncing works fine.
+
+`git annex sync --all --content ONE_OF_THE_ARCHIVE_BACKUP_REPOSITORIES` does not change anything either.
