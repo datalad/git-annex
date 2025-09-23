@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2025-09-23T03:41:09Z"
+ content="""
+In just the right circumstance, this can also prevent import from
+adding files. If an export deleted a file, and then it was written back to
+the special remote, in a way that caused it to have an identical content
+identifier, then import would see no change when diffing, and so would not
+add the file back.
+
+With the directory special remote, the way to trigger this is:
+
+	git rm foo
+	git commit -m rm
+	mv ../directory/foo ..
+	git-annex export master --to remote
+	mv ../foo ../directory/foo
+	git-annex import master --from remote
+	git merge remote/master
+
+The `mv` is needed to preserve the inode, which is used in the content
+identifier. 
+
+With other types of special remotes that have less good content
+identifiers, it might suffice for the same content to be written to the
+special remote.
+"""]]
