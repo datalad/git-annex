@@ -1,0 +1,79 @@
+[[!comment format=mdwn
+ username="Arnie97"
+ avatar="http://cdn.libravatar.org/avatar/607ed64cbd8e7a4cc2035a865b6cb5b2"
+ subject="the X prefix conflicts with the eXternal backend namespace"
+ date="2025-09-24T12:05:05Z"
+ content="""
+I'm trying to create a external backend for xxHash, but experienced weird behaviors.
+
+If only `/bin/git-annex-backend-XXH3` is present in `$PATH`, and `git config annex.backend XXH3` is set, then git annex complains `Cannot run git-annex-backend-XH3 -- It is not installed in PATH`, which seems like a bug.
+And if `/bin/git-annex-backend-XXH3` is moved to `/bin/git-annex-backend-XH3` according to the error message, it will complain `Cannot run git-annex-backend-XXH3 -- It is not installed in PATH` (this is expected).
+Finally I have to link the same shell script to both `/bin/git-annex-backend-XH3` and `/bin/git-annex-backend-XXH3` to make the backend config `XXH3` work.
+
+```bash
+#!/bin/sh
+
+set -e
+
+hashtype=\"${0##*git-annex-backend-X}\"
+
+# could send PROGRESS while doing this, but it's
+# hard to implement that in shell
+case \"$hashtype\" in
+    BLAKE3_256)
+        hashfile() { b3sum --no-names \"$1\"; } ;;
+    BLAKE3_512)
+        hashfile() { b3sum --no-names -l 64 \"$1\"; } ;;
+    XXH32|XH32)
+        hashfile() { xxhsum -H0 \"$1\" | cut -d ' ' -f 1; } ;;
+    XXH64|XH64)
+        hashfile() { xxhsum -H1 \"$1\" | cut -d ' ' -f 1; } ;;
+    XXH128|XH128)
+        hashfile() { xxhsum -H2 \"$1\" | cut -d ' ' -f 1; } ;;
+    XXH3|XH3)
+        hashfile() { xxhsum -H3 --tag \"$1\" | awk '{ print $NF }'; } ;;
+esac
+
+while read line; do
+    set -- $line
+    case \"$1\" in
+        GETVERSION)
+            echo VERSION 1
+        ;;
+        CANVERIFY)
+            echo CANVERIFY-YES
+        ;;
+        ISSTABLE)
+            echo ISSTABLE-YES
+        ;;
+        ISCRYPTOGRAPHICALLYSECURE)
+            echo ISCRYPTOGRAPHICALLYSECURE-YES
+        ;;
+        GENKEY)
+            contentfile=\"$2\"
+            hash=$(hashfile \"$contentfile\")
+            sz=$(wc -c \"$contentfile\" | cut -d ' ' -f 1)
+            if [ -n \"$hash\" ]; then
+                echo \"GENKEY-SUCCESS\" \"$hashtype-s$sz--$hash\"
+            else
+                echo \"GENKEY-FAILURE\" \"calculate hash sum failed\"
+            fi
+        ;;
+        VERIFYKEYCONTENT)
+            key=\"$2\"
+            contentfile=\"$3\"
+            hash=$(hashfile \"$contentfile\")
+            khash=$(echo \"$key\" | sed 's/.*--//')
+            if [ \"$hash\" = \"$khash\" ]; then
+                echo \"VERIFYKEYCONTENT-SUCCESS\"
+            else
+                echo \"VERIFYKEYCONTENT-FAILURE\"
+            fi
+        ;;
+        *)
+            echo ERROR protocol error
+        ;;
+    esac
+done
+```
+"""]]
