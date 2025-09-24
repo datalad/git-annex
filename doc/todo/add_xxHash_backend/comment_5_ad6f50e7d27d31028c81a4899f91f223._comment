@@ -17,6 +17,11 @@ This change will fix it:
 	- hashtype="${0##*git-annex-backend-X}"
 	+ hashtype="${0##*git-annex-backend-}"
 
+However, since the hash is named "XXHASH", and this is an external backend,
+I think the backend name you should really be using is "XXXHASH". This
+leaves the "XXHASH" backend name free for git-annex to use if it
+implemented it as a built-in backend.
+
 Once you have the program working, we can add it to the list of external
 backends.
 """]]
