@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2025-09-24T16:30:12Z"
+ content="""
+This is a bug in your program. It is generating a
+key using the XH3 backend, rather than the XXH3 backend.
+
+	[2025-09-24 12:29:41.565937669] (Annex.ExternalAddonProcess) /home/joey/bin/git-annex-backend-XXH3[1] <-- GENKEY .git/annex/othertmp/ingest-bar89415-0
+	[2025-09-24 12:29:41.568293334] (Annex.ExternalAddonProcess) /home/joey/bin/git-annex-backend-XXH3[1] --> GENKEY-SUCCESS XH3-s30--88ad06d188b880a1
+
+When git-annex later wants to do something that that key,
+it expects to find a git-annex-backend-XH3 program.
+
+This change will fix it:
+
+	- hashtype="${0##*git-annex-backend-X}"
+	+ hashtype="${0##*git-annex-backend-}"
+
+Once you have the program working, we can add it to the list of external
+backends.
+"""]]

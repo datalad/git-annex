@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2025-09-24T16:39:02Z"
+ content="""
+I am inclined to keep this todo open despite external backend
+programs existing, because it would be nice to have xxHash in
+git-annex natively due to its speed.
+
+I found this haskell library which includes xxh3
+and which would be easy to add as a git-annex dependency,
+although it would need to be gated behind a build flag for now:
+<https://hackage.haskell.org/package/xxhash-ffi>
+
+(Since that library uses Hashable, it generates an Int for the hash.
+This seems to limit it to be used on 64 bit platforms. 
+<https://github.com/haskell-haskey/xxhash-ffi/issues/6>
+The lower-level Data.Digest.XXHash.FFI.C uses CULLong so will work on 32
+bit.)
+"""]]
