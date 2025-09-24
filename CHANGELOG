@@ -1,32 +1,32 @@
 git-annex (10.20250829) UNRELEASED; urgency=medium
 
-  * drop: --fast support when dropping from a remote.
+  * Fix bug that made changes to a special remote sometimes be missed when
+    importing a tree from it. After upgrading, any such missed changes
+    will be included in the next tree imported from a special remote.
+    Fixes reversion introduced in version 10.20230626.
   * Fix crash operating on filenames that are exactly 21 bytes long
     and begin with a utf-8 character.
+  * Fix hang that could occur when using git-annex adjust on a branch with
+    a number of files greater than annex.queuesize.
   * Fix bug that could cause an invalid utf-8 sequence to be used in a
     temporary filename when the input filename was valid utf-8.
-  * git-annex.cabal: Turn on the OsPath build flag by default.
+  * Improve performance when used with a local git remote that has a
+    large working tree.
+  * drop: --fast support when dropping from a remote.
+  * Added annex.assistant.allowunlocked config.
+  * Add git-remote-p2p-annex and git-remote-tor-annex to standalone builds.
+  * enableremote: Disallow using type= to attempt to change the type of an
+    existing remote.
   * Add build warnings when git-annex is built without the OsPath
     build flag.
   * version: Report on whether it was built with the OsPath build flag.
   * Avoid leaking file descriptors to child processes started by git-annex
     in some situations. Note that when not built with the OsPath build
     flag, these leaks can still happen.
-  * Improve performance when used with a local git remote that has a
-    large working tree.
-  * Removed support for building with cryptonite, use crypton.
+  * git-annex.cabal: Turn on the OsPath build flag by default.
   * p2phttp: Fix a hang that could occur when used with --directory,
     and a repository in the directory got removed.
-  * Added annex.assistant.allowunlocked config.
-  * Add git-remote-p2p-annex and git-remote-tor-annex to standalone builds.
-  * enableremote: Disallow using type= to attempt to change the type of an
-    existing remote.
-  * Fix hang that could occur when using git-annex adjust on a branch with
-    a number of files greater than annex.queuesize.
-  * Fix bug that made changes to a special remote sometimes be missed when
-    importing a tree from it. After upgrading, any such missed changes
-    will be included in the next tree imported from a special remote.
-    Fixes reversion introduced in version 10.20230626.
+  * Removed support for building with unmaintained cryptonite, use crypton.
 
  -- Joey Hess <id@joeyh.name>  Fri, 29 Aug 2025 12:34:06 -0400
 
