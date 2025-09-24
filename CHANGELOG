@@ -1,4 +1,4 @@
-git-annex (10.20250829) UNRELEASED; urgency=medium
+git-annex (10.20250925) UNRELEASED; urgency=medium
 
   * Fix bug that made changes to a special remote sometimes be missed when
     importing a tree from it. After upgrading, any such missed changes
@@ -28,7 +28,7 @@ git-annex (10.20250829) UNRELEASED; urgency=medium
     and a repository in the directory got removed.
   * Removed support for building with unmaintained cryptonite, use crypton.
 
- -- Joey Hess <id@joeyh.name>  Fri, 29 Aug 2025 12:34:06 -0400
+ -- Joey Hess <id@joeyh.name>  Wed, 24 Sep 2025 12:05:56 -0400
 
 git-annex (10.20250828) upstream; urgency=medium
 
