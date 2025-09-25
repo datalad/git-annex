@@ -16,7 +16,10 @@ git config --global user.name "GitHub Almighty"
 
 find "$patches_dir" -type f '!' -name '.*' -print | sort | while read -r patchfile
 do
-    echo "[INFO] Applying patch $patchfile"
+    echo "[INFO] Applying patch '$patchfile' on '$OSTYPE'"
+    if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then # Check if on Windows (adjust as needed)
+        unix2dos "$patchfile"  # Convert to CRLF on Windows
+    fi
     # Test whether the patch has already been applied by seeing if it can be
     # applied in reverse
     if git apply -R --check "$patchfile"
