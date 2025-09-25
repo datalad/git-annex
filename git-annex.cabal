@@ -169,9 +169,6 @@ Flag TorrentParser
 Flag MagicMime
   Description: Use libmagic to determine file MIME types
 
-Flag Servant
-  Description: Use the servant library, enabling using annex+http urls and git-annex p2phttp
-
 Flag OsPath
   Description: Use the os-string library and related libraries, for faster filename manipulation
   Default: True
@@ -282,7 +279,13 @@ Executable git-annex
    network-bsd,
    git-lfs (>= 1.2.0),
    clock (>= 0.3.0),
-   crypton
+   crypton,
+   servant,
+   servant-server,
+   servant-client,
+   servant-client-core,
+   warp (>= 3.2.8),
+   warp-tls (>= 3.2.2)
   CC-Options: -Wall
   GHC-Options: -Wall -fno-warn-tabs  -Wincomplete-uni-patterns
   Default-Language: Haskell2010
@@ -308,21 +311,6 @@ Executable git-annex
   -- Avoid linking with unused dynamic libraries.
   if os(linux) || os(freebsd)
     GHC-Options: -optl-Wl,--as-needed
-
-  if flag(Servant)
-    Build-Depends:
-      servant,
-      servant-server,
-      servant-client,
-      servant-client-core,
-      warp (>= 3.2.8),
-      warp-tls (>= 3.2.2)
-    CPP-Options: -DWITH_SERVANT
-    Other-Modules:
-      Command.P2PHttp
-      P2P.Http
-      P2P.Http.Server
-      P2P.Http.State
 
   if flag(OsPath)
     Build-Depends:
@@ -353,8 +341,6 @@ Executable git-annex
       yesod-form (>= 1.4.8),
       yesod-core (>= 1.6.0),
       path-pieces (>= 0.2.1),
-      warp (>= 3.2.8),
-      warp-tls (>= 3.2.2),
       wai,
       wai-extra,
       blaze-builder,
@@ -718,6 +704,7 @@ Executable git-annex
     Command.MinCopies
     Command.OldKeys
     Command.P2P
+    Command.P2PHttp
     Command.P2PStdIO
     Command.PostReceive
     Command.PreCommit
@@ -917,6 +904,9 @@ Executable git-annex
     P2P.Annex
     P2P.Auth
     P2P.Generic
+    P2P.Http
+    P2P.Http.Server
+    P2P.Http.State
     P2P.Http.Types
     P2P.Http.Client
     P2P.Http.Url

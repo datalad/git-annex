@@ -1,3 +1,10 @@
+git-annex (10.20250926) UNRELEASED; urgency=medium
+
+  * Remove the Servant build flag; always build with support for
+    annex+http urls and git-annex p2phttp.
+
+ -- Joey Hess <id@joeyh.name>  Thu, 25 Sep 2025 13:36:21 -0400
+
 git-annex (10.20250925) upstream; urgency=medium
 
   * Fix bug that made changes to a special remote sometimes be missed when

@@ -27,7 +27,6 @@ import Types.NumCopies
 import Types.Remote
 import Annex.Common
 import qualified Git
-#ifdef WITH_SERVANT
 import qualified Annex
 import Annex.UUID
 import Annex.Url
@@ -51,12 +50,10 @@ import qualified Data.Map as M
 import Control.Concurrent.Async
 import Control.Concurrent
 import System.IO.Unsafe
-#endif
 import Data.Time.Clock.POSIX
 import qualified Data.ByteString.Lazy as L
 
 type ClientAction a
-#ifdef WITH_SERVANT
 	= ClientEnv
 	-> ProtocolVersion
 	-> B64UUID ServerSide
@@ -64,9 +61,6 @@ type ClientAction a
 	-> [B64UUID Bypass]
 	-> Maybe Auth
 	-> Annex (Either ClientError a)
-#else
-	= ()
-#endif
 
 p2pHttpClient
 	:: Remote
@@ -95,7 +89,6 @@ p2pHttpClientVersions'
 	-> (String -> Annex a)
 	-> ClientAction a
 	-> Annex (Maybe a)
-#ifdef WITH_SERVANT
 p2pHttpClientVersions' allowedversion rmt rmtrepo fallback clientaction =
 	case p2pHttpBaseUrl <$> remoteAnnexP2PHttpUrl (gitconfig rmt) of
 		Nothing -> error "internal"
@@ -174,10 +167,6 @@ p2pHttpClientVersions' allowedversion rmt rmtrepo fallback clientaction =
 				putTMVar ccv $ Git.CredentialCache $
 					M.insert (Git.CredentialBaseURL credentialbaseurl) cred cc
 		Nothing -> noop
-#else
-p2pHttpClientVersions' _ _ _ fallback () = Just <$> fallback
-	"This remote uses an annex+http url, but this version of git-annex is not built with support for that."
-#endif
 
 clientGet
 	:: Key
@@ -188,7 +177,6 @@ clientGet
 	-> Maybe FileSize
 	-- ^ Size of existing file, when resuming.
 	-> ClientAction Validity
-#ifdef WITH_SERVANT
 clientGet k af consumer startsz clientenv (ProtocolVersion ver) su cu bypass auth = liftIO $ do
 	let offset = fmap (Offset . fromIntegral) startsz
 	withClientM (cli (B64Key k) cu bypass baf offset auth) clientenv $ \case
@@ -220,12 +208,8 @@ clientGet k af consumer startsz clientenv (ProtocolVersion ver) su cu bypass aut
 	gather' (S.Yield v s) = LI.Chunk v <$> unsafeInterleaveIO (gather' s)
 	
 	baf = associatedFileToB64FilePath af
-#else
-clientGet _ _ _ _ = ()
-#endif
 
 clientCheckPresent :: Key -> ClientAction Bool
-#ifdef WITH_SERVANT
 clientCheckPresent key clientenv (ProtocolVersion ver) su cu bypass auth =
 	liftIO $ withClientM (cli su (B64Key key) cu bypass auth) clientenv $ \case
 		Left err -> return (Left err)
@@ -241,9 +225,6 @@ clientCheckPresent key clientenv (ProtocolVersion ver) su cu bypass auth =
 	
 	_ :<|> _ :<|> _ :<|> _ :<|> _ :<|>
 		v4 :<|> v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
-#else
-clientCheckPresent _ = ()
-#endif
 
 -- Similar to P2P.Protocol.remove.
 clientRemoveWithProof
@@ -275,7 +256,6 @@ clientRemoveWithProof proof k unabletoremove remote =
 	useversion v = v >= ProtocolVersion 3
 
 clientRemove :: Key -> ClientAction RemoveResultPlus
-#ifdef WITH_SERVANT
 clientRemove k clientenv (ProtocolVersion ver) su cu bypass auth =
 	liftIO $ withClientM cli clientenv return
   where
@@ -292,15 +272,11 @@ clientRemove k clientenv (ProtocolVersion ver) su cu bypass auth =
 	_ :<|> _ :<|> _ :<|> _ :<|> _ :<|>
 		_ :<|> _ :<|> _ :<|> _ :<|> _ :<|>
 		v4 :<|> v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
-#else
-clientRemove _ = ()
-#endif
 
 clientRemoveBefore
 	:: Key
 	-> Timestamp
 	-> ClientAction RemoveResultPlus
-#ifdef WITH_SERVANT
 clientRemoveBefore k ts clientenv (ProtocolVersion ver) su cu bypass auth =
 	liftIO $ withClientM (cli su (B64Key k) cu bypass ts auth) clientenv return
   where
@@ -313,12 +289,8 @@ clientRemoveBefore k ts clientenv (ProtocolVersion ver) su cu bypass auth =
 		_ :<|> _ :<|> _ :<|> _ :<|> _ :<|>
 		_ :<|>_ :<|> _ :<|> _ :<|> _ :<|>
 		v4 :<|> v3 :<|> _ = client p2pHttpAPI
-#else
-clientRemoveBefore _ _ = ()
-#endif
 
 clientGetTimestamp :: ClientAction GetTimestampResult
-#ifdef WITH_SERVANT
 clientGetTimestamp clientenv (ProtocolVersion ver) su cu bypass auth = 
 	liftIO $ withClientM (cli su cu bypass auth) clientenv return
   where
@@ -332,9 +304,6 @@ clientGetTimestamp clientenv (ProtocolVersion ver) su cu bypass auth =
 		_ :<|> _ :<|> _ :<|> _ :<|> _ :<|>
 		_ :<|> _ :<|>
 		v4 :<|> v3 :<|> _ = client p2pHttpAPI
-#else
-clientGetTimestamp = ()
-#endif
 
 clientPut
 	:: MeterUpdate
@@ -349,7 +318,6 @@ clientPut
 	-- ^ Set data-present parameter and do not actually send data
 	-- (v4+ only)
 	-> ClientAction PutResultPlus
-#ifdef WITH_SERVANT
 clientPut meterupdate k moffset af contentfile contentfilesize validitycheck datapresent clientenv (ProtocolVersion ver) su cu bypass auth
 	| datapresent = liftIO $ withClientM (cli mempty) clientenv return
 	| otherwise = do
@@ -435,14 +403,10 @@ clientPut meterupdate k moffset af contentfile contentfilesize validitycheck dat
 		_ :<|> _ :<|>
 		_ :<|> _ :<|>
 		v4 :<|> v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
-#else
-clientPut _ _ _ _ _ _ _ _ = ()
-#endif
 
 clientPutOffset
 	:: Key
 	-> ClientAction PutOffsetResultPlus
-#ifdef WITH_SERVANT
 clientPutOffset k clientenv (ProtocolVersion ver) su cu bypass auth
 	| ver == 0 = return (Right (PutOffsetResultPlus (Offset 0)))
 	| otherwise = liftIO $ withClientM cli clientenv return
@@ -463,14 +427,10 @@ clientPutOffset k clientenv (ProtocolVersion ver) su cu bypass auth
 		_ :<|> _ :<|>
 		_ :<|> _ :<|> _ :<|> _ :<|> _ :<|>
 		v4 :<|> v3 :<|> v2 :<|> v1 :<|> _ = client p2pHttpAPI
-#else
-clientPutOffset _ = ()
-#endif
 
 clientLockContent
 	:: Key
 	-> ClientAction LockResult
-#ifdef WITH_SERVANT
 clientLockContent k clientenv (ProtocolVersion ver) su cu bypass auth = 
 	liftIO $ withClientM (cli (B64Key k) cu bypass auth) clientenv return
   where
@@ -490,9 +450,6 @@ clientLockContent k clientenv (ProtocolVersion ver) su cu bypass auth =
 		_ :<|> _ :<|> _ :<|> _ :<|> _ :<|>
 		_ :<|> _ :<|> _ :<|> _ :<|>
 		v4 :<|> v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
-#else
-clientLockContent _ = ()
-#endif
 
 clientKeepLocked
 	:: LockID
@@ -503,7 +460,6 @@ clientKeepLocked
 	-- server. The lock will remain held until the callback returns,
 	-- and then will be dropped.
 	-> ClientAction a
-#ifdef WITH_SERVANT
 clientKeepLocked lckid remoteuuid unablelock callback clientenv (ProtocolVersion ver) su cu bypass auth = do
 	readyv <- liftIO newEmptyTMVarIO
 	keeplocked <- liftIO newEmptyTMVarIO
@@ -563,6 +519,3 @@ clientKeepLocked lckid remoteuuid unablelock callback clientenv (ProtocolVersion
 		_ :<|> _ :<|> _ :<|> _ :<|>
 		_ :<|> _ :<|> _ :<|> _ :<|> _ :<|>
 		v4 :<|> v3 :<|> v2 :<|> v1 :<|> v0 :<|> _ = client p2pHttpAPI
-#else
-clientKeepLocked _ _ _ _ = ()
-#endif
