@@ -1,0 +1,13 @@
+I'm attempting to update Arch Linux packaging ... the major caveat being we're stuck using an old (9.4.8) version of `ghc` for now...
+
+Building the latest tagged release now produces this error:
+
+```
+Utility/OpenFd.hs:28:9: error:
+    Variable not in scope: when :: Bool -> IO () -> IO a0
+   |
+28 |         when closeonexec $
+   |         ^^^^
+```
+
+I'm not sure this error is directly caused by the antiquated compiler, but also not sure how to debug this further or work around it either.
