@@ -5,7 +5,6 @@
 
 module Build.Version where
 
-import Data.List
 import System.Environment
 import Data.Char
 
