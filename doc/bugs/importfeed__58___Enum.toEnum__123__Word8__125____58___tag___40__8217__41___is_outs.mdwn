@@ -1,0 +1,98 @@
+### Please describe the problem.
+
+Since upgrading to git-annex version 10.20250925, from the macOS HomeBrew build, `git annex importfeed` seems to *usually* fail with an `Enum.toEnum{Word8}` out of bounds error.  The exact value reported for the out of bounds value varies between feed URLs, but from a little bit of testing the error appears deterministic between those feed URLs.
+
+A few examples (plus one more in the reproducer below):
+
+```
+importfeed https://popculturedetective.agency/feed/podcast 
+git-annex: Enum.toEnum{Word8}: tag (8217) is outside of bounds (0,255)
+failed
+```
+
+```
+importfeed https://contextualelectronics.com/feed/podcast/ 
+git-annex: Enum.toEnum{Word8}: tag (8217) is outside of bounds (0,255)
+failed
+```
+
+```
+importfeed https://theamphour.libsyn.com/rss 
+git-annex: Enum.toEnum{Word8}: tag (8211) is outside of bounds (0,255)
+failed
+```
+
+(A couple of podcast feeds with no new changes just report "ok"; but I'd also expect most of the above to not have any recent changes as they're weekly-or-less podcasts.)
+
+### What steps will reproduce the problem?
+
+Indicative example (one of the feed URLs I follow; but it's happening on all of *most* of them that all worked with the previous version of git-annex):
+
+```
+ewen@basadi:/tmp/podcasts$ git init
+Initialized empty Git repository in /private/tmp/podcasts/.git/
+ewen@basadi:/tmp/podcasts$ git annex init 'Test repo'
+init Test repo ok
+(recording state in git...)
+ewen@basadi:/tmp/podcasts$ TEMPLATE='archive/${feedtitle}/${itemtitle}${extension}'
+ewen@basadi:/tmp/podcasts$ git annex importfeed --template="${TEMPLATE}" "https://risky.biz/feeds/risky-business"
+importfeed gathering known urls ok
+importfeed https://risky.biz/feeds/risky-business 
+git-annex: Enum.toEnum{Word8}: tag (8217) is outside of bounds (0,255)
+failed
+importfeed: 1 failed
+ewen@basadi:/tmp/podcasts$ 
+```
+
+The `--template` part does not seem necessary to the reproducer either, as I get the same error without (it's just the `--template` is in my standard run that I've used for years):
+
+```
+ewen@basadi:/tmp/podcasts$ git annex importfeed "https://risky.biz/feeds/risky-business"
+importfeed gathering known urls ok
+importfeed https://risky.biz/feeds/risky-business 
+git-annex: Enum.toEnum{Word8}: tag (8217) is outside of bounds (0,255)
+failed
+importfeed: 1 failed
+ewen@basadi:/tmp/podcasts$ 
+```
+
+### What version of git-annex are you using? On what operating system?
+
+```
+ewen@basadi:~$ git annex version
+git-annex version: 10.20250925
+build flags: Assistant Webapp Pairing FsEvents TorrentParser MagicMime Servant Benchmark Feeds Testsuite S3 WebDAV OsPath
+dependency versions: aws-0.24.4 bloomfilter-2.0.1.2 crypton-1.0.4 DAV-1.3.4 feed-1.3.2.1 ghc-9.10.3 http-client-0.7.19 persistent-sqlite-2.13.3.1 torrent-10000.1.3 uuid-1.3.16 yesod-1.6.2.1
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL GITBUNDLE GITMANIFEST VURL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg rclone hook external compute mask
+operating system: darwin x86_64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
+ewen@basadi:~$ 
+```
+
+on macOS 15.6.1 (Sequoia), which is the latest release apart from the macOS 26 released this month.  On Intel in this case, but seems to also reproduce on the same macOS 15.6.1 (Sequoia) on Apple M2 processor, with the same HomeBrew build of git-annex.
+
+### Please provide any additional information below.
+
+[[!format sh """
+ewen@basadi:/tmp/podcasts$ git annex --verbose --verbose importfeed --verbose --verbose "https://risky.biz/feeds/risky-business"
+importfeed gathering known urls ok
+importfeed https://risky.biz/feeds/risky-business 
+git-annex: Enum.toEnum{Word8}: tag (8217) is outside of bounds (0,255)
+failed
+importfeed: 1 failed
+ewen@basadi:/tmp/podcasts$ 
+"""]]
+
+At this stage I don't know if this is specific to `importfeed` or specific to the HomeBrew build of git-annex.
+
+Other annexes tracking files do seem to work (`git annex add` / `git annex sync` / `git annex copy ...` all work) with this version of git-annex.  So I suspect it's somehow specific to importfeed and/or the HomeBrew build.
+
+And it seems a fairly recent breakage, as IIRC the previous installed was from 2025-08.
+
+[HomeBrew git-annex package information](https://formulae.brew.sh/formula/git-annex)
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes, for many years.  git-annex has worked vey well for downloading/collecting podcasts for years, which is why t was surprising it's suddenly failing like this.
