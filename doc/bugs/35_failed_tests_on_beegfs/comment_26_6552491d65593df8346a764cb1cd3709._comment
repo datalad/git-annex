@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="ewen"
+ avatar="http://cdn.libravatar.org/avatar/605b2981cb52b4af268455dee7a4f64e"
+ subject="Cross link to importfeed parsing"
+ date="2025-09-28T22:49:31Z"
+ content="""
+As a cross link, the changes in [comment 8 on this bug](http://git-annex.branchable.com/bugs/35_failed_tests_on_beegfs/#comment-d7e4cf0592937215e3acd3c08c03288c) seem to have changed the feed parsing from binary mode to decoding UTF-8, which appears to be breaking on feeds which actually contain UTF-8 (eg, smart quotes, smart dashes, etc).
+
+See [comment on bug about importfeed breaking on `toEnum` out of range](http://git-annex.branchable.com/bugs/importfeed__58___Enum.toEnum__123__Word8__125____58___tag___40__8217__41___is_outs/#comment-dbdafeb801ad23e2ccb3c2aa066a4efb) (where it took me a while to figure out what the root cause was).
+
+Ewen
+
+
+"""]]
