@@ -1918,19 +1918,19 @@ test_gpg_crypto = do
   where
 	testscheme scheme = intmpclonerepo $ test_with_gpg $ \gpgcmd environ -> do
 		createDirectory (literalOsPath "dir")
-		let ps =
+		let initps =
 			[ "foo"
+			, "type=directory"
 			, "encryption=" ++ scheme
 			, "directory=dir"
 			, "highRandomQuality=false"
 			] ++ if scheme `elem` ["hybrid","pubkey"]
 				then ["keyid=" ++ Utility.Gpg.testKeyId]
 				else []
-		let initps = ps ++ [ "type=directory" ]
 		git_annex' "initremote" initps (Just environ) "initremote"
 		git_annex_shouldfail' "initremote" initps (Just environ) "initremote should not work when run twice in a row"
-		git_annex' "enableremote" ps (Just environ) "enableremote"
-		git_annex' "enableremote" ps (Just environ) "enableremote when run twice in a row"
+		git_annex' "enableremote" initps (Just environ) "enableremote"
+		git_annex' "enableremote" initps (Just environ) "enableremote when run twice in a row"
 		git_annex' "get" [annexedfile] (Just environ) "get of file"
 		annexed_present annexedfile
 		git_annex' "copy" [annexedfile, "--to", "foo"] (Just environ) "copy --to encrypted remote"

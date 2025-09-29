@@ -2,6 +2,8 @@ git-annex (10.20250926) UNRELEASED; urgency=medium
 
   * Remove the Servant build flag; always build with support for
     annex+http urls and git-annex p2phttp.
+  * enableremote: Allow type= to be provided when it does not change the
+    type of the special remote.
 
  -- Joey Hess <id@joeyh.name>  Thu, 25 Sep 2025 13:36:21 -0400
 
