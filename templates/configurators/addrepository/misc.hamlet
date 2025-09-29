@@ -11,14 +11,6 @@
 ^{makeWormholePairing}
 
 <h3>
-  <a href="@{StartLocalPairR}">
-    <span .glyphicon .glyphicon-plus-sign>
-    \ Local computer
-<p>
-  Pair with a computer to keep files in sync quickly, #
-  over your local network.
-
-<h3>
   <a href="@{NewRepositoryR}">
     <span .glyphicon .glyphicon-plus-sign>
     \ Add another repository

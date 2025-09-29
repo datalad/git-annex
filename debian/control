@@ -58,8 +58,6 @@ Build-Depends:
 	libghc-http-client-restricted-dev,
 	libghc-blaze-builder-dev,
 	libghc-crypto-api-dev,
-	libghc-network-multicast-dev,
-	libghc-network-info-dev [linux-any kfreebsd-any],
 	libghc-safesemaphore-dev,
 	libghc-async-dev,
 	libghc-monad-logger-dev,

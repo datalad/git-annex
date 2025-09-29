@@ -27,6 +27,7 @@ have. Beyond the business of connecting to the webapp securely, the adhoc
 network protocol used by the webapp's pairing interface is baked into the
 assistant even when the webapp is not being used. And is not otherwise used
 in git-annex, and has had at least one security issue in the past.
+(Update: That has been removed from the webapp now.)
 
 The git-annex binary also ends up significantly larger due to containing
 the webapp. And removing it deletes 28 thousand lines of code from
