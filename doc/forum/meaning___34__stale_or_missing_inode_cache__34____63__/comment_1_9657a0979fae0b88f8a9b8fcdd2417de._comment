@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-09-29T15:16:06Z"
+ content="""
+The inode cache is something git-annex uses internally to keep track of
+changes to files. There are some known situations where it can get out of
+date, including an upgrade from a v8 repository. Sometimes inodes change
+for various reasons, like copying a repository from one filesystem to
+another. So this just means that fsck has detected and updated the
+information. I would not worry about it unless git-annex has other
+unexpected behavior.
+"""]]
