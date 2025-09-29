@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-09-29T15:07:41Z"
+ content="""
+git-annex has a dependency on unbounded-delays, listed in git-annex.cabal.
+
+Noting has changed here since 2024 when it stopped vendoring part of that
+library and added the dependency.
+
+I do see that the debian/control shipped with git-annex was missing that
+dep, I've added it and I *guess* that will fix your problem
+"""]]
