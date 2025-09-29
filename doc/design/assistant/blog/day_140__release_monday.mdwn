@@ -1,5 +1,5 @@
 New release today, the main improvements in this one being WebDAV,
-Box.com, and Amazon glacier support. [[/assistant/release_notes]]
+Box.com, and Amazon glacier support.
 
 Collected together all the OSX problem reports into one place
 at [[/assistant/OSX]], to make it easier to get an overview of them.
