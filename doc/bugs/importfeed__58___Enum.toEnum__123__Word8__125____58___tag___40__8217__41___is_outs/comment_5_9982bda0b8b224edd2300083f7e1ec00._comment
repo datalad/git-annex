@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="ewen"
+ avatar="http://cdn.libravatar.org/avatar/605b2981cb52b4af268455dee7a4f64e"
+ subject="Feed seems to now be parsed as UTF-8 characters, not binary mode"
+ date="2025-09-28T22:42:32Z"
+ content="""
+I think the relevant change is likely to be:
+
+```
+* feed (update: parseFeedFromFile uses openBinaryFile, updated git-annex to open
+  the file itself instead)
+```
+
+from [https://git-annex.branchable.com/bugs/35_failed_tests_on_beegfs/#comment-d7e4cf0592937215e3acd3c08c03288c](https://git-annex.branchable.com/bugs/35_failed_tests_on_beegfs/#comment-d7e4cf0592937215e3acd3c08c03288c)
+
+Based on the fact that's a 2025-09-04 change (so since previous release), refers to `parseFeedFromFile`, and the relevant commit seems to be:
+
+[http://source.git-annex.branchable.com/?p=source.git;a=commit;h=2b1e9eced2fe825c882b4e9549a3a12f41d08055](http://source.git-annex.branchable.com/?p=source.git;a=commit;h=2b1e9eced2fe825c882b4e9549a3a12f41d08055)
+
+and particular in this file:
+
+[http://source.git-annex.branchable.com/?p=source.git;a=blobdiff;f=Command/ImportFeed.hs;h=e36e72370204ece44a05bfae5954272a46f34f5c;hp=7b66a2b5077613b7e33dc8597a8272e7fdea7102;hb=2b1e9eced2fe825c882b4e9549a3a12f41d08055;hpb=56cd59a9f4e24c5a6842179e0da9180875d837cc](http://source.git-annex.branchable.com/?p=source.git;a=blobdiff;f=Command/ImportFeed.hs;h=e36e72370204ece44a05bfae5954272a46f34f5c;hp=7b66a2b5077613b7e33dc8597a8272e7fdea7102;hb=2b1e9eced2fe825c882b4e9549a3a12f41d08055;hpb=56cd59a9f4e24c5a6842179e0da9180875d837cc)
+
+My reading of that code is that the feed parsing switched from (implicitly) \"just bytes\" (`openBinaryFile`) to decoding UTF-8 into full UTF-8 characters, but there's either (a) something in the later git-annex code or (b) the XML parser that does not expect to receive non-ASCII Unicode characters resulting from opening in \"character\" mode rather than \"binary\" mode, resulting in out of range values.
+
+Which results in the crash on encountering the first non-ASCII character in the feed :-/
+
+It's not clear to me why in fixing \"set close-on-exec bit on open files\" the feed parsing was changed from bytes (binary mode) to decoded characters.  But it appears it wasn't tested on feeds where the text has been through a wordprocessor throwing in smart quotes and smart dashes and the like all over the place.
+
+Ewen
+"""]]

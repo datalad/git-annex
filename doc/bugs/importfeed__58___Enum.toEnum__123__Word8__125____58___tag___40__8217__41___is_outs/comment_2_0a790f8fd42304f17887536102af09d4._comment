@@ -1,0 +1,70 @@
+[[!comment format=mdwn
+ username="ewen"
+ avatar="http://cdn.libravatar.org/avatar/605b2981cb52b4af268455dee7a4f64e"
+ subject="Debug output"
+ date="2025-09-28T21:58:18Z"
+ content="""
+Having found `--debug` (by trying to scan the source; I barely know Haskell, but found almost no *explicit* `toEnum` and none that have changed in the last month AFAICT), it does seem like it's getting as far as downloading the feed URL contents, and then failing (presumably on doing something about parsing it).
+
+```
+ewen@basadi:/tmp/podcasts$ git annex importfeed --debug \"https://risky.biz/feeds/risky-business\"
+[2025-09-29 10:51:54.947712] (Utility.Process) process [7859] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"show-ref\",\"git-annex\"]
+[2025-09-29 10:51:54.954732] (Utility.Process) process [7859] done ExitSuccess
+[2025-09-29 10:51:54.955442] (Utility.Process) process [7860] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2025-09-29 10:51:54.962048] (Utility.Process) process [7860] done ExitSuccess
+[2025-09-29 10:51:54.963011] (Utility.Process) process [7861] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"cat-file\",\"--batch\"]
+importfeed gathering known urls [2025-09-29 10:51:54.97316] (Utility.Process) process [7862] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"rev-parse\",\"--verify\",\"--quiet\",\"refs/heads/git-annex:\"]
+[2025-09-29 10:51:54.980308] (Utility.Process) process [7862] done ExitSuccess
+ok
+importfeed https://risky.biz/feeds/risky-business [2025-09-29 10:51:55.067656] (Utility.Url) Request {
+  host                 = \"risky.biz\"
+  port                 = 443
+  secure               = True
+  requestHeaders       = [(\"Accept-Encoding\",\"identity\"),(\"User-Agent\",\"git-annex/10.20250925\")]
+  path                 = \"/feeds/risky-business\"
+  queryString          = \"\"
+  method               = \"GET\"
+  proxy                = Nothing
+  rawBody              = False
+  redirectCount        = 10
+  responseTimeout      = ResponseTimeoutDefault
+  requestVersion       = HTTP/1.1
+  proxySecureMode      = ProxySecureWithConnect
+}
+
+
+git-annex: Enum.toEnum{Word8}: tag (8217) is outside of bounds (0,255)
+failed
+[2025-09-29 10:51:57.214034] (Utility.Process) process [7861] done ExitSuccess
+importfeed: 1 failed
+ewen@basadi:/tmp/podcasts$ 
+```
+
+Request headers (via `curl`; note there's a 301 redirect, but asking `git-annex` to download the version at the end of the redirect doens't change the `git-annex` symptoms):
+
+```
+ewen@basadi:/tmp$ curl --head https://risky.biz/feeds/risky-business
+HTTP/1.1 301 Moved Permanently
+Date: Sun, 28 Sep 2025 21:54:28 GMT
+Server: Apache
+Strict-Transport-Security: max-age=63072000;
+Location: https://risky.biz/feeds/risky-business/
+Connection: close
+Content-Type: text/html; charset=iso-8859-1
+
+ewen@basadi:/tmp$ curl --head https://risky.biz/feeds/risky-business/
+HTTP/1.1 200 OK
+Date: Sun, 28 Sep 2025 21:54:40 GMT
+Server: Apache
+Strict-Transport-Security: max-age=63072000;
+Last-Modified: Sun, 28 Sep 2025 19:34:25 GMT
+ETag: \"864f7-63fe19b449bd4\"
+Accept-Ranges: bytes
+Content-Length: 550135
+Vary: Accept-Encoding
+Connection: close
+Content-Type: application/xml
+
+ewen@basadi:/tmp$ 
+```
+"""]]

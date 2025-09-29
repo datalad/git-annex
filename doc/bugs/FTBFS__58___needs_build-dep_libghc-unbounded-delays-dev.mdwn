@@ -1,0 +1,13 @@
+### Please describe the problem.
+
+encountered while building standalone `10.20250828-1~ndall+1` under trixie 
+
+```
+  checking git-remote-gcrypt... git-remote-gcrypt
+  checking ssh connection caching... yes
+Configuring git-annex-10.20250828...
+Error: Setup: Encountered missing or private dependencies:
+unbounded-delays
+```
+
+oddly we still built fine I believe for the http://github.com/datalad/git-annex where we also do not have that one I think

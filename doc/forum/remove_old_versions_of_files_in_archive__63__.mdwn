@@ -1,0 +1,9 @@
+I have set up a number of annex repos for storing various different things (media, ebooks, audiobooks, gopro footage, archived files, files to sync to mobile devices over adb, etc). Many of them I sync to backblaze (as s3 special remote) and gdrive (as rclone special remote).
+
+Both backblaze and gdrive remotes are configured as "redundantarchive" groups (configured as `not (copies=redundantarchive:2)`). This all seems to be working properly.
+
+As time goes on, I expect I'll run out of storage in gdrive (backblaze I can keep storing more stuff in it as long as I keep paying money). This got me thinking about longer term storage management. How should one limit the size of an "archive" remote? Or decide to delete versions of files? Are there preferred content configs I could use to be smarter about which data I store where?
+
+What about keeping a certain number of versions of a file (last n) or versions before a particular date (no older than)? I see expireunused, but I don't think I understand how it interacts with archive groups or special remotes generally.
+
+How are we supposed to think about archives and removing old versions of data generally?

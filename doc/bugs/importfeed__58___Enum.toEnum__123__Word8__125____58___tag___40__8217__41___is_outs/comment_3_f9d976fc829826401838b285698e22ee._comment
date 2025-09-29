@@ -1,0 +1,109 @@
+[[!comment format=mdwn
+ username="ewen"
+ avatar="http://cdn.libravatar.org/avatar/605b2981cb52b4af268455dee7a4f64e"
+ subject="Example still working feed"
+ date="2025-09-28T22:05:57Z"
+ content="""
+My *hunch* is that this error occurs during *parsing* the feed XML, based on not getting to the feed *title* and \"ok\" being displayed in the error case.  But I'm not sure if there's a specific way to test just that.
+
+Example of a podcast feed that still works:
+
+https://www.2600.com/oth-broadband.xml
+
+There's no redirect on this one, and the `Content-Type` header has an explicit `charset=utf-8`, but so far I don't know if that matters.  
+
+The failing feed has `encoding=\"utf-8\"` in the `<?xml ...?>` header of the file, which in theory is functionally equivalent in terms of XML communicating how to expect the file to be encoded.  But maybe git-annex is not treating that the same any longer?
+
+```
+ewen@basadi:/tmp/podcasts$ git annex importfeed --relaxed \"https://www.2600.com/oth-broadband.xml\" 
+importfeed gathering known urls ok
+importfeed https://www.2600.com/oth-broadband.xml (\"Off The Hook\") ok
+ewen@basadi:/tmp/podcasts$ 
+```
+
+second import attempt above, matching what my podcast downloads normally do; the first one was also `--relaxed` but with `--debug` and the debug output is quote long, so here's just the start of it, showing it got a lot further than the feeds that don't work:
+
+```
+ewen@basadi:/tmp/podcasts$ git annex importfeed --debug --relaxed \"https://www.2600.com/oth-broadband.xml\" 
+[2025-09-29 10:57:01.984117] (Utility.Process) process [8003] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"show-ref\",\"git-annex\"]
+[2025-09-29 10:57:01.99142] (Utility.Process) process [8003] done ExitSuccess
+[2025-09-29 10:57:01.992598] (Utility.Process) process [8004] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2025-09-29 10:57:01.999387] (Utility.Process) process [8004] done ExitSuccess
+[2025-09-29 10:57:02.00066] (Utility.Process) process [8005] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"cat-file\",\"--batch\"]
+importfeed gathering known urls [2025-09-29 10:57:02.01013] (Utility.Process) process [8006] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"rev-parse\",\"--verify\",\"--quiet\",\"refs/heads/git-annex:\"]
+[2025-09-29 10:57:02.016994] (Utility.Process) process [8006] done ExitSuccess
+ok
+importfeed https://www.2600.com/oth-broadband.xml [2025-09-29 10:57:02.101169] (Utility.Url) Request {
+  host                 = \"www.2600.com\"
+  port                 = 443
+  secure               = True
+  requestHeaders       = [(\"Accept-Encoding\",\"identity\"),(\"User-Agent\",\"git-annex/10.20250925\")]
+  path                 = \"/oth-broadband.xml\"
+  queryString          = \"\"
+  method               = \"GET\"
+  proxy                = Nothing
+  rawBody              = False
+  redirectCount        = 10
+  responseTimeout      = ResponseTimeoutDefault
+  requestVersion       = HTTP/1.1
+  proxySecureMode      = ProxySecureWithConnect
+}
+
+(\"Off The Hook\") ok
+addurl https://download.2600.com/mediadownload/www.2600.com/offthehook/mp3files/2025/off_the_hook__20250924-128.mp3 [2025-09-29 10:57:02.798482] (Utility.Process) process [8025] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"-c\",\"annex.debug=true\",\"check-ignore\",\"-z\",\"--stdin\",\"--verbose\",\"--non-matching\"]
+(to Off_The_Hook/Off_The_Hook__-_Wed__24_Sep_2025_19_00_00_EST.mp3) [2025-09-29 10:57:02.807045] (Annex.Branch) read 0d7/832/URL--https&c%%download.2600.com%media-1b3961da2b715a143256fcc3b5e6313a.log.web
+[2025-09-29 10:57:02.808092] (Annex.Branch) set 0d7/832/URL--https&c%%download.2600.com%media-1b3961da2b715a143256fcc3b5e6313a.log.web
+[2025-09-29 10:57:02.808366] (Annex.Branch) read 0d7/832/URL--https&c%%download.2600.com%media-1b3961da2b715a143256fcc3b5e6313a.log
+[2025-09-29 10:57:02.809307] (Annex.Branch) set 0d7/832/URL--https&c%%download.2600.com%media-1b3961da2b715a143256fcc3b5e6313a.log
+[2025-09-29 10:57:02.809547] (Annex.Branch) read 0d7/832/URL--https&c%%download.2600.com%media-1b3961da2b715a143256fcc3b5e6313a.log
+[2025-09-29 10:57:02.809684] (Messages.explain) [ Off_The_Hook/Off_The_Hook__-_Wed__24_Sep_2025_19_00_00_EST.mp3 does not match annex.addunlocked: nothing[FALSE] ]
+
+[2025-09-29 10:57:02.810562] (Utility.Process) process [8026] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+[2025-09-29 10:57:02.816781] (Utility.Process) process [8026] done ExitSuccess
+[2025-09-29 10:57:02.817626] (Utility.Process) process [8027] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"show-ref\",\"refs/heads/main\"]
+[2025-09-29 10:57:02.824386] (Utility.Process) process [8027] done ExitFailure 1
+[2025-09-29 10:57:02.825815] (Utility.Process) process [8028] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"hash-object\",\"-w\",\"--no-filters\",\"--stdin-paths\"]
+[2025-09-29 10:57:02.833619] (Annex.Branch) read 0d7/832/URL--https&c%%download.2600.com%media-1b3961da2b715a143256fcc3b5e6313a.log.met
+[2025-09-29 10:57:02.834642] (Annex.Branch) set 0d7/832/URL--https&c%%download.2600.com%media-1b3961da2b715a143256fcc3b5e6313a.log.met
+ok
+...
+(recording state in git...)
+[2025-09-29 10:57:03.027308] (Utility.Process) process [8047] feed: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"update-index\",\"-z\",\"--index-info\"]
+[2025-09-29 10:57:03.033836] (Utility.Process) process [8047] done ExitSuccess
+[2025-09-29 10:57:03.03538] (Utility.Process) process [8048] feed: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"update-index\",\"-z\",\"--index-info\"]
+[2025-09-29 10:57:03.052124] (Utility.Process) process [8048] done ExitSuccess
+[2025-09-29 10:57:03.052815] (Utility.Process) process [8049] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2025-09-29 10:57:03.060486] (Utility.Process) process [8049] done ExitSuccess
+[2025-09-29 10:57:03.061529] (Utility.Process) process [8050] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"write-tree\"]
+[2025-09-29 10:57:03.080761] (Utility.Process) process [8050] done ExitSuccess
+[2025-09-29 10:57:03.081517] (Utility.Process) process [8051] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"commit-tree\",\"6333ccc39e4da89afeb821dcb39b6ef3ba84c936\",\"--no-gpg-sign\",\"-p\",\"refs/heads/git-annex\",\"-m\",\"update\"]
+[2025-09-29 10:57:03.090011] (Utility.Process) process [8051] done ExitSuccess
+[2025-09-29 10:57:03.090729] (Utility.Process) process [8052] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"update-ref\",\"refs/heads/git-annex\",\"1b74c6e0e12093128fe6f6ba4c895e9115df3015\"]
+[2025-09-29 10:57:03.099106] (Utility.Process) process [8052] done ExitSuccess
+[2025-09-29 10:57:03.102583] (Utility.Process) process [8005] done ExitSuccess
+[2025-09-29 10:57:03.102969] (Utility.Process) process [8028] done ExitSuccess
+[2025-09-29 10:57:03.103307] (Utility.Process) process [8025] done ExitFailure 1
+```
+
+```
+ewen@basadi:/tmp$ curl --head https://www.2600.com/oth-broadband.xml
+HTTP/1.1 200 OK
+Date: Sun, 28 Sep 2025 21:56:26 GMT
+Server: Apache
+X-Content-Type-Options: nosniff
+X-Drupal-Cache: HIT
+Etag: \"1759088060-0\"
+Content-Language: en
+X-Frame-Options: SAMEORIGIN
+Cache-Control: public, max-age=0
+Last-Modified: Sun, 28 Sep 2025 19:34:20 GMT
+Expires: Sun, 19 Nov 1978 05:00:00 GMT
+Vary: Cookie,Accept-Encoding
+Content-Type: application/rss+xml; charset=utf-8
+Strict-Transport-Security: max-age=16070400;
+orig_req_proto: https
+Connection: close
+
+ewen@basadi:/tmp$ 
+```
+"""]]

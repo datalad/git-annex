@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="ewen"
+ avatar="http://cdn.libravatar.org/avatar/605b2981cb52b4af268455dee7a4f64e"
+ subject="Previous working build was 20250828"
+ date="2025-09-28T21:35:07Z"
+ content="""
+For context, [previous HomeBrew build](https://github.com/Homebrew/homebrew-core/commit/9dac1897529335a9115830a1c646ca3e90f39292) that I would have had installed, and working, before was `20250828`.
+
+Ewen
+
+
+"""]]

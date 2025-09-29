@@ -1,0 +1,69 @@
+[[!comment format=mdwn
+ username="ewen"
+ avatar="http://cdn.libravatar.org/avatar/605b2981cb52b4af268455dee7a4f64e"
+ subject="importfeed: utf-8 XML is (now?) parsed into 8-bit characters"
+ date="2025-09-28T22:24:23Z"
+ content="""
+Based on looking at some examples, I'm fairly convinced that the podcast feeds are now being parsed into 8 bit characters (extended ASCII?), even when (only when?) they have `encoding=\"UTF-8\"` on the `<?xml ...?>` prelude tag.  UTF-8 decoding can obviously can easily result in characters outside the 8-bit range, which seems to be the exception thrown, based on examining the feed contents (below) and the \"tag\" values outside range.
+
+8217 == 0x2019 (in hex).
+
+And [U+2019](https://www.compart.com/en/unicode/U+2019) is a single quotation mark, which encodes in UTF-8 as `0xE2 0x80 0x99`.
+
+The first problematic feed is littered with that exact byte sequence:
+
+```
+ewen@basadi:/tmp$ curl -s https://risky.biz/feeds/risky-business/ | head -1 
+<?xml version=\"1.0\" encoding=\"utf-8\" ?>
+ewen@basadi:/tmp$ 
+```
+
+```
+ewen@basadi:/tmp$ curl -s https://risky.biz/feeds/risky-business/ | hexdump -C | grep \"e2 80 99\" | head
+000008b0  65 65 6b e2 80 99 73 20  73 68 6f 77 20 50 61 74  |eek...s show Pat|
+00000a20  20 77 65 65 6b e2 80 99  73 20 65 70 69 73 6f 64  | week...s episod|
+00000a60  e2 80 99 73 20 73 70 6f  6e 73 6f 72 20 69 6e 74  |...s sponsor int|
+00000bf0  20 74 68 65 20 77 65 65  6b e2 80 99 73 20 63 79  | the week...s cy|
+00000d60  20 77 65 65 6b e2 80 99  73 20 65 70 69 73 6f 64  | week...s episod|
+00000da0  e2 80 99 73 20 73 70 6f  6e 73 6f 72 20 69 6e 74  |...s sponsor int|
+00001580  65 e2 80 9d 20 69 73 6e  e2 80 99 74 20 74 68 65  |e... isn...t the|
+00001c20  e2 80 99 20 61 73 20 73  75 70 70 6c 69 65 72 20  |... as supplier |
+00002290  20 74 68 69 73 20 77 65  65 6b e2 80 99 73 20 73  | this week...s s|
+000022d0  65 6b e2 80 99 73 20 63  79 62 65 72 73 65 63 75  |ek...s cybersecu|
+ewen@basadi:/tmp$ 
+```
+
+Another of the problematic feeds (reported as 8211; see first post) has lots of the UTF-8 sequence `e2 80 93` for [U+2103](https://www.compart.com/en/unicode/U+2013) (an en dash), and 8211 == 0x2013:
+
+```
+ewen@basadi:/tmp$ curl -s https://theamphour.libsyn.com/rss  | hexdump -C | grep \" e2 80 \" | head 
+0001e800  31 39 36 20 e2 80 93 20  41 6e 20 49 6e 74 65 72  |196 ... An Inter|
+0001e860  31 39 36 20 e2 80 93 20  41 6e 20 49 6e 74 65 72  |196 ... An Inter|
+0003e510  68 74 3d 22 30 22 3e 4c  6f 61 64 69 6e 67 e2 80  |ht=\"0\">Loading..|
+0003f660  3e 20 3c 70 3e 4c 6f 61  64 69 6e 67 e2 80 a6 20  |> <p>Loading... |
+00052440  6d 70 20 48 6f 75 72 20  23 33 37 39 20 e2 80 93  |mp Hour #379 ...|
+0007a7d0  e2 80 93 20 4f 73 74 72  6f 62 6f 67 75 6c 6f 75  |... Ostrobogulou|
+00088480  72 20 23 38 33 20 e2 80  94 20 41 67 67 72 61 76  |r #83 ... Aggrav|
+00088b40  41 6d 70 20 48 6f 75 72  20 23 38 32 20 e2 80 94  |Amp Hour #82 ...|
+000891e0  20 23 38 31 20 e2 80 94  20 4a 65 72 73 65 79 20  | #81 ... Jersey |
+000898a0  30 20 e2 80 94 20 4f 74  69 6f 73 65 20 4f 6e 74  |0 ... Otiose Ont|
+ewen@basadi:/tmp$ 
+```
+
+```
+ewen@basadi:/tmp$ curl -s https://theamphour.libsyn.com/rss  | head -1 
+<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+ewen@basadi:/tmp$ 
+```
+
+The working feed appears to have no non-ASCII characters in it:
+
+```
+ewen@basadi:/tmp$ curl -s 'https://www.2600.com/oth-broadband.xml' | hexdump -C  | grep ' [89abcdef][0-9a-f] ' 
+ewen@basadi:/tmp$ 
+```
+
+So it appears non-ASCII UTF-8 encoding is required to trigger this problem.
+
+Ewen
+"""]]

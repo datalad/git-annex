@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 4"
+ date="2025-09-27T17:27:51Z"
+ content="""
+Am I right to assume that I might achieve this (import with efficient reimports if needed from a remote via ssh directory) using a `directory` special remote on top of `sshfs` mount?
+Or is there a better way to achieve that?
+"""]]
