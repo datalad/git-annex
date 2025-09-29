@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-09-29T15:19:41Z"
+ content="""
+git-annex is still targeting supporting ghc back to 9.0.2, so your old
+ghc should not yet be a problem. However, I don't have any CI left that
+uses such old versions of ghc, so it might break from time to time.
+
+I've fixed this one, which was a missing `import Control.Monad`. Please
+report if you find other build failures.
+"""]]

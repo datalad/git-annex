@@ -14,6 +14,9 @@ module Utility.OpenFd where
 
 import System.Posix.IO.ByteString
 import System.Posix.Types
+#if ! MIN_VERSION_unix(2,8,0)
+import Control.Monad
+#endif
 
 import Utility.RawFilePath
 
