@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2025-09-29T15:12:00Z"
+ content="""
+How efficient that would be would depend, I think, on how stable inodes are
+between remounts of a sshfs mount. If it sees new inodes, it will
+re-download all the files.
+"""]]
