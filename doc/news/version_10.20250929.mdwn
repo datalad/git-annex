@@ -1,0 +1,7 @@
+git-annex 10.20250929 released with [[!toggle text="these changes"]]
+[[!toggleable text="""  * enableremote: Allow type= to be provided when it does not change the
+    type of the special remote.
+  * importfeed: Fix encoding issues parsing feeds when built with OsPath.
+  * Fix build with ghc 9.0.2.
+  * Remove the Servant build flag; always build with support for
+    annex+http urls and git-annex p2phttp."""]]
