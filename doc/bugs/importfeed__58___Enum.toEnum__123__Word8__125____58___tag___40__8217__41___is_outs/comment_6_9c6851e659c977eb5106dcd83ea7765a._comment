@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2025-09-29T14:45:50Z"
+ content="""
+Thanks for some really good detective work @ewen.
+
+Note that this only happens when git-annex is built with the OsPath build
+flag. 
+
+That seems to indicate that the problem is in
+Utility.FileIO.openBinaryFile,
+which is the only way that parseFeedFromFile' varies depending on that
+build flag.
+
+Aha yes, the problem is that uses withOpenFileEncoding, which is
+inappropriate for a binary file!
+"""]]

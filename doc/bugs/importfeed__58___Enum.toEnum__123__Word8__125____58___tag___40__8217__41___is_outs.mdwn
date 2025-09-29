@@ -96,3 +96,5 @@ And it seems a fairly recent breakage, as IIRC the previous installed was from 2
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes, for many years.  git-annex has worked vey well for downloading/collecting podcasts for years, which is why t was surprising it's suddenly failing like this.
+
+> [[fixed|done]] --[[Joey]]

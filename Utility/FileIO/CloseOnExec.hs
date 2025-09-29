@@ -3,9 +3,9 @@
  - All functions have been modified to set the close-on-exec
  - flag to True.
  -
- - Also, functions that return a Handle have been modified to
- - use the locale encoding, working around this bug:
- - https://github.com/haskell/file-io/issues/45
+ - Also, functions that return a Handle (for a non-binary file)
+ - have been modified to use the locale encoding, working around
+ - this bug: https://github.com/haskell/file-io/issues/45
  -
  - Copyright 2025 Joey Hess <id@joeyh.name>
  - Copyright 2024 Julian Ospald
@@ -70,12 +70,12 @@ openFile osfp iomode =  augmentError "openFile" osfp $
 
 withBinaryFile :: OsPath -> IOMode -> (Handle -> IO r) -> IO r
 withBinaryFile osfp iomode act = (augmentError "withBinaryFile" osfp
-    $ withOpenFileEncoding osfp iomode True False closeOnExec (try . act) True)
+    $ withOpenFile' osfp iomode True False closeOnExec (try . act) True)
   >>= either ioError pure
 
 openBinaryFile :: OsPath -> IOMode -> IO Handle
 openBinaryFile osfp iomode = augmentError "openBinaryFile" osfp $
-	 withOpenFileEncoding osfp iomode True False closeOnExec pure False
+	 withOpenFile' osfp iomode True False closeOnExec pure False
 
 readFile :: OsPath -> IO BSL.ByteString
 readFile fp = withFileNoEncoding' fp ReadMode BSL.hGetContents
