@@ -6,6 +6,9 @@ git-annex (10.20251216) UNRELEASED; urgency=medium
   * Remove support for building with old versions of persistent and 
     persistent-sqlite.
   * Removed support for building with ghc older than 9.6.6.
+  * webapp: Remove support for local pairing; use wormhole pairing instead.
+  * git-annex.cabal: Removed pairing build flag, and no longer depends
+    on network-multicast or network-info.
 
  -- Joey Hess <id@joeyh.name>  Thu, 01 Jan 2026 12:20:29 -0400
 
