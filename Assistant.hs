@@ -40,6 +40,9 @@ import Assistant.Threads.Glacier
 #ifdef WITH_WEBAPP
 import Assistant.WebApp
 import Assistant.Threads.WebApp
+#ifdef WITH_PAIRING
+import Assistant.Threads.PairListener
+#endif
 #else
 import Assistant.Types.UrlRenderer
 #endif
@@ -152,6 +155,11 @@ startDaemon assistant foreground startdelay cannotrun listenhost listenport star
 			then webappthread
 			else webappthread ++
 				[ watch commitThread
+#ifdef WITH_WEBAPP
+#ifdef WITH_PAIRING
+				, assist $ pairListenerThread urlrenderer
+#endif
+#endif
 				, assist pushThread
 				, assist pushRetryThread
 				, assist exportThread

@@ -3,6 +3,7 @@ flags:
     production: true
     parallelbuild: true
     assistant: true
+    pairing: true
     torrentparser: true
     magicmime: false
     dbus: false

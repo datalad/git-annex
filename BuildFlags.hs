@@ -26,6 +26,11 @@ buildFlags = filter (not . null)
 #else
 #warning Building without the webapp.
 #endif
+#ifdef WITH_PAIRING
+	, "Pairing"
+#else
+#warning Building without local pairing.
+#endif
 #ifdef WITH_INOTIFY
 	, "Inotify"
 #endif

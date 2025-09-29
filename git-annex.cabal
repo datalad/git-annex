@@ -96,8 +96,11 @@ Extra-Source-Files:
   templates/configurators/newrepository/first.hamlet
   templates/configurators/newrepository/combine.hamlet
   templates/configurators/enablewebdav.hamlet
+  templates/configurators/pairing/local/inprogress.hamlet
+  templates/configurators/pairing/local/prompt.hamlet
   templates/configurators/pairing/wormhole/prompt.hamlet
   templates/configurators/pairing/wormhole/start.hamlet
+  templates/configurators/pairing/disabled.hamlet
   templates/configurators/addglacier.hamlet
   templates/configurators/fsck.cassius
   templates/configurators/edit/nonannexremote.hamlet
@@ -148,6 +151,9 @@ Extra-Source-Files:
 Flag Assistant
   Description: Enable git-annex assistant, webapp, and watch command
   Default: True
+
+Flag Pairing
+  Description: Enable pairing
 
 Flag Production
   Description: Enable production build (slower build; faster binary)
@@ -361,6 +367,8 @@ Executable git-annex
       Assistant.Monad
       Assistant.NamedThread
       Assistant.Pairing
+      Assistant.Pairing.MakeRemote
+      Assistant.Pairing.Network
       Assistant.Pushes
       Assistant.RemoteControl
       Assistant.Repair
@@ -378,6 +386,7 @@ Executable git-annex
       Assistant.Threads.Merger
       Assistant.Threads.MountWatcher
       Assistant.Threads.NetWatcher
+      Assistant.Threads.PairListener
       Assistant.Threads.ProblemFixer
       Assistant.Threads.Pusher
       Assistant.Threads.RemoteControl
@@ -474,6 +483,10 @@ Executable git-annex
       Build-Depends: dbus (>= 0.10.7), fdo-notify (>= 0.3)
       CPP-Options: -DWITH_DBUS -DWITH_DESKTOP_NOTIFY -DWITH_DBUS_NOTIFICATIONS
       Other-Modules: Utility.DBus
+
+  if flag(Pairing)
+    Build-Depends: network-multicast, network-info
+    CPP-Options: -DWITH_PAIRING
 
   if flag(TorrentParser)
     Build-Depends: torrent (>= 10000.0.0)

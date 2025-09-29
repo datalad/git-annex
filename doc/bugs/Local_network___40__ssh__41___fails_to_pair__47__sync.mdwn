@@ -175,5 +175,3 @@ fatal: The remote end hung up unexpectedly
 """]]
 
 [[!taglink moreinfo]]
-
-> This feature has been removed. [[done]] --[[Joey]]

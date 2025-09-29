@@ -1,11 +1,3 @@
-git-annex (10.20250930) UNRELEASED; urgency=medium
-
-  * webapp: Remove support for local pairing; use wormhole pairing instead.
-  * git-annex.cabal: Removed pairing build flag, and no longer depends
-    on network-multicast or network-info.
-
- -- Joey Hess <id@joeyh.name>  Mon, 29 Sep 2025 12:35:51 -0400
-
 git-annex (10.20250929) upstream; urgency=medium
 
   * enableremote: Allow type= to be provided when it does not change the
