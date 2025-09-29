@@ -645,7 +645,7 @@ feedState url = fromRepo $ gitAnnexFeedState $ fromUrl url Nothing False
 fromFeedText :: T.Text -> B.ByteString
 fromFeedText = TE.encodeUtf8
 
-{- Like Test.Feed.parseFeedFromFile, but ensures the close-on-exec bit is
+{- Like Text.Feed.parseFeedFromFile, but ensures the close-on-exec bit is
  - set when opening the file. -}
 parseFeedFromFile' :: OsPath -> IO (Maybe Feed)
 parseFeedFromFile' fp = parseFeedString <$> utf8readfile fp
