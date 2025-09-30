@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2025-09-30T14:31:59Z"
+ content="""
+A `git-annex activity` (or `git-annex log`) could also optionally stream live
+activity as it is happening. Eg, when a transfer is started it could display
+the start, and then later the end. That would be easy to build with what's
+in git-annex already. The assistant already uses the transfer logs that way,
+using inotify to notice changes.
+"""]]

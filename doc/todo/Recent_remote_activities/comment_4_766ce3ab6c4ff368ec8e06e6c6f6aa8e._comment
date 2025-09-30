@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""git-annex activity"""
+ date="2025-09-30T14:29:54Z"
+ content="""
+Copying a related idea from @nobodyinperson on [[todo/remove_webapp]]:
+
+Furthermore, a command like `git annex activity` that goes arbitrarily far back in time and statically (non-live) lists recent activities like:
+
+- yesterday 23:32: remote1 downloaded 5 files (45MB)
+- today 10:45: you modified file `document.txt` (10MB)
+- today 10:46: you uploaded file `document.txt` (from today 10:45) to remote1, remote2 and remote3
+- today 12:35: Fred McGitFace modified file `document.txt` (12MB) and uploaded to remote2
+- ...
+
+Basically a human-readable (or as JSON), chronological log of things that happened in the repo. This is a superpower of git-annex: all this information is available as far back as one wants, we just don't have a way to access it nicely. `git log` and `git annex log` exist, but they are too specific, too broad or a bit hard to parse on their own. For example:
+
+- `git annex activity --since=\"2 weeks ago\" --include='*.doc'` would list things (who committed, which remote received it, etc.) that happened in the last two weeks to *.doc files
+- `git annex activity --only-annex --in=remote2` would list recent annex operations (in the `git-annex` branch only) of remote2
+- `git annex activity --only-changes --largerthan=10MB` would list recent file changes (additions, modifications, deletions, etc., in `git log` only)
+
+This `git annex assistant-log` and `git annex activity` would be a very nice feature to showcase git-annex's power (which other file syncing tool can to this? 🤔) and also solve [[todo/Recent_remote_activities]].
+"""]]

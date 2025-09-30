@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2025-09-30T14:22:09Z"
+ content="""
+git-annex does support desktop notifications of file uploads/downloads,
+via --notify-start and --notify-finish. (When built with dbus support.)
+That can be used with the assistant w/o webapp to keep a desktop user
+informed about what is going on.
+"""]]

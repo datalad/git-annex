@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2025-09-30T14:55:25Z"
+ content="""
+I've copied the `git-annex activity` idea over to
+[[todo/Recent_remote_activities]] so it doesn't get lost.
+
+I don't think it makes sense to make that a blocker for removing the webapp
+though. That would only let an advanced user build some kind of activity
+display, doesn't address the needs of most users of the webapp. 
+"""]]

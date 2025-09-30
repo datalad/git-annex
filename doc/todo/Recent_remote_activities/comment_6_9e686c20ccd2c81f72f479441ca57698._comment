@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: git-annex activity"""
+ date="2025-09-30T14:34:50Z"
+ content="""
+> `git annex activity --since="2 weeks ago" --include='*.doc'
+
+This is essentially the same as `git-annex log` with a path. It also
+supports --since and --json. The difference I guess is the idea to also
+include information about git commits of the files, not only git-annex
+location changes. That would complicate the output, and apparently
+`git-annex log`'s output is too hard to parse already. So a design for a
+better output would be needed.
+
+> `git annex activity --only-annex --in=remote2`
+
+This is the same as `git-annex log --all` with the output filtered to only
+list a given remote. (`--in` does not influence `--all` currently).
+
+> `git annex activity --only-changes --largerthan=10MB`
+
+Can probably be accomplished with `git log` with some
+-S regexp.
+"""]]
