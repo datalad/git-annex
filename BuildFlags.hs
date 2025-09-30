@@ -64,6 +64,7 @@ buildFlags = filter (not . null)
 	, "Testsuite"
 	, "S3"
 	, "WebDAV"
+	, "Servant"
 #ifdef WITH_OSPATH
 	, "OsPath"
 #else 
