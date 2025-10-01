@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2025-10-01T15:35:53Z"
+ content="""
+I wonder how sshfs manages stable inodes that differ from the actual ones?
+But if it's really reliably stable, it would be ok to use it with the
+directory special remote.
+
+Extending the external special remote interface to support
+[import](https://git-annex.branchable.com/design/external_special_remote_protocol/export_and_import_appendix/#index1h2)
+would let you roll your own special remote, that could use ssh with
+rsync or whatever. 
+
+The current design for that tries to support both import and export, but
+noone has yet stepped up to the plate to try to implement a special remote
+that supports both safely. So I am leaning toward thinking that it would be
+a good idea to make the external special remote interface support *only*
+import (or export) for a given external special remote, but not both.
+
+Then would become pretty easy to make your own special remote that
+implements import only. Using whatever ssh commands make sense for the
+server.
+"""]]

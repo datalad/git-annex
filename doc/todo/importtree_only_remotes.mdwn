@@ -32,7 +32,9 @@ the wrong content. (So the remote should have retrievalSecurityPolicy =
 RetrievalVerifiableKeysSecure to make downloads be verified well enough.)
 
 I said this would not use a ContentIdentifier, but it seems it needs some
-simple form of ContentIdentifier, which could be just an mtime.
+simple form of ContentIdentifier, which could be just an mtime
+(but mtime or mtime+size is not able to detect swaps of 2 files that share
+both; using inode or something like that is better).
 Without any ContentIdentifier, it seems that each time 
 `git annex import --from remote` is run, it would need to re-download
 all files from the remote, because it would have no way of knowing
