@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 8"
+ date="2025-10-01T20:18:43Z"
+ content="""
+FTR: apparently sshfs is based on sftp and that one provides no means to access original inode.  Not yet sure on what then it could say about stability of inode across remounts/as whether sensible to rely on it. Useful ref with pointers [sshfs/issues/109#issuecomment-2755824670](https://github.com/libfuse/sshfs/issues/109#issuecomment-2755824670)
+"""]]
