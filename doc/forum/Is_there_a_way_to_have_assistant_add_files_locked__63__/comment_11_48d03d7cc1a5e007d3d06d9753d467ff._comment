@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2025-10-01T15:32:45Z"
+ content="""
+This did get implemented, `git config annex.assistant.allowunlocked true`
+and that will make it use your `annex.addunlocked` setting.
+"""]]
