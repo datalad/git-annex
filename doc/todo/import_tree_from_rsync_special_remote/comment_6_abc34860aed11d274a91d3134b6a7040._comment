@@ -1,0 +1,34 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 6"
+ date="2025-10-01T13:09:00Z"
+ content="""
+quick check -- according to `ls` - original inodes are not mapped but some are given and persist across remounts:
+
+```
+❯ ls -li /tmp/glances-root.log ~/.emacs ~/20250807-15forzabava.pdf
+   132280 lrwxrwxrwx 1 yoh  yoh      17 Nov 11  2014 /home/yoh/.emacs -> .etc/emacs/.emacs
+152278557 -rw-rw-r-- 1 yoh  yoh  207101 Aug  7 10:30 /home/yoh/20250807-15forzabava.pdf
+       34 -rw-r--r-- 1 root root   1165 Oct  1 08:43 /tmp/glances-root.log
+
+❯ sshfs localhost:/ /tmp/localhost
+
+❯ ls -li /tmp/localhost{/tmp/glances-root.log,/home/yoh/{.emacs,20250807-15forzabava.pdf}}
+ 6 lrwxrwxrwx 1 yoh  yoh      17 Nov 11  2014 /tmp/localhost/home/yoh/.emacs -> .etc/emacs/.emacs
+10 -rw-rw-r-- 1 yoh  yoh  207101 Aug  7 10:30 /tmp/localhost/home/yoh/20250807-15forzabava.pdf
+ 3 -rw-r--r-- 1 root root   1165 Oct  1 08:43 /tmp/localhost/tmp/glances-root.log
+
+❯ fusermount -u /tmp/localhost
+
+❯ sshfs localhost:/ /tmp/localhost
+
+❯ ls -li /tmp/localhost{/tmp/glances-root.log,/home/yoh/{.emacs,20250807-15forzabava.pdf}}
+ 6 lrwxrwxrwx 1 yoh  yoh      17 Nov 11  2014 /tmp/localhost/home/yoh/.emacs -> .etc/emacs/.emacs
+10 -rw-rw-r-- 1 yoh  yoh  207101 Aug  7 10:30 /tmp/localhost/home/yoh/20250807-15forzabava.pdf
+ 3 -rw-r--r-- 1 root root   1165 Oct  1 08:43 /tmp/localhost/tmp/glances-root.log
+
+```
+
+ok, if not `sshfs` and not `rsync` -- any other way you see? e.g. could it be easily setup for some `git` with ssh URL type \"special\" remote? ;-)
+"""]]
