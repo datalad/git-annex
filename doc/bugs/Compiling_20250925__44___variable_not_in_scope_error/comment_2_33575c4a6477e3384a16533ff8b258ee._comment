@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="caleb@2b0d6f0eabf955cc8fd04c634b09f0ca4aad9233"
+ nickname="caleb"
+ avatar="http://cdn.libravatar.org/avatar/1d84382865c6c3378c04a35348fdfa07"
+ subject="comment 2"
+ date="2025-10-01T22:15:14Z"
+ content="""
+Thank you for the fix, that built just fine and I've successfully bumped the Arch Linux package to 20250929.
+"""]]
