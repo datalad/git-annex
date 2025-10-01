@@ -1,0 +1,8 @@
+Thank you for addressing that [todo](https://git-annex.branchable.com/todo/allow_configuring_assistant_to_add_files_locked/)!  
+
+But I must say though that the choice of `annex.assistant.allowunlocked`  is very confusing!  Without careful RTFM it suggests that by default assistant **does not** `allowunlocked`, thus using `locked` and thus to the **opposite** effect of the default behavior.
+
+Since really it instructs assistant to consider `addunlocked`, then I would have named it like `treataddunlocked` or alike.
+Or the smallest change to make it semantically sensible would have been to remove `un` from it and make `annex.assistant.allowlocked` thus allowing for `locked` files in general, which would then in reality (after RTFM) mean using `addunlocked` config.
+
+Just wanted to check if you stick to current choice before I start making use of it!
