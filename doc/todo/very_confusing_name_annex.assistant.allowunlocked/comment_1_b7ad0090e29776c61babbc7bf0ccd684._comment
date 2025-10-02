@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-10-02T17:32:52Z"
+ content="""
+I think that "annex.assistant.allowlocked" would be as confusing, like you
+say the user would then have to RTFM to realize that they need to use
+annex.addunlocked to configure it, and that it doesn't cause files to be
+locked by default.
+
+To me, "treataddunlocked" is vague. Treat it as what?
+"allowaddunlocked" would be less vague since it does get the (full)
+name of the other config in there, so says it's allowing use of
+the other config.
+
+I agree this is a confusing name, and I wouldn't mind changing it, but I
+don't think it warrants an entire release to do that. So there would be
+perhaps a month for people to start using the current name. If this had
+come up in the 2 weeks between implementation and release I would have
+changed it, but at this point it starts to need a backwards compatability
+transition to change it, and I don't know if the minor improvement of
+"allowaddunlocked" is worth that.
+"""]]
