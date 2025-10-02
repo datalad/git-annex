@@ -162,6 +162,7 @@ makeinfos updated changelogversion = do
 		[ Param "tag"
 		, Param "-f"
 		, Param "-u", Param signingKey
+		, Param "-m", Param ("tagging version " ++ changelogversion)
 		, Param ("git-annex_" ++ changelogversion)
 		]
 	void $ inRepo $ runBool
