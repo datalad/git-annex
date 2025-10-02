@@ -159,6 +159,11 @@ makeinfos updated changelogversion = do
 		, Param $ "updated info files for git-annex " ++ descversion
 		]
 	void $ inRepo $ runBool
+		[ Param "tag"
+		, Param "-f"
+		, Param ("git-annex_" ++ changelogversion)
+		]
+	void $ inRepo $ runBool
 		[ Param "annex"
 		, Param "move"
 		, Param "--to"
@@ -168,6 +173,11 @@ makeinfos updated changelogversion = do
 	void $ inRepo $ runBool
 		[ Param "annex"
 		, Param "sync"
+		]
+	void $ inRepo $ runBool
+		[ Param "git"
+		, Param "push"
+		, Param "--tags"
 		]
 	
 	-- Check for out of date info files.
