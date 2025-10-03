@@ -1,4 +1,4 @@
-I set up `annex.largefiles` in my global `.gitattributes` config. But git add doesn't add the defined large files to annex. But git annex works with large files and small as intended.
+I set up `annex.largefiles` in my global `.gitattributes` config. But git add doesn't add the defined large files to annex. But git annex works with large and small files as intended.
 
 My config is the one below:
 
