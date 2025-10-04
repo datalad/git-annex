@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="incogshift"
+ avatar="http://cdn.libravatar.org/avatar/fe527f5047693f6657cd03a6893da975"
+ subject="My config works now"
+ date="2025-10-04T08:05:00Z"
+ content="""
+I have `.gitattributes`:
+
+```
+* annex.largefiles=nothing filter=annex
+*.pdf annex.largefiles=anything filter=annex
+```
+
+and git config:
+
+```
+[annex]
+	gitaddtoannex = true
+```
+
+Using `git add` now adds it to annex. This can be confirmed with
+
+```
+git annex info file.pdf
+```
+
+The output should show `present = true` at the end. If it wasn't added to annex, the output would show `fatal: Not a valid object name file.pdf`.
+
+And it seems that, by default, the files are stored in the working tree in their unlocked state. So `git add` doesn't replace the file with a symlink unlike `git annex add`
+"""]]
