@@ -1,0 +1,18 @@
+Forgejo supports ["AGit-Flow"](https://forgejo.org/docs/latest/user/agit-support/) to make pull requests without requiring a user to fork a repository first. This is achieved by having a sort of branch namespace `refs/for/<target-branch>/<topic>` which can be pushed to by users that only have read access to the repository. This will open a PR from this branch to the named target branch.
+
+There are efforts in upstream Forgejo to make this a more prominent alternative to forking for contributions: <https://codeberg.org/forgejo/discussions/issues/131>.
+
+I am wondering how git-annex could best fit into this flow. I would like to be able to create PRs containing annexed files on Forgejo-aneksajo in this way (tracking issue on the Forgejo-aneksajo side: <https://codeberg.org/forgejo-aneksajo/forgejo-aneksajo/issues/32>). Obviously annexed objects copied to the Forgejo-aneksajo instance via this path should only be available in the context of that PR in some way.
+
+The fundamental issue seems to be that annexed objects always belong to the entire repository, and are not scoped to any branch.
+
+I've thought of these options so far:
+- Provide a "per PR special remote" that the creator of the PR could push annexed files to. This would require the user to configure an additional remote, which the AGit-Flow tries to avoid for plain-git contributions.
+- A per-user special remote that is assumed to contain the annexed files for all of the users AGit-PRs. If git recognizes remote configs in the users' global git config then it could be possible to get away with configuring things once, but I am not sure of the behavior of git in that case.
+- Allow read-only users to have append-only access to the annex. This must at least be limited to secure hashes though, and there are implications of DoS by malicious users filling disk space / quotas.
+
+Worth it to note that AGit-Flow already works for Contributors with write access, since they can write to the annex freely anyway.
+
+Do you have any other ideas on how git-annex could be used in this workflow?
+
+[[!tag projects/INM7]]
