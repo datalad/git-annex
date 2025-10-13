@@ -7,11 +7,12 @@ I am wondering how git-annex could best fit into this flow. I would like to be a
 The fundamental issue seems to be that annexed objects always belong to the entire repository, and are not scoped to any branch.
 
 I've thought of these options so far:
+
 - Provide a "per PR special remote" that the creator of the PR could push annexed files to. This would require the user to configure an additional remote, which the AGit-Flow tries to avoid for plain-git contributions.
 - A per-user special remote that is assumed to contain the annexed files for all of the users AGit-PRs. If git recognizes remote configs in the users' global git config then it could be possible to get away with configuring things once, but I am not sure of the behavior of git in that case.
 - Allow read-only users to have append-only access to the annex. This must at least be limited to secure hashes though, and there are implications of DoS by malicious users filling disk space / quotas.
 
-Worth it to note that AGit-Flow already works for Contributors with write access, since they can write to the annex freely anyway.
+Worth it to note that AGit-Flow already works for contributors with write access, since they can write to the annex freely anyway.
 
 Do you have any other ideas on how git-annex could be used in this workflow?
 
