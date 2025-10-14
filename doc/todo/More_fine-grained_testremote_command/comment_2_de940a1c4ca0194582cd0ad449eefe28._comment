@@ -1,0 +1,34 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2025-10-14T15:21:02Z"
+ content="""
+I don't know about the "--write-only" name, but I see the value in having a
+way for testremote to check what a remote that is expected to only allow
+read access does not allow any writes, as well as otherwise behaving
+correctly.
+
+There are actually only two write operations, `storeKey` and `removeKey`.
+Since `removeKey` is supposed to succeed when a key is not present, if
+`storeKey` fails, then `removeKey` will succeed. But `removeKey` should
+fail to remove a key that is stored on the remote. To test that,
+the --test-readonly=file option would need to be used to provide a file
+that is already stored on the remote.
+
+I think it would make sense to require that option be present
+in order to use this new "--write-only" (or whatever name) option.
+
+---
+
+Also, git-annex does know internally that some remotes are readonly. For
+example, a regular http git remote that does not use p2phttp.
+Or any remote that has `remote.<name>.annex-readonly` set. Currently
+`testremote` only skips all the write tests for those, rather than
+confirming that writes fail. It would make sense for testremote of a known
+readonly remote to behave as if this new option were provided.
+
+(But, setting `remote.<name>.annex-readonly` rather than using
+the "--write-only" option would not work for you, because that config
+causes git-annex to refuse to try to write to the remote. Which doesn't
+tell you if your server is configured to correctly reject writes.)
+"""]]

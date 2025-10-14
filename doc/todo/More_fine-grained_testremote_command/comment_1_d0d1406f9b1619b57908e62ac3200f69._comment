@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-10-14T14:54:53Z"
+ content="""
+It would be possible to make `git-annex testremote` support the
+command-line options of the underlying test framework (tasty).
+`git-annex test` already does that, so has --list-test and --pattern.
+
+It's not as simple as just plumbing that up though, because testremote has
+implicit dependencies in its test ordering. It has to do the `storeKey`
+test before it can do the `present` test, for example. Those dependencies
+would need to be made explict, rather than implicit.
+
+Explict dependencies, though, would also make it not really possible to run
+most of the tests separately. Running testremote 5 times to run the listed
+tests, if each run does the necessary `storeKey` would add a lot of overhead.
+
+Not declaring dependencies and leaving it up to the user to run testremote
+repeatedly to run a sequence of tests in the necessary order would also
+run into problems with testremote using random test keys which change every
+time it's run, as well as it having an end cleanup stage where it removes
+any lingering test keys from the local repository and the remote.
+
+This seems to be a bit of an impasse... :-/
+"""]]
