@@ -1,0 +1,12 @@
+I am using `git annex testremote` as a baseline test bench for Forgejo-aneksajo as a git-annex remote, and it is awesome to have that. I have some pain points with it though:
+
+- I would like to use these tests to confirm that I don't accidentally give write access to read-only users. This means I would need a way to ensure that all tests which require write access fail against the remote.
+- I am spawning a `git annex testremote` subprocess within the integration tests of Forgejo-aneksajo, which are written in Go. Sometimes this "large blackbox test" gets stuck in CI and I haven't figured out why yet. It would be nice to have a more transparent integration into the Forgejo-aneksajo test suite.
+
+Both of those points could be addressed if `git annex testremote` provided a way to run each test individually, and to get a list of all the available tests categorized by if they are read-only or read-write. I could then integrate each as an individual sub-test into Forgejo-aneksajo's test suite and properly assert on the outcome of the test given the respective test setup.
+
+If that's not possible for some reason it would also be an improvement with regards to the first point if there was something like a `git annex testremote --write-only` with the option to only report success if all of those tests have failed.
+
+What do you think?
+
+[[!tag projects/INM7]]

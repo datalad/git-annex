@@ -1,0 +1,20 @@
+### Please describe the feature.
+
+Walrus is a new type of decentralized storage, which allows programmable ownership of blob data.
+This fits perfectly to git-annex and allows to store huge amounts of blob data with 100% uptime and a good price economy.
+
+https://www.walrus.xyz/
+
+The coordination layer is SUI, a decentralized global programmable object database.
+Unfortunately, nobody implemented a git storage on SUI yet, so currently this can be seen a a normal blob storage. Long term, hosting git on SUI/walrus will create real decentralized git repos.
+
+As a nice bonus, when using walrus/sui, those, how use the git-annex default package, could pay a small fee to support the project. This would allow a steady income long term for the project.
+
+Since walrus is a storage backend and only guarantees that objects are available for epochs the underlying Storage object is reserved for (you buy a contingent ob blob storage for a duration of time).
+This Storage object needs to be extended / managed.
+The whole infrastructure, allow to build a decentralized annex cloud storage, where the user actually own his data and only storage payment etc is automated. Notifications etc.
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I love git annex, works like a charm. Using it for 5+ years

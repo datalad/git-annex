@@ -1,0 +1,93 @@
+[[!meta author="Spencer"]]
+
+# Friends: Sharing Files through Connected Projects
+
+I often connect repos together during my scientific work, in which I like to use the [YODA (Datalad)](https://handbook.datalad.org/en/latest/_images/dataset_modules.svg) standard of connecting related projects via submodules. However, I've recently found that sometimes I have to connect an entire repo to, say, a paper just to use one resource. For the sake of provenance, this connection is essential, but it feels extremely inefficient and unscalable to have one repo filled with submodules just for individual files.
+
+For these specific instances, I'm devising an alternative solution: friend repos.
+
+## Friends are Unrelated Repos
+
+In general, a friend is a repo whose *history* (branches, worktree, commits) is not relevant to the current repo, but is the origin for some files that the current repo uses. This is unlike *clones* (where everything is related), *parents/children* (where the entire child is derived or related to the parent, e.g. like superproject team repos and their children), or other [groups](https://git-annex.branchable.com/preferred_content/standard_groups/) defined by git-annex (archives, sources, etc.)
+
+This definition requires upholding some technical details:
+
+1. Friends should **never sync**. This precludes defining them as normal git remotes unless you are very dilligent about undefining `remote.<name>.fetch` and setting `remote.<name>.sync=false`
+1. Friends don't need to know about *all* files in the friend repo (neither their history (git) or key logs (annex)), they just the files they use. Therefore while `git annex filter-branch` could be used to filter for just the files needed, it is a bit overkill.
+
+## Solution - A Special Remote with Custom Groups
+
+(`gx` is short for `git annex`)
+
+Define a special repo that points to the primary storage location for the friend repo.
+I like to define it with a name like `fri.X` so it's obvious by inspection that it's an friend.
+Other metadata also tells you this (`gx group fri.X` will list `friend`, or something could be added to the description),
+but being in the name makes it clear especially for e.g. `gx list`.
+
+### Depot: Primary Storage
+
+The depot is where a repo stores its *own* stuff.
+This prevents others' stuff from being duplicated into the referencing repo.
+For those familiar with the `client` group, `depot`s are just clients with friends replacing archives.
+
+```bash
+gx groupwanted depot "(include=* and (not (copies=friend:1))) or approxlackingcopies=1"
+```
+
+#### Client Replacement Version
+
+If you want to be able to use the assistant or archives, here's a version that can stand in for `client`:
+
+```bash
+gx groupwanted depot "(include=* and ((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1 or copies=friend:1)))) or approxlackingcopies=1"
+```
+
+### Friend: Related Repos
+
+The friend is the source for stuff the current repo references.
+Therefore, it doesn't need to be stored by the repo (i.e. in its depot)
+
+```bash
+gx groupwanted friend present
+```
+
+### Finishing Up
+
+To actually register where friend files are, the ideal way is `gx fsck`.
+This is better than e.g. `gx filter-branch` mentioned above because it's automatic.
+The default behavior of `fsck`, like other annex commands, is to check against files *in the current worktree*,
+so it will only populate the metadata for a special remote about the files the current repo is trained to care about.
+
+```bash
+gx fsck -f fri.X --fast -J 10
+```
+
+Without `--fast`, the process will be slower as it verifies hashes by downloading files.
+
+In short the process involves:
+
+1. For every repo that wants a friend:
+    1. Define the group `friend` with its `groupwanted` rule (above for easy copying)
+    1. Define the group `depot` with its `groupwanted` rule (above for easy copying)
+    1. Set existing depots to use the `depot` group and have `groupwanted` as their `wanted` rule
+1. For every friend:
+    1. Define a new special remote `fri.X` pointing to the depot/storage location for friend repo.
+    1. Assign the special remote with group `friend` and ensure it has `groupwanted` as its `wanted` rule
+1. For every batch of files added from a friend:
+    1. Copy the files (or symlinks) and track them with annex
+    1. Run the `gx fsck` above to update the friend with the new files
+    1. Run `gx sync` if desired.
+    1. The result should be files present in the friend (and maybe the current), but not the depot(s).
+    1. Now, the friend tells us where a file came from without having to add the entire friend as a submodule!
+
+## FAQ/Open Questions
+
+1. Is there a way to define the custom groups globally, or will I have to re-define special groups in every repo that uses friend/depots?
+    1. Not sure yet. I wonder where custom groups could be defined globally? Maybe in the user `.gitconfig`.
+1. Is there a way to get CLI autocomplete to suggest custom groups?
+    1. I don't think there's support for this yet: only the standard groups are suggested in my zsh/omz setup.
+1. Is this a replacement for Datalad datasets?
+    1. I think of this as a tool to use alongside datasets. Datalad datasets are great when one project depends on the entirety of another (like a technical paper on an analysis) while this technique is better for collecting files from many projects under one umbrella (like a Thesis, which coincidentally, is what I'm developing this for).
+    1. This also helps separate the ideas of storage (where files live) and referencing (how files are used). When I originally started using datasets, I had one special repo for each repo since I figured each repo has to have its own unique remote for git in whatever Github/Organization/Team the project belongs to anyway. Now, this is motivating me to consider how to rationally store contents for projects that share some commonality (a collaboration, an experimental phase, a taskforce, a super-repo as a parent). In this way, I can maintain a provenance record while minimizing the number of clones and remotes I need to maintain.
+
+<!-- Learning in Public: I've only just begun to use this for myself and am eliciting feedback and fleshing it out by describing it here (Feynmann Technique Style) -->
