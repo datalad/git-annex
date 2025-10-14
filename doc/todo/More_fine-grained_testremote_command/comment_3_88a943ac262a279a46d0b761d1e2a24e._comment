@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/cd1c0b3be1af288012e49197918395f0"
+ subject="comment 3"
+ date="2025-10-14T16:52:24Z"
+ content="""
+> It's not as simple as just plumbing that up though, because testremote has implicit dependencies in its test ordering. It has to do the storeKey test before it can do the present test, for example.
+
+I already thought that this might be the case, so running the tests independently isn't really infeasible.
+
+To address my second point I might be able to just parse the output of testremote into \"sub-tests\" on the Forgejo-aneksajo side. Tasty doesn't seem to have a nice streaming output format for that though, right? There is a TAP formatter, but that looks unmaintained...
+
+---
+
+> There are actually only two write operations, storeKey and removeKey. Since removeKey is supposed to succeed when a key is not present, if storeKey fails, then removeKey will succeed. But removeKey should fail to remove a key that is stored on the remote. To test that, the --test-readonly=file option would need to be used to provide a file that is already stored on the remote.
+
+Now that you are saying this, is a new option even necessary? --test-readonly already takes a filename that is expected to be present on the remote, so instead of adding a new option --test-readonly could ensure that this key can't be removed, and that a different key can't be stored (and that removeKey succeeds on this not-present key).
+"""]]
