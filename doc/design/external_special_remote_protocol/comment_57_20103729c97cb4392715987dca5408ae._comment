@@ -1,0 +1,34 @@
+[[!comment format=mdwn
+ username="psxvoid"
+ avatar="http://cdn.libravatar.org/avatar/fde068fbdeabeea31e3be7aa9c55d84b"
+ subject="Re: support for bulk write/read/test remote - joey"
+ date="2025-10-19T04:36:37Z"
+ content="""
+Hi Joey,
+
+Sorry, for the late response, and thanks for the feedback.
+
+> \"that's fundamentally different than how git-annex works\"
+
+Hence the previous comment :)
+
+> \"And I think you could put it in your special remote.\"
+
+That's exactly what I was doing around a year ago. I was implementing a special remote to support writing data on BDXL disks.
+
+> \"So that when git-annex sends a file to your remote, the file is actually stored in the remote, rather than in a temporary location.\"
+
+Yep, roughly that's how I was implementing it - storing intermediate data in an sqlite database.
+
+I'd put the project on hold because I started to ask myself the following questions:
+
+1. OK, I can store transactions in the special remote. It means storing what is where on which disk. Isn't it what git annex supposed to do?
+2. If a BDXL disk get's corrupted or lost, how to reflect it in the git annex repo and the special remote? I can mark it as \"lost\" in the remote, then run fsck in git annex remote.
+3. Because I have to track location data separately in the special remote, what if it get's corrupted (the sqlite database)?
+4. What if I buy 50GB BDXL instead of 100GB which I'm using? Does it means the special remote also should track free space on each disk?
+5. Burning a disk - what if it won't be successful? Git annex will think that it was successful, cause it doesn't support bulk operations and numcopies rules will be violated.
+
+There were many more questions like this.
+
+And at some point the design started to look more like a blown-up feature-reach archival application/solution. The main point here is that it's definitely possible. I can limit the scope but there are many many issues, and nobody except me will be interested in it. Plus, many responsibilities would be overlapping with git annex.
+"""]]
