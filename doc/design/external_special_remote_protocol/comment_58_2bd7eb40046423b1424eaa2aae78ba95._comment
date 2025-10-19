@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="psxvoid"
+ avatar="http://cdn.libravatar.org/avatar/fde068fbdeabeea31e3be7aa9c55d84b"
+ subject="Rr: support for bulk write/read/test remote (PS)"
+ date="2025-10-19T04:58:54Z"
+ content="""
+P.S.: And to make it more clear why I told about dar first and then about writing BDXLs - when I mentioned dar - it was the stage when I experimented with dar to use it as an intermediary to write to BDXLs. But then I started to experiment with plain files because it could be better for long-term archival solution.
+"""]]
