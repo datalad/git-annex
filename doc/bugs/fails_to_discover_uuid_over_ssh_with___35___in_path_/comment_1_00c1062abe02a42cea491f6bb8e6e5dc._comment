@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-10-20T19:16:15Z"
+ content="""
+Also affected is '?' in the path. It's somewhat surprising to me that git
+treats these parts of an url as path components, but
+not too surprising, as git's definition of "url" is pretty loose.
+
+Fixed git-annex to follow suite.
+"""]]

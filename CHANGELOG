@@ -1,3 +1,10 @@
+git-annex (10.20250930) UNRELEASED; urgency=medium
+
+  * Support ssh remotes with '#' and '?' in the path to the repository,
+    the same way git does.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 20 Oct 2025 15:22:30 -0400
+
 git-annex (10.20250929) upstream; urgency=medium
 
   * enableremote: Allow type= to be provided when it does not change the

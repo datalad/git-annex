@@ -38,7 +38,7 @@ module Git (
 	relPath,
 ) where
 
-import Network.URI (uriPath, uriScheme, unEscapeString)
+import Network.URI (uriPath, uriScheme, uriQuery, uriFragment, unEscapeString)
 #ifndef mingw32_HOST_OS
 import System.Posix.Files
 #endif
@@ -73,7 +73,10 @@ repoLocation Repo { location = Unknown } = giveup "unknown repoLocation"
  - it's the gitdir, and for URL repositories, is the path on the remote
  - host. -}
 repoPath :: Repo -> OsPath
-repoPath Repo { location = Url u } = toOsPath $ unEscapeString $ uriPath u
+repoPath Repo { location = Url u } = toOsPath $ unEscapeString $
+	-- git allows the path of a ssh url to include both '?' and '#',
+	-- and treats them as part of the path
+	uriPath u ++ uriQuery u ++ uriFragment u
 repoPath Repo { location = Local { worktree = Just d } } = d
 repoPath Repo { location = Local { gitdir = d } } = d
 repoPath Repo { location = LocalUnknown dir } = dir
