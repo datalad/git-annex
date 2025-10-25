@@ -33,7 +33,6 @@ if [ "$1" = address ]; then
 else
 	socketfile="$2"
 	if [ -z "$socketfile" ]; then
-		# Connect to the peer's address and relay stdin and stdout.
                 peeraddress="$1"
 		dumbpipe connect "$peeraddress"
 	else
