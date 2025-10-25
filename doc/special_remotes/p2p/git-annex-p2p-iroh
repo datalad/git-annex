@@ -1,0 +1,43 @@
+#!/bin/sh
+# Allows git-annex to use iroh for P2P connections.
+#
+# This uses a modified version of iroh's dumbpipe program, adding the
+# generate-ticket command. This pull request has the necessary changes:
+# https://github.com/n0-computer/dumbpipe/pull/86
+#
+# Quality: experimental. Has worked at least twice, but there are known and
+# unknown bugs.
+#
+# Copyright 2025 Joey Hess; licenced under the GNU GPL version 3 or higher.
+
+set -e
+
+git_dir=$(git rev-parse --git-dir)
+creds_dir="$git_dir/annex/creds"
+iroh_secret_file="$creds_dir/iroh-secret"
+
+get_iroh_secret () {
+	IROH_SECRET=$(cat "$iroh_secret_file")
+	export IROH_SECRET
+}
+
+if [ "$1" = address ]; then
+	if [ ! -e "$iroh_secret_file" ]; then
+		mkdir -p "$creds_dir"
+		umask 077
+		gpg --gen-random 16 32 > $iroh_secret_file
+	fi
+	get_iroh_secret
+	# avoid display of the iroh secret to stderr
+	dumbpipe generate-ticket 2>/dev/null
+else
+	socketfile="$2"
+	if [ -z "$socketfile" ]; then
+		# Connect to the peer's address and relay stdin and stdout.
+                peeraddress="$1"
+		dumbpipe connect "$peeraddress"
+	else
+		get_iroh_secret
+		dumbpipe listen-unix --socket-path="$socketfile"
+	fi
+fi
