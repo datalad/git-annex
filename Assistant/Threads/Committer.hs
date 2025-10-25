@@ -63,7 +63,7 @@ commitThread = namedThread "Committer" $ do
 	largefilematcher <- liftAnnex largeFilesMatcher
 	annexdotfiles <- liftAnnex $ getGitConfigVal annexDotFiles
 	addunlockedmatcher <- liftAnnex $
-		ifM (annexSupportUnlocked <$> Annex.getGitConfig)
+		ifM (annexAssistantAllowUnlocked <$> Annex.getGitConfig)
 			( Just <$> addUnlockedMatcher
 			, return Nothing
 			)

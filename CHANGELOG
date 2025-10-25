@@ -2,6 +2,8 @@ git-annex (10.20250930) UNRELEASED; urgency=medium
 
   * Support ssh remotes with '#' and '?' in the path to the repository,
     the same way git does.
+  * assistant: Fix reversion that caused files to be added locked by
+    default.
 
  -- Joey Hess <id@joeyh.name>  Mon, 20 Oct 2025 15:22:30 -0400
 
