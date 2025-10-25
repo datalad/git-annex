@@ -10,6 +10,8 @@ For other P2P networks, a fairly simple program is used to connect
 git-annex up with the network. Install one of these programs to use the P2P
 network of your choice:
 
+* [[git-annex-p2p-iroh]]  
+  Uses [Iroh](https://www.iroh.computer/) for fast P2P with hole punching.
 * [[git-annex-p2p-unix-sockets]]  
   This is only a demo, using unix sockets in `/tmp` rather than a real
   P2P network. Not for real world use.
