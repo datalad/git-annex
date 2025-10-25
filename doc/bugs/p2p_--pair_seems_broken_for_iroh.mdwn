@@ -1,0 +1,5 @@
+When using git-annex-p2p-iroh, `git-annnex p2p --pair` times out after the
+magic wormhole step.
+
+`git-annex p2p --link` does work with the iroh script, so this is probably
+a bug in git-annex. --[[Joey]]
