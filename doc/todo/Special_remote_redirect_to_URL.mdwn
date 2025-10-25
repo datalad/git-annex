@@ -1,0 +1,15 @@
+The [external special remote protocol](/design/external_special_remote_protocol/) allows the following responses to `TRANSFER RETRIEVE {key} {file}`:
+
+* `TRANSFER-SUCCESS RETRIEVE {key}`
+* `TRANSFER-FAILURE RETRIEVE {key} {message}`
+
+I propose a third response: `TRANSFER-REDIRECT RETRIEVE {key} {url}`
+
+This will permit the following use cases:
+
+1) Make a request against an authentication server that provides a short-lived access token to the same or a different server. The authentication server does not need to relay the data.
+2) Deterministically calculate a remote URL (or local path) without reimplementing HTTP fetch logic, taking advantage of the testing and security hardening of the git-annex implementation.
+
+
+[[!meta author=cjmarkie]]
+[[!tag projects/openneuro]]
