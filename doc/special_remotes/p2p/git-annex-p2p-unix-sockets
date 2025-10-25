@@ -4,7 +4,7 @@
 # This simulates a multi-node P2P network using unix 
 # socket files in /tmp.
 #
-# Copyright 2025 Joey Hess; icenced under the GNU GPL version 3 or higher.
+# Copyright 2025 Joey Hess; licenced under the GNU GPL version 3 or higher.
 
 set -e
 
