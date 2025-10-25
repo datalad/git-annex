@@ -1,0 +1,14 @@
+Connecting to a discussion we had at distribits....
+
+It would be useful to extend the external special remote protocol with the ability to create ephemeral special remotes. Ephemeral in the sense that they are created by and during the runtime of a special remote, and only exist until that special remote process is terminated by git-annex.
+
+There could be a new protocol command that takes the same parameters as `initremote` as arguments. Its response would be the UUID of the created special remote.
+
+The second part of the protocol extension would be a third response value for `CHECKPRESENT`, `TRANSFER*`, `REMOVE`. The addition to `SUCCESS`, and `FAILURE` would by `REDIRECT-REMOTE <UUID>`, and instruct git-annex to perform the same request against the special remote given by `UUID` instead.
+
+The corresponding change in key availability would be recorded for the original special remote.
+
+A use case would be to have an "orchestration" special remotes that maybe represent a particular infrastructure. They dynamically deploy appropriate transfer setups, and do not commit them to a repository. This can be useful for setups with short-lived tokens/urls. This is
+in some way also an alternative to the `sameas` approach, where the alternatives are hidden in the implementation of a special remote, rather than in *each* repository.
+
+[[!tag projects/INM7]]
