@@ -3,7 +3,7 @@ The [external special remote protocol](/design/external_special_remote_protocol/
 * `TRANSFER-SUCCESS RETRIEVE {key}`
 * `TRANSFER-FAILURE RETRIEVE {key} {message}`
 
-I propose a third response: `TRANSFER-REDIRECT RETRIEVE {key} {url}`
+I propose a third response: `TRANSFER-REDIRECT-URL RETRIEVE {key} {url}`
 
 This will permit the following use cases:
 
