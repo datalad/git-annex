@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/cd1c0b3be1af288012e49197918395f0"
+ subject="comment 4"
+ date="2025-10-26T11:55:55Z"
+ content="""
+I am seeing the same issue on a Pixel 9a with GrapheneOS and Termux installed from the Play Store, but _not_ with Termux installed from F-Droid.
+
+Digging a bit I found that:
+
+- Termux does not advertise the Google Play Store as a means of installation on their website: <https://termux.dev/en/>
+- The Termux wiki states that everyone who can use F-Droid should get it from there: <https://wiki.termux.com/wiki/Termux_Google_Play>
+- The F-Droid and Play Store builds are created from different codebases, at least temporarily: <https://github.com/termux-play-store#:~:text=As%20the%20F%2DDroid%20build%20of,and%20details%20are%20worked%20out.>
+
+I've also noticed that some executables just don't exist in Termux-from-Play-Store, e.g. `termux-change-repo`.
+
+Considering that you might just want to try the F-Droid build, if possible.
+"""]]
