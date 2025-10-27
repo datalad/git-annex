@@ -211,7 +211,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download git-annex package
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: git-annex-macos-dmg_${{ needs.build-package.outputs.build-version }}
 
@@ -347,7 +347,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download git-annex package
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: git-annex-macos-dmg_${{ needs.build-package.outputs.build-version }}
 
@@ -404,7 +404,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download git-annex package
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: git-annex-macos-dmg_${{ needs.build-package.outputs.build-version }}
 
