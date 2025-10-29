@@ -4,3 +4,5 @@ From my experimentation it seems to be that git-annex does not discover the `ann
 2. Likewise, if the server-side initially didn't support p2phttp and didn't set `annex.url` when the repository was cloned, but is later updated to support it, git-annex doesn't automatically pick up this change.
 
 This automatic discovery would be nice for p2phttp support in forgejo-aneksajo, as existing clones could automatically start making use of it as soon as the instance is updated to support it on the server-side and the git-annex version is updated to be recent enough on the client-side.
+
+[[!tag projects/ICE4]]
