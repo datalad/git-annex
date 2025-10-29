@@ -1,4 +1,4 @@
-At FJZ, the INM-7 and ICE-4 data hosting infrastructures use git-annex. 
+At FZJ, the INM-7 and ICE-4 data hosting infrastructures use git-annex. 
 This is a tracking page for issues relating to those projects.
 It includes issues relating to 
 [forgejo-aneksajo](https://codeberg.org/matrss/forgejo-aneksajo).
