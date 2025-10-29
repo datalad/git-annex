@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/cd1c0b3be1af288012e49197918395f0"
+ subject="comment 2"
+ date="2025-10-29T17:38:12Z"
+ content="""
+Due to your explanation of how p2phttp is supposed to work with proxying I realized that I have made a mistake in how I have integrated it into Forgejo-aneksajo. Right now there is a single p2phttp endpoint serving all repositories, and the provided UUID is used to determine on which repository to act. But this breaks with proxying, since the UUID then doesn't necessarily correspond to a repository on the instance. I will therefore have to move the p2phttp endpoints under the `<owner>/<repo>` routing namespace. Having git-annex retrieve updated config data from remotes would make this change propagate to clones automatically, which would be nice I think.
+"""]]
