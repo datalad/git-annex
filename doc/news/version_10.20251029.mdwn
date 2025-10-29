@@ -1,0 +1,5 @@
+git-annex 10.20251029 released with [[!toggle text="these changes"]]
+[[!toggleable text="""  * Support ssh remotes with '#' and '?' in the path to the repository,
+    the same way git does.
+  * assistant: Fix reversion that caused files to be added locked by
+    default."""]]
