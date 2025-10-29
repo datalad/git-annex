@@ -27,7 +27,7 @@ Bugs
 <details>
 <summary>Fixed</summary>
 
-[[!inline pages="(bugs/* and !bugs/done and link(bugs/done)) and
-(tagged(projects/INM7 or tagged(projects/ICE4))" feeds=no actions=yes archive=yes show=0  template=buglist]]
+[[!inline pages="bugs/* and !bugs/done and link(bugs/done)) and
+(tagged(projects/INM7) or tagged(projects/ICE4))" feeds=no actions=yes archive=yes show=0  template=buglist]]
 
 </details>
