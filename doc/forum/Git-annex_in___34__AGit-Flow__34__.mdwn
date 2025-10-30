@@ -16,4 +16,4 @@ Worth it to note that AGit-Flow already works for contributors with write access
 
 Do you have any other ideas on how git-annex could be used in this workflow?
 
-[[!tag projects/INM7]]
+[[!tag projects/ICE4]]
