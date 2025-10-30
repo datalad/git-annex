@@ -1,0 +1,41 @@
+### Please describe the problem.
+
+P2phttp can deadlock with multiple concurrent clients talking to it.
+
+
+### What steps will reproduce the problem?
+
+1. Create a git-annex repository with a bunch of annexed files served via p2phttp like so: `git-annex --debug p2phttp -J2 --bind 127.0.0.1 --wideopen`
+2. Create multiple different clones of that repository connected via p2phttp all doing `while true; do git annex drop .; git annex get --in origin; done`
+3. Observe a deadlock after an indeterminate amount of time
+
+This deadlock seems to occur faster the more repos you use. I've tried increasing -J to 3 and had it deadlock with two client repos once, but that seems to happen much less often.
+
+### What version of git-annex are you using? On what operating system?
+
+```
+$ git annex version
+git-annex version: 10.20250929-g33ab579243742b0b18ffec2ea4ce1e3a827720b4
+build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Benchmark Feeds Testsuite S3 WebDAV Servant OsPath
+dependency versions: aws-0.24.4 bloomfilter-2.0.1.2 crypton-1.0.4 DAV-1.3.4 feed-1.3.2.1 ghc-9.10.2 http-client-0.7.19 persistent-sqlite-2.13.3.1 torrent-10000.1.3 uuid-1.3.16 yesod-1.6.2.1
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL GITBUNDLE GITMANIFEST VURL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg rclone hook external compute mask
+operating system: linux x86_64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
+local repository version: 10
+```
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+[[!tag projects/ICE4]]
