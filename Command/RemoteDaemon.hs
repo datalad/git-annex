@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2014-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -12,6 +12,7 @@ module Command.RemoteDaemon where
 import Command
 import RemoteDaemon.Core
 import Utility.Daemon
+import qualified Annex
 #ifndef mingw32_HOST_OS
 import Annex.Path
 import Utility.OpenFd
@@ -31,9 +32,12 @@ run o
 #ifndef mingw32_HOST_OS
 		git_annex <- fromOsPath <$> liftIO programPath
 		ps <- gitAnnexDaemonizeParams
-		let logfd = openFdWithMode (toRawFilePath "/dev/null") ReadOnly Nothing 
-			defaultFileFlags
-			(CloseOnExecFlag True)
+		logfd <- ifM (Annex.getRead Annex.debugenabled) 
+			( return Nothing
+			, return $ Just $ openFdWithMode (toRawFilePath "/dev/null") WriteOnly Nothing 
+				defaultFileFlags
+				(CloseOnExecFlag True)
+			)
 		liftIO $ daemonize git_annex ps logfd Nothing False runNonInteractive
 #else
 		liftIO $ foreground Nothing runNonInteractive	

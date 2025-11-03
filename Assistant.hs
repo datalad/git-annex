@@ -101,7 +101,7 @@ startDaemon assistant foreground startdelay cannotrun listenhost listenport star
 		else do
 			git_annex <- fromOsPath <$> liftIO programPath
 			ps <- gitAnnexDaemonizeParams
-			start (Utility.Daemon.daemonize git_annex ps logfd (Just pidfile) False) Nothing
+			start (Utility.Daemon.daemonize git_annex ps (Just logfd) (Just pidfile) False) Nothing
 #else
 	-- Windows doesn't daemonize, but does redirect output to the
 	-- log file. The only way to do so is to restart the program.

@@ -44,7 +44,7 @@ import System.Posix hiding (getEnv, getEnvironment)
  - Instead, it runs the cmd with provided params, in the background,
  - which the caller should arrange to run this again.
  -}
-daemonize :: String -> [CommandParam] -> IO Fd -> Maybe OsPath -> Bool -> IO () -> IO ()
+daemonize :: String -> [CommandParam] -> Maybe (IO Fd) -> Maybe OsPath -> Bool -> IO () -> IO ()
 daemonize cmd params openlogfd pidfile changedirectory a = do
 	maybe noop checkalreadyrunning pidfile
 	getEnv envvar >>= \case
@@ -55,7 +55,7 @@ daemonize cmd params openlogfd pidfile changedirectory a = do
 			nullfd <- openFdWithMode (toRawFilePath "/dev/null") ReadOnly Nothing defaultFileFlags 
 				(CloseOnExecFlag True)
 			redir nullfd stdInput
-			redirLog =<< openlogfd
+			maybe noop (redirLog =<<) openlogfd
 			environ <- getEnvironment
 			_ <- createProcess $
 				(proc cmd (toCommand params))

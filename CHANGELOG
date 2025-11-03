@@ -1,6 +1,7 @@
 git-annex (10.20251030) UNRELEASED; urgency=medium
 
   * p2p --pair: Fix to work with external P2P networks.
+  * remotedaemon: Avoid crashing when run with --debug.
 
  -- Joey Hess <id@joeyh.name>  Mon, 03 Nov 2025 14:02:46 -0400
 
