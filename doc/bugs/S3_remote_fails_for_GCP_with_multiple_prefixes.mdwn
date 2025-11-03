@@ -1,0 +1,95 @@
+### Please describe the problem.
+initremote of an S3 special remote with a GCP object storage bucket and a fileprefix fails if another repo with a different fileprefix has already been configured in the same bucket.
+
+### What steps will reproduce the problem?
+With two git-annex repos and an initially empty bucket configured without versioning or hierarchical namespaces:
+
+For the first repo:
+
+git-annex --debug initremote s3-BACKUP type=S3 partsize=1GiB fileprefix=ds001263/ encryption=none public=no bucket=openneuro-nell-test host=storage.googleapis.com storageclass=ARCHIVE cost=400
+
+For a second repo:
+
+git-annex --debug initremote s3-BACKUP type=S3 partsize=1GiB fileprefix=ds001264/ encryption=none public=no bucket=openneuro-nell-test host=storage.googleapis.com storageclass=ARCHIVE cost=400
+
+The first initremote will succeed and configure the remote. The second attempts to create a bucket and fails because it already exists. Manually populating remote.log and annex-uuid in the bucket allows this remote to function after enableremote.
+
+### What version of git-annex are you using? On what operating system?
+
+10.20250929 on Fedora 43.
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+initremote s3-BACKUP [2025-11-02 15:07:58.441842173] (Utility.Process) process [3914104] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","git-annex"]
+[2025-11-02 15:07:58.442407721] (Utility.Process) process [3914104] done ExitSuccess
+[2025-11-02 15:07:58.442547945] (Utility.Process) process [3914105] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","--hash","refs/heads/git-annex"]
+[2025-11-02 15:07:58.443007509] (Utility.Process) process [3914105] done ExitSuccess
+[2025-11-02 15:07:58.443341839] (Utility.Process) process [3914106] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch"]
+[2025-11-02 15:07:58.445120803] (Remote.S3) String to sign: "GET\n\n\nSun, 02 Nov 2025 23:07:58 GMT\n/openneuro-nell-test/?location"
+[2025-11-02 15:07:58.445148464] (Remote.S3) Host: "openneuro-nell-test.storage.googleapis.com"
+[2025-11-02 15:07:58.445161875] (Remote.S3) Path: "/"
+[2025-11-02 15:07:58.445173305] (Remote.S3) Query string: "location"
+[2025-11-02 15:07:58.445188565] (Remote.S3) Header: [("Date","Sun, 02 Nov 2025 23:07:58 GMT"),("User-Agent","git-annex/10.20250929")]
+[2025-11-02 15:07:58.635355111] (Remote.S3) Response status: Status {statusCode = 403, statusMessage = "Forbidden"}
+[2025-11-02 15:07:58.635400652] (Remote.S3) Response header 'Content-Type': 'application/xml; charset=UTF-8'
+[2025-11-02 15:07:58.635424923] (Remote.S3) Response header 'X-GUploader-UploadID': 'AOCedOEofSsg_ed3IPSuAQerc3FtHvXPALQhf2W1S26R_51sPNFu-0-ZozTZuBqhr5pV-3fK'
+[2025-11-02 15:07:58.635441664] (Remote.S3) Response header 'Content-Length': '298'
+[2025-11-02 15:07:58.635455574] (Remote.S3) Response header 'Date': 'Sun, 02 Nov 2025 23:07:58 GMT'
+[2025-11-02 15:07:58.635469194] (Remote.S3) Response header 'Expires': 'Sun, 02 Nov 2025 23:07:58 GMT'
+[2025-11-02 15:07:58.635481435] (Remote.S3) Response header 'Cache-Control': 'private, max-age=0'
+[2025-11-02 15:07:58.635495745] (Remote.S3) Response header 'Server': 'UploadServer'
+(checking bucket...) [2025-11-02 15:07:58.635780314] (Remote.S3) String to sign: "GET\n\n\nSun, 02 Nov 2025 23:07:58 GMT\n/openneuro-nell-test/ds001264/annex-uuid"
+[2025-11-02 15:07:58.635796454] (Remote.S3) Host: "openneuro-nell-test.storage.googleapis.com"
+[2025-11-02 15:07:58.635818565] (Remote.S3) Path: "/ds001264/annex-uuid"
+[2025-11-02 15:07:58.635828655] (Remote.S3) Query string: ""
+[2025-11-02 15:07:58.635840346] (Remote.S3) Header: [("Date","Sun, 02 Nov 2025 23:07:58 GMT"),("Authorization","..."),("User-Agent","git-annex/10.20250929")]
+[2025-11-02 15:07:58.685220703] (Remote.S3) Response status: Status {statusCode = 404, statusMessage = "Not Found"}
+[2025-11-02 15:07:58.685251934] (Remote.S3) Response header 'Content-Type': 'application/xml; charset=UTF-8'
+[2025-11-02 15:07:58.685268695] (Remote.S3) Response header 'X-GUploader-UploadID': 'AOCedOHoPd6zdBzYMMr-ON5aWjlDBbGd7ZIaf_Iit8Gt74l3aRT-Ty4Fayk9Tx9tlBMYuMKH'
+[2025-11-02 15:07:58.685280535] (Remote.S3) Response header 'Content-Length': '201'
+[2025-11-02 15:07:58.685290386] (Remote.S3) Response header 'Date': 'Sun, 02 Nov 2025 23:07:58 GMT'
+[2025-11-02 15:07:58.685299996] (Remote.S3) Response header 'Expires': 'Sun, 02 Nov 2025 23:07:58 GMT'
+[2025-11-02 15:07:58.685310096] (Remote.S3) Response header 'Cache-Control': 'private, max-age=0'
+[2025-11-02 15:07:58.685319476] (Remote.S3) Response header 'Server': 'UploadServer'
+[2025-11-02 15:07:58.685365338] (Remote.S3) String to sign: "GET\n\n\nSun, 02 Nov 2025 23:07:58 GMT\n/openneuro-nell-test/"
+[2025-11-02 15:07:58.685376888] (Remote.S3) Host: "openneuro-nell-test.storage.googleapis.com"
+[2025-11-02 15:07:58.685386298] (Remote.S3) Path: "/"
+[2025-11-02 15:07:58.685394309] (Remote.S3) Query string: ""
+[2025-11-02 15:07:58.685403479] (Remote.S3) Header: [("Date","Sun, 02 Nov 2025 23:07:58 GMT"),("Authorization","..."),("User-Agent","git-annex/10.20250929")]
+[2025-11-02 15:07:58.725819533] (Remote.S3) Response status: Status {statusCode = 200, statusMessage = "OK"}
+[2025-11-02 15:07:58.725847874] (Remote.S3) Response header 'Content-Type': 'application/xml; charset=UTF-8'
+[2025-11-02 15:07:58.725861764] (Remote.S3) Response header 'X-GUploader-UploadID': 'AOCedOGjVuiFnd4UNsb069xhhamfE7ttizD8j1W9S7fGeUBqVoPxKff00jMdZyvUGFo90z_N'
+[2025-11-02 15:07:58.725873324] (Remote.S3) Response header 'x-goog-metageneration': '3'
+[2025-11-02 15:07:58.725883625] (Remote.S3) Response header 'Content-Length': '784'
+[2025-11-02 15:07:58.725893065] (Remote.S3) Response header 'Date': 'Sun, 02 Nov 2025 23:07:58 GMT'
+[2025-11-02 15:07:58.725907215] (Remote.S3) Response header 'Expires': 'Sun, 02 Nov 2025 23:07:58 GMT'
+[2025-11-02 15:07:58.725983778] (Remote.S3) Response header 'Cache-Control': 'private, max-age=0'
+[2025-11-02 15:07:58.72604907] (Remote.S3) Response header 'Server': 'UploadServer'
+(creating bucket in US...) [2025-11-02 15:07:58.726309948] (Remote.S3) String to sign: "PUT\n\n\nSun, 02 Nov 2025 23:07:58 GMT\n/openneuro-nell-test/"
+[2025-11-02 15:07:58.726329498] (Remote.S3) Host: "openneuro-nell-test.storage.googleapis.com"
+[2025-11-02 15:07:58.726341689] (Remote.S3) Path: "/"
+[2025-11-02 15:07:58.726350049] (Remote.S3) Query string: ""
+[2025-11-02 15:07:58.726366349] (Remote.S3) Header: [("Date","Sun, 02 Nov 2025 23:07:58 GMT"),("Authorization","..."),("User-Agent","git-annex/10.20250929")]
+[2025-11-02 15:07:58.75553637] (Remote.S3) Response status: Status {statusCode = 409, statusMessage = "Conflict"}
+[2025-11-02 15:07:58.755576871] (Remote.S3) Response header 'Content-Type': 'application/xml; charset=UTF-8'
+[2025-11-02 15:07:58.755590572] (Remote.S3) Response header 'X-GUploader-UploadID': 'AOCedOFn-ViFqzgcWiIW6Pun3lCz6lMnBFrRxyRpyC9LIdnv9j20Yz2Cd7MnuXIcNxZ-j6_J'
+[2025-11-02 15:07:58.755603132] (Remote.S3) Response header 'Content-Length': '421'
+[2025-11-02 15:07:58.755610962] (Remote.S3) Response header 'Vary': 'Origin'
+[2025-11-02 15:07:58.755618952] (Remote.S3) Response header 'Date': 'Sun, 02 Nov 2025 23:07:58 GMT'
+[2025-11-02 15:07:58.755628153] (Remote.S3) Response header 'Server': 'UploadServer'
+
+git-annex: S3Error {s3StatusCode = Status {statusCode = 409, statusMessage = "Conflict"}, s3ErrorCode = "BucketNameUnavailable", s3ErrorMessage = "The requested bucket name is not available. The bucket namespace is shared by all users of the system. Please select a different name and try again.", s3ErrorResource = Nothing, s3ErrorHostId = Nothing, s3ErrorAccessKeyId = Nothing, s3ErrorStringToSign = Nothing, s3ErrorBucket = Nothing, s3ErrorEndpointRaw = Nothing, s3ErrorEndpoint = Nothing}
+failed
+[2025-11-02 15:07:58.755843459] (Utility.Process) process [3914106] done ExitSuccess
+initremote: 1 failed
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Thanks for all your great work, Joey!
