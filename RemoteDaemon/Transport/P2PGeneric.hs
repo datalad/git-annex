@@ -38,6 +38,7 @@ import Control.Concurrent.STM
 import Control.Concurrent.STM.TBMQueue
 import Control.Concurrent.Async
 import Network.Socket (Socket)
+import System.IO.Error
 import qualified Data.Set as S
 
 server :: Server
@@ -179,6 +180,8 @@ serveClient loadauthtokens (P2PNetName netname) th@(TransportHandle _ _ rd) u r 
 				P2P.serveAuthed P2P.ServeReadWrite u
 			case v' of
 				Right () -> return ()
+				Left (ProtoFailureIOError e) | isEOFError e ->
+					return ()
 				Left e -> liftIO $ debug' $ 
 					netname ++ " connection error: " ++ describeProtoFailure e
 
