@@ -1,12 +1,9 @@
 #!/bin/sh
 # Allows git-annex to use iroh for P2P connections.
 #
-# This uses a modified version of iroh's dumbpipe program, adding the
-# generate-ticket command. This pull request has the necessary changes:
+# This uses iroh's dumbpipe program. It needs a version with the
+# generate-ticket command, which was added in this pull request:
 # https://github.com/n0-computer/dumbpipe/pull/86
-#
-# Quality: experimental. Has worked at least twice, but there are known and
-# unknown bugs.
 #
 # Copyright 2025 Joey Hess; licenced under the GNU GPL version 3 or higher.
 

@@ -8,7 +8,7 @@ It can be used with git-annex, to connect together two repositories.
 To use this, you need a few things:
 
 * Install [dumbpipe](https://www.dumbpipe.dev/). This will be used to talk
-  over Iroh.
+  over Iroh. Note that this needs version 0.33 or newer of dumbpipe.
 * Download [[special_remotes/p2p/git-annex-p2p-iroh]] and make the script
   executable.
 * You also need to install [Magic Wormhole](https://github.com/warner/magic-wormhole) -
