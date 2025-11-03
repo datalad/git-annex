@@ -3,3 +3,9 @@ magic wormhole step.
 
 `git-annex p2p --link` does work with the iroh script, so this is probably
 a bug in git-annex. --[[Joey]]
+
+> --debug shows the problem is `AUTH-FAILURE`. And it appears that the
+> remotedaemon's loadP2PAuthTokens is not loading any auth tokens after
+> pairing writes one to `.git/annex/creds/p2pauth`. The written auth token
+> incorrectly has the address of the peer, rather than the local repository.
+> [[fixed|done]] --[[Joey]

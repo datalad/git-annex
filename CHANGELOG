@@ -1,3 +1,9 @@
+git-annex (10.20251030) UNRELEASED; urgency=medium
+
+  * p2p --pair: Fix to work with external P2P networks.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 03 Nov 2025 14:02:46 -0400
+
 git-annex (10.20251029) upstream; urgency=medium
 
   * Support ssh remotes with '#' and '?' in the path to the repository,

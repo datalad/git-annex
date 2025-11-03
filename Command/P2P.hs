@@ -263,7 +263,7 @@ wormholePairing remotename ouraddrs ui = do
 						Left _e -> return ReceiveFailed
 						Right ls -> maybe 
 							(return ReceiveFailed)
-							(finishPairing 100 remotename ourhalf)
+							(finishPairing 100 remotename ourhalf ouraddrs)
 							(deserializePairData ls)
 
 -- | Allow the peer we're pairing with to authenticate to us,
@@ -276,8 +276,8 @@ wormholePairing remotename ouraddrs ui = do
 -- Since we're racing the peer as they do the same, the first try is likely
 -- to fail to authenticate. Can retry any number of times, to avoid the
 -- users needing to redo the whole process.
-finishPairing :: Int -> RemoteName -> HalfAuthToken -> PairData -> Annex PairingResult
-finishPairing retries remotename (HalfAuthToken ourhalf) (PairData (HalfAuthToken theirhalf) theiraddrs) = do
+finishPairing :: Int -> RemoteName -> HalfAuthToken -> [P2PAddress] -> PairData -> Annex PairingResult
+finishPairing retries remotename (HalfAuthToken ourhalf) ouraddrs (PairData (HalfAuthToken theirhalf) theiraddrs) = do
 	case (toAuthToken (ourhalf <> theirhalf), toAuthToken (theirhalf <> ourhalf)) of
 		(Just ourauthtoken, Just theirauthtoken) -> do
 			liftIO $ putStrLn $ "Successfully exchanged pairing data. Connecting to " ++ remotename ++  "..."
@@ -289,9 +289,9 @@ finishPairing retries remotename (HalfAuthToken ourhalf) (PairData (HalfAuthToke
 		liftIO $ threadDelaySeconds (Seconds 2)
 		liftIO $ putStrLn $ "Unable to connect to " ++ remotename ++ ". Retrying..."
 		go (n-1) theiraddrs theirauthtoken ourauthtoken
-	go n (addr:rest) theirauthtoken ourauthtoken = do
-		storeP2PAuthToken addr ourauthtoken
-		r <- setupLink remotename (P2PAddressAuth addr theirauthtoken)
+	go n (theiraddr:rest) theirauthtoken ourauthtoken = do
+		forM_ ouraddrs $ \ouraddr -> storeP2PAuthToken ouraddr ourauthtoken
+		r <- setupLink remotename (P2PAddressAuth theiraddr theirauthtoken)
 		case r of
 			LinkSuccess -> return PairSuccess
 			_ -> go n rest theirauthtoken ourauthtoken
