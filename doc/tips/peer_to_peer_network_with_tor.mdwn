@@ -3,6 +3,9 @@ git-annex has recently gotten support for running as a
 and easy to use way to connect repositories in different
 locations. No account on a central server is needed; it's peer-to-peer.
 
+(See also [[peer_to_peer_network_with_iroh]] for something similar but
+faster if you don't need all the layered security of tor.)
+
 ## dependencies
 
 To use this, you need to get Tor installed and running. See
@@ -15,15 +18,12 @@ here are [the installation instructions](https://magic-wormhole.readthedocs.io/e
 
 *Important:*
 
-* At the time of writing, you need to install Magic Wormhole under Python 2,
-  because [Tor support is only available under python2.7](https://magic-wormhole.readthedocs.io/en/latest/tor.html).
-
 * The installation process must make a `wormhole` executable available
   somewhere on your `$PATH`.  Some distributions may only install executables
   which reference the Python version, e.g. `wormhole-2.7`, in which case you
   will need to manually create a symlink (and maybe file a bug with your distribution).
 
-* You need git-annex version 6.20180705. Older versions of git-annex
+* You need git-annex version 6.20180705 or newer. Older versions of git-annex
   unfortunately had a bug that prevents this process from working correctly.
 
 ## pairing two repositories
