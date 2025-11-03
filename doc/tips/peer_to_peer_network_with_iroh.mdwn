@@ -13,13 +13,6 @@ To use this, you need a few things:
   executable.
 * You also need to install [Magic Wormhole](https://github.com/warner/magic-wormhole) -
   here are [the installation instructions](https://magic-wormhole.readthedocs.io/en/latest/welcome.html#installation).
-
-*Important:*
-
-* The installation process must make a `wormhole` executable available
-  somewhere on your `$PATH`.  Some distributions may only install executables
-  which reference the Python version, e.g. `wormhole-2.7`, in which case you
-  will need to manually create a symlink (and maybe file a bug with your distribution).
 * You need git-annex version 10.20251103 or newer. Older versions of git-annex
   unfortunately had a bug that prevents this process from working correctly.
 

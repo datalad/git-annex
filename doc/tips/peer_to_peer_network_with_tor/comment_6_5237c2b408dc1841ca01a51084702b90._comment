@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: Issue on openSUSE with Tor's requirement for Python 2.7 """
+ date="2025-11-03T19:44:09Z"
+ content="""
+Thanks for that. Since that issue got fixed in 2020, it seems unncessary to
+complicate this tip with the warning about it, so I've removed your
+addition now.
+"""]]
