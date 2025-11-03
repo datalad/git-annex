@@ -80,7 +80,7 @@ Here's how it all looks:
 	remote: Compressing objects: 100% (7/7), done.
 	remote: Total 8 (delta 0), reused 0 (delta 0)
 	Unpacking objects: 100% (8/8), done.
-	From tor-annex::wa3i6wgttmworwli.onion:5162
+	From p2p-annex::iroh:endpointadroxtad5dj5vaweczqnmkhk2sb7dmysazljjul6zeug7bexymejaaa
 	   452db22..a894c60  git-annex  -> peer1/git-annex
 	   c0ac431..44ca7f6  master     -> peer1/master
 	
