@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2025-11-05T18:40:52Z"
+ content="""
+Tested a modified p2phttp that uses 2 worker pools, one for the P2P client side
+and one for server side. This means that -J2 actually runs up to 4 threads,
+although with only 2 capabilities, so the change won't affect CPU load. 
+So I tried with -J2 and 4 clients running the loop.
+
+It still stalls much as before, maybe after a bit longer.
+
+It still seems likely that the two workers used per http request
+is the root of the problem. When there are more than annex.jobs concurrent 
+requests, each http response handler calls inAnnexWorker, and so one will
+block. If the corresponding localConnection successfully gets a worker,
+that means one of the other localConnections is blocked. Resulting in a
+running http response handler whose corresponding localConnection is blocked.
+The inverse also seems possible.
+
+If 2 worker pools is not the solution, it seems it would need to instead be
+solved by rearchitecting the http server to not have that separation. Or to
+ensure that getP2PConnection doesn't return until the localConnection has
+allocated its worker. I'll try that next.
+"""]]
