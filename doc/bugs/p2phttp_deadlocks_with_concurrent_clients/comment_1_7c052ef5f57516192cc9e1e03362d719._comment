@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-11-05T16:52:12Z"
+ content="""
+I think that --debug output from the p2phttp server would be helpful in
+narrowing down if there is particular operation that causes this hang.
+
+p2phttp has a pool of worker threads, so if a thread stalls out, or
+potentially crashes in some way that is not handled, it can result in all
+subsequent operations hanging. 
+[[!commit 91dbcf0b56ba540a33ea5a79ed52f33e82f4f61b]] is one recent example
+of that; I remember there were some similar problems when initially
+developing it.
+
+-J2 also seems quite low though. With the http server itself using one of
+those threads, all requests get serialized through the second thread. If there is
+any situation where request A needs request B to be made and finish before
+it can succeed, that would deadlock.
+"""]]

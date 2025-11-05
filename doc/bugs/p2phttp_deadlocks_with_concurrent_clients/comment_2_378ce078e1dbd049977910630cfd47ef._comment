@@ -1,0 +1,71 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2025-11-05T17:14:29Z"
+ content="""
+I was able to reproduce this fairly quickly with 2 clones, each running
+the loop on the same 5 files, which I made each be 1 mb in size.
+
+Both hung on get, of different files. The tail of the --debug:
+
+	[2025-11-05 13:14:06.255833094] (P2P.IO) [http server] [ThreadId 914] P2P > DATA 1048576
+	[2025-11-05 13:14:06.255872078] (P2P.IO) [http client] [ThreadId 912] P2P < DATA 1048576
+	[2025-11-05 13:14:06.262783513] (P2P.IO) [http server] [ThreadId 914] P2P > VALID
+	[2025-11-05 13:14:06.262897622] (P2P.IO) [http client] [ThreadId 912] P2P < VALID
+	[2025-11-05 13:14:06.262956555] (P2P.IO) [http client] [ThreadId 912] P2P > SUCCESS
+	[2025-11-05 13:14:06.263008765] (P2P.IO) [http server] [ThreadId 914] P2P < SUCCESS
+	[2025-11-05 13:14:06.264030615] (P2P.IO) [http client] [ThreadId 883] P2P > CHECKPRESENT SHA256E-s1048576--06477b9c41f04aaa5c09af0adbd093506435193c868ef56a5510eff0d3c9fc2b
+	[2025-11-05 13:14:06.264088566] (P2P.IO) [http server] [ThreadId 916] P2P < CHECKPRESENT SHA256E-s1048576--06477b9c41f04aaa5c09af0adbd093506435193c868ef56a5510eff0d3c9fc2b
+	[2025-11-05 13:14:06.264183098] (P2P.IO) [http server] [ThreadId 916] P2P > SUCCESS
+	[2025-11-05 13:14:06.264219447] (P2P.IO) [http client] [ThreadId 883] P2P < SUCCESS
+	[2025-11-05 13:14:06.265125295] (P2P.IO) [http client] [ThreadId 920] P2P > GET 0 3 SHA256E-s1048576--06477b9c41f04aaa5c09af0adbd093506435193c868ef56a5510eff0d3c9fc2b
+	[2025-11-05 13:14:06.265177174] (P2P.IO) [http server] [ThreadId 921] P2P < GET 0 3 SHA256E-s1048576--06477b9c41f04aaa5c09af0adbd093506435193c868ef56a5510eff0d3c9fc2b
+	[2025-11-05 13:14:06.265598603] (P2P.IO) [http server] [ThreadId 921] P2P > DATA 1048576
+	[2025-11-05 13:14:06.265639962] (P2P.IO) [http client] [ThreadId 920] P2P < DATA 1048576
+	[2025-11-05 13:14:06.274452543] (P2P.IO) [http server] [ThreadId 921] P2P > VALID
+	[2025-11-05 13:14:06.274505514] (P2P.IO) [http client] [ThreadId 920] P2P < VALID
+	[2025-11-05 13:14:06.274551963] (P2P.IO) [http client] [ThreadId 920] P2P > SUCCESS
+	[2025-11-05 13:14:06.274594385] (P2P.IO) [http server] [ThreadId 921] P2P < SUCCESS
+	[2025-11-05 13:14:06.276689062] (P2P.IO) [http client] [ThreadId 883] P2P > CHECKPRESENT SHA256E-s1048576--81386bfd2b7880ed397001ea5325ee25cfa69cf46d097b7a69b0a31b5e990f8d
+	[2025-11-05 13:14:06.276783864] (P2P.IO) [http server] [ThreadId 924] P2P < CHECKPRESENT SHA256E-s1048576--81386bfd2b7880ed397001ea5325ee25cfa69cf46d097b7a69b0a31b5e990f8d
+	[2025-11-05 13:14:06.276799023] (P2P.IO) [http client] [ThreadId 892] P2P > CHECKPRESENT SHA256E-s1048576--06477b9c41f04aaa5c09af0adbd093506435193c868ef56a5510eff0d3c9fc2b
+	[2025-11-05 13:14:06.276912961] (P2P.IO) [http server] [ThreadId 924] P2P > SUCCESS
+	[2025-11-05 13:14:06.276939743] (P2P.IO) [http client] [ThreadId 883] P2P < SUCCESS
+	[2025-11-05 13:14:06.276944802] (P2P.IO) [http server] [ThreadId 926] P2P < CHECKPRESENT SHA256E-s1048576--06477b9c41f04aaa5c09af0adbd093506435193c868ef56a5510eff0d3c9fc2b
+	[2025-11-05 13:14:06.277069411] (P2P.IO) [http server] [ThreadId 926] P2P > SUCCESS
+	[2025-11-05 13:14:06.277111522] (P2P.IO) [http client] [ThreadId 892] P2P < SUCCESS
+
+A second hang happened with the loops each running on the same 2 files. This time,
+one clone was doing "get 1" and the other clone "drop 1 (locking origin...)" when they hung.
+
+	[2025-11-05 13:28:03.931334099] (P2P.IO) [http server] [ThreadId 8421] P2P > SUCCESS
+	[2025-11-05 13:28:03.931380284] (P2P.IO) [http client] [ThreadId 8424] P2P < SUCCESS
+	[2025-11-05 13:28:03.932204439] (P2P.IO) [http client] [ThreadId 8424] P2P > UNLOCKCONTENT
+	[2025-11-05 13:28:03.932251987] (P2P.IO) [http server] [ThreadId 8421] P2P < UNLOCKCONTENT
+	[2025-11-05 13:28:04.252596865] (P2P.IO) [http client] [ThreadId 8427] P2P > CHECKPRESENT SHA256E-s1048576--4ad843113f3ee799f2ff834a80bb2aaff35d5babd68395339406671c50e99f6a
+	[2025-11-05 13:28:04.252748136] (P2P.IO) [http server] [ThreadId 8429] P2P < CHECKPRESENT SHA256E-s1048576--4ad843113f3ee799f2ff834a80bb2aaff35d5babd68395339406671c50e99f6a
+	[2025-11-05 13:28:04.252918516] (P2P.IO) [http server] [ThreadId 8429] P2P > SUCCESS
+	[2025-11-05 13:28:04.253026869] (P2P.IO) [http client] [ThreadId 8427] P2P < SUCCESS
+
+A third hang, again with 2 files, and both hung on "drop 1 (locking
+origin...)"
+
+	[2025-11-05 13:34:34.413288012] (P2P.IO) [http client] [ThreadId 16147] P2P > CHECKPRESENT SHA256E-s1048576--c644050a65e9e93a43f5b21e1188e4e7a406057d84102c78fce0007ceb875c69
+	[2025-11-05 13:34:34.413341843] (P2P.IO) [http server] [ThreadId 16172] P2P < CHECKPRESENT SHA256E-s1048576--c644050a65e9e93a43f5b21e1188e4e7a406057d84102c78fce0007ceb875c69
+	[2025-11-05 13:34:34.413415351] (P2P.IO) [http server] [ThreadId 16172] P2P > SUCCESS
+	[2025-11-05 13:34:34.413442692] (P2P.IO) [http client] [ThreadId 16147] P2P < SUCCESS
+	[2025-11-05 13:34:34.414251817] (P2P.IO) [http client] [ThreadId 16176] P2P > GET 0 2 SHA256E-s1048576--c644050a65e9e93a43f5b21e1188e4e7a406057d84102c78fce0007ceb875c69
+	[2025-11-05 13:34:34.4142963] (P2P.IO) [http server] [ThreadId 16177] P2P < GET 0 2 SHA256E-s1048576--c644050a65e9e93a43f5b21e1188e4e7a406057d84102c78fce0007ceb875c69
+	[2025-11-05 13:34:34.414731756] (P2P.IO) [http server] [ThreadId 16177] P2P > DATA 1048576
+	[2025-11-05 13:34:34.414777692] (P2P.IO) [http client] [ThreadId 16176] P2P < DATA 1048576
+	[2025-11-05 13:34:34.421258237] (P2P.IO) [http server] [ThreadId 16177] P2P > VALID
+	[2025-11-05 13:34:34.421322858] (P2P.IO) [http client] [ThreadId 16176] P2P < VALID
+	[2025-11-05 13:34:34.421358204] (P2P.IO) [http client] [ThreadId 16176] P2P > SUCCESS
+	[2025-11-05 13:34:34.421390053] (P2P.IO) [http server] [ThreadId 16177] P2P < SUCCESS
+	[2025-11-05 13:34:34.764709623] (P2P.IO) [http client] [ThreadId 16188] P2P > LOCKCONTENT SHA256E-s1048576--4ad843113f3ee799f2ff834a80bb2aaff35d5babd68395339406671c50e99f6a
+
+Here the P2P protocol client inside the http server got a worker thread, but then apparently
+the http response handler stalled out. That's different from the other 2 debug logs where
+the protocol client was able to send a response. I think in the other 2 debug logs,
+the P2P protocol client then stalls getting a worker thread.
+"""]]

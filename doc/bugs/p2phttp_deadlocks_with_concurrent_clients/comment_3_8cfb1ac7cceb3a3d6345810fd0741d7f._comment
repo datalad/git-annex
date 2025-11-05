@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2025-11-05T17:48:02Z"
+ content="""
+Aha! We have two things both calling inAnnexWorker:
+
+1. localConnection, handling the P2P protocol client
+   side of things inside the http server. (Or in the case of a proxy,
+   other functions that do the similar thing.)
+2. http response handlers, which run the P2P protocol server side.
+
+For each http request, both of these run asyncronously.
+
+So, with -J2, if two http requests happen at the same time, and
+localConnection wins both races, the two worker threads are both stalled
+waiting for a response from the P2P server side. Which is blocked waiting
+for a worker thread. Or perhaps both of the http response handlers win,
+similar deadlock. 
+
+Maybe it could even happen that the localConnection for one request wins,
+as well as the response handler for the other request?
+
+(And higher -J numbers would still have the same problem,
+when there are more clients. The docs for -J are also a bit wrong,
+they say that the http server uses 1 thread itself, but it can really
+use any number of threads since localConnection does run
+inAnnexWorker in an async action.)
+
+Anyway, if this analysis is correct, the fix is surely to have 2 worker
+thread pools, once for the P2P protocol client side, and one for the P2P
+protocol server side.
+"""]]
