@@ -1,0 +1,10 @@
+In the git-annex docs for [S3](https://git-annex.branchable.com/special_remotes/S3/), under `storageclass`, it says
+
+> Amazon S3's DEEP_ARCHIVE is similar to Amazon Glacier. For that, use the glacier special remote, rather than this one.
+
+However, Amazon has [deprecated the standalone Glacier API](https://www.lastweekinaws.com/blog/aws-deprecates-two-dozen-services-most-of-which-youve-never-heard-of/), in favor of the S3 Glacier storage classes like [S3 Glacier Deep Archive](https://aws.amazon.com/blogs/aws/new-amazon-s3-storage-class-glacier-deep-archive/). As I understand it, new AWS accounts cannot sign up for Glacier at all, and existing accounts can only use it if they already had been using it. Instead, Amazon wants you to use the S3 classes, which are the [same price](https://aws.amazon.com/s3/pricing/) but use the S3 API instead of the Glacier API.
+
+
+For new repositories, should we use S3 with `storageclass=DEEP_ARCHIVE`? 
+
+It's not clear to me if this will work correctly, if the git-annex S3 implementation is built to handle S3 Glacier storage classes correctly. If not, what should we do since we can't use the standalone Glacier anymore?
