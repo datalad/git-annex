@@ -97,12 +97,16 @@ dupState = do
 			setConcurrency (ConcurrencyCmdLine (Concurrent 1))
 			Annex.getState id
 		_ -> return st
-	return $ st'
-		-- each thread has its own repoqueue
-		{ Annex.repoqueue = Nothing
-		-- no errors from this thread yet
-		, Annex.errcounter = 0
-		}
+	return $ dupState' st'
+
+{- Should only be used when concurrency is enabled. -}
+dupState' :: AnnexState -> AnnexState
+dupState' st = st
+	-- each thread has its own repoqueue
+	{ Annex.repoqueue = Nothing
+	-- no errors from this thread yet
+	, Annex.errcounter = 0
+	}
 
 {- Merges the passed AnnexState into the current Annex state. -}
 mergeState :: AnnexState -> Annex ()
