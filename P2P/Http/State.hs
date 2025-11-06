@@ -75,6 +75,8 @@ instance Semigroup P2PHttpServerState where
 data PerRepoServerState = PerRepoServerState
 	{ acquireP2PConnection :: AcquireP2PConnection
 	, annexWorkerPool :: AnnexWorkerPool
+	, annexState :: TMVar Annex.AnnexState
+	, annexRead :: Annex.AnnexRead
 	, getServerMode :: GetServerMode
 	, openLocks :: TMVar (M.Map LockID Locker)
 	}
@@ -91,10 +93,12 @@ data ServerMode
 		}
 	| CannotServeRequests
 
-mkPerRepoServerState :: AcquireP2PConnection -> AnnexWorkerPool -> GetServerMode -> IO PerRepoServerState
-mkPerRepoServerState acquireconn annexworkerpool getservermode = PerRepoServerState
+mkPerRepoServerState :: AcquireP2PConnection -> AnnexWorkerPool -> Annex.AnnexState -> Annex.AnnexRead -> GetServerMode -> IO PerRepoServerState
+mkPerRepoServerState acquireconn annexworkerpool annexstate annexread getservermode = PerRepoServerState
 	<$> pure acquireconn
 	<*> pure annexworkerpool
+	<*> newTMVarIO annexstate
+	<*> pure annexread
 	<*> pure getservermode
 	<*> newTMVarIO mempty
 
@@ -275,7 +279,9 @@ mkP2PHttpServerState getservermode updaterepos proxyconnectionpoolsize clusterco
 		liftIO $ atomically $ putTMVar endv ()
 		liftIO $ wait asyncservicer
 	let servinguuids = myuuid : map proxyRemoteUUID (maybe [] S.toList myproxies)
-	st <- liftIO $ mkPerRepoServerState (acquireconn reqv) workerpool getservermode
+	annexstate <- dupState
+	annexread <- Annex.getRead id
+	st <- liftIO $ mkPerRepoServerState (acquireconn reqv) workerpool annexstate annexread getservermode
 	return $ P2PHttpServerState
 		{ servedRepos = M.fromList $ zip servinguuids (repeat st)
 		, serverShutdownCleanup = endit
@@ -283,8 +289,10 @@ mkP2PHttpServerState getservermode updaterepos proxyconnectionpoolsize clusterco
 		}
   where
 	acquireconn reqv connparams = do
+		ready <- newEmptyTMVarIO
 		respvar <- newEmptyTMVarIO
-		atomically $ putTMVar reqv (connparams, respvar)
+		atomically $ putTMVar reqv (connparams, ready, respvar)
+		() <- atomically $ takeTMVar ready
 		atomically $ takeTMVar respvar
 
 	servicer myuuid myproxies proxypool reqv relv endv = do
@@ -296,8 +304,8 @@ mkP2PHttpServerState getservermode updaterepos proxyconnectionpoolsize clusterco
 					`orElse` 
 				(Left . Left <$> takeTMVar endv)
 		case reqrel of
-			Right (connparams, respvar) -> do
-				servicereq myuuid myproxies proxypool relv connparams
+			Right (connparams, ready, respvar) -> do
+				servicereq myuuid myproxies proxypool relv connparams ready
 					>>= atomically . putTMVar respvar
 				servicer myuuid myproxies proxypool reqv relv endv
 			Left (Right releaseconn) -> do
@@ -305,16 +313,16 @@ mkP2PHttpServerState getservermode updaterepos proxyconnectionpoolsize clusterco
 				servicer myuuid myproxies proxypool reqv relv endv
 			Left (Left ()) -> return ()
 	
-	servicereq myuuid myproxies proxypool relv connparams
+	servicereq myuuid myproxies proxypool relv connparams ready
 		| connectionServerUUID connparams == myuuid =
-			localConnection relv connparams workerpool
+			localConnection relv connparams workerpool ready
 		| otherwise =
 			atomically (getProxyConnectionPool proxypool connparams) >>= \case
-				Just conn -> proxyConnection proxyconnectionpoolsize relv connparams workerpool proxypool conn
-				Nothing -> checkcanproxy myproxies proxypool relv connparams
+				Just conn -> proxyConnection proxyconnectionpoolsize relv connparams workerpool proxypool conn ready
+				Nothing -> checkcanproxy myproxies proxypool relv connparams ready
 
-	checkcanproxy myproxies proxypool relv connparams = 
-		inAnnexWorker' workerpool
+	checkcanproxy myproxies proxypool relv connparams ready = do
+		inAnnexWorker workerpool
 			(checkCanProxy' myproxies (connectionServerUUID connparams))
 		>>= \case
 			Right (Left reason) -> return $ Left $
@@ -334,7 +342,7 @@ mkP2PHttpServerState getservermode updaterepos proxyconnectionpoolsize clusterco
 		bypass = P2P.Bypass $ S.fromList $ connectionBypass connparams
 		proxyconnection openconn = openconn >>= \case
 			Right conn -> proxyConnection proxyconnectionpoolsize
-				relv connparams workerpool proxypool conn
+				relv connparams workerpool proxypool conn ready
 			Left ex -> return $ Left $
 				ConnectionFailed $ show ex
 
@@ -354,10 +362,12 @@ localConnection
 	:: TMVar (IO ())
 	-> ConnectionParams
 	-> AnnexWorkerPool
+	-> TMVar ()
 	-> IO (Either ConnectionProblem P2PConnectionPair)
-localConnection relv connparams workerpool = 
+localConnection relv connparams workerpool ready = 
 	localP2PConnectionPair connparams relv $ \serverrunst serverconn ->
-		inAnnexWorker' workerpool $
+		inAnnexWorker workerpool $ do
+			liftIO $ atomically $ putTMVar ready ()
 			void $ runFullProto serverrunst serverconn $
 				P2P.serveOneCommandAuthed
 					(connectionServerMode connparams)
@@ -431,14 +441,16 @@ proxyConnection
 	-> AnnexWorkerPool
 	-> TMVar ProxyConnectionPool
 	-> ProxyConnection
+	-> TMVar ()
 	-> IO (Either ConnectionProblem P2PConnectionPair)
-proxyConnection proxyconnectionpoolsize relv connparams workerpool proxypool proxyconn = do
+proxyConnection proxyconnectionpoolsize relv connparams workerpool proxypool proxyconn ready = do
 	(clientconn, proxyfromclientconn) <- 
 		mkP2PConnectionPair connparams ("http client", "proxy")
 	clientrunst <- mkClientRunState connparams
 	proxyfromclientrunst <- mkClientRunState connparams
 	asyncworker <- async $
-		inAnnexWorker' workerpool $ do
+		inAnnexWorker workerpool $ do
+			liftIO $ atomically $ putTMVar ready ()
 			proxystate <- liftIO Proxy.mkProxyState
 			let proxyparams = Proxy.ProxyParams
 				{ Proxy.proxyMethods = mkProxyMethods
@@ -495,8 +507,8 @@ proxyConnection proxyconnectionpoolsize relv connparams workerpool proxypool pro
 	
 	requestcomplete () = return ()
 	
-	closeproxyconnection = 
-		void . inAnnexWorker' workerpool . proxyConnectionCloser
+	closeproxyconnection =
+		void . inAnnexWorker workerpool . proxyConnectionCloser
 
 data Locker = Locker
 	{ lockerThread :: Async ()
@@ -585,11 +597,8 @@ withAnnexWorkerPool mc a = do
 			Nothing -> giveup "Use -Jn or set annex.jobs to configure the number of worker threads."
 			Just wp -> a wp
 
-inAnnexWorker :: PerRepoServerState -> Annex a -> IO (Either SomeException a)
-inAnnexWorker st = inAnnexWorker' (annexWorkerPool st)
-
-inAnnexWorker' :: AnnexWorkerPool -> Annex a -> IO (Either SomeException a)
-inAnnexWorker' poolv annexaction = do
+inAnnexWorker :: AnnexWorkerPool -> Annex a -> IO (Either SomeException a)
+inAnnexWorker poolv annexaction = do
 	(workerstrd, workerstage) <- atomically $ waitStartWorkerSlot poolv
 	resv <- newEmptyTMVarIO
 	aid <- async $ do
@@ -609,6 +618,20 @@ inAnnexWorker' poolv annexaction = do
 		pool <- takeTMVar poolv
 		let !pool' = deactivateWorker pool aid workerstrd'
 		putTMVar poolv pool'
+	return res
+
+handleRequestAnnex :: PerRepoServerState -> Annex a -> IO (Either SomeException a)
+handleRequestAnnex st a = do
+	ast <- atomically $ readTMVar (annexState st)
+	let astdup = dupState' ast
+
+	(res, (astdup', _)) <- Annex.run (astdup, annexRead st) $ 
+		tryNonAsync a
+	
+	ast' <- atomically $ takeTMVar (annexState st)
+	((), (ast'', _)) <- Annex.run (ast', annexRead st) $ mergeState astdup'
+	atomically $ putTMVar (annexState st) ast''
+
 	return res
 
 data ProxyConnection = ProxyConnection
@@ -649,8 +672,8 @@ openProxyConnectionToRemote
 	-> P2P.Bypass
 	-> Remote
 	-> IO (Either SomeException ProxyConnection)
-openProxyConnectionToRemote workerpool clientmaxversion bypass remote =
-	inAnnexWorker' workerpool $ do
+openProxyConnectionToRemote workerpool clientmaxversion bypass remote = do
+	inAnnexWorker workerpool $ do
 		remoteside <- proxyRemoteSide clientmaxversion bypass remote
 		concurrencyconfig <- Proxy.noConcurrencyConfig
 		openedProxyConnection (Remote.uuid remote)
@@ -668,8 +691,8 @@ openProxyConnectionToCluster
 	-> ClusterUUID
 	-> ClusterConcurrency
 	-> IO (Either SomeException ProxyConnection)
-openProxyConnectionToCluster workerpool clientmaxversion bypass clusteruuid concurrency =
-	inAnnexWorker' workerpool $ do
+openProxyConnectionToCluster workerpool clientmaxversion bypass clusteruuid concurrency = do
+	inAnnexWorker workerpool $ do
 		(proxyselector, closenodes) <-
 			clusterProxySelector clusteruuid clientmaxversion bypass
 		concurrencyconfig <- Proxy.mkConcurrencyConfig concurrency

@@ -126,7 +126,7 @@ serveGet mst su apiver (B64Key k) cu bypass baf startat sec auth = do
 	endv <- liftIO newEmptyTMVarIO
 	validityv <- liftIO newEmptyTMVarIO
 	finalv <- liftIO newEmptyTMVarIO
-	annexworker <- liftIO $ async $ inAnnexWorker st $ do
+	annexworker <- liftIO $ async $ handleRequestAnnex st $ do
 		let storer _offset len = sendContentWith $ \bs -> liftIO $ do
 			atomically $ putTMVar bsv (len, bs)
 			atomically $ takeTMVar endv
@@ -401,7 +401,7 @@ servePutAction
 	-> Maybe B64FilePath
 	-> (P2P.Protocol.Offset -> Proto (Maybe [UUID]))
 	-> IO (Either SomeException (Either ProtoFailure (Maybe [UUID])))
-servePutAction (conn, st) (B64Key k) baf a = inAnnexWorker st $
+servePutAction (conn, st) (B64Key k) baf a = handleRequestAnnex st $
 	enteringStage (TransferStage Download) $
 		runFullProto (clientRunState conn) (clientP2PConnection conn) $
 			put' k af a
@@ -477,9 +477,9 @@ serveLockContent mst su apiver (B64Key k) cu bypass sec auth = do
 	let lock = do
 		lockresv <- newEmptyTMVarIO
 		unlockv <- newEmptyTMVarIO
-		-- A single worker thread takes the lock, and keeps running
+		-- A thread takes the lock, and keeps running
 		-- until unlock in order to keep the lock held.
-		annexworker <- async $ inAnnexWorker st $ do
+		annexworker <- async $ handleRequestAnnex st $ do
 			lockres <- runFullProto (clientRunState conn) (clientP2PConnection conn) $ do
 				net $ sendMessage (LOCKCONTENT k)
 				checkSuccess

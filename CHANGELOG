@@ -2,6 +2,7 @@ git-annex (10.20251103) UNRELEASED; urgency=medium
 
   * p2p --pair: Fix to work with external P2P networks.
   * remotedaemon: Avoid crashing when run with --debug.
+  * p2phttp: Fix server stall when there are too many concurrent clients.
   * p2phttp: Fix a file descriptor leak caused by a race condition.
 
  -- Joey Hess <id@joeyh.name>  Mon, 03 Nov 2025 14:02:46 -0400
