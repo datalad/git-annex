@@ -114,8 +114,6 @@ workerAsync (ActiveWorker aid _) = Just aid
 
 -- | Allocates a WorkerPool that has the specified number of workers
 -- in it, of each stage.
---
--- The stages are distributed evenly throughout.
 allocateWorkerPool :: t -> Int -> UsedStages -> WorkerPool t
 allocateWorkerPool t n u = WorkerPool
 	{ usedStages = u
