@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2025-11-06T20:27:42Z"
+ content="""
+Pushed a preliminary fix in the `p2phttp_deadlock` branch.
+
+That has some known problems, documented in the commit. But it does
+avoid p2phttp locking up like this.
+"""]]
