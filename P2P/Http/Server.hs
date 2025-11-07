@@ -474,7 +474,7 @@ serveLockContent
 	-> Handler LockResult
 serveLockContent mst su apiver (B64Key k) cu bypass sec auth = do
 	(conn, st) <- getP2PConnection apiver mst cu su bypass sec auth LockAction id
-	let lock = do
+	let lock = checklocklimit conn st $ do
 		lockresv <- newEmptyTMVarIO
 		unlockv <- newEmptyTMVarIO
 		-- A thread takes the lock, and keeps running
@@ -490,6 +490,7 @@ serveLockContent mst su apiver (B64Key k) cu bypass sec auth = do
 					void $ runFullProto (clientRunState conn) (clientP2PConnection conn) $ do
 						net $ sendMessage UNLOCKCONTENT
 				_ -> return ()
+			liftIO $ releaseLockedFilesQSem st
 		atomically (takeTMVar lockresv) >>= \case
 			Right True -> return (Just (annexworker, unlockv))
 			_ -> return Nothing
@@ -501,7 +502,19 @@ serveLockContent mst su apiver (B64Key k) cu bypass sec auth = do
 		Just (locker, lockid) -> do
 			liftIO $ storeLock lockid locker st
 			return $ LockResult True (Just lockid)
-		Nothing -> return $ LockResult False Nothing
+		Nothing -> do
+			releaseP2PConnection conn
+			return $ LockResult False Nothing
+  where
+	checklocklimit conn st a = 
+		ifM (consumeLockedFilesQSem st)
+			( a
+			, do
+				-- This works around a problem when nothing
+				-- is sent to the P2P connection.
+				_ <- liftIO $ proxyClientNetProto conn getTimestamp
+				return Nothing
+			)
 
 serveKeepLocked
 	:: APIVersion v

@@ -57,6 +57,7 @@ data Options = Options
 	, proxyConnectionsOption :: Maybe Integer
 	, jobsOption :: Maybe Concurrency
 	, clusterJobsOption :: Maybe Int
+	, lockedFilesOption :: Maybe Integer
 	, directoryOption :: [FilePath]
 	}
 
@@ -119,6 +120,10 @@ optParser _ = Options
 		( long "clusterjobs" <> metavar paramNumber
 		<> help "number of concurrent node accesses per connection"
 		))
+	<*> optional (option auto
+		( long "lockedfiles" <> metavar paramNumber
+		<> help "number of content files that can be locked"
+		))
 	<*> many (strOption
 		( long "directory" <> metavar paramPath
 		<> help "serve repositories in subdirectories of a directory"
@@ -128,8 +133,10 @@ startAnnex :: Options -> Annex ()
 startAnnex o
 	| null (directoryOption o) = ifM ((/=) NoUUID <$> getUUID)
 		( do
+			lockedfilesqsem <- liftIO $ 
+				mkLockedFilesQSem (lockedFilesOption o)
 			authenv <- liftIO getAuthEnv
-			st <- mkServerState o authenv
+			st <- mkServerState o authenv lockedfilesqsem
 			liftIO $ runServer o st
 		-- Run in a git repository that is not a git-annex repository.
 		, liftIO $ startIO o 
@@ -146,20 +153,21 @@ startIO o
 		runServer o st
   where
 	mkst authenv oldst = do
+		lockedfilesqsem <- mkLockedFilesQSem (lockedFilesOption o)
 		repos <- findRepos o
 		sts <- forM repos $ \r -> do
 			strd <- Annex.new r
-			Annex.eval strd (mkstannex authenv oldst)
+			Annex.eval strd (mkstannex authenv oldst lockedfilesqsem)
 		return (mconcat sts)
 			{ updateRepos = updaterepos authenv
 			}
 	
-	mkstannex authenv oldst = do
+	mkstannex authenv oldst lockedfilesqsem = do
 		u <- getUUID
 		if u == NoUUID
 			then return mempty
 			else case M.lookup u (servedRepos oldst) of
-				Nothing -> mkServerState o authenv
+				Nothing -> mkServerState o authenv lockedfilesqsem
 				Just old -> return $ P2PHttpServerState
 					{ servedRepos = M.singleton u old
 					, serverShutdownCleanup = mempty
@@ -213,14 +221,15 @@ runServer o mst = go `finally` serverShutdownCleanup mst
 		Socket.listen sock Socket.maxListenQueue
 		return sock
 
-mkServerState :: Options -> M.Map Auth P2P.ServerMode -> Annex P2PHttpServerState
-mkServerState o authenv = 
+mkServerState :: Options -> M.Map Auth P2P.ServerMode -> LockedFilesQSem -> Annex P2PHttpServerState
+mkServerState o authenv lockedfilesqsem = 
 	withAnnexWorkerPool (jobsOption o) $
 		mkP2PHttpServerState
 			(mkGetServerMode authenv o)
 			return
 			(fromMaybe 1 $ proxyConnectionsOption o)
 			(fromMaybe 1 $ clusterJobsOption o)
+			lockedfilesqsem
 
 mkGetServerMode :: M.Map Auth P2P.ServerMode -> Options -> GetServerMode
 mkGetServerMode _ o _ Nothing

@@ -79,6 +79,7 @@ data PerRepoServerState = PerRepoServerState
 	, annexRead :: Annex.AnnexRead
 	, getServerMode :: GetServerMode
 	, openLocks :: TMVar (M.Map LockID Locker)
+	, lockedFilesQSem :: LockedFilesQSem
 	}
 
 type AnnexWorkerPool = TMVar (WorkerPool (Annex.AnnexState, Annex.AnnexRead))
@@ -93,14 +94,15 @@ data ServerMode
 		}
 	| CannotServeRequests
 
-mkPerRepoServerState :: AcquireP2PConnection -> AnnexWorkerPool -> Annex.AnnexState -> Annex.AnnexRead -> GetServerMode -> IO PerRepoServerState
-mkPerRepoServerState acquireconn annexworkerpool annexstate annexread getservermode = PerRepoServerState
+mkPerRepoServerState :: AcquireP2PConnection -> AnnexWorkerPool -> Annex.AnnexState -> Annex.AnnexRead -> GetServerMode -> LockedFilesQSem -> IO PerRepoServerState
+mkPerRepoServerState acquireconn annexworkerpool annexstate annexread getservermode lockedfilesqsem = PerRepoServerState
 	<$> pure acquireconn
 	<*> pure annexworkerpool
 	<*> newTMVarIO annexstate
 	<*> pure annexread
 	<*> pure getservermode
 	<*> newTMVarIO mempty
+	<*> pure lockedfilesqsem
 
 data ActionClass = ReadAction | WriteAction | RemoveAction | LockAction
 	deriving (Eq)
@@ -258,14 +260,36 @@ type AcquireP2PConnection
 	= ConnectionParams
 	-> IO (Either ConnectionProblem P2PConnectionPair)
 
+type LockedFilesQSem = TMVar Integer
+
+mkLockedFilesQSem :: Maybe Integer -> IO LockedFilesQSem
+mkLockedFilesQSem = newTMVarIO . fromMaybe 100
+
+consumeLockedFilesQSem :: PerRepoServerState -> IO Bool
+consumeLockedFilesQSem st = atomically $ do
+	n <- takeTMVar (lockedFilesQSem st)
+	if n < 1
+		then do
+			putTMVar (lockedFilesQSem st) n
+			return False
+		else do
+			putTMVar (lockedFilesQSem st) (pred n)
+			return True
+
+releaseLockedFilesQSem :: PerRepoServerState -> IO ()
+releaseLockedFilesQSem st = atomically $ do
+	n <- takeTMVar (lockedFilesQSem st)
+	putTMVar (lockedFilesQSem st) (succ n)
+
 mkP2PHttpServerState
 	:: GetServerMode
 	-> UpdateRepos
 	-> ProxyConnectionPoolSize
 	-> ClusterConcurrency
+	-> LockedFilesQSem
 	-> AnnexWorkerPool
 	-> Annex P2PHttpServerState
-mkP2PHttpServerState getservermode updaterepos proxyconnectionpoolsize clusterconcurrency workerpool = do
+mkP2PHttpServerState getservermode updaterepos proxyconnectionpoolsize clusterconcurrency lockedfilesqsem workerpool = do
 	enableInteractiveBranchAccess
 	myuuid <- getUUID
 	myproxies <- M.lookup myuuid <$> getProxies
@@ -281,7 +305,7 @@ mkP2PHttpServerState getservermode updaterepos proxyconnectionpoolsize clusterco
 	let servinguuids = myuuid : map proxyRemoteUUID (maybe [] S.toList myproxies)
 	annexstate <- dupState
 	annexread <- Annex.getRead id
-	st <- liftIO $ mkPerRepoServerState (acquireconn reqv) workerpool annexstate annexread getservermode
+	st <- liftIO $ mkPerRepoServerState (acquireconn reqv) workerpool annexstate annexread getservermode lockedfilesqsem
 	return $ P2PHttpServerState
 		{ servedRepos = M.fromList $ zip servinguuids (repeat st)
 		, serverShutdownCleanup = endit

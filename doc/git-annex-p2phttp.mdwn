@@ -89,6 +89,13 @@ convenient way to download the content of any key, by using the path
   concurrently, which is often optimal. But around 20 cores can be needed
   when the webserver is busy.
 
+* `--lockedfiles=N`
+
+  This is the total number of content files that the server can keep
+  locked at the same time. Each lock needs one file descriptor.
+
+  The default is 100, which should be more than enough for most uses.
+
 * `--port=N`
 
   Port to listen on. The default is port 9417, which is the default
