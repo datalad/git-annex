@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/cd1c0b3be1af288012e49197918395f0"
+ subject="comment 6"
+ date="2025-11-07T09:12:13Z"
+ content="""
+> I think that --debug output from the p2phttp server would be helpful in narrowing down if there is particular operation that causes this hang.
+
+I should have been a bit more clear, I also saw the deadlock sometimes with concurrent get's, sometimes with drop's, and sometimes with a mix of both, so there wasn't one particular operation that seemed to be the issue.
+
+> -J2 also seems quite low though.
+
+This is for Forgejo-aneksajo, where there is still one p2phttp process being started per repository. Since there could potentially be 1000's of concurrent processes at any given time I thought it might be wise to start with the bare minimum by default. Due to how p2phttp and proxying is supposed to interact I've also realized that the current integration is not working as it should (<https://codeberg.org/forgejo-aneksajo/forgejo-aneksajo/issues/96>) and that I probably won't be able to make use of the single p2phttp process for all repositories (because of ambiguity with authorization when there are multiple different repositories with differing permissions that proxy for the same remote).
+"""]]
