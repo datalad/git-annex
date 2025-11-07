@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2025-11-07T20:37:44Z"
+ content="""
+I've landed a complete fix for this. The server no longer locks up
+when I run the test case for a long time.
+
+Additionally, there was a bug that caused p2phttp to leak lock file
+descriptors, which gets triggered by the same test case. I've fixed that.
+
+There are two problems I noticed in testing though.
+
+`git-annex get` sometimes slows down to just bytes per second, 
+or entirely stalls. This is most apparent with `-J10`, but I've seen it
+happen even when there is no concurrency or other clients.
+This should probably be treated as a separate bug, but it does
+cause the test case to eventually hang, unless git-annex is configured
+to do stall detection. The server keeps responding to
+other requests though.
+
+Running `git-annex drop` and interrupting it at the wrong moment
+while it's locking content on the server seems to cause a P2P protocol
+worker to not get returned to the worker pool. When it happens enough
+times, this can cause the server to stop responding to new requests.
+Which seems closely related to this bug.
+"""]]
