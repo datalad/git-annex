@@ -147,9 +147,7 @@ lockContentShared key mduration a = do
 #ifndef mingw32_HOST_OS
 	lock retention _ (Just lockfile) = 
 		( posixLocker tryLockShared lockfile >>= \case
-			Just lck -> do
-				writeretention retention
-				return (Just lck)
+			Just lck -> writeretention retention lck
 			Nothing -> return Nothing
 		, Just $ posixLocker tryLockExclusive lockfile >>= \case
 			Just lck -> do
@@ -166,9 +164,7 @@ lockContentShared key mduration a = do
 		let (locker, postunlock) = winLocker lockShared obj lckf
 		in 
 			( locker >>= \case
-				Just lck -> do
-					writeretention retention
-					return (Just lck)
+				Just lck -> writeretention retention lck
 				Nothing -> return Nothing
 			, Just $ \lckfile -> do
 				maybe noop (\pu -> pu lckfile) postunlock
@@ -191,9 +187,20 @@ lockContentShared key mduration a = do
 					_ -> noop
 #endif
 	
-	writeretention Nothing = noop
-	writeretention (Just (rt, retentionts)) = 
-		writeContentRetentionTimestamp key rt retentionts
+	writeretention Nothing lck = return (Just lck)
+	writeretention (Just (rt, retentionts)) lck = 
+		-- While writeContentRetentionTimestamp recovers from
+		-- races itself, it's still possible for it to fail,
+		-- eg if the object directory is no longer writable due
+		-- to a sudden permissions change, or the disk going
+		-- readonly. In that case, the lock is dropped to avoid
+		-- a dangling lock. The lock file is necessarily left on
+		-- disk.
+		tryNonAsync (writeContentRetentionTimestamp key rt retentionts) >>= \case
+			Right () -> return (Just lck)
+			Left _ -> do
+				liftIO $ dropLock lck
+				return Nothing
 	
 	-- When this is called, an exclusive lock has been taken, so no other
 	-- processes can be writing to the retention time stamp file.
@@ -1078,14 +1085,24 @@ contentSize key = catchDefaultIO Nothing $
 writeContentRetentionTimestamp :: Key -> OsPath -> POSIXTime -> Annex ()
 writeContentRetentionTimestamp key rt t = do
 	lckfile <- calcRepo (gitAnnexContentRetentionTimestampLock key)
-	modifyContentDirWhenExists lckfile $ bracket (lock lckfile) unlock $ \_ ->
-		readContentRetentionTimestamp rt >>= \case
-			Just ts | ts >= t -> return ()
-			_ -> replaceFile (const noop) rt $ \tmp ->
-				liftIO $ writeFileString tmp $ show t
+	modifyContentDirWhenExists lckfile $ epermretry $ 
+		bracket (lock lckfile) unlock $ \_ ->
+			readContentRetentionTimestamp rt >>= \case
+				Just ts | ts >= t -> return ()
+				_ -> replaceFile (const noop) rt $ \tmp ->
+					liftIO $ writeFileString tmp $ show t
   where
 	lock = takeExclusiveLock
 	unlock = liftIO . dropLock
+
+	-- In a race, the directory can get frozen again before the file is
+	-- replaced, resulting in permission denied. Retrying will recover
+	-- from that. Note that thawContentDir will throw an exception if
+	-- it's no longer possible to thaw the content directory, which
+	-- avoids this ever being an infinite loop.
+	epermretry a = flip catchPermissionDenied a $ \_ -> do
+		thawContentDir rt
+		epermretry a
 
 {- Does not need locking because the file is written atomically. -}
 readContentRetentionTimestamp :: OsPath -> Annex (Maybe POSIXTime)
