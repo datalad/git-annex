@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2025-11-10T15:34:06Z"
+ content="""
+A third approach would be to have a config setting that makes dropped
+objects be instead moved to a remote. So the drop would succeed, but
+whereis would indicate that the object was being retained there. Then
+a cron job on the remote could finish the deletions.
+
+This would not be singifinantly more heavyweight than just moving to a
+directory, if you used eg a directory special remote. And it's also a lot
+more flexible.
+
+Of course, this would make dropping take longer than usual, depending on
+how fast the object could be moved to the remote. If it were slow, there
+would be no way to convey progress back to the user without a lot more
+complication than this feature warrants.
+
+Open to your thoughts on these alternatives..
+"""]]
