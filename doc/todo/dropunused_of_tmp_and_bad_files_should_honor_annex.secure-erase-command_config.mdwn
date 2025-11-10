@@ -1,0 +1,3 @@
+Currently, when `annex.secure-erase-command` is configured, 
+`git-annex dropunused` does not use it for deleting tmp and bad files.
+Since those can contain the content of objects, it should. --[[Joey]]

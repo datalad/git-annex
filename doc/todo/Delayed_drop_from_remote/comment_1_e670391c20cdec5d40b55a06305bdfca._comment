@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-11-10T15:06:35Z"
+ content="""
+The deletion could be handled by a cron job that the user is
+responsible for setting up, which avoids needing to configure a time limit
+in git-annex, and also avoids the question of what git-annex command(s)
+would handle the clean up.
+
+An alternative way to handle this would be to use the "appendonly" config
+of `git-annex p2phttp` (and `git-annex-shell` has something similar). Then
+the repository would refuse to drop. And instead you could have a cron job
+that uses `git-annex unused` to drop old objects. This would need some way
+to only drop unused objects after some period of time.
+
+I think there are some benefits to that path, it makes explicit to the user
+that they data they wanted to drop is not immediately going away from the
+server. Which might be important for legal reasons (although the prospect
+of backups of annexed files makes it hard to be sure if a server has really
+deleted something anyway). And if the repository had a disk quota, this
+would make explicit to the user why dropping content from it didn't free up
+quota.
+
+(I think it would also be possible to (ab)use the `annex.secure-erase-command`
+to instead move objects to the directory. Probably not a good idea,
+especially because there's no guarantee that command is only run on
+complete annex objects.)
+"""]]
