@@ -5,6 +5,9 @@ git-annex (10.20251103) UNRELEASED; urgency=medium
   * p2phttp: Fix server stall when there are too many concurrent clients.
   * p2phttp: Fix a file descriptor leak caused by a race condition.
   * p2phttp: Added the --lockedfiles option.
+  * dropunused: Run the annex.secure-erase-command 
+    (or .git/hooks/secure-erase-annex) when deleting
+    temp and bad object files.
 
  -- Joey Hess <id@joeyh.name>  Mon, 03 Nov 2025 14:02:46 -0400
 

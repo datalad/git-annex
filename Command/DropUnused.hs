@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010,2012,2018 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -17,6 +17,7 @@ import qualified Git
 import Command.Unused (withUnusedMaps, UnusedMaps(..), startUnused)
 import Annex.NumCopies
 import Annex.Content
+import Annex.Content.LowLevel
 
 cmd :: Command
 cmd = withAnnexOptions [jobsOption, jsonOptions] $
@@ -79,5 +80,7 @@ perform from numcopies mincopies key = case from of
 performOther :: (Key -> Git.Repo -> OsPath) -> Key -> CommandPerform
 performOther filespec key = do
 	f <- fromRepo $ filespec key
-	pruneTmpWorkDirBefore f (liftIO . removeWhenExistsWith removeFile)
+	pruneTmpWorkDirBefore f $ \f' -> do
+		secureErase f'
+		liftIO $ removeWhenExistsWith removeFile f'
 	next $ return True
