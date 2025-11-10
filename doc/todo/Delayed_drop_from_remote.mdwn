@@ -1,0 +1,11 @@
+In the name of protecting people from themselves I'd like to have an option to configure repositories on a Forgejo-aneksajo instance (or rather in general) to _not_ immediately obey a `git annex drop --from ... --force`.
+
+I am thinking of having an `annex.delayeddrop` config option (names subject to bike-shedding of course) to set in each repo's git config. With it set to e.g. "30d" `git annex drop` on that repository would, from the point of view of the user, do everything like always including recording that the repo no longer has the data, but instead of deleting the files immediately, move them into e.g. .git/annex/deleted-objects. This directory would then be cleaned of files that have been there for more than 30 days at some point in the future, e.g. when an fsck is done, or maybe on other operations too.
+
+I don't think any tooling around ".git/annex/deleted-objects" would be necessary, rather with the information that the data for some key was lost one could then manually dive into that directory, retrieve the data out of it, and reinject it into the repository.
+
+The point is to have a fast path to recovery from over-eager dropping that might otherwise lead to data loss, even though `--force` should be totally clear to everyone.
+
+Or maybe something like this exists already...
+
+[[!tag projects/ICE4]]
