@@ -1,0 +1,40 @@
+At [Distribits 2025](https://distribits.live/), there were several talks on
+git-annex and closely related subjects.
+
+Joey Hess's talk 
+["git-annex for computer scientists"](https://www.distribits.live/talks/2025/hess-git-annex-for-computer-scientists/)
+explained the core data structures that make up git-annex, and then
+used that as a basis to understand several recent git-annex features.
+([mirror](https://downloads.kitenet.net/talks/distribits_2025_git-annex_for_computer_scientists.webm))
+
+Steffen Vogel's talk
+["Managing Tape Archives with git-annex: A Special Remote for Sequential Media"](https://www.distribits.live/talks/2025/vogel-managing-tape-archives-with-git-annex/)
+presented a soon to be released special remote for LTO tape, breaking new
+ground in what git-annex can use.
+
+Matthias Riße's talk
+["Forgejo-aneksajo: a git-annex/DataLad forge"](https://www.distribits.live/talks/2025/risse-forgejo-aneksajo-a-git-annex-datalad-forge/)
+covered this increasingly important integration between git-annex and
+forgejo, and how it is developed and maintained.
+
+Michał Szczepanik's talk
+["Compute on demand"](https://www.distribits.live/talks/2025/szczepanik-compute-on-demand/)
+compared and contrasted the git-annex compute special remote with 
+the datalad-remake special remote.
+
+The above three speakers were in
+a [panel discussion](https://www.distribits.live/talks/2025/discussion-hess-vogel-szczepanik-risse/) as well.
+
+Timothy Sanders's talk
+["Using Git-annex to enhance the MediaWiki file repository system"](https://www.distribits.live/talks/2025/sanders-using-git-annex-to-enhance-the/)
+presented a git-annex mediawiki backend.
+
+Christopher Markiewicz's talk
+["Maintaining large datasets at scale"](https://www.distribits.live/talks/2025/markiewicz-maintaining-large-datasets-at-scale/)
+covered finding and fixing defects that arise in automatically managed
+git-annex repositories.
+
+Many of the other talks at Distribits also involved git-annex.
+[Playlist](https://www.youtube.com/playlist?list=PLEQHbPfpVqU6_bZ4gUQn_9OX-LvDmKoby)
+
+[[!meta title="git-annex presentations at Distribits 2025"]]
