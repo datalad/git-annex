@@ -490,13 +490,13 @@ serveLockContent mst su apiver (B64Key k) cu bypass sec auth = do
 					void $ runFullProto (clientRunState conn) (clientP2PConnection conn) $ do
 						net $ sendMessage UNLOCKCONTENT
 				_ -> return ()
-			liftIO $ releaseLockedFilesQSem st
 		atomically (takeTMVar lockresv) >>= \case
 			Right True -> return (Just (annexworker, unlockv))
 			_ -> return Nothing
 	let unlock (annexworker, unlockv) = do
 		atomically $ putTMVar unlockv ()
 		void $ wait annexworker
+		liftIO $ releaseLockedFilesQSem st
 		releaseP2PConnection conn
 	liftIO $ mkLocker lock unlock >>= \case
 		Just (locker, lockid) -> do
