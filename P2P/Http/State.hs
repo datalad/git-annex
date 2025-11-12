@@ -571,6 +571,13 @@ mkLocker :: (IO (Maybe a)) -> (a -> IO ()) -> IO (Maybe (Locker, LockID))
 mkLocker lock unlock = do
 	lv <- newEmptyTMVarIO
 	timeoutdisablev <- newEmptyTMVarIO
+	timeouttid <- async $ whenM (atomically $ readTMVar lv) $ do
+		threadDelaySeconds $ Seconds $ fromIntegral $
+			durationSeconds p2pDefaultLockContentRetentionDuration
+		atomically (tryReadTMVar timeoutdisablev) >>= \case
+			Nothing -> void $ atomically $
+				writeTMVar lv False
+			Just () -> noop
 	let setlocked = putTMVar lv
 	locktid <- async $ lock >>= \case
 		Nothing ->
@@ -586,13 +593,6 @@ mkLocker lock unlock = do
 	locksuccess <- atomically $ readTMVar lv
 	if locksuccess
 		then do
-			timeouttid <- async $ do
-				threadDelaySeconds $ Seconds $ fromIntegral $
-					durationSeconds p2pDefaultLockContentRetentionDuration
-				atomically (tryReadTMVar timeoutdisablev) >>= \case
-					Nothing -> void $ atomically $
-						writeTMVar lv False
-					Just () -> noop
 			tid <- async $ do
 				wait locktid
 				cancel timeouttid
