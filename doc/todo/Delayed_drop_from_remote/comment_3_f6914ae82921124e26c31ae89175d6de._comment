@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/cd1c0b3be1af288012e49197918395f0"
+ subject="comment 3"
+ date="2025-11-10T21:14:20Z"
+ content="""
+> The deletion could be handled by a cron job that the user is responsible for setting up, which avoids needing to configure a time limit in git-annex, and also avoids the question of what git-annex command(s) would handle the clean up.
+
+Agreed, that makes sense.
+
+> An alternative way to handle this would be to use the \"appendonly\" config of git-annex p2phttp (and git-annex-shell has something similar). Then the repository would refuse to drop. And instead you could have a cron job that uses git-annex unused to drop old objects.
+
+While realistically most force drops probably would be unused files those two things aren't necessarily the same.
+
+> I think there are some benefits to that path, it makes explicit to the user that they data they wanted to drop is not immediately going away from the server.
+
+I think I would deliberately want this to be invisible to the user, since I wouldn't want anyone to actively start relying on it.
+
+> Which might be important for legal reasons (although the prospect of backups of annexed files makes it hard to be sure if a server has really deleted something anyway).
+
+That's a tradeoff for sure, but the expectation should already be that a hosted service like a Forgejo-aneksajo instance will retain backups at least for disaster recovery purposes. But that's on the admin(s) to communicate, and within a personal setting it doesn't matter at all.
+
+> And if the repository had a disk quota, this would make explicit to the user why dropping content from it didn't free up quota.
+
+Actually for that reason I would not count this soft-deleted data towards quotas for my own purposes.
+
+> A third approach would be to have a config setting that makes dropped objects be instead moved to a remote. So the drop would succeed, but whereis would indicate that the object was being retained there. Then a cron job on the remote could finish the deletions.
+
+I like this! Considering that such a \"trash bin\" (special) remote could be initialized with `--private` (right?) it would be possible to make it fully invisible to the user too, while indeed being much more flexible. I suppose the cron job would then be something like `git annex drop --from trash-bin --all --not --accessedwithin=30d`, assuming that moving it there counts as \"accessing\" and no background job on the server accesses it afterwards (maybe an additional matching option for mtime or ctime instead of atime would be useful here?). This feels very much git-annex'y 🙂
+"""]]
