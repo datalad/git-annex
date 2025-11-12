@@ -121,7 +121,7 @@ serveGet
 	-> Maybe Auth
 	-> Handler (Headers '[DataLengthHeader] (S.SourceT IO B.ByteString))
 serveGet mst su apiver (B64Key k) cu bypass baf startat sec auth = do
-	(conn, st) <- getP2PConnection apiver mst cu su bypass sec auth ReadAction id
+	(conn, st) <- getP2PConnection apiver WorkerPoolRunner mst cu su bypass sec auth ReadAction id
 	bsv <- liftIO newEmptyTMVarIO
 	endv <- liftIO newEmptyTMVarIO
 	validityv <- liftIO newEmptyTMVarIO
@@ -232,7 +232,7 @@ serveCheckPresent
 	-> Maybe Auth
 	-> Handler CheckPresentResult
 serveCheckPresent st su apiver (B64Key k) cu bypass sec auth = do
-	res <- withP2PConnection apiver st cu su bypass sec auth ReadAction id
+	res <- withP2PConnection apiver WorkerPoolRunner st cu su bypass sec auth ReadAction id
 		$ \(conn, _) -> liftIO $ proxyClientNetProto conn $ checkPresent k
 	case res of
 		Right b -> return (CheckPresentResult b)
@@ -251,7 +251,7 @@ serveRemove
 	-> Maybe Auth
 	-> Handler t
 serveRemove st resultmangle su apiver (B64Key k) cu bypass sec auth = do
-	res <- withP2PConnection apiver st cu su bypass sec auth RemoveAction id
+	res <- withP2PConnection apiver WorkerPoolRunner st cu su bypass sec auth RemoveAction id
 		$ \(conn, _) ->
 			liftIO $ proxyClientNetProto conn $ remove Nothing k
 	case res of
@@ -273,7 +273,7 @@ serveRemoveBefore
 	-> Maybe Auth
 	-> Handler RemoveResultPlus
 serveRemoveBefore st su apiver (B64Key k) cu bypass (Timestamp ts) sec auth = do
-	res <- withP2PConnection apiver st cu su bypass sec auth RemoveAction id
+	res <- withP2PConnection apiver WorkerPoolRunner st cu su bypass sec auth RemoveAction id
 		$ \(conn, _) ->
 			liftIO $ proxyClientNetProto conn $
 				removeBeforeRemoteEndTime ts k
@@ -294,7 +294,7 @@ serveGetTimestamp
 	-> Maybe Auth
 	-> Handler GetTimestampResult
 serveGetTimestamp st su apiver cu bypass sec auth = do
-	res <- withP2PConnection apiver st cu su bypass sec auth ReadAction id
+	res <- withP2PConnection apiver WorkerPoolRunner st cu su bypass sec auth ReadAction id
 		$ \(conn, _) ->
 			liftIO $ proxyClientNetProto conn getTimestamp
 	case res of
@@ -320,7 +320,7 @@ servePut
 	-> Maybe Auth
 	-> Handler t
 servePut mst resultmangle su apiver (Just True) _ k cu bypass baf _ _ sec auth = do
-	res <- withP2PConnection' apiver mst cu su bypass sec auth WriteAction
+	res <- withP2PConnection' apiver WorkerPoolRunner mst cu su bypass sec auth WriteAction
 		(\cst -> cst { connectionWaitVar = False }) (liftIO . protoaction)
 	servePutResult resultmangle res
   where
@@ -333,7 +333,7 @@ servePut mst resultmangle su apiver _datapresent (DataLength len) k cu bypass ba
 		liftIO $ atomically $ readTMVar validityv
 	tooshortv <- liftIO newEmptyTMVarIO
 	content <- liftIO $ S.unSourceT stream (gather validityv tooshortv)
-	res <- withP2PConnection' apiver mst cu su bypass sec auth WriteAction
+	res <- withP2PConnection' apiver WorkerPoolRunner mst cu su bypass sec auth WriteAction
 		(\cst -> cst { connectionWaitVar = False }) $ \(conn, st) -> do
 			liftIO $ void $ async $ checktooshort conn tooshortv
 			liftIO (protoaction conn st content validitycheck)
@@ -450,7 +450,7 @@ servePutOffset
 	-> Maybe Auth
 	-> Handler t
 servePutOffset st resultmangle su apiver (B64Key k) cu bypass sec auth = do
-	res <- withP2PConnection apiver st cu su bypass sec auth WriteAction
+	res <- withP2PConnection apiver WorkerPoolRunner st cu su bypass sec auth WriteAction
 		(\cst -> cst { connectionWaitVar = False }) $ \(conn, _) ->
 			liftIO $ proxyClientNetProto conn $ getPutOffset k af
 	case res of
@@ -473,7 +473,7 @@ serveLockContent
 	-> Maybe Auth
 	-> Handler LockResult
 serveLockContent mst su apiver (B64Key k) cu bypass sec auth = do
-	(conn, st) <- getP2PConnection apiver mst cu su bypass sec auth LockAction id
+	(conn, st) <- getP2PConnection apiver WorkerPoolRunner mst cu su bypass sec auth LockAction id
 	let lock = checklocklimit conn st $ do
 		lockresv <- newEmptyTMVarIO
 		unlockv <- newEmptyTMVarIO

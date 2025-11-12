@@ -2,7 +2,7 @@
  -
  - https://git-annex.branchable.com/design/p2p_protocol_over_http/
  -
- - Copyright 2024 Joey Hess <id@joeyh.name>
+ - Copyright 2024-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -10,6 +10,7 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TupleSections #-}
 
 module P2P.Http.State where
@@ -94,11 +95,11 @@ data ServerMode
 		}
 	| CannotServeRequests
 
-mkPerRepoServerState :: AcquireP2PConnection -> AnnexWorkerPool -> Annex.AnnexState -> Annex.AnnexRead -> GetServerMode -> LockedFilesQSem -> IO PerRepoServerState
+mkPerRepoServerState :: AcquireP2PConnection -> AnnexWorkerPool -> TMVar Annex.AnnexState -> Annex.AnnexRead -> GetServerMode -> LockedFilesQSem -> IO PerRepoServerState
 mkPerRepoServerState acquireconn annexworkerpool annexstate annexread getservermode lockedfilesqsem = PerRepoServerState
 	<$> pure acquireconn
 	<*> pure annexworkerpool
-	<*> newTMVarIO annexstate
+	<*> pure annexstate
 	<*> pure annexread
 	<*> pure getservermode
 	<*> newTMVarIO mempty
@@ -110,6 +111,7 @@ data ActionClass = ReadAction | WriteAction | RemoveAction | LockAction
 withP2PConnection
 	:: APIVersion v
 	=> v
+	-> AnnexActionRunner
 	-> TMVar P2PHttpServerState
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
@@ -120,8 +122,8 @@ withP2PConnection
 	-> (ConnectionParams -> ConnectionParams)
 	-> ((P2PConnectionPair, PerRepoServerState) -> Handler (Either ProtoFailure a))
 	-> Handler a
-withP2PConnection apiver mst cu su bypass sec auth actionclass fconnparams connaction =
-	withP2PConnection' apiver mst cu su bypass sec auth actionclass fconnparams connaction'
+withP2PConnection apiver runner mst cu su bypass sec auth actionclass fconnparams connaction =
+	withP2PConnection' apiver runner mst cu su bypass sec auth actionclass fconnparams connaction'
   where
 	connaction' conn = connaction conn >>= \case
 		Right r -> return r
@@ -131,6 +133,7 @@ withP2PConnection apiver mst cu su bypass sec auth actionclass fconnparams conna
 withP2PConnection'
 	:: APIVersion v
 	=> v
+	-> AnnexActionRunner
 	-> TMVar P2PHttpServerState
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
@@ -141,14 +144,15 @@ withP2PConnection'
 	-> (ConnectionParams -> ConnectionParams)
 	-> ((P2PConnectionPair, PerRepoServerState) -> Handler a)
 	-> Handler a
-withP2PConnection' apiver mst cu su bypass sec auth actionclass fconnparams connaction = do
-	(conn, st) <- getP2PConnection apiver mst cu su bypass sec auth actionclass fconnparams
+withP2PConnection' apiver runner mst cu su bypass sec auth actionclass fconnparams connaction = do
+	(conn, st) <- getP2PConnection apiver runner mst cu su bypass sec auth actionclass fconnparams
 	connaction (conn, st)
 		`finally` liftIO (releaseP2PConnection conn)
 
 getP2PConnection
 	:: APIVersion v
 	=> v
+	-> AnnexActionRunner
 	-> TMVar P2PHttpServerState
 	-> B64UUID ClientSide
 	-> B64UUID ServerSide
@@ -158,10 +162,10 @@ getP2PConnection
 	-> ActionClass
 	-> (ConnectionParams -> ConnectionParams)
 	-> Handler (P2PConnectionPair, PerRepoServerState)
-getP2PConnection apiver mst cu su bypass sec auth actionclass fconnparams =
+getP2PConnection apiver runner mst cu su bypass sec auth actionclass fconnparams =
 	checkAuthActionClass mst su sec auth actionclass go
   where
-	go st servermode = liftIO (acquireP2PConnection st cp) >>= \case
+	go st servermode = liftIO (acquireP2PConnection st runner cp) >>= \case
 		Left (ConnectionFailed err) -> 
 			throwError err502 { errBody = encodeBL err }
 		Left TooManyConnections ->
@@ -257,7 +261,8 @@ proxyClientNetProto conn = runNetProto
 	(clientRunState conn) (clientP2PConnection conn)
 
 type AcquireP2PConnection
-	= ConnectionParams
+	= AnnexActionRunner
+	-> ConnectionParams
 	-> IO (Either ConnectionProblem P2PConnectionPair)
 
 type LockedFilesQSem = TMVar Integer
@@ -303,19 +308,21 @@ mkP2PHttpServerState getservermode updaterepos proxyconnectionpoolsize clusterco
 		liftIO $ atomically $ putTMVar endv ()
 		liftIO $ wait asyncservicer
 	let servinguuids = myuuid : map proxyRemoteUUID (maybe [] S.toList myproxies)
-	annexstate <- dupState
+	annexstate <- liftIO . newTMVarIO =<< dupState
 	annexread <- Annex.getRead id
-	st <- liftIO $ mkPerRepoServerState (acquireconn reqv) workerpool annexstate annexread getservermode lockedfilesqsem
+	st <- liftIO $ mkPerRepoServerState 
+		(acquireconn reqv annexstate annexread)
+		workerpool annexstate annexread getservermode lockedfilesqsem
 	return $ P2PHttpServerState
 		{ servedRepos = M.fromList $ zip servinguuids (repeat st)
 		, serverShutdownCleanup = endit
 		, updateRepos = updaterepos
 		}
   where
-	acquireconn reqv connparams = do
+	acquireconn reqv annexstate annexread runnertype connparams = do
 		ready <- newEmptyTMVarIO
 		respvar <- newEmptyTMVarIO
-		atomically $ putTMVar reqv (connparams, ready, respvar)
+		atomically $ putTMVar reqv (runnertype, annexstate, annexread, connparams, ready, respvar)
 		() <- atomically $ takeTMVar ready
 		atomically $ takeTMVar respvar
 
@@ -328,8 +335,8 @@ mkP2PHttpServerState getservermode updaterepos proxyconnectionpoolsize clusterco
 					`orElse` 
 				(Left . Left <$> takeTMVar endv)
 		case reqrel of
-			Right (connparams, ready, respvar) -> do
-				servicereq myuuid myproxies proxypool relv connparams ready
+			Right (runnertype, annexstate, annexread, connparams, ready, respvar) -> do
+				servicereq runnertype annexstate annexread myuuid myproxies proxypool relv connparams ready
 					>>= atomically . putTMVar respvar
 				servicer myuuid myproxies proxypool reqv relv endv
 			Left (Right releaseconn) -> do
@@ -337,36 +344,40 @@ mkP2PHttpServerState getservermode updaterepos proxyconnectionpoolsize clusterco
 				servicer myuuid myproxies proxypool reqv relv endv
 			Left (Left ()) -> return ()
 	
-	servicereq myuuid myproxies proxypool relv connparams ready
+	servicereq runnertype annexstate annexread myuuid myproxies proxypool relv connparams ready
 		| connectionServerUUID connparams == myuuid =
-			localConnection relv connparams workerpool ready
+			localConnection relv connparams runner ready
 		| otherwise =
 			atomically (getProxyConnectionPool proxypool connparams) >>= \case
-				Just conn -> proxyConnection proxyconnectionpoolsize relv connparams workerpool proxypool conn ready
-				Nothing -> checkcanproxy myproxies proxypool relv connparams ready
+				Just conn -> 
+					proxyConnection proxyconnectionpoolsize relv connparams runner proxypool conn ready
+				Nothing -> checkcanproxy runnertype annexstate annexread myproxies proxypool relv connparams ready
+	  where
+		runner = annexActionRunner runnertype workerpool annexstate annexread
 
-	checkcanproxy myproxies proxypool relv connparams ready = do
-		inAnnexWorker workerpool
+	checkcanproxy runnertype annexstate annexread myproxies proxypool relv connparams ready =
+		runner
 			(checkCanProxy' myproxies (connectionServerUUID connparams))
 		>>= \case
 			Right (Left reason) -> return $ Left $
 				ConnectionFailed $ 
 					fromMaybe "unknown uuid" reason
 			Right (Right (Right proxyremote)) -> proxyconnection $
-				openProxyConnectionToRemote workerpool
+				runner $ openProxyConnectionToRemote
 					(connectionProtocolVersion connparams)
 					bypass proxyremote
 			Right (Right (Left clusteruuid)) -> proxyconnection $
-				openProxyConnectionToCluster workerpool
+				runner $ openProxyConnectionToCluster
 					(connectionProtocolVersion connparams)
 					bypass clusteruuid clusterconcurrency
 			Left ex -> return $ Left $
 				ConnectionFailed $ show ex
 	  where
+		runner = annexActionRunner runnertype workerpool annexstate annexread
 		bypass = P2P.Bypass $ S.fromList $ connectionBypass connparams
 		proxyconnection openconn = openconn >>= \case
 			Right conn -> proxyConnection proxyconnectionpoolsize
-				relv connparams workerpool proxypool conn ready
+				relv connparams runner proxypool conn ready
 			Left ex -> return $ Left $
 				ConnectionFailed $ show ex
 
@@ -385,12 +396,12 @@ data P2PConnectionPair = P2PConnectionPair
 localConnection
 	:: TMVar (IO ())
 	-> ConnectionParams
-	-> AnnexWorkerPool
+	-> (Annex () -> IO (Either SomeException ()))
 	-> TMVar ()
 	-> IO (Either ConnectionProblem P2PConnectionPair)
-localConnection relv connparams workerpool ready = 
+localConnection relv connparams runner ready = 
 	localP2PConnectionPair connparams relv $ \serverrunst serverconn ->
-		inAnnexWorker workerpool $ do
+		runner $ do
 			liftIO $ atomically $ putTMVar ready ()
 			void $ runFullProto serverrunst serverconn $
 				P2P.serveOneCommandAuthed
@@ -462,38 +473,37 @@ proxyConnection
 	:: ProxyConnectionPoolSize
 	-> TMVar (IO ())
 	-> ConnectionParams
-	-> AnnexWorkerPool
+	-> (Annex () -> IO (Either SomeException ()))
 	-> TMVar ProxyConnectionPool
 	-> ProxyConnection
 	-> TMVar ()
 	-> IO (Either ConnectionProblem P2PConnectionPair)
-proxyConnection proxyconnectionpoolsize relv connparams workerpool proxypool proxyconn ready = do
+proxyConnection proxyconnectionpoolsize relv connparams runner proxypool proxyconn ready = do
 	(clientconn, proxyfromclientconn) <- 
 		mkP2PConnectionPair connparams ("http client", "proxy")
 	clientrunst <- mkClientRunState connparams
 	proxyfromclientrunst <- mkClientRunState connparams
-	asyncworker <- async $
-		inAnnexWorker workerpool $ do
-			liftIO $ atomically $ putTMVar ready ()
-			proxystate <- liftIO Proxy.mkProxyState
-			let proxyparams = Proxy.ProxyParams
-				{ Proxy.proxyMethods = mkProxyMethods
-				, Proxy.proxyState = proxystate
-				, Proxy.proxyServerMode = connectionServerMode connparams
-				, Proxy.proxyClientSide = Proxy.ClientSide proxyfromclientrunst proxyfromclientconn
-				, Proxy.proxyUUID = proxyConnectionRemoteUUID proxyconn
-				, Proxy.proxySelector = proxyConnectionSelector proxyconn
-				, Proxy.proxyConcurrencyConfig = proxyConnectionConcurrency proxyconn
-				, Proxy.proxyClientProtocolVersion = connectionProtocolVersion connparams
-				}
-			let proxy mrequestmessage = case mrequestmessage of
-				Just requestmessage -> do
-					Proxy.proxyRequest proxydone proxyparams
-						requestcomplete requestmessage protoerrhandler
-				Nothing -> return ()
-			protoerrhandler proxy $
-				liftIO $ runNetProto proxyfromclientrunst proxyfromclientconn $
-					P2P.net P2P.receiveMessage
+	asyncworker <- async $ runner $ do
+		liftIO $ atomically $ putTMVar ready ()
+		proxystate <- liftIO Proxy.mkProxyState
+		let proxyparams = Proxy.ProxyParams
+			{ Proxy.proxyMethods = mkProxyMethods
+			, Proxy.proxyState = proxystate
+			, Proxy.proxyServerMode = connectionServerMode connparams
+			, Proxy.proxyClientSide = Proxy.ClientSide proxyfromclientrunst proxyfromclientconn
+			, Proxy.proxyUUID = proxyConnectionRemoteUUID proxyconn
+			, Proxy.proxySelector = proxyConnectionSelector proxyconn
+			, Proxy.proxyConcurrencyConfig = proxyConnectionConcurrency proxyconn
+			, Proxy.proxyClientProtocolVersion = connectionProtocolVersion connparams
+			}
+		let proxy mrequestmessage = case mrequestmessage of
+			Just requestmessage -> do
+				Proxy.proxyRequest proxydone proxyparams
+					requestcomplete requestmessage protoerrhandler
+			Nothing -> return ()
+		protoerrhandler proxy $
+			liftIO $ runNetProto proxyfromclientrunst proxyfromclientconn $
+				P2P.net P2P.receiveMessage
 	
 	let closebothsides = do
 		liftIO $ closeConnection proxyfromclientconn
@@ -531,8 +541,7 @@ proxyConnection proxyconnectionpoolsize relv connparams workerpool proxypool pro
 	
 	requestcomplete () = return ()
 	
-	closeproxyconnection =
-		void . inAnnexWorker workerpool . proxyConnectionCloser
+	closeproxyconnection = void . runner . proxyConnectionCloser
 
 data Locker = Locker
 	{ lockerThread :: Async ()
@@ -645,18 +654,32 @@ inAnnexWorker poolv annexaction = do
 	return res
 
 handleRequestAnnex :: PerRepoServerState -> Annex a -> IO (Either SomeException a)
-handleRequestAnnex st a = do
-	ast <- atomically $ readTMVar (annexState st)
+handleRequestAnnex st = handleRequestAnnex' (annexState st) (annexRead st)
+
+handleRequestAnnex' :: TMVar Annex.AnnexState -> Annex.AnnexRead -> Annex a -> IO (Either SomeException a)
+handleRequestAnnex' stv rd a = do
+	ast <- atomically $ readTMVar stv
 	let astdup = dupState' ast
 
-	(res, (astdup', _)) <- Annex.run (astdup, annexRead st) $ 
+	(res, (astdup', _)) <- Annex.run (astdup, rd) $ 
 		tryNonAsync a
 	
-	ast' <- atomically $ takeTMVar (annexState st)
-	((), (ast'', _)) <- Annex.run (ast', annexRead st) $ mergeState astdup'
-	atomically $ putTMVar (annexState st) ast''
+	ast' <- atomically $ takeTMVar stv
+	((), (ast'', _)) <- Annex.run (ast', rd) $ mergeState astdup'
+	atomically $ putTMVar stv ast''
 
 	return res
+
+data AnnexActionRunner
+	-- Number of concurrent Annex actions is bounded by the size of the 
+	-- worker pool
+	= WorkerPoolRunner
+	-- When using this, must enforce bounds first
+	| RequestRunner
+
+annexActionRunner :: AnnexActionRunner -> AnnexWorkerPool -> TMVar Annex.AnnexState -> Annex.AnnexRead -> Annex a -> IO (Either SomeException a)
+annexActionRunner WorkerPoolRunner workerpool _ _ = inAnnexWorker workerpool
+annexActionRunner RequestRunner _ st rd = handleRequestAnnex' st rd
 
 data ProxyConnection = ProxyConnection
 	{ proxyConnectionRemoteUUID :: UUID
@@ -691,38 +714,34 @@ openedProxyConnection u desc selector closer concurrency = do
 		fastDebug "P2P.Http" ("Closed proxy connection to " ++ desc)
 
 openProxyConnectionToRemote
-	:: AnnexWorkerPool
-	-> P2P.ProtocolVersion
+	:: P2P.ProtocolVersion
 	-> P2P.Bypass
 	-> Remote
-	-> IO (Either SomeException ProxyConnection)
-openProxyConnectionToRemote workerpool clientmaxversion bypass remote = do
-	inAnnexWorker workerpool $ do
-		remoteside <- proxyRemoteSide clientmaxversion bypass remote
-		concurrencyconfig <- Proxy.noConcurrencyConfig
-		openedProxyConnection (Remote.uuid remote)
-			("remote " ++ Remote.name remote)
-			(Proxy.singleProxySelector remoteside)
-			(Proxy.closeRemoteSide remoteside)
-			concurrencyconfig
+	-> Annex ProxyConnection
+openProxyConnectionToRemote clientmaxversion bypass remote = do
+	remoteside <- proxyRemoteSide clientmaxversion bypass remote
+	concurrencyconfig <- Proxy.noConcurrencyConfig
+	openedProxyConnection (Remote.uuid remote)
+		("remote " ++ Remote.name remote)
+		(Proxy.singleProxySelector remoteside)
+		(Proxy.closeRemoteSide remoteside)
+		concurrencyconfig
 
 type ClusterConcurrency = Int
 
 openProxyConnectionToCluster
-	:: AnnexWorkerPool
-	-> P2P.ProtocolVersion
+	:: P2P.ProtocolVersion
 	-> P2P.Bypass
 	-> ClusterUUID
 	-> ClusterConcurrency
-	-> IO (Either SomeException ProxyConnection)
-openProxyConnectionToCluster workerpool clientmaxversion bypass clusteruuid concurrency = do
-	inAnnexWorker workerpool $ do
-		(proxyselector, closenodes) <-
-			clusterProxySelector clusteruuid clientmaxversion bypass
-		concurrencyconfig <- Proxy.mkConcurrencyConfig concurrency
-		openedProxyConnection (fromClusterUUID clusteruuid)
-			("cluster " ++ fromUUID (fromClusterUUID clusteruuid))
-			proxyselector closenodes concurrencyconfig
+	-> Annex ProxyConnection
+openProxyConnectionToCluster clientmaxversion bypass clusteruuid concurrency = do
+	(proxyselector, closenodes) <-
+		clusterProxySelector clusteruuid clientmaxversion bypass
+	concurrencyconfig <- Proxy.mkConcurrencyConfig concurrency
+	openedProxyConnection (fromClusterUUID clusteruuid)
+		("cluster " ++ fromUUID (fromClusterUUID clusteruuid))
+		proxyselector closenodes concurrencyconfig
 
 type ProxyConnectionPool = (Integer, M.Map ProxyConnectionPoolKey [ProxyConnection])
 
