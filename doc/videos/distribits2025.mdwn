@@ -17,13 +17,13 @@ Matthias Riße's talk
 covered this increasingly important integration between git-annex and
 forgejo, and how it is developed and maintained.
 
+The above three speakers were in
+a [panel discussion](https://www.distribits.live/talks/2025/discussion-hess-vogel-szczepanik-risse/) as well.
+
 Michał Szczepanik's talk
 ["Compute on demand"](https://www.distribits.live/talks/2025/szczepanik-compute-on-demand/)
 compared and contrasted the git-annex compute special remote with 
 the datalad-remake special remote.
-
-The above three speakers were in
-a [panel discussion](https://www.distribits.live/talks/2025/discussion-hess-vogel-szczepanik-risse/) as well.
 
 Timothy Sanders's talk
 ["Using Git-annex to enhance the MediaWiki file repository system"](https://www.distribits.live/talks/2025/sanders-using-git-annex-to-enhance-the/)
