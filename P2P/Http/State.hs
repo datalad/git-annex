@@ -163,23 +163,36 @@ getP2PConnection
 	-> (ConnectionParams -> ConnectionParams)
 	-> Handler (P2PConnectionPair, PerRepoServerState)
 getP2PConnection apiver runner mst cu su bypass sec auth actionclass fconnparams =
-	checkAuthActionClass mst su sec auth actionclass go
-  where
-	go st servermode = liftIO (acquireP2PConnection st runner cp) >>= \case
+	checkAuthActionClass mst su sec auth actionclass $
+		getP2PConnection' apiver runner cu su bypass fconnparams
+
+getP2PConnection'
+	:: APIVersion v
+	=> v
+	-> AnnexActionRunner
+	-> B64UUID ClientSide
+	-> B64UUID ServerSide
+	-> [B64UUID Bypass]
+	-> (ConnectionParams -> ConnectionParams)
+	-> PerRepoServerState
+	-> P2P.ServerMode
+	-> Handler (P2PConnectionPair, PerRepoServerState)
+getP2PConnection' apiver runner cu su bypass fconnparams st servermode =
+	liftIO (acquireP2PConnection st runner cp) >>= \case
 		Left (ConnectionFailed err) -> 
 			throwError err502 { errBody = encodeBL err }
 		Left TooManyConnections ->
 			throwError err503
 		Right v -> return (v, st)
-	  where
-		cp = fconnparams $ ConnectionParams
-			{ connectionProtocolVersion = protocolVersion apiver
-			, connectionServerUUID = fromB64UUID su
-			, connectionClientUUID = fromB64UUID cu
-			, connectionBypass = map fromB64UUID bypass
-			, connectionServerMode = servermode
-			, connectionWaitVar = True
-			}
+  where
+	cp = fconnparams $ ConnectionParams
+		{ connectionProtocolVersion = protocolVersion apiver
+		, connectionServerUUID = fromB64UUID su
+		, connectionClientUUID = fromB64UUID cu
+		, connectionBypass = map fromB64UUID bypass
+		, connectionServerMode = servermode
+		, connectionWaitVar = True
+		}
 
 getPerRepoServerState :: TMVar P2PHttpServerState -> B64UUID ServerSide -> IO (Maybe PerRepoServerState)
 getPerRepoServerState mstv su = do

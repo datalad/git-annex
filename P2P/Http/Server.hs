@@ -472,14 +472,29 @@ serveLockContent
 	-> IsSecure
 	-> Maybe Auth
 	-> Handler LockResult
-serveLockContent mst su apiver (B64Key k) cu bypass sec auth = do
-	(conn, st) <- getP2PConnection apiver WorkerPoolRunner mst cu su bypass sec auth LockAction id
-	let lock = checklocklimit conn st $ do
+serveLockContent mst su apiver (B64Key k) cu bypass sec auth =
+	checkAuthActionClass mst su sec auth LockAction $ \st mode ->
+		ifM (liftIO $ consumeLockedFilesQSem st)
+			( go st mode
+			, return $ LockResult False Nothing
+			)
+  where
+	go st mode = do
+		-- Uses RequestRunner to avoid using a worker
+		-- pool slot for a potentially long-running lock.
+		(conn, st') <- getP2PConnection' apiver RequestRunner cu su bypass id st mode
+		liftIO $ mkLocker (lock conn st') (unlock conn st') >>= \case
+			Just (locker, lockid) -> do
+				liftIO $ storeLock lockid locker st
+				return $ LockResult True (Just lockid)
+			Nothing -> return $ LockResult False Nothing
+	
+	lock conn st = do
 		lockresv <- newEmptyTMVarIO
 		unlockv <- newEmptyTMVarIO
 		-- A thread takes the lock, and keeps running
 		-- until unlock in order to keep the lock held.
-		annexworker <- async $ handleRequestAnnex st $ do
+		lockthread <- async $ handleRequestAnnex st $ do
 			lockres <- runFullProto (clientRunState conn) (clientP2PConnection conn) $ do
 				net $ sendMessage (LOCKCONTENT k)
 				checkSuccess
@@ -491,30 +506,14 @@ serveLockContent mst su apiver (B64Key k) cu bypass sec auth = do
 						net $ sendMessage UNLOCKCONTENT
 				_ -> return ()
 		atomically (takeTMVar lockresv) >>= \case
-			Right True -> return (Just (annexworker, unlockv))
+			Right True -> return (Just (lockthread, unlockv))
 			_ -> return Nothing
-	let unlock (annexworker, unlockv) = do
+	
+	unlock conn st (lockthread, unlockv) = do
 		atomically $ putTMVar unlockv ()
-		void $ wait annexworker
-		liftIO $ releaseLockedFilesQSem st
+		void $ wait lockthread
 		releaseP2PConnection conn
-	liftIO $ mkLocker lock unlock >>= \case
-		Just (locker, lockid) -> do
-			liftIO $ storeLock lockid locker st
-			return $ LockResult True (Just lockid)
-		Nothing -> do
-			releaseP2PConnection conn
-			return $ LockResult False Nothing
-  where
-	checklocklimit conn st a = 
-		ifM (consumeLockedFilesQSem st)
-			( a
-			, do
-				-- This works around a problem when nothing
-				-- is sent to the P2P connection.
-				_ <- liftIO $ proxyClientNetProto conn getTimestamp
-				return Nothing
-			)
+		liftIO $ releaseLockedFilesQSem st
 
 serveKeepLocked
 	:: APIVersion v
