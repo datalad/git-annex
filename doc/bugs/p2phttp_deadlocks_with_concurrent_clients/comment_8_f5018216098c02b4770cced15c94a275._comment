@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2025-11-12T19:53:41Z"
+ content="""
+Fixed the problem with interrupted `git-annex drop`.
+
+Opened a new bug report about sometimes stalling `git-annex
+drop`: [[get_from_p2phttp_sometimes_stalls]]
+
+I think I've fully addressed this bug report now, so will close it.
+"""]]

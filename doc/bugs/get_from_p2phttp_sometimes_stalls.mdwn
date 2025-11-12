@@ -1,0 +1,47 @@
+`git-annex get` from a p2phttp remote sometimes stalls out.
+
+This has been observed when using loopback. Eg, run in one repo,
+which contains about 1000 annexed files of size 1 mb each:
+
+    git-annex p2phttp -J2 --bind 127.0.0.1 --wideopen
+
+Then in a clone:
+
+    git config remote.origin.annexUrl annex+http://localhost/git-annex/
+    while true; do git-annex get --from origin -J20; git-annex drop; done
+
+The concurrency is probably not strictly needed to reproduce this.
+But it makes it more likely to occur sooner, at least.
+
+The total stall looks like this:
+
+    1%    7.82 KiB          6 MiB/s 0s
+
+Here is another one:
+
+	1%    7.82 KiB          6 MiB/s 0s
+
+The progress display never updates. Every time
+I've seen the total stall, it's been at 7.82 KiB,
+which seems odd.
+
+Looking at the object in `.git/annex/tmp`, it has the correct
+content, but is 4368 bytes short of the full 1048576 byte size.
+I've verified this is the case every time. So it looks like
+the client didn't get the final chunk of the file in the response.
+
+Note that, despite p2phttp being run with -J2, 
+so only supporting 2 concurrent get operations,
+interrupting the `git-annex get` that stalled out
+and running it again does not block waiting for the server.
+ So p2phttp seems to have finished processing the request.
+ Or possibly failed in a way that returns a worker to the pool.
+--[[Joey]]
+
+> Initial investigation in serveGet seems to show it successfully
+> sending the whole object. At least up to fromActionStep,
+> I've not verified servant always does the right thing with that
+> or doesn't close the connection early sometimes.
+> 
+> Using curl as the client and seeing if
+> it always receives the whole object would be a good next step. --[[Joey]] 
