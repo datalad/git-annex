@@ -1,0 +1,13 @@
+### Please describe the problem.
+Similar to the x-amz-meta-* S3 remote configuration, it would be useful to be able to configure an S3 remote with the x-amz-tagging header passed to putObject. Unlike x-amz-meta values, tags can be updated without copying objects to a new version.
+
+An example use case is publishing a private dataset where a bucket policy is used to limit access by default (tagged private on the initial export) and objects are progressively made public after an embargo period.
+
+### What version of git-annex are you using? On what operating system?
+
+10.20250929 on Fedora 43.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
+[[!tag projects/openneuro]]
