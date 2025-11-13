@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2025-11-13T17:53:48Z"
+ content="""
+Using DebugLocks, found that the deadlock is in checkvalidity,
+the second time it calls `putTMVar endv ()`.
+
+That was added in [[!commit 7bd616e169827568c4ca6bc6e4f8ae5bf796d2d8]] 
+"a bugfix to serveGet, it hung at the end".
+
+Looks like a race between checkvalidity and waitfinal,
+which both fill endv. waitfinal does not deadlock when endv is already
+full, but checkvalidity does.
+"""]]

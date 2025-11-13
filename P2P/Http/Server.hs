@@ -189,7 +189,7 @@ serveGet mst su apiver (B64Key k) cu bypass baf startat sec auth = do
 				validity <- atomically $ takeTMVar validityv
 				sz <- takeMVar szv
 				atomically $ putTMVar finalv ()
-				atomically $ putTMVar endv ()
+				void $ atomically $ tryPutTMVar endv ()
 				return $ case validity of
 					Nothing -> True
 					Just Valid -> True

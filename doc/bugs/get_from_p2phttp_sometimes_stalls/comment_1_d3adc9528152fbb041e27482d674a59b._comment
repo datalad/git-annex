@@ -1,0 +1,47 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-11-13T17:22:33Z"
+ content="""
+I saw this bug with git-annex built using haskell packages from current
+debian unstable.
+
+On a hunch, I tried a `stack build`, and it does not stall. However, I am
+seeing this from the http server at about the same frequency as the stall,
+and occuring during the `git-annex get`:
+
+	thread blocked indefinitely in an STM transaction
+
+And at the same time, this is reported on the client side:
+
+	get 27 (from origin...)
+	  HttpExceptionRequest Request {
+	    host                 = "localhost"
+	    port                 = 9417
+	    secure               = False
+	    requestHeaders       = [("Accept","application/octet-stream")]
+	    path                 = "/git-annex/a697daef-f8c3-4e64-a3e0-65927e36d06b/v4/k
+	    queryString          = "?clientuuid=9bc0478c-a0ff-4159-89ab-14c13343beb9&ass
+	    method               = "GET"
+	    proxy                = Nothing
+	    rawBody              = False
+	    redirectCount        = 10
+	    responseTimeout      = ResponseTimeoutDefault
+	    requestVersion       = HTTP/1.1
+	    proxySecureMode      = ProxySecureWithConnect
+	  }
+	   IncompleteHeaders
+	ok
+
+(I assume that it succeeded because it did an automatic retry when the
+first download was incomplete.)
+
+I also tried using the
+stack build for the server, and the cabal build for the client, with the same
+result. With the cabal build for the server and stack build for the client, it 
+stalls as before.
+
+So it's a bug on the server side, and whatever it is causes one of the threads to
+get killed in a way that causes another STM transaction to deadlock. 
+And the runtime happenes to detect the deadlock and resolve it when built with stack.
+"""]]

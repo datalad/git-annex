@@ -2,10 +2,10 @@ git-annex (10.20251103) UNRELEASED; urgency=medium
 
   * p2p --pair: Fix to work with external P2P networks.
   * remotedaemon: Avoid crashing when run with --debug.
-  * p2phttp: Fix server stall when there are too many concurrent clients.
-  * p2phttp: Fix a file descriptor leak caused by a race condition.
+  * p2phttp: Significant robustness fixes to bugs that caused the 
+    server to stall.
+  * p2phttp: Fix a file descriptor leak.
   * p2phttp: Added the --lockedfiles option.
-  * p2phttp: Fix server stall when a git-annex drop is interrupted.
   * dropunused: Run the annex.secure-erase-command 
     (or .git/hooks/secure-erase-annex) when deleting
     temp and bad object files.

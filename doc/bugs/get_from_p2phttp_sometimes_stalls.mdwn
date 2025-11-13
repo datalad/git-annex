@@ -45,3 +45,5 @@ and running it again does not block waiting for the server.
 > 
 > Using curl as the client and seeing if
 > it always receives the whole object would be a good next step. --[[Joey]] 
+
+>> [[fixed|done]] --[[Joey]]
