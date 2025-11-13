@@ -1,7 +1,6 @@
-git-annex (10.20251103) UNRELEASED; urgency=medium
+git-annex (10.20251114) UNRELEASED; urgency=medium
 
   * p2p --pair: Fix to work with external P2P networks.
-  * remotedaemon: Avoid crashing when run with --debug.
   * p2phttp: Significant robustness fixes to bugs that caused the 
     server to stall.
   * p2phttp: Fix a file descriptor leak.
@@ -9,6 +8,7 @@ git-annex (10.20251103) UNRELEASED; urgency=medium
   * dropunused: Run the annex.secure-erase-command 
     (or .git/hooks/secure-erase-annex) when deleting
     temp and bad object files.
+  * remotedaemon: Avoid crashing when run with --debug.
 
  -- Joey Hess <id@joeyh.name>  Mon, 03 Nov 2025 14:02:46 -0400
 
