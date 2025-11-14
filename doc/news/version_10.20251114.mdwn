@@ -1,0 +1,10 @@
+git-annex 10.20251114 released with [[!toggle text="these changes"]]
+[[!toggleable text="""  * p2p --pair: Fix to work with external P2P networks.
+  * p2phttp: Significant robustness fixes for bugs that caused the
+    server to stall.
+  * p2phttp: Fix a file descriptor leak.
+  * p2phttp: Added the --lockedfiles option.
+  * dropunused: Run the annex.secure-erase-command
+    (or .git/hooks/secure-erase-annex) when deleting
+    temp and bad object files.
+  * remotedaemon: Avoid crashing when run with --debug."""]]
