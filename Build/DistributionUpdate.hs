@@ -166,8 +166,7 @@ makeinfos updated changelogversion = do
 		, Param ("git-annex_" ++ changelogversion)
 		]
 	void $ inRepo $ runBool
-		[ Param "git"
-		, Param "push"
+		[ Param "push"
 		, Param "--tags"
 		]
 	void $ inRepo $ runBool
