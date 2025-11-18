@@ -7,4 +7,6 @@ Implementing this will need changes to the haskell aws library, since it
 does not allow setting this header.
 
 I opened an issue <https://github.com/aristidb/aws/issues/294>
+
+Update: This will need aws-0.25.
 """]]
