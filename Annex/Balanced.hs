@@ -12,7 +12,7 @@ import Types.UUID
 import Utility.Hash
 
 import Data.Maybe
-import Data.List
+import qualified Data.List as L
 import Data.Bits (shiftL)
 import qualified Data.Set as S
 import qualified Data.ByteArray as BA
@@ -33,7 +33,7 @@ balancedPicker s = \s' key num ->
 	combineduuids = mconcat (map fromUUID (S.toAscList s))
 
 	tointeger :: Digest a -> Integer
-	tointeger = foldl' (\i b -> (i `shiftL` 8) + fromIntegral b) 0 
+	tointeger = L.foldl' (\i b -> (i `shiftL` 8) + fromIntegral b) 0 
 		. BA.unpack
 
 {- The selection for a given key never changes. -}
