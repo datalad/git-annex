@@ -13,3 +13,5 @@ flags:
 packages:
 - '.'
 resolver: lts-24.2
+extra-deps:
+- aws-0.25

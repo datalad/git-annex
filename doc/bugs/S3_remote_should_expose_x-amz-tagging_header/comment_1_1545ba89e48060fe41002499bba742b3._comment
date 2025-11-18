@@ -8,5 +8,12 @@ does not allow setting this header.
 
 I opened an issue <https://github.com/aristidb/aws/issues/294>
 
-Update: This will need aws-0.25.
+Update: This will need git-annex to be built with aws-0.25. If a S3 special
+remote is configured with this header, and an older version of git-annex
+or a git-annex built with an older version of aws is used, it will just not
+send along the header when storing an object.
+
+So if your use case involves making newly uploaded objects private, you'll
+want to make sure you're always using a build of git-annex that supports
+it.
 """]]

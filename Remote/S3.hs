@@ -1,6 +1,6 @@
 {- S3 remotes
  -
- - Copyright 2011-2024 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -108,6 +108,8 @@ remote = specialRemoteType $ RemoteType
 				(FieldDesc "for path-style requests, set to \"path\"")
 			, signatureVersionParser signatureField
 				(FieldDesc "S3 signature version")
+			, optionalStringParser taggingField
+				(FieldDesc "tagging header to add when storing on S3")
 			, optionalStringParser mungekeysField HiddenField
 			, optionalStringParser AWS.s3credsField HiddenField
 			]
@@ -160,6 +162,9 @@ requeststyleField = Accepted "requeststyle"
 
 signatureField :: RemoteConfigField
 signatureField = Accepted "signature"
+
+taggingField :: RemoteConfigField
+taggingField = Accepted "x-amz-tagging"
 
 data SignatureVersion 
 	= SignatureVersion Int
@@ -1017,6 +1022,7 @@ data S3Info = S3Info
 	, bucketExportLocation :: ExportLocation -> BucketObject
 	, bucketImportLocation :: BucketObject -> Maybe ImportLocation
 	, metaHeaders :: [(T.Text, T.Text)]
+	, tagging :: [(T.Text, T.Text)]
 	, partSize :: Maybe Integer
 	, isIA :: Bool
 	, versioning :: Bool
@@ -1039,6 +1045,7 @@ extractS3Info c = do
 		, bucketExportLocation = getBucketExportLocation c
 		, bucketImportLocation = getBucketImportLocation c
 		, metaHeaders = getMetaHeaders c
+		, tagging = getTagging c
 		, partSize = getPartSize c
 		, isIA = configIA c
 		, versioning = fromMaybe False $
@@ -1056,6 +1063,9 @@ putObject info file rbody = (S3.putObject (bucket info) file rbody)
 	, S3.poMetadata = metaHeaders info
 	, S3.poAutoMakeBucket = isIA info
 	, S3.poAcl = acl info
+#if MIN_VERSION_aws(0,25,0)
+	, S3.poTagging = tagging info
+#endif
 	}
 
 acl :: S3Info -> Maybe S3.CannedAcl
@@ -1082,6 +1092,14 @@ getMetaHeaders = map munge
   where
 	metaprefixlen = length metaPrefix
 	munge (k, v) = (T.pack $ drop metaprefixlen (fromProposedAccepted k), T.pack v)
+
+getTagging :: ParsedRemoteConfig -> [(T.Text, T.Text)]
+getTagging c = case getRemoteConfigValue taggingField c of
+	Nothing -> []
+	Just s -> map go $ parseQueryText (encodeBS s)
+  where
+	go (k, Just v) = (k, v)
+	go (k, Nothing) = (k, mempty)
 
 isMetaHeader :: RemoteConfigField -> Bool
 isMetaHeader h = metaPrefix `isPrefixOf` fromProposedAccepted h

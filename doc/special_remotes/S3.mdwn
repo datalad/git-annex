@@ -162,10 +162,14 @@ the S3 remote.
   and to "bar/" in another special remote, and both special remotes could
   then use the same bucket.
 
-* `x-amz-meta-*` are passed through as http headers when storing keys
-  in S3.
+* `x-amz-meta-*` are passed through as http headers
+  when storing keys in S3.
 
 * `x-archive-meta-*` are passed through as http headers when storing keys
   in the Internet Archive. See
   [the Internet Archive S3 interface documentation](https://archive.org/help/abouts3.txt)
   for example headers.
+
+* `x-amz-tagging` is passed through as a http header
+  when storing keys in S3. (Needs git-annex 10.20251118 or newer
+  built with aws-0.25. Otherwise, the header will *not* be sent.)
