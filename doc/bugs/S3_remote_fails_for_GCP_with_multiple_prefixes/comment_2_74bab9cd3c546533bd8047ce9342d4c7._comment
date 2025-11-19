@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2025-11-19T18:27:45Z"
+ content="""
+This is fixed in aws-0.25.1. I have made the git-annex stack build use that
+version. I also added a build warning when built with an older version,
+to hopefully encourage other builds to get updated.
+"""]]

@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-11-19T16:24:33Z"
+ content="""
+Root caused to this bug: <https://github.com/aristidb/aws/issues/296>
+
+Seems likely that `git-annex import` from an importtree=yes S3
+remote on GCP is also broken since it also uses getBucket.
+
+git-annex uses getBucket to probe if the bucket already exists,
+which lets it avoid dealing with the various ways that PUT of a bucket can
+fail. GCP also has some incompatabilities in how it responds to that,
+eg in the above log, it uses a custom "BucketNameUnavailable",
+rather than the S3 standard " BucketAlreadyExists".
+"""]]

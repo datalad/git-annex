@@ -95,3 +95,5 @@ initremote: 1 failed
 Thanks for all your great work, Joey!
 
 [[!tag projects/openneuro]]
+
+> [[fixed|done]] --[[Joey]]
