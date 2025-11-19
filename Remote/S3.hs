@@ -12,6 +12,10 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE CPP #-}
 
+#if ! MIN_VERSION_aws(0,25,1)
+#warning Building with an old version of the aws library. Recommend updating to 0.25.1, which fixes bugs and is needed for some features.
+#endif
+
 module Remote.S3 (remote, iaHost, configIA, iaItemUrl) where
 
 import qualified Aws as AWS
