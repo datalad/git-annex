@@ -815,20 +815,26 @@ genBucket c gc u = do
   where
 	go _ _ (Right True) = noop
 	go info h _ = do
-		r <- liftIO $ tryNonAsync $ runResourceT $ do
-			void $ sendS3Handle h (S3.getBucket $ bucket info)
-			return True
-		case r of
+		checkbucketexists info h >>= \case
 			Right True -> noop
-			_ -> do
-				showAction $ UnquotedString $ "creating bucket in " ++ datacenter
-				void $ liftIO $ runResourceT $ sendS3Handle h $ 
-					(S3.putBucket (bucket info))
-						{ S3.pbCannedAcl = acl info
-						, S3.pbLocationConstraint = locconstraint
-						, S3.pbXStorageClass = storageclass
-						}
+			Right False -> createbucket info h
+			Left err -> do
+				fastDebug "Remote.S3" ("createBucket threw exception: " ++ show err)
+				createbucket info h
 		writeUUIDFile c u info h
+		
+	checkbucketexists info h = liftIO $ tryNonAsync $ runResourceT $ do
+		void $ sendS3Handle h (S3.getBucket $ bucket info)
+		return True
+	
+	createbucket info h = do
+		showAction $ UnquotedString $ "creating bucket in " ++ datacenter
+		void $ liftIO $ runResourceT $ sendS3Handle h $ 
+			(S3.putBucket (bucket info))
+				{ S3.pbCannedAcl = acl info
+				, S3.pbLocationConstraint = locconstraint
+				, S3.pbXStorageClass = storageclass
+				}
 	
 	locconstraint = mkLocationConstraint $ T.pack datacenter
 	datacenter = fromJust $ getRemoteConfigValue datacenterField c
