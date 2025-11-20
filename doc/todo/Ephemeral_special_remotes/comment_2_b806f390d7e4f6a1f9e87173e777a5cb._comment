@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2025-11-20T14:05:10Z"
+ content="""
+There are also some common setup stage tasks that pose problems but could
+all be fixed in one place:
+
+* Encryption setup generates encryption keys. Which is both slow and also
+  generating an then throwing away an encryption key is the wrong thing to
+  do. I think this could be dealt with by copying the encryption setup of the
+  remote that is generating the emphemeral remote into it.
+* remote.name.annex-uuid is set in git config by gitConfigSpecialRemote.
+  Either that could be disabled for ephemerals, or the uuid and name could
+  also be inherited, which would make that a no-op.
+"""]]
