@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-11-20T13:34:28Z"
+ content="""
+The major difficulty in implementing this seems to be the setup stage,
+which is the per-special-remote code that runs during
+initremote/enableremote. That code can write to disk, or perform 
+expensive operations.
+
+A few examples:
+
+* S3's setup makes 1 http request to verify that the bucket exists
+  (or about 4 http requests when it needs to create the bucket).
+  It does additional work when bucket versioning is enabled.
+* directory's setup modifies the git config file to set
+  remote.name.directory. And if that were skipped, generating the directory
+  special remote would fail, because it reads that git config.
+
+My gut feeling is that it won't be practical to make it possible to
+ephemeralize every type of special remote. But it would not be too
+hard to make some subset of special remotes able to be used ephemerally.
+
+It might be possible to maintain a cache of recently used ephemeral special
+remotes across runs of git-annex, and so avoid needing to re-run the setup
+stage.
+"""]]
