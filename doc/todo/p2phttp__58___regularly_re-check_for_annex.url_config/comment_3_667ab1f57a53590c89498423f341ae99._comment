@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2025-11-20T18:36:31Z"
+ content="""
+Even if it only re-checks when git-annex is going to use the remote
+(and not on every run of git-annex) that seems perhaps too often to check.
+
+But if it checks less often than that, once per day or whatever, there will
+of course be a window where it has not yet noticed the change and uses the
+cached remote.name.annexUrl and potentially fails.
+
+A balance might be that if it fails to connect to the remote.name.annexUrl,
+it could re-check it then.
+"""]]
