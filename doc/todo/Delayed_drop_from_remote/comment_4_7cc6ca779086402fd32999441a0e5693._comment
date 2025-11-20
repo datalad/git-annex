@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2025-11-20T18:16:47Z"
+ content="""
+Yes, the trashbin remote could be private. I think we're in agreement
+that's the best way to go.
+
+--accessedwithin relies on atime, and looks at objects in the local
+repository only, so it would not work to find objects in the trashbin
+remote.
+
+I don't think there is anything in preferred content
+expressions that would meet your need here exactly. It would probably be
+possible to add an expression that matches objects that have been present
+in a given repository for a given amount of time. The presence logs do have a
+timestamp.
+
+Of course, if you used a directory special remote you could use
+plain old `find`.
+"""]]
