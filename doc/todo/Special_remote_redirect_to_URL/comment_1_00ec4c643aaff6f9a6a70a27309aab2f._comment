@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-11-20T13:23:00Z"
+ content="""
+This seems like a good design to me. It will need a protocol extension
+to indicate when a git-annex version supports it.
+
+It occured to me that when `git-annex p2phttp` is used and is proxying to a
+special remote that uses this feature, it would be possible to forward the
+redirect to the http client, so the server would not need to download the
+object itself.
+
+A neat optimisation potential, although implementing it would cut across
+several things in a way I'm unsure how to do cleanly.
+
+That did make me wonder though, if the redirect url would always be safe to
+share with the client, without granting the client any abilities beyond a
+one-time download. And I think that's too big an assumption to make for
+this optionisation. Someone could choose to redirect to an url containing
+eg, http basic auth, which would be fine when using it all locally, but not
+in this proxy situation. So there would need to be an additional configuration
+to enable the proxy optimisation.
+"""]]
