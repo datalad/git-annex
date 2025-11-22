@@ -22,7 +22,7 @@ running `git-annex mincopies N` or can be overridden on a per-file-type
 basis by the annex.mincopies setting in `.gitattributes` files. 
 The --mincopies switch allows temporarily using a different value.
 
-Note that [trusted repositories|trust]] are assumed to
+Note that [[trusted repositories|trust]] are assumed to
 continue to contain content, so checking them is skipped. So dropping
 content from trusted repositories does risk numcopies and mincopies 
 later being violated.
