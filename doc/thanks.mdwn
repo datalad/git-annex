@@ -34,7 +34,7 @@ contributed good bug reports and great ideas.
 ## financial support, 2024-2025
 
 <img alt="OpenNeuro logo" src="https://raw.githubusercontent.com/OpenNeuroOrg/openneuro/1c1e0d3b2a2032729727702eb65b1b563eadce1d/packages/openneuro-components/src/assets/on-dark.svg" width=100>&nbsp;&nbsp;
-<img alt="Standford wordmark" src="https://poldracklab.org/images/stanford-line2-8.png" width=200>&nbsp;&nbsp;
+<img alt="Stanford wordmark" src="https://poldracklab.org/images/stanford-line2-8.png" width=200>&nbsp;&nbsp;
 <img alt="Jülich Forschungszentrum logo" src="https://www.fz-juelich.de/static/media/Logo.2ceb35fc.svg" width=200>&nbsp;&nbsp;
 
 git-annex development is supported in large part by:
@@ -50,6 +50,8 @@ git-annex development is supported in large part by:
 * [ReproNim](https://repronim.org/), funded by
   [a NIH grant](https://projectreporter.nih.gov/project_info_details.cfm?aid=8999833)
   awarded to UMass Medical School Worcester, Dartmouth College, MIT, et al.
+* Institute of Climate and Energy Systems (Stratosphere; ICE-4) at
+  [Forschungszentrum Jülich](https://www.fz-juelich.de/en/ice/ice-4).
 
 Thanks also to these folks for their support: 
 [[!inline raw=yes pages="thanks/list"]] and anonymous supporters.
