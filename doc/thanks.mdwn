@@ -37,7 +37,7 @@ contributed good bug reports and great ideas.
 <img alt="Stanford wordmark" src="https://poldracklab.org/images/stanford-line2-8.png" width=200>&nbsp;&nbsp;
 <img alt="Jülich Forschungszentrum logo" src="https://www.fz-juelich.de/static/media/Logo.2ceb35fc.svg" width=200>&nbsp;&nbsp;
 <img alt="DANDI logo" src="https://dandiarchive.org/assets/logo-DbYqjGgV.svg" width=150>&nbsp;&nbsp;
-<img alt="ReproNim logo" src="https://repronim.org/images/square-512T2.png" width=75>&nbsp;&nbsp;
+<img alt="ReproNim logo" src="https://repronim.org/images/square-512T2.png" width=70>&nbsp;&nbsp;
 
 git-annex development is supported in large part by:
 
