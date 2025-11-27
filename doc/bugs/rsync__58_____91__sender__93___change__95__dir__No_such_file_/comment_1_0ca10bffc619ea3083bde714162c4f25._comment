@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="scinu@299f3f05b38f16a60b2c1d63240426946bec9ab7"
+ nickname="scinu"
+ avatar="http://cdn.libravatar.org/avatar/c5a190c5c0ce61a5be141609dff37fe1"
+ subject="Resolved: using newer version"
+ date="2025-11-25T12:39:58Z"
+ content="""
+After installing git-annex from Archlinux repositories, it works again. 
+
+For some reason, I had installed git-annex-standalone (10.20220121-1)
+With git-annex (10.20251114-2) everything works as intended.
+
+git-annex version: 10.20251114-geeb21b831e7c45078bd9447ec2b0532a691fe471
+
+Sorry for the noise, should have done this before.
+
+Best, Scinu
+"""]]
