@@ -1,0 +1,117 @@
+### Please describe the problem.
+
+we have dandiarchive s3 bucket with versioning turned on. Currently, after I changed signature from anonymous and added region it looks like
+
+```
+dandi@drogon:/mnt/backup/dandi/dandiset-manifests$ git show git-annex:remote.log                                                                                                                                             
+09b87154-c650-46d1-a036-6e03c56c0b1a bucket=dandiarchive datacenter=US encryption=none fileprefix=dandisets/ host=s3.amazonaws.com importtree=yes name=s3-dandiarchive port=80 publicurl=https://dandiarchive.s3.amazonaws.com/ region=us-east-2 signature=v4 storageclass=STANDARD type=S3 timestamp=1764626152s
+```
+
+Bucket has ["trailing delete"](https://github.com/dandi/dandi-archive/blob/master/doc/design/s3-trailing-delete.md) enabled since awhile (years).  
+
+Originally it was all open and we were importing on cron, the last merge was
+
+```
+Date:   2025 Aug 27 21:23:09 -0400                                                                                                                                                                                           
+                                                                                                                                                                                                                             
+    Merge remote-tracking branch 's3-dandiarchive/master' 
+```
+
+Recently-ish (sep/oct) policy got updated so some keys on s3 became protected and require authentication.  We had a good number of failing due to 403 runs, including ones where I already specified AWS credentials but still had `signature=anonymous` and no region specified.  Then (yesterday) I specified signature to be v4, had a run where it complained about region needing to be us-east-2 instead of us-east-1 (not sure why could not deduce automagically), so I specified it too.  And then the `import` run seem to proceeded fine!
+
+But `git merge` then failed:
+
+```
+dandi@drogon:/mnt/backup/dandi/dandiset-manifests$ git merge s3-dandiarchive/master                                                                                                                                          
+error: unable to read sha1 file of 000029/draft/dandiset.jsonld (f7c097994e60c2b58dae464633583b65a6691415)                                                                                                                   
+error: unable to read sha1 file of 000029/draft/dandiset.yaml (1fa7abf602b540507c1a31e20da3d687e83ebfe6)                                                                                                                     
+error: unable to read sha1 file of 000338/draft/assets.jsonld (4ad13ca757df0b39f2c20af47e5d3c9140ccfc7b)                                                                                                                     
+error: unable to read sha1 file of 000338/draft/assets.yaml (08cca54d889faffc76c7911f5c700eb09c22e628)                                                                                                                       
+error: unable to read sha1 file of 000338/draft/collection.jsonld (cf60b31aca7826a8d4993828e439af1f808cb17e)
+...
+```
+
+and `git fsck` fails loudly with many blobs missing etc
+
+```
+dandi@drogon:/mnt/backup/dandi/dandiset-manifests$ head .duct/logs/2025.12.02T08.19.22-3737239_stdout                                                                                                                        
+broken link from    tree 8c233f531c125ef0edbba48300d7c2ca914c1dac                                                                                                                                                            
+              to    blob 513d0a3ba28460f1c7db74b2f4b4905a9942d903                                                                                                                                                            
+broken link from    tree 8c233f531c125ef0edbba48300d7c2ca914c1dac                                                                                                                                                            
+              to    blob 2d3e42dc7935b136141f81f3113a6eac247aa570                                                                                                                                                            
+broken link from    tree 8c233f531c125ef0edbba48300d7c2ca914c1dac                                                                                                                                                            
+              to    blob e88e9ef106f8c7cdce43378079416ab353593335   
+...
+```
+and also similar errors while trying to git log a sample file there:
+
+```
+dandi@drogon:/mnt/backup/dandi/dandiset-manifests$ git log s3-dandiarchive/master -- 000029/draft/dandiset.jsonld                                                                                                            
+commit 2fc1ff12                                                                                                                                                                                                              
+Author: DANDI Team <team@dandiarchive.org>                                                                                                                                                                                   
+Date:   2025 Dec 01 16:56:17 -0500                                                                                                                                                                                           
+                                                                                                                                                                                                                             
+    import from s3-dandiarchive                                                                                                                                                                                              
+                                                                                                                                                                                                                             
+commit 65c4ea5b                                                                                                                                                                                                              
+Author: DANDI Team <team@dandiarchive.org>                                                                                                                                                                                   
+Date:   2025 Apr 24 16:23:07 -0400                                                                                                                                                                                           
+                                                                                                                                                                                                                             
+    import from s3-dandiarchive                                                                                                                                                                                              
+                                                                                                                                                                                                                             
+commit 832893d3                                                                                                                                                                                                              
+Author: DANDI Team <team@dandiarchive.org>                                                                                                                                                                                   
+Date:   2025 Apr 24 13:21:10 -0400                                                                                                                                                                                           
+                                                                                                                                                                                                                             
+    import from s3-dandiarchive                                                                                                                                                                                              
+dandi@drogon:/mnt/backup/dandi/dandiset-manifests$ git log -p s3-dandiarchive/master -- 000029/draft/dandiset.jsonld                                                                                                         
+fatal: unable to read f7c097994e60c2b58dae464633583b65a6691415                                                                                                                                                               
+commit 2fc1ff12                                                                                                                                                                                                              
+Author: DANDI Team <team@dandiarchive.org>                                                                                                                                                                                   
+Date:   2025 Dec 01 16:56:17 -0500                                                                                                                                                                                           
+                                                                                                                                                                                                                             
+    import from s3-dandiarchive   
+```
+
+as the fail on the recently imported version, suggests that it is git-annex not importing correctly somehow?
+
+I believe this was done with this version:
+
+```
+dandi@drogon:/mnt/backup/dandi/dandiset-manifests$ source ~/git-annexes/static-10.20250416.sh                                                                                                                                
+dandi@drogon:/mnt/backup/dandi/dandiset-manifests$ git annex version | head                                                                                                                                                  
+git-annex version: 10.20250416-static1                                                                 
+build flags: Pairing DBus DesktopNotify TorrentParser MagicMime Servant Benchmark Feeds Testsuite S3 WebDAV                                                                                                                  
+dependency versions: aws-0.24.4 bloomfilter-2.0.1.2 crypton-1.0.4 DAV-1.3.4 feed-1.3.2.1 ghc-9.8.4 http-client-0.7.19 persistent-sqlite-2.13.3.0 torrent-10000.1.3 uuid-1.3.16     
+...
+```
+
+please advise on how to mitigate (`git reset --hard` the `s3-dandiarchive/master` to prior state before yesterday and reimport with newer git-annex or ... ?)
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]
+
+
+
+
+Originally all keys in the bucket 
+
+### What steps will reproduce the problem?
+
+
+### What version of git-annex are you using? On what operating system?
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
