@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 1"
+ date="2025-12-02T19:22:10Z"
+ content="""
+I have now tried with most recent release 10.20251114-geeb21b831e7c45078bd9447ec2b0532a691fe471 while operating on a copy from the backup.
+
+and looking at the fact that  it starts with the latter, likely the \"access restricted ones\"
+
+```
+(venv-annex) dandi@drogon:/mnt/backup/dandi/dandiset-manifests$ ( source .git/secrets.env; git-annex import master --from s3-dandiarchive && git merge s3-dandiarchive/master )                                              
+list s3-dandiarchive ok                                                                                                                                                                                                      
+import s3-dandiarchive 000675/draft/assets.jsonld                                                                                                                                                                            
+ok                                                                                                                                                                                                                           
+import s3-dandiarchive 000675/draft/assets.yaml                                                                                                                                                                              
+ok                                               
+...
+```
+
+while still making commits to earlier folders
+
+```
+(venv-annex) dandi@drogon:/mnt/backup/dandi/dandiset-manifests$ git log --stat s3-dandiarchive/master -- 000029/draft || echo $?                                                                                             
+fatal: unable to read f7c097994e60c2b58dae464633583b65a6691415                                                                                                                                                               
+commit ce60e6d1                                                                                                                                                                                                              
+Author: DANDI Team <team@dandiarchive.org>                                                                                                                                                                                   
+Date:   2025 Dec 02 14:16:10 -0500                                                                                                                                                                                           
+                                                                                                                                                                                                                             
+    import from s3-dandiarchive                                                                                                                                                                                              
+                                                                                                                                                                                                                             
+128  
+```
+I suspect it just somehow \"manufactures\" them for public ones without fetching their keys?
+"""]]
