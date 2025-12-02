@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="caribou"
+ avatar="http://cdn.libravatar.org/avatar/914e725d4ec32ad668501d14ade2e52f"
+ subject="git annex and starship 2"
+ date="2025-12-02T10:16:41Z"
+ content="""
+Hello,
+Thank you for the pointers from the previous comments it seems to be indeed connected to starship in my case also.
+However for me, increasing the timeout up to 2000ms wasn't enough. The workaround that worked for me was to ignore_submodules...
+
+[git_status]
+ignore_submodules = true
+"""]]
