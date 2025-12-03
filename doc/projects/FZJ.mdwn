@@ -35,5 +35,5 @@ Bugs
 Forum posts
 ===========
 
-[[!inline pages="forum/* (tagged(projects/INM7) or tagged(projects/ICE4))" sort=mtime feeds=no actions=yes archive=yes show=0  template=buglist template=buglist]]
+[[!inline pages="forum/* and (tagged(projects/INM7) or tagged(projects/ICE4))" sort=mtime feeds=no actions=yes archive=yes show=0  template=buglist template=buglist]]
 
