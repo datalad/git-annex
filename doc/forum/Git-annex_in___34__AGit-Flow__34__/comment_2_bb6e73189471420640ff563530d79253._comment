@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2025-12-03T18:44:56Z"
+ content="""
+> A per-user special remote that is assumed to contain the annexed files for all of the users AGit-PRs. If git recognizes remote
+> configs in the users' global git config then it could be possible to get away with configuring things once, but I am not sure of the
+> behavior of git in that case.
+
+I think git will do that (have not checked), but a special remote needs
+information to be written to the git-annex branch, not just git config,
+so there's no way to globally configure a special remote to be accessible
+in every git-annex repository.
+
+Along similar lines, forgejo could set up an autoenabled remote
+that contains annexed files for all AGit-PRs, and that wants any files
+not in the main git repository. (This could be a special remote, or a
+git-annex repository that just doesn't allow any ref pushes to it. The
+latter might be easier to deal with since `git-annex p2phttp` could serve
+it as just another git-annex repository.)
+
+That would solve the second problem I discussed in the comment above,
+because when the user copies objects to that separate remote, it will not
+cause git-annex in the forgejo repository to update the main git-annex
+branch to list those objects.
+
+When merging a PR, forgejo would move the objects over from that remote
+to the main git repository.
+
+You would be left with a bit of an problem in deleting objects from that
+remote when a PR is rejected. Since the user may never have pushed
+their git-annex branch after sending an object to it, 
+and so you would not know what PR that object belongs to. I suppose this
+could be handled by finding all objects that are in active PRs and deleting
+ones that are not after some amount of time.
+"""]]

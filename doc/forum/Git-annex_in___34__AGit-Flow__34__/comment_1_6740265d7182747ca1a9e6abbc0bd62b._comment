@@ -1,0 +1,56 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-12-03T17:54:21Z"
+ content="""
+> Obviously annexed objects copied to the Forgejo-aneksajo instance
+> via this path should only be available in the context of that PR in some way.
+> 
+> The fundamental issue seems to be that annexed objects always belong to the entire repository, and are not scoped to any branch.
+
+Hmm.. git objects also don't really belong to any particular branch.
+git only fetches objects referenced by the branches you clone.
+
+Similarly, git-annex can only ever get annex objects that are listed
+in the git-annex branch. Even with `--all`, it will not know about objects
+not listed there.
+
+So, seems to me you may only need to keep the PR's git-annex branch separate from
+the main git-annex branch, so that the main git-annex branch does not list
+objects from the PR. I see two problems that would need to be solved to do
+that:
+
+1. If git-annex is able to see the PR's git-annex branch as eg
+   (refs/foo/git-annex), it will auto-merge it into the main git-annex branch, and
+   then --all will operate on objects from the PR as well. So the PR's
+   git-annex branch would need to be named to avoid that.
+
+   This could be just `git push origin git-annex:refs/for/git-annex/topic-branch`  
+   Maybe `git-annex sync` could be made to support that for its pushes?
+
+2. When git-annex receives an object into the repository, the receiving side
+   updates the git-annex branch to indicate it now has a copy of that object. So,
+   you would need a way to make objects sent to a PR update the PR's git-annex branch,
+   rather than the main git-annex branch.
+
+   This could be something similar to `git push -o topic` in
+   git-annex. Which would need to be a P2P protocol extension. Or maybe 
+   some trick with the repository UUID?
+
+When the PR is merged, you would then also merge its git-annex branch.
+
+If the PR is instead rejected, and you want to delete the objects
+associated with it, you would first delete the PR's other branches, and
+then run `git-annex unused`, arranging (how?) for it to see only the PR's
+git-annex branch and not any other git-annex branches. That would find any
+objects that were sent as part of the PR, that don't also happen to be used
+in other branches (including other PRs).
+
+----
+
+I do wonder, if this were implemeted, would the git-annex 
+workflow for the user be any better than if there were a per-PR
+remote for them to use? If every git-annex command that pushes the
+git-annex branch or sends objects to forjejo needs `-o topic`
+to be given, then it might be a worse user experience.
+"""]]
