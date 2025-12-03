@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2025-12-03T19:08:42Z"
+ content="""
+With the separate autoenabled remote for PRs, the UX could look like this:
+
+	> git-annex add myfile
+	add myfile ok
+	> git commit -m foo
+	> git push origin HEAD:refs/for/main -o topic="add myfile"
+	> git-annex push origin-PRs
+	copy myfile (to origin-PRs) ... ok
+
+Or with a small git-annex improvement, even:
+
+	> git-annex assist -o topic="add myfile"
+	add myfile ok
+	copy myfile (to origin-PRs) ... ok
+
+For this, origin-PRs would want all files not in origin,
+and origin would want all files not in origin-PRs. And origin-PRs would
+need to have a lower cost than origin so that it doesn't first try, and
+fail, to copy the file to origin.
+"""]]
