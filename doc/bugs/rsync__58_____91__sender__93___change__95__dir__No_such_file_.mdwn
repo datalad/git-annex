@@ -51,3 +51,6 @@ rsync exited 23
 
 git-annex solves a lot of problems for both work and privately. I use it on a daily basis since a decade, and it is just great and very reliable. 
 Great software, please keep up developing and maintaining it.
+
+> [[closing|done]] as this must have been a bug in the older version.
+> --[[Joey]]
