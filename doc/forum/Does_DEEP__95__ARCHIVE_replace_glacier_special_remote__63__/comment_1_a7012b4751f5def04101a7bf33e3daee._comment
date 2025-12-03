@@ -6,6 +6,6 @@
 I don't think `storageclass=DEEP_ARCHIVE` will currently work,
 git-annex is not able to request that the object be restored.
 
-See [[todo/wishlist__58___Restore_s3_files_moved_to_Glacier/]]
+See [[todo/wishlist__58___Restore_s3_files_moved_to_Glacier]]
 for a todo which would solve this.
 """]]
