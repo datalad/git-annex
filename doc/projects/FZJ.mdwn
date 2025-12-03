@@ -31,3 +31,9 @@ Bugs
 (tagged(projects/INM7) or tagged(projects/ICE4))" feeds=no actions=yes archive=yes show=0  template=buglist]]
 
 </details>
+
+Forum posts
+===========
+
+[[!inline pages="forum/* (tagged(projects/INM7) or tagged(projects/ICE4))" sort=mtime feeds=no actions=yes archive=yes show=0  template=buglist template=buglist]]
+
