@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2025-12-03T16:16:14Z"
+ content="""
+Are the `000675/draft/` files you show it importing the ones that are
+access restricted?
+
+And when you replicated the problem from the backup, were you using it in
+the configuration where it cannot access those?
+
+I notice that all the files affected seem to be probably smallish text
+files (yaml, jsonld). Do you have annex.largefiles configured in this
+repository, and are all of the affected files non-annexed files?
+If so, it would be worth retrying from the backup with the config changed
+so those files get annexed and see if that avoids the problem.
+"""]]

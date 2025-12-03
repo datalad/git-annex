@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2025-12-03T16:37:11Z"
+ content="""
+> please advise on how to mitigate (`git reset --hard` the `s3-dandiarchive/master` to prior state before yesterday and reimport with newer git-annex or ... ?)
+
+Simply resetting the remote tracking branch and re-importing won't cause an
+import to necessarily happen again. This is because git-annex tracks
+internally what has been imported from the remote. Running an import again
+when it's already imported files won't re-download those same files.
+And it will regenerate the same remote tracking branch.
+
+So running in a clone from a backup is a better way to re-run the import.
+"""]]
