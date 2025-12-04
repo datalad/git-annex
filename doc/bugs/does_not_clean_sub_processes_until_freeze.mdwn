@@ -1,0 +1,65 @@
+### Please describe the problem.
+
+Whenever I leave git-annex to do a long operation on a remote server, I came
+back to its eventual death. I leave a `git-annex get ... -J 4` on a tmux at a
+server it eventually freezes, so I tend to rely on my machine and
+short/repetitive operations to be able to use git-annex. Before I thought the
+parallelization might be the issue so I reduced it to 4 from 8/16/32, but it
+didn't resolve the problem.
+
+This last time I wanted to investigate and I found out a lot of subprocess
+hanging around.
+
+```sh
+$ ps -u <me> | grep git
+2460230 pts31   00:00:00 git <defunct>
+2460231 pts31   00:00:00 git <defunct>
+2460232 pts31   00:00:00 git <defunct>
+2460233 pts31   00:00:00 git <defunct>
+2460234 pts31   00:00:00 git <defunct>
+2460235 pts31   00:00:00 git <defunct>
+2460237 pts31   00:00:00 git <defunct>
+...
+$ ps -u <me> | grep git | wc -l
+13193
+```
+
+Which explains why lowering parallel jobs didn't resolve but delay the eventual
+freeze.
+
+On this setup the version is old which might be the culprit. Although I can try
+to get an updated version (via binary or conda) on my path, I would still like
+to identify the problem. It also happened on another server setup which had a
+relatively newer version but since I have no access to there anymore, I can't
+provide more information on that (yet).
+
+### What steps will reproduce the problem?
+
+Run `$ git annex get * -J 4` and wait for eventual freeze
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 8.20210223
+build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.26 DAV-1.3.4 feed-1.3.0.1 ghc-8.8.4 http-client-0.6.4.1 persistent-sqlite-2.10.6.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.1.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg hook external
+operating system: linux x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I use it for all kind of data I have both in private and at work. Amazing
+piece of software. I'm sure my colleagues/IT are annoyed of me plugging it to
+every possible discussion.
