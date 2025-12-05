@@ -1,0 +1,42 @@
+### Please describe the problem.
+
+This is a repo under `git-annex assistant` control and was committing and pushing fine but then stopped... there were many other oddities (some files were `git rm`ed and never committed back etc), but now it is at the level of git on remote I guess, so likely going through `git-annex filter-process` -- claims to have unstaged changes when `git status` says none:
+
+
+```shell
+reprostim@reproiner:/data/reprostim$ git push typhon
+Enumerating objects: 15079, done.
+Counting objects: 100% (10929/10929), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (6763/6763), done.
+Writing objects: 100% (6764/6764), 816.02 KiB | 16.00 MiB/s, done.
+Total 6764 (delta 64), reused 6388 (delta 1), pack-reused 0
+remote: Resolving deltas: 100% (64/64), completed with 30 local objects.
+To typhon:/data/repronim/dbic-reproflow/sourcedata/reprostim-reproiner
+ ! [remote rejected]     master -> master (Working directory has unstaged changes)
+error: failed to push some refs to 'typhon:/data/repronim/dbic-reproflow/sourcedata/reprostim-reproiner'
+reprostim@reproiner:/data/reprostim$ ssh typhon git -C /data/repronim/dbic-reproflow/sourcedata/reprostim-reproiner status
+On branch master
+Your branch is ahead of 'reproiner/master' by 2906 commits.
+  (use "git push" to publish your local commits)
+
+nothing to commit, working tree clean
+
+```
+
+how to troubleshoot in the future?
+
+workaround done: pushed as another branch which I then just "merged" (was fast-forward) locally (on typhon).
+
+
+
+### What version of git-annex are you using? On what operating system?
+
+
+```
+reprostim@reproiner:/data/reprostim$ git annex version | head -n 1
+git-annex version: 10.20251114-1~ndall+1
+reprostim@reproiner:/data/reprostim$ ssh typhon git annex version | head -n 1
+git-annex version: 10.20250416
+
+```
