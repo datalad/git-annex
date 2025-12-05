@@ -463,7 +463,7 @@ The two protocol versions are actually identical.
 Old versions of git-annex that supported only `VERSION 1`
 had a bug in their implementation of the 
 part of the protocol documented in the [[export_and_import_appendix]].
-The bug could result in ontent being exported to the wrong file.
+The bug could result in content being exported to the wrong file.
 External special remotes that implement that should use `VERSION 2` to
 avoid talking to the buggy old version of git-annex.
 
