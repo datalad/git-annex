@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2025-12-05T16:29:39Z"
+ content="""
+Probably this. In any case, it's better to upgrade before filing a bug on something like this.
+
+	git-annex (8.20211123) upstream; urgency=medium
+	
+	  * Bugfix: When -J was enabled, getting files could leak an
+	    ever-growing number of git cat-file processes.
+"""]]
