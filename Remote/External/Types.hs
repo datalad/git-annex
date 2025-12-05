@@ -1,6 +1,6 @@
 {- External special remote data types.
  -
- - Copyright 2013-2024 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -116,6 +116,7 @@ supportedExtensionList = ExtensionList
 	[ "INFO"
 	, "GETGITREMOTENAME"
 	, "UNAVAILABLERESPONSE"
+	, "TRANSFER-RETRIEVE-URL"
 	, asyncExtension
 	]
 
@@ -243,6 +244,7 @@ data Response
 	| PREPARE_FAILURE ErrorMsg
 	| TRANSFER_SUCCESS Direction Key
 	| TRANSFER_FAILURE Direction Key ErrorMsg
+	| TRANSFER_RETRIEVE_URL Key URLString
 	| CHECKPRESENT_SUCCESS Key
 	| CHECKPRESENT_FAILURE Key
 	| CHECKPRESENT_UNKNOWN Key ErrorMsg
@@ -281,6 +283,7 @@ instance Proto.Receivable Response where
 	parseCommand "PREPARE-FAILURE" = Proto.parse1 PREPARE_FAILURE
 	parseCommand "TRANSFER-SUCCESS" = Proto.parse2 TRANSFER_SUCCESS
 	parseCommand "TRANSFER-FAILURE" = Proto.parse3 TRANSFER_FAILURE
+	parseCommand "TRANSFER-RETRIEVE-URL" = Proto.parse2 TRANSFER_RETRIEVE_URL
 	parseCommand "CHECKPRESENT-SUCCESS" = Proto.parse1 CHECKPRESENT_SUCCESS
 	parseCommand "CHECKPRESENT-FAILURE" = Proto.parse1 CHECKPRESENT_FAILURE
 	parseCommand "CHECKPRESENT-UNKNOWN" = Proto.parse2 CHECKPRESENT_UNKNOWN

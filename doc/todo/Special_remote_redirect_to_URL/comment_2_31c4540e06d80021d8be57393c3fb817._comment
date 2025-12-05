@@ -4,13 +4,23 @@
  date="2025-12-05T16:35:05Z"
  content="""
 One problem with this design is that there may be HTTP headers that are
-used for authorization, rather than putting authentication in the url.
+needed for authorization, rather than putting authentication in the url.
 
 I think we may have talked about this at the hackfest, and came down on the
 side of simplicity, supporting only an url. Can't quite remember.
 
 It might also be possible to redirect to an url when storing an object.
+There it is more likely that a custom http verb would be needed, rather
+than PUT.
 
 I think that protocol design should leave these possibilities open to be
-implemented later.
+implemented later. So, I'm going with this:
+
+	EXTENSIONS TRANSFER-RETRIEVE-URL
+	TRANSFER-RETRIEVE-URL Key Url
+
+Which leaves open the possibility for later things like:
+
+	TRANSFER-RETRIEVE-URL Key Url [Header1: foo, Header2: bar]
+	TRANSFER-STORE-URL Key Url PUT
 """]]

@@ -1,6 +1,6 @@
 {- git-annex file content managing
  -
- - Copyright 2010-2024 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -47,6 +47,7 @@ module Annex.Content (
 	listKeys',
 	saveState,
 	downloadUrl,
+	downloadUrl',
 	preseedTmp,
 	dirKeys,
 	withObjectLoc,
@@ -881,13 +882,21 @@ saveState nocommit = doSideAction $ do
  - that failed.
  -}
 downloadUrl :: Bool -> Key -> MeterUpdate -> Maybe IncrementalVerifier -> [Url.URLString] -> OsPath -> Url.UrlOptions -> Annex Bool
-downloadUrl listfailedurls k p iv urls file uo = 
+downloadUrl listfailedurls k p iv urls file uo =
+	downloadUrl' listfailedurls k p iv urls file uo >>= \case
+		Right r -> return r
+		Left e -> do
+			warning $ UnquotedString e
+			return False
+
+downloadUrl' :: Bool -> Key -> MeterUpdate -> Maybe IncrementalVerifier -> [Url.URLString] -> OsPath -> Url.UrlOptions -> Annex (Either String Bool)
+downloadUrl' listfailedurls k p iv urls file uo = 
 	-- Poll the file to handle configurations where an external
 	-- download command is used.
 	meteredFile file (Just p) k (go urls [])
   where
 	go (u:us) errs p' = Url.download' p' iv u file uo >>= \case
-		Right () -> return True
+		Right () -> return (Right True)
 		Left err -> do
 			-- If the incremental verifier was fed anything
 			-- while the download that failed ran, it's unable
@@ -899,14 +908,12 @@ downloadUrl listfailedurls k p iv urls file uo =
 					_ -> noop
 				Nothing -> noop
 			go us ((u, err) : errs) p'
-	go [] [] _ = return False
-	go [] errs@((_, err):_) _ = do
+	go [] [] _ = return (Right False)
+	go [] errs@((_, err):_) _ = return $ Left $
 		if listfailedurls
-			then warning $ UnquotedString $
-				unlines $ flip map errs $ \(u, err') ->
-					u ++ " " ++ err'
-			else warning $ UnquotedString err
-		return False
+			then unlines $ flip map errs $ \(u, err') ->
+				u ++ " " ++ err'
+			else err
 
 {- Copies a key's content, when present, to a temp file.
  - This is used to speed up some rsyncs. -}

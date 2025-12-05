@@ -45,7 +45,7 @@ Recent versions of git-annex respond with a message indicating
 protocol extensions that it supports. Older versions of
 git-annex do not send this message.
 
-	EXTENSIONS INFO ASYNC GETGITREMOTENAME UNAVAILABLERESPONSE
+	EXTENSIONS INFO ASYNC GETGITREMOTENAME UNAVAILABLERESPONSE TRANSFER-RETRIEVE-URL
 
 The special remote can respond to that with its own EXTENSIONS message, listing
 any extensions it wants to use. 
@@ -143,6 +143,11 @@ The following requests *must* all be supported by the special remote.
     Indicates the transfer completed successfully.
   * `TRANSFER-FAILURE STORE|RETRIEVE Key ErrorMsg`  
     Indicates the transfer failed.
+  * `TRANSFER-RETRIEVE-URL Key Url`  
+    Rather than the special remote downloading content from an url itself,
+    this lets it offload that work to git-annex. This response is a protocol
+    extension; it's only safe to send it to git-annex after it sent an
+    `EXTENSIONS` that included `TRANSFER-RETRIEVE-URL`.
 * `CHECKPRESENT Key`  
   Requests the remote to check if a key is present in it.  
   It's important that, while a key is being transferred to a remote,
@@ -376,7 +381,7 @@ handling a request.
   name.  
   (git-annex replies with VALUE followed by the name.)  
   This message is a protocol extension; it's only safe to send it to
-  git-annex after it sent an EXTENSIONS that included GETGITREMOTENAME.
+  git-annex after it sent an `EXTENSIONS` that included `GETGITREMOTENAME`.
 * `SETWANTED PreferredContentExpression`  
   Can be used to set the preferred content of a repository. Normally
   this is not configured by a special remote, but it may make sense
@@ -435,7 +440,7 @@ handling a request.
   When git-annex is in --json mode, the message will be emitted immediately
   in its own json object, with an "info" field.  
   This message is a protocol extension; it's only safe to send it to
-  git-annex after it sent an EXTENSIONS that included INFO.  
+  git-annex after it sent an `EXTENSIONS` that included `INFO`.  
   (git-annex does not send a reply to this message.)  
 
 ## general messages
@@ -477,6 +482,9 @@ These protocol extensions are currently supported.
 * `UNAVAILABLERESPONSE`  
   This allows the `AVAILABILITY UNAVAILABLE` response to be used
   in reply to `GETAVAILABILITY`.
+* `TRANSFER-RETRIEVE-URL`  
+  This allows the `TRANSFER-RETRIEVE-URL` response to be used
+  in reply to `TRANSFER` and `TRANSFEREXPORT`.
 
 ## signals
 

@@ -54,6 +54,11 @@ a request, it can reply with `UNSUPPORTED-REQUEST`.
     Indicates the transfer completed successfully.
   * `TRANSFER-FAILURE STORE|RETRIEVE Key ErrorMsg`  
     Indicates the transfer failed.
+  * `TRANSFER-RETRIEVE-URL Key Url`  
+    Rather than the special remote downloading content from an url itself,
+    this lets it offload that work to git-annex. This response is a
+    protocol extension; it's only safe to send it to git-annex after
+    it sent an `EXTENSIONS` that included `TRANSFER-RETRIEVE-URL`.
 * `CHECKPRESENTEXPORT Key`  
   Requests the remote to check if the previously provided `EXPORT` Name is present
   in it.  

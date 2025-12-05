@@ -1,6 +1,6 @@
 {- External special remote interface.
  -
- - Copyright 2013-2024 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -93,7 +93,7 @@ gen rt externalprogram r u rc gc rs
 		let exportactions = if exportsupported
 			then ExportActions
 				{ storeExport = storeExportM external
-				, retrieveExport = retrieveExportM external
+				, retrieveExport = retrieveExportM external gc
 				, removeExport = removeExportM external
 				, checkPresentExport = checkPresentExportM external
 				, removeExportDirectory = Just $ removeExportDirectoryM external
@@ -116,7 +116,7 @@ gen rt externalprogram r u rc gc rs
 			cheapexportsupported
 		return $ Just $ specialRemote c
 			(storeKeyM external)
-			(retrieveKeyFileM external)
+			(retrieveKeyFileM external gc)
 			(removeKeyM external)
 			(checkPresentM external)
 			rmt
@@ -248,17 +248,19 @@ storeKeyM external = fileStorer $ \k f p ->
 				result (Left (respErrorMessage "TRANSFER" errmsg))
 			_ -> Nothing
 
-retrieveKeyFileM :: External -> Retriever
-retrieveKeyFileM external = fileRetriever $ \d k p ->
-	either giveup return =<< watchFileSize d p (go d k)
+retrieveKeyFileM :: External -> RemoteGitConfig -> Retriever
+retrieveKeyFileM external gc = fileRetriever $ \dest k p ->
+	either giveup return =<< watchFileSize dest p (go dest k)
   where
-	go d k p = handleRequestKey external (\sk -> TRANSFER Download sk (fromOsPath d)) k (Just p) $ \resp ->
+	go dest k p = handleRequestKey external (\sk -> TRANSFER Download sk (fromOsPath dest)) k (Just p) $ \resp ->
 		case resp of
 			TRANSFER_SUCCESS Download k'
 				| k == k' -> result $ Right ()
 			TRANSFER_FAILURE Download k' errmsg
 				| k == k' -> result $ Left $
 					respErrorMessage "TRANSFER" errmsg
+			TRANSFER_RETRIEVE_URL k' url
+				| k == k' -> retrieveUrl' gc url dest k p
 			_ -> Nothing
 
 removeKeyM :: External -> Remover
@@ -306,8 +308,8 @@ storeExportM external f k loc p = either giveup return =<< go
 		_ -> Nothing
 	req sk = TRANSFEREXPORT Upload sk (fromOsPath f)
 
-retrieveExportM :: External -> Key -> ExportLocation -> OsPath -> MeterUpdate -> Annex Verification
-retrieveExportM external k loc dest p = do
+retrieveExportM :: External -> RemoteGitConfig -> Key -> ExportLocation -> OsPath -> MeterUpdate -> Annex Verification
+retrieveExportM external gc k loc dest p = do
 	verifyKeyContentIncrementally AlwaysVerify k $ \iv ->
 		tailVerify iv dest $
 			either giveup return =<< go
@@ -317,6 +319,8 @@ retrieveExportM external k loc dest p = do
 			| k == k' -> result $ Right ()
 		TRANSFER_FAILURE Download k' errmsg
 			| k == k' -> result $ Left $ respErrorMessage "TRANSFER" errmsg
+		TRANSFER_RETRIEVE_URL k' url
+			| k == k' -> retrieveUrl' gc url dest k p
 		UNSUPPORTED_REQUEST ->
 			result $ Left "TRANSFEREXPORT not implemented by external special remote"
 		_ -> Nothing
@@ -838,7 +842,18 @@ retrieveUrl :: RemoteGitConfig -> Retriever
 retrieveUrl gc = fileRetriever' $ \f k p iv -> do
 	us <- getWebUrls k
 	unlessM (withUrlOptions (Just gc) $ downloadUrl True k p iv us f) $
-		giveup "failed to download content"
+		giveup downloadFailed
+
+retrieveUrl' :: RemoteGitConfig -> URLString -> OsPath -> Key -> MeterUpdate -> Maybe (Annex (ResponseHandlerResult (Either String ())))
+retrieveUrl' gc url dest k p = 
+	Just $ withUrlOptions (Just gc) $ \uo ->
+		downloadUrl' False k p Nothing [url] dest uo >>= return . \case
+			Left msg -> Result (Left msg)
+			Right True -> Result (Right ())
+			Right False -> Result (Left downloadFailed)
+
+downloadFailed :: String
+downloadFailed = "failed to download content"
 
 checkKeyUrl :: RemoteGitConfig -> CheckPresent
 checkKeyUrl gc k = do

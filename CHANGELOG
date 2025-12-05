@@ -5,6 +5,8 @@ git-annex (10.20251118) UNRELEASED; urgency=medium
   * Add a build warning when the version of aws being built against is
     too old. 0.25.1 is needed to support Google Cloud Storage.
   * stack.yaml: Use aws-0.25.1.
+  * Added TRANSFER-RETRIEVE-URL extension to the external special remote
+    protocol.
 
  -- Joey Hess <id@joeyh.name>  Tue, 18 Nov 2025 12:34:12 -0400
 
