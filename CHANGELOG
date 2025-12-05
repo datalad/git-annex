@@ -6386,7 +6386,7 @@ git-annex (4.20131101) unstable; urgency=low
   * sync: Show a hint about receive.denyNonFastForwards when a push fails.
   * directory, webdav: Fix bug introduced in version 4.20131002 that
     caused the chunkcount file to not be written. Work around repositories
-    without such a file, so files can still be retreived from them.
+    without such a file, so files can still be retrieved from them.
   * assistant: Automatically repair damanged git repository, if it can
     be done without losing data.
   * assistant: Support repairing git remotes that are locally accessible
