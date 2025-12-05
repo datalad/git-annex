@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2025-12-05T16:58:21Z"
+ content="""
+An added benefit of this will be that git-annex can stream hash
+while downloading, so it will avoid re-reading the file at the end to
+verifiy it.
+"""]]
