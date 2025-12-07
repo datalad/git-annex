@@ -1,0 +1,26 @@
+I thought I had an issue on this but failed to find :-/
+
+ATM git-annex does not even bother to suggest or do anything about a remote git/git-annex repository if there is no git-annex (`git-annex-shell`) available there:
+
+```
+yoh@typhon:/mnt/DATA/data/dbic/QA$ git annex list
+
+  Unable to parse git config from origin
+
+  Remote origin does not have git-annex installed; setting annex-ignore
+
+  This could be a problem with the git-annex installation on the remote. Please make sure that git-annex-shell is available in PATH when you ssh into the remote. Once you have fixed the git-annex installation, run: git annex enableremote origin
+here
+|datasets.datalad.org
+||origin
+|||web
+||||bittorrent
+|||||
+_X___ .datalad/metadata/objects/06/cn-2c3eade47bd2d9052658c6a9d10a57.xz
+
+...
+```
+
+a workaround, it seems as [it was posted over a decade ago](https://superuser.com/questions/526705/hosting-a-git-annex-on-a-server-without-git-annex-installed) (and now even google ai suggests that) is to setup an additional `rsync` remote and use it to fetch. upon a quick try didn't work for me but could have been an operator error...
+
+As files are available over regular ssh/scp and even rsync over ssh - I really do not see a technical problem for git-annex to establish interoperability with such a remote, at least for reading from, without having remote git-annex-shell.  That should make it possible to access git-annex'es on servers which might be running some odd setups where installation of git-annex in user-space would be tricky if not impossible.
