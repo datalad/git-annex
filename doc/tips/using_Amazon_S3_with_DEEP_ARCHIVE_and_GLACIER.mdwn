@@ -38,7 +38,7 @@ Now the remote can be used like any other remote.
 But, when you try to get a file out of S3, it'll start a restore:
 
 	# git annex get my_cool_big_file
-	get my_cool_big_file (from s3...) (gpg)
+	get my_cool_big_file (from mys3...) (gpg)
 
       Restore initiated, try again later.
 	failed
