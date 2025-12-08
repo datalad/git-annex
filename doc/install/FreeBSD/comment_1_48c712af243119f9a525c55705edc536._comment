@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="Q: any way to &quot;install&quot; without having root/admin privileges"
+ date="2025-12-07T19:38:46Z"
+ content="""
+need to install on a box where I am not an admin, just to copy the files from it (odd that git-annex can't just get anything it needs since SSH is there and working fine!).
+"""]]
