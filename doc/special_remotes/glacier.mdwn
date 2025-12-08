@@ -10,6 +10,10 @@ due to the data not yet being available. You can then wait approximately
 four hours, re-run the same command, and this time, it will actually
 download the data.
 
+Amazon has deprecated Glacier, except for existing users. Instead of using
+this special remote, you can use the [[S3]] special remote, configured with
+`storageclass=DEEP_ARCHIVE` and `restore=yes`
+
 ## configuration
 
 The standard environment variables `AWS_ACCESS_KEY_ID` and 

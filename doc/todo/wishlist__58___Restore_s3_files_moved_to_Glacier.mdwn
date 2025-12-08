@@ -7,3 +7,6 @@ Basically, the files moved by AWS from S3 to Glacier are not available under the
 I suppose DELETE needs special care as well.
 
 [[!meta title="wishlist: Restore s3 files moved to Glacier or Deep Archive"]]
+
+> [[done]], configure the S3 remote with `restore=yes`. There are also
+> some git configs. --[[Joey]]

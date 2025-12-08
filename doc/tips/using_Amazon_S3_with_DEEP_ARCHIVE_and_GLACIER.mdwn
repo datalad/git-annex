@@ -1,0 +1,74 @@
+Amazon S3 with `DEEP_ARCHIVE` storage class is less expensive than regular
+S3, but does not provide real-time access to the files in the S3 bucket. It
+takes hours to get content from the S3 bucket. Similarly, the 
+`GLACIER` storage class takes minutes to hours to get content.
+(This is similar to the deprecated Amazon Glacier.)
+
+This needs git-annex version 10.20251208, and it needs to be built with
+`aws-0.25.2`.
+
+First, export your Amazon AWS credentials:
+
+        # export AWS_ACCESS_KEY_ID="08TJMT99S3511WOZEP91"
+        # export AWS_SECRET_ACCESS_KEY="s3kr1t"
+
+Now, create a gpg key, if you don't already have one. This will be used
+to encrypt everything stored in S3, for your privacy. Once you have
+a gpg key, run `gpg --list-secret-keys` to look up its key id, something
+like "2512E3C7"
+
+Next, create the S3 remote.
+
+	# git annex initremote mys3 type=S3 storageclass=DEEP_ARCHIVE restore=yes keyid=2512E3C7
+	initremote mys3 (encryption setup with gpg key C910D9222512E3C7) (gpg) ok
+
+The configuration for the S3 remote is stored in git. So to make another
+repository use the same remote is easy:
+
+        # cd /media/usb/annex
+        # git pull laptop
+        # git annex enableremote mys3
+        initremote mys3 (gpg) ok
+
+Now the remote can be used like any other remote.
+
+        # git annex move my_cool_big_file --to mys3
+        copy my_cool_big_file (gpg) (to mys3...) ok
+
+But, when you try to get a file out of S3, it'll start a restore:
+
+	# git annex get my_cool_big_file
+	get my_cool_big_file (from s3...) (gpg)
+
+      Restore initiated, try again later.
+	failed
+
+Like it says, you'll need to run the command again later. Let's remember to
+do that:
+
+	# at now + 24 hours
+	at> git annex get my_cool_big_file
+
+## git configs
+
+There are a couple of git configs that you can use to control how the
+retrieval of a file works.
+
+The `annex.s3-restore-days` config controls how many days a retrieved file
+remains accessible in the S3 bucket. The default is 1 day, but if you need
+longer you can set this to a higher value. 
+
+The`annex.s3-restore-tier` config controls how fast the restore happens. It
+can be set to "standard", "bulk", or "expedited". Using "bulk" can save
+money, but takes longer. Using "expedited" is faster but more expensive,
+and it does not work with `DEEP_ARCHIVE` but needs `GLACIER`. Consult the
+S3 documentation for details.
+
+## note about chunking
+
+The `chunk=` configuration does not work well with this, because git-annex
+will try to get the first chunk, start a restore of it, and then give up
+without restoring the rest of the chunks. When you run it
+again, it will get the first chunk, and then start a restore of the second
+chunk. And so on.. It would take as many retries as a file is chunked into
+to get the whole file back from S3.

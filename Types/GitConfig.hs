@@ -439,6 +439,8 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexTahoe :: Maybe FilePath
 	, remoteAnnexBupSplitOptions :: [String]
 	, remoteAnnexDirectory :: Maybe FilePath
+	, remoteAnnexS3RestoreTier :: Maybe String
+	, remoteAnnexS3RestoreDays :: Maybe Integer
 	, remoteAnnexAndroidDirectory :: Maybe FilePath
 	, remoteAnnexAndroidSerial :: Maybe String
 	, remoteAnnexGCrypt :: Maybe String
@@ -541,6 +543,8 @@ extractRemoteGitConfig r remotename = do
 		, remoteAnnexTahoe = getmaybe TahoeField
 		, remoteAnnexBupSplitOptions = getoptions BupSplitOptionsField
 		, remoteAnnexDirectory = notempty $ getmaybe DirectoryField
+		, remoteAnnexS3RestoreTier = notempty $ getmaybe S3RestoreTierField
+		, remoteAnnexS3RestoreDays = getmayberead S3RestoreDaysField
 		, remoteAnnexAndroidDirectory = notempty $ getmaybe AndroidDirectoryField
 		, remoteAnnexAndroidSerial = notempty $ getmaybe AndroidSerialField
 		, remoteAnnexGCrypt = notempty $ getmaybe GCryptField
@@ -625,6 +629,8 @@ data RemoteGitConfigField
 	| TahoeField
 	| BupSplitOptionsField
 	| DirectoryField
+	| S3RestoreTierField
+	| S3RestoreDaysField
 	| AndroidDirectoryField
 	| AndroidSerialField
 	| GCryptField
@@ -697,6 +703,8 @@ remoteGitConfigField = \case
 	TahoeField -> uninherited True "tahoe"
 	BupSplitOptionsField -> uninherited True "bup-split-options"
 	DirectoryField -> uninherited True "directory"
+	S3RestoreTierField -> uninherited True "s3-restore-tier"
+	S3RestoreDaysField -> uninherited True "s3-restore-days"
 	AndroidDirectoryField -> uninherited True "androiddirectory"
 	AndroidSerialField -> uninherited True "androidserial"
 	GCryptField -> uninherited True "gcrypt"

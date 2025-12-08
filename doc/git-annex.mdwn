@@ -1889,11 +1889,11 @@ Remotes are configured using these settings in `.git/config`.
 
   This configuration setting is no longer used.
 
-* `remote.<name>.annex-ssh-options`
+* `remote.<name>.annex-ssh-options`, `annex.ssh-options`
 
   Options to use when using ssh to talk to this remote.
 
-* `remote.<name>.annex-rsync-options`
+* `remote.<name>.annex-rsync-options`, `annex.rsync-options`
 
   Options to use when using rsync
   to or from this remote. For example, to force IPv6, and limit
@@ -1903,7 +1903,7 @@ Remotes are configured using these settings in `.git/config`.
   and others will not be be passed to the remote rsync. So using some
   options may break the communication between the local and remote rsyncs.
 
-* `remote.<name>.annex-rsync-upload-options`
+* `remote.<name>.annex-rsync-upload-options`, `annex.rsync-upload-options`
 
   Options to use when using rsync to upload a file to a remote.
 
@@ -1911,7 +1911,7 @@ Remotes are configured using these settings in `.git/config`.
   so can be used to override them. For example, to limit upload bandwidth
   to 10Kbyte/s, set `--bwlimit 10`.
 
-* `remote.<name>.annex-rsync-download-options`
+* `remote.<name>.annex-rsync-download-options`, `annex.rsync-download-options`
 
   Options to use when using rsync to download a file from a remote.
 
@@ -1927,13 +1927,13 @@ Remotes are configured using these settings in `.git/config`.
   When the transport used is `ssh`, connections are automatically cached
   unless `annex.sshcaching` is unset.
 
-* `remote.<name>.annex-bup-split-options`
+* `remote.<name>.annex-bup-split-options`, `annex.bup-split-options`
 
   Options to pass to bup split when storing content in this remote.
   For example, to limit the bandwidth to 100Kbyte/s, set it to `--bwlimit 100k`
   (There is no corresponding option for bup join.)
 
-* `remote.<name>.annex-gnupg-options`
+* `remote.<name>.annex-gnupg-options`, `annex.gnupg-options`
 
   Options to pass to GnuPG when it's encrypting data. For instance, to
   use the AES cipher with a 256 bits key and disable compression, set it
@@ -1941,13 +1941,13 @@ Remotes are configured using these settings in `.git/config`.
   precedence over the default GnuPG configuration, which is otherwise
   used.)
 
-* `remote.<name>.annex-gnupg-decrypt-options`
+* `remote.<name>.annex-gnupg-decrypt-options`, `annex.gnupg-decrypt-options`
 
   Options to pass to GnuPG when it's decrypting data. (These options take
   precedence over the default GnuPG configuration, which is otherwise
   used.)
 
-* `remote.<name>.annex-shared-sop-command`
+* `remote.<name>.annex-shared-sop-command`, `annex.shared-sop-command`
 
   Use this command, which is an implementation of the Stateless OpenPGP
   command line interface, rather than GnuPG for encrypting and decrypting
@@ -1956,7 +1956,7 @@ Remotes are configured using these settings in `.git/config`.
 
   For example, to use Sequoia PGP's sqop command, set this to "sqop".
 
-* `remote.<name>.annex-shared-sop-profile`
+* `remote.<name>.annex-shared-sop-profile`, `annex.shared-sop-profile`
 
   When encrypting with a Stateless OpenPGP command, this can be used
   to specify the profile to use, such as "rfc4880".
@@ -1964,15 +1964,6 @@ Remotes are configured using these settings in `.git/config`.
   For a list of available profiles, run eg "sqop list-profiles encrypt"
 
   sqop list-profiles encrypt
-
-* `annex.ssh-options`, `annex.rsync-options`,
-  `annex.rsync-upload-options`, `annex.rsync-download-options`,
-  `annex.bup-split-options`, `annex.gnupg-options`,
-  `annex.gnupg-decrypt-options`,
-  `annex.shared-sop-command`, `annex.shared-sop-profile`
-
-  Default options to use if a remote does not have more specific options
-  as described above.
 
 * `remote.<name>.annex-rsyncurl`
 
@@ -2033,6 +2024,18 @@ Remotes are configured using these settings in `.git/config`.
 
   Used to identify Amazon S3 special remotes.
   Normally this is automatically set up by `git annex initremote`.
+
+* `remote.<name>.annex-s3-restore-tier`, `annex.s3-restore-tier`
+
+  When using a Amazon S3 special remote, this specifies the tier
+  to use when retrieving objects from deep storage. It can be set to
+  "standard" (the default), "bulk", or "expedited".
+
+* `remote.<name>.annex-s3-restore-days`, `annex.s3-restore-days`
+
+  When using an Amazon S3 special remote, this specifies how many
+  days objects that are retrieved from deep storage should be left
+  available. The default is 1 day.
 
 * `remote.<name>.annex-glacier`
 

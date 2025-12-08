@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2025-12-08T19:31:53Z"
+ content="""
+I've implemented this now, S3 special remote can be configured with
+`restore=yes` and it will initiate a restore.
+"""]]

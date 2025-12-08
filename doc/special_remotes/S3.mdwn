@@ -1,7 +1,8 @@
 This special remote type stores file contents in a bucket in Amazon S3
 or a similar service.
 
-See [[tips/using_Amazon_S3]], 
+See [[tips/using_Amazon_S3]],
+[[tips/using_Amazon_S3_with_DEEP_ARCHIVE_and_GLACIER]],
 [[tips/Internet_Archive_via_S3]], and [[tips/using_Google_Cloud_Storage]]
 for usage examples.
 
@@ -56,8 +57,9 @@ the S3 remote.
   multiple [[copies]], also consider setting this to `ONEZONE_IA`
   to save even more money.
 
-  Amazon S3's `DEEP_ARCHIVE` is similar to Amazon Glacier. For that,
-  use the [[glacier]] special remote, rather than this one.
+  Amazon S3's `GLACIER` and `DEEP_ARCHIVE` and similar storage classes
+  that do not provide real-time access to files can also be used, but
+  you must  set `restore=yes` when using them.
 
   When using Google Cloud Storage, to make a nearline bucket, set this to
   `NEARLINE`.
@@ -65,6 +67,20 @@ the S3 remote.
   Note that changing the storage class of an existing S3 remote will
   affect new objects sent to the remote, but not objects already
   stored there.
+
+* `restore` - Optional. Set to "yes" to make git-annex try to initiate a
+  restore of a file when it is not currently accessible in the S3
+  bucket. This is needed when using Amazon S3's `DEEP_ARCHIVE` and
+  similar storage classes.
+
+  When a S3 special remote is configured this way, commands like 
+  "git-annex get" trigger the restore, and will fail due to the data not
+  being available. You can then wait a while, re-run the same command,
+  and this time, it will actually download the data.
+
+  The git configs `annex.s3-restore-tier` and `annex.s3-restore-days`
+  (and similar per-remote configs) can be used to control the retrival
+  tier and how many days to keep the restored file available.
 
 * `host` - Specify in order to use a different, S3 compatible
   service.

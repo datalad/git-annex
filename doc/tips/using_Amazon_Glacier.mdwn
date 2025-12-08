@@ -1,6 +1,12 @@
 Amazon Glacier provides low-cost storage, well suited for archiving and
 backup. But it takes around 4 hours to get content out of Glacier.
 
+Amazon Glacier has been deprecated, and only existing users can use it at
+this point. So this tip is not likely to be useful to you. Instead, see
+[[tips/using_Amazon_S3_with_DEEP_ARCHIVE]].
+
+----
+
 Recent versions of git-annex support Glacier. To use it, you need to have
 [glacier-cli](http://github.com/basak/glacier-cli) installed.
 

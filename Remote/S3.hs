@@ -12,8 +12,8 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE CPP #-}
 
-#if ! MIN_VERSION_aws(0,25,1)
-#warning Building with an old version of the aws library. Recommend updating to 0.25.1, which fixes bugs and is needed for some features.
+#if ! MIN_VERSION_aws(0,25,2)
+#warning Building with an old version of the aws library. Recommend updating to 0.25.2, which fixes bugs and is needed for some features.
 #endif
 
 module Remote.S3 (remote, iaHost, configIA, iaItemUrl) where
@@ -96,6 +96,8 @@ remote = specialRemoteType $ RemoteType
 				(FieldDesc "part size for multipart upload (eg 1GiB)")
 			, optionalStringParser storageclassField
 				(FieldDesc "storage class, eg STANDARD or STANDARD_IA or ONEZONE_IA")
+			, yesNoParser restoreField (Just False)
+				(FieldDesc "enable restore of files not currently accessible in the bucket")
 			, optionalStringParser fileprefixField
 				(FieldDesc "prefix to add to filenames in the bucket")
 			, yesNoParser versioningField (Just False)
@@ -151,7 +153,10 @@ storageclassField = Accepted "storageclass"
 
 fileprefixField :: RemoteConfigField
 fileprefixField = Accepted "fileprefix"
-			
+
+restoreField :: RemoteConfigField
+restoreField = Accepted "restore"
+
 publicField :: RemoteConfigField
 publicField = Accepted "public"
 
@@ -208,7 +213,7 @@ gen r u rc gc rs = do
   where
 	new c cst info hdl magic = Just $ specialRemote c
 		(store hdl this info magic)
-		(retrieve hdl rs c info)
+		(retrieve gc hdl rs c info)
 		(remove hdl this info)
 		(checkKey hdl rs c info)
 		this
@@ -432,14 +437,14 @@ storeHelper info h magic f object p = liftIO $ case partSize info of
 {- Implemented as a fileRetriever, that uses conduit to stream the chunks
  - out to the file. Would be better to implement a byteRetriever, but
  - that is difficult. -}
-retrieve :: S3HandleVar -> RemoteStateHandle -> ParsedRemoteConfig -> S3Info -> Retriever
-retrieve hv rs c info = fileRetriever' $ \f k p iv -> withS3Handle hv $ \case
+retrieve :: RemoteGitConfig -> S3HandleVar -> RemoteStateHandle -> ParsedRemoteConfig -> S3Info -> Retriever
+retrieve gc hv rs c info = fileRetriever' $ \f k p iv -> withS3Handle hv $ \case
 	Right h -> 
 		eitherS3VersionID info rs c k (T.pack $ bucketObject info k) >>= \case
 			Left failreason -> do
 				warning (UnquotedString failreason)
 				giveup "cannot download content"
-			Right loc -> retrieveHelper info h loc f p iv
+			Right loc -> retrieveHelper gc info h loc f p iv
 	Left S3HandleNeedCreds ->
 		getPublicWebUrls' rs info c k >>= \case
 			Left failreason -> do
@@ -448,17 +453,44 @@ retrieve hv rs c info = fileRetriever' $ \f k p iv -> withS3Handle hv $ \case
 			Right us -> unlessM (withUrlOptions Nothing $ downloadUrl False k p iv us f) $
 				giveup "failed to download content"
 
-retrieveHelper :: S3Info -> S3Handle -> (Either S3.Object S3VersionID) -> OsPath -> MeterUpdate -> Maybe IncrementalVerifier -> Annex ()
-retrieveHelper info h loc f p iv = retrieveHelper' h f p iv $
+retrieveHelper :: RemoteGitConfig -> S3Info -> S3Handle -> (Either S3.Object S3VersionID) -> OsPath -> MeterUpdate -> Maybe IncrementalVerifier -> Annex ()
+retrieveHelper gc info h loc f p iv = retrieveHelper' gc info h f p iv $
 	case loc of
 		Left o -> S3.getObject (bucket info) o
 		Right (S3VersionID o vid) -> (S3.getObject (bucket info) o)
 			{ S3.goVersionId = Just vid }
 
-retrieveHelper' :: S3Handle -> OsPath -> MeterUpdate -> Maybe IncrementalVerifier -> S3.GetObject -> Annex ()
-retrieveHelper' h f p iv req = liftIO $ runResourceT $ do
-	S3.GetObjectResponse { S3.gorResponse = rsp } <- sendS3Handle h req
+retrieveHelper' :: RemoteGitConfig -> S3Info -> S3Handle -> OsPath -> MeterUpdate -> Maybe IncrementalVerifier -> S3.GetObject -> Annex ()
+retrieveHelper' gc info h f p iv req = liftIO $ runResourceT $ do
+	S3.GetObjectResponse { S3.gorResponse = rsp } <- handlerestore $ 
+		sendS3Handle h req
 	Url.sinkResponseFile p iv zeroBytesProcessed f WriteMode rsp
+  where
+	needrestore st = restore info && statusCode st == 403
+	handlerestore a = catchJust (Url.matchStatusCodeException needrestore) a $ \_ -> do
+#if MIN_VERSION_aws(0,25,2)
+		let tier = case remoteAnnexS3RestoreTier gc of
+			Just "bulk" -> S3.RestoreObjectTierBulk
+			Just "expedited" -> S3.RestoreObjectTierExpedited
+			_ -> S3.RestoreObjectTierStandard
+		let days = case remoteAnnexS3RestoreDays gc of
+			Just n -> S3.RestoreObjectLifetimeDays n
+			Nothing -> S3.RestoreObjectLifetimeDays 1
+		let restorereq = S3.restoreObject
+			(S3.goBucket req)
+			(S3.goObjectName req)
+			tier
+			days
+		restoreresp <- sendS3Handle h $ restorereq
+			{ S3.roVersionId = S3.goVersionId req
+			}
+		case restoreresp of
+			S3.RestoreObjectAccepted -> giveup "Restore initiated, try again later."
+			S3.RestoreObjectAlreadyInProgress -> giveup "Restore in progress, try again later."
+			S3.RestoreObjectAlreadyRestored -> a
+#else
+		giveup "git-annex is built with too old a version of the aws library to support restore=yes"
+#endif
 
 remove :: S3HandleVar -> Remote -> S3Info -> Remover
 remove hv r info _proof k = withS3HandleOrFail (uuid r) hv $ \h -> do
@@ -529,7 +561,7 @@ storeExportS3' hv r rs info magic f k loc p = withS3Handle hv $ \case
 retrieveExportS3 :: S3HandleVar -> Remote -> S3Info -> Key -> ExportLocation -> OsPath -> MeterUpdate -> Annex Verification
 retrieveExportS3 hv r info k loc f p = verifyKeyContentIncrementally AlwaysVerify k $ \iv ->
 	withS3Handle hv $ \case
-		Right h -> retrieveHelper info h (Left (T.pack exportloc)) f p iv
+		Right h -> retrieveHelper (gitconfig r) info h (Left (T.pack exportloc)) f p iv
 		Left S3HandleNeedCreds -> case getPublicUrlMaker info of
 			Just geturl -> either giveup return =<<
 				withUrlOptions Nothing
@@ -728,7 +760,7 @@ retrieveExportWithContentIdentifierS3 hv r rs info loc (cid:_) dest gk p =
   where
 	go iv = withS3Handle hv $ \case
 		Right h -> do
-			rewritePreconditionException $ retrieveHelper' h dest p iv $
+			rewritePreconditionException $ retrieveHelper' (gitconfig r) info h dest p iv $
 				limitGetToContentIdentifier cid $
 					S3.getObject (bucket info) o
 			k <- either return id gk
@@ -1036,6 +1068,7 @@ data S3Info = S3Info
 	, partSize :: Maybe Integer
 	, isIA :: Bool
 	, versioning :: Bool
+	, restore :: Bool
 	, publicACL :: Bool
 	, publicurl :: Maybe URLString
 	, host :: Maybe String
@@ -1060,6 +1093,8 @@ extractS3Info c = do
 		, isIA = configIA c
 		, versioning = fromMaybe False $
 			getRemoteConfigValue versioningField c
+		, restore = fromMaybe False $
+			getRemoteConfigValue restoreField c
 		, publicACL = fromMaybe False $
 			getRemoteConfigValue publicField c
 		, publicurl = getRemoteConfigValue publicurlField c
