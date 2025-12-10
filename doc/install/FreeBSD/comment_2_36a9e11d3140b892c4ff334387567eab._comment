@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2025-12-10T18:15:59Z"
+ content="""
+Doesn't FreeBSD support emulating linux syscalls? I suspect that the linux
+standalone tarball could be used to install git-annex on user-space on
+FreeBSD and work that way. Have not tried it maybe there is a better way,
+to install a FreeBSD port as a regular user.
+"""]]
