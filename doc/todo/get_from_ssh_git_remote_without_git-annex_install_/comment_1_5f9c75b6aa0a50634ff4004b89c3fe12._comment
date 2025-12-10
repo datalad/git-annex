@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-12-10T17:39:01Z"
+ content="""
+It's actually possible to use a rsync special remote to fetch objects right
+out of `.git/annex/objects/`. For example:
+
+	git-annex initremote foo-rsync type=rsync encryption=none rsyncurl=example.com:/path/to/repo/.git/annex/objects/ --sameas=foo
+
+Since the default hash directory paths are different for rsync than for a
+git-annex repository, getting an object will first try the wrong hash path,
+which does lead to rsync complaining to stderr. But then it will fall back
+to a hash path that works.
+
+Sending an object to the rsync special remote will store it in a hash path
+different from the one that git-annex usually uses. So later switching to using
+git-annex in that repository will result in some unusual behavior, since
+it won't see some files that were put there. `git-annex fsck` will actually
+recover from this too, eg:
+
+	fsck newfile (normalizing object location) (checksum...) ok
+
+There are enough problems that I can't really recommend this, 
+it just seemed worth pointing out that it can be done.
+"""]]
