@@ -1,0 +1,47 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2025-12-10T17:54:01Z"
+ content="""
+As for the idea that git-annex could access a remote without
+git-annex-shell, I think that any efforts in this area are bound to end up
+with some partial implementation of a quarter of git-annex-shell in shell
+script, which is bound to not work as well as the real thing.
+
+Consider that this is a supported workflow:
+
+	git push origin master
+	git-annex copy --to origin
+
+	ssh otherhost
+	cd repo
+	git pull origin
+	git-annex get
+
+In that example, the git-annex branch is not pushed to origin after annexed
+files are sent to it. So how does git-annex on otherhost know that origin
+has those files? Well, git-annex-shell, when receiving the files, updates
+the git-annex branch in origin.
+
+So, to support this workflow, the git-annex-shell reimplementation in shell
+would need to update the git-annex branch. That's about 3000 lines of code
+in git-annex, with complecations including concurrency, making it fast,
+etc.
+
+Other complications include supporting different repository versions,
+populating unlocked files, supporting configs like
+annex.secure-erase-command, etc. And while any of these could be left out
+an be documented as limitations of not having git-annex installed, I think
+the real kicker is that this is behavior what would occur even if git-annex
+is only *temporarily* not installed. So there's the risk that any user who
+is having a bad PATH day suddenly gets a weird behavior.
+
+Making it read-only would somewhat limit the exposure to all these
+problems, but if it's read-only, how would any annex objects get into the
+remote repository in the first place?
+
+Using a separate special remote seems much cleaner. Then it's only used if
+you choose to use it. And it works like any other special remote. 
+The rsync special remote is close enough to work, but a more special-purpose
+one could support things a bit better.
+"""]]
