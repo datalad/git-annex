@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 3"
+ date="2025-12-11T12:20:27Z"
+ content="""
+don't know much about freebsd but static builds from https://git.kyleam.com/static-annex do not work:
+
+```shell
+[yoh@dbic-mrinbox ~/git-annex-10.20250828]$ bin/git-annex
+ELF binary type \"0\" not known.
+bash: bin/git-annex: cannot execute binary file: Exec format error
+[yoh@dbic-mrinbox ~/git-annex-10.20250828]$ file bin/git-annex
+bin/git-annex: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, BuildID[sha1]=a6f7f36778ade374ef6572c787cacf6ffa2ec78d, with debug_info, not stripped
+
+```
+"""]]
