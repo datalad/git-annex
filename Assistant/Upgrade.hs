@@ -28,6 +28,7 @@ import qualified Types.Backend
 import Assistant.TransferQueue
 import Assistant.TransferSlots
 import Remote (remoteFromUUID)
+import Remote.List
 import Annex.Path
 import Config.Files
 import Utility.ThreadScheduler
@@ -102,7 +103,7 @@ startDistributionDownload d = go =<< liftIO . newVersionLocation d =<< liftIO ol
 		, transferKeyData = fromKey id k
 		}
 	cleanup = liftAnnex $ do
-		lockContentForRemoval k noop removeAnnex
+		lockContentForRemoval k noop (removeAnnex remoteList)
 		setUrlMissing k u
 		logStatus NoLiveUpdate k InfoMissing
 

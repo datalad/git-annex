@@ -20,6 +20,7 @@ import Annex.NumCopies
 import Annex.Content
 import Annex.Wanted
 import Annex.Notification
+import Remote.List
 
 cmd :: Command
 cmd = withAnnexOptions [jobsOption, jsonOptions, annexedMatchingOptions] $
@@ -134,7 +135,7 @@ performLocal lu pcc key afile numcopies mincopies preverified ud = lockContentFo
 				, "proof:"
 				, show proof
 				]
-			removeAnnex contentlock
+			removeAnnex remoteList contentlock
 			notifyDrop afile True
 			next $ cleanupLocal lu key ud
 		, do 

@@ -31,6 +31,7 @@ import P2P.IO
 import P2P.Annex
 import Annex.WorkerPool
 import Types.WorkerPool
+import Remote.List
 import Types.Direction
 import Utility.Metered
 import Utility.STM
@@ -137,7 +138,7 @@ serveGet mst su apiver (B64Key k) cu bypass baf startat sec auth = do
 				return True
 		let noothermessages = const Nothing
 		enteringStage (TransferStage Upload) $
-			runFullProto (clientRunState conn) (clientP2PConnection conn) $
+			runFullProto (clientRunState conn) remoteList (clientP2PConnection conn) $
 				void $ receiveContent Nothing nullMeterUpdate
 					sizer storer noothermessages getreq
 	void $ liftIO $ forkIO $ waitfinal endv finalv conn annexworker
@@ -403,7 +404,7 @@ servePutAction
 	-> IO (Either SomeException (Either ProtoFailure (Maybe [UUID])))
 servePutAction (conn, st) (B64Key k) baf a = handleRequestAnnex st $
 	enteringStage (TransferStage Download) $
-		runFullProto (clientRunState conn) (clientP2PConnection conn) $
+		runFullProto (clientRunState conn) remoteList (clientP2PConnection conn) $
 			put' k af a
   where
 	af = b64FilePathToAssociatedFile baf
@@ -495,14 +496,14 @@ serveLockContent mst su apiver (B64Key k) cu bypass sec auth =
 		-- A thread takes the lock, and keeps running
 		-- until unlock in order to keep the lock held.
 		lockthread <- async $ handleRequestAnnex st $ do
-			lockres <- runFullProto (clientRunState conn) (clientP2PConnection conn) $ do
+			lockres <- runFullProto (clientRunState conn) remoteList (clientP2PConnection conn) $ do
 				net $ sendMessage (LOCKCONTENT k)
 				checkSuccess
 			liftIO $ atomically $ putTMVar lockresv lockres
 			case lockres of
 				Right True -> do
 					liftIO $ atomically $ takeTMVar unlockv
-					void $ runFullProto (clientRunState conn) (clientP2PConnection conn) $ do
+					void $ runFullProto (clientRunState conn) remoteList (clientP2PConnection conn) $ do
 						net $ sendMessage UNLOCKCONTENT
 				_ -> return ()
 		atomically (takeTMVar lockresv) >>= \case

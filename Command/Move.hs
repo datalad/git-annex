@@ -14,6 +14,7 @@ import qualified Command.Drop
 import qualified Annex
 import Annex.Content
 import qualified Remote
+import Remote.List
 import Annex.UUID
 import Annex.Transfer
 import Logs.Trust
@@ -211,7 +212,7 @@ toPerform' mcontentlock lu dest removewhen key afile fastcheck isthere = do
 		-- Drop content before updating location logs,
 		-- in case disk space is very low this frees
 		-- up space before writing data to disk.
-		removeAnnex contentlock
+		removeAnnex remoteList contentlock
 		next $ do
 			() <- setpresentremote
 			Command.Drop.cleanupLocal lu key (Command.Drop.DroppingUnused False)

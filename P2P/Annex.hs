@@ -32,16 +32,16 @@ import Control.Concurrent.STM
 import Data.Time.Clock.POSIX
 
 -- Full interpreter for Proto, that can receive and send objects.
-runFullProto :: RunState -> P2PConnection -> Proto a -> Annex (Either ProtoFailure a)
-runFullProto runst conn = go
+runFullProto :: RunState -> Annex [Remote] -> P2PConnection -> Proto a -> Annex (Either ProtoFailure a)
+runFullProto runst remotelist conn = go
   where
 	go :: RunProto Annex
 	go (Pure v) = return (Right v)
 	go (Free (Net n)) = runNet runst conn go n
-	go (Free (Local l)) = runLocal runst go l
+	go (Free (Local l)) = runLocal runst remotelist go l
 
-runLocal :: RunState -> RunProto Annex -> LocalF (Proto a) -> Annex (Either ProtoFailure a)
-runLocal runst runner a = case a of
+runLocal :: RunState -> Annex [Remote] -> RunProto Annex -> LocalF (Proto a) -> Annex (Either ProtoFailure a)
+runLocal runst remotelist runner a = case a of
 	TmpContentSize k next -> do
 		tmp <- fromRepo $ gitAnnexTmpObjectLocation k
 		size <- liftIO $ catchDefaultIO 0 $ getFileSize tmp
@@ -145,7 +145,7 @@ runLocal runst runner a = case a of
 				( lockContentForRemoval k cleanup $ \contentlock ->
 					ifM checkts
 						( do
-							removeAnnex contentlock
+							removeAnnex remotelist contentlock
 							cleanup
 						, return False
 						)

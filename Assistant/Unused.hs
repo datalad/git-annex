@@ -20,6 +20,7 @@ import Utility.DataUnits
 import Utility.DiskFree
 import Utility.HumanTime
 import Utility.Tense
+import Remote.List
 
 import Data.Time.Clock.POSIX
 import qualified Data.Text as T
@@ -76,7 +77,7 @@ expireUnused duration = do
 	forM_ oldkeys $ \k -> do
 		debug ["removing old unused key", serializeKey k]
 		liftAnnex $ tryNonAsync $ do
-			lockContentForRemoval k noop removeAnnex
+			lockContentForRemoval k noop (removeAnnex remoteList)
 			logStatus NoLiveUpdate k InfoMissing
   where
 	boundary = durationToPOSIXTime <$> duration

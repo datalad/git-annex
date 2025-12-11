@@ -32,6 +32,7 @@ import Annex.UUID
 import Git
 import Git.Command
 import qualified Utility.OsString as OS
+import Remote.List
 
 import Control.Concurrent
 import Control.Concurrent.STM
@@ -176,7 +177,7 @@ serveClient loadauthtokens (P2PNetName netname) th@(TransportHandle _ _ rd) u r 
 	authed conn theiruuid = 
 		bracket watchChangedRefs (liftIO . maybe noop stopWatchingChangedRefs) $ \crh -> do
 			runst <- liftIO $ mkRunState (Serving theiruuid crh)
-			v' <- runFullProto runst conn $
+			v' <- runFullProto runst remoteList conn $
 				P2P.serveAuthed P2P.ServeReadWrite u
 			case v' of
 				Right () -> return ()

@@ -309,7 +309,7 @@ runProto r connpool onerr proto = Just <$>
 runProtoConn :: P2P.Proto a -> P2PShellConnection -> Annex (P2PShellConnection, Maybe a)
 runProtoConn _ P2P.ClosedConnection = return (P2P.ClosedConnection, Nothing)
 runProtoConn a conn@(P2P.OpenConnection (runst, c, _)) = do
-	P2P.runFullProto runst c a >>= \case
+	P2P.runFullProto runst (Annex.getState Annex.remotes) c a >>= \case
 		Right r -> return (conn, Just r)
 		-- When runFullProto fails, the connection is no longer
 		-- usable, so close it.

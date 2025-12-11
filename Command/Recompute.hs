@@ -22,6 +22,7 @@ import Git.FilePath
 import Logs.Location
 import Command.AddComputed (Reproducible(..), parseReproducible, getInputContent, getInputContent', addComputed)
 import Backend (maybeLookupBackendVariety, unknownBackendVarietyMessage, chooseBackend)
+import Remote.List
 import Types.Key
 import qualified Utility.RawFilePath as R
 
@@ -190,7 +191,7 @@ perform o r file origkey origstate = do
 		-- the old version.
 		v -> if recomputingvurl
 			then do
-				lockContentForRemoval origkey noop removeAnnex
+				lockContentForRemoval origkey noop (removeAnnex remoteList)
 				return (Just (Reproducible False))
 			else return v
 	

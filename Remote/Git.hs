@@ -516,7 +516,7 @@ dropKey' repo r st@(State connpool duc _ _ _ _) proof key
 					Annex.Content.lockContentForRemoval key cleanup $ \lock ->
 						ifM (liftIO $ checkSafeDropProofEndTime proof) 
 							( do
-								Annex.Content.removeAnnex lock
+								Annex.Content.removeAnnex (Annex.getState Annex.remotes) lock
 								cleanup
 							, return False
 							)

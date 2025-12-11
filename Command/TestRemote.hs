@@ -33,6 +33,7 @@ import Remote.Helper.Chunked
 import Remote.Helper.Encryptable (encryptionField, highRandomQualityField)
 import Git.Types
 import qualified Utility.FileIO as F
+import Remote.List
 
 import Test.Tasty
 import Test.Tasty.Runners
@@ -251,13 +252,13 @@ test runannex mkr mkk =
 		whenwritable r $ runBool (store r k)
 	, check ("present " ++ show True) $ \r k -> present r k True
 	, check "retrieveKeyFile" $ \r k -> do
-		lockContentForRemoval k noop removeAnnex
+		lockContentForRemoval k noop (removeAnnex remoteList)
 		get r k
 	, check "fsck downloaded object" fsck
 	, check "retrieveKeyFile resume from 0" $ \r k -> do
 		tmp <- prepTmp k
 		liftIO $ F.writeFile' tmp mempty
-		lockContentForRemoval k noop removeAnnex
+		lockContentForRemoval k noop (removeAnnex remoteList)
 		get r k
 	, check "fsck downloaded object" fsck
 	, check "retrieveKeyFile resume from 33%" $ \r k -> do
@@ -267,14 +268,14 @@ test runannex mkr mkk =
 			sz <- hFileSize h
 			L.hGet h $ fromInteger $ sz `div` 3
 		liftIO $ F.writeFile tmp partial
-		lockContentForRemoval k noop removeAnnex
+		lockContentForRemoval k noop (removeAnnex remoteList)
 		get r k
 	, check "fsck downloaded object" fsck
 	, check "retrieveKeyFile resume from end" $ \r k -> do
 		loc <- Annex.calcRepo (gitAnnexLocation k)
 		tmp <- prepTmp k
 		void $ liftIO $ copyFileExternal CopyAllMetaData loc tmp
-		lockContentForRemoval k noop removeAnnex
+		lockContentForRemoval k noop (removeAnnex remoteList)
 		get r k
 	, check "fsck downloaded object" fsck
 	, check "removeKey when present" $ \r k -> 
@@ -401,7 +402,7 @@ cleanup rs ks ok
 	| all Remote.readonly rs = return ok
 	| otherwise = do
 		forM_ rs $ \r -> forM_ ks (Remote.removeKey r Nothing)
-		forM_ ks $ \k -> lockContentForRemoval k noop removeAnnex
+		forM_ ks $ \k -> lockContentForRemoval k noop (removeAnnex remoteList)
 		return ok
 
 chunkSizes :: Int -> Bool -> [Int]

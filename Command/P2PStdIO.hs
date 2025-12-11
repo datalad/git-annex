@@ -19,6 +19,7 @@ import qualified CmdLine.GitAnnexShell.Checks as Checks
 import Logs.Cluster
 import Annex.Cluster
 import qualified Remote
+import Remote.List
 
 import System.IO.Error
 
@@ -56,7 +57,7 @@ performLocal theiruuid servermode = do
 		P2P.net $ P2P.sendMessage (P2P.AUTH_SUCCESS myuuid)
 		P2P.serveAuthed servermode myuuid
 	runst <- liftIO $ mkRunState $ Serving theiruuid Nothing
-	p2pErrHandler noop (const p2pDone) (runFullProto runst conn server)
+	p2pErrHandler noop (const p2pDone) (runFullProto runst remoteList conn server)
 
 performProxy :: UUID -> P2P.ServerMode -> Remote -> CommandPerform
 performProxy clientuuid servermode r = do

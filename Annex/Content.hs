@@ -778,8 +778,8 @@ unlinkAnnex key = do
 		liftIO $ removeWhenExistsWith removeFile obj
 
 {- Removes a key's file from .git/annex/objects/ -}
-removeAnnex :: ContentRemovalLock -> Annex ()
-removeAnnex (ContentRemovalLock key) = withObjectLoc key $ \file ->
+removeAnnex :: Annex [Remote] -> ContentRemovalLock -> Annex ()
+removeAnnex remotelist (ContentRemovalLock key) = withObjectLoc key $ \file ->
 	cleanObjectLoc key $ do
 		secureErase file
 		liftIO $ removeWhenExistsWith removeFile file

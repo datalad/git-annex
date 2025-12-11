@@ -1201,7 +1201,7 @@ cleanupInitialization sab alternatejournaldir = void $ tryNonAsync $ do
 		annexobjectdir <- fromRepo gitAnnexObjectDir
 		ks <- listKeys InAnnex
 		forM_ ks $ \k -> case fromKey keyVariety k of
-                	GitBundleKey -> lockContentForRemoval k noop removeAnnex
+                	GitBundleKey -> lockContentForRemoval k noop (removeAnnex remoteList)
 			_ -> noop
 		void $ liftIO $ tryIO $ removeDirectory annexobjectdir
 

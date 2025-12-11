@@ -22,6 +22,7 @@ import Annex.CheckIgnore
 import Annex.WorkTree
 import Utility.FileMode
 import qualified Utility.RawFilePath as R
+import Remote.List
 
 import System.PosixCompat.Files (linkCount)
 import Control.Concurrent.STM
@@ -154,7 +155,7 @@ removeUnannexed = go []
 	go c [] = return c
 	go c (k:ks) = ifM (inAnnexCheck k $ liftIO . enoughlinks)
 		( do
-			lockContentForRemoval k noop removeAnnex
+			lockContentForRemoval k noop (removeAnnex remoteList)
 			go c ks
 		, go (k:c) ks
 		)

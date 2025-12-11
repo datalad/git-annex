@@ -103,7 +103,7 @@ runProto u addr connpool a = withConnection u addr connpool (runProtoConn a)
 runProtoConn :: P2P.Proto a -> Connection -> Annex (Connection, Maybe a)
 runProtoConn _ ClosedConnection = return (ClosedConnection, Nothing)
 runProtoConn a c@(OpenConnection (runst, conn)) = do
-	v <- runFullProto runst conn a
+	v <- runFullProto runst (Annex.getState Annex.remotes) conn a
 	-- When runFullProto fails, the connection is no longer usable,
 	-- so close it.
 	case v of

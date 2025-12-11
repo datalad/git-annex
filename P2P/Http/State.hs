@@ -39,6 +39,7 @@ import Annex.Cluster
 import qualified P2P.Proxy as Proxy
 import qualified Types.Remote as Remote
 import Utility.STM
+import Remote.List
 
 import Servant
 import qualified Data.Map.Strict as M
@@ -416,7 +417,7 @@ localConnection relv connparams runner ready =
 	localP2PConnectionPair connparams relv $ \serverrunst serverconn ->
 		runner $ do
 			liftIO $ atomically $ putTMVar ready ()
-			void $ runFullProto serverrunst serverconn $
+			void $ runFullProto serverrunst remoteList serverconn $
 				P2P.serveOneCommandAuthed
 					(connectionServerMode connparams)
 					(connectionServerUUID connparams)

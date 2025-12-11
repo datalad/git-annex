@@ -40,6 +40,7 @@ import Config
 import Utility.Tmp
 import Utility.Metered
 import Utility.Matcher
+import Remote.List
 
 import qualified Data.ByteString.Char8 as S8
 import qualified Data.ByteString.Lazy as L
@@ -364,7 +365,7 @@ performExport r srcrs db ek af contentsha loc allfilledvar = do
 			( lockContentForRemoval ek (return False) $ \contentlock -> do
 				showAction $ UnquotedString $ "to " ++ Remote.name r
 				sendlocalannexobject
-					`finally` removeAnnex contentlock
+					`finally` removeAnnex remoteList contentlock
 			, return False 
 			)
 
