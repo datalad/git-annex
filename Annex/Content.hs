@@ -96,7 +96,7 @@ import Annex.ReplaceFile
 import Annex.AdjustedBranch (adjustedBranchRefresh)
 import Annex.DirHashes
 import Messages.Progress
-import Types.Remote (RetrievalSecurityPolicy(..), VerifyConfigA(..))
+import Types.Remote (RetrievalSecurityPolicy(..), VerifyConfigA(..), name, storeKey, uuid)
 import Types.NumCopies
 import Types.Key
 import Types.Transfer
@@ -779,7 +779,8 @@ unlinkAnnex key = do
 
 {- Removes a key's file from .git/annex/objects/ -}
 removeAnnex :: Annex [Remote] -> ContentRemovalLock -> Annex ()
-removeAnnex remotelist (ContentRemovalLock key) = withObjectLoc key $ \file ->
+removeAnnex remotelist (ContentRemovalLock key) = withObjectLoc key $ \file -> do
+	putouttrash
 	cleanObjectLoc key $ do
 		secureErase file
 		liftIO $ removeWhenExistsWith removeFile file
@@ -800,6 +801,20 @@ removeAnnex remotelist (ContentRemovalLock key) = withObjectLoc key $ \file ->
 			-- removal process, so thaw it.
 			, void $ tryIO $ thawContent file
 			)
+	
+	putouttrash = annexTrashbin <$> Annex.getGitConfig >>= \case
+		Nothing -> return ()
+		Just trashbin -> do
+			rs <- remotelist
+			putouttrash' trashbin rs
+	
+	putouttrash' _ [] = giveup "annex.trashbin is set to the name of an unknown remote"
+	putouttrash' trashbin (r:rs)
+		| name r == trashbin = do
+			catchNonAsync (storeKey r key (AssociatedFile Nothing) Nothing nullMeterUpdate)
+				(\ex -> giveup $ "Failed to move to annex.trashbin remote; unable to drop " ++ show ex)
+			logChange NoLiveUpdate key (uuid r) InfoPresent
+		| otherwise = putouttrash' trashbin rs
 
 {- Moves a key out of .git/annex/objects/ into .git/annex/bad, and
  - returns the file it was moved to. -}

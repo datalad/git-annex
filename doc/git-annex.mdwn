@@ -1318,6 +1318,15 @@ repository, using [[git-annex-config]]. See its man page for a list.)
   After changing this config, you need to re-run `git-annex init` for it
   to take effect.
 
+* `annex.trashbin`
+
+  When this is set to the name of a remote, files that are dropped from the
+  repository will be moved to that remote.
+
+  Note that, if it takes a long time to move a file to the remote, the user
+  will not see a progress display for their drop action. So this is best
+  used with a fast remote.
+
 * `annex.url`
 
   When a remote has a http url, the first time git-annex uses the remote

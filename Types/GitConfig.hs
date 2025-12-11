@@ -158,6 +158,7 @@ data GitConfig = GitConfig
 	, annexAdjustedBranchRefresh :: Integer
 	, annexSupportUnlocked :: Bool
 	, annexAssistantAllowUnlocked :: Bool
+	, annexTrashbin :: Maybe RemoteName
 	, coreSymlinks :: Bool
 	, coreSharedRepository :: SharedRepository
 	, coreQuotePath :: QuotePath
@@ -283,6 +284,7 @@ extractGitConfig configsource r = GitConfig
 		(getmayberead (annexConfig "adjustedbranchrefresh"))
 	, annexSupportUnlocked = getbool (annexConfig "supportunlocked") True
 	, annexAssistantAllowUnlocked = getbool (annexConfig "assistant.allowunlocked") False
+	, annexTrashbin = getmaybe "annex.trashbin"
 	, coreSymlinks = getbool "core.symlinks" True
 	, coreSharedRepository = getSharedRepository r
 	, coreQuotePath = QuotePath (getbool "core.quotepath" True)

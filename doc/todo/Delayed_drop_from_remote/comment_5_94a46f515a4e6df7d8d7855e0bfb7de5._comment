@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2025-12-11T19:25:23Z"
+ content="""
+annex.trashbin is implemented.
+
+I am going to close this todo; if it turns out there is some preferred
+content improvement that would help with cleaning out the trash, let's talk
+about that on a new todo. But I'm guessing you'll make do with `find`.
+
+> I think I would deliberately want this to be invisible to the user, since I wouldn't want anyone to actively start relying on it.
+
+With a private remote it's reasonably invisible. The very observant user
+might notice a drop time that scales with the size of the file being
+dropped and be able to guess this feature is being used. And, if there is
+some error when it tries to move the object to the remote, the drop will
+fail. The error message in that case cannot really obscure the fact that
+annex.trashbin is configured.
+"""]]
