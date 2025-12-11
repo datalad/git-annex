@@ -1327,6 +1327,9 @@ repository, using [[git-annex-config]]. See its man page for a list.)
   will not see a progress display for their drop action. So this is best
   used with a fast remote.
 
+  And, if the remote is not accessible, or a file fails to be moved to it,
+  the file will not be dropped from the repository.
+
 * `annex.url`
 
   When a remote has a http url, the first time git-annex uses the remote
