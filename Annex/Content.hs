@@ -653,14 +653,6 @@ linkAnnex fromto key src (Just srcic) dest destmode =
 			liftIO $ removeWhenExistsWith removeFile dest
 			failed
 
-{- Removes the annex object file for a key. Lowlevel. -}
-unlinkAnnex :: Key -> Annex ()
-unlinkAnnex key = do
-	obj <- calcRepo (gitAnnexLocation key)
-	modifyContentDir obj $ do
-		secureErase obj
-		liftIO $ removeWhenExistsWith removeFile obj
-
 {- Runs an action to transfer an object's content. The action is also
  - passed the size of the object.
  -
@@ -775,6 +767,15 @@ cleanObjectDirs f = do
 		maybe noop (const $ go dir (n-1))
 			<=< catchMaybeIO $ tryWhenExists $
 				removeDirectory dir
+
+{- Removes the annex object file for a key. Lowlevel, does not update
+ - pointer files. -}
+unlinkAnnex :: Key -> Annex ()
+unlinkAnnex key = do
+	obj <- calcRepo (gitAnnexLocation key)
+	modifyContentDir obj $ do
+		secureErase obj
+		liftIO $ removeWhenExistsWith removeFile obj
 
 {- Removes a key's file from .git/annex/objects/ -}
 removeAnnex :: ContentRemovalLock -> Annex ()
