@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 3"
+ date="2025-12-11T13:33:27Z"
+ content="""
+> In that example, the git-annex branch is not pushed to origin after annexed files are sent to it. So how does git-annex on otherhost know that origin has those files? Well, git-annex-shell, when receiving the files, updates the git-annex branch in origin.
+
+
+IIRC user can just push `git-annex` branch directly after `git-annex` merging remote version locally, right?
+
+> Making it read-only would somewhat limit the exposure to all these problems, but if it's read-only, how would any annex objects get into the remote repository in the first place?
+
+my use-case at hands: I manipulate git-annex repo on a linux box on an NFS mount and the original one is freebsd box with bare minimal installation.  I have about 50 datasets in a hierarchy.  I wanted to backup to another location and it would be more performant to talk to the original freebsd server directly instead of going through NFS mount. I [can't install git-annex on that freebsd box ATM](https://git-annex.branchable.com/install/FreeBSD/#comment-38d4cc2a1e1deb696447cc0a9e149e77).
+
+FWIW, on a second thought, given that I do have a workaround with `rsync` (verified that it works) and unless another more prominent usecase arrives, might be indeed not worth the hassle.
+ 
+"""]]
