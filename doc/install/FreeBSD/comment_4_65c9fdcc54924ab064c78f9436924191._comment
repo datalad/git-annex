@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2025-12-11T14:56:30Z"
+ content="""
+I don't know much about the static-annex builds, but you may have better
+luck with the [[Linux_standalone]] builds due to their using a more
+conventional libc.
+
+Building git-annex from source is not hard if you can get the stack tool
+installed. It looks like the only currently supported way to do that as a
+freebsd user is to install <https://www.haskell.org/ghcup/> which includes
+stack. Then follow the [[fromsource]] section on "building from source with
+stack".
+"""]]

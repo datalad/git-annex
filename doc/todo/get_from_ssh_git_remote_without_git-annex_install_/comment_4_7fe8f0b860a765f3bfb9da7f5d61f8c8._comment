@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2025-12-11T14:42:10Z"
+ content="""
+> IIRC user can just push `git-annex` branch directly after `git-annex` merging remote version locally, right?
+
+Sure, but my point was that they would have to change their workflow due to
+a change on the server that might not be visible to them. Violating least
+surprise.
+"""]]
