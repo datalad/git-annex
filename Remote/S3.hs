@@ -489,7 +489,8 @@ retrieveHelper' gc info h f p iv req = liftIO $ runResourceT $ do
 			S3.RestoreObjectAlreadyInProgress -> giveup "Restore in progress, try again later."
 			S3.RestoreObjectAlreadyRestored -> a
 #else
-		giveup "git-annex is built with too old a version of the aws library to support restore=yes"
+		case remoteAnnexS3RestoreTier gc of
+			_ -> giveup "git-annex is built with too old a version of the aws library to support restore=yes"
 #endif
 
 remove :: S3HandleVar -> Remote -> S3Info -> Remover
