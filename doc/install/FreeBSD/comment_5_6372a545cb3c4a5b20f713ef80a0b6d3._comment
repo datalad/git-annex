@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 5"
+ date="2025-12-12T10:46:12Z"
+ content="""
+FWIW, dynamically linked binary is no good either:
+
+```
+[yoh@dbic-mrinbox ~]$ wget https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-amd64.tar.gz
+[yoh@dbic-mrinbox ~]$ tar -xzvf git-annex-standalone-amd64.tar.gz 
+[yoh@dbic-mrinbox ~]$ cd git-annex.linux/
+[yoh@dbic-mrinbox ~/git-annex.linux]$ ls
+LICENSE			exe			git-annex		git-core		git-remote-tor-annex	lib			logo_16x16.png		templates
+README			extra			git-annex-shell		git-receive-pack	git-shell		lib64			magic			trustedkeys.gpg
+bin			gconvdir		git-annex-webapp	git-remote-annex	git-upload-pack		libdirs			runshell		usr
+buildid			git			git-annex.MANIFEST	git-remote-p2p-annex	i18n			logo.svg		shimmed
+[yoh@dbic-mrinbox ~/git-annex.linux]$ ./git-annex
+ELF binary type \"3\" not known.
+exec: /usr/home/yoh/git-annex.linux/exe/git-annex: Exec format error
+
+```
+
+I will try to assemble build commands later...
+"""]]
