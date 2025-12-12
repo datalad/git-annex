@@ -6,7 +6,7 @@
 Actually I have gone ahead an implemented some
 [[git-annex-matching-options]] that will be useful
 in finding content to drop from the trashbin: 
-`--presentsince --lackingsince `--changedsince`
+`--presentsince --lackingsince --changedsince`
 
 You might use, for example: 
 
