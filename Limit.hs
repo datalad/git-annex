@@ -910,6 +910,43 @@ addAccessedWithin duration = do
 			return $ delta <= secs
 	secs = fromIntegral (durationSeconds duration)
 
+addPresentSince :: String -> Annex ()
+addPresentSince = limitLocationDuration "presentsince"
+	(\k t -> loggedLocationsUnchangedSince k t (== InfoPresent))
+
+addLackingSince :: String -> Annex ()
+addLackingSince = limitLocationDuration "lackingsince"
+	(\k t -> loggedLocationsUnchangedSince k t (/= InfoPresent))
+
+addChangedSince :: String -> Annex ()
+addChangedSince = limitLocationDuration "changedsince"
+	(\k t -> loggedLocationsChangedAfter k t (const True))
+
+limitLocationDuration :: String -> (Key -> POSIXTime -> Annex [UUID]) -> String-> Annex ()
+limitLocationDuration desc getter s = do
+	u <- Remote.nameToUUID name
+	case parseDuration interval of
+		Left parseerr -> addLimit $ Left parseerr
+		Right duration ->
+			let check _notpresent key = do
+				now <- liftIO getPOSIXTime
+				let t = now - fromIntegral (durationSeconds duration)
+				us <- getter key t
+				return $ u `elem` us
+			in addLimit $ Right $ mkmatcher check
+  where
+	(name, interval) = separate (== ':') s
+	mkmatcher check = MatchFiles
+		{ matchAction = const $ checkKey . check
+		, matchNeedsFileName = False
+		, matchNeedsFileContent = False
+		, matchNeedsKey = True
+		, matchNeedsLocationLog = True
+		, matchNeedsLiveRepoSize = False
+		, matchNegationUnstable = False
+		, matchDesc = desc =? s
+		}
+
 lookupFileKey :: FileInfo -> Annex (Maybe Key)
 lookupFileKey fi = case matchKey fi of
 	Just k -> return (Just k)

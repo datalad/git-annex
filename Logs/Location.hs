@@ -8,7 +8,7 @@
  - Repositories record their UUID and the date when they --get or --drop
  - a value.
  - 
- - Copyright 2010-2024 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2025 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -23,6 +23,8 @@ module Logs.Location (
 	loggedLocations,
 	loggedPreviousLocations,
 	loggedLocationsHistorical,
+	loggedLocationsUnchangedSince,
+	loggedLocationsChangedAfter,
 	loggedLocationsRef,
 	isKnownKey,
 	checkDead,
@@ -53,6 +55,7 @@ import Git.Types (RefDate, Ref, Sha)
 import qualified Annex
 
 import Data.Time.Clock
+import Data.Time.Clock.POSIX
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -74,6 +77,9 @@ logStatusAfter lu key a = ifM a
 	)
 
 {- Log a change in the presence of a key's value in a repository.
+ -
+ - If the provided LogStatus is the same as what is currently in the log,
+ - the log is not updated.
  -
  - Cluster UUIDs are not logged. Instead, when a node of a cluster is
  - logged to contain a key, loading the log will include the cluster's
@@ -98,7 +104,7 @@ loggedLocations :: Key -> Annex [UUID]
 loggedLocations = getLoggedLocations presentLogInfo
 
 {- Returns a list of repository UUIDs that the location log indicates
- - used to have the vale of a key, but no longer do.
+ - used to have the value of a key, but no longer do.
  -}
 loggedPreviousLocations :: Key -> Annex [UUID]
 loggedPreviousLocations = getLoggedLocations notPresentLogInfo
@@ -106,6 +112,44 @@ loggedPreviousLocations = getLoggedLocations notPresentLogInfo
 {- Gets the location log on a particular date. -}
 loggedLocationsHistorical :: RefDate -> Key -> Annex [UUID]
 loggedLocationsHistorical = getLoggedLocations . historicalLogInfo
+
+{- Returns a list of repository UUIDs that the location log indicates
+ - have had a matching LogStatus for a key that has not changed 
+ - since the given time. 
+ - 
+ - This assumes that logs were written with a properly set clock.
+ - 
+ - Note that, while logChange avoids updating the log with the same
+ - LogStatus that is already in it, there are distributed situations
+ - where the log for a repository does get updated redundantly, 
+ - setting the same LogStatus that was already logged. When that has
+ - happened, this will treat it as the LogStatus having changed at the
+ - last time it was written.
+ -}
+loggedLocationsUnchangedSince :: Key -> POSIXTime -> (LogStatus -> Bool) -> Annex [UUID]
+loggedLocationsUnchangedSince key time matchstatus =
+	loggedLocationsMatchingTime key (<= time) matchstatus
+
+{- Similar to loggedLocationsSince, but lists repository UUIDs that
+ - have had a matching LogStatus recorded after the given time.
+ -}
+loggedLocationsChangedAfter :: Key -> POSIXTime -> (LogStatus -> Bool) -> Annex [UUID]
+loggedLocationsChangedAfter key time matchstatus =
+	loggedLocationsMatchingTime key (> time) matchstatus
+
+loggedLocationsMatchingTime :: Key -> (POSIXTime -> Bool) -> (LogStatus -> Bool) -> Annex [UUID]
+loggedLocationsMatchingTime key matchtime matchstatus = do
+	config <- Annex.getGitConfig
+	locs <- map (toUUID . fromLogInfo . info)
+		. filter (matchtime' . date)
+		. filter (matchstatus . status)
+		. compactLog
+		<$> readLog (locationLogFile config key)
+	clusters <- getClusters
+	return $ addClusterUUIDs clusters locs
+  where
+	matchtime' (VectorClock t) = matchtime t
+	matchtime' Unknown = False
 
 {- Gets the locations contained in a git ref. -}
 loggedLocationsRef :: Ref -> Annex [UUID]

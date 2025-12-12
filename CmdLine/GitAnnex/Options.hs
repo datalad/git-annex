@@ -381,6 +381,21 @@ keyMatchingOptions' =
 			<> help "match files accessed within a time interval"
 			<> hidden
 			)
+	, annexOption (setAnnexState . Limit.addPresentSince) $ strOption
+		( long "presentsince" <> metavar paramValue
+		<> help "matches files present in a repository throughout a time interval"
+		<> hidden
+		)
+	, annexOption (setAnnexState . Limit.addLackingSince) $ strOption
+		( long "lackingsince" <> metavar paramValue
+		<> help "matches files not present in a repository throughout a time interval"
+		<> hidden
+		)
+	, annexOption (setAnnexState . Limit.addChangedSince) $ strOption
+		( long "changedsince" <> metavar paramValue
+		<> help "matches files whose presence changed during a time interval"
+		<> hidden
+		)
 	, annexOption (setAnnexState . Limit.addMimeType) $ strOption
 		( long "mimetype" <> metavar paramGlob
 		<> help "match files by mime type"

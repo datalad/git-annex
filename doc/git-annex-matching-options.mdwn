@@ -64,7 +64,7 @@ in either of two repositories.
 
   The repository should be specified using the name of a configured remote,
   or the UUID or description of a repository. For the current repository,
-  use `--in=here`
+  use "here".
   
   Note that this does not check remote repositories to verify that content
   is still present on them. However, when checking the current repository,
@@ -224,8 +224,8 @@ in either of two repositories.
 
 * `--accessedwithin=interval`
 
-  Matches when the content was accessed recently, within the specified time
-  interval.
+  Matches when the content in the local repository was accessed recently,
+  within the specified time interval.
   
   The interval can be in the form "5m" or "1h" or "2d" or "1y", or a
   combination such as "1h5m".
@@ -235,6 +235,42 @@ in either of two repositories.
 
   If the OS or filesystem does not support access times, this will not
   match anything.
+
+* `--presentsince=repository:interval`
+
+  Matches when the content of the file has been present in the specified
+  repository throughout the specified time interval.
+
+  The repository should be specified using the name of a configured remote,
+  or the UUID or description of a repository. For the current repository,
+  use "here"
+  
+  The interval can be in the form "5m" or "1h" or "2d" or "1y", or a
+  combination such as "1h5m".
+
+  So for example, `--presentsince=here:1d` matches files that have been in
+  the current repository for 1 day.
+
+* `--lackingsince=repository:interval`
+
+  This is the opposite of `--presentsince`; it matches when, throughout the
+  specified time interval, the content was not present in the specified
+  repository.
+
+  For example, `--lackingsince=here:1d` will match a file that was dropped
+  from the local repository more than 1 day ago, and has not been present
+  in it at any time since then. And it will match files that have never
+  been present in the local repository.
+
+* `--changedsince=repository:interval`
+
+  Matches when there was a change in the content stored in the repository
+  within the specified time interval.
+
+  For example, `--changedsince=here:2d` will match a file that was 
+  present in the repository but got dropped 1 day ago. And it will match a
+  file that the repository got 1 day ago. But it won't match a file that
+  has been present in the repository since 2 days ago.
 
 * `--unlocked`
 

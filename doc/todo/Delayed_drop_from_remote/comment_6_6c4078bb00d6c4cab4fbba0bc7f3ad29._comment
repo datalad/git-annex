@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2025-12-12T17:24:48Z"
+ content="""
+Actually I have gone ahead an implemented some
+[[git-annex-matching-options]] that will be useful
+in finding content to drop from the trashbin: 
+`--presentsince --lackingsince `--changedsince`
+
+You might use, for example: 
+
+	git-annex drop --force --from trashbin \
+		--presentsince=trashbin:7d --and --not --changedsince=here:7d
+
+That will match files that were moved to the trashbin 7 days ago,
+and that have not re-entered the current repository in the time since then.
+"""]]
