@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="nadir"
+ avatar="http://cdn.libravatar.org/avatar/2af9174cf6c06de802104d632dc40071"
+ subject="passing additional flags to rclone"
+ date="2025-12-15T20:42:38Z"
+ content="""
+I'm trying to pass additional flags to rclone, like `--bwlimit` for example. Not sure how to do that, though. The `--whatelse` flag tells me they should just be passed by default:
+
+```
+> git annex initremote hetzner type=rclone rcloneremotename=hetzner rcloneprefix=someprefix  encryption=shared chunk=500MiB  --whatelse
+embedcreds
+	embed credentials into git repository
+	(yes or no)
+onlyencryptcreds
+	only encrypt embedded credentials, not annexed files
+	(yes or no)
+mac
+	how to encrypt filenames used on the remote
+	(HMACSHA1 or HMACSHA224 or HMACSHA256 or HMACSHA384 or HMACSHA512)
+keyid
+	gpg key id
+keyid+
+	add additional gpg key
+keyid-
+	remove gpg key
+*
+	all other parameters are passed to rclone
+```
+
+I tried `--bwlimit 3000` and `bwlimit=3000`, but that gives me `invalid option` plus help text or `git-annex: Unexpected parameters: bwlimit` respectively. 
+"""]]
