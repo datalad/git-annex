@@ -1,20 +1,22 @@
-git-annex (10.20251118) UNRELEASED; urgency=medium
+git-annex (10.20251215) upstream; urgency=medium
 
-  * S3: Remote can be configured with an x-amz-tagging header.
-    (Needs aws-0.25)
-  * Add a build warning when the version of aws being built against is
-    too old. 0.25.1 is needed to support Google Cloud Storage.
-  * Added TRANSFER-RETRIEVE-URL extension to the external special remote
-    protocol.
-  * S3: Support restore=yes, when used with storageclass=DEEP_ARCHIVE and
-    similar. This is equivilant to the now deprecated Amazon Glacier.
-    (Needs aws-0.25.2)
-  * stack.yaml: Use aws-0.25.2.
   * Added annex.trashbin configuration.
   * Added --presentsince, --lackingsince, and --changedsince file
     matching options.
+  * Added TRANSFER-RETRIEVE-URL extension to the external special remote
+    protocol.
+  * S3: Remote can be configured with an x-amz-tagging header.
+    (Needs aws-0.25)
+  * S3: Support Google Cloud Storage
+    (Needs aws-0.25.1)
+  * S3: Support restore=yes, when used with storageclass=DEEP_ARCHIVE and
+    similar. This is equivilant to the now deprecated Amazon Glacier.
+    (Needs aws-0.25.2)
+  * Add a build warning when the version of aws being built against is
+    too old to support all features.
+  * stack.yaml: Use aws-0.25.2.
 
- -- Joey Hess <id@joeyh.name>  Tue, 18 Nov 2025 12:34:12 -0400
+ -- Joey Hess <id@joeyh.name>  Mon, 15 Dec 2025 13:23:29 -0400
 
 git-annex (10.20251114) upstream; urgency=medium
 
