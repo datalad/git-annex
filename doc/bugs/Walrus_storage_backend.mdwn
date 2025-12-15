@@ -18,3 +18,5 @@ The whole infrastructure, allow to build a decentralized annex cloud storage, wh
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I love git annex, works like a charm. Using it for 5+ years
+
+> [[notabug|done]] --[[Joey]]
