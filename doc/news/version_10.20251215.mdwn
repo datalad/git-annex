@@ -1,0 +1,16 @@
+git-annex 10.20251215 released with [[!toggle text="these changes"]]
+[[!toggleable text="""  * Added annex.trashbin configuration.
+  * Added --presentsince, --lackingsince, and --changedsince file
+    matching options.
+  * Added TRANSFER-RETRIEVE-URL extension to the external special remote
+    protocol.
+  * S3: Remote can be configured with an x-amz-tagging header.
+    (Needs aws-0.25)
+  * S3: Support Google Cloud Storage
+    (Needs aws-0.25.1)
+  * S3: Support restore=yes, when used with storageclass=DEEP\_ARCHIVE and
+    similar. This is equivilant to the now deprecated Amazon Glacier.
+    (Needs aws-0.25.2)
+  * Add a build warning when the version of aws being built against is
+    too old to support all features.
+  * stack.yaml: Use aws-0.25.2."""]]
