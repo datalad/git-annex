@@ -43,3 +43,9 @@ initremote: 1 failed
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yep. It's a great little tool; up till now always local network + rsync.
+
+> Pass signature=v4 to `git-annex initremotr` to use v4 signing.
+> This has been supported for years.
+> 
+> That actually became the default for S3 in version 
+> 10.20250828. [[done]] --[[Joey]]
