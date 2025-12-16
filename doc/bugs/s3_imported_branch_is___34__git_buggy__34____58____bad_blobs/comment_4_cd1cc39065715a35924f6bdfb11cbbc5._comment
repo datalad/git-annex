@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 4"
+ date="2025-12-16T20:33:56Z"
+ content="""
+yes -- that one is embargoed (can be seen by going to https://dandiarchive.org/dandiset/000675)
+
+> And when you replicated the problem from the backup, were you using it in the configuration where it cannot access those?
+
+if I got the question right and since I do not recall now -- judging from me using `( source .git/secrets.env; git-annex import master...` I think I was with credentials allowing to access them (hence no errors while importing)
+
+> Do you have annex.largefiles configured in this repository, and are all of the affected files non-annexed files?
+
+yes
+
+```
+(venv-annex) dandi@drogon:/mnt/backup/dandi/dandiset-manifests$ grep largefiles .gitattributes
+**/.git* annex.largefiles=nothing
+* annex.largefiles=((mimeencoding=binary)and(largerthan=0))
+```
+
+and it seems all go into git
+
+```
+(venv-annex) dandi@drogon:/mnt/backup/dandi/dandiset-manifests$ git annex list
+here          
+|s3-dandiarchive (untrusted)
+||web         
+|||bittorrent 
+||||          
+```
+is empty
+
+"""]]
