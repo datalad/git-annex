@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2025-12-17T18:30:06Z"
+ content="""
+In a non-export S3 bucket with versioning, fsck also cannot recover from a
+corrupted object, due to the same problem with the versionId. The same
+method should work to handle this case.
+"""]]
