@@ -1,0 +1,8 @@
+Ultimate goal is to backup [dandiarchive](https://dandiarchive.org/) (currently about 800TB but grows) to [NESE tapes](https://nese.readthedocs.io/en/latest/user-docs.html#nese-tape). NESE tapes service expects transfer via globus and 
+
+> Files stored on NESE Tape should ideally be between 1 GiB and 1 TiB. Please consider creating tarballs of these target sizes before sending data via Globus to NESE Tape.
+
+All our dandisets range in sizes of their files from KBs to GBs, and already present in git/git-annex'es at e.g. https://github.com/dandisets . Previously, we abused Dropbox via an rclone shared special remote, but that one is gone now.  So I wonder what could be our setup here to most seamlessly and "automatically" batch archive across a range of git/git-annex repos into the same "shared" globus space tarballs.
+
+Any ideas on the setup would be appreciated.  
+

@@ -1,0 +1,61 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 3"
+ date="2025-12-16T18:06:34Z"
+ content="""
+yes -- small files, go to git
+
+no, it is a small number of files created/renamed. In this case it is a set of 4 files [pre-created empty and closed](https://github.com/con/duct/blob/36944dafd4b555a59355ac56f93f550b375bb733/src/con_duct/duct_main.py#L831), and then 3 out of 4 opened for writing by duct and at the end of the process closed, and that original 1 (`_info.json`) is [reopened for writing to dump the record and closed](https://github.com/con/duct/blob/v0.8.0/src/con_duct/__main__.py#L1072-L1074). Then outside tool which ran it takes all of them and renames into the filename with end timestamp.  git-annex manages to detect that original 0-sized `_info.json` one gets removed but does not pick up the new one which gets rapidly renamed into a longer name.
+
+In git log looks like:
+
+```
+commit 65e9f13a882ef78d743fbe634c8e05f9dcb32c45
+Author: ReproStim User <changeme@example.com>
+Date:   Tue Dec 16 09:44:30 2025 -0500
+
+    git-annex in reprostim@reproiner:/data/reprostim
+
+ Videos/2025/12/2025.12.16-09.30.29.570--.mkv.duct_info.json                         | 0
+ Videos/2025/12/2025.12.16-09.30.29.570--2025.12.16-09.44.28.225.mkv                 | 1 +
+ Videos/2025/12/2025.12.16-09.30.29.570--2025.12.16-09.44.28.225.mkv.duct_usage.json | 1 +
+ Videos/2025/12/2025.12.16-09.30.29.570--2025.12.16-09.44.28.225.mkv.log             | 1 +
+ 4 files changed, 3 insertions(+)
+
+commit 3fe4710fc058e7d1433637c9af538b3bb9e5ebed
+Author: ReproStim User <changeme@example.com>
+Date:   Tue Dec 16 09:30:31 2025 -0500
+
+    git-annex in reprostim@reproiner:/data/reprostim
+
+ Videos/2025/12/2025.12.16-09.30.29.570--.mkv.duct_info.json | 0
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+
+commit f6bb6137c81ef36387ded229a4d8592964530bc8
+Author: ReproStim User <changeme@example.com>
+Date:   Tue Dec 16 09:30:23 2025 -0500
+
+    git-annex in reprostim@reproiner:/data/reprostim
+
+ Videos/2025/12/2025.12.16-09.29.32.681--.mkv.duct_info.json                         | 0
+ Videos/2025/12/2025.12.16-09.29.32.681--2025.12.16-09.30.21.889.mkv                 | 1 +
+ Videos/2025/12/2025.12.16-09.29.32.681--2025.12.16-09.30.21.889.mkv.duct_usage.json | 1 +
+ Videos/2025/12/2025.12.16-09.29.32.681--2025.12.16-09.30.21.889.mkv.log             | 1 +
+ 4 files changed, 3 insertions(+)
+
+commit 00444920167e17b429d10fa29df8f1947930152c
+Author: ReproStim User <changeme@example.com>
+Date:   Tue Dec 16 09:29:34 2025 -0500
+
+    git-annex in reprostim@reproiner:/data/reprostim
+
+ Videos/2025/12/2025.12.16-09.29.32.681--.mkv.duct_info.json | 0
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+
+```
+
+
+Here is a copy of current process: https://www.oneukrainian.com/tmp/daemon-20251216.log
+
+"""]]
