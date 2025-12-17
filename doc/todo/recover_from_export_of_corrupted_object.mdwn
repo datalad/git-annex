@@ -1,0 +1,33 @@
+<https://github.com/OpenNeuroOrg/openneuro/issues/3446#issuecomment-2892398583>
+This is a case where a truncated file was exported as part of a tree to S3.
+In particular a bucket with `versioning=yes`.
+
+Currently there is no good way for a user to recover from this. Exporting a
+tree that deletes the corrupted file, followed by a tree that adds back the
+right version of the file will generally work. It will not work for a
+versioned S3 bucket though, because removing an export from a versioned S3
+bucket does not remove the recorded S3 versionId. While re-exporting the
+file will record the new versionId, the old one remains recorded, and when
+multiple versionIds are recorded for the same key, either may be used when
+retrieving it.
+
+What needs to be done is to remove the old versionId. But it does not seem
+right to generally do this when removing an exported file from a S3 bucket,
+because usually, when it's not corrupted, that versionId is still valid,
+and can still be used to retrieve that object.
+
+`git-annex fsck --from=s3` will detect the problem, but it is unable to do
+anything to resolve it, since it can only try to drop the corrupted key,
+and dropping by key is not supported with an exporttree=yes remote.
+
+Could fsck be extended to handle this? It should be possible for fsck to:
+
+1. removeExport the corrupted file, and update the export log to say that
+   the export of the tree to the special remote is incomplete.
+2. Handle the special case of the versioned S3 bucket with eg, a new Remote
+   method that is used when a key on the remote is corrupted. In the case
+   of a versioned S3 bucket, that new method would remove the versionId.
+
+--[[Joey]]
+
+[[!tag projects/openneuro]]
