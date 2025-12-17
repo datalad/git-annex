@@ -2,10 +2,16 @@
 This is a case where a truncated file was exported as part of a tree to S3.
 In particular a bucket with `versioning=yes`.
 
+Note that `git-annex export` does not verify checksums before sending, and
+so it's possible for this to happen if a corrupted object has somehow
+gotten into the local repository. It might be possible to improve this to
+deal better with object corruption, including object corruption that occurs
+while exporting.
+
 Currently there is no good way for a user to recover from this. Exporting a
 tree that deletes the corrupted file, followed by a tree that adds back the
-right version of the file will generally work. It will not work for a
-versioned S3 bucket though, because removing an export from a versioned S3
+right version of the file will generally work. But it will not work for a
+versioned S3 bucket, because removing an export from a versioned S3
 bucket does not remove the recorded S3 versionId. While re-exporting the
 file will record the new versionId, the old one remains recorded, and when
 multiple versionIds are recorded for the same key, either may be used when
