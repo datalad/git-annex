@@ -1,0 +1,5 @@
+It is possible to deposit files in a remotes annex, for example via a p2phttp request. In this case, the deposited file was never known to the git-annex branch metadata. It is my understanding that in this case all the "unused" tooling is not applicable.
+
+Does git-annex provide means to scan an annex for unexpected annex keys, and maybe for ingesting them such that the appear as unused?
+
+Thx!
