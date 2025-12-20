@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="wzhd"
+ avatar="http://cdn.libravatar.org/avatar/1795a91af84f4243a3bf0974bc8d79fe"
+ subject="Directory remotes in offline drives for archiving?"
+ date="2025-12-20T10:28:35Z"
+ content="""
+Using offline drives as remotes makes it easy to enable encryption. I can rely on git-annex to encrypt the annexed files instead of setting up block device or file system encryption. The git repo does not need to be cloned to the drive.
+
+Can I move annexed files out of my laptop and into archival drives only?
+I have multiple drives plugged in via USB to store multiple copies. 
+But it seems git-annex doesn't consider it safe because copies can't be locked down with directory remotes?
+I'm only moving files into these drives by invoking one instance of git-annex, I'm pretty sure files won't be concurrently removed from the drives.
+Can I move the files without entirely disabling all safety checks? 
+"""]]
