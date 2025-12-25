@@ -1,0 +1,113 @@
+### Please describe the problem.
+
+situation is tricky as I forced it via `git reset --hard HEAD^` after a commit which managed to commit a file directly into git instead of git-annex due to changes in `.gitattributes` , whenever originally it was under annex unlocked.
+
+So now I am in situation where it is not obvious on how to "instantiate" that file in the tree since `annex get` does nothing although file is just a link:
+
+```
+❯ cat .strava-backup/config.toml
+/annex/objects/MD5E-s1235--04d86de671070073b0bade06fd5085c1.toml
+❯ git annex whereis .strava-backup/config.toml
+whereis .strava-backup/config.toml (1 copy) 
+  	abe1a028-2aec-4c31-b48d-0db92e338292 -- yoh@bilena:~/proj/strava-backup-mine [here]
+ok
+❯ git annex get .strava-backup/config.toml
+❯ git annex get --force .strava-backup/config.toml
+❯ git annex restage .strava-backup/config.toml
+git-annex: This command takes no parameters.
+❯ git annex restage
+restage  ok
+❯ cat .strava-backup/config.toml
+/annex/objects/MD5E-s1235--04d86de671070073b0bade06fd5085c1.toml
+```
+
+I thought I could just "instantiate" its content from the key -- but now `git-annex` insists (well - via `git status`)  that it is modified, even after I do `restage` and commit. 
+
+
+<details>
+<summary></summary> 
+
+```shell
+❯ cat .git/annex/objects/F2/m8/MD5E-s1235--04d86de671070073b0bade06fd5085c1.toml/MD5E-s1235--04d86de671070073b0bade06fd5085c1.toml >| .strava-backup/config.toml
+❯ git status
+On branch master
+Your branch is ahead of 'test-washoe-tmp/master' by 1 commit.
+  (use "git push" to publish your local commits)
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   .strava-backup/config.toml
+
+no changes added to commit (use "git add" and/or "git commit -a")
+❯ git annex restage
+restage  ok
+❯ git status
+On branch master
+Your branch is ahead of 'test-washoe-tmp/master' by 1 commit.
+  (use "git push" to publish your local commits)
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   .strava-backup/config.toml
+
+no changes added to commit (use "git add" and/or "git commit -a")
+❯ git diff
+❯ git diff --cached
+❯ git status
+On branch master
+Your branch is ahead of 'test-washoe-tmp/master' by 1 commit.
+  (use "git push" to publish your local commits)
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   .strava-backup/config.toml
+
+no changes added to commit (use "git add" and/or "git commit -a")
+❯ git commit -m 'reinstantiated file'
+On branch master
+Your branch is ahead of 'test-washoe-tmp/master' by 1 commit.
+  (use "git push" to publish your local commits)
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   .strava-backup/config.toml
+
+no changes added to commit (use "git add" and/or "git commit -a")
+❯ git commit -m 'reinstantiated file' -a
+On branch master
+Your branch is ahead of 'test-washoe-tmp/master' by 1 commit.
+  (use "git push" to publish your local commits)
+
+nothing to commit, working tree clean
+❯ git status
+On branch master
+Your branch is ahead of 'test-washoe-tmp/master' by 1 commit.
+  (use "git push" to publish your local commits)
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   .strava-backup/config.toml
+
+no changes added to commit (use "git add" and/or "git commit -a")
+
+```
+</details>
+
+only if I do `git reset --hard` it becomes unmodified . I had to do `annex fsck` which made it instantiated but modified, then "commit" which committed nothing but everything became kosher.
+
+There should be a more seamless way to recover, or should I generally always use `annex fsck` after `git reset --hard` when working with unlocked files?
+
+
+### What version of git-annex are you using? On what operating system?
+
+
+```
+❯ git annex version | head -n 1
+git-annex version: 10.20251114-geeb21b831e7c45078bd9447ec2b0532a691fe471
+```
+
