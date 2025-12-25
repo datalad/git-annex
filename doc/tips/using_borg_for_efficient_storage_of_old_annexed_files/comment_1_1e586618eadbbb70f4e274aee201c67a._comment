@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="nadir"
+ avatar="http://cdn.libravatar.org/avatar/2af9174cf6c06de802104d632dc40071"
+ subject="This is amazing"
+ date="2025-12-25T12:10:18Z"
+ content="""
+It (near) perfectly solves a problem I had. 
+
+If something similar existed for restic, I could use my existing backup repositories with this. There's also the issue that borg does not support most rclone supported remotes, like restic does, so it reduces usable cloud providers pretty much to hetzner in my situation.
+
+Still great. Thanks!
+"""]]
