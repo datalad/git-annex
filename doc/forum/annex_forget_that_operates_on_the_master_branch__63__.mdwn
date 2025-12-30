@@ -1,0 +1,14 @@
+Greetings.
+
+I would like to be able to truncate the commit history of the master branch (or, ideally, arbitrarily rewrite history).
+
+At the moment I manually prune commit history via [this](https://gist.github.com/JuliaSprenger/05810e0f7fe04062a32b3951c6520904) guide which boils down to:  
+1. Squash commits of the master branch and ```git annex forget --drop-dead --force```;  
+2. Force-push changes to the master and git-annex branches for each repository;  
+3. Delete ```sync/...``` branches in each repository.
+
+The problem is that rewriting history this way requires all of them to be online at the same time.
+
+Can this be done in an asynchronous manner?
+
+Thanks.
