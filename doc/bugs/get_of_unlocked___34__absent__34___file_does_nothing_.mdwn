@@ -111,3 +111,4 @@ There should be a more seamless way to recover, or should I generally always use
 git-annex version: 10.20251114-geeb21b831e7c45078bd9447ec2b0532a691fe471
 ```
 
+[[!meta title="after git reset --hard, git-annex get of unlocked unpopulated pointer file does nothing"]]

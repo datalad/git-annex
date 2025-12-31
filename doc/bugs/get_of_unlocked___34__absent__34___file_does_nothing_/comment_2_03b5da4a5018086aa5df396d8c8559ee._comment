@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2025-12-31T17:29:42Z"
+ content="""
+I can understand reaching for `git-annex get` in this situation. But I
+don't know if it really makes sense to have that and every other command
+that gets the content of a file also handle populating annex pointer
+files that have been staged. That seems like it might very
+well violate least surprise in other situations, or cause problems in other
+situations.
+
+The best fix would be if `git reset`, `git stash`, `git cherry-pick` and
+whatever else were made to run some hook.
+
+One could just as well complain about this:
+
+	git-annex add foo
+	mkdir subdir
+	git mv foo subdir/
+	cat subdir/foo
+	cat: subdir/foo: No such file or directory
+	git-annex get subdir/foo
+	cat subdir/foo
+	cat: subdir/foo: No such file or directory
+
+There `git-annex get` does not fix up the annex symlink for the new
+location of the file. The situation will get resolved by `git-annex fix`
+which gets run on `git commit` and is usually enough that the user doesn't
+need to remember to run it.
+
+Not only is it out of scope for `git-annex get` to deal with that
+situation, if it modified the symlink it would then leave a change in the
+working tree. Which is surprising behavior.
+"""]]

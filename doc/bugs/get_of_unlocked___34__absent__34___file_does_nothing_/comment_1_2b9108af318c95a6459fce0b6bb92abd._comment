@@ -1,0 +1,38 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2025-12-31T16:23:36Z"
+ content="""
+`git-annex get` is not doing anything because the content of the annexed
+file is already present in the repository, as shown by the `git-annex
+whereis`. All that `get` does is get objects that are not present in the
+git-annex repository. It does not fix up after other problems.
+
+As far as I can tell, this will reproduce your situation:
+
+	git-annex init
+	git config annex.addunlocked true
+	echo 1 > foo
+	git-annex add foo
+	git commit -m add
+	echo 2 > foo
+	git config annex.largefiles nothing
+	git annex add foo
+	git commit -m add
+	git config annex.largefiles anything
+	git reset --hard HEAD^
+
+The command you could have run then, which would have fixed it right up, is
+`git status`. That will populate the files with their annexed content. And
+it will recommend running `git-annex restage` to fix up the index to
+reflect those changes. (Running `git-annex restage` on its own is useless
+though.)
+
+This all happens because `git reset --hard` does not run any git hooks.
+So `git-annex smudge --update` does not get a chance to automatically 
+run like it  usually would when a checkout or merge is made.
+Until that `git status`.
+
+Running `git-annex smudge --update` after the `git reset` will also fix
+things right up.
+"""]]
