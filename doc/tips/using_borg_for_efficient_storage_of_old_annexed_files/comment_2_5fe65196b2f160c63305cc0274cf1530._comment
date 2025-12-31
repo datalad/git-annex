@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2025-12-31T18:18:50Z"
+ content="""
+It might well be possible to implement this for restic too. 
+The crucial thing needed is for git-annex to 
+be able to list the backups and find the annexed files. For borg,
+it does that by using `borg list`.
+"""]]
