@@ -1,0 +1,17 @@
+The borg special remote allows git-annex to treat borg backups of a
+git-annex repository as just another remote. This could also be done for
+other backup software.
+
+restic seems like a good candidate. What other commonly used backup
+software might be good to support? Comments welcome with suggestions..
+
+---
+
+Currently, support for these has to be in git-annex, it cannot be an
+external special remote. Just providing a way to in the external special
+remote interfase to set `thirdPartyPopulated` might be enough to allow
+using external special remotes for this. 
+
+The borg implementation does have getImported which looks at the git-annex
+branch, and is used in an optimisation. It would be good to factor that out
+to a common optimisation for all `thirdPartyPopulated` remotes. --[[Joey]]
