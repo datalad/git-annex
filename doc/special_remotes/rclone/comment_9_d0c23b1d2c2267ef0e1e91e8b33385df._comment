@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: passing additional flags to rclone"""
+ date="2025-12-31T18:38:21Z"
+ content="""
+Passing arbitrary parameters to rclone is not supported. It would possibly
+be a security hole if it were supported, because if there were a parameter
+say --deleteeverything, you could `initremote` a special remote with that 
+parameter, and then wait for someone else to `enableremote` and use that 
+special remote and have a bad day.
+
+The "*" in `initremote --whatelse` output is a placeholder. It is not
+intended to mean that every possible thing is passed through, but that,
+if rclone supports some additional parameters, and explicitly asks for
+them (via GETCONFIG), they will be passed through to it.
+
+I think that currently, `rclone gitannex` does not request any parameters.
+It would certainly be possible to make it support something like
+"bwlimit=3000".
+"""]]
