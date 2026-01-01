@@ -29,7 +29,7 @@ import Utility.Touch
 cmd :: Command
 cmd = noCommit $ withAnnexOptions [annexedMatchingOptions, jsonOptions] $
 	command "fix" SectionMaintenance
-		"fix up links to annexed content"
+		"fix up pointers to annexed content"
 		paramPaths (withParams seek)
 
 seek :: CmdParams -> CommandSeek

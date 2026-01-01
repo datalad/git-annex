@@ -1,6 +1,6 @@
 # NAME
 
-git-annex fix - fix up links to annexed content
+git-annex fix - fix up pointers to annexed content
 
 # SYNOPSIS
 
@@ -13,8 +13,9 @@ content. This is useful to run manually when you have been moving the
 symlinks around, but is done automatically when committing a change
 with git too.
 
-Also, populates unlocked files with annexed content. Usually this happens
-automatically, but some git commands can leave them as unpopulated.
+Also, populates unlocked pointer files with annexed content. 
+Usually this happens automatically, but some git commands can leave them 
+unpopulated.
 
 Also, adjusts unlocked files to be copies or hard links as
 configured by annex.thin.
