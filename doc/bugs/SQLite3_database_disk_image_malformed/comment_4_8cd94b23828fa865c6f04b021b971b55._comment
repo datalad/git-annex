@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="puck"
+ avatar="http://cdn.libravatar.org/avatar/06d3f4f0a82dd00a84f8f8fabc8e537d"
+ subject="Fixing a bit of a mess"
+ date="2026-01-01T09:07:11Z"
+ content="""
+While the database file was corrupt, I did some work (not realising it was corrupt) to fix up MP3 tags in my music collection. Now when I run git annex fsck I'm getting errors like:
+
+    fsck music/Arlo_Guthrie/The_Best_Of_Arlo_Guthrie/01-Alices_Restaurant_Massacree.mp3 
+      music/Arlo_Guthrie/The_Best_Of_Arlo_Guthrie/01-Alices_Restaurant_Massacree.mp3: Bad file size (128 B larger); moved to .git/annex/bad/SHA256E-s17800671--1a992cda34a5ab52d42cd7a420114fc122458ff57672e468f8403faa77f209b0.mp3
+    
+      ** No known copies exist of music/Arlo_Guthrie/The_Best_Of_Arlo_Guthrie/01-Alices_Restaurant_Massacree.mp3
+    failed
+
+and
+
+    fsck music/Arrow/misc/Hot_Hot_Hot.mp3 (checksum...) 
+      music/Arrow/misc/Hot_Hot_Hot.mp3: Bad file content; moved to .git/annex/bad/SHA256E-s3444736--3178689ce4a69a0e94fe11afaf077b6471077fd2d5128a5a65a71dcf84272ed5.mp3
+    
+      ** No known copies exist of music/Arrow/misc/Hot_Hot_Hot.mp3
+    failed
+
+I've tried using git annex reinject, but that is refused as the checksum doesn't match.
+
+Can I tell git-annex to just accept the files that I have in my repository as being correct?
+"""]]
