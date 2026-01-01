@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2026-01-01T17:58:00Z"
+ content="""
+> A useful thing to display might be the path to the corrupted database file and advice to remove it?
+
+Good idea to display the path. I've made that change.
+
+I don't think I want to make git-annex suggest deleting sqlite databases
+anytime sqlite crashes for any reason. While they are safe to delete,
+that encourages users to shrug and move on and tends to normalize any
+problem with sqlite. In reality, problems with sqlite are very rare,
+and I'd like to hear about them and understand them.
+"""]]

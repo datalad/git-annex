@@ -41,3 +41,5 @@ The only SQLite3 database I can find is in .git/annex/keysdb . I can open that u
 I've been happily using git-annex for many many years, first time I've encountered an issue like this.
 
 
+> Calling this [[done]] since the sqlite error messages have been improved.
+> --[[Joey]]

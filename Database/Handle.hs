@@ -1,6 +1,6 @@
 {- Persistent sqlite database handles.
  -
- - Copyright 2015-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2026 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -24,6 +24,7 @@ import Utility.Debug
 import Utility.DebugLocks
 import Utility.InodeCache
 import Utility.OsPath
+import Utility.SafeOutput
 
 import Database.Persist.Sqlite
 import qualified Database.Sqlite as Sqlite
@@ -78,7 +79,7 @@ closeDb (DbHandle _db worker jobs _) = do
  - it is able to run.
  -}
 queryDb :: DbHandle -> SqlPersistM a -> IO a
-queryDb (DbHandle _db _ jobs errvar) a = do
+queryDb (DbHandle db _ jobs errvar) a = do
 	res <- newEmptyMVar
 	putMVar jobs $ QueryJob $
 		debugLocks $ liftIO . putMVar res =<< tryNonAsync a
@@ -86,7 +87,7 @@ queryDb (DbHandle _db _ jobs errvar) a = do
 		Right r -> either throwIO return r
 		Left BlockedIndefinitelyOnMVar -> do
 			err <- takeMVar errvar
-			giveup $ "sqlite worker thread crashed: " ++ err
+			giveup $ "sqlite worker thread for " ++ fromOsPath (safeOutput db) ++ " crashed: " ++ err
 
 {- Writes a change to the database.
  -
@@ -111,7 +112,7 @@ commitDb h@(DbHandle db _ _ errvar) wa =
 					robustly a
 			Left BlockedIndefinitelyOnMVar -> do
 				err <- takeMVar errvar
-				giveup $ "sqlite worker thread crashed: " ++ err
+				giveup $ "sqlite worker thread for " ++ fromOsPath (safeOutput db) ++ " crashed: " ++ err
 	
 	briefdelay = 100000 -- 1/10th second
 
@@ -191,7 +192,7 @@ runSqliteRobustly tablename db a = do
 					briefdelay
 					retryHelper "access" ex maxretries db retries ic $
 						go conn
-				| otherwise -> rethrow $ errmsg "after successful open" ex
+				| otherwise -> rethrow $ errmsg ("after successful sqlite database " ++ fromOsPath (safeOutput db) ++ " open") ex
 	
 	opensettle retries ic = do
 #if MIN_VERSION_persistent_sqlite(2,13,3)
@@ -217,7 +218,7 @@ runSqliteRobustly tablename db a = do
 						if e == Sqlite.ErrorIO
 							then opensettle
 							else settle conn
-				| otherwise -> rethrow $ errmsg "while opening database connection" ex
+				| otherwise -> rethrow $ errmsg ("while opening sqlite database " ++ fromOsPath (safeOutput db) ++ " connection") ex
 	
 	-- This should succeed for any table.
 	nullselect = T.pack $ "SELECT null from " ++ tablename ++ " limit 1"
@@ -274,7 +275,7 @@ closeRobustly db conn = go maxretries emptyDatabaseInodeCache
 				| e == Sqlite.ErrorBusy -> do
 					threadDelay briefdelay
 					retryHelper "close" ex maxretries db retries ic go
-				| otherwise -> rethrow $ errmsg "while closing database connection" ex
+				| otherwise -> rethrow $ errmsg ("while closing sqlite database " ++ fromOsPath (safeOutput db) ++ " connection") ex
 	
 	briefdelay = 1000 -- 1/1000th second
 	
@@ -312,7 +313,7 @@ retryHelper action err maxretries db retries ic a = do
 
 databaseAccessStalledMsg :: Show err => String -> OsPath -> err -> String
 databaseAccessStalledMsg action db err =
-	"Repeatedly unable to " ++ action ++ " sqlite database " ++ fromOsPath db 
+	"Repeatedly unable to " ++ action ++ " sqlite database " ++ fromOsPath (safeOutput db)
 		++ ": " ++ show err ++ ". "
 		++ "Perhaps another git-annex process is suspended and is "
 		++ "keeping this database locked?"
