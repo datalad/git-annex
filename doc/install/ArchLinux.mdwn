@@ -1,21 +1,3 @@
-There is now an [official git-annex package for Arch](https://www.archlinux.org/packages/community/x86_64/git-annex/), so to install it:
+There is now an [official git-annex package for Arch](https://www.archlinux.org/packages/extra/x86_64/git-annex/), so to install it:
 
 	pacman -S git-annex
-
-There are at least three non non-official packages for git-annex in the Arch Linux User Repository. Any of these may be installed manually per [AUR guidelines](https://wiki.archlinux.org/index.php/AUR_User_Guidelines#Installing_packages) or using a wrapper such as [`yaourt`](https://wiki.archlinux.org/index.php/yaourt) shown below.
-
-1. A git-annex package is available in the haskell-core AUR <https://wiki.archlinux.org/index.php/ArchHaskell>
-
-2. A development package is available at [git-annex-git](https://aur.archlinux.org/packages/git-annex-git/) that functions similarly to the source package but builds directly from the HEAD of the git repository rather that the last official release.
-
-       $ yaourt -Sy git-annex-git
-
-3. A Cabal sandbox build is also available
-
-       $ yaourt -Sy git-annex-cabal
-
-Finally you may choose to forgo the Arch Linux package system entirely and install git-annex directly through cabal.
-
-    $ pacman -S git rsync curl wget gnupg openssh cabal-install
-    $ cabal update
-    $ cabal install git-annex --bindir=$HOME/bin
