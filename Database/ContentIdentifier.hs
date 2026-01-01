@@ -34,7 +34,6 @@ module Database.ContentIdentifier (
 import Database.Types
 import qualified Database.Queue as H
 import Database.Init
-import Database.Utility
 import Annex.Locations
 import Annex.Common hiding (delete)
 import qualified Annex.Branch
@@ -118,7 +117,7 @@ flushDbQueue (ContentIdentifierHandle h _) = H.flushDbQueue h
 -- Be sure to also update the git-annex branch when using this.
 recordContentIdentifier :: ContentIdentifierHandle -> RemoteStateHandle -> ContentIdentifier -> Key -> IO ()
 recordContentIdentifier h (RemoteStateHandle u) cid k = queueDb h $ do
-	void $ insertUniqueFast $ ContentIdentifiers u cid k
+	void $ insertUnique_ $ ContentIdentifiers u cid k
 
 getContentIdentifiers :: ContentIdentifierHandle -> RemoteStateHandle -> Key -> IO [ContentIdentifier]
 getContentIdentifiers (ContentIdentifierHandle h _) (RemoteStateHandle u) k = 
@@ -141,7 +140,7 @@ getContentIdentifierKeys (ContentIdentifierHandle h _) (RemoteStateHandle u) cid
 recordAnnexBranchTree :: ContentIdentifierHandle -> Sha -> IO ()
 recordAnnexBranchTree h s = queueDb h $ do
 	deleteWhere ([] :: [Filter AnnexBranch])
-	void $ insertUniqueFast $ AnnexBranch $ toSSha s
+	void $ insertUnique_ $ AnnexBranch $ toSSha s
 
 getAnnexBranchTree :: ContentIdentifierHandle -> IO Sha
 getAnnexBranchTree (ContentIdentifierHandle h _) = H.queryDbQueue h $ do

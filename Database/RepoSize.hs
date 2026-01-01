@@ -38,7 +38,6 @@ import qualified Annex
 import Database.RepoSize.Handle
 import qualified Database.Handle as H
 import Database.Init
-import Database.Utility
 import Database.Types
 import Annex.LockFile
 import Git.Types
@@ -200,7 +199,7 @@ unsetRepoSize u = deleteWhere [RepoSizesRepo ==. u]
 recordAnnexBranchCommit :: Sha -> SqlPersistM ()
 recordAnnexBranchCommit branchcommitsha = do
 	deleteWhere ([] :: [Filter AnnexBranch])
-	void $ insertUniqueFast $ AnnexBranch $ toSSha branchcommitsha
+	void $ insertUnique_ $ AnnexBranch $ toSSha branchcommitsha
 
 startingLiveSizeChange :: RepoSizeHandle -> UUID -> Key -> SizeChange -> SizeChangeId -> IO ()
 startingLiveSizeChange (RepoSizeHandle (Just h) _) u k sc cid = 

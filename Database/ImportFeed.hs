@@ -26,7 +26,6 @@ module Database.ImportFeed (
 import Database.Types
 import qualified Database.Queue as H
 import Database.Init
-import Database.Utility
 import Annex.Locations
 import Annex.Common hiding (delete)
 import qualified Annex.Branch
@@ -109,16 +108,16 @@ isKnownItemId (ImportFeedDbHandle h) i =
 
 recordKnownUrl :: ImportFeedDbHandle -> URLByteString -> IO ()
 recordKnownUrl h u = queueDb h $
-	void $ insertUniqueFast $ KnownUrls $ SByteString u
+	void $ insertUnique_ $ KnownUrls $ SByteString u
 
 recordKnownItemId :: ImportFeedDbHandle -> SByteString -> IO ()
 recordKnownItemId h i = queueDb h $
-	void $ insertUniqueFast $ KnownItemIds i
+	void $ insertUnique_ $ KnownItemIds i
 
 recordAnnexBranchTree :: ImportFeedDbHandle -> Sha -> IO ()
 recordAnnexBranchTree h s = queueDb h $ do
 	deleteWhere ([] :: [Filter AnnexBranch])
-	void $ insertUniqueFast $ AnnexBranch $ toSSha s
+	void $ insertUnique_ $ AnnexBranch $ toSSha s
 
 getAnnexBranchTree :: ImportFeedDbHandle -> IO Sha
 getAnnexBranchTree (ImportFeedDbHandle h) = H.queryDbQueue h $ do

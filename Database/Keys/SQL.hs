@@ -18,7 +18,6 @@ module Database.Keys.SQL where
 
 import Database.Types
 import Database.Handle
-import Database.Utility
 import qualified Database.Queue as H
 import Utility.InodeCache
 import Git.FilePath
@@ -120,7 +119,7 @@ removeAssociatedFile k f = queueDb $
 
 addInodeCaches :: Key -> [InodeCache] -> WriteHandle -> IO ()
 addInodeCaches k is = queueDb $
-	forM_ is $ \i -> insertUniqueFast $ Content k i 
+	forM_ is $ \i -> insertUnique_ $ Content k i 
 		(inodeCacheToFileSize i)
 		(inodeCacheToEpochTime i)
 

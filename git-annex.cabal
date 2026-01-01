@@ -246,7 +246,7 @@ Executable git-annex
    time (>= 1.9.1),
    old-locale,
    persistent-sqlite (>= 2.13.3),
-   persistent (>= 2.8.1),
+   persistent (>= 2.13.3),
    persistent-template (>= 2.8.0),
    unliftio-core,
    microlens,
@@ -789,7 +789,6 @@ Executable git-annex
     Database.RepoSize
     Database.RepoSize.Handle
     Database.Types
-    Database.Utility
     Git
     Git.AutoCorrect
     Git.Branch
