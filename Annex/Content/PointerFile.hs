@@ -36,7 +36,6 @@ populatePointerFile restage k obj f = go =<< liftIO (isPointerFile f)
 	go (Just k') | k == k' = do
 		destmode <- liftIO $ catchMaybeIO $
 			fileMode <$> R.getFileStatus (fromOsPath f)
-		liftIO $ removeWhenExistsWith removeFile f
 		(ic, populated) <- replaceWorkTreeFile f $ \tmp -> do
 			ok <- linkOrCopy k obj tmp destmode >>= \case
 				Just _ -> thawContent tmp >> return True
