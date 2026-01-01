@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP, OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Types.Cluster (
 	ClusterUUID,
@@ -43,12 +43,7 @@ mkClusterUUID u
 -- Check if it is a valid cluster UUID.
 isClusterUUID :: UUID -> Bool
 isClusterUUID (UUID b) 
-	| B.take 2 b == "ac" = 
-#if MIN_VERSION_bytestring(0,11,0)
-		B.indexMaybe b 14 == Just eight
-#else
-		B.length b > 14 && B.head (B.drop 14 b) == eight
-#endif
+	| B.take 2 b == "ac" = B.indexMaybe b 14 == Just eight
   where
 	eight = fromIntegral (ord '8')
 isClusterUUID _ = False

@@ -190,7 +190,7 @@ source-repository head
 
 custom-setup
   Setup-Depends:
-    base (>= 4.15.1.0 && < 5.0),
+    base (>= 4.18.2.1 && < 5.0),
     split,
     filepath,
     exceptions,
@@ -206,12 +206,12 @@ custom-setup
 Executable git-annex
   Main-Is: git-annex.hs
   Build-Depends:
-   base (>= 4.15.1.0 && < 5.0),
+   base (>= 4.18.2.1 && < 5.0),
    network-uri (>= 2.6),
    optparse-applicative (>= 0.14.2),
    containers (>= 0.5.8),
    exceptions (>= 0.6),
-   stm (>= 2.3),
+   stm (>= 2.5.1.0),
    mtl (>= 2),
    uuid (>= 1.2.6),
    process (>= 1.6.4),
@@ -229,8 +229,8 @@ Executable git-annex
    monad-logger (>= 0.3.10),
    free,
    utf8-string (>= 1.0.0),
-   bytestring,
-   text,
+   bytestring (>= 0.11.5.3),
+   text (>= 2.0.2),
    sandi,
    monad-control,
    transformers,
@@ -330,7 +330,7 @@ Executable git-annex
       process (>= 1.6.2.0),
       silently (>= 1.2.5.1)
   else
-    Build-Depends: unix (>= 2.7.2)
+    Build-Depends: unix (>= 2.8.4)
 
   if flag(Assistant) && ! os(solaris) && ! os(gnu)
     CPP-Options: -DWITH_ASSISTANT -DWITH_WEBAPP
@@ -1125,7 +1125,6 @@ Executable git-annex
     Utility.SshConfig
     Utility.SshHost
     Utility.StatelessOpenPGP
-    Utility.STM
     Utility.Su
     Utility.SystemDirectory
     Utility.FileIO

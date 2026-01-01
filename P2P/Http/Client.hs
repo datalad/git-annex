@@ -35,7 +35,6 @@ import P2P.Http.Url
 import Annex.Concurrent
 import Utility.Url (BasicAuth(..))
 import Utility.HumanTime
-import Utility.STM
 import qualified Utility.FileIO as F
 import qualified Git.Credential as Git
 
@@ -48,6 +47,7 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy.Internal as LI
 import qualified Data.Map as M
 import Control.Concurrent.Async
+import Control.Concurrent.STM
 import Control.Concurrent
 import System.IO.Unsafe
 import Data.Time.Clock.POSIX

@@ -796,11 +796,7 @@ keyFile k =
 
 	needesc = map (fromIntegral . ord) ['&', '%', ':', '/']
 
-#if MIN_VERSION_bytestring(0,11,3)
 	anyneedesc = SB.any (`elem` needesc)
-#else
-	anyneedesc = any (`elem` needesc) . SB.unpack
-#endif
 
 {- Reverses keyFile, converting a filename fragment (ie, the basename of
  - the symlink target) into a key. -}

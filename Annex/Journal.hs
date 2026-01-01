@@ -13,7 +13,6 @@
  -}
 
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE CPP #-}
 
 module Annex.Journal where
 
@@ -211,14 +210,9 @@ discardIncompleteAppend :: L.ByteString -> L.ByteString
 discardIncompleteAppend v
 	| L.null v = v
 	| L.last v == nl = v
-	| otherwise = dropwhileend (/= nl) v
+	| otherwise = L.dropWhileEnd (/= nl) v
   where
 	nl = fromIntegral (ord '\n')
-#if MIN_VERSION_bytestring(0,11,2)
-	dropwhileend = L.dropWhileEnd
-#else
-	dropwhileend p = L.reverse . L.dropWhile p . L.reverse
-#endif
 
 {- List of existing journal files in a journal directory, but without locking,
  - may miss new ones just being added, or may have false positives if the

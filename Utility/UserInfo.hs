@@ -19,9 +19,7 @@ import Utility.Exception
 #ifndef mingw32_HOST_OS
 import Utility.Data
 import System.Posix.User
-#if MIN_VERSION_unix(2,8,0)
 import System.Posix.User.ByteString (UserEntry)
-#endif
 #endif
 
 {- Current user's home directory.

@@ -47,11 +47,7 @@ import qualified Data.ByteString.Char8 as S8
 import qualified Data.ByteString.Lazy as L
 
 #ifndef mingw32_HOST_OS
-#if MIN_VERSION_unix(2,8,0)
 import Utility.OpenFd
-#else
-import System.PosixCompat.Files (isSymbolicLink)
-#endif
 #endif
 
 type LinkTarget = S.ByteString
@@ -455,19 +451,12 @@ isPointerFile f = catchDefaultIO Nothing $
 #if defined(mingw32_HOST_OS)
 	F.withFile f ReadMode readhandle
 #else
-#if MIN_VERSION_unix(2,8,0)
 	let open = do
 		fd <- openFdWithMode (fromOsPath f) ReadOnly Nothing
 			(defaultFileFlags { nofollow = True })
 			(CloseOnExecFlag True)
 		fdToHandle fd
 	in bracket open hClose readhandle
-#else
-	ifM (isSymbolicLink <$> R.getSymbolicLinkStatus (fromOsPath f))
-		( return Nothing
-		, F.withFile f ReadMode readhandle
-		)
-#endif
 #endif
   where
 	readhandle h = parseLinkTargetOrPointer <$> S.hGet h maxPointerSz
