@@ -1,6 +1,7 @@
 Hi,
 
 ### Please describe the problem.
+
 I'm trying to set up a git-annex repo for my books/technical papers to have easy access to them on my desktop and laptop. I'm using a centralized server (following [this guide](https://git-annex.branchable.com/tips/centralized_git_repository_tutorial/on_your_own_server/)) to make it easy to sync between my machines.
 
 The issue is however that sqlite crashes when I'm trying to get a file from my server. See the log further down for the error message. I'm suspecting it is due to the repo on my server is named `Böcker` (swedish name for books). It does work if I'm cloning it locally on my server. E.g.
@@ -105,3 +106,11 @@ I'm not giving up on this that easily. Worst case I'll just rename my repo on my
 
 Thank you for all the hours developing this software!
 
+> This seems to be the same bug that was fixed in [[!commit 8a3beabf350899e369dcd57a72432930581fbc25]].
+> and released in version 10.20231227. While this bug actually has a fixed
+> version of git-annex, the version output shows it was built with too
+> old a version of persistent-sqlite to get the fix.
+> 
+> I've now updated git-annex's build deps, so all future versions will
+> be with a sufficiently new persistent-sqlite to not have this problem.
+> [[done]] --[[Joey]]

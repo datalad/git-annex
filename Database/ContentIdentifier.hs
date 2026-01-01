@@ -5,7 +5,6 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE QuasiQuotes, TypeFamilies, TypeOperators, TemplateHaskell #-}
 {-# LANGUAGE OverloadedStrings, GADTs, FlexibleContexts, EmptyDataDecls #-}
 {-# LANGUAGE MultiParamTypeClasses, GeneralizedNewtypeDeriving #-}
@@ -50,13 +49,7 @@ import qualified Logs.ContentIdentifier as Log
 
 import Database.Persist.Sql hiding (Key)
 import Database.Persist.TH
-
-#if MIN_VERSION_persistent_sqlite(2,13,3)
 import Database.RawFilePath
-#else
-import Database.Persist.Sqlite (runSqlite)
-import qualified Data.Text as T
-#endif
 
 data ContentIdentifierHandle = ContentIdentifierHandle H.DbQueue Bool
 
@@ -103,13 +96,8 @@ openDb = do
 			runMigrationSilent migrateContentIdentifier
 		-- Migrate from old versions of database, which had buggy
 		-- and suboptimal uniqueness constraints.
-#if MIN_VERSION_persistent_sqlite(2,13,3)
 		else liftIO $ runSqlite' (fromOsPath db) $ void $
 			runMigrationSilent migrateContentIdentifier
-#else
-		else liftIO $ runSqlite (T.pack (fromRawFilePath db)) $ void $
-			runMigrationSilent migrateContentIdentifier
-#endif
 	h <- liftIO $ H.openDbQueue db "content_identifiers"
 	return $ ContentIdentifierHandle h isnew
 

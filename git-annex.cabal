@@ -245,7 +245,7 @@ Executable git-annex
    conduit,
    time (>= 1.9.1),
    old-locale,
-   persistent-sqlite (>= 2.8.1),
+   persistent-sqlite (>= 2.13.3),
    persistent (>= 2.8.1),
    persistent-template (>= 2.8.0),
    unliftio-core,

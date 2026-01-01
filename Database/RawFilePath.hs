@@ -31,11 +31,10 @@
  - WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 -}
 
-{-# LANGUAGE OverloadedStrings, CPP #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Database.RawFilePath where
 
-#if MIN_VERSION_persistent_sqlite(2,13,3)
 import Database.Persist.Sqlite
 import qualified Database.Sqlite as Sqlite
 import Utility.RawFilePath (RawFilePath)
@@ -92,4 +91,3 @@ withSqliteConnInfo'
 	-> (SqlBackend -> m a)
 	-> m a
 withSqliteConnInfo' db = withSqlConn . openWith' db const
-#endif

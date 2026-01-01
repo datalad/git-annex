@@ -3,6 +3,7 @@ git-annex (10.20251216) UNRELEASED; urgency=medium
   * fix: Populate unlocked pointer files in situations where a git command,
     like git reset or git stash, leaves them unpopulated.
   * When displaying sqlite error messages, include the path to the database.
+  * Remove support for building with old versions of persistent-sqlite.
 
  -- Joey Hess <id@joeyh.name>  Thu, 01 Jan 2026 12:20:29 -0400
 

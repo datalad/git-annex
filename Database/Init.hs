@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE OverloadedStrings, CPP #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Database.Init where
 
@@ -13,9 +13,7 @@ import Annex.Common
 import Annex.Perms
 import Utility.FileMode
 import qualified Utility.RawFilePath as R
-#if MIN_VERSION_persistent_sqlite(2,13,3)
 import Database.RawFilePath
-#endif
 
 import Database.Persist.Sqlite
 import Lens.Micro
@@ -36,11 +34,7 @@ initDb db migration = do
 	let tmpdb = tmpdbdir </> literalOsPath "db"
 	let tmpdb' = fromOsPath tmpdb
 	createAnnexDirectory tmpdbdir
-#if MIN_VERSION_persistent_sqlite(2,13,3)
 	liftIO $ runSqliteInfo' tmpdb' (enableWAL tmpdb) migration
-#else
-	liftIO $ runSqliteInfo (enableWAL tmpdb) migration
-#endif
 	setAnnexDirPerm tmpdbdir
 	-- Work around sqlite bug that prevents it from honoring
 	-- less restrictive umasks.

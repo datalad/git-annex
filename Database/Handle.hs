@@ -195,11 +195,7 @@ runSqliteRobustly tablename db a = do
 				| otherwise -> rethrow $ errmsg ("after successful sqlite database " ++ fromOsPath (safeOutput db) ++ " open") ex
 	
 	opensettle retries ic = do
-#if MIN_VERSION_persistent_sqlite(2,13,3)
 		conn <- Sqlite.open' (fromOsPath db)
-#else
-		conn <- Sqlite.open (T.pack (fromOsPath db))
-#endif
 		settle conn retries ic
 
 	settle conn retries ic = do
