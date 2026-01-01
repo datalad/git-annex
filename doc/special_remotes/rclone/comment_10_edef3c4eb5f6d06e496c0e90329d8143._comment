@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="nadir"
+ avatar="http://cdn.libravatar.org/avatar/2af9174cf6c06de802104d632dc40071"
+ subject="comment 10"
+ date="2026-01-01T11:27:39Z"
+ content="""
+That makes a lot of sense. So if I understood things right, the correct place to work on this is rclone. I think I'll try to ask what they think of this kind of use case. 
+
+Thanks for the explanation
+"""]]
