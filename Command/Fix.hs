@@ -85,6 +85,7 @@ start fixwhat si file key = do
 				(Just n, Just n', False) | n > 1 && n == n' ->
 					fixby $ breakHardLink file key obj
 				_ -> stop
+
 breakHardLink :: OsPath -> Key -> OsPath -> CommandPerform
 breakHardLink file key obj = do
 	replaceWorkTreeFile file $ \tmp -> do
