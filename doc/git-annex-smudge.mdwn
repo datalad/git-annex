@@ -47,8 +47,8 @@ it records which worktree files need to be updated, and
 the content. That is run by several git hooks, including post-checkout
 and post-merge. However, a few git commands, notably `git stash` and
 `git cherry-pick`, do not run any hooks, so after using those commands
-you can manually run `git annex smudge --update` to update the working
-tree.
+you can manually run `git annex smudge --update` (or `git-annex fix`) 
+to update the working tree.
 
 # OPTIONS
 

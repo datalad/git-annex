@@ -1,3 +1,10 @@
+git-annex (10.20251216) UNRELEASED; urgency=medium
+
+  * fix: Populate unlocked pointer files in situations where a git command,
+    like git reset or git stash, leaves them unpopulated.
+
+ -- Joey Hess <id@joeyh.name>  Thu, 01 Jan 2026 12:20:29 -0400
+
 git-annex (10.20251215) upstream; urgency=medium
 
   * Added annex.trashbin configuration.

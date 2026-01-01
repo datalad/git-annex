@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2026 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -14,6 +14,7 @@ import Config
 import qualified Annex
 import Annex.ReplaceFile
 import Annex.Content
+import Annex.Content.PointerFile
 import Annex.Perms
 import Annex.Link
 import qualified Database.Keys
@@ -54,11 +55,24 @@ start fixwhat si file key = do
 				fixby $ fixSymlink file wantlink
 			| otherwise -> stop
 		Nothing -> case fixwhat of
-			FixAll -> fixthin
+			FixAll -> fixpointers
 			FixSymlinks -> stop
   where
 	file' = fromOsPath file
+
 	fixby = starting "fix" (mkActionItem (key, file)) si
+
+	fixpointers =
+		ifM (isJust <$> liftIO (isPointerFile file))
+			( stopUnless (inAnnex key) $ fixby $ do
+				obj <- calcRepo (gitAnnexLocation key)
+				populatePointerFile' QueueRestage key obj file >>= \case
+					Just ic -> Database.Keys.addInodeCaches key [ic]
+					Nothing -> giveup "not enough disk space to populate pointer file"
+				next $ return True
+			, fixthin
+			)
+
 	fixthin = do
 		obj <- calcRepo (gitAnnexLocation key)
 		stopUnless (isUnmodified key file <&&> isUnmodified key obj) $ do
@@ -71,7 +85,6 @@ start fixwhat si file key = do
 				(Just n, Just n', False) | n > 1 && n == n' ->
 					fixby $ breakHardLink file key obj
 				_ -> stop
-
 breakHardLink :: OsPath -> Key -> OsPath -> CommandPerform
 breakHardLink file key obj = do
 	replaceWorkTreeFile file $ \tmp -> do

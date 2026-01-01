@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2026-01-01T16:17:58Z"
+ content="""
+I think it makes sense for `git-annex fix` to deal with this situation.
+In both cases the user has run a git command that affects files in the
+workint tree, and it has left the annexed content not accessible.
+"""]]
