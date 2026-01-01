@@ -64,12 +64,8 @@ start fixwhat si file key = do
 
 	fixpointers =
 		ifM (isJust <$> liftIO (isPointerFile file))
-			( stopUnless (inAnnex key) $ fixby $ do
-				obj <- calcRepo (gitAnnexLocation key)
-				populatePointerFile' QueueRestage key obj file >>= \case
-					Just ic -> Database.Keys.addInodeCaches key [ic]
-					Nothing -> giveup "not enough disk space to populate pointer file"
-				next $ return True
+			( stopUnless (inAnnex key) $ 
+				fixby $ fixPointerFile key file
 			, fixthin
 			)
 
@@ -124,3 +120,11 @@ fixSymlink file link = do
 	next $ return True
   where
 	link' = fromOsPath link
+
+fixPointerFile :: Key -> OsPath -> CommandPerform
+fixPointerFile key file = do
+	obj <- calcRepo (gitAnnexLocation key)
+	populatePointerFile' QueueRestage key obj file >>= \case
+		Just ic -> Database.Keys.addInodeCaches key [ic]
+		Nothing -> giveup "not enough disk space to populate pointer file"
+	next $ return True
