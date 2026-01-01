@@ -9,6 +9,7 @@ git-annex (10.20251216) UNRELEASED; urgency=medium
   * webapp: Remove support for local pairing; use wormhole pairing instead.
   * git-annex.cabal: Removed pairing build flag, and no longer depends
     on network-multicast or network-info.
+  * stack.yaml: Update to lts-24.26.
 
  -- Joey Hess <id@joeyh.name>  Thu, 01 Jan 2026 12:20:29 -0400
 

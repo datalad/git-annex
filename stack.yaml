@@ -11,6 +11,6 @@ flags:
     ospath: true
 packages:
 - '.'
-resolver: lts-24.2
+resolver: lts-24.26
 extra-deps:
 - aws-0.25.2
