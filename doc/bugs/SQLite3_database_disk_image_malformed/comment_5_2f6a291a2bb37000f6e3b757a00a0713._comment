@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2026-01-01T17:29:54Z"
+ content="""
+Your previous problem with the sqlite database cannot have caused fsck to
+detect a checksum problem with your annexed file.
+
+It looks like you have somehow modified annex object files, eg files in
+`.git/annex/objects`. git-annex sets permissions that usually prevent such
+a thing from happening.
+
+There is no way to make git-annex accept a version of a file with a different
+checksum than the one recorded in git. Instead you need to `git-annex add` the
+new version of the files to the repository in place of the old version.
+
+Here is a bash script that will pull the files out of `.git/annex/bad/`
+and update the annexed files:
+
+	IFS=$'\n'; for x in $(git-annex find --format='${key}\n${file}\n'); do if [ "$l" ]; then f="$x"; l=; if [ -e ".git/annex/bad/$k" ]; then mv ".git/annex/bad/$k" "$f"; git-annex add "$f" ; fi; else k="$x"; l=1; fi; done
+"""]]
