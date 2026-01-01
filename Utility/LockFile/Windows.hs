@@ -5,7 +5,7 @@
  - License: BSD-2-clause
  -}
 
-{-# LANGUAGE OverloadedStrings, CPP #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Utility.LockFile.Windows (
 	lockShared,
@@ -22,9 +22,7 @@ import Control.Concurrent
 import Utility.Path.Windows
 import Utility.FileSystemEncoding
 import Utility.OsPath
-#if MIN_VERSION_Win32(2,13,4)
 import Common (tryNonAsync)
-#endif
 
 type LockFile = OsPath
 
@@ -62,21 +60,12 @@ lockExclusive = openLock fILE_SHARE_NONE
 openLock :: ShareMode -> LockFile -> IO (Maybe LockHandle)
 openLock sharemode f = do
 	f' <- convertToWindowsNativeNamespace (fromOsPath f)
-#if MIN_VERSION_Win32(2,13,4)
 	r <- tryNonAsync $ createFile_NoRetry (fromRawFilePath f') gENERIC_READ sharemode 
 		Nothing oPEN_ALWAYS fILE_ATTRIBUTE_NORMAL
 		Nothing
 	return $ case r of
 		Left _ -> Nothing
 		Right h -> Just h
-#else
-	h <- withTString (fromRawFilePath f') $ \c_f ->
-		c_CreateFile c_f gENERIC_READ sharemode (maybePtr Nothing)
-			oPEN_ALWAYS fILE_ATTRIBUTE_NORMAL (maybePtr Nothing)
-	return $ if h == iNVALID_HANDLE_VALUE
-		then Nothing
-		else Just h
-#endif
 
 dropLock :: LockHandle -> IO ()
 dropLock = closeHandle
