@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2026-01-01T18:45:26Z"
+ content="""
+Looks to me like arch is no longer stuck on the old 9.4.8 ghc but has a
+slightly newer 9.6.6. Which is the same as Debian stable.
+
+So, I am probably going to make git-annex only support back to that
+version, to simplify things.
+
+Please let me know if I have misunderstood the situation in arch land..
+"""]]
