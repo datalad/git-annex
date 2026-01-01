@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="puck"
+ avatar="http://cdn.libravatar.org/avatar/06d3f4f0a82dd00a84f8f8fabc8e537d"
+ subject="More details in error message?"
+ date="2026-01-01T07:32:23Z"
+ content="""
+Hey,
+
+I just came back to this after trying to do something in my repository. Good to hear I can just the SQlite file, done that now, and it is busy running fsck now.
+
+A useful thing to display might be the path to the corrupted database file and advice to remove it?
+"""]]
