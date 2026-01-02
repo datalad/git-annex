@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2026-01-02T16:42:10Z"
+ content="""
+git-annex is actually using git credential here. That's
+where the "Username for" prompt comes from.
+
+I think that this is a chicken and egg problem. git-annex is doing UUID
+discovery, which is the first thing it does when run with a new remote that
+does not have a UUID. But the repository does not exist, so has no UUID,
+and it won't be created until git push happens.
+
+Deferring git-annex UUID discovery would avoid the problem, but I think
+that would be very complicated if possible at all.
+
+I wonder if there is some way that git-annex could tell, at the http level,
+that this URL does not exist yet? If so, it could avoid doing UUID
+discovery. Then `git-annex push` would at least be able to push the git
+repo. And then on the next run git-annex would discover the UUID and would
+be able to fully use the repository. Not an ideal solution perhaps, since
+you would need to `git-annex push` twice in a row to fully populate the
+repisitory.
+
+Looks like the url you gave just 404's, but I'm not sure if I'm seeing
+now the same as what you would have seen.
+
+@matrs Any chance you could give me access to reproduce this using your
+server so I could look into that?
+"""]]
