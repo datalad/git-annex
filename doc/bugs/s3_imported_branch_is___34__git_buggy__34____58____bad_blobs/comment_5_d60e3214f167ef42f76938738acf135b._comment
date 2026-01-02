@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2026-01-02T14:43:14Z"
+ content="""
+All being small files does make me think this bug is somehow specfic to
+adding the files to git. So it would be very useful to re-run the
+reproducer again, with annex.largefiles this time configured so everything
+is annexed.
+
+> > And when you replicated the problem from the backup, were you using it in the configuration where it cannot access those?
+> 
+> if I got the question right and since I do not recall now -- judging from me using `( source .git/secrets.env; git-annex import master...` I think I was with credentials allowing to access them (hence no errors while importing)
+
+Well that's why I asked. It's not clear to me if it ever did show a failure, 
+when used in the configuration where it couldn't access the files.
+
+It seems equally likely that it somehow incorrectly thought it succeeded.
+"""]]
