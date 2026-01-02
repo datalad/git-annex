@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: Directory remotes in offline drives for archiving?"""
+ date="2026-01-02T14:29:49Z"
+ content="""
+The only time git-annex will complain about being unable to lock down a file on
+a remote is when you are dropping a file from a special remote, and the only
+copy is in another special remote.
+
+	drop foo (from dirremote...) (unsafe)
+	  Unable to lock down 1 copy of file necessary to safely drop it.
+	
+	  These remotes do not support locking: otherdirremote
+
+	  (Use --force to override this check, or adjust numcopies.)
+
+In that situation, you can either use `--force` or `git-annex get` the file,
+then drop from the remote, and then drop the file from the local repository.
+The latter avoids any possible concurrency problems, but `--force` is of
+course faster, and would be fine in your situation.
+
+Dropping a file from a local repository that is present in a special remote
+does not have this problem.
+"""]]
