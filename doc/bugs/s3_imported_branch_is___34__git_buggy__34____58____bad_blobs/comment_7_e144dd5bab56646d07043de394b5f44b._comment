@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2026-01-02T15:27:57Z"
+ content="""
+One way I can see that this might happen is if `git-annex forget`
+has been used, after a previous export/import.
+
+In that case, the content identifier database would be populated with a
+GIT key, which would be used instead of downloading the file to be
+imported. Resulting in a git sha being used, which could not be present in
+the git repository. Because while the git-annex branch usually gets
+imported/exported trees linked into it, `git-annex forget` erases that.
+
+So a possible scenario:
+
+	git-annex export or import
+	git-annex forget
+	pushing git-annex branch to somewhere
+	in a separate git clone, pulling that git-annex branch
+	git-annex import
+
+That is worth trying to replicate. But it seems pretty unlikely to me that
+is what you actually did ...?
+
+Leaving aside the possibility that `git hash-object` might be buggy and not
+record the object in the git repository, that's the only way I can find for
+this to possibly happen, after staring at the code for far too long.
+"""]]
