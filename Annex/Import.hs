@@ -798,7 +798,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 					Right r -> next $ do
 						liftIO $ atomically $
 							putTMVar job r
-						return True
+						return (isJust r)
 			commandAction $ bracket_
 				(waitstart importing cid)
 				(signaldone importing cid)
