@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2026-01-02T15:04:03Z"
+ content="""
+I was able to set up this same special remote myself (manually populating remote.log)
+and use with my own S3 creds (which of course have no special access rights to this bucket
+so it was all public access only), importing into a fresh repository.
+
+Part of that import included:
+
+	import s3-dandiarchive 000345/draft/dandiset.yaml
+	  HttpExceptionRequest Request {
+	[...]
+	   (StatusCodeException (Response {responseStatus = Status {statusCode = 403, statusMessage = "Forbidden"}, responseVersion = HTTP/1.1, responseHeaders = [("x-amz-request-id","T0PNM10TN8STRTK4"),("x-amz-id-2","pqZXYNtU9T0mQxmHvtBjr2weztjwWwP3GleV7Jy5P3DcZbCi7Mt4Kzqo1wpPj9Zy85cZ3CUPHro="),("Content-Type","application/xml"),("Transfer-Encoding","chunked"),("Date","Fri, 02 Jan 2026 15:01:16 GMT"),("Server","AmazonS3")], responseBody = (), responseCookieJar = CJ {expose = []}, responseClose' = ResponseClose, responseOriginalRequest = Request {
+	[...]
+	  , responseEarlyHints = []}) "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Error><Code>AccessDenied</Code><Message>Access Denied</Message><RequestId>T0PNM10TN8STRTK4</RequestId><HostId>pqZXYNtU9T0mQxmHvtBjr2weztjwWwP3GleV7Jy5P3DcZbCi7Mt4Kzqo1wpPj9Zy85cZ3CUPHro=</HostId></Error>")
+	ok
+
+But, the import ended with:
+
+	  Failed to import some files from s3-dandiarchive. Re-run command to resume import.
+
+And did not create a branch, so I have not been able to reproduce the
+problem.
+
+Digging into why it says "ok" there, that was unfortunately only a display
+problem. Corrected that.
+"""]]
