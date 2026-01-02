@@ -982,14 +982,22 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 			ImportSubTree subdir _ ->
 				getTopFilePath subdir </> fromImportLocation loc
 
-	getcidkey cidmap db cid = liftIO $
+	getcidkey cidmap db cid = do
 		-- Avoiding querying the database when it's empty speeds up
 		-- the initial import.
-		if CIDDb.databaseIsEmpty db
+		l <- liftIO $ if CIDDb.databaseIsEmpty db
 			then getcidkeymap cidmap cid
 			else CIDDb.getContentIdentifierKeys db rs cid >>= \case
 				[] -> getcidkeymap cidmap cid
 				l -> return l
+		filterM validcidkey l
+	
+	-- Guard against a content identifier containing a git sha that is
+	-- not present in the repository. It's possible that it's not,
+	-- when git-annex forget is used.
+	validcidkey k = case keyGitSha k of
+		Just sha -> isJust <$> catObjectMetaData sha
+		Nothing -> return True
 
 	getcidkeymap cidmap cid =
 		atomically $ maybeToList . M.lookup cid <$> readTVar cidmap

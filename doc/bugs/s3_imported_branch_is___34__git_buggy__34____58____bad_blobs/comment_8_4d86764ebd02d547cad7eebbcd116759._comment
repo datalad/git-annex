@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2026-01-02T15:59:56Z"
+ content="""
+I've made it deal with the `git-annex forget` scenario now.
+"""]]
