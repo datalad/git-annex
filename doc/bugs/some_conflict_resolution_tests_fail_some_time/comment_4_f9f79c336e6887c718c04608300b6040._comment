@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2026-01-02T16:35:22Z"
+ content="""
+Nothing changed on the git-annex side I'm pretty sure that would have fixed
+this.
+
+I am inclined to chalk this up to something having crashed in some way on
+that machine, and the problem later clearing up. Ugh.
+"""]]
