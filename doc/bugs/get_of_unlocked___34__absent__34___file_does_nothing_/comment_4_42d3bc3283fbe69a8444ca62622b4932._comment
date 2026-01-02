@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 4"
+ date="2026-01-02T17:36:34Z"
+ content="""
+Thank you Joey for looking into it.  Since there was a bit of exploration above, in the nutshell, what should the tandem of git-annex command(s) for users to do after `git reset --hard COMMITISH` to \"time travel\" most efficiently (assuming heavy repos)?
+"""]]
