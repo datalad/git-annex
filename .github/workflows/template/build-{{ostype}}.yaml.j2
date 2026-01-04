@@ -258,7 +258,10 @@ jobs:
         run: stack install --no-haddock --local-bin-path .
 
       - name: Install NSIS
-        run: choco install nsis -y
+        shell: pwsh
+        run: |
+          choco install nsis -y
+          echo "C:\Program Files (x86)\NSIS" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Build the installer
         run: |
