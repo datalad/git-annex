@@ -134,6 +134,9 @@ jobs:
       - name: Build git-annex
         run: stack install --no-haddock --local-bin-path .
 
+      - name: Install NSIS
+        run: choco install nsis -y
+
       - name: Build the installer
         run: |
           stack ghc --no-haddock --package nsis Build/NullSoftInstaller.hs
