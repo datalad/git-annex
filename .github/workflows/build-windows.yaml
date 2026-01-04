@@ -145,7 +145,7 @@ jobs:
              git-annex-installer_"${{ steps.build-version.outputs.version }}".exe
 
       - name: Upload packages
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: git-annex-windows-installer_${{ steps.build-version.outputs.version }}
           path: |

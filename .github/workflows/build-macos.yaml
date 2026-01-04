@@ -122,7 +122,7 @@ jobs:
              git-annex_"${{ steps.build-version.outputs.version }}".dmg
 
       - name: Upload packages
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: git-annex-macos-dmg_${{ steps.build-version.outputs.version }}
           path: |
