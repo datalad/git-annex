@@ -27,7 +27,7 @@
     # is fixed
   test_annex_include:
     - flavor: normal
-      os: macos-latest
+      os: macos-latest-large
   artifact_basename: git-annex-macos-dmg
   artifact_install_steps:
     - hdiutil attach git-annex_*.dmg

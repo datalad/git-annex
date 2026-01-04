@@ -193,7 +193,7 @@ jobs:
       matrix:
         flavor: ["normal", "crippled-tmp", "custom-config1"]
         os: [macos-15-intel]
-        include: [{"flavor": "normal", "os": "macos-latest"}]
+        include: [{"flavor": "normal", "os": "macos-latest-large"}]
       fail-fast: false
     steps:
       - name: Checkout this repository
