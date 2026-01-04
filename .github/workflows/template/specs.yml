@@ -18,7 +18,7 @@
 - ostype: macos
   osname: macOS
   cron_hour: '01'
-  runs_on: macos-13
+  runs_on: macos-15-intel
   env:
     LANG: C
   test_annex_flavors: [normal, crippled-tmp, custom-config1]
