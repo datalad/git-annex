@@ -361,20 +361,12 @@ jobs:
           echo.127.0.0.1  datalad-test >> %SYSTEMROOT%\System32\drivers\etc\hosts
           echo.127.0.0.1  datalad-test2 >> %SYSTEMROOT%\System32\drivers\etc\hosts
 
-      - name: OpenSSH server setup
-        shell: powershell
+      - name: Start OpenSSH server
+        shell: pwsh
         run: |
-          mkdir downloads
-          Invoke-WebRequest -Uri https://github.com/PowerShell/Win32-OpenSSH/releases/download/v7.6.1.0p1-Beta/OpenSSH-Win32.zip -OutFile downloads\openssh.zip
-          7z x -o"downloads" downloads\openssh.zip
-
-      - name: Install
-        shell: cmd
-        run: powershell.exe -ExecutionPolicy Bypass -File downloads\OpenSSH-Win32\install-sshd.ps1
-
-      - name: Configure service
-        shell: cmd
-        run: powershell.exe New-NetFirewallRule -Name sshd -DisplayName 'OpenSSH Server (sshd)' -Enabled True -Direction Inbound -Protocol TCP -Action Allow -LocalPort 22
+          # Windows Server 2025 has OpenSSH pre-installed, just need to start it
+          Start-Service sshd
+          Set-Service -Name sshd -StartupType 'Automatic'
 
       - name: Keys in default place
         run: ssh-keygen -f ~/.ssh/id_rsa -N ""
