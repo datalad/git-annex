@@ -24,7 +24,7 @@ env:
 
 jobs:
   build-package:
-    runs-on: macos-13
+    runs-on: macos-15-intel
     outputs:
       build-version: ${{ steps.build-version.outputs.version }}
     steps:
@@ -192,7 +192,7 @@ jobs:
     strategy:
       matrix:
         flavor: ["normal", "crippled-tmp", "custom-config1"]
-        os: [macos-13]
+        os: [macos-15-intel]
         include: [{"flavor": "normal", "os": "macos-latest"}]
       fail-fast: false
     steps:
@@ -329,7 +329,7 @@ jobs:
             See <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}> for more information.
 
   test-annex-more:
-    runs-on: macos-13
+    runs-on: macos-15-intel
     needs: build-package
     steps:
       - name: Checkout this repository
@@ -382,7 +382,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   test-datalad:
-    runs-on: macos-13
+    runs-on: macos-15-intel
     needs: build-package
     strategy:
       matrix:
