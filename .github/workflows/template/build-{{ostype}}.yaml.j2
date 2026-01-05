@@ -70,12 +70,12 @@ jobs:
           # Verify that singularity functions since might have failed before
           singularity --version
 
-    {% elif ostype == "macos" %}
+    {% elif ostype.startswith("macos") %}
       - name: Set up system
         run: brew install libmagic pkg-config rsync
 
     {% endif %}
-    {% if ostype == "windows" or ostype == "macos" %}
+    {% if ostype == "windows" or ostype.startswith("macos") %}
       - name: Setup Haskell
         uses: haskell-actions/setup@v2
         with:
@@ -120,6 +120,8 @@ jobs:
           version="$(git describe "$BUILD_COMMIT" | sed -e 's/-/+git/')"
           {% if ostype == "ubuntu" %}
           arch="$(dpkg --print-architecture)"
+          {% elif arch %}
+          arch={{arch}}
           {% else %}
           arch=x64
           {% endif %}
@@ -174,7 +176,7 @@ jobs:
         run: grep -E '^All [[:digit:]]{3} tests passed' "${bbuild_log}"
         if: "!contains(env.DEB_BUILD_OPTIONS, 'nocheck')"
 
-    {% elif ostype == "macos" %}
+    {% elif ostype.startswith("macos") %}
       - name: Configure build
         run: |
           echo OSX_MAGIC_FILE="$(brew list --verbose libmagic| grep magic.mgc | head -n 1)" >> "$GITHUB_ENV"
@@ -193,9 +195,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.stack
-          key: cache-stack-macos-${{ hashFiles('stack.yaml.lock') }}-${{ hashFiles('git-annex.cabal') }}
+          key: cache-stack-{{ostype}}-${{ hashFiles('stack.yaml.lock') }}-${{ hashFiles('git-annex.cabal') }}
           restore-keys: |
-            cache-stack-macos-
+            cache-stack-{{ostype}}-
 
       - name: Build git-annex
         run: make osxapp
@@ -420,7 +422,7 @@ jobs:
           {{step}}
           {% endfor %}
 
-    {% if ostype == "macos" %}
+    {% if ostype.startswith("macos") %}
       - name: Install coreutils (for timeout)
         run: brew install coreutils
 
@@ -449,7 +451,7 @@ jobs:
 
       - name: Run tests
         run: |
-        {% if (ostype == "ubuntu" or ostype == "macos") and test_annex_flavors %}
+        {% if (ostype == "ubuntu" or ostype.startswith("macos")) and test_annex_flavors %}
           if echo "${{ matrix.flavor }}" | grep -q "crippled" ; then
             # source so that CRIPPLEDFS_PATH will be set:
             . .github/workflows/tools/setup_crippledfs crippledfs 500
@@ -547,7 +549,7 @@ jobs:
 
             See <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}> for more information.
 
-{% if ostype == "ubuntu" or ostype == "macos" %}
+{% if ostype == "ubuntu" or ostype.startswith("macos") %}
   test-annex-more:
     runs-on: {{runs_on}}
     needs: build-package
@@ -643,11 +645,11 @@ jobs:
 
     {% if ostype == "ubuntu" %}
     {# TODO: return for macos! https://github.com/datalad/git-annex/issues/42
-      {% if ostype == "ubuntu"  or ostype == "macos" %} #}
+      {% if ostype == "ubuntu"  or ostype.startswith("macos") %} #}
       - name: Set up SSH target
         shell: bash
         run: |
-          {% if ostype == "macos" %}
+          {% if ostype.startswith("macos") %}
           # coreutils provides a readlink that supports `-f`
           brew install coreutils docker docker-machine
           docker-machine --github-api-token="${{ secrets.GITHUB_TOKEN }}" create --driver virtualbox default
@@ -716,7 +718,7 @@ jobs:
 
       - name: Set up environment
         run: |
-          {% if ostype == "macos" %}
+          {% if ostype.startswith("macos") %}
           brew install exempi  # Needed by python-xmp-toolkit
           {% endif %}
           git config --global user.email "test@github.land"

@@ -19,6 +19,7 @@
   osname: macOS
   cron_hour: '01'
   runs_on: macos-15-intel
+  arch: x64
   env:
     LANG: C
   test_annex_flavors: [normal, crippled-tmp, custom-config1]
@@ -37,6 +38,25 @@
   test_datalad: true
     # TODO: Re-enable macOS testing once it passes reliably
     # <https://github.com/datalad/datalad-extensions/pull/33#issuecomment-696368877>
+
+- ostype: macos-arm64
+  osname: macOS ARM64
+  cron_hour: '01'
+  runs_on: macos-15
+  arch: arm64
+  env:
+    LANG: C
+  test_annex_flavors: [normal, crippled-tmp, custom-config1]
+  test_annex_include:
+    - flavor: normal
+      os: macos-latest
+  artifact_basename: git-annex-macos-arm64-dmg
+  artifact_install_steps:
+    - hdiutil attach git-annex_*.dmg
+    - rsync -a /Volumes/git-annex/git-annex.app /Applications/
+    - hdiutil detach /Volumes/git-annex/
+    - echo /Applications/git-annex.app/Contents/MacOS >> "$GITHUB_PATH"
+  test_datalad: true
 
 - ostype: windows
   osname: Windows
