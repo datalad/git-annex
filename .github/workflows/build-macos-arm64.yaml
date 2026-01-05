@@ -131,7 +131,7 @@ jobs:
              git-annex_"${{ steps.build-version.outputs.version }}".dmg
 
       - name: Upload packages
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: git-annex-macos-arm64-dmg_${{ steps.build-version.outputs.version }}
           path: |
