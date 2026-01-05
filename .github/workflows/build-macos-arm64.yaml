@@ -1,0 +1,474 @@
+name: Build git-annex on macOS ARM64
+
+on:
+  # Trigger the workflow on pull requests
+  pull_request:
+    paths:
+      - '.github/workflows/build-macos-arm64.yaml'
+      - 'patches/*.patch'
+  schedule:
+    - cron: '30 01 * * *'
+  workflow_dispatch:
+    inputs:
+      commitish:
+        description: The upstream commitish to build
+      pr:
+        description: The number of the PR to build
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  LANG: C
+
+jobs:
+  build-package:
+    runs-on: macos-15
+    outputs:
+      build-version: ${{ steps.build-version.outputs.version }}
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Create pending PR status
+        if: github.event.inputs.pr != ''
+        run: |
+          .github/workflows/tools/set-pr-status \
+            "${{ github.event.inputs.pr }}" \
+            macOS ARM64 \
+            build-package \
+            pending
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up system
+        run: brew install libmagic pkg-config rsync
+
+      - name: Setup Haskell
+        uses: haskell-actions/setup@v2
+        with:
+          enable-stack: true
+          stack-no-global: true
+
+      - name: Determine git-annex ref to build
+        run: |
+          . .github/workflows/tools/set-build-commit
+          echo "BUILD_COMMIT=$BUILD_COMMIT" >> "$GITHUB_ENV"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INPUT_PR: ${{ github.event.inputs.pr }}
+          INPUT_COMMITISH: ${{ github.event.inputs.commitish }}
+
+      - name: Check out source files
+        run: |
+          # The goal here is for $BUILD_COMMIT to be the HEAD (necessary for
+          # git-annex's version detection to use the correct git commit) with
+          # the .github/, clients/, and patches/ trees from master — or
+          # whatever ref is being used as the workflow source — also available.
+          git checkout "$BUILD_COMMIT"
+          git checkout "$GITHUB_SHA" -- .github clients patches
+
+      - name: Get build version
+        id: build-version
+        run: |
+          version="$(git describe "$BUILD_COMMIT" | sed -e 's/-/+git/')"
+          arch=arm64
+          echo "Building $version"
+          echo "version=${version}_$arch" >> "$GITHUB_OUTPUT"
+
+      - name: Apply local patches
+        run: |
+          .github/workflows/tools/apply-patches patches ${{ github.event_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure build
+        run: |
+          echo OSX_MAGIC_FILE="$(brew list --verbose libmagic| grep magic.mgc | head -n 1)" >> "$GITHUB_ENV"
+          echo BUILDERCOMMONOPTIONS="" >> "$GITHUB_ENV"
+          echo BUILDER=stack >> "$GITHUB_ENV"
+          echo GHC="stack ghc --" >> "$GITHUB_ENV"
+
+      - name: Enable building with magic
+        run: |
+          perl -pli -e 's/magicmime: false/magicmime: true/' stack.yaml
+
+      - name: stack setup
+        run: stack setup
+
+      - name: Enable Stack cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.stack
+          key: cache-stack-macos-arm64-${{ hashFiles('stack.yaml.lock') }}-${{ hashFiles('git-annex.cabal') }}
+          restore-keys: |
+            cache-stack-macos-arm64-
+
+      - name: Build git-annex
+        run: make osxapp
+
+      - name: Update version info for git rev being built.
+        run: |
+          mkdir -p dist
+          make Build/BuildVersion
+          ./Build/BuildVersion > dist/build-version
+
+      - name: Add version to DMG name and move it
+        run: |
+          mv tmp/git-annex.dmg \
+             git-annex_"${{ steps.build-version.outputs.version }}".dmg
+
+      - name: Upload packages
+        uses: actions/upload-artifact@v5
+        with:
+          name: git-annex-macos-arm64-dmg_${{ steps.build-version.outputs.version }}
+          path: |
+            git-annex[-_]*.*
+            dist/build-version
+
+      - name: Create new release
+        if: github.event.inputs.commitish != ''
+        run: |
+          printf '[DEBUG] INPUT_COMMITISH=%b\n' "$INPUT_COMMITISH"
+          if git rev-parse refs/tags/"$INPUT_COMMITISH" &> /dev/null
+          then
+              echo "[INFO] Building a tag; uploading assets to release ..."
+              echo '[DEBUG] BEGIN gh release list'
+              gh release list | tee releases.txt | cat -v
+              echo '[DEBUG] END gh release list'
+              if grep -q "^$INPUT_COMMITISH\b" releases.txt
+              then
+                  echo "[INFO] Release already exists; uploading assets"
+                  gh release upload "$INPUT_COMMITISH" git-annex[-_]*.*
+              else
+                  echo "[INFO] Creating release"
+                  gh release create \
+                    --notes "This is an unofficial release build provided by the DataLad team." \
+                    "$INPUT_COMMITISH" git-annex[-_]*.*
+              fi
+          else
+              echo "[INFO] Not building a tag; no release to make"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INPUT_COMMITISH: ${{ github.event.inputs.commitish }}
+
+      - name: Set final PR status
+        if: always() && github.event.inputs.pr != ''
+        run: |
+          .github/workflows/tools/set-pr-status \
+            "${{ github.event.inputs.pr }}" \
+            macOS ARM64 \
+            build-package \
+            "${{ job.status }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Send e-mail on failed run
+        if: failure() && contains(fromJSON('["schedule", "workflow_dispatch"]'), github.event_name)
+        # freeze to v6
+        uses: dawidd6/action-send-mail@6d98ae34d733f9a723a9e04e94f2f24ba05e1402
+        with:
+          server_address: ${{ secrets.NOTIFY_SMTP_HOST }}
+          server_port: ${{ secrets.NOTIFY_SMTP_PORT }}
+          username: ${{ secrets.NOTIFY_SMTP_USERNAME }}
+          password: ${{ secrets.NOTIFY_SMTP_PASSWORD }}
+          secure: ${{ secrets.NOTIFY_SMTP_SECURE }}
+          ignore_cert: ${{ secrets.NOTIFY_SMTP_IGNORE_CERT }}
+          from: "GitHub Actions Notifications <${{ secrets.NOTIFY_SMTP_USERNAME }}@${{ secrets.NOTIFY_SMTP_HOST }}>"
+          to: ${{ secrets.NOTIFY_RECIPIENT }}
+          subject: '[${{ github.repository }}] Build on macOS ARM64 failed!'
+          body: |
+            A build (via ${{ github.event_name }}) of git-annex for macOS ARM64 failed!
+
+            See <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}> for more information.
+
+  test-annex:
+    runs-on: ${{ matrix.os }}
+    needs: build-package
+    strategy:
+      matrix:
+        flavor: ["normal", "crippled-tmp", "custom-config1"]
+        os: [macos-15]
+        include: [{"flavor": "normal", "os": "macos-latest"}]
+      fail-fast: false
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v6
+
+      - name: Create pending PR status
+        if: github.event.inputs.pr != ''
+        run: |
+          .github/workflows/tools/set-pr-status \
+            "${{ github.event.inputs.pr }}" \
+            macOS ARM64 \
+            "test-annex (${{ matrix.flavor }}, ${{ matrix.os }})" \
+            pending
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download git-annex package
+        uses: actions/download-artifact@v6
+        with:
+          name: git-annex-macos-arm64-dmg_${{ needs.build-package.outputs.build-version }}
+
+      - name: Install git-annex package
+        run: |
+          hdiutil attach git-annex_*.dmg
+          rsync -a /Volumes/git-annex/git-annex.app /Applications/
+          hdiutil detach /Volumes/git-annex/
+          echo /Applications/git-annex.app/Contents/MacOS >> "$GITHUB_PATH"
+
+      - name: Install coreutils (for timeout)
+        run: brew install coreutils
+
+
+      - name: Check git-annex version for some expected build flags
+        run: |
+          # apparently order is not alphabetic, so cannot be relied upon for a single grep
+          flags=$(git annex version | grep 'build flags:')
+          for f in Assistant MagicMime Servant S3; do
+            echo -n "Checking for $f: "
+            echo "$flags" | grep --color "$f" || { echo "FAIL"; exit 1; }
+          done
+
+      - name: Print git-annex version
+        run: git annex version
+
+      - name: Run tests
+        run: |
+          if echo "${{ matrix.flavor }}" | grep -q "crippled" ; then
+            # source so that CRIPPLEDFS_PATH will be set:
+            . .github/workflows/tools/setup_crippledfs crippledfs 500
+          fi
+          if echo "${{ matrix.flavor }}" | grep -q "nfs" ; then
+            mkdir /tmp/nfsmount_ /tmp/nfsmount
+            echo "/tmp/nfsmount_ localhost(rw)" | sudo bash -c 'cat - > /etc/exports'
+            sudo apt-get install -y nfs-kernel-server
+            sudo exportfs -a
+            sudo mount -t nfs localhost:/tmp/nfsmount_ /tmp/nfsmount
+          fi
+
+          case "${{ matrix.flavor }}" in
+            # For git-annex it causes only few temporary directories to be on the crippled FS,
+            # while the main ones produced by git annex test  reside in CWD, for which we use
+            # $HOME
+            crippled-tmp)
+              export TMPDIR="$CRIPPLEDFS_PATH"
+              ;;
+            nfs-tmp)
+              export TMPDIR=/tmp/nfsmount
+              ;;
+            # Also used as CWD where running the tests, so in effect tests annex operating
+            # on those file systems
+            crippled-home)
+              export HOME="$CRIPPLEDFS_PATH"
+              ;;
+            nfs-home)
+              export HOME=/tmp/nfsmount
+              ;;
+            normal|custom-config1)
+              ;;
+            *)
+              echo "Unknown flavor ${{ matrix.flavor }}"
+              exit 1
+          esac
+
+          # Do it after we possibly setup HOME
+          git config --global user.email "test@github.land"
+          git config --global user.name "GitHub Almighty"
+          test_opts=( )
+
+          case "${{ matrix.flavor }}" in
+            # For git-annex it causes only few temporary directories to be on the crippled FS,
+            # while the main ones produced by git annex test  reside in CWD, for which we use
+            # $HOME
+            custom-config1)
+              test_opts=( --test-git-config annex.stalldetection=1KB/120s )
+              ;;
+            *)
+              ;;
+          esac
+
+          cd $HOME
+          export | grep -e crippledfs || :
+
+          timeout 3600 git annex test "${test_opts[@]:-}"
+
+      - name: Set final PR status
+        if: always() && github.event.inputs.pr != ''
+        run: |
+          .github/workflows/tools/set-pr-status \
+            "${{ github.event.inputs.pr }}" \
+            macOS ARM64 \
+            "test-annex (${{ matrix.flavor }}, ${{ matrix.os }})" \
+            "${{ job.status }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Send e-mail on failed run
+        if: failure() && contains(fromJSON('["schedule", "workflow_dispatch"]'), github.event_name)
+        # freeze to v6
+        uses: dawidd6/action-send-mail@6d98ae34d733f9a723a9e04e94f2f24ba05e1402
+        with:
+          server_address: ${{ secrets.NOTIFY_SMTP_HOST }}
+          server_port: ${{ secrets.NOTIFY_SMTP_PORT }}
+          username: ${{ secrets.NOTIFY_SMTP_USERNAME }}
+          password: ${{ secrets.NOTIFY_SMTP_PASSWORD }}
+          secure: ${{ secrets.NOTIFY_SMTP_SECURE }}
+          ignore_cert: ${{ secrets.NOTIFY_SMTP_IGNORE_CERT }}
+          from: "GitHub Actions Notifications <${{ secrets.NOTIFY_SMTP_USERNAME }}@${{ secrets.NOTIFY_SMTP_HOST }}>"
+          to: ${{ secrets.NOTIFY_RECIPIENT }}
+          subject: '[${{ github.repository }}] Tests of macOS ARM64 build failed!'
+          body: |
+            The tests for a build (via ${{ github.event_name }}) of git-annex for macOS ARM64 (flavor: ${{ matrix.flavor }}, OS: ${{ matrix.os }}) failed!
+
+            See <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}> for more information.
+
+  test-annex-more:
+    runs-on: macos-15
+    needs: build-package
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v6
+
+      - name: Create pending PR status
+        if: github.event.inputs.pr != ''
+        run: |
+          .github/workflows/tools/set-pr-status \
+            "${{ github.event.inputs.pr }}" \
+            macOS ARM64 \
+            test-annex-more \
+            pending
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download git-annex package
+        uses: actions/download-artifact@v6
+        with:
+          name: git-annex-macos-arm64-dmg_${{ needs.build-package.outputs.build-version }}
+
+      - name: Install git-annex package
+        run: |
+          hdiutil attach git-annex_*.dmg
+          rsync -a /Volumes/git-annex/git-annex.app /Applications/
+          hdiutil detach /Volumes/git-annex/
+          echo /Applications/git-annex.app/Contents/MacOS >> "$GITHUB_PATH"
+
+      - name: Seek of dynlibs
+        run: |
+          mkdir /tmp/testrepo; cd /tmp/testrepo; git init
+          function nfailed() {
+            strace -f git-annex "$1" 2>&1 | awk "/$2.*ENOENT/{print}" | tee /dev/fd/2 | wc -l
+          }
+          # We should get some reasonable number (not 40) of directories look up for dynamic libraries
+          liblookups=
+          PS4='> '; set -x
+          test $(nfailed version "libpcre.*so") -lt 7
+          test $(nfailed init "libpcre.*so") -lt 260
+
+      - name: Set final PR status
+        if: always() && github.event.inputs.pr != ''
+        run: |
+          .github/workflows/tools/set-pr-status \
+            "${{ github.event.inputs.pr }}" \
+            macOS ARM64 \
+            test-annex-more \
+            "${{ job.status }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  test-datalad:
+    runs-on: macos-15
+    needs: build-package
+    strategy:
+      matrix:
+        version: [master, maint, release]
+      fail-fast: false
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v6
+
+      - name: Create pending PR status
+        if: github.event.inputs.pr != ''
+        run: |
+          .github/workflows/tools/set-pr-status \
+            "${{ github.event.inputs.pr }}" \
+            macOS ARM64 \
+            "test-datalad (${{ matrix.version }})" \
+            pending
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download git-annex package
+        uses: actions/download-artifact@v6
+        with:
+          name: git-annex-macos-arm64-dmg_${{ needs.build-package.outputs.build-version }}
+
+      - name: Install git-annex package
+        run: |
+          hdiutil attach git-annex_*.dmg
+          rsync -a /Volumes/git-annex/git-annex.app /Applications/
+          hdiutil detach /Volumes/git-annex/
+          echo /Applications/git-annex.app/Contents/MacOS >> "$GITHUB_PATH"
+
+
+      - name: Set up environment
+        run: |
+          brew install exempi  # Needed by python-xmp-toolkit
+          git config --global user.email "test@github.land"
+          git config --global user.name "GitHub Almighty"
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v6
+        with:
+          python-version: 3.9
+
+      - name: Install ${{ matrix.version }} Datalad
+        run: |
+          if [ "${{ matrix.version }}" = "release" ]; then
+            commitish="$(gh api --jq .tag_name repos/datalad/datalad/releases/latest)"
+          else
+            commitish="${{ matrix.version }}"
+          fi
+          python -m pip install --upgrade pip
+          pip install git+https://github.com/datalad/datalad@${commitish}
+        env:
+          # Authorize so that we don't run up against low API rate limits
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install nose et al (just in case!)
+        run: pip install nose pytest vcrpy mock
+
+      - name: WTF!?
+        run: datalad wtf
+
+      # needed for ssh certs under ubuntu and tox.ini everywhere
+      - name: Checkout datalad
+        uses: actions/checkout@v6
+        with:
+          repository: datalad/datalad
+          path: datalad
+          fetch-depth: 1
+
+      - name: Run datalad tests
+        run: |
+          mkdir -p __testhome__
+          cd __testhome__
+          python -m pytest -c ../datalad/tox.ini -s -v --pyargs datalad
+
+      - name: Set final PR status
+        if: always() && github.event.inputs.pr != ''
+        run: |
+          .github/workflows/tools/set-pr-status \
+            "${{ github.event.inputs.pr }}" \
+            macOS ARM64 \
+            "test-datalad (${{ matrix.version }})" \
+            "${{ job.status }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+# vim:set et sts=2:
