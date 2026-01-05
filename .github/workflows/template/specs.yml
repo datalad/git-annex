@@ -41,7 +41,7 @@
 - ostype: windows
   osname: Windows
   cron_hour: '03'
-  runs_on: windows-2022
+  runs_on: windows-2025
   env:
     LANG: C.utf-8
   test_annex_flavors: [normal, custom-config1]
