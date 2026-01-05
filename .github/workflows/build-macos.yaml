@@ -45,7 +45,16 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up system
-        run: brew install libmagic pkg-config rsync
+        run: |
+          brew install libmagic pkg-config rsync
+          # On ARM64 Macs, Homebrew uses /opt/homebrew instead of /usr/local
+          # Set paths so that the Haskell magic package can find libmagic
+          HOMEBREW_PREFIX="$(brew --prefix)"
+          {
+            echo "PKG_CONFIG_PATH=${HOMEBREW_PREFIX}/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
+            echo "LIBRARY_PATH=${HOMEBREW_PREFIX}/lib:${LIBRARY_PATH:-}"
+            echo "C_INCLUDE_PATH=${HOMEBREW_PREFIX}/include:${C_INCLUDE_PATH:-}"
+          } >> "$GITHUB_ENV"
 
       - name: Setup Haskell
         uses: haskell-actions/setup@v2
