@@ -1,10 +1,10 @@
-name: Build git-annex on macOS
+name: Build git-annex on macOS ARM64
 
 on:
   # Trigger the workflow on pull requests
   pull_request:
     paths:
-      - '.github/workflows/build-macos.yaml'
+      - '.github/workflows/build-macos-arm64.yaml'
       - 'patches/*.patch'
   schedule:
     - cron: '30 01 * * *'
@@ -24,7 +24,7 @@ env:
 
 jobs:
   build-package:
-    runs-on: macos-15-intel
+    runs-on: macos-15
     outputs:
       build-version: ${{ steps.build-version.outputs.version }}
     steps:
@@ -38,7 +38,7 @@ jobs:
         run: |
           .github/workflows/tools/set-pr-status \
             "${{ github.event.inputs.pr }}" \
-            macOS \
+            macOS ARM64 \
             build-package \
             pending
         env:
@@ -84,7 +84,7 @@ jobs:
         id: build-version
         run: |
           version="$(git describe "$BUILD_COMMIT" | sed -e 's/-/+git/')"
-          arch=x64
+          arch=arm64
           echo "Building $version"
           echo "version=${version}_$arch" >> "$GITHUB_OUTPUT"
 
@@ -112,9 +112,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.stack
-          key: cache-stack-macos-${{ hashFiles('stack.yaml.lock') }}-${{ hashFiles('git-annex.cabal') }}
+          key: cache-stack-macos-arm64-${{ hashFiles('stack.yaml.lock') }}-${{ hashFiles('git-annex.cabal') }}
           restore-keys: |
-            cache-stack-macos-
+            cache-stack-macos-arm64-
 
       - name: Build git-annex
         run: make osxapp
@@ -133,7 +133,7 @@ jobs:
       - name: Upload packages
         uses: actions/upload-artifact@v5
         with:
-          name: git-annex-macos-dmg_${{ steps.build-version.outputs.version }}
+          name: git-annex-macos-arm64-dmg_${{ steps.build-version.outputs.version }}
           path: |
             git-annex[-_]*.*
             dist/build-version
@@ -170,7 +170,7 @@ jobs:
         run: |
           .github/workflows/tools/set-pr-status \
             "${{ github.event.inputs.pr }}" \
-            macOS \
+            macOS ARM64 \
             build-package \
             "${{ job.status }}"
         env:
@@ -189,9 +189,9 @@ jobs:
           ignore_cert: ${{ secrets.NOTIFY_SMTP_IGNORE_CERT }}
           from: "GitHub Actions Notifications <${{ secrets.NOTIFY_SMTP_USERNAME }}@${{ secrets.NOTIFY_SMTP_HOST }}>"
           to: ${{ secrets.NOTIFY_RECIPIENT }}
-          subject: '[${{ github.repository }}] Build on macOS failed!'
+          subject: '[${{ github.repository }}] Build on macOS ARM64 failed!'
           body: |
-            A build (via ${{ github.event_name }}) of git-annex for macOS failed!
+            A build (via ${{ github.event_name }}) of git-annex for macOS ARM64 failed!
 
             See <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}> for more information.
 
@@ -201,8 +201,8 @@ jobs:
     strategy:
       matrix:
         flavor: ["normal", "crippled-tmp", "custom-config1"]
-        os: [macos-15-intel]
-        include: [{"flavor": "normal", "os": "macos-latest-large"}]
+        os: [macos-15]
+        include: [{"flavor": "normal", "os": "macos-latest"}]
       fail-fast: false
     steps:
       - name: Checkout this repository
@@ -213,7 +213,7 @@ jobs:
         run: |
           .github/workflows/tools/set-pr-status \
             "${{ github.event.inputs.pr }}" \
-            macOS \
+            macOS ARM64 \
             "test-annex (${{ matrix.flavor }}, ${{ matrix.os }})" \
             pending
         env:
@@ -222,7 +222,7 @@ jobs:
       - name: Download git-annex package
         uses: actions/download-artifact@v6
         with:
-          name: git-annex-macos-dmg_${{ needs.build-package.outputs.build-version }}
+          name: git-annex-macos-arm64-dmg_${{ needs.build-package.outputs.build-version }}
 
       - name: Install git-annex package
         run: |
@@ -312,7 +312,7 @@ jobs:
         run: |
           .github/workflows/tools/set-pr-status \
             "${{ github.event.inputs.pr }}" \
-            macOS \
+            macOS ARM64 \
             "test-annex (${{ matrix.flavor }}, ${{ matrix.os }})" \
             "${{ job.status }}"
         env:
@@ -331,14 +331,14 @@ jobs:
           ignore_cert: ${{ secrets.NOTIFY_SMTP_IGNORE_CERT }}
           from: "GitHub Actions Notifications <${{ secrets.NOTIFY_SMTP_USERNAME }}@${{ secrets.NOTIFY_SMTP_HOST }}>"
           to: ${{ secrets.NOTIFY_RECIPIENT }}
-          subject: '[${{ github.repository }}] Tests of macOS build failed!'
+          subject: '[${{ github.repository }}] Tests of macOS ARM64 build failed!'
           body: |
-            The tests for a build (via ${{ github.event_name }}) of git-annex for macOS (flavor: ${{ matrix.flavor }}, OS: ${{ matrix.os }}) failed!
+            The tests for a build (via ${{ github.event_name }}) of git-annex for macOS ARM64 (flavor: ${{ matrix.flavor }}, OS: ${{ matrix.os }}) failed!
 
             See <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}> for more information.
 
   test-annex-more:
-    runs-on: macos-15-intel
+    runs-on: macos-15
     needs: build-package
     steps:
       - name: Checkout this repository
@@ -349,7 +349,7 @@ jobs:
         run: |
           .github/workflows/tools/set-pr-status \
             "${{ github.event.inputs.pr }}" \
-            macOS \
+            macOS ARM64 \
             test-annex-more \
             pending
         env:
@@ -358,7 +358,7 @@ jobs:
       - name: Download git-annex package
         uses: actions/download-artifact@v6
         with:
-          name: git-annex-macos-dmg_${{ needs.build-package.outputs.build-version }}
+          name: git-annex-macos-arm64-dmg_${{ needs.build-package.outputs.build-version }}
 
       - name: Install git-annex package
         run: |
@@ -384,14 +384,14 @@ jobs:
         run: |
           .github/workflows/tools/set-pr-status \
             "${{ github.event.inputs.pr }}" \
-            macOS \
+            macOS ARM64 \
             test-annex-more \
             "${{ job.status }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   test-datalad:
-    runs-on: macos-15-intel
+    runs-on: macos-15
     needs: build-package
     strategy:
       matrix:
@@ -406,7 +406,7 @@ jobs:
         run: |
           .github/workflows/tools/set-pr-status \
             "${{ github.event.inputs.pr }}" \
-            macOS \
+            macOS ARM64 \
             "test-datalad (${{ matrix.version }})" \
             pending
         env:
@@ -415,7 +415,7 @@ jobs:
       - name: Download git-annex package
         uses: actions/download-artifact@v6
         with:
-          name: git-annex-macos-dmg_${{ needs.build-package.outputs.build-version }}
+          name: git-annex-macos-arm64-dmg_${{ needs.build-package.outputs.build-version }}
 
       - name: Install git-annex package
         run: |
@@ -474,7 +474,7 @@ jobs:
         run: |
           .github/workflows/tools/set-pr-status \
             "${{ github.event.inputs.pr }}" \
-            macOS \
+            macOS ARM64 \
             "test-datalad (${{ matrix.version }})" \
             "${{ job.status }}"
         env:
