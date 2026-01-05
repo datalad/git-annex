@@ -699,9 +699,6 @@ jobs:
             echo StrictHostKeyChecking no
           ) > "$USERPROFILE"/.ssh/config
 
-      - name: Fire up service
-        run: net start sshd
-
       - name: Test login
         run: |
           ssh -v localhost exit
