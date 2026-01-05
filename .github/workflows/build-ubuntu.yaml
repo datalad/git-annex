@@ -226,7 +226,7 @@ jobs:
       - name: Send e-mail on failed run
         if: failure() && contains(fromJSON('["schedule", "workflow_dispatch"]'), github.event_name)
         # freeze to v6
-        uses: dawidd6/action-send-mail@6d98ae34d733f9a723a9e04e94f2f24ba05e1402
+        uses: dawidd6/action-send-mail@6e71c855c9a091d80a519621b9fd3e8d252ca40c
         with:
           server_address: ${{ secrets.NOTIFY_SMTP_HOST }}
           server_port: ${{ secrets.NOTIFY_SMTP_PORT }}
@@ -361,7 +361,7 @@ jobs:
       - name: Send e-mail on failed run
         if: failure() && contains(fromJSON('["schedule", "workflow_dispatch"]'), github.event_name)
         # freeze to v6
-        uses: dawidd6/action-send-mail@6d98ae34d733f9a723a9e04e94f2f24ba05e1402
+        uses: dawidd6/action-send-mail@6e71c855c9a091d80a519621b9fd3e8d252ca40c
         with:
           server_address: ${{ secrets.NOTIFY_SMTP_HOST }}
           server_port: ${{ secrets.NOTIFY_SMTP_PORT }}
