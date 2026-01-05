@@ -684,9 +684,13 @@ jobs:
         run: ssh-keygen -f ~/.ssh/id_rsa -N ""
 
       - name: Authorize access with these keys
-        shell: cmd
+        shell: pwsh
         run: |
-          copy %USERPROFILE%\.ssh\id_rsa.pub %USERPROFILE%\.ssh\authorized_keys
+          # For admin users, Windows OpenSSH requires keys in administrators_authorized_keys
+          $authKeys = "$env:ProgramData\ssh\administrators_authorized_keys"
+          Get-Content "$env:USERPROFILE\.ssh\id_rsa.pub" | Out-File -Encoding utf8 $authKeys
+          # Set required permissions: only SYSTEM and Administrators
+          icacls.exe $authKeys /inheritance:r /grant "Administrators:F" /grant "SYSTEM:F"
 
       - name: Configure SSH
         run: |
