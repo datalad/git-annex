@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2026-01-06T15:46:38Z"
+ content="""
+I was wrong, `git-annex forget` cannot cause this, since
+[[!commit 8e7dc958d20861a91562918e24e071f70d34cf5b]] in 8.20210428
+made exported tree grafts be preserved through a forget.
+
+This leaves me with no scenario that might cause this problem. Unless
+a git-annex version older than that were used.
+
+I've reverted [[!commit 69e6c4d024dcff7c2f8ea1a2ed3b483a86b2cc7d]] which I
+had made to guard against the `git-annex forget` scenario, since it would
+slow down imports of trees that contain a lot of small files.
+
+It still seems possible that commit would have avoided the problem, but
+until I understand what actually caused the problem, I don't want to
+unncessarily slow git-annex down with an unverified fix for it.
+"""]]
