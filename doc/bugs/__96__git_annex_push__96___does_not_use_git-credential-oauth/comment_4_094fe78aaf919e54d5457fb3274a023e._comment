@@ -1,0 +1,52 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/cd1c0b3be1af288012e49197918395f0"
+ subject="comment 4"
+ date="2026-01-06T17:36:19Z"
+ content="""
+The chicken-and-egg problem you are describing is actually something msz has already encountered and reported, but that issue is fixed: Forgejo-aneksajo also creates the repository for requests to /config, and will git-annex-init it if the request comes from a git-annex user agent and the user has write permissions. More about that here:
+
+- <https://codeberg.org/forgejo-aneksajo/forgejo-aneksajo/commit/3c53e9803de9c59e9e78ac19f0bb107651bb48f8>
+- <https://codeberg.org/forgejo-aneksajo/forgejo-aneksajo/issues/85>
+- <https://codeberg.org/forgejo-aneksajo/forgejo-aneksajo/issues/83#issuecomment-5093679> and following comments
+
+So that's not it... I've investigated a bit and I think I led you astray with the comment about a \"non-existing repository\". I am also seeing the issue with a pre-created repository, and even with a pre-created and git-annex-init'ialized repository.
+
+The issue is actually that for ATRIS I rely on git-credential-oauth's \"Gitea-like-Server\" discovery here: <https://github.com/hickford/git-credential-oauth/blob/f01271d94c70b9280c19f489f90c05e9aba0d757/main.go#L206>
+
+When doing a `git push origin main` the git-credential-oauth helper actually receives this request:
+
+```
+$ git push origin main
+capability[]=authtype
+capability[]=state
+protocol=https
+host=atris.fz-juelich.de
+wwwauth[]=Basic realm=\"Gitea\"
+```
+
+while with `git annex push` it is just this:
+
+```
+$ git annex push
+protocol=https
+host=atris.fz-juelich.de
+```
+
+Git-credential-oauth recognizes that it is talking to a Gitea/Forgejo server based on this `wwwauth[]=Basic realm=\"Gitea\"` data. Without it and in the absence of a more specific configuration for the server it doesn't try to handle it and falls back to the standard http credential handling of git. I am not sure where these capability and wwwauth fields are coming from, but I think git-annex should somehow do the same as git here...
+
+---
+
+I've gotten at the data git sends to the credential helper with this trivial script:
+
+```
+$ cat ~/bin/git-credential-echo 
+#!/usr/bin/env bash
+
+exec cat >&2
+```
+
+and configuring it as my credential helper.
+
+I have to say, I like this pattern of processes communicating over simple line-based protocols :)
+"""]]
