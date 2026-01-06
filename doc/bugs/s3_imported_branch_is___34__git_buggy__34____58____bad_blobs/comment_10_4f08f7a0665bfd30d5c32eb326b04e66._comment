@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2026-01-06T15:57:43Z"
+ content="""
+I think that a previous, failed import from the remote, run in a
+different clone of the repository than the import that later fails,
+could have caused the problem.
+
+My thinking is, while import is downloading files, the content identifiers
+get recorded in the git-annex branch. Only once the import is complete does
+the imported tree get grafted into the git-annex branch. So, if the import
+fails (or is interrupted), this can leave content identifiers in the log. 
+The git blobs for small files have already been stored in git, but no tree 
+references them. If that git-annex branch gets pushed, then in a separate
+clone of the repository, running the import again would see those content
+identifiers. But the git blobs referenced by them would not have been pushed,
+and so would not be available.
+
+We already know that the import was failing due to the S3 permissions,
+so the only other thing that would have been needed is for the git-annex
+branch to be pushed to origin, and then this same import tried later in a
+different clone.
+
+@yarikoptic does this seem plausibly what could have happened?
+"""]]
