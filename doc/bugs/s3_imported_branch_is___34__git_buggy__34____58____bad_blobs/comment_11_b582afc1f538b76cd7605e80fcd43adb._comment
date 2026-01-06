@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2026-01-06T16:16:56Z"
+ content="""
+Replicated this problem as follows:
+
+1. modified `importKeys` to fail at the end
+2. set up a directory special remote with importtree=yes
+3. git config annex.largefiles nothing
+4. run, git-annex import, which fails
+5. that left git-annex branch changes in the journal, for `GIT` keys
+6. git-annex sync back to origin
+7. return `importKeys` to usual behavior
+8. make new clone from origin
+9. run git-annex import in the new clone
+10. merge the imported branch into master
+
+result:
+
+	error: unable to read sha1 file of 1 (d00491fd7e5bb6fa28c517a0bb32b8b506539d4d)
+	error: unable to read sha1 file of 2 (5716ca5987cbf97d6bb54920bea6adde242d87e6)
+	error: unable to read sha1 file of 3 (aab959616afa9408f5efc385eb98f63fdb990ba5)
+"""]]
