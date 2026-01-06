@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2026-01-06T16:39:40Z"
+ content="""
+The chicken and egg problem could be solved by making `git-annex push`,
+after pushing the git branches, regenerate the remote list. So if the
+branch push created the git repo, any annex uuid that the new repo has
+would be discovered at that point.
+
+The remote list regeneration would only need to be done when there are
+git remotes that don't have a UUID yet.
+
+The assistant would also need to be made to do that.
+
+This, combined with avoiding the early 
+UUID discovery that led to the git-credential prompt, would make
+"push to create" work smoothly.
+"""]]
