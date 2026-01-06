@@ -11,6 +11,8 @@ git-annex (10.20251216) UNRELEASED; urgency=medium
     on network-multicast or network-info.
   * stack.yaml: Update to lts-24.26.
   * import: Fix display of some import errors.
+  * Fix bug that could result in a tree imported from a remote containing
+    missing git blobs.
 
  -- Joey Hess <id@joeyh.name>  Thu, 01 Jan 2026 12:20:29 -0400
 

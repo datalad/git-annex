@@ -21,4 +21,10 @@ result:
 	error: unable to read sha1 file of 1 (d00491fd7e5bb6fa28c517a0bb32b8b506539d4d)
 	error: unable to read sha1 file of 2 (5716ca5987cbf97d6bb54920bea6adde242d87e6)
 	error: unable to read sha1 file of 3 (aab959616afa9408f5efc385eb98f63fdb990ba5)
+
+Verified that [[!commit 69e6c4d024dcff7c2f8ea1a2ed3b483a86b2cc7d]] does in
+fact avoid this problem. Running steps 9 and 10 with that commit results in
+a non-broken repository.
+
+Yay, solved!
 """]]
