@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/cd1c0b3be1af288012e49197918395f0"
+ subject="comment 5"
+ date="2026-01-06T17:47:53Z"
+ content="""
+`git push` seems to first make a GET request for something like `/m.risse/test-push-oauth2.git/info/refs?service=git-receive-pack`, which responds with a 401 and `www-authenticate: Basic realm=\"Gitea\"` among the headers. Git then seems to pass this information on to the git-credential-helper.
+
+`git annex push` likewise receives a 401 response from the `/config` endpoint with the same www-authenticate header, so it could pass it on to the credential helper too.
+
+I am not sure where the `capability`s are coming from...
+"""]]
