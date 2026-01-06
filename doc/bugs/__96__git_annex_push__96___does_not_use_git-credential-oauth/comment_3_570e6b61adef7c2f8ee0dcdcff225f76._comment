@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2026-01-06T17:28:34Z"
+ content="""
+Looks like the 401 Unauthorized happens for all non-existent repos when accessing `/config`.
+
+Eg:
+
+	joey@darkstar:~>curl https://atris.fz-juelich.de/m.risse/joeytestmadeup.git
+	Not found.
+	joey@darkstar:~>curl https://atris.fz-juelich.de/m.risse/joeytestmadeup.git/config
+	Unauthorized
+
+A bug in Forgejo?
+"""]]
