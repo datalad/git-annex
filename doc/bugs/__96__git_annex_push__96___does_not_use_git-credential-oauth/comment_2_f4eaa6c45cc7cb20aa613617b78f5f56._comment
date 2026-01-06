@@ -13,7 +13,6 @@ git remotes that don't have a UUID yet.
 
 The assistant would also need to be made to do that.
 
-This, combined with avoiding the early 
-UUID discovery that led to the git-credential prompt, would make
-"push to create" work smoothly.
+This, combined with avoiding prompting on 404 in 
+UUID discovery would make "push to create" work smoothly.
 """]]
