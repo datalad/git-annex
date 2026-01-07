@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2026-01-07T16:47:38Z"
+ content="""
+The www-authenticate header is also sent when the request for `/config` is
+a 401. So git-annex can use that to set the wwwauth field.
+
+The capability fields are indicating capabilities of git.
+I checked and git-credential-oauth does not rely on those capabilities.
+
+(Wildly, git-credential-oauth is looking for "GitLab", "GitHub", and
+"Gitea" in order to sniff what backend it's authenticating to, and that's
+all it uses the wwwauth for.)
+"""]]
