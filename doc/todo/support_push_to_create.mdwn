@@ -1,0 +1,33 @@
+"push to create" as supported by eg Forgejo makes a `git push` to a new
+git repository create the repository.
+
+Since the repository does not exist when git-annex probes the UUID,
+which happens before any push, annex-ignore is set to true.
+So a command like `git-annex push` will do the git push and create the
+repository, but fail to discover the uuid of that repository, and so
+not send annexed files to it.
+
+forgejo-aneksajo has worked around this by making git-annex's request for
+"$url/config" create the repository. See:
+
+* <https://codeberg.org/forgejo-aneksajo/forgejo-aneksajo/commit/3c53e9803de9c59e9e78ac19f0bb107651bb48f8>
+* <https://codeberg.org/forgejo-aneksajo/forgejo-aneksajo/issues/85>
+* <https://codeberg.org/forgejo-aneksajo/forgejo-aneksajo/issues/83#issuecomment-5093679> and following comments
+
+But that means that `git-annex pull` will also auto-create the repository.
+Or even a command like `git-annex info` that does UUID discovery of a newly
+added remote.
+
+git-annex could support push to create better by having `git-annex push`, 
+after pushing the git branches, regenerate the remote list, while
+ignoring the annex-ignore configuration of remotes.
+So if the branch push created the git repo, any annex uuid that the
+new repo has would be discovered at that point. (And at that point annex-ignore
+would need to be cleared.)
+
+The remote list regeneration would only need to be done when there are git
+remotes that don't have a UUID. This would slow down pushes to eg github slightly,
+since it would ignore annex-ignore being set, and re-probe the git config
+to see if a UUID has appeared. That seems a small enough price to pay.
+
+The assistant would also need to be made to handle this. jjjj
