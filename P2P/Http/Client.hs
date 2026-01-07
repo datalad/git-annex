@@ -2,7 +2,7 @@
  -
  - https://git-annex.branchable.com/design/p2p_protocol_over_http/
  -
- - Copyright 2024 Joey Hess <id@joeyh.name>
+ - Copyright 2024-2026 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -42,7 +42,7 @@ import Servant hiding (BasicAuthData(..))
 import Servant.Client.Streaming
 import qualified Servant.Types.SourceT as S
 import Network.HTTP.Types.Status
-import Network.HTTP.Client
+import Network.HTTP.Client hiding (responseHeaders)
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy.Internal as LI
 import qualified Data.Map as M
@@ -52,6 +52,7 @@ import Control.Concurrent
 import System.IO.Unsafe
 import Data.Time.Clock.POSIX
 import qualified Data.ByteString.Lazy as L
+import Data.Foldable (toList)
 
 type ClientAction a
 	= ClientEnv
@@ -119,7 +120,7 @@ p2pHttpClientVersions' allowedversion rmt rmtrepo fallback clientaction =
 					go clientenv mcred credcached mauth vs
 				| statusCode (responseStatusCode resp) == 401 ->
 					case mcred of
-						Nothing -> authrequired clientenv (v:vs)
+						Nothing -> authrequired clientenv resp (v:vs)
 						Just cred -> do
 							inRepo $ Git.rejectUrlCredential cred
 							Just <$> fallback (showstatuscode resp)
@@ -134,9 +135,10 @@ p2pHttpClientVersions' allowedversion rmt rmtrepo fallback clientaction =
 
 	catchclienterror a = a `catch` \(ex :: ClientError) -> pure (Left ex)
 
-	authrequired clientenv vs = do
+	authrequired clientenv resp vs = do
+		let respheaders = toList $ responseHeaders resp
 		cred <- prompt $ 
-			inRepo $ Git.getUrlCredential credentialbaseurl
+			inRepo $ Git.getUrlCredential credentialbaseurl respheaders
 		go clientenv (Just cred) False (credauth cred) vs
 
 	showstatuscode resp = 

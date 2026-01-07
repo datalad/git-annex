@@ -13,6 +13,8 @@ git-annex (10.20251216) UNRELEASED; urgency=medium
   * import: Fix display of some import errors.
   * Fix bug that could result in a tree imported from a remote containing
     missing git blobs.
+  * Pass www-authenticate headers in to to git credential, to support
+    eg, git-credential-oauth.
 
  -- Joey Hess <id@joeyh.name>  Thu, 01 Jan 2026 12:20:29 -0400
 

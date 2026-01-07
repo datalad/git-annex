@@ -157,7 +157,7 @@ withUrlOptions :: Maybe RemoteGitConfig -> (U.UrlOptions -> Annex a) -> Annex a
 withUrlOptions mgc a = a =<< getUrlOptions mgc
 
 -- When downloading an url, if authentication is needed, uses
--- git-credential to prompt for username and password.
+-- git-credential for the prompting.
 --
 -- Note that, when the downloader is curl, it will not use git-credential.
 -- If the user wants to, they can configure curl to use a netrc file that
@@ -169,8 +169,8 @@ withUrlOptionsPromptingCreds mgc a = do
 	prompter <- mkPrompter
 	cc <- Annex.getRead Annex.gitcredentialcache
 	a $ uo
-		{ U.getBasicAuth = \u -> prompter $
-			getBasicAuthFromCredential g cc u
+		{ U.getBasicAuth = \u respheaders -> prompter $
+			getBasicAuthFromCredential g cc u respheaders
 		}
 
 checkBoth :: U.URLString -> Maybe Integer -> U.UrlOptions -> Annex Bool

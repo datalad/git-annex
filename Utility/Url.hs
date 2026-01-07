@@ -281,7 +281,7 @@ getUrlInfo url uo = case parseURIRelaxed url of
 					fn <- extractFromResourceT (extractfilename resp)
 					return $ found len fn
 				else if responseStatus resp == unauthorized401
-					then return $ getBasicAuth uo' (show (getUri req)) >>= \case
+					then return $ getBasicAuth uo' (show (getUri req)) (responseHeaders resp) >>= \case
 						Nothing -> return dne
 						Just (ba, signalsuccess) -> do
 							ui <- existsconduit'
@@ -476,7 +476,7 @@ downloadConduit meterupdate iv req file uo =
 				else do
 					rf <- extractFromResourceT (respfailure resp)
 					if responseStatus resp == unauthorized401
-						then return $ getBasicAuth uo (show (getUri req')) >>= \case
+						then return $ getBasicAuth uo (show (getUri req')) (responseHeaders resp) >>= \case
 							Nothing -> giveup rf
 							Just ba -> retryauthed ba
 						else return $ giveup rf
@@ -516,7 +516,7 @@ downloadConduit meterupdate iv req file uo =
 					else do
 						rf <- extractFromResourceT (respfailure resp)
 						if responseStatus resp == unauthorized401
-							then return $ getBasicAuth uo (show (getUri req'')) >>= \case
+							then return $ getBasicAuth uo (show (getUri req'')) (responseHeaders resp) >>= \case
 								Nothing -> giveup rf
 								Just ba -> retryauthed ba
 							else return $ giveup rf
@@ -725,10 +725,10 @@ data BasicAuth = BasicAuth
 --
 -- The returned IO action is run after trying to use the BasicAuth,
 -- indicating if the password worked.
-type GetBasicAuth = URLString -> IO (Maybe (BasicAuth, Bool -> IO ()))
+type GetBasicAuth = URLString -> ResponseHeaders -> IO (Maybe (BasicAuth, Bool -> IO ()))
 
 noBasicAuth :: GetBasicAuth
-noBasicAuth = const $ pure Nothing
+noBasicAuth = const $ const $ pure Nothing
 
 applyBasicAuth' :: BasicAuth -> Request -> Request
 applyBasicAuth' ba = applyBasicAuth
