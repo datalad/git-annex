@@ -12,11 +12,11 @@ subdirectories. Eg, if the bucket contains "foo", "bar/...", and "baz/...",
 the response will list only the file "foo", and CommonPrefixes contains
 "bar" and "baz". 
 
-So, git-annex could make that request, and then if "include=bar/*" is not
-in preferred content, but "include=foo/*" is, it could make a request to
+So, git-annex could make that request, and then if `"include=bar/*"` is not
+in preferred content, but `"include=foo/*"` is, it could make a request to
 list files prefixed by "foo/". And so avoid listing all the files in "bar".
 
-If preferred content contained "include=foo/x/*" and "include=foo/y/*", 
+If preferred content contained `"include=foo/x/*"` and `"include=foo/y/*"`, 
 when CommonPrefixes includes "foo", git-annex could follow up with 2 requests
 to list those subdirectories.
 
@@ -24,7 +24,7 @@ So this ends up making at most 1 additional request per subdirectory included
 in preferred content.
 
 When preferred content excludes a subdirectory though, more requests would
-be needed. For "exclude=bar/*", if the response lists 100 other
+be needed. For `"exclude=bar/*"`, if the response lists 100 other
 subdirectories in CommonPrefixes, it would need to make 100 separate
 requests to list those while avoiding listing bar. That could easily be
 more expensive than the current behavior. So it does not seem to make sense
