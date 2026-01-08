@@ -3,11 +3,14 @@
  subject="""comment 1"""
  date="2026-01-08T13:49:52Z"
  content="""
-Paths in preferred content expressions match relative to the top, so
-this preferred content expression will match only md files in the top,
+This preferred content expression will match only md files in the top,
 and files in the docs subdirectory:
 
-`include=docs/* or include=*.md`
+`include=docs/* or (include=*.md and exclude=*/*)`
+
+I got this wrong at first; this version will work! The `"include=*.md"` 
+matches files with that extension anywhere in the tree, so the `"exclude=*/*`
+is needed to limit to ones not in a subdirectory. 
 
 Only preferred content is downloaded, but S3 is still queried for the
 entire list of files in the bucket.
