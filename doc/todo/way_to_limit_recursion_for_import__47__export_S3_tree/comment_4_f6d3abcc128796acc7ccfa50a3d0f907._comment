@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2026-01-08T19:46:02Z"
+ content="""
+Unfortunately, that design doesn't optimize the preferred content
+expression that you were wanting to use:
+
+`include=docs/* or (include=*.md and exclude=*/*)`
+
+In this case, the exclude limits the include to md files in the top directory,
+not subdirectories, but with the current design it will recurse and find
+all files to handle the `include=*.md`.
+
+To optimise that, it needs to look at when includes are ANDed with
+excludes. With `"exclude=*/*"`, only files in the root directory can match,
+and those are always listed. So, that include can be filtered out before
+step #3 above.
+
+The other cases of excludes that can be ANDed with an include are:
+
+* `exclude=bar/*` -- This needs to do a full listing, same reasons I
+  discussed in comment 2.
+* `exclude=*/foo.*` -- Also needs a full listing.
+* `exclude=foo` -- Also needs a full listing.
+* `exclude=foo.*` -- Also needs a full listing.
+* `exclude=*[/]*` -- Same as "exclude=*/*"
+* `exclude=*[//]*` -- Same (and so on for other numbers of slashes).
+* `exclude=*/**` -- Same (and so on for more asterisks in the front or back)
+* `exclude=*[/]**` -- Same (and so on for more slashes and asterisks in the
+   front or back)
+* `exclude=*` -- Pointless to AND with an include since the combination
+  can never match. May as well optimise it anyway by avoiding a full listing.
+* `exclude=**` -- Same as above (and so on) 
+"""]]
