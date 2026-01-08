@@ -5,12 +5,12 @@
  content="""
 There are some complications in possible preferred content expressions:
 
-"include=foo*/*" -- we want "foo/*" but also "foooooom/*"... but what if
+`"include=foo*/*"` -- we want `"foo/*"` but also `"foooooom/*"`... but what if
 there are 100 such subdirectories? It would be an unexpected cost to need
 to make so many requests. Like exclude=, the optimisation should not be
 used in this case.
 
-"include=foo/bar" -- we want only this file.. so would prefer to avoid
+`"include=foo/bar"` -- we want only this file.. so would prefer to avoid
 recursing through the rest of foo. If there are multiple ones like this
 that are all in the same subdirectory, it might be nice to make
 one single request to find them all. But this seems like an edge case,
@@ -22,16 +22,16 @@ Here's a design:
 2. Filter for "include=" that contain a "/" in the value. If none are
    found, do the usual full listing of the bucket.
 3. If any of those includes contain a glob before a "/", do the usual full
-   listing of the bucket. (This handles the "include=foo*/* case)
+   listing of the bucket. (This handles the `"include=foo*/*"` case)
 4. Otherwise, list the top level of the bucket with delimiter set to "/".
 5. Include all the top-level files in the list.
 6. Filter the includes to ones that start with a subdirectory in the
    CommonPrefixes.
 7. For each remaining include, make a request to list the bucket, with
    the prefix set to the non-glob directory from the include. For example,
-   for "include=foo/bar/*", set prefix to "foo/bar/", but for
-   "include=foo/*bar", set prefix to "foo/". And for "include=foo/bar",
-   set prefix to "foo/". 
+   for `"include=foo/bar/*"`, set prefix to `"foo/bar/"`, but for
+   `"include=foo/*bar"`, set prefix to `"foo/"`. And for
+   `"include=foo/bar"`, set prefix to `"foo/"`. 
 8. Add back the prefixes to each file in the responses.
 
 Note that, step #1 hides some complexity, because currently preferred
