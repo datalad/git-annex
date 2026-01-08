@@ -1,0 +1,6 @@
+I wanted to implement management and synchronization of descriptive files (README.md etc) on the top of the large S3 bucket via git-annex so I could keep files in a git repo and rely on importree/exporttree functionality to keep bucket and repo in sync.
+
+Looking at [special_remotes/S3/](https://git-annex.branchable.com/special_remotes/S3/) I didn't spot any option to achieve that. 
+
+I am not sure what would be the best option for this, given that greedy me might want to also eventually `sync` some `docs/` prefix there: may be could be a white list of some keys/paths to include and/or exclude? May be some [preferred content](https://git-annex.branchable.com/preferred_content/) `include` expression could be specific enough to not demand full bucket traversal (unrealistic in feasible time) but rather limit to top level, e.g. `include=^docs/ and include=^*.md` or smth smarter? 
+

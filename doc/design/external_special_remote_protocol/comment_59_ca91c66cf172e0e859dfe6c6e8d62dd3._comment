@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Katie"
+ avatar="http://cdn.libravatar.org/avatar/38e04123b913160b66d8117cada14532"
+ subject="How do I get GETGITREMOTENAME to work in INITREMOTE?"
+ date="2026-01-07T23:37:01Z"
+ content="""
+I am writing a external special remote using this protocol. This is little similar to the directory remote and there's a path on the local system where content is stored.
+
+I don't want this location to be saved in the git-annex branch and I thought I'll be able to use GETGITREMOTENAME to persist it myself. However, I'm running into an issue where GETGITREMOTENAME fails during INITREMOTE (presumably since the remote has not yet been created). It does work during Prepare, but that feels a bit late to ask for a required piece of configuration.
+
+What are my options? My ideal behavior would be if it behaves very similar to `directory=` field in directory remote, but I can hand-manage it too if that's the recommendation as long as I get some identifier for this remote (there can be multiple of these in the same repo)
+"""]]
