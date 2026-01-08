@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2026-01-08T13:49:52Z"
+ content="""
+Paths in preferred content expressions match relative to the top, so
+this preferred content expression will match only md files in the top,
+and files in the docs subdirectory:
+
+`include=docs/* or include=*.md`
+
+Only preferred content is downloaded, but S3 is still queried for the
+entire list of files in the bucket.
+"""]]
