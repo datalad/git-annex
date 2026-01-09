@@ -31,7 +31,6 @@ import Types.ProposedAccepted
 import Annex.SpecialRemote.Config (exportTreeField)
 import Remote.Helper.Chunked
 import Remote.Helper.Encryptable (encryptionField, highRandomQualityField)
-import Git.Types
 import qualified Utility.FileIO as F
 import Remote.List
 

@@ -103,13 +103,13 @@ start o (name:ws) = do
 	si = SeekInput (name:ws)
 	ai = ActionItemOther (Just (UnquotedString name))
 
-perform :: RemoteType -> String -> R.RemoteConfig -> InitRemoteOptions -> CommandPerform
+perform :: RemoteType -> RemoteName -> R.RemoteConfig -> InitRemoteOptions -> CommandPerform
 perform t name c o = do
 	when (privateRemote o) $
 		setConfig (remoteAnnexConfig c "private") (boolConfig True)
 	dummycfg <- liftIO dummyRemoteGitConfig
 	let c' = M.delete uuidField c
-	(c'', u) <- R.setup t R.Init (sameasu <|> uuidfromuser) Nothing c' dummycfg
+	(c'', u) <- R.setup t R.Init (sameasu <|> uuidfromuser) name Nothing c' dummycfg
 	next $ cleanup t u name c'' o
   where
 	uuidfromuser = case fromProposedAccepted <$> M.lookup uuidField c of
@@ -122,7 +122,7 @@ perform t name c o = do
 uuidField :: R.RemoteConfigField
 uuidField = Accepted "uuid"
 
-cleanup :: RemoteType -> UUID -> String -> R.RemoteConfig -> InitRemoteOptions -> CommandCleanup
+cleanup :: RemoteType -> UUID -> RemoteName -> R.RemoteConfig -> InitRemoteOptions -> CommandCleanup
 cleanup t u name c o = do
 	case sameas o of
 		Nothing -> do

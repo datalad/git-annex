@@ -55,7 +55,7 @@ startSpecialRemote :: Annex () -> Git.RemoteName -> Remote.RemoteConfig -> [(UUI
 startSpecialRemote = startSpecialRemote' "configremote" . performSpecialRemote
 
 performSpecialRemote :: Annex () -> PerformSpecialRemote
-performSpecialRemote precheck _ u _ c _ mcu = do
+performSpecialRemote precheck _ u _ _ c _ mcu = do
 	precheck
 	case mcu of
 		Nothing -> Logs.Remote.configSet u c

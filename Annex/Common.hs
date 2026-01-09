@@ -12,6 +12,7 @@ import Annex.Debug as X (fastDebug, debug)
 import Messages as X
 import Git.Quote as X
 import Types.RepoSize as X
+import Git.Types as X (RemoteName)
 #ifndef mingw32_HOST_OS
 import System.Posix.IO as X hiding (createPipe, append)
 #endif

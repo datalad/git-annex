@@ -15,7 +15,6 @@ import Types.Cluster
 import Logs.UUID
 import Config
 import Annex.UUID
-import Git.Types
 import Git.Remote (isLegalName)
 
 import qualified Data.Map as M

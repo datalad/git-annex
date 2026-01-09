@@ -21,7 +21,7 @@ import Utility.UserInfo
 import Utility.Gpg
 import Types.Remote (RemoteConfig)
 import Types.ProposedAccepted
-import Git.Types (RemoteName, fromRef, fromConfigKey)
+import Git.Types (fromRef, fromConfigKey)
 import qualified Remote.GCrypt as GCrypt
 import qualified Annex
 import qualified Git.Command

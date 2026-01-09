@@ -21,7 +21,6 @@ import Types.Remote (RemoteConfig)
 import Types.StandardGroups
 import Creds
 import Assistant.Gpg
-import Git.Types (RemoteName)
 import Annex.SpecialRemote.Config
 import Types.ProposedAccepted
 

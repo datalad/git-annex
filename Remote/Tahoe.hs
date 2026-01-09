@@ -125,8 +125,8 @@ gen r u rc gc rs = do
 		, remoteStateHandle = rs
 		}
 
-tahoeSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-tahoeSetup _ mu _ c _ = do
+tahoeSetup :: SetupStage -> Maybe UUID -> RemoteName -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+tahoeSetup _ mu _ _ c _ = do
 	furl <- maybe (fromMaybe missingfurl $ M.lookup furlField c) Proposed
 		<$> liftIO (getEnv "TAHOE_FURL")
 	u <- maybe (liftIO genUUID) return mu

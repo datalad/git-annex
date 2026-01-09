@@ -18,7 +18,6 @@ import Logs.Location
 import Annex.Transfer
 import qualified Remote
 import Utility.SimpleProtocol (dupIoHandles)
-import Git.Types (RemoteName)
 import qualified Database.Keys
 import Annex.BranchState
 

@@ -141,8 +141,8 @@ isGitRemoteAnnex r = "annex::" `isPrefixOf` Git.repoLocation r
  - No attempt is made to make the remote be accessible via ssh key setup,
  - etc.
  -}
-gitSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-gitSetup Init mu _ c gc = do
+gitSetup :: SetupStage -> Maybe UUID -> RemoteName -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+gitSetup Init mu _ _ c gc = do
 	let location = maybe (giveup "Specify location=url") fromProposedAccepted $
 		M.lookup locationField c
 	r <- inRepo $ Git.Construct.fromRemoteLocation location False
@@ -153,8 +153,8 @@ gitSetup Init mu _ c gc = do
 		else if isNothing mu || mu == Just u
 			then enableRemote (Just u) c
 			else giveup "git repository does not have specified uuid"
-gitSetup (Enable _) mu _ c _ = enableRemote mu c
-gitSetup (AutoEnable _) mu _ c _ = enableRemote mu c
+gitSetup (Enable _) mu _ _ c _ = enableRemote mu c
+gitSetup (AutoEnable _) mu _ _ c _ = enableRemote mu c
 
 enableRemote :: Maybe UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
 enableRemote (Just u) c = do

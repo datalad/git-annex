@@ -8,7 +8,6 @@
 module Assistant.WebApp.RepoId where
 
 import Annex.Common
-import Git.Types (RemoteName)
 import qualified Remote
 
 {- Parts of the webapp need to be able to act on repositories that may or

@@ -16,7 +16,6 @@ import qualified Remote
 import Utility.Tense
 import Types.Transfer
 import Types.Distribution
-import Git.Types (RemoteName)
 
 import Data.String
 import qualified Data.Text as T

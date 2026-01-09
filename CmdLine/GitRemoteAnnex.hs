@@ -598,8 +598,8 @@ withSpecialRemote cfg@(SpecialRemoteConfig {}) sab a = case specialRemoteName cf
 			specialRemoteConfig cfg
 		t <- either giveup return (SpecialRemote.findType c)
 		dummycfg <- liftIO dummyRemoteGitConfig
-		(c', u) <- Remote.setup t (Remote.Enable c) (Just (specialRemoteUUID cfg)) 
-			Nothing c dummycfg
+		(c', u) <- Remote.setup t (Remote.Enable c) (Just (specialRemoteUUID cfg))
+			remotename Nothing c dummycfg
 			`onException` cleanupremote remotename
 		Logs.Remote.configSet u c'
 		setConfig (remoteConfig c' "url") (specialRemoteUrl cfg)

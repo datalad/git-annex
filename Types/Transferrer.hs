@@ -9,7 +9,6 @@ module Types.Transferrer where
 
 import Annex.Common
 import Types.Messages
-import Git.Types (RemoteName)
 import qualified Utility.SimpleProtocol as Proto
 import Utility.Format
 import Utility.Metered (TotalSize(..))

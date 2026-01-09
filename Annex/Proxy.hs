@@ -29,7 +29,6 @@ import Logs.UUID
 import Logs.Location
 import Utility.Tmp.Dir
 import Utility.Metered
-import Git.Types
 import qualified Database.Export as Export
 import qualified Utility.FileIO as F
 #ifndef mingw32_HOST_OS

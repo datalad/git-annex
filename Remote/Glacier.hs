@@ -118,8 +118,8 @@ gen r u rc gc rs = do
 			{ chunkConfig = NoChunks
 			}
 
-glacierSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-glacierSetup ss mu mcreds c gc = do
+glacierSetup :: SetupStage -> Maybe UUID -> RemoteName -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+glacierSetup ss mu _ mcreds c gc = do
 	u <- maybe (liftIO genUUID) return mu
 	glacierSetup' ss u mcreds c gc
 glacierSetup' :: SetupStage -> UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)

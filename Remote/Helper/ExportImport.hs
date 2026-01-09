@@ -79,7 +79,7 @@ importIsSupported = \_ _ -> return True
 adjustExportImportRemoteType :: RemoteType -> RemoteType
 adjustExportImportRemoteType rt = rt { setup = setup' }
   where
-	setup' st mu cp c gc = do
+	setup' st mu remotename cp c gc = do
 		pc <- either giveup return . parseRemoteConfig c
 			=<< configParser rt c
 		let checkconfig supported configured configfield cont =
@@ -97,7 +97,7 @@ adjustExportImportRemoteType rt = rt { setup = setup' }
 				)
 		checkconfig exportSupported exportTree exportTreeField $
 			checkconfig importSupported importTree importTreeField $
-				setup rt st mu cp c gc
+				setup rt st mu remotename cp c gc
 	
 	enable oldc pc configured configfield cont = do
 		oldpc <- parsedRemoteConfig rt oldc

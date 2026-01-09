@@ -109,8 +109,8 @@ gen r u rc gc rs = do
 		, remoteStateHandle = rs
 		}
 
-setupInstance :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-setupInstance _ mu _ c _ = do
+setupInstance :: SetupStage -> Maybe UUID -> RemoteName -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+setupInstance _ mu _ _ c _ = do
 	u <- maybe (liftIO genUUID) return mu
 	gitConfigSpecialRemote u c [("web", "true")]
 	return (c, u)

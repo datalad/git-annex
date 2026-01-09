@@ -19,7 +19,6 @@ import qualified Git.Construct
 import qualified Annex.Branch
 import qualified Git.GCrypt
 import qualified Remote.GCrypt as GCrypt
-import Git.Types (RemoteName)
 import Assistant.WebApp.MakeRemote
 import Annex.SpecialRemote.Config
 import Logs.Remote

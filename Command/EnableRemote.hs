@@ -14,7 +14,6 @@ import qualified Annex
 import qualified Logs.Remote
 import qualified Types.Remote as R
 import qualified Git
-import qualified Git.Types as Git
 import qualified Annex.SpecialRemote as SpecialRemote
 import qualified Remote
 import qualified Types.Remote as Remote
@@ -75,7 +74,7 @@ start o (name:rest) = go =<< filter matchingname <$> Annex.getGitRemotes
 
 -- enableremote of a normal git remote with no added parameters is a special case
 -- that retries probing the remote uuid.
-startNormalRemote :: Git.RemoteName -> Git.Repo -> CommandStart
+startNormalRemote :: RemoteName -> Git.Repo -> CommandStart
 startNormalRemote name r = starting "enableremote (normal)" ai si $ do
 	setRemoteIgnore r False
 	r' <- Remote.Git.configRead False r
@@ -85,12 +84,12 @@ startNormalRemote name r = starting "enableremote (normal)" ai si $ do
 	ai = ActionItemOther (Just (UnquotedString name))
 	si = SeekInput [name]
 
-startSpecialRemote :: EnableRemoteOptions -> Git.RemoteName -> Remote.RemoteConfig -> [(UUID, Remote.RemoteConfig, Maybe (SpecialRemote.ConfigFrom UUID))] -> CommandStart
+startSpecialRemote :: EnableRemoteOptions -> RemoteName -> Remote.RemoteConfig -> [(UUID, Remote.RemoteConfig, Maybe (SpecialRemote.ConfigFrom UUID))] -> CommandStart
 startSpecialRemote o = startSpecialRemote' "enableremote" (performSpecialRemote o)
 
-type PerformSpecialRemote = RemoteType -> UUID -> R.RemoteConfig -> R.RemoteConfig -> RemoteGitConfig -> Maybe (SpecialRemote.ConfigFrom UUID) -> CommandPerform
+type PerformSpecialRemote = RemoteType -> UUID -> RemoteName -> R.RemoteConfig -> R.RemoteConfig -> RemoteGitConfig -> Maybe (SpecialRemote.ConfigFrom UUID) -> CommandPerform
 
-startSpecialRemote' :: String -> PerformSpecialRemote -> Git.RemoteName -> Remote.RemoteConfig -> [(UUID, Remote.RemoteConfig, Maybe (SpecialRemote.ConfigFrom UUID))] -> CommandStart
+startSpecialRemote' :: String -> PerformSpecialRemote -> RemoteName -> Remote.RemoteConfig -> [(UUID, Remote.RemoteConfig, Maybe (SpecialRemote.ConfigFrom UUID))] -> CommandStart
 startSpecialRemote' cname perform name config [] = do
 	m <- SpecialRemote.specialRemoteMap
 	confm <- Logs.Remote.remoteConfigMap
@@ -110,7 +109,7 @@ startSpecialRemote' cname perform name config ((u, c, mcu):[]) =
 		gc <- maybe (liftIO dummyRemoteGitConfig) 
 			(return . Remote.gitconfig)
 			=<< Remote.byUUID u
-		perform t u c fullconfig gc mcu
+		perform t u name c fullconfig gc mcu
   where
 	ai = ActionItemOther (Just (UnquotedString name))
 	si = SeekInput [name]
@@ -118,18 +117,15 @@ startSpecialRemote' _ _ _ _ _ =
 	giveup "Multiple remotes have that name. Either use git-annex renameremote to rename them, or specify the uuid of the remote."
 
 performSpecialRemote :: EnableRemoteOptions -> PerformSpecialRemote
-performSpecialRemote o t u oldc c gc mcu = do
+performSpecialRemote o t u name oldc c gc mcu = do
 	-- Avoid enabling a special remote if there is another remote
 	-- with the same name.
-	case SpecialRemote.lookupName c of
-		Nothing -> noop
-		Just name -> do
-			rs <- Remote.remoteList
-			case filter (\rmt -> Remote.name rmt == name) rs of
-				(rmt:_) | Remote.uuid rmt /= u ->
-					giveup $ "Not overwriting currently configured git remote named \"" ++ name ++ "\""
-				_ -> noop
-	(c', u') <- R.setup t (R.Enable oldc) (Just u) Nothing c gc
+	rs <- Remote.remoteList
+	case filter (\rmt -> Remote.name rmt == name) rs of
+		(rmt:_) | Remote.uuid rmt /= u ->
+			giveup $ "Not overwriting currently configured git remote named \"" ++ name ++ "\""
+		_ -> noop
+	(c', u') <- R.setup t (R.Enable oldc) (Just u) name Nothing c gc
 	next $ cleanupSpecialRemote o t u' c' mcu
 
 cleanupSpecialRemote :: EnableRemoteOptions -> RemoteType -> UUID -> R.RemoteConfig -> Maybe (SpecialRemote.ConfigFrom UUID) -> CommandCleanup
@@ -174,7 +170,7 @@ unknownNameError prefix = do
 
 -- Use dead remote only when there is no other remote
 -- with the same name
-deadLast :: Git.RemoteName -> ([(UUID, Remote.RemoteConfig, Maybe (SpecialRemote.ConfigFrom UUID))] -> Annex a) -> Annex a
+deadLast :: RemoteName -> ([(UUID, Remote.RemoteConfig, Maybe (SpecialRemote.ConfigFrom UUID))] -> Annex a) -> Annex a
 deadLast name use =
 	SpecialRemote.findExisting' name >>= \case
 		([], l) -> use l

@@ -123,8 +123,8 @@ gen r u rc gc rs = do
   where
 	buprepo = fromMaybe (giveup "missing buprepo") $ remoteAnnexBupRepo gc
 
-bupSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-bupSetup ss mu _ c gc = do
+bupSetup :: SetupStage -> Maybe UUID -> RemoteName -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+bupSetup ss mu _ _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 
 	-- verify configuration is sane

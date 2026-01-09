@@ -24,7 +24,6 @@ import Annex.SpecialRemote.Config
 import Logs.UUID
 import Logs.Remote
 import Git.Remote
-import Git.Types (RemoteName)
 import Creds
 import Assistant.Gpg
 import Utility.Gpg (KeyId)
@@ -108,7 +107,7 @@ setupSpecialRemote' setdesc name remotetype config mcreds (mu, ss, c) mcu = do
 	 - to perform IO actions to refill the pool. -}
 	let weakc = M.insert (Proposed "highRandomQuality") (Proposed "false") (M.union config c)
 	dummycfg <- liftIO dummyRemoteGitConfig
-	(c', u) <- R.setup remotetype ss mu mcreds weakc dummycfg
+	(c', u) <- R.setup remotetype ss mu name mcreds weakc dummycfg
 	case mcu of
 		Nothing ->
 			configSet u c'

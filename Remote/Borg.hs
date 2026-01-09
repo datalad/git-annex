@@ -133,8 +133,8 @@ gen r u rc gc rs = do
 		BorgRepo
 		(remoteAnnexBorgRepo gc)
 
-borgSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-borgSetup _ mu _ c _gc = do
+borgSetup :: SetupStage -> Maybe UUID -> RemoteName -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+borgSetup _ mu _ _ c _gc = do
 	u <- maybe (liftIO genUUID) return mu
 
 	-- verify configuration is sane

@@ -96,8 +96,8 @@ gen r u rc gc rs = do
   where
 	hooktype = fromMaybe (giveup "missing hooktype") $ remoteAnnexHookType gc
 
-hookSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-hookSetup ss mu _ c gc = do
+hookSetup :: SetupStage -> Maybe UUID -> RemoteName -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+hookSetup ss mu _ _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 	let hooktype = maybe (giveup "Specify hooktype=") fromProposedAccepted $
 		M.lookup hooktypeField c

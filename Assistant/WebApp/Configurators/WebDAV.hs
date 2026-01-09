@@ -17,7 +17,6 @@ import qualified Remote
 import Types.Remote (RemoteConfig, config)
 import Types.StandardGroups
 import Logs.Remote
-import Git.Types (RemoteName)
 import Assistant.Gpg
 import Types.GitConfig
 import Annex.SpecialRemote.Config

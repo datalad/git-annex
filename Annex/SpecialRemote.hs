@@ -22,7 +22,6 @@ import Remote.List
 import Logs.Remote
 import Logs.Trust
 import qualified Types.Remote as Remote
-import Git.Types (RemoteName)
 import Utility.SafeOutput
 
 import qualified Data.Map as M
@@ -99,7 +98,7 @@ autoEnable = do
 			(Just name, Right t) -> checkcanenable u name $ do
 				showSideAction $ UnquotedString $ "Auto enabling special remote " ++ name
 				dummycfg <- liftIO dummyRemoteGitConfig
-				tryNonAsync (setup t (AutoEnable c) (Just u) Nothing c dummycfg) >>= \case
+				tryNonAsync (setup t (AutoEnable c) (Just u) name Nothing c dummycfg) >>= \case
 					Left e -> warning (UnquotedString (show e))
 					Right (_c, _u) ->
 						when (cu /= u) $

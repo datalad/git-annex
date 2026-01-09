@@ -139,8 +139,8 @@ gen r u rc gc rs = case getComputeProgram' rc of
 		, remoteStateHandle = rs
 		}
 
-setupInstance :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-setupInstance ss mu _ c _ = do
+setupInstance :: SetupStage -> Maybe UUID -> RemoteName -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+setupInstance ss mu _ _ c _ = do
 	ComputeProgram program <- either giveup return $ getComputeProgram' c
 	allowedprograms <- maybe [] words . annexAllowedComputePrograms
 		<$> Annex.getGitConfig

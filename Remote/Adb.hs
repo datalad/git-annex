@@ -139,8 +139,8 @@ gen r u rc gc rs = do
 	serial = maybe (giveup "missing androidserial") AndroidSerial
 		(remoteAnnexAndroidSerial gc)
 
-adbSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-adbSetup ss mu _ c gc = do
+adbSetup :: SetupStage -> Maybe UUID -> RemoteName -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+adbSetup ss mu _ _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 
 	-- verify configuration

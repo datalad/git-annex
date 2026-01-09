@@ -219,8 +219,8 @@ noCrypto = giveup "cannot use gcrypt remote without encryption enabled"
 unsupportedUrl :: a
 unsupportedUrl = giveup "unsupported repo url for gcrypt"
 
-gCryptSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-gCryptSetup ss mu _ c gc = go $ fromProposedAccepted <$> M.lookup gitRepoField c
+gCryptSetup :: SetupStage -> Maybe UUID -> RemoteName -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+gCryptSetup ss mu _ _ c gc = go $ fromProposedAccepted <$> M.lookup gitRepoField c
   where
 	remotename = fromJust (lookupName c)
 	go Nothing = giveup "Specify gitrepo="

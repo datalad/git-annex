@@ -22,7 +22,6 @@ import qualified Annex
 import Logs.Trust
 import Logs.UUID
 import Annex.UUID
-import Git.Types (RemoteName)
 import Utility.Tuple
 import Utility.SafeOutput
 

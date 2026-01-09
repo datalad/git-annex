@@ -108,10 +108,10 @@ gen r u rc gc rs = do
 cannotModify :: a
 cannotModify = giveup "httpalso special remote is read only"
 
-httpAlsoSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-httpAlsoSetup _ Nothing _ _ _ =
+httpAlsoSetup :: SetupStage -> Maybe UUID -> RemoteName -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+httpAlsoSetup _ Nothing _ _ _ _ =
 	giveup "Must use --sameas when initializing a httpalso remote."
-httpAlsoSetup ss (Just u) _ c gc = do
+httpAlsoSetup ss (Just u) _ _ c gc = do
 	_url <- maybe (giveup "Specify url=")
 		(return . fromProposedAccepted)
 		(M.lookup urlField c)

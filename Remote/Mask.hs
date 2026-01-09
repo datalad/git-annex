@@ -89,8 +89,8 @@ gen r u rc gc rs = do
 		(checkKey maskedremote)
 		this
 
-maskSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-maskSetup setupstage mu _ c gc = do
+maskSetup :: SetupStage -> Maybe UUID -> RemoteName -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+maskSetup setupstage mu _ _ c gc = do
 	remotelist <- Annex.getState Annex.remotes
 	let findnamed maskremotename =
 		case filter (\r -> name r == maskremotename) remotelist of

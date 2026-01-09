@@ -144,8 +144,8 @@ gen r u rc gc rs = do
 		, remoteStateHandle = rs
 		}
 
-mySetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-mySetup ss mu _ c gc = do
+mySetup :: SetupStage -> Maybe UUID -> RemoteName -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+mySetup ss mu _ _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 
 	(c', _encsetup) <- encryptionSetup ss c gc

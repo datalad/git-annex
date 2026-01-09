@@ -17,7 +17,6 @@ import qualified Annex
 import Annex.Common
 import qualified Annex.Branch
 import qualified Git.Remote
-import Git.Types
 import Logs
 import Logs.UUIDBased
 import Logs.MapLog

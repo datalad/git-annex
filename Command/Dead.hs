@@ -12,7 +12,6 @@ import Types.TrustLevel
 import Command.Trust (trustCommand)
 import Logs.Location
 import Remote (keyLocations)
-import Git.Types
 
 cmd :: Command
 cmd = withAnnexOptions [jsonOptions] $

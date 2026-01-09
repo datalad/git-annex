@@ -9,7 +9,7 @@
 
 module Annex.Sim where
 
-import Annex.Common
+import Annex.Common hiding (RemoteName)
 import Utility.DataUnits
 import Types.NumCopies
 import Types.Group

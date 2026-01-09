@@ -114,8 +114,8 @@ gen r u rc gc rs = do
 		}
 	ddarrepo = maybe (giveup "missing ddarrepo") (DdarRepo gc) (remoteAnnexDdarRepo gc)
 
-ddarSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-ddarSetup ss mu _ c gc = do
+ddarSetup :: SetupStage -> Maybe UUID -> RemoteName -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+ddarSetup ss mu _ _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 
 	-- verify configuration is sane

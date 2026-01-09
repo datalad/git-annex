@@ -270,8 +270,8 @@ gen r u rc gc rs = do
 			, remoteStateHandle = rs
 			}
 
-s3Setup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-s3Setup ss mu mcreds c gc = do
+s3Setup :: SetupStage -> Maybe UUID -> RemoteName -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+s3Setup ss mu _ mcreds c gc = do
 	u <- maybe (liftIO genUUID) return mu
 	s3Setup' ss u mcreds c gc
 

@@ -11,7 +11,6 @@ import Command
 import Logs.Web
 import Command.FromKey (keyOpt, keyOpt')
 import qualified Remote
-import Git.Types
 
 cmd :: Command
 cmd = withAnnexOptions [jsonOptions] $ command "reregisterurl"

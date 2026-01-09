@@ -199,8 +199,8 @@ rsyncTransport gc url
 	loginopt = maybe [] (\l -> ["-l",l]) login
 	fromNull as xs = if null xs then as else xs
 
-rsyncSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-rsyncSetup ss mu _ c gc = do
+rsyncSetup :: SetupStage -> Maybe UUID -> RemoteName -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+rsyncSetup ss mu _ _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 	-- verify configuration is sane
 	let url = maybe (giveup "Specify rsyncurl=") fromProposedAccepted $

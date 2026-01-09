@@ -12,7 +12,6 @@ import qualified Utility.MagicWormhole as Wormhole
 import Command.P2P (wormholePairing, PairingResult(..))
 import P2P.Address
 import Annex.Concurrent
-import Git.Types
 
 import Control.Concurrent
 import Control.Concurrent.Async

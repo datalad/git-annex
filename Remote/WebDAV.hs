@@ -128,8 +128,8 @@ gen r u rc gc rs = do
 			}
 		chunkconfig = getChunkConfig c
 
-webdavSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-webdavSetup ss mu mcreds c gc = do
+webdavSetup :: SetupStage -> Maybe UUID -> RemoteName -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+webdavSetup ss mu _ mcreds c gc = do
 	u <- maybe (liftIO genUUID) return mu
 	url <- maybe (giveup "Specify url=")
 		(return . fromProposedAccepted)
