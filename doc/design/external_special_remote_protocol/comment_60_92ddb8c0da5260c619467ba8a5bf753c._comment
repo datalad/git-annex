@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: How do I get GETGITREMOTENAME to work in INITREMOTE?"""
+ date="2026-01-09T17:26:59Z"
+ content="""
+@Katie, thanks for pointing out that doesn't work. I was able to fix that,
+so check out a daily build.
+"""]]

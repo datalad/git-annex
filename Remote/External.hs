@@ -1,6 +1,6 @@
 {- External special remote interface.
  -
- - Copyright 2013-2025 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2026 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -193,7 +193,7 @@ externalSetup externalprogram setgitconfig ss mu remotename _ c gc = do
 		else do
 			pc' <- either giveup return $ parseRemoteConfig c' (lenientRemoteConfigParser externalprogram)
 			let p = fromMaybe (ExternalType externaltype) externalprogram
-			external <- newExternal p (Just u) pc' (Just gc) Nothing Nothing
+			external <- newExternal p (Just u) pc' (Just gc) (Just remotename) Nothing
 			-- Now that we have an external, ask it to LISTCONFIGS, 
 			-- and re-parse the RemoteConfig strictly, so we can
 			-- error out if the user provided an unexpected config.
@@ -953,3 +953,4 @@ remoteConfigParser externalprogram c
   where
 	isproposed (Accepted _) = False
 	isproposed (Proposed _) = True
+

@@ -7,6 +7,8 @@ git-annex (10.20251216) UNRELEASED; urgency=medium
   * Pass www-authenticate headers in to to git credential, to support
     eg, git-credential-oauth.
   * import: Fix display of some import errors.
+  * external: Respond to GETGITREMOTENAME during INITREMOTE with the remote
+    name.
   * When displaying sqlite error messages, include the path to the database.
   * webapp: Remove support for local pairing; use wormhole pairing instead.
   * git-annex.cabal: Removed pairing build flag, and no longer depends

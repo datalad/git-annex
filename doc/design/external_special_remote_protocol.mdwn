@@ -379,6 +379,9 @@ handling a request.
   passed to `git-annex initremote` and `enableremote`, but it is possible
   for git remotes to be renamed, and this will provide the remote's current
   name.  
+  If this is used during INITREMOTE, the git remote may not be
+  configured yet. (Older versions of git-annex responded with an ERROR
+  when this is used during INITREMOTE.)  
   (git-annex replies with VALUE followed by the name.)  
   This message is a protocol extension; it's only safe to send it to
   git-annex after it sent an `EXTENSIONS` that included `GETGITREMOTENAME`.
