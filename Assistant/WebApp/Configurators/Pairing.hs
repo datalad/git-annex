@@ -6,18 +6,13 @@
  -}
 
 {-# LANGUAGE TypeFamilies, QuasiQuotes, TemplateHaskell, OverloadedStrings, FlexibleContexts #-}
-{-# LANGUAGE CPP #-}
 
 module Assistant.WebApp.Configurators.Pairing where
 
-import Assistant.Pairing
 import Assistant.WebApp.Common
-import Annex.UUID
-import Utility.UserInfo
 import Utility.Tor
 import Utility.Su
 import Assistant.WebApp.Pairing
-import Assistant.Alert
 import qualified Utility.MagicWormhole as Wormhole
 import Assistant.MakeRemote
 import Assistant.RemoteControl
@@ -25,7 +20,6 @@ import Assistant.Sync
 import Assistant.WebApp.SideBar
 import Command.P2P (unusedPeerRemoteName, PairingResult(..))
 import P2P.Address
-import Git
 import Annex.Path
 import Utility.Process.Transcript
 
