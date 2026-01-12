@@ -1,0 +1,72 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2026-01-12T15:54:26Z"
+ content="""
+Seems I really dropped the ball on following up to this one. On the other
+hand, it seems a lot of things need to be thought through still..
+
+---
+
+I suppose there are two ways a default preferred content config could work:
+
+1. Something that gets set in the repository's config at `git-annex init`
+   (or autoinit) time, when the repository does not already have a
+   preferred content setting. Also at `git-annex initremote` time for
+   special remotes.
+2. Something that is used rather than the current default of ""
+   when a repository does not have a preferred content setting.
+
+With option #1, it gets baked into the repo, while with option #2 you can
+change a single git config later and it affects whatever repos.
+
+Pretty sure people have been wanting option #1.
+
+And option #2 seems to have a problem, that git-annex could see different
+preferred content settings for the same repository when run in different
+places. Which could result in a churn of content being added to a
+repository, and later dropped from it.
+
+So option #1 seems like the right one.
+
+---
+
+Looking back at the original request, there was the idea that
+`git annex config` could set the default.
+
+Every `git annex config` setting needs to be considered for
+security and unwanted behavior.
+
+As far as security goes, if someone can set `git-annex config`,
+they can just go in and change the preferred content settings of any
+repository. So no difference?
+
+Well, there is a small one. If I have made a clone of a repository,
+I may be hiding the existence of that repository from others.
+So nobody knows its uuid, and so they cannot change its preferred content
+setting. But with `git-annex config` allowing overriding the default,
+I'd risk a pull from origin changing it.
+
+Which, since the default is to want all files, must change my repo
+to want fewer files.
+
+So for this to be an actual security problem, I would need to be relying
+on my repository getting all files for some security reason. Which could be
+auditing the content of annexed files. As the auditing repository, I want
+it to get every file that passes through origin. And by foolishly relying
+on the current default preferred content (which after all joey seems like
+he's never gonna get around to changing!), I open myself up to an attacker
+breaking my auditing process.
+
+That's a bit tortured, but it does seem to argue against making this 
+a `git-annex config` setting.
+
+----
+
+The original request also included annex.defaultgroupwanted ...
+I don't see how that would work. groupwanted varies by group, it does
+not make sense to have a default that works across groups. 
+
+It does seem to make sense to allow annex.defaultgroup to set the default
+group(s) of a new repository.
+"""]]
