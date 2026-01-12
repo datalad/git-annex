@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2011-2024 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2026 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -22,6 +22,7 @@ import Types.ProposedAccepted
 import Config
 import Git.Config
 import Git.Types
+import Annex.Init
 
 import qualified Data.Map as M
 import qualified Data.Text as T
@@ -127,6 +128,7 @@ cleanup t u name c o = do
 	case sameas o of
 		Nothing -> do
 			describeUUID u (toUUIDDesc name)
+			propigateDefaultGitConfigs u
 			Logs.Remote.configSet u c
 		Just _ -> do
 			cu <- liftIO genUUID

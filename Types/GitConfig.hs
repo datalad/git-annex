@@ -1,6 +1,6 @@
 {- git-annex configuration
  -
- - Copyright 2012-2025 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2026 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -51,6 +51,7 @@ import Types.RepoVersion
 import Types.StallDetection
 import Types.View
 import Types.Cluster
+import Types.Group
 import Config.DynamicConfig
 import Utility.HumanTime
 import Utility.Gpg (GpgCmd, mkGpgCmd)
@@ -171,6 +172,9 @@ data GitConfig = GitConfig
 	, annexViewUnsetDirectory :: ViewUnset
 	, annexClusters :: M.Map RemoteName ClusterUUID
 	, annexFullyBalancedThreshhold :: Double
+	, annexDefaultWanted :: Maybe String
+	, annexDefaultRequired :: Maybe String
+	, annexDefaultGroups :: [Group]
 	}
 
 extractGitConfig :: ConfigSource -> Git.Repo -> GitConfig
@@ -284,7 +288,7 @@ extractGitConfig configsource r = GitConfig
 		(getmayberead (annexConfig "adjustedbranchrefresh"))
 	, annexSupportUnlocked = getbool (annexConfig "supportunlocked") True
 	, annexAssistantAllowUnlocked = getbool (annexConfig "assistant.allowunlocked") False
-	, annexTrashbin = getmaybe "annex.trashbin"
+	, annexTrashbin = getmaybe (annexConfig "trashbin")
 	, coreSymlinks = getbool "core.symlinks" True
 	, coreSharedRepository = getSharedRepository r
 	, coreQuotePath = QuotePath (getbool "core.quotepath" True)
@@ -315,6 +319,10 @@ extractGitConfig configsource r = GitConfig
 	, annexFullyBalancedThreshhold =
 		fromMaybe 0.9 $ (/ 100) <$> getmayberead
 			(annexConfig "fullybalancedthreshhold")
+	, annexDefaultWanted = getmaybe (annexConfig "defaultwanted")
+	, annexDefaultRequired = getmaybe (annexConfig "defaultrequired")
+	, annexDefaultGroups = map (Group . encodeBS) $
+		getwords (annexConfig "defaultgroups")
 	}
   where
 	getbool k d = fromMaybe d $ getmaybebool k

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2026-01-12T17:30:18Z"
+ content="""
+Implemented git configs annex.defaultwanted, annex.defaultrequired,
+and annex.defaultgroups.
+"""]]

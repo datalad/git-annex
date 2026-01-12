@@ -1,5 +1,7 @@
 git-annex (10.20251216) UNRELEASED; urgency=medium
 
+  * New git configs annex.defaultwanted, annex.defaultrequired, and
+    annex.defaultgroups.
   * Fix bug that could result in a tree imported from a remote containing
     missing git blobs.
   * fix: Populate unlocked pointer files in situations where a git command,

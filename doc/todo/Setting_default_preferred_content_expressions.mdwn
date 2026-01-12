@@ -24,3 +24,5 @@ I like my annexed/datalad repos (mostly research data next to analysis code for 
 Thanks again very much for git-annex, I love it! 💛
 
 Yann
+
+> [[done]] --[[Joey]]

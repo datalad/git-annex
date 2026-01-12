@@ -1,6 +1,6 @@
 {- git-annex repository initialization
  -
- - Copyright 2011-2025 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2026 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -20,6 +20,7 @@ module Annex.Init (
 	probeCrippledFileSystem,
 	probeCrippledFileSystem',
 	isCrippledFileSystem,
+	propigateDefaultGitConfigs,
 ) where
 
 import Annex.Common
@@ -34,6 +35,8 @@ import qualified Database.Fsck
 import Logs.UUID
 import Logs.Trust.Basic
 import Logs.Config
+import Logs.PreferredContent.Raw
+import Logs.Group
 import Types.TrustLevel
 import Types.RepoVersion
 import Annex.Version
@@ -64,6 +67,7 @@ import qualified Utility.LockFile.Posix as Posix
 #endif
 
 import qualified Data.Map as M
+import qualified Data.Set as S
 import Control.Monad.IO.Class (MonadIO)
 #ifndef mingw32_HOST_OS
 import System.PosixCompat.Files (ownerReadMode, isNamedPipe)
@@ -150,7 +154,8 @@ initialize' startupannex mversion _initallowed = do
 		hookWrite preCommitHook
 		hookWrite postReceiveHook
 	setDifferences
-	unlessM (isJust <$> getVersion) $
+	initialversion <- getVersion
+	unless (isJust initialversion) $
 		setVersion (fromMaybe defaultVersion mversion)
 	supportunlocked <- annexSupportUnlocked <$> Annex.getGitConfig
 	if supportunlocked
@@ -171,6 +176,8 @@ initialize' startupannex mversion _initallowed = do
 					Direct.switchHEADBack
 				)
 	propigateSecureHashesOnly
+	when (isNothing initialversion) $
+		propigateDefaultGitConfigs =<< getUUID
 	createInodeSentinalFile False
 	fixupUnusualReposAfterInit
 
@@ -487,7 +494,7 @@ initSharedClone True = do
 	trustSet u UnTrusted
 	setConfig (annexConfig "hardlink") (Git.Config.boolConfig True)
 
-{- Propagate annex.securehashesonly from then global config to local
+{- Propigate annex.securehashesonly from the global config to local
  - config. This makes a clone inherit a parent's setting, but once
  - a repository has a local setting, changes to the global config won't
  - affect it. -}
@@ -495,6 +502,19 @@ propigateSecureHashesOnly :: Annex ()
 propigateSecureHashesOnly =
 	maybe noop (setConfig "annex.securehashesonly" . fromConfigValue)
 		=<< getGlobalConfig "annex.securehashesonly"
+
+{- Propigate git configs that set defaults. -}
+propigateDefaultGitConfigs :: UUID -> Annex ()
+propigateDefaultGitConfigs u = do
+	gc <- Annex.getGitConfig
+	set (annexDefaultWanted gc) preferredContentSet
+	set (annexDefaultRequired gc) requiredContentSet
+	case annexDefaultGroups gc of
+		[] -> noop
+		groups -> groupChange u (S.union (S.fromList groups))
+  where
+	set (Just expr) setter = setter u expr
+	set Nothing _ = noop
 
 fixupUnusualReposAfterInit :: Annex ()
 fixupUnusualReposAfterInit = do
