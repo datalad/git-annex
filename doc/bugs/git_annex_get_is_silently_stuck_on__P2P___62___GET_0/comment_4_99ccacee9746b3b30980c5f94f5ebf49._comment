@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2026-01-12T15:31:48Z"
+ content="""
+Makes sense it could be locking. As part of recording the currently running
+transfer, a lock is held.
+
+Pid locking still involves a regular unix lock, the side lock, which is in
+/dev/shm or /tmp. So I guess it could be that /tmp is on nfs and lockd
+misbehaving caused the problem?
+"""]]
