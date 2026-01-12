@@ -45,17 +45,17 @@ Well, there is a small one. If I have made a clone of a repository,
 I may be hiding the existence of that repository from others.
 So nobody knows its uuid, and so they cannot change its preferred content
 setting. But with `git-annex config` allowing overriding the default,
-I'd risk a pull from origin changing it.
+a clone I made yesterday may behave differently than a clone I make today.
 
-Which, since the default is to want all files, must change my repo
+Which, since the default is to want all files, must make clone
 to want fewer files.
 
-So for this to be an actual security problem, I would need to be relying
-on my repository getting all files for some security reason. Which could be
-auditing the content of annexed files. As the auditing repository, I want
-it to get every file that passes through origin. And by foolishly relying
-on the current default preferred content (which after all joey seems like
-he's never gonna get around to changing!), I open myself up to an attacker
+So for this to be an actual security problem, I would need to be relying on
+my clones getting all files for some security reason. Which could be
+auditing the content of annexed files. I want the auditing clones to get
+every file that passes through origin. And by foolishly relying on the
+current default preferred content (which after all joey seems like he's
+never gonna get around to changing!), I open myself up to an attacker
 breaking my auditing process.
 
 That's a bit tortured, but it does seem to argue against making this 
