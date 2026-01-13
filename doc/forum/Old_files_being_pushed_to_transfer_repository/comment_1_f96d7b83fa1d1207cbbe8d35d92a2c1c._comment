@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2026-01-13T14:21:29Z"
+ content="""
+There are two possibilities:
+
+1. Transfer repositories want files that have not yet reached all clients, so
+   maybe you had a second client repository that doesn't have the file yet.
+
+2. When there is only a single client repository, transfer repositories
+   want to contain all content, even once it's reached that client. The
+   assumption is that, since the purpose of a transfer repo is to transfer
+   between clients, there will be a second client repository added at some
+   point, and then the trasfer repository will have the content to send it it.
+
+This is documented in [[preferred_content/standard_groups]].
+"""]]
