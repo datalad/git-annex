@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: comment 6"""
+ date="2026-01-13T14:14:27Z"
+ content="""
+`git-annex findcomputed --inputs` is documented to output one line per
+input file. If it doesn't behave that way, file a bug.
+
+It would be possible to run git-annex commands in the compute script if
+you were able to determine where the git repository was. I don't think
+git-annex sets anything in the environment that will help with that
+currently.
+
+If the compute program set metadata though, it would re-set the same
+metadata when it's used to recompute the files. That might be undesirable
+behavior if the user has edited the metadata in the meantime.
+"""]]
