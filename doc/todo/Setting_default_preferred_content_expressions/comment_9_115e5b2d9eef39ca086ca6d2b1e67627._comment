@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2026-01-13T17:29:35Z"
+ content="""
+Note that you can set annex.defaultwanted to "standard", and
+annex.defaultgroups to some group, and then changing
+`git-annex groupwanted` will affect all repositories that copied that
+defaultwanted into their config.
+
+So that's a way to be able to make changes that will affect other people's
+clones. But only ones that they have opted into.
+"""]]

@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2026-01-13T17:42:20Z"
+ content="""
+If annex.defaultwanted were able to be changed for all repositories with
+`git-annex config`, then here's a really ugly security problem:
+
+* First, I make sure to get a copy of every annexed file.
+* Then I run `git-annex config annex.defaultwanted nothing`
+* Then I wait for git-annex to drop every file from your repository.
+* Finally, I demand $ to get your files back.
+
+Now, the same can be done by convincing people to add their repository to
+some group and set preferred content to "standard", and later
+changing the groupwanted. But that only works on people you were able to
+social engineer to doing that, not everyone who cloned a repository
+with the default settings.
+
+And beyond the ransom problem, there's the problem that once this is set,
+any change to it is going to affect most every other user of the
+repository. With groupwanted there's a communicated intent in the name of
+the group, and there can be different groups with different versions of the
+preferred content expression. This lacks that, it encourages flag day
+events.
+"""]]
