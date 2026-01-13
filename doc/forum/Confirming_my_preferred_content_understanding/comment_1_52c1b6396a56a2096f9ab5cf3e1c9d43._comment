@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2026-01-13T14:01:50Z"
+ content="""
+I think that will work!
+
+Since moving content between the archive drives is probably reasonably
+fast, it might make sense to use fullybalanced or fullysizebalanced.
+
+In any case, when using "balanced" things, you will need to use
+[[git-annex-maxsize]] to tell it how large each repository is.
+"""]]
