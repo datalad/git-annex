@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: buyer's remorse"""
+ date="2026-01-13T14:55:07Z"
+ content="""
+Oh good question!
+
+This gets a tiny bit into internals, but `.git/annex/journal-private/` is
+where the private information is stored. If you move the files from there
+into `.git/annex/journal/`, they will be committed on the next run of
+git-annex.
+
+You would need to take care to avoid overwriting any existing files in the
+journal, usually there won't be any though.
+
+Also unset annex.private of course.
+"""]]
