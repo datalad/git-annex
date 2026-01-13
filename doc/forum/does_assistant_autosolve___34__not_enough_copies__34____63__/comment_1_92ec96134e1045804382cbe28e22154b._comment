@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2026-01-13T14:27:09Z"
+ content="""
+The assistant only sends files to repositories that want them. This is not
+guaranteed to make as many copies of the files as whatever you have
+numcopies configured to. (Numcopies will prevent the assistant from
+dropping a file from a repository if there are not enough copies.)
+
+All of your archive repositories only want 1 copy of a file across all of
+them, so you would need 2 backup repositories (which want all files) in
+order to get to 3 copies.
+"""]]
