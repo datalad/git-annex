@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2026-01-13T15:33:19Z"
+ content="""
+The automatic init that git-annex does in a clone does enter adjusted
+branch. I think I was not considering that because you were talking about
+having an existing repository and git-annex entering the adjusted branch
+later.
+
+We can reopen this if you want, unsure.
+"""]]
