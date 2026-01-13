@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="Thanks! Maybe still consider a repo-wide setting for default wanted content? "
+ date="2026-01-13T15:50:32Z"
+ content="""
+Hi joey, thank you for picking this up. IIUC, what you implemented (`git config annex.default{wanted,required,group}`) allows you to set these configs *locally* and then spare *yourself* the initial `git annex wanted . present` (etc.) setup calls. This is cool, thanks!
+
+The problem I was trying to express here is however that `git annex assist` (the very convenient do-it-all command you can tell non-techy people to use to 'do the syncing stuff') will by default pull in *all* files, resulting in a terrible user experience: it's slow (of course nobody sets `annex.jobs=cpus` or uses `-j4`), it takes up a ridiculous amount of space, people will say 'I don't need that 3GB file, why does it download it?' (of course nobody remembers or understands to set `git annex wanted . present` or anything complex), etc. Sure, this is a question of user education, but good defaults can make for a much easier onboarding experience. (I know you are not so fond of such a do-it-all command, but this `git annex assist` single-stepping command really has been a good git annex selling point in the discussions and talks I had.)
+
+So if there was a global setting like `git annex config --set annex.defaultwanted 'present or include=*.pdf'` that would set the default wanted expression for any clone, one could define what the most important files are and tell everyone to `git annex get` the others if necessary. `git annex assist` will be fast, only pull in the most important files (or none!), people can modify or add new stuff, and run `git annex assist` quickly again.
+
+I would say `git annex config --set annex.defaultwanted <whatever>` should **not** execute `git annex wanted . <whatever>` and as such hard-code it in the git-annex branch for every repo (because then again, when would that even be executed? Would it be re-set after another `git annex config --set annex.defaultwanted <whatever2>`? When?). Instead, `git annex --set annex.defaultwanted <whatever>` should cause the *default* (i.e. fallback) value of `git annex wanted .` to be `<whatever>`, which is currently just `\"\"`, which I guess means something like `include=*` IIRC.
+
+## Re: your security concerns
+
+I understand your hesitation to add more `git annex config ...` global repo configs. But here I would argue:
+
+- git annex does not have a permissions model anyway. Anyone with push access to a repo can change any policy, any wanted expression for any repo, etc. If that is a problem, then git annex might not be the right tool. I guess one can implement some level of permission control with post-receive hooks on the remote side, but that is outside git annex's scope. git annex assumes everyone writing to the repo is nice.
+- I don't really understand your 'auditing' repo situation. Does it mean you regularly clone some repos, run `git annex pull|assist` in them to check if it still works? In that case the only negative thing `git annex config --set annex.defaultwanted` could do is indeed leaving you with *less* downloaded files. If one needs all files, `git annex get --all` has always been the way to go, hasn't it? 🤔 Or what kind of external repos from bad actors maliciously setting a default wanted expression do you 'audit'? And how is not having all files after `git annex assist` bad in this case?
+
+*Should* you consider implementing `git annex config --set annex.defaultwanted`, it would conflict with the freshly introduced `git config annex.defaultwanted` local settings. We could rename those to `git config annex.initdefaultwanted` (or just `annex.initwanted), to emphasize that those only happen on `git annex init`. Then `git annex config --set annex.defaultwanted` would also sound very sensible to me in contrast, as it really configures the default, and does not modify individual repos.
+
+Cheers,
+Yann
+
+"""]]
