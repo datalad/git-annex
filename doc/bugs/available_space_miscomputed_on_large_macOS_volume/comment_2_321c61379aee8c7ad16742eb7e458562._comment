@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2026-01-13T14:32:53Z"
+ content="""
+I'm inclined to agree with you, it's probably a problem with
+<https://hackage.haskell.org/package/disk-free-space>
+
+I am not going to be able to reproduce this!
+
+Could you take a look at disk-free-space in ghci and see if it reproduces
+there?
+
+	ghci> import System.DiskSpace
+	ghci> getAvailSpace "/"
+	283744563200
+	ghci> getDiskUsage "/"
+	DiskUsage {diskTotal = 501386043392, diskFree = 283761369088, diskAvail = 283744591872, blockSize = 4096}
+
+Looking at the code, it assumes bsize and frsize are CULong. I guess it's
+that or FsBlkCnt is somehow wrong.
+"""]]
