@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2026-01-13T17:02:50Z"
+ content="""
+The annex-ignore config can be manually set by the user to prevent using an
+otherwise usable remote. The man page gives the example of a network
+connection that is too slow to use normally.
+
+It may be that no users are actually using annex-ignore like this.
+Using annex-sync seems more likely. But, it's hard to rule out.
+
+That presents a problem, since this would need to unset annex-ignore once
+the repository was created.
+
+Checking before push if the repository exists, and only unsetting
+annex-ignore if it did not exist before sync, but does afterwards, would be
+one way around this problem. It does mean that, if 2 people are making
+a repository at the same location at the same time, the loser may be left
+with annex-ignore set due to the other person having created the
+repository.
+
+Or, a new config could be added, that is like annex-ignore, but is only
+set by git-annex, and not by the user. Keeping annex-ignore's behavior,
+but making git-annex set and unset the new config as needed.
+"""]]
