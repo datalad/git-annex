@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 12"""
+ date="2026-01-14T17:42:46Z"
+ content="""
+> Anyone with write access to a repo can already freely change any group, groupwanted or wanted for any involved clone - if it's present in the git-annex branch
+
+A good point certianly.
+
+> So your concerns only apply to private repos that don't record their activity in the git-annex branch by using `annex.private=true`.
+
+Well also repos that lack permission to push or are simply not pushed to
+origin.
+
+It's probably somewhat common to want to get files from origin, but not let
+origin make config changes that drop all the files they have previously
+shared.
+"""]]
