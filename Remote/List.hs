@@ -110,8 +110,8 @@ remoteGen' adjustconfig m t g = do
 		Just r -> Just <$> adjustExportImport (adjustReadOnly (addHooks r)) rs
 
 {- Updates a local git Remote, re-reading its git config. -}
-updateRemote :: Remote -> Bool -> Annex (Maybe Remote)
-updateRemote remote honorignore = do
+updateRemote :: Remote -> Annex (Maybe Remote)
+updateRemote remote = do
 	m <- remoteConfigMap
 	remote' <- updaterepo =<< getRepo remote
 	remoteGen m (remotetype remote) remote'
