@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="comment 11"
+ date="2026-01-14T14:13:00Z"
+ content="""
+> you can set annex.defaultwanted to \"standard\", and annex.defaultgroups to some group, and then changing git-annex groupwanted will affect all repositories that copied that defaultwanted into their config
+
+> If annex.defaultwanted were able to be changed for all repositories with git-annex config, then here's a really ugly security problem [...]
+
+Yes, but the same is already possible for anyone with write access to a repo. I can `git annex wanted JOEYS-UUID nothing`, wait for your assistant or manual sync to auto-drop all files (would also need to set `{num,min}copies` to 1 for that, and even then it might not auto-drop it depending on the remotes). Anyone with write access to a repo can already freely change any group, groupwanted or wanted for any involved clone - if it's present in the git-annex branch (i.e. not made with `git config annex.private=true`). So your concerns only apply to private repos that don't record their activity in the git-annex branch by using `annex.private=true`. Making a git-annex repo private is a conscious, active choice. One does not need to do it if one only consumes files and does not have push access anyway. So that'll be people who actively change repo content, probably consume it, but don't want their repo to show up in `git annex info`. Maybe for a publicly-pushable git-annex repo where everyone can add new files (who would host that anyway...). In this case, yes, users of that repo can't trust each other and there setting something like `git annex config --set annex.defaultwanted nothing` at some point can lead to people's `git annex sync|assist|assistant` to suddenly drop their files - and probably also on the central remote. But I'd argue that this kind of publicly writable setup has so many other obvious problems that `annex.defaultwanted` is one of the minor ones.
+
+Other situations I can imagine consider groups of people (or just single users) who trust each other when using a git-annex repo. git-annex is not designed to solve such permission problems - neither is git itself.
+
+git-annex usages:
+
+- publicly writable git-annex repo
+(bad idea anyway for several reasons)
+- publicly readable git-annex repo (e.g. your git-annex-builds repo)
+
+> people you were able to social engineer to doing that
+
+
+"""]]
