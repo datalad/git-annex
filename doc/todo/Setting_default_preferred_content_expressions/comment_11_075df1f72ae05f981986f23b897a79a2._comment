@@ -12,13 +12,18 @@ Yes, but the same is already possible for anyone with write access to a repo. I 
 
 Other situations I can imagine consider groups of people (or just single users) who trust each other when using a git-annex repo. git-annex is not designed to solve such permission problems - neither is git itself.
 
-git-annex usages:
+In your publicly readable (not writable) git-annex-builds repo on the other hand, if *you* were to set `git annex config --set annex.defaultwanted nothing`, then people who just run `git annex sync|assist|assistant` in their clones would have their downloaded builds dropped, okay.
+
+### git-annex usage scenarios
 
 - publicly writable git-annex repo
-(bad idea anyway for several reasons)
-- publicly readable git-annex repo (e.g. your git-annex-builds repo)
-
-> people you were able to social engineer to doing that
-
+  - (bad idea anyway for several reasons without any form of permission control on the remote side)
+  - malicious people could set `git annex config --set annex.defaultwanted nothing` at some point and other's clones would have files dropped on sync.
+- publicly readable git-annex repo to provide assets (e.g. your git-annex-builds repo)
+  - only the owner could do such shenanigans. Users can avoid it by using `git annex pull` and `git annex get` instead of `sync|assist|assistant` (which arguably makes more sense in this case anyway) or explicitly stating their `git annex wanted here ...`.
+- groups or individuals working on a repo in several clones - everyone has write access, in a team for example
+  - anyone can already happily destroy repo contents and control other's wanted expressions
+  - `git annex config annex.defaultwanted` can be set as an established "repo policy" for everyone's convenience, that anyone can overwrite locally with `git annex wanted here ...`.
+  - if you run `git annex assist|sync|assistant|satisfy`, you *accept the repo's policy*, as with your `securehashesonly` example. If you're paranoid, don't use these sync commands, but do only exactly what you want such as `git annex pull -g`, `git annex get <thatfile>`, `git annex wanted ...`, etc.
 
 """]]
