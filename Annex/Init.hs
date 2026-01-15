@@ -20,7 +20,7 @@ module Annex.Init (
 	probeCrippledFileSystem,
 	probeCrippledFileSystem',
 	isCrippledFileSystem,
-	propigateDefaultGitConfigs,
+	propigateInitGitConfigs,
 ) where
 
 import Annex.Common
@@ -177,7 +177,7 @@ initialize' startupannex mversion _initallowed = do
 				)
 	propigateSecureHashesOnly
 	when (isNothing initialversion) $
-		propigateDefaultGitConfigs =<< getUUID
+		propigateInitGitConfigs =<< getUUID
 	createInodeSentinalFile False
 	fixupUnusualReposAfterInit
 
@@ -504,12 +504,12 @@ propigateSecureHashesOnly =
 		=<< getGlobalConfig "annex.securehashesonly"
 
 {- Propigate git configs that set defaults. -}
-propigateDefaultGitConfigs :: UUID -> Annex ()
-propigateDefaultGitConfigs u = do
+propigateInitGitConfigs :: UUID -> Annex ()
+propigateInitGitConfigs u = do
 	gc <- Annex.getGitConfig
-	set (annexDefaultWanted gc) preferredContentSet
-	set (annexDefaultRequired gc) requiredContentSet
-	case annexDefaultGroups gc of
+	set (annexInitWanted gc) preferredContentSet
+	set (annexInitRequired gc) requiredContentSet
+	case annexInitGroups gc of
 		[] -> noop
 		groups -> groupChange u (S.union (S.fromList groups))
   where

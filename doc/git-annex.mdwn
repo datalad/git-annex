@@ -1061,25 +1061,25 @@ repository, using [[git-annex-config]]. See its man page for a list.)
   If this is set to `true` then it will instead use the `annex.addunlocked`
   configuration to decide which files to add unlocked.
 
-* `annex.defaultwanted`
+* `annex.initwanted`
 
   When this is set to a preferred content expression, all 
   new repositories (and special remotes) will have it copied into their
   configuration when initialized, the same as if you had run
   [[git-annex-wanted]](1).
 
-* `annex.defaultrequired`
+* `annex.initrequired`
 
   When this is set to a preferred content expression, all 
   new repositories (and special remotes) will have it copied into their
   configuration when initialized, the same as if you had run
   [[git-annex-required]](1).
 
-* `annex.defaultgroups`
+* `annex.initgroups`
   
   When this is set to a list of groups (separated by whitespace), all
-  new repositories (and special remotes) will start out in those groups,
-  the same as if you had run [[git-annex-group]](1).
+  new repositories (and special remotes) start out in those groups
+  when initialized, the same as if you had run [[git-annex-group]](1).
 
 * `annex.numcopies`
 

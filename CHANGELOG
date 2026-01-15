@@ -1,7 +1,7 @@
 git-annex (10.20260115) upstream; urgency=medium
 
-  * New git configs annex.defaultwanted, annex.defaultrequired, and
-    annex.defaultgroups.
+  * New git configs annex.initwanted, annex.initrequired, and
+    annex.initgroups.
   * Fix bug that could result in a tree imported from a remote containing
     missing git blobs.
   * fix: Populate unlocked pointer files in situations where a git command,

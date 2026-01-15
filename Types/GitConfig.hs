@@ -172,9 +172,9 @@ data GitConfig = GitConfig
 	, annexViewUnsetDirectory :: ViewUnset
 	, annexClusters :: M.Map RemoteName ClusterUUID
 	, annexFullyBalancedThreshhold :: Double
-	, annexDefaultWanted :: Maybe String
-	, annexDefaultRequired :: Maybe String
-	, annexDefaultGroups :: [Group]
+	, annexInitWanted :: Maybe String
+	, annexInitRequired :: Maybe String
+	, annexInitGroups :: [Group]
 	}
 
 extractGitConfig :: ConfigSource -> Git.Repo -> GitConfig
@@ -319,10 +319,10 @@ extractGitConfig configsource r = GitConfig
 	, annexFullyBalancedThreshhold =
 		fromMaybe 0.9 $ (/ 100) <$> getmayberead
 			(annexConfig "fullybalancedthreshhold")
-	, annexDefaultWanted = getmaybe (annexConfig "defaultwanted")
-	, annexDefaultRequired = getmaybe (annexConfig "defaultrequired")
-	, annexDefaultGroups = map (Group . encodeBS) $
-		getwords (annexConfig "defaultgroups")
+	, annexInitWanted = getmaybe (annexConfig "initwanted")
+	, annexInitRequired = getmaybe (annexConfig "initrequired")
+	, annexInitGroups = map (Group . encodeBS) $
+		getwords (annexConfig "initgroups")
 	}
   where
 	getbool k d = fromMaybe d $ getmaybebool k

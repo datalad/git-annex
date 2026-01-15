@@ -128,7 +128,7 @@ cleanup t u name c o = do
 	case sameas o of
 		Nothing -> do
 			describeUUID u (toUUIDDesc name)
-			propigateDefaultGitConfigs u
+			propigateInitGitConfigs u
 			Logs.Remote.configSet u c
 		Just _ -> do
 			cu <- liftIO genUUID
