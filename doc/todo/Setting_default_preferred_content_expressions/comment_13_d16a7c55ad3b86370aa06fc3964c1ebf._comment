@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="comment 13"
+ date="2026-01-15T08:51:46Z"
+ content="""
+> It's probably somewhat common to want to get files from origin, but not let origin make config changes that drop all the files they have previously shared.
+
+Fair enough.
+
+So I guess one can encourage users to include `git config --global annex.jobs 4` and `git config annex.defaultwanted present` in their setup. Thanks for implementing that.
+"""]]
