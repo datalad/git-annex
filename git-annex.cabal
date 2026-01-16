@@ -180,7 +180,7 @@ Flag Dbus
 
 source-repository head
   type: git
-  location: git://git-annex.branchable.com/
+  location: https://git.joeyh.name/git/git-annex.git/
 
 custom-setup
   Setup-Depends:
