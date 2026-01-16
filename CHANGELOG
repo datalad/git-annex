@@ -20,7 +20,7 @@ git-annex (10.20260115) upstream; urgency=medium
   * Removed support for building with ghc older than 9.6.6.
   * stack.yaml: Update to lts-24.26.
 
- -- Joey Hess <id@joeyh.name>  Wed, 14 Jan 2026 13:40:58 -0400
+ -- Joey Hess <id@joeyh.name>  Fri, 16 Jan 2026 11:09:14 -0400
 
 git-annex (10.20251215) upstream; urgency=medium
 
