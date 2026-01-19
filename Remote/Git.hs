@@ -185,10 +185,10 @@ configRead autoinit r = do
 	hasuuid <- (/= NoUUID) <$> getRepoUUID r
 	annexignore <- liftIO $ getDynamicConfig (remoteAnnexIgnore gc)
 	case (repoCheap r, annexignore, hasuuid) of
-		(_, True, _) -> return r
 		(True, _, _)
 			| remoteAnnexCheckUUID gc -> tryGitConfigRead gc autoinit r hasuuid
 			| otherwise -> return r
+		(_, True, _) -> return r
 		(False, _, False) -> configSpecialGitRemotes r >>= \case
 			Nothing -> tryGitConfigRead gc autoinit r False
 			Just r' -> return r'
