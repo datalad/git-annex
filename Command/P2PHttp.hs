@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2024-2025 Joey Hess <id@joeyh.name>
+ - Copyright 2024-2026 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -21,6 +21,7 @@ import qualified Git
 import qualified Git.Construct
 import qualified Annex
 import Types.Concurrency
+import Types.Messages
 import qualified Utility.RawFilePath as R
 import Utility.FileMode
 
@@ -163,6 +164,7 @@ startIO o
 			}
 	
 	mkstannex authenv oldst lockedfilesqsem = do
+		Annex.setOutput QuietOutput
 		u <- getUUID
 		if u == NoUUID
 			then return mempty
