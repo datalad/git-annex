@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2026-01-19T15:10:44Z"
+ content="""
+This seems like a bug in the p2phttp server, it should not be leaving the
+git-annex branch uncommitted for long periods of time. It's easy enough to
+show that it leaves changes in the journal for a long time.
+
+Probably we don't usually notice the bug because usually, if the p2phttp server
+doesn't commit the journal, the client will record the same information
+in the git-annex branch on its side, and push it out in the normal course
+of events, eg during a sync. I assume your JS client doesn't do that.
+
+I've filed a bug: [[bugs/p2phttp_timely_journal_commit]]
+
+(As to the p2phttp clientuuid parameter, it is actually only used in transfer
+logs, which don't get into the git-annex branch. Using a made-up non-UUID there,
+or for that matter, using a UUID that "belongs" to someone else won't cause
+any real problem. (`git-annex info` will use the non-UUID in the "transfers
+in progress" display). This does not seem related to your problem.)
+"""]]

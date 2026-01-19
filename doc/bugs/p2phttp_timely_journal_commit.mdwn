@@ -1,0 +1,13 @@
+`git-annex p2phttp`, when eg receiving files into the repository, leaves
+git-annex location log changes in the journal and does not commit them to
+the git-annex branch in a timely fashion.
+
+Usually git-annex branch commits happen when a git-annex command finishes,
+but p2phttp runs for a long time. So a commit won't happen until it's
+restarted or some other git-annex command is run in the repo.
+
+This causes problems. Ie, if one client copies a file to the repository,
+but does not ever push its git-annex branch, other clients will never learn
+that the repository has a copy of the file. --[[Joey]]
+
+[[!tag projects/INM7]]
