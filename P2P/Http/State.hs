@@ -2,7 +2,7 @@
  -
  - https://git-annex.branchable.com/design/p2p_protocol_over_http/
  -
- - Copyright 2024-2025 Joey Hess <id@joeyh.name>
+ - Copyright 2024-2026 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -36,6 +36,7 @@ import Utility.HumanTime
 import Logs.Proxy
 import Annex.Proxy
 import Annex.Cluster
+import qualified Annex.Branch
 import qualified P2P.Proxy as Proxy
 import qualified Types.Remote as Remote
 import Remote.List
@@ -82,6 +83,7 @@ data PerRepoServerState = PerRepoServerState
 	, getServerMode :: GetServerMode
 	, openLocks :: TMVar (M.Map LockID Locker)
 	, lockedFilesQSem :: LockedFilesQSem
+	, branchChangesInProgress :: TMVar Bool
 	}
 
 type AnnexWorkerPool = TMVar (WorkerPool (Annex.AnnexState, Annex.AnnexRead))
@@ -90,7 +92,7 @@ type GetServerMode = IsSecure -> Maybe Auth -> ServerMode
 
 data ServerMode
 	= ServerMode
-		{ serverMode :: P2P.ServerMode
+	{ serverMode :: P2P.ServerMode
 		, unauthenticatedLockingAllowed :: Bool
 		, authenticationAllowed :: Bool
 		}
@@ -105,6 +107,7 @@ mkPerRepoServerState acquireconn annexworkerpool annexstate annexread getserverm
 	<*> pure getservermode
 	<*> newTMVarIO mempty
 	<*> pure lockedfilesqsem
+	<*> newEmptyTMVarIO
 
 data ActionClass = ReadAction | WriteAction | RemoveAction | LockAction
 	deriving (Eq)
@@ -318,15 +321,18 @@ mkP2PHttpServerState getservermode updaterepos proxyconnectionpoolsize clusterco
 	proxypool <- liftIO $ newTMVarIO (0, mempty)
 	asyncservicer <- liftIO $ async $
 		servicer myuuid myproxies proxypool reqv relv endv
-	let endit = do
-		liftIO $ atomically $ putTMVar endv ()
-		liftIO $ wait asyncservicer
 	let servinguuids = myuuid : map proxyRemoteUUID (maybe [] S.toList myproxies)
 	annexstate <- liftIO . newTMVarIO =<< dupState
 	annexread <- Annex.getRead id
 	st <- liftIO $ mkPerRepoServerState 
 		(acquireconn reqv annexstate annexread)
 		workerpool annexstate annexread getservermode lockedfilesqsem
+	asynccommitter <- liftIO $ async $
+		branchCommitter st endv
+	let endit = do
+		liftIO $ atomically $ putTMVar endv ()
+		liftIO $ wait asyncservicer
+		liftIO $ wait asynccommitter
 	return $ P2PHttpServerState
 		{ servedRepos = M.fromList $ zip servinguuids (repeat st)
 		, serverShutdownCleanup = endit
@@ -347,7 +353,7 @@ mkP2PHttpServerState getservermode updaterepos proxyconnectionpoolsize clusterco
 					`orElse` 
 				(Left . Right <$> takeTMVar relv)
 					`orElse` 
-				(Left . Left <$> takeTMVar endv)
+				(Left . Left <$> readTMVar endv)
 		case reqrel of
 			Right (runnertype, annexstate, annexread, connparams, ready, respvar) -> do
 				servicereq runnertype annexstate annexread myuuid myproxies proxypool relv connparams ready
@@ -818,3 +824,56 @@ proxyConnectionPoolKey connparams =
 	, connectionBypass connparams
 	, connectionProtocolVersion connparams
 	)
+
+-- Use when running an action which may journal git-annex branch changes.
+-- This arranges for the journalled changes to be committed to the branch
+-- in a timely fashion, so that eg, soon after one client has sent a file,
+-- another client can pull the branch and see that the file is present in
+-- the server.
+changesBranch :: TMVar P2PHttpServerState -> B64UUID ServerSide -> Handler t -> Handler t
+changesBranch mstv su a = liftIO (getPerRepoServerState mstv su) >>= \case
+	Just st -> bracket_ (send st True) (send st False) a
+	Nothing -> a
+  where
+	send st b = liftIO $ atomically $ 
+		putTMVar (branchChangesInProgress st) b
+
+branchCommitter :: PerRepoServerState -> TMVar () -> IO ()
+branchCommitter st endv = do
+	idlev <- newEmptyTMVarIO
+	void $ async $ committer idlev
+	go idlev (0 :: Integer)
+  where
+	waitchangeorend = (Right <$> takeTMVar (branchChangesInProgress st))
+		`orElse` (Left <$> readTMVar endv)
+	go idlev n = atomically waitchangeorend >>= \case
+		Right True -> do
+			let !n' = succ n
+			-- Not idle.
+			void $ atomically $ tryTakeTMVar idlev
+			go idlev n'
+		Right False -> do
+			let n' = pred n
+			when (n' == 0) $
+				-- Idle.
+				atomically $ writeTMVar idlev ()
+			go idlev n'
+		Left () -> return ()
+	waitidleorend idlev = 
+		(Right <$> readTMVar idlev)
+			`orElse` (Left <$> readTMVar endv)
+	committer idlev =
+		-- Wait until a change has completed and it's idle.
+		atomically (waitidleorend idlev) >>= \case
+			Right () -> do
+				threadDelaySeconds (Seconds 1)
+				-- Once it's been idle for a second,
+				-- commit the journalled changes.
+				atomically (tryTakeTMVar idlev) >>= \case
+					Just () ->
+						void $ handleRequestAnnex st $
+							Annex.Branch.commit =<< Annex.Branch.commitMessage
+					Nothing -> noop
+				committer idlev
+			Left () -> return ()
+

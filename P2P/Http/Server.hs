@@ -251,7 +251,7 @@ serveRemove
 	-> IsSecure
 	-> Maybe Auth
 	-> Handler t
-serveRemove st resultmangle su apiver (B64Key k) cu bypass sec auth = do
+serveRemove st resultmangle su apiver (B64Key k) cu bypass sec auth = changesBranch st su $ do
 	res <- withP2PConnection apiver WorkerPoolRunner st cu su bypass sec auth RemoveAction id
 		$ \(conn, _) ->
 			liftIO $ proxyClientNetProto conn $ remove Nothing k
@@ -273,7 +273,7 @@ serveRemoveBefore
 	-> IsSecure
 	-> Maybe Auth
 	-> Handler RemoveResultPlus
-serveRemoveBefore st su apiver (B64Key k) cu bypass (Timestamp ts) sec auth = do
+serveRemoveBefore st su apiver (B64Key k) cu bypass (Timestamp ts) sec auth = changesBranch st su $ do
 	res <- withP2PConnection apiver WorkerPoolRunner st cu su bypass sec auth RemoveAction id
 		$ \(conn, _) ->
 			liftIO $ proxyClientNetProto conn $
@@ -320,7 +320,7 @@ servePut
 	-> IsSecure
 	-> Maybe Auth
 	-> Handler t
-servePut mst resultmangle su apiver (Just True) _ k cu bypass baf _ _ sec auth = do
+servePut mst resultmangle su apiver (Just True) _ k cu bypass baf _ _ sec auth = changesBranch mst su $ do
 	res <- withP2PConnection' apiver WorkerPoolRunner mst cu su bypass sec auth WriteAction
 		(\cst -> cst { connectionWaitVar = False }) (liftIO . protoaction)
 	servePutResult resultmangle res
@@ -328,7 +328,7 @@ servePut mst resultmangle su apiver (Just True) _ k cu bypass baf _ _ sec auth =
 	protoaction conn = servePutAction conn k baf $ \_offset -> do
 		net $ sendMessage DATA_PRESENT
 		checkSuccessPlus
-servePut mst resultmangle su apiver _datapresent (DataLength len) k cu bypass baf moffset stream sec auth = do
+servePut mst resultmangle su apiver _datapresent (DataLength len) k cu bypass baf moffset stream sec auth = changesBranch mst su $ do
 	validityv <- liftIO newEmptyTMVarIO
 	let validitycheck = local $ runValidityCheck $
 		liftIO $ atomically $ readTMVar validityv
