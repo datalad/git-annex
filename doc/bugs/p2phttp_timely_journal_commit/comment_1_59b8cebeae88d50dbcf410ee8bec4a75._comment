@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2026-01-19T15:37:59Z"
+ content="""
+It could simply commit after each change.
+But that would bloat the git-annex branch with a lot of small commits when
+a lot of files are being sent to the server in one batch.
+
+I think what probably makes sense is to detect when the p2phttp
+server has been idle for some amount of time, and commit then.
+A few seconds idle should be enough to coalesce everything done by
+a typical `git annex push` into a single git-annex branch commit.
+"""]]
