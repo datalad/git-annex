@@ -1,0 +1,71 @@
+[[!comment format=mdwn
+ username="mih"
+ avatar="http://cdn.libravatar.org/avatar/f881df265a423e4f24eff27c623148fd"
+ subject="Mismatch with observations"
+ date="2026-01-16T15:30:17Z"
+ content="""
+Thanks for detailing the behavior. I am observing something different, though. The context is a git-annex repo at a forgejo-aneksajo site.
+
+I used a JS client to upload annex keys to a an annex with uuid `f1a8ef1c-...`. This worked. I see them in `annex/objects` at the remote
+
+```
+git@loki:~/git/repositories/internal/pool-files.git$ tree annex/objects/
+annex/objects/
+|-- d73
+|   `-- 370
+|       `-- SHA256E-s61542--80e2f39feca014a9d6cbaa510e37d96c4663500a1cf6dd74a4cd10b42f3e9169.1
+|           `-- SHA256E-s61542--80e2f39feca014a9d6cbaa510e37d96c4663500a1cf6dd74a4cd10b42f3e9169.1
+|-- db2
+|   `-- f4b
+|       `-- SHA256E-s61542--80e2f39feca014a9d6cbaa510e37d96c4663500a1cf6dd74a4cd10b42f3e9169.svg
+|           `-- SHA256E-s61542--80e2f39feca014a9d6cbaa510e37d96c4663500a1cf6dd74a4cd10b42f3e9169.svg
+|-- dc7
+|   `-- 005
+|       `-- SHA256E-s12027--6f4d23344053ca2f22c4a40eec33e178b70e67d63edd1c5e4f05d96053548b69.png
+|           `-- SHA256E-s12027--6f4d23344053ca2f22c4a40eec33e178b70e67d63edd1c5e4f05d96053548b69.png
+`-- fa0
+    `-- d63
+        `-- SHA256E-s324254--d6581b4f13219fe93aa8b020df8ec8875881c5d97f28493c6b7b7ac9e80c2532.png
+            `-- SHA256E-s324254--d6581b4f13219fe93aa8b020df8ec8875881c5d97f28493c6b7b7ac9e80c2532.png
+```
+
+I also see this:
+
+```
+git@...:~/git/repositories/internal/pool-files.git$ find . -name '*f1a8ef1c-...*'
+./annex/transfer/upload/f1a8ef1c-...
+git@...:~/git/repositories/internal/pool-files.git$ grep -R 'f1a8ef1c-6d8a-40e3-970f-4634390d961f' .   
+./annex/journal/db2_f4b_SHA256E-s61542--80e2f39feca014a9d6cbaa510e37d96c4663500a1cf6dd74a4cd10b42f3e9169.svg.log:1766077308s 1 f1a8ef1c-...
+./annex/journal/dc7_005_SHA256E-s12027--6f4d23344053ca2f22c4a40eec33e178b70e67d63edd1c5e4f05d96053548b69.png.log:1766058908s 1 f1a8ef1c-...
+./annex/journal/fa0_d63_SHA256E-s324254--d6581b4f13219fe93aa8b020df8ec8875881c5d97f28493c6b7b7ac9e80c2532.png.log:1766060307s 1 f1a8ef1c-...
+./annex/journal/d73_370_SHA256E-s61542--80e2f39feca014a9d6cbaa510e37d96c4663500a1cf6dd74a4cd10b42f3e9169.1.log:1766077792s 1 f1a8ef1c-...
+./config:       uuid = f1a8ef1c-...
+```
+
+This made me (incorrectly) think whether this could mean that the repo thinks the upload came FROM f1a8ef1c-... ?
+
+The p2phttp request is made to an endpoint that is composed like this:
+
+```
+endpoint = `${baseUrl}/${targetUuid}/v4/put?key=${encodeURIComponent(fileData.value.annexKey)}&clientuuid=${encodeURIComponent(clientUuid)}`
+```
+
+where
+
+```
+  baseUrl: https://<site>/git-annex-p2phttp/git-annex
+  targetUuid: f1a8ef1c-...
+  clientUuid: not-a-uuid
+```
+
+Notice that `clientUuid` is not a UUID (redacted original value that also was not a valid UUID).
+
+I have adjusted that to be an actual UUID, and did another upload. This achieved two things:
+
+1. A new file uploaded successfully (as before)
+2. The pending logs were applied and the git-annex branch was updated -- exactly like you described.
+
+However, the new upload is now sitting in the journal, and has not been taken into account, and additional uploads do not trigger a git-annex branch update immediately.
+
+This issue may be in the realm of forgejo-aneksajo, and how it runs the p2phttp server. The previous uploads were made mid-December (as seen from the timestamps in the journal). Nothing has triggered a journal commit, also not the fetch of the git-annex branch.
+"""]]
