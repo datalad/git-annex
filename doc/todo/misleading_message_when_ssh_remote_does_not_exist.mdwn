@@ -1,0 +1,13 @@
+	joey@darkstar:~/tmp/ben/mom4>git remote add foo localhost:/tmp/foo
+	joey@darkstar:~/tmp/ben/mom4>git-annex init
+	init
+	  Unable to parse git config from foo
+	
+	  Remote foo does not have git-annex installed; setting annex-ignore
+	
+	  This could be a problem with the git-annex installation on the remote. Please make sure that git-annex-shell is available in PATH when you ssh into the remote. Once you have fixed the git-annex installation, run: git annex enableremote foo
+	ok
+
+This message is wrong, git-annex-shell is installed. But since /tmp/foo does not exist, it errors out.
+
+Maybe `git-annex-shell configlist` should output nothing instead of erroring out in this situation? --[[Joey]]
