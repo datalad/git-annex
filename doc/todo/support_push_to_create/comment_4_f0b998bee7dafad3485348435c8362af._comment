@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2026-01-20T18:48:32Z"
+ content="""
+The user might manually `git push`, knowing push-to-create is a thing,
+but do it after `git-annex init`, and so annex-ignore is already set
+and will stay set until they `git-annex push`. Which they may never do.
+
+To deal with this, when annex-ignore-auto is set, Remote.Git could check if
+the remote tracking branch exists. If so, unset annex-ignore-auto and
+annex-ignore and re-run the uuid probing.
+"""]]
