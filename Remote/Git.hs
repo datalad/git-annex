@@ -1,6 +1,6 @@
 {- Standard git remotes.
  -
- - Copyright 2011-2024 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2026 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -21,6 +21,7 @@ import Types.GitConfig
 import qualified Git
 import qualified Git.Config
 import qualified Git.Construct
+import qualified Git.Ref
 import qualified Git.Command
 import qualified Git.GCrypt
 import qualified Git.Types as Git
@@ -177,7 +178,10 @@ enableRemote Nothing _ = giveup "unable to enable git remote with no specified u
  - annex-checkuuid is false.
  -
  - The config of other URL remotes is only read when there is no
- - cached UUID value. 
+ - cached UUID value. To handle push-to-create, the first time that
+ - the remote tracking branch for the git-annex branch exists, the
+ - config is re-read to discover if the remote has been created and has a
+ - UUID.
  -}
 configRead :: Bool -> Git.Repo -> Annex Git.Repo
 configRead autoinit r = do
@@ -188,11 +192,24 @@ configRead autoinit r = do
 		(True, _, _)
 			| remoteAnnexCheckUUID gc -> tryGitConfigRead gc autoinit r hasuuid
 			| otherwise -> return r
-		(_, True, _) -> return r
-		(False, _, False) -> configSpecialGitRemotes r >>= \case
-			Nothing -> tryGitConfigRead gc autoinit r False
-			Just r' -> return r'
+		(_, True, _) 
+			| remoteAnnexIgnoreAuto gc ->
+				checkpushedtocreate gc
+			| otherwise -> return r
+		(False, _, False) -> go gc
 		_ -> return r
+  where
+	go gc = configSpecialGitRemotes r >>= \case
+		Nothing -> tryGitConfigRead gc autoinit r False
+		Just r' -> return r'
+	checkpushedtocreate gc = 
+		ifM (inRepo $ Git.Ref.exists $ Annex.Branch.remoteTrackingBranch $ getRemoteName r)
+			( do
+				unsetRemoteIgnore r
+				reloadConfig
+				unsetRemoteIgnoreAuto r `after` go gc
+			, return r
+			)
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u rc gc rs

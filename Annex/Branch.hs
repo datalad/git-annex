@@ -1,6 +1,6 @@
 {- management of the git-annex branch
  -
- - Copyright 2011-2024 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2026 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -13,6 +13,7 @@ module Annex.Branch (
 	hasOrigin,
 	hasSibling,
 	siblingBranches,
+	remoteTrackingBranch,
 	create,
 	getBranch,
 	UpdateMade(..),
@@ -105,13 +106,18 @@ name = Git.Ref "git-annex"
 fullname :: Git.Ref
 fullname = Git.Ref $ "refs/heads/" <> fromRef' name
 
-{- Branch's name in origin. -}
-originname :: Git.Ref
-originname = Git.Ref $ "refs/remotes/origin/" <> fromRef' name
+{- The remote tracking branch for origin. -}
+originTrackingBranch :: Git.Ref
+originTrackingBranch = Git.Ref $ "refs/remotes/origin/" <> fromRef' name
+
+{- Name of the remote tracking branch for a remote. -}
+remoteTrackingBranch :: RemoteName -> Git.Ref
+remoteTrackingBranch remotename = Git.Ref $ 
+	"refs/remotes/" <> encodeBS remotename <> "/" <> fromRef' name
 
 {- Does origin/git-annex exist? -}
 hasOrigin :: Annex Bool
-hasOrigin = inRepo $ Git.Ref.exists originname
+hasOrigin = inRepo $ Git.Ref.exists originTrackingBranch
 
 {- Does the git-annex branch or a sibling foo/git-annex branch exist? -}
 hasSibling :: Annex Bool
@@ -135,7 +141,7 @@ getBranch = maybe (hasOrigin >>= go >>= use) return =<< branchsha
 			[ Param "branch"
 			, Param "--no-track"
 			, Param $ fromRef name
-			, Param $ fromRef originname
+			, Param $ fromRef originTrackingBranch
 			]
 		fromMaybe (giveup $ "failed to create " ++ fromRef name)
 			<$> branchsha
