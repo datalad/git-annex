@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2026-01-20T15:49:26Z"
+ content="""
+Here's a better plan: annex-ignore remains the config, but 
+annex-ignore-auto is set when git-annex sets annex-ignore.
+If the user manually sets annex-ignore, they don't set
+annex-ignore-auto.
+
+Then, `git-annex push` can check if push-to-create happend
+and unset annex-ignore iff annex-ignore-auto is set.
+"""]]
