@@ -31,3 +31,5 @@ since it would ignore annex-ignore being set, and re-probe the git config
 to see if a UUID has appeared. That seems a small enough price to pay.
 
 The assistant would also need to be made to handle this. --[[Joey]]
+
+> [[done]] --[[Joey]]
