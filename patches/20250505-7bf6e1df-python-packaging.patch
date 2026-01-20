@@ -1,0 +1,123 @@
+diff --git a/pyproject.toml b/pyproject.toml
+new file mode 100644
+index 0000000000..bc754a40a6
+--- /dev/null
++++ b/pyproject.toml
+@@ -0,0 +1,74 @@
++[project]
++authors = [
++  { name = "Joey Hess", email = "id@joeyh.name" },
++]
++classifiers = [
++  "Development Status :: 6 - Mature",
++  "Environment :: Console",
++  "Intended Audience :: Developers",
++  "Intended Audience :: End Users/Desktop",
++  "Intended Audience :: Information Technology",
++  "Intended Audience :: Science/Research",
++  "License :: DFSG approved",
++  "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
++  "Natural Language :: English",
++  "Operating System :: MacOS",
++  "Operating System :: Microsoft :: Windows",
++  "Operating System :: POSIX :: Linux",
++  "Programming Language :: Haskell",
++  "Topic :: Software Development :: Version Control",
++  "Topic :: Software Development :: Version Control :: Git",
++  "Topic :: System :: Archiving :: Backup",
++  "Topic :: System :: Archiving :: Mirroring",
++  "Topic :: System :: Archiving :: Packaging",
++  "Topic :: Utilities",
++]
++description = "manage files with git, without checking their contents into git"
++dynamic = ["version"]
++keywords = [
++  "git",
++  "data logistics",
++  "version control",
++]
++license = "AGPL-3.0-or-later"
++maintainers = [
++  { name = "Michael Hanke", email = "mih@ngln.eu" },
++]
++name = "git-annex"
++readme = "python/README.md"
++requires-python = ">=3.9"
++
++[project.urls]
++Homepage = "https://git-annex.branchable.com/"
++Documentation = "https://git-annex.branchable.com/git-annex"
++Issues = "https://git-annex.branchable.com/bugs"
++Source = "http://source.git-annex.branchable.com/?p=source.git"
++Changelog = "http://source.git-annex.branchable.com/?p=source.git;a=blob;f=CHANGELOG;hb=HEAD"
++
++[build-system]
++requires = [
++  "hatchling",
++  "hatch-vcs",
++]
++build-backend = "hatchling.build"
++
++[tool.hatch.version]
++source = "vcs"
++
++[tool.hatch.build.targets.wheel.shared-data]
++"git-annex" = "bin/git-annex"
++
++[tool.hatch.build.targets.wheel]
++# we need to ship at least one file
++only-include = ["python/py.typed"]
++
++[tool.hatch.build.targets.wheel.sources]
++# give the 'only-include' files a base directory in the wheel
++"python" = "git-annex"
++
++[tool.hatch.build.targets.wheel.hooks.custom]
++# custom build hook to set some metadata
++path = "python/build_hook_plugin.py"
++# if set, actually perform a build. Otherwise assume that
++# the built binary is in bin/
++#build = "stack"
+diff --git a/python/README.md b/python/README.md
+new file mode 100644
+index 0000000000..e69de29bb2
+diff --git a/python/build_hook_plugin.py b/python/build_hook_plugin.py
+new file mode 100644
+index 0000000000..fb5107184d
+--- /dev/null
++++ b/python/build_hook_plugin.py
+@@ -0,0 +1,31 @@
++from pathlib import Path
++from subprocess import run
++from sysconfig import get_platform
++from typing import Any
++
++from hatchling.builders.hooks.plugin.interface import BuildHookInterface
++
++
++class SpecialBuildHook(BuildHookInterface):
++
++    def initialize(
++        self,
++        version: str,  # noqa: ARG002
++        build_data: dict[str, Any],
++    ) -> None:
++        # we have platform-specific builds
++        build_data['pure_python'] = False
++        # set a tag that says: any python3 for the build platform
++        build_data['tag'] = \
++            f'py3-none-{get_platform().replace("-", "_").replace(".", "_")}'
++
++        build_cmds = []
++        if self.config.get('build') == 'stack':
++            build_cmds = [
++                ['stack', 'setup'],
++                ['stack', 'build', '--no-haddock'],
++                ['stack', 'install', '--no-haddock', '--local-bin-path', '.'],
++            ]
++
++        for cmd in build_cmds:
++            run(cmd, cwd=self.root, check=True)
+diff --git a/python/py.typed b/python/py.typed
+new file mode 100644
+index 0000000000..e69de29bb2

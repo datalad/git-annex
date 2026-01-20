@@ -5,6 +5,7 @@ on:
   pull_request:
     paths:
       - '.github/workflows/build-windows.yaml'
+      - '.github/workflows/tools/apply-patches'
       - 'patches/*.patch'
   schedule:
     - cron: '30 03 * * *'
@@ -149,6 +150,14 @@ jobs:
         run: |
           mv git-annex-installer.exe \
              git-annex-installer_"${{ steps.build-version.outputs.version }}".exe
+
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Build the Python wheel
+        run: |
+          uv build --wheel
 
       - name: Upload packages
         uses: actions/upload-artifact@v5
