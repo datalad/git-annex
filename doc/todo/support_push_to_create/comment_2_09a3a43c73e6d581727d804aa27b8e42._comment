@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2026-01-20T15:16:46Z"
+ content="""
+Problem with a new config (call it annex-ignore-auto) is that users may
+have learned to unset annex-ignore when there was a problem that got
+corrected, and would need to learn to unset annex-ignore-auto instead.
+While `git-annex push` would do it for them, they might not use that.
+
+Is this disruptive change worth it to support push-to-create? Probably.
+But it does make the option of checking before push and after push and
+unsetting annex-ignore seem more appealing.
+
+The situation where 2 users are doing push to create of the same remote
+repo at the same time is very unlikely to happen. And currently what
+happens is that both have to unset annex-ignore. A change that makes only
+one of them but not the other need to unset it is not making things worse.
+"""]]
