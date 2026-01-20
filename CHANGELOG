@@ -3,6 +3,8 @@ git-annex (10.20260116) UNRELEASED; urgency=medium
   * Fix behavior of local git remotes that have annex-ignore
     set to be the same as ssh git remotes.
   * p2phttp: Commit git-annex branch changes promptly.
+  * When used with git forges that allow Push to Create, the remote's
+    annex-uuid is re-probed after the initial push.
 
  -- Joey Hess <id@joeyh.name>  Mon, 19 Jan 2026 10:55:02 -0400
 

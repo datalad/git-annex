@@ -368,6 +368,7 @@ tryGitConfigRead gc autoinit r hasuuid
 				when longmessage $
 					warning $ UnquotedString $ "This could be a problem with the git-annex installation on the remote. Please make sure that git-annex-shell is available in PATH when you ssh into the remote. Once you have fixed the git-annex installation, run: git annex enableremote " ++ n
 		setremote setRemoteIgnore True
+		setremote setRemoteIgnoreAuto True
 	
 	setremote setter v = case Git.remoteName r of
 		Nothing -> noop

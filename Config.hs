@@ -1,6 +1,6 @@
 {- Git configuration
  -
- - Copyright 2011-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2026 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -77,6 +77,15 @@ setRemoteAvailability r c = setConfig (remoteAnnexConfig r "availability") (show
 
 setRemoteIgnore :: Git.Repo -> Bool -> Annex ()
 setRemoteIgnore r b = setConfig (remoteAnnexConfig r "ignore") (Git.Config.boolConfig b)
+
+unsetRemoteIgnore :: Git.Repo -> Annex ()
+unsetRemoteIgnore r = unsetConfig (remoteAnnexConfig r "ignore")
+
+setRemoteIgnoreAuto :: Git.Repo -> Bool -> Annex ()
+setRemoteIgnoreAuto r b = setConfig (remoteAnnexConfig r "ignore-auto") (Git.Config.boolConfig b)
+
+unsetRemoteIgnoreAuto :: Git.Repo -> Annex ()
+unsetRemoteIgnoreAuto r = unsetConfig (remoteAnnexConfig r "ignore-auto")
 
 setRemoteBare :: Git.Repo -> Bool -> Annex ()
 setRemoteBare r b = setConfig (remoteAnnexConfig r "bare") (Git.Config.boolConfig b)

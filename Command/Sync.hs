@@ -1,7 +1,7 @@
 {- git-annex command
  -
  - Copyright 2011 Joachim Breitner <mail@joachim-breitner.de>
- - Copyright 2011-2024 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2026 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -264,7 +264,15 @@ seek' :: SyncOptions -> CommandSeek
 seek' o = startConcurrency transferStages $ do
 	let withbranch a = a =<< getCurrentBranch
 
-	remotes <- syncRemotes (syncWith o)
+	mc <- mergeConfig (allowUnrelatedHistories o)
+
+	unless (cleanupOption o) $
+		includeactions
+			[ [ commit o ]
+			, [ withbranch (mergeLocal mc o) ]
+			]
+	
+	remotes <- mapM (pushToCreate o) =<< syncRemotes (syncWith o)
 	warnSyncContentTransition o remotes
 	-- Remotes that git can push to and pull from.
 	let gitremotes = filter Remote.gitSyncableRemote remotes
@@ -277,16 +285,8 @@ seek' o = startConcurrency transferStages $ do
 			commandAction (withbranch cleanupLocal)
 			mapM_ (commandAction . withbranch . cleanupRemote) gitremotes
 		else do
-			mc <- mergeConfig (allowUnrelatedHistories o)
-
-			-- Syncing involves many actions, any of which
-			-- can independently fail, without preventing
-			-- the others from running. 
-			-- These actions cannot be run concurrently.
-			mapM_ includeCommandAction $ concat
-				[ [ commit o ]
-				, [ withbranch (mergeLocal mc o) ]
-				, map (withbranch . pullRemote o mc) gitremotes
+			includeactions
+				[ map (withbranch . pullRemote o mc) gitremotes
 				, [ mergeAnnex ]
 				]
 			
@@ -325,8 +325,8 @@ seek' o = startConcurrency transferStages $ do
 				-- git-annex branch on the remotes in the
 				-- meantime, so pull and merge again to
 				-- avoid our push overwriting those changes.
-				when (syncedcontent || exportedcontent) $ do
-					mapM_ includeCommandAction $ concat
+				when (syncedcontent || exportedcontent) $
+					includeactions
 						[ map (withbranch . pullRemote o mc) gitremotes
 						, [ commitAnnex, mergeAnnex ]
 						]
@@ -334,6 +334,12 @@ seek' o = startConcurrency transferStages $ do
 			void $ includeCommandAction $ withbranch $ pushLocal o
 			-- Pushes to remotes can run concurrently.
 			mapM_ (commandAction . withbranch . pushRemote o) gitremotes
+  where
+	-- Syncing involves many actions, any of which
+	-- can independently fail, without preventing
+	-- the others from running. 
+	-- These actions cannot be run concurrently.
+	includeactions = mapM_ includeCommandAction . concat
 
 {- Merging may delete the current directory, so go to the top
  - of the repo. This also means that sync always acts on all files in the
@@ -1188,3 +1194,43 @@ exportHasAnnexObjects = annexObjects . Remote.config
 
 isThirdPartyPopulated :: Remote -> Bool
 isThirdPartyPopulated = Remote.thirdPartyPopulated . Remote.remotetype
+
+{- Support for push-to-create of git repositories.
+ -
+ - When the remote does not exist yet, annex-ignore and
+ - annex-ignore-auto will be set. In that case, try to push.
+ -
+ - After a successful push, clear annex-ignore and regenerate the remote.
+ - That may re-set annex-ignore. Then annex-ignore-auto is cleared, so
+ - this will not run again, even when annex-ignore remains set.
+ -}
+pushToCreate :: SyncOptions -> Remote -> Annex Remote
+pushToCreate o r
+	| not (pushOption o) = return r
+	| Remote.gitSyncableRemote r && remoteAnnexIgnoreAuto (Remote.gitconfig r) =
+		ifM (liftIO $ getDynamicConfig $ remoteAnnexIgnore $ Remote.gitconfig r)
+			( getCurrentBranch >>= \case
+				currbranch@(Just _, _) -> do
+					pushed <- includeCommandAction $
+						pushRemote o r currbranch
+					if pushed
+						then do
+							repo <- Remote.getRepo r
+							unsetRemoteIgnore repo
+							reloadConfig
+							r' <- regenremote
+							unsetRemoteIgnoreAuto repo
+							return r'
+						else return r
+				_ -> return r
+			, return r
+			)
+	| otherwise = return r
+  where
+	regenremote = do
+		-- Regenerating the remote list involves some extra work,
+		-- but push-to-create only happens once per remote.
+		rs <- Remote.remoteList' False
+		case filter (\r' -> Remote.name r' == Remote.name r) rs of
+			(r':_) -> return r'
+			_ -> return r

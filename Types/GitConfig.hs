@@ -396,6 +396,7 @@ globalConfigs =
 data RemoteGitConfig = RemoteGitConfig
 	{ remoteAnnexCost :: DynamicConfig (Maybe Cost)
 	, remoteAnnexIgnore :: DynamicConfig Bool
+	, remoteAnnexIgnoreAuto :: Bool
 	, remoteAnnexSync :: DynamicConfig Bool
 	, remoteAnnexPull :: Bool
 	, remoteAnnexPush :: Bool
@@ -477,6 +478,7 @@ extractRemoteGitConfig r remotename = do
 	return $ RemoteGitConfig
 		{ remoteAnnexCost = annexcost
 		, remoteAnnexIgnore = annexignore
+		, remoteAnnexIgnoreAuto = getbool IgnoreAutoField False
 		, remoteAnnexSync = annexsync
 		, remoteAnnexPull = getbool PullField True
 		, remoteAnnexPush = getbool PushField True
@@ -586,6 +588,7 @@ data RemoteGitConfigField
 	= CostField
 	| CostCommandField
 	| IgnoreField
+	| IgnoreAutoField
 	| IgnoreCommandField
 	| SyncField
 	| SyncCommandField
@@ -659,6 +662,7 @@ remoteGitConfigField = \case
 	CostField -> inherited True "cost"
 	CostCommandField -> inherited True "cost-command"
 	IgnoreField -> inherited True "ignore"
+	IgnoreAutoField -> inherited True "ignore-auto"
 	IgnoreCommandField -> inherited True "ignore-command"
 	SyncField -> inherited True "sync"
 	SyncCommandField -> inherited True "sync-command"

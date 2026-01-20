@@ -1597,6 +1597,15 @@ Remotes are configured using these settings in `.git/config`.
   as setting annex-ignore to true. This allows controlling behavior based
   on e.g., the current network.
 
+* `remote.<name>.annex-ignore-auto`
+
+  This is set by git-annex when it sets `remote.<name>.annex-ignore` due to
+  detecting that the remote repository is not usable by git-annex.
+
+  When this is set, `git-annex push` will check if the remote repository
+  is now usable by git-annex, and if so, will unset
+  `remote.<name>.annex-ignore`.
+
 * `remote.<name>.annex-sync`
 
   If set to `false`, prevents `git-annex sync` (and `git-annex pull`, 
