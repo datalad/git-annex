@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2026-01-23T16:42:49Z"
+ content="""
+If [[todo/drop_from_export_remote]] were implemented that would take care
+of #1.
+
+Since `git-annex fsck` already tells the user what to do when it finds a
+corrupted file on an export remote, and that works for ones not using
+versioning, I think #1 can be postponed and #2 be dealt with first.
+"""]]
