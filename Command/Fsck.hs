@@ -651,7 +651,7 @@ badContentRemote remote localcopy key = do
 		(True, Right ()) -> "moved from " ++ Remote.name remote ++
 			" to " ++ fromOsPath destbad
 		(False, Right ()) -> "dropped from " ++ Remote.name remote
-		(_, Left e) -> "failed to drop from" ++ Remote.name remote ++ ": " ++ show e
+		(_, Left e) -> "failed to drop from " ++ Remote.name remote ++ ": " ++ show e
 
 runFsck :: Incremental -> SeekInput -> ActionItem -> Key -> Annex Bool -> CommandStart
 runFsck inc si ai key a = stopUnless (needFsck inc key) $
