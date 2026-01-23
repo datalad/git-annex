@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/cd1c0b3be1af288012e49197918395f0"
+ subject="comment 4"
+ date="2026-01-23T14:39:24Z"
+ content="""
+> A balance might be that if it fails to connect to the remote.name.annexUrl, it could re-check it then.
+
+Would this include re-checking when remote.name.annexUrl is unset? That would be necessary in the situations where either the client didn't understand p2phttp when the repository was closed or when the server-side didn't provide p2phttp yet.
+
+Given that the clone happened in the knowledge that \"dumb http\" was the only supported http protocol and read only, I am now questioning if such a automatic upgrade to p2phttp would really be needed, or even desirable. Dumb http continues to work anyway.
+
+Only re-checking if remote.name.annexUrl is set already would solve the issue of relocating the p2phttp endpoint.
+"""]]

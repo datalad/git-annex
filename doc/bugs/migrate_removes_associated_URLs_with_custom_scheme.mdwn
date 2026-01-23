@@ -140,3 +140,5 @@ I know that this is sort of abusing the URL handling in git-annex, but it was su
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes! It is absolutely great, thank you for it.
+
+[[!tag projects/ICE4]]
