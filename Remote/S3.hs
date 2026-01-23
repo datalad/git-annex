@@ -1418,7 +1418,7 @@ eitherS3VersionID info rs c k fallback
 		[] -> if exportTree c
 			then Left "Remote is configured to use versioning, but no S3 version ID is recorded for this key"
 			else Right (Left fallback)
-		-- It's possible for a key to be stored multiple timees in
+		-- It's possible for a key to be stored multiple times in
 		-- a bucket with different version IDs; only use one of them.
 		(v:_) -> Right (Right v)
 	| otherwise = return (Right (Left fallback))
