@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2026-01-23T16:46:05Z"
+ content="""
+Rather than altering the exported git tree, it could removeExport and then
+update the export log to say that the export is incomplete. 
+
+That would result in a re-export putting the file back on the remote.
+
+It's not uncommon to eg want to `git-annex move foo --from remote`,
+due to it being low on space, or to temporarily make it unavailable,
+and later send the file back to the remote. Supporting drop from export
+remotes in this way would allow for such a workflow, although with the
+difference that `git-annex export` would be needed to put the file back.
+
+It might also be possible to make sending a particular file to an export 
+remote succeed when the export to the remote is incomplete and the file is
+in the exported tree. Then `git-annex move foo --to remote` would work to
+put the file back.
+"""]]
