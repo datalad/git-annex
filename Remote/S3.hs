@@ -253,6 +253,7 @@ gen r u rc gc rs = do
                                 }
 			, whereisKey = Just (getPublicWebUrls rs info c)
 			, remoteFsck = Nothing
+			, repairKey = Just (repairKeyS3 hdl rs info)
 			, repairRepo = Nothing
 			, config = c
 			, getRepo = return r
@@ -1487,3 +1488,11 @@ checkVersioning info rs k
 		[] -> giveup "Remote is configured to use versioning, but no S3 version ID is recorded for this key, so it cannot safely be modified."
 		_ -> return ()
 	| otherwise = return ()
+
+repairKeyS3 :: S3HandleVar -> RemoteStateHandle -> S3Info -> Key -> Annex Bool
+repairKeyS3 hdl rs info k
+	| versioning info = do
+		vs <- getS3VersionID rs k
+		-- XXX todo
+		return True
+	| otherwise = return False
