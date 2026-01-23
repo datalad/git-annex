@@ -6,9 +6,14 @@
 If [[todo/drop_from_export_remote]] were implemented that would take care
 of #1.
 
-Since `git-annex fsck` already tells the user what to do when it finds a
-corrupted file on an export remote, and that works for ones not using
-versioning, I think #1 can be left to that todo to solve,
-and #2 be dealt with here. That will be enough to recover the problem
-dataset.
+The user can export a tree that removes the file themselves. fsck even
+suggests doing that when it finds a corrupted file on an exporttree remote,
+since it's unable to drop it in that case.
+
+But notice that the fsck run above does not suggest doing that. Granted,
+with a S3 bucket with versioning, exporting a tree won't remove the
+corrupted version of the file from the remote anyway.
+
+It seems that dealing with #2 here is enough to recover the problem
+dataset, and #1 can be left to that other todo.
 """]]
