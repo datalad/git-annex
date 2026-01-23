@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2026-01-23T17:21:51Z"
+ content="""
+After a *lot* of thought and struggling with layering issues between fsck and
+the S3 remote, here is a design to solve #2:
+
+Add a new method `repairCorruptedKey :: Key -> Annex Bool`
+
+fsck calls this when it finds a remote does not have a key it expected it
+to have, or when it downloads corrupted content.
+
+If `repairCorruptedKey` returns True, it was able to repair a problem, and
+the Key should be able to be downloaded from the remote still. If it
+returns False, it was not able to repair the problem.
+
+Most special remotes will make this `pure False`. For S3 with versioning=yes,
+it will download the object from the bucket, using each recorded versionId.
+Any versionId that does not work will be removed. And return True if any
+download did succeed.
+
+In a case where the object size is right, but it's corrupt,
+fsck will download the object, and then repairCorruptedKey will download it
+a second time. If there were 2 files with the same content, it would end up
+being downloaded 3 times! So this can be pretty expensive, 
+but it's simple and will work.
+"""]]

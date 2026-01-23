@@ -8,5 +8,7 @@ of #1.
 
 Since `git-annex fsck` already tells the user what to do when it finds a
 corrupted file on an export remote, and that works for ones not using
-versioning, I think #1 can be postponed and #2 be dealt with first.
+versioning, I think #1 can be left to that todo to solve,
+and #2 be dealt with here. That will be enough to recover the problem
+dataset.
 """]]

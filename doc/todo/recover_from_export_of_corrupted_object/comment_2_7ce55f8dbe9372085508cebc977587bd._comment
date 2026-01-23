@@ -3,7 +3,24 @@
  subject="""comment 2"""
  date="2025-12-17T18:30:06Z"
  content="""
-In a non-export S3 bucket with versioning, fsck also cannot recover from a
-corrupted object, due to the same problem with the versionId. The same
-method should work to handle this case.
+The OpenNeuro dataset ds005256 is a S3 bucket with versioning=yes, and a
+publicurl set, and exporttree=yes. With that combination, when S3
+credentials are not set, the versionId is used, in the public url for downloading.
+
+	git clone https://github.com/OpenNeuroDatasets/ds005256.git
+	git-annex get stimuli/task-alignvideo/ses-01_run-02_order-01_content-harrymetsally.mp4
+
+Note that this first does a download that fails incomplete with
+"Verification of content failed". Then it complains "Unable to access these
+remotes: s3-PUBLIC". It's trying two different download methods; the second
+one can only work with S3 credentials set.
+
+	git-annex fsck stimuli/task-alignvideo/ses-01_run-02_order-01_content-harrymetsally.mp4
+	fsck stimuli/task-alignvideo/ses-01_run-02_order-01_content-harrymetsally.mp4 (fixing location log)	
+	  ** Based on the location log, stimuli/task-alignvideo/ses-01_run-02_order-01_content-harrymetsally.mp4
+	  ** was expected to be present, but its content is missing.
+	failed
+
+Note that this doesn't download, but fails at the checkPresent stage. At that
+point, the HTTP HEAD reports the size of the object, and it's too short.
 """]]
