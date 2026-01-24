@@ -1506,7 +1506,7 @@ repairKeyS3 hdl rs info k
 		vs <- getS3VersionID rs k
 		if null vs
 			then return False
-			else anyM govid vs
+			else or <$> mapM govid vs
 	| otherwise = return False
   where
 	govid vid = govid' vid `catchNonAsync` const (return False)
