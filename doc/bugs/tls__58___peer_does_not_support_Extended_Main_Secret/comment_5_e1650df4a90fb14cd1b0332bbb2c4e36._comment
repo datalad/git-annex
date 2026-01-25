@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""workaround"""
+ date="2026-01-25T19:27:58Z"
+ content="""
+Workaround: Make git-annex use curl for url downloads. Eg:
+
+	git config annex.security.allowed-ip-addresses all
+	git config annex.web-options --netrc
+
+Note this using curl has other security implications, including letting
+git-annex download from IPs on the LAN.
+"""]]
