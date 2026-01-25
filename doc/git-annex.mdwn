@@ -2246,6 +2246,15 @@ Remotes are configured using these settings in `.git/config`.
   If set, this is treated the same as having
   annex.security.allowed-ip-addresses set.
 
+* `annex.security.allow-insecure-https`
+
+  This can be used to loosen the security of the HTTPS implementation.
+
+  Set to "tls-1.2-no-EMS" to allow using TLS 1.2 without Extended Main
+  Secret support. You should do this only when needing to use git-annex
+  with a server that is insecure, and where the security of TLS is not
+  important to you.
+
 * `annex.security.allow-unverified-downloads`
 
   For security reasons, git-annex refuses to download content from

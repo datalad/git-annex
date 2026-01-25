@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2026-01-25T20:19:57Z"
+ content="""
+Finally ran into this myself, and I observed several podcast hosts still
+not supporting EMS even now.
+
+Implemented a config to solve this:
+
+	git config annex.security.allow-insecure-https tls-1.2-no-EMS
+
+I do caution against setting this globally for security reasons. At least not
+without understanding the security implications, which I can't say I do.
+
+Even setting it in a single repo could affect other
+connections by git-annx to eg, API endpoints used for storage.
+
+Personally, I am setting it only when importing feeds from those hosts:
+
+	git -c annex.security.allow-insecure-https=tls-1.2-no-EMS annex importfeed
+"""]]

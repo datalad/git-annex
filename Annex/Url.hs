@@ -1,7 +1,7 @@
 {- Url downloading, with git-annex user agent and configured http
  - headers, security restrictions, etc.
  -
- - Copyright 2013-2022 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2026 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -48,6 +48,8 @@ import Network.HTTP.Client
 import Network.HTTP.Client.TLS
 import Text.Read
 import qualified Data.Set as S
+import qualified Network.Connection as NC
+import qualified Network.TLS as TLS
 
 defaultUserAgent :: U.UserAgent
 defaultUserAgent = "git-annex/" ++ BuildInfo.packageversion
@@ -66,7 +68,7 @@ getUrlOptions mgc = Annex.getState Annex.urloptions >>= \case
 		return uo
   where
 	mk = do
-		(urldownloader, manager) <- checkallowedaddr
+		(urldownloader, manager) <- mk' =<< Annex.getGitConfig
 		U.mkUrlOptions
 			<$> (Just <$> getUserAgent)
 			<*> headers
@@ -87,7 +89,7 @@ getUrlOptions mgc = Annex.getState Annex.urloptions >>= \case
 			pure (remoteAnnexWebOptions gc)
 		_ -> annexWebOptions <$> Annex.getGitConfig
 	
-	checkallowedaddr = words . annexAllowedIPAddresses <$> Annex.getGitConfig >>= \case
+	mk' gc = case words (annexAllowedIPAddresses gc) of
 		["all"] -> do
 			curlopts <- map Param <$> getweboptions
 			allowedurlschemes <- annexAllowedUrlSchemes <$> Annex.getGitConfig
@@ -96,7 +98,7 @@ getUrlOptions mgc = Annex.getState Annex.urloptions >>= \case
 					U.DownloadWithCurlRestricted mempty
 				else U.DownloadWithCurl curlopts
 			manager <- liftIO $ U.newManager $ 
-				avoidtimeout $ tlsManagerSettings
+				avoidtimeout managersettings
 			return (urldownloader, manager)
 		allowedaddrsports -> do
 			addrmatcher <- liftIO $ 
@@ -118,7 +120,7 @@ getUrlOptions mgc = Annex.getState Annex.urloptions >>= \case
 					then Nothing
 					else Just (connectionrestricted addr)
 			(settings, pr) <- liftIO $ 
-				mkRestrictedManagerSettings r Nothing Nothing
+				mkRestrictedManagerSettings r Nothing tlssettings
 			case pr of
 				Nothing -> return ()
 				Just ProxyRestricted -> toplevelWarning True
@@ -130,6 +132,18 @@ getUrlOptions mgc = Annex.getState Annex.urloptions >>= \case
 			let urldownloader = U.DownloadWithConduit $
 				U.DownloadWithCurlRestricted r
 			return (urldownloader, manager)
+	  where
+		-- When configured, allow TLS 1.2 without EMS.
+		-- In tls-2.0, the default was changed from
+		-- TLS.AllowEMS to TLS.RequireEMS.
+		tlssettings
+			| annexAllowInsecureHttps gc = Just $
+				NC.TLSSettingsSimple False False False
+				def { TLS.supportedExtendedMainSecret = TLS.AllowEMS }
+			| otherwise = Nothing
+		managersettings = case tlssettings of
+			Nothing -> tlsManagerSettings
+			Just v -> mkManagerSettings v Nothing
 	
 	-- http-client defailts to timing out a request after 30 seconds
 	-- or so, but some web servers are slower and git-annex has its own

@@ -147,6 +147,7 @@ data GitConfig = GitConfig
 	, annexRetryDelay :: Maybe Seconds
 	, annexAllowedUrlSchemes :: S.Set Scheme
 	, annexAllowedIPAddresses :: String
+	, annexAllowInsecureHttps :: Bool
 	, annexAllowUnverifiedDownloads :: Bool
 	, annexAllowedComputePrograms :: Maybe String
 	, annexMaxExtensionLength :: Maybe Int
@@ -268,6 +269,8 @@ extractGitConfig configsource r = GitConfig
 		getmaybe (annexConfig "security.allowed-ip-addresses")
 			<|>
 		getmaybe (annexConfig "security.allowed-http-addresses") -- old name
+	, annexAllowInsecureHttps = (== Just "tls-1.2-no-EMS") $
+		getmaybe (annexConfig "security.allow-insecure-https")
 	, annexAllowUnverifiedDownloads = (== Just "ACKTHPPT") $
 		getmaybe (annexConfig "security.allow-unverified-downloads")
 	, annexAllowedComputePrograms =

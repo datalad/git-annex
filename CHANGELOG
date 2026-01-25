@@ -5,6 +5,9 @@ git-annex (10.20260116) UNRELEASED; urgency=medium
   * p2phttp: Commit git-annex branch changes promptly.
   * When used with git forges that allow Push to Create, the remote's
     annex-uuid is re-probed after the initial push.
+  * Added annex.security.allow-insecure-https config, which allows
+    using old http servers that use TLS 1.2 without Extended Main
+    Secret support.
 
  -- Joey Hess <id@joeyh.name>  Mon, 19 Jan 2026 10:55:02 -0400
 

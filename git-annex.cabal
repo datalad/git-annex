@@ -274,6 +274,8 @@ Executable git-annex
    git-lfs (>= 1.2.0),
    clock (>= 0.3.0),
    crypton,
+   crypton-connection,
+   tls,
    servant,
    servant-server,
    servant-client,
