@@ -6,7 +6,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, CPP #-}
 
 module Annex.Url (
 	withUrlOptions,
@@ -137,9 +137,11 @@ getUrlOptions mgc = Annex.getState Annex.urloptions >>= \case
 		-- In tls-2.0, the default was changed from
 		-- TLS.AllowEMS to TLS.RequireEMS.
 		tlssettings
+#if MIN_VERSION_tls(2,0,0)
 			| annexAllowInsecureHttps gc = Just $
 				NC.TLSSettingsSimple False False False
 				def { TLS.supportedExtendedMainSecret = TLS.AllowEMS }
+#endif
 			| otherwise = Nothing
 		managersettings = case tlssettings of
 			Nothing -> tlsManagerSettings
