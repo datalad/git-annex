@@ -253,7 +253,7 @@ gen r u rc gc rs = do
                                 }
 			, whereisKey = Just (getPublicWebUrls rs info c)
 			, remoteFsck = Nothing
-			, repairKey = Just (repairKeyS3 hdl rs info)
+			, repairKey = Just (repairKeyS3 hdl this rs info)
 			, repairRepo = Nothing
 			, config = c
 			, getRepo = return r
@@ -1500,8 +1500,8 @@ checkVersioning info rs k
  - is valid, this returns True, since it was able to repair
  - the S3 remote.
  -}
-repairKeyS3 :: S3HandleVar -> RemoteStateHandle -> S3Info -> Key -> Annex Bool
-repairKeyS3 hdl rs info k
+repairKeyS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> Key -> Annex Bool
+repairKeyS3 hdl r rs info k
 	| versioning info = do
 		vs <- getS3VersionID rs k
 		if null vs
@@ -1509,8 +1509,7 @@ repairKeyS3 hdl rs info k
 			else or <$> mapM govid vs
 	| otherwise = return False
   where
-	govid vid = govid' vid `catchNonAsync` const (return False)
-	govid' s3vid@(S3VersionID o vid) = do
+	govid s3vid@(S3VersionID o vid) = do
 	        miv <- startVerifyKeyContentIncrementally AlwaysVerify k
 		downloaded <- case miv of
 			Just iv -> withS3Handle hdl $ \case
@@ -1520,7 +1519,7 @@ repairKeyS3 hdl rs info k
 							{ S3.goVersionId = Just vid }
 					sinkResponseIncrementalVerifier nullMeterUpdate iv rsp
 					return True
-				Left S3HandleNeedCreds -> return False
+				Left problem -> giveupS3HandleProblem problem (uuid r)
 			Nothing -> return False
 		v <- snd <$> finishVerifyKeyContentIncrementally' True miv
 		case v of

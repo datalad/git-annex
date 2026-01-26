@@ -200,7 +200,7 @@ performRemote key afile numcopies remote =
 		let tmp = t </> literalOsPath "fsck" <> toOsPath (show pid) <> literalOsPath "." <> keyFile key
 		let cleanup = liftIO $ catchIO (removeFile tmp) (const noop)
 		cleanup
-		cleanup `after` a tmp
+		a tmp `finally` cleanup
 	getfile tmp = ifM (checkDiskSpace Nothing (Just (takeDirectory tmp)) key 0 True)
 		( ifM (getcheap tmp)
 			( return (Just (Right UnVerified))
@@ -353,12 +353,9 @@ verifyLocationLog' key ai present u updatestatus repairmissing = do
 			fix InfoPresent
 			-- There is no data loss, so do not fail.
 			return True
-		(False, True) -> 
+		(False, True) ->
 			ifM repairmissing
-				( do
-					warning $ actionItemDesc ai
-						<> " repaired problem with remote"
-					return True
+				( return True
 				, do
 					fix InfoMissing
 					warning $
@@ -643,9 +640,9 @@ badContentRemote remote localcopy key =
 repairKeyRemote :: Key -> Remote -> Annex Bool
 repairKeyRemote key remote = case Remote.repairKey remote of
 	Nothing -> return False
-	Just a -> tryNonAsync (a key) >>= \case
-		Right res -> return res
-		Left _ -> return False
+	Just a -> do
+		showSideAction "repairing problem with remote"
+		a key
 
 {- Bad content is dropped from the remote. We have downloaded a copy
  - from the remote to a temp file already (in some cases, it's just a
