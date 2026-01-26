@@ -37,3 +37,5 @@ Could fsck be extended to handle this? It should be possible for fsck to:
 --[[Joey]]
 
 [[!tag projects/openneuro]]
+
+> [[done]] --[[Joey]] 
