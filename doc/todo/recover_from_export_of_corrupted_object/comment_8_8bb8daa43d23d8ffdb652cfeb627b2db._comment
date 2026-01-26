@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2026-01-26T17:01:47Z"
+ content="""
+I thought about making `git-annex export` checksum files before uploading,
+but I don't see why export needs that any more than a regular copy to a
+remote does. In either case, annex.verify will notice the bad content when
+getting from the remote, and fscking the remote will also detect it, and
+now, recover from it.
+
+It seems unlikely to me that the annex object file got truncated before
+it was sent to ds005256 in any case. Seems more likely that the upload
+was somehow not of the whole file.
+"""]]
