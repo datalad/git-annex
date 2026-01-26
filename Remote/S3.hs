@@ -253,7 +253,7 @@ gen r u rc gc rs = do
                                 }
 			, whereisKey = Just (getPublicWebUrls rs info c)
 			, remoteFsck = Nothing
-			, repairKey = Just (repairKeyS3 hdl this rs info)
+			, repairKey = repairKeyS3 info hdl this rs
 			, repairRepo = Nothing
 			, config = c
 			, getRepo = return r
@@ -1493,23 +1493,24 @@ checkVersioning info rs k
 	| otherwise = return ()
 
 {- Recover from a bad upload that a S3 version id points to. -}
-repairKeyS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> Key -> Annex Bool
-repairKeyS3 hdl r rs info k
-	| versioning info = getS3VersionID rs k >>= \case
-		-- With only one S3 version id, it must be bad, so no need
-		-- to download it.
-		(s3vid:[]) -> do
-			unsetS3VersionID rs k s3vid
-			return False
-		-- Try to repair each S3 version id, if any are valid
-		-- the repair succeeded.
-		vs -> or <$> mapM repairvid vs
-	| otherwise = return False
+repairKeyS3 :: S3Info -> S3HandleVar -> Remote -> RemoteStateHandle -> Maybe (Key -> Annex Bool)
+repairKeyS3 info hdl r rs
+	| versioning info = Just $ \k ->
+		getS3VersionID rs k >>= \case
+			-- With only one S3 version id, it must be bad, so no need
+			-- to download it.
+			(s3vid:[]) -> do
+				unsetS3VersionID rs k s3vid
+				return False
+			-- Try to repair each S3 version id, if any are valid
+			-- the repair succeeded.
+			vs -> or <$> mapM (repairvid k) vs
+	| otherwise = Nothing
   where
  	{- Download and verify the content, and if it's invalid, 
 	 - unset the S3 version id.
 	 -}
-	repairvid s3vid@(S3VersionID o vid) = do
+	repairvid k s3vid@(S3VersionID o vid) = do
 	        miv <- startVerifyKeyContentIncrementally AlwaysVerify k
 		downloaded <- case miv of
 			Just iv -> withS3Handle hdl $ \case
