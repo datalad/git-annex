@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2026-01-26T16:43:58Z"
+ content="""
+Currently `git-annex fsck --from` an export remote is unable to drop a key
+if it finds corrupted data. Implementing this would also deal with that
+problem.
+"""]]

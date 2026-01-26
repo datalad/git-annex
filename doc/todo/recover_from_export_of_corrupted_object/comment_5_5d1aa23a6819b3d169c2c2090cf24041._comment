@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2026-01-26T16:41:32Z"
+ content="""
+#1 is not needed for the case of a versioned S3 bucket, because after
+`git-annex fsck --from S3` corrects the problem, `git-annex export --to S3`
+will see that the file is not in S3, and re-upload it.
+
+In the general case, #1 is still needed. I think
+[[todo/drop_from_export_remote]] would solve this, and so no need to deal
+with it here.
+"""]]
