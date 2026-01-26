@@ -1,0 +1,46 @@
+How do I prevent annex-sync from eating my data by automatic commits?
+
+I have already set the following:
+
+$ anx config --get annex.autocommit
+
+false
+
+$ anx config --get annex.resolvemerge
+
+false
+
+$ anx config --get annex.synccontent
+
+false
+
+$ anx config --get annex.synconlyannex
+
+true
+
+Workflow is as follows:
+
+- single repo on a PC with mixed locked and unlocked files and an adb special remote.
+
+- make a change to a file on the android device;
+
+- run git annex sync;
+
+Current behavior:
+
+Said file (sometimes; I don't get the logic) gets overwritten on the PC.
+
+All unlocked files are automatically locked.
+
+Oh and if git-annex noticed a conflict and refused to overwrite the file on the android device during export,
+then if I run git annex sync again it overwrites the file on the android device anyway leading to data loss.
+
+What the hell?
+
+Desired behavior:
+
+Apply some conflict resolution strategies if needed and just stage the changes.
+
+Don't actually commit any changes.
+
+Don't eat my data by automatically running git annex export.
