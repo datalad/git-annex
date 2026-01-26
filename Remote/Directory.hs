@@ -128,6 +128,7 @@ gen r u rc gc rs = do
 				}
 			, whereisKey = Nothing
 			, remoteFsck = Nothing
+			, repairKey = Nothing
 			, repairRepo = Nothing
 			, config = c
 			, getRepo = return r

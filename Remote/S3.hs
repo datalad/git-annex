@@ -1,6 +1,6 @@
 {- S3 remotes
  -
- - Copyright 2011-2025 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2026 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -68,7 +68,7 @@ import Utility.Metered
 import Utility.DataUnits
 import Annex.Content
 import qualified Annex.Url as Url
-import Utility.Url (extractFromResourceT, UserAgent)
+import Utility.Url (extractFromResourceT, UserAgent, sinkResponseIncrementalVerifier)
 import Annex.Url (getUserAgent, getUrlOptions, withUrlOptions, UrlOptions(..))
 import Utility.Env
 import Annex.Verify
@@ -253,6 +253,7 @@ gen r u rc gc rs = do
                                 }
 			, whereisKey = Just (getPublicWebUrls rs info c)
 			, remoteFsck = Nothing
+			, repairKey = repairKeyS3 info hdl this rs
 			, repairRepo = Nothing
 			, config = c
 			, getRepo = return r
@@ -1392,14 +1393,17 @@ extractContentIdentifier (ContentIdentifier v) o =
 
 setS3VersionID :: S3Info -> RemoteStateHandle -> Key -> Maybe S3VersionID -> Annex ()
 setS3VersionID info rs k vid
-	| versioning info = maybe noop (setS3VersionID' rs k) vid
+	| versioning info = maybe noop (setS3VersionID' rs k (CurrentlySet True)) vid
 	| otherwise = noop
 
-setS3VersionID' :: RemoteStateHandle -> Key -> S3VersionID -> Annex ()
-setS3VersionID' rs k vid = addRemoteMetaData k rs $
+setS3VersionID' :: RemoteStateHandle -> Key -> CurrentlySet -> S3VersionID -> Annex ()
+setS3VersionID' rs k currentlyset vid = addRemoteMetaData k rs $
 	updateMetaData s3VersionField v emptyMetaData
   where
-	v = mkMetaValue (CurrentlySet True) (formatS3VersionID vid)
+	v = mkMetaValue currentlyset (formatS3VersionID vid)
+
+unsetS3VersionID :: RemoteStateHandle -> Key -> S3VersionID -> Annex ()
+unsetS3VersionID rs k vid = setS3VersionID' rs k (CurrentlySet False) vid
 
 getS3VersionID :: RemoteStateHandle -> Key -> Annex [S3VersionID]
 getS3VersionID rs k = do
@@ -1487,3 +1491,42 @@ checkVersioning info rs k
 		[] -> giveup "Remote is configured to use versioning, but no S3 version ID is recorded for this key, so it cannot safely be modified."
 		_ -> return ()
 	| otherwise = return ()
+
+{- Recover from a bad upload that a S3 version id points to. -}
+repairKeyS3 :: S3Info -> S3HandleVar -> Remote -> RemoteStateHandle -> Maybe (Key -> Annex Bool)
+repairKeyS3 info hdl r rs
+	| versioning info = Just $ \k ->
+		getS3VersionID rs k >>= \case
+			-- With only one S3 version id, it must be bad, so no need
+			-- to download it.
+			(s3vid:[]) -> do
+				unsetS3VersionID rs k s3vid
+				return False
+			-- Try to repair each S3 version id, if any are valid
+			-- the repair succeeded.
+			vs -> or <$> mapM (repairvid k) vs
+	| otherwise = Nothing
+  where
+ 	{- Download and verify the content, and if it's invalid, 
+	 - unset the S3 version id.
+	 -}
+	repairvid k s3vid@(S3VersionID o vid) = do
+	        miv <- startVerifyKeyContentIncrementally AlwaysVerify k
+		downloaded <- case miv of
+			Just iv -> withS3Handle hdl $ \case
+				Right h -> liftIO $ runResourceT $ do
+					S3.GetObjectResponse { S3.gorResponse = rsp }
+						<- sendS3Handle h $ (S3.getObject (bucket info) o)
+							{ S3.goVersionId = Just vid }
+					sinkResponseIncrementalVerifier nullMeterUpdate iv rsp
+					return True
+				Left problem -> giveupS3HandleProblem problem (uuid r)
+			Nothing -> return False
+		v <- snd <$> finishVerifyKeyContentIncrementally' True miv
+		case v of
+			Verified -> return True
+			_
+				| downloaded -> do
+					unsetS3VersionID rs k s3vid
+					return False
+				| otherwise -> return False

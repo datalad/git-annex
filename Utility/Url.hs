@@ -31,6 +31,7 @@ module Utility.Url (
 	download,
 	downloadConduit,
 	sinkResponseFile,
+	sinkResponseIncrementalVerifier,
 	downloadPartial,
 	matchStatusCodeException,
 	matchHttpExceptionContent,
@@ -591,6 +592,26 @@ sinkResponseFile meterupdate iv initialp file mode resp = do
 				() <- ui bs
 				B.hPut fh bs
 			go ui sofar' fh
+
+-- Sends a Response's body to an IncrementalVerifier, without writing it to
+-- a file.
+sinkResponseIncrementalVerifier
+	:: MonadResource m
+	=> MeterUpdate
+	-> IncrementalVerifier
+	-> Response (ConduitM () B8.ByteString m ())
+	-> m ()
+sinkResponseIncrementalVerifier meterupdate iv resp =
+	runConduit $ responseBody resp .| go zeroBytesProcessed
+  where
+	go sofar = await >>= \case
+		Nothing -> return ()
+		Just bs -> do
+			let sofar' = addBytesProcessed sofar (B.length bs)
+			liftIO $ do
+				void $ meterupdate sofar'
+				updateIncrementalVerifier iv bs
+			go sofar'
 
 {- Downloads at least the specified number of bytes from an url. -}
 downloadPartial :: URLString -> UrlOptions -> Int -> IO (Maybe L.ByteString)

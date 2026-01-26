@@ -122,6 +122,7 @@ gen r u rc gc rs = case getComputeProgram' rc of
 		, importActions = importUnsupported
 		, whereisKey = Nothing
 		, remoteFsck = Nothing
+		, repairKey = Nothing
 		, repairRepo = Nothing
 		, config = c
 		, gitconfig = gc

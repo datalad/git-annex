@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2025 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2026 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -200,7 +200,7 @@ performRemote key afile numcopies remote =
 		let tmp = t </> literalOsPath "fsck" <> toOsPath (show pid) <> literalOsPath "." <> keyFile key
 		let cleanup = liftIO $ catchIO (removeFile tmp) (const noop)
 		cleanup
-		cleanup `after` a tmp
+		a tmp `finally` cleanup
 	getfile tmp = ifM (checkDiskSpace Nothing (Just (takeDirectory tmp)) key 0 True)
 		( ifM (getcheap tmp)
 			( return (Just (Right UnVerified))
@@ -337,28 +337,34 @@ verifyLocationLog key keystatus ai = do
 			warning $ "** Despite annex.securehashesonly being set, " <> QuotedPath obj <> " has content present in the annex using an insecure " <> UnquotedString (decodeBS (formatKeyVariety (fromKey keyVariety key))) <> " key"
 
 	verifyLocationLog' key ai present u (logChange NoLiveUpdate key u)
+		(pure False)
 
 verifyLocationLogRemote :: Key -> ActionItem -> Remote -> Bool -> Annex Bool
 verifyLocationLogRemote key ai remote present =
 	verifyLocationLog' key ai present (Remote.uuid remote)
 		(Remote.logStatus NoLiveUpdate remote key)
+		(repairKeyRemote key remote)
 
-verifyLocationLog' :: Key -> ActionItem -> Bool -> UUID -> (LogStatus -> Annex ()) -> Annex Bool
-verifyLocationLog' key ai present u updatestatus = do
+verifyLocationLog' :: Key -> ActionItem -> Bool -> UUID -> (LogStatus -> Annex ()) -> Annex Bool -> Annex Bool
+verifyLocationLog' key ai present u updatestatus repairmissing = do
 	uuids <- loggedLocations key
 	case (present, u `elem` uuids) of
 		(True, False) -> do
 			fix InfoPresent
 			-- There is no data loss, so do not fail.
 			return True
-		(False, True) -> do
-			fix InfoMissing
-			warning $
-				"** Based on the location log, " <>
-				actionItemDesc ai <>
-				"\n** was expected to be present, " <>
-				"but its content is missing."
-			return False
+		(False, True) ->
+			ifM repairmissing
+				( return True
+				, do
+					fix InfoMissing
+					warning $
+						"** Based on the location log, " <>
+						actionItemDesc ai <>
+						"\n** was expected to be present, " <>
+						"but its content is missing."
+					return False
+				)
 		(False, False) -> do
 			-- When the location log for the key is not present,
 			-- create it, so that the key will be known.
@@ -622,13 +628,29 @@ badContent key = do
 	dest <- moveBad key
 	return $ "moved to " ++ fromOsPath dest
 
+badContentRemote :: Remote -> OsPath -> Key -> Annex String
+badContentRemote remote localcopy key = 
+	ifM (repairKeyRemote key remote)
+		( do
+			liftIO $ removeFile localcopy
+			return "repaired problem with remote"
+		, badContentRemote' remote localcopy key
+		)
+
+repairKeyRemote :: Key -> Remote -> Annex Bool
+repairKeyRemote key remote = case Remote.repairKey remote of
+	Nothing -> return False
+	Just a -> do
+		showSideAction "repairing problem with remote"
+		a key
+
 {- Bad content is dropped from the remote. We have downloaded a copy
  - from the remote to a temp file already (in some cases, it's just a
  - symlink to a file in the remote). To avoid any further data loss,
  - that temp file is moved to the bad content directory unless 
  - the local annex has a copy of the content. -}
-badContentRemote :: Remote -> OsPath -> Key -> Annex String
-badContentRemote remote localcopy key = do
+badContentRemote' :: Remote -> OsPath -> Key -> Annex String
+badContentRemote' remote localcopy key = do
 	bad <- fromRepo gitAnnexBadDir
 	let destbad = bad </> keyFile key
 	movedbad <- ifM (inAnnex key <||> liftIO (doesFileExist destbad))
@@ -790,7 +812,7 @@ cleanupLinkedWorkTreeBug =
 		let r' = r { Git.mainWorkTreePath = Nothing }
 		let dir = gitAnnexDir r'
 		whenM (liftIO $ dirnotsymlink dir) $ do
-			showSideAction $ "Cleaning up directory " 
+			showSideAction $ "Cleaning up directory "
 				<> QuotedPath dir
 				<> " created by buggy version of git-annex"
 			(st, rd) <- liftIO $ Annex.new' (\r'' _c -> pure r'') r'
@@ -803,7 +825,7 @@ cleanupLinkedWorkTreeBug =
 			void $ tryNonAsync $ liftIO $
 				removeDirectoryRecursive dir
   where
-	dirnotsymlink dir = 
+	dirnotsymlink dir =
 		tryIO (R.getSymbolicLinkStatus (fromOsPath dir)) >>= \case
 			Right st -> return $ not (isSymbolicLink st)
 			Left _ -> return False

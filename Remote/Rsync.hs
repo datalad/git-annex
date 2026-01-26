@@ -113,6 +113,7 @@ gen r u rc gc rs = do
 			, whereisKey = Nothing
 			, remoteFsck = Nothing
 			, repairRepo = Nothing
+			, repairKey = Nothing
 			, config = c
 			, getRepo = return r
 			, gitconfig = gc

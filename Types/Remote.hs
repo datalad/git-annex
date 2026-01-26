@@ -140,6 +140,10 @@ data RemoteA a = Remote
 	-- without transferring all the data to the local repo
 	-- The parameters are passed to the fsck command on the remote.
 	, remoteFsck :: Maybe ([CommandParam] -> a (IO Bool))
+	-- Fsck calls this when it finds a problem with a key on a remote.
+	-- If the remote is able to repair the problem, so that the key can
+	-- once more be downloaded from it, it can return True.
+	, repairKey :: Maybe (Key -> a Bool)
 	-- Runs an action to repair the remote's git repository.
 	, repairRepo :: Maybe (a Bool -> a (IO Bool))
 	-- a Remote has a persistent configuration store
@@ -361,10 +365,6 @@ data ImportActions a = ImportActions
 		-> a (Key, Verification)
 	-- Exports content to an ExportLocation, and returns the
 	-- ContentIdentifier corresponding to the content it stored.
-	--
-	-- This is used rather than storeExport when a special remote
-	-- supports imports, since files on such a special remote can be
-	-- changed at any time.
 	--
 	-- Since other things can modify the same file on the special
 	-- remote, this must take care to not overwrite such modifications,

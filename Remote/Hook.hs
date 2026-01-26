@@ -75,6 +75,7 @@ gen r u rc gc rs = do
 			, importActions = importUnsupported
 			, whereisKey = Nothing
 			, remoteFsck = Nothing
+			, repairKey = Nothing
 			, repairRepo = Nothing
 			, config = c
 			, localpath = Nothing

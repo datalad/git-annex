@@ -108,6 +108,7 @@ gen r u rc gc rs = do
 		, importActions = importUnsupported
 		, whereisKey = Just (getWhereisKey rs)
 		, remoteFsck = Nothing
+		, repairKey = Nothing
 		, repairRepo = Nothing
 		, config = c
 		, getRepo = return r

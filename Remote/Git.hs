@@ -245,6 +245,7 @@ gen r u rc gc rs
 			, remoteFsck = if Git.repoIsUrl r
 				then Nothing
 				else Just $ fsckOnRemote r
+			, repairKey = Nothing
 			, repairRepo = if Git.repoIsUrl r
 				then Nothing
 				else Just $ repairRemote r

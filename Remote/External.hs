@@ -143,6 +143,7 @@ gen rt externalprogram r u rc gc rs
 			, importActions = importUnsupported
 			, whereisKey = towhereis
 			, remoteFsck = Nothing
+			, repairKey = Nothing
 			, repairRepo = Nothing
 			, config = c
 			, localpath = Nothing
