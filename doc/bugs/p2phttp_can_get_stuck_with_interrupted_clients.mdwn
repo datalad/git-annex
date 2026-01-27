@@ -2,7 +2,7 @@
 
 The p2phttp server can get stuck such that it no longer sends responses when client git-annex processes are interrupted.
 
-I think this is the cause for deadlocks mih and I have seen (very sporadically) on Forgejo-aneksajo instances. I know of \~4 deadlocks since 
+I think this is the cause for deadlocks mih and I have seen (very sporadically) on Forgejo-aneksajo instances. I know of ~4 deadlocks since the 10.20251114 that happened in regular usage of these instances and that required a server restart to fix.
 
 
 ### What steps will reproduce the problem?
