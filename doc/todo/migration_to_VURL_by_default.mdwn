@@ -58,5 +58,7 @@ because which ever might have been registered before, unregisterurl is used
 when the content can no longer be downloaded from the web (or other special
 remote that claims an url).
 
+> Implemented this..
+
 Could registerurl (and fromkey) generate a VURL key that behaves the same
 as addurl --relaxed? --[[Joey]]
