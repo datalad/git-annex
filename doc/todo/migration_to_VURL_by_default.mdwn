@@ -44,3 +44,19 @@ configuration of which kind of keys addurl uses, once VURL is the default.
 > > But, I don't think that registerurl/unregisterurl continuing to
 > > generate URL keys is a big problem, it should not block making VURL
 > > the default in places where it can be default. --[[Joey]]
+
+----
+
+Made --verifiable be the default for addurl and importfeed.
+
+I want to think more about registerurl and unregisterurl (and fromkey's)
+generation of URL keys though.
+
+unregisterurl could generate from an url both an URL and a VURL and
+unregister both, or whichever is registered. That seems to make sense,
+because which ever might have been registered before, unregisterurl is used
+when the content can no longer be downloaded from the web (or other special
+remote that claims an url).
+
+Could registerurl (and fromkey) generate a VURL key that behaves the same
+as addurl --relaxed? --[[Joey]]

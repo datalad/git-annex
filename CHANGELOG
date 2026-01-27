@@ -9,6 +9,7 @@ git-annex (10.20260116) UNRELEASED; urgency=medium
     using old http servers that use TLS 1.2 without Extended Main
     Secret support.
   * fsck: Support repairing a corrupted file in a versiond S3 remote.
+  * addurl, importfeed: Enable --verifiable by default.
 
  -- Joey Hess <id@joeyh.name>  Mon, 19 Jan 2026 10:55:02 -0400
 

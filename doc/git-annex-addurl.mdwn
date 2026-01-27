@@ -45,22 +45,27 @@ be used to get better filenames.
 
 * `--verifiable` `-V`
 
-  This can be used with the `--fast` or `--relaxed` option. It improves
-  the safety of the resulting annexed file, by letting its content be
-  verified with a checksum when it is transferred between git-annex
-  repositories, as well as by things like `git-annex fsck`.
+  This option is now enabled by default when using `--fast` or `--relaxed`,
+  but was not the default in older versions of git-annex.
 
-  When used with --relaxed, content from the web special remote will
-  always be accepted, even if it has changed, and the checksum recorded
-  for later verification.
+  When a file is added without first downloading its content from the web,
+  the checksum of the file is not yet known. 
 
-  When used with --fast, the checksum is recorded the first time the
-  content is downloaded from the web special remote. Once a checksum has
-  been recorded, subsequent downloads from the web special remote 
-  must have the same checksum.
+  To allow later learning and verifying the checksum, the VURL backend is
+  used. With `--fast`, the checksum is learned on initial download of the
+  file from the web, and all subsequent downloads from the web must have
+  the same checksum. With `--relaxed`, additional checksums are added each
+  time different content is downloaded from the web.
+  
+  This improves the safety of the resulting annexed file, by letting
+  its content be verified with a checksum when it is transferred between
+  git-annex repositories, as well as by things like `git-annex fsck`.
 
-  When addurl was used without this option before, the file it added 
-  can be converted to be verifiable by migrating it to the VURL backend.
+  Files that were added with old versions of addurl (or with 
+  `git-annex registerurl` or `git-annex fromkey`) are not verifiable.
+  They can be converted to verifiable by migrating them from the URL
+  backend to the VURL backend. 
+  
   For example: `git-annex migrate foo --backend=VURL`
 
 * `--raw`

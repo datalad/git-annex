@@ -275,7 +275,7 @@ startDownload addunlockedmatcher opts cache cv todownload = case location todown
 	Enclosure url -> startdownloadenclosure url
 	MediaLink linkurl -> do
 		let mediaurl = setDownloader linkurl YoutubeDownloader
-		let mediakey = Backend.URL.fromUrl mediaurl Nothing (verifiableOption (downloadOptions opts))
+		let mediakey = Backend.URL.fromUrl mediaurl Nothing True
 		-- Old versions of git-annex that used quvi might have
 		-- used the quviurl for this, so check if it's known
 		-- to avoid adding it a second time.
