@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2026-01-27T17:40:15Z"
+ content="""
+This is extremely similar to the bug that 
+[[!commit f2fed42a090e081bf880dcacc9a25bfa8a0f7d8f]] was supposed to fix.
+But that had a small amount of gets hang, without any interruptions being
+needed to cause it. So I think is different.
+
+There was also the similar
+[[!commit 1c67f2310a7ca3e4fce183794f0cff2f4f5d1efb]] where an interrupted
+drop caused later hangs.
+"""]]
