@@ -12,6 +12,7 @@ git-annex (10.20260116) UNRELEASED; urgency=medium
   * addurl, importfeed: Enable --verifiable by default.
   * unregisterurl: Unregister both VURL and URL keys when passed an url
     instead of a key.
+  * unregisterurl: Fix display of action to not be "registerurl".
 
  -- Joey Hess <id@joeyh.name>  Mon, 19 Jan 2026 10:55:02 -0400
 

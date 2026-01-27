@@ -37,12 +37,12 @@ seek o = case (batchOption o, keyUrlPairs o) of
 	(Batch fmt, _) -> seekBatch registerUrl o fmt
 	-- older way of enabling batch input, does not support BatchNull
 	(NoBatch, []) -> seekBatch registerUrl o (BatchFormat BatchLine (BatchKeys False))
-	(NoBatch, ps) -> commandAction (start registerUrl o ps)
+	(NoBatch, ps) -> commandAction (start "unregisterurl" registerUrl o ps)
 
 seekBatch :: (Remote -> Key -> URLString -> Annex ()) -> RegisterUrlOptions -> BatchFormat -> CommandSeek
 seekBatch a o fmt = batchOnly Nothing (keyUrlPairs o) $
 	batchInput fmt (pure . parsebatch) $
-		batchCommandAction . start' a o
+		batchCommandAction . start' "registerurl" a o
   where
 	parsebatch l = 
 		let (keyname, u) = separate (== ' ') l
@@ -52,15 +52,15 @@ seekBatch a o fmt = batchOnly Nothing (keyUrlPairs o) $
 				Left e -> Left e
 				Right k -> Right (k, u)
 
-start :: (Remote -> Key -> URLString -> Annex ()) -> RegisterUrlOptions -> [String] -> CommandStart
-start a o (keyname:url:[]) = start' a o (si, (keyOpt keyname, url))
+start :: String -> (Remote -> Key -> URLString -> Annex ()) -> RegisterUrlOptions -> [String] -> CommandStart
+start msg a o (keyname:url:[]) = start' msg a o (si, (keyOpt keyname, url))
   where
 	si = SeekInput [keyname, url]
-start _ _ _ = giveup "specify a key and an url"
+start _ _ _ _ = giveup "specify a key and an url"
 
-start' :: (Remote -> Key -> URLString -> Annex ()) -> RegisterUrlOptions -> (SeekInput, (Key, URLString)) -> CommandStart
-start' a o (si, (key, url)) =
-	starting "registerurl" ai si $
+start' :: String -> (Remote -> Key -> URLString -> Annex ()) -> RegisterUrlOptions -> (SeekInput, (Key, URLString)) -> CommandStart
+start' msg a o (si, (key, url)) =
+	starting msg ai si $
 		perform a o key url
   where
 	ai = ActionItemOther (Just (UnquotedString url))
