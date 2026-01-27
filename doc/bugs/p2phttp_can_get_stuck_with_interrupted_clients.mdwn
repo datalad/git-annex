@@ -1,0 +1,177 @@
+### Please describe the problem.
+
+The p2phttp server can get stuck such that it no longer sends responses when client git-annex processes are interrupted.
+
+I think this is the cause for deadlocks mih and I have seen (very sporadically) on Forgejo-aneksajo instances. I know of ~4 deadlocks since the 10.20251114 release that happened in regular usage of these instances and that required a server restart to fix.
+
+
+### What steps will reproduce the problem?
+
+Create a repository with some data (I used datalad, but plain git-annex should be the same):
+
+```
+datalad create test-p2phttp-interrupt
+cd test-p2phttp-interrupt
+for i in $(seq 1 20); do head -c 1G /dev/urandom > test$i.bin; done
+datalad save
+```
+
+Create two clones:
+
+```
+datalad clone test-p2phttp-interrupt test-p2phttp-interrupt-clone
+datalad clone test-p2phttp-interrupt test-p2phttp-interrupt-clone2
+```
+
+Make them use p2phttp (run in both clones):
+
+```
+git config remote.origin.annexUrl 'annex+http://localhost:3001'
+```
+
+Serve the first repo via p2phttp:
+
+```
+git annex p2phttp -J2 --debug --bind localhost --port 3001 --wideopen
+```
+
+In one clone run a get that is constantly interrupted and restarted:
+
+```
+while true; do
+git annex get . &
+pid=$!
+sleep 5
+kill -s SIGINT $pid
+done
+```
+
+In the other clone just run a regular get:
+
+```
+git annex get .
+```
+
+Observation: after letting this run for a while the get's no longer make any progress. The p2phttp process no longer logs anything new.
+
+Given my understanding from the previous deadlocks in p2phttp it seems like the worker process that should be used to respond to these requests somehow didn't get released after an interrupted request.
+
+
+### What version of git-annex are you using? On what operating system?
+
+```
+git-annex version: 10.20260115-ge8de977f1d5b5ac57cfe7a0c66d4e1c3ff337af1
+build flags: Assistant Webapp Inotify DBus DesktopNotify TorrentParser MagicMime Benchmark Feeds Testsuite S3 WebDAV Servant OsPath
+dependency versions: aws-0.25.2 bloomfilter-2.0.1.3 crypton-1.0.4 DAV-1.3.4 feed-1.3.2.1 ghc-9.10.3 http-client-0.7.19 torrent-10000.1.3 uuid-1.3.16 yesod-1.6.2.1
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL GITBUNDLE GITMANIFEST VURL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg rclone hook external compute mask
+operating system: linux x86_64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
+local repository version: 10
+```
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+$ git annex p2phttp -J2 --debug --bind localhost --port 3001 --wideopen
+[2026-01-27 15:17:52.122387435] (Utility.Process) process [1704520] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","git-annex"]
+[2026-01-27 15:17:52.124778937] (Utility.Process) process [1704520] done ExitSuccess
+[2026-01-27 15:17:52.125127598] (Utility.Process) process [1704521] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","--hash","refs/heads/git-annex"]
+[2026-01-27 15:17:52.127448536] (Utility.Process) process [1704521] done ExitSuccess
+[2026-01-27 15:17:52.128485775] (Utility.Process) process [1704522] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch"]
+[2026-01-27 15:17:52.131112388] (Annex.Branch) read proxy.log
+[2026-01-27 15:17:56.728686389] (P2P.IO) [http client] [ThreadId 12] P2P > CHECKPRESENT MD5E-s1073741824--4c882b5dc5bbb53d59ab0d4e67e2a3c4.bin
+[2026-01-27 15:17:56.728896008] (P2P.IO) [http server] [ThreadId 15] P2P < CHECKPRESENT MD5E-s1073741824--4c882b5dc5bbb53d59ab0d4e67e2a3c4.bin
+[2026-01-27 15:17:56.729107393] (P2P.IO) [http server] [ThreadId 15] P2P > SUCCESS
+[2026-01-27 15:17:56.729160766] (P2P.IO) [http client] [ThreadId 12] P2P < SUCCESS
+[2026-01-27 15:17:57.093025365] (P2P.IO) [http client] [ThreadId 18] P2P > GET 220011077 test10.bin MD5E-s1073741824--4c882b5dc5bbb53d59ab0d4e67e2a3c4.bin
+[2026-01-27 15:17:57.093145849] (P2P.IO) [http server] [ThreadId 17] P2P < GET 220011077 test10.bin MD5E-s1073741824--4c882b5dc5bbb53d59ab0d4e67e2a3c4.bin
+[2026-01-27 15:17:57.093714738] (Utility.Process) process [1704639] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","-c","filter.annex.smudge=","-c","filter.annex.clean=","-c","filter.annex.process=","write-tree"]
+[2026-01-27 15:17:57.096671191] (Utility.Process) process [1704639] done ExitSuccess
+[2026-01-27 15:17:57.096984805] (Utility.Process) process [1704640] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","--hash","refs/annex/last-index"]
+[2026-01-27 15:17:57.099497] (Utility.Process) process [1704640] done ExitSuccess
+[2026-01-27 15:17:57.100142132] (P2P.IO) [http server] [ThreadId 17] P2P > DATA 853730747
+[2026-01-27 15:17:57.100206771] (P2P.IO) [http client] [ThreadId 18] P2P < DATA 853730747
+[2026-01-27 15:17:59.215559236] (P2P.IO) [http client] [ThreadId 24] P2P > CHECKPRESENT MD5E-s1073741824--e8bb491c04da0917cf1871a4d9f719d2.bin
+[2026-01-27 15:17:59.215654747] (P2P.IO) [http server] [ThreadId 26] P2P < CHECKPRESENT MD5E-s1073741824--e8bb491c04da0917cf1871a4d9f719d2.bin
+[2026-01-27 15:17:59.215723248] (P2P.IO) [http server] [ThreadId 26] P2P > SUCCESS
+[2026-01-27 15:17:59.215761274] (P2P.IO) [http client] [ThreadId 24] P2P < SUCCESS
+[2026-01-27 15:17:59.217064991] (P2P.IO) [http client] [ThreadId 29] P2P > GET 0 test1.bin MD5E-s1073741824--e8bb491c04da0917cf1871a4d9f719d2.bin
+[2026-01-27 15:17:59.217130521] (P2P.IO) [http server] [ThreadId 28] P2P < GET 0 test1.bin MD5E-s1073741824--e8bb491c04da0917cf1871a4d9f719d2.bin
+[2026-01-27 15:17:59.217519652] (P2P.IO) [http server] [ThreadId 28] P2P > DATA 1073741824
+[2026-01-27 15:17:59.21755853] (P2P.IO) [http client] [ThreadId 29] P2P < DATA 1073741824
+[2026-01-27 15:18:00.279578339] (P2P.IO) [http server] [ThreadId 17] P2P > VALID
+[2026-01-27 15:18:00.279785154] (P2P.IO) [http client] [ThreadId 18] P2P < VALID
+[2026-01-27 15:18:00.279818373] (P2P.IO) [http client] [ThreadId 18] P2P > SUCCESS
+[2026-01-27 15:18:00.279862343] (P2P.IO) [http server] [ThreadId 17] P2P < SUCCESS
+[2026-01-27 15:18:00.329523146] (P2P.IO) [http client] [ThreadId 12] P2P > CHECKPRESENT MD5E-s1073741824--a4b23db926fc7b0eed61415c0557d272.bin
+[2026-01-27 15:18:00.329702303] (P2P.IO) [http server] [ThreadId 33] P2P < CHECKPRESENT MD5E-s1073741824--a4b23db926fc7b0eed61415c0557d272.bin
+[2026-01-27 15:18:00.329825138] (P2P.IO) [http server] [ThreadId 33] P2P > SUCCESS
+[2026-01-27 15:18:00.329871666] (P2P.IO) [http client] [ThreadId 12] P2P < SUCCESS
+[2026-01-27 15:18:00.331456293] (P2P.IO) [http client] [ThreadId 36] P2P > GET 0 test11.bin MD5E-s1073741824--a4b23db926fc7b0eed61415c0557d272.bin
+[2026-01-27 15:18:00.331595061] (P2P.IO) [http server] [ThreadId 35] P2P < GET 0 test11.bin MD5E-s1073741824--a4b23db926fc7b0eed61415c0557d272.bin
+[2026-01-27 15:18:00.332346826] (P2P.IO) [http server] [ThreadId 35] P2P > DATA 1073741824
+[2026-01-27 15:18:00.332430727] (P2P.IO) [http client] [ThreadId 36] P2P < DATA 1073741824
+[2026-01-27 15:18:01.745659339] (P2P.IO) [http client] [ThreadId 39] P2P > CHECKPRESENT MD5E-s1073741824--a4b23db926fc7b0eed61415c0557d272.bin
+[2026-01-27 15:18:01.745775646] (P2P.IO) [http server] [ThreadId 41] P2P < CHECKPRESENT MD5E-s1073741824--a4b23db926fc7b0eed61415c0557d272.bin
+[2026-01-27 15:18:01.745896432] (P2P.IO) [http server] [ThreadId 41] P2P > SUCCESS
+[2026-01-27 15:18:01.745947955] (P2P.IO) [http client] [ThreadId 39] P2P < SUCCESS
+[2026-01-27 15:18:02.304886078] (P2P.IO) [http client] [ThreadId 44] P2P > GET 335670329 test11.bin MD5E-s1073741824--a4b23db926fc7b0eed61415c0557d272.bin
+[2026-01-27 15:18:02.305117538] (P2P.IO) [http server] [ThreadId 43] P2P < GET 335670329 test11.bin MD5E-s1073741824--a4b23db926fc7b0eed61415c0557d272.bin
+[2026-01-27 15:18:03.331345311] (P2P.IO) [http server] [ThreadId 28] P2P > VALID
+[2026-01-27 15:18:03.331419419] (P2P.IO) [http client] [ThreadId 29] P2P < VALID
+[2026-01-27 15:18:03.331465319] (P2P.IO) [http client] [ThreadId 29] P2P > SUCCESS
+[2026-01-27 15:18:03.331492753] (P2P.IO) [http server] [ThreadId 28] P2P < SUCCESS
+[2026-01-27 15:18:03.331780166] (P2P.IO) [http server] [ThreadId 43] P2P > DATA 738071495
+[2026-01-27 15:18:03.331839961] (P2P.IO) [http client] [ThreadId 44] P2P < DATA 738071495
+[2026-01-27 15:18:06.044717964] (P2P.IO) [http server] [ThreadId 43] P2P > VALID
+[2026-01-27 15:18:06.044806699] (P2P.IO) [http client] [ThreadId 44] P2P < VALID
+[2026-01-27 15:18:06.044861192] (P2P.IO) [http client] [ThreadId 44] P2P > SUCCESS
+[2026-01-27 15:18:06.04490031] (P2P.IO) [http server] [ThreadId 43] P2P < SUCCESS
+
+$ while true; do
+git annex get . &
+pid=$!
+sleep 5
+kill -s SIGINT $pid
+done
+[1] 1704547
+get test10.bin (from origin...) 
+ok                                
+get test11.bin (from origin...) 
+29%   294.58 MiB      255 MiB/s 2s    [2] 1704749
+(recording state in git...)
+get test11.bin (from origin...) 
+ok                                
+get test12.bin [1]-  Interrupt               git annex get .
+[3] 1704857
+(recording state in git...)
+get test12.bin [2]-  Interrupt               git annex get .
+[4] 1704996
+get test12.bin [3]-  Interrupt               git annex get .
+[5] 1705094
+get test12.bin [4]-  Interrupt               git annex get .
+[6] 1705191
+get test12.bin [5]-  Interrupt               git annex get .
+[7] 1705286
+get test12.bin ^C[6]-  Interrupt               git annex get .
+
+$ git annex get .
+get test1.bin (from origin...) 
+ok                                    
+get test10.bin ^C
+
+# End of transcript or log.
+"""]]
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Starting with a DataLad Dataset and by extension git-annex repository is the first thing I do whenever I have to deal with code and/or data that is not some throwaway stuff :)
+
+[[!tag projects/ICE4]]
