@@ -10,6 +10,7 @@ git-annex (10.20260116) UNRELEASED; urgency=medium
     Secret support.
   * fsck: Support repairing a corrupted file in a versiond S3 remote.
   * addurl, importfeed: Enable --verifiable by default.
+  * fromkey, registerurl: When passed an url, generate a VURL key.
   * unregisterurl: Unregister both VURL and URL keys.
   * unregisterurl: Fix display of action to not be "registerurl".
 

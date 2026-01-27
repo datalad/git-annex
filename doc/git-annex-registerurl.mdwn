@@ -15,7 +15,7 @@ No verification is performed of the url's contents.
 
 Normally the key is a git-annex formatted key. However, to make it easier
 to use this to add urls, if the key cannot be parsed as a key, and is a
-valid url, an URL key is constructed from the url.
+valid url, a VURL key is constructed from the url.
 
 Registering an url also makes git-annex treat the key as present in the
 special remote that claims it. (Usually the web special remote.)
