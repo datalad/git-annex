@@ -41,30 +41,6 @@ resulting in the new url being downloaded to such a filename.
 
   These options behave the same as when using [[git-annex-addurl]](1).
 
-* `--fast`
-
-  Avoid immediately downloading urls. The url is still checked
-  (via HEAD) to verify that it exists, and to get its size if possible.
-
-* `--relaxed`
-
-  Don't immediately download urls, and avoid storing the size of the
-  url's content. This makes git-annex accept whatever content is there
-  at a future point.
-
-* `--raw`
-
-  Prevent special handling of urls by yt-dlp, bittorrent, and other
-  special remotes. This will for example, make importfeed
-  download a .torrent file and not the contents it points to.
-
-* `--no-raw`
-
-  Require content pointed to by the url to be downloaded using yt-dlp
-  or a special remote, rather than the raw content of the url. if that
-  cannot be done, the import will fail, and the next import of the feed
-  will retry.
-
 * `--scrape`
 
   Rather than downloading the url and parsing it as a rss/atom feed
