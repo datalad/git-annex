@@ -1,0 +1,47 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2026-01-28T19:22:19Z"
+ content="""
+Developed the below patch to use pauseTimeout after the Request is
+consumed.
+
+Unfortunatelty, I then discovered that [pauseTimeout does not work](https://github.com/yesodweb/wai/issues/1058)!
+
+This leaves only the options of waiting for a fixed version of warp, 
+or disabling slowloris prevention entirely, or somehow dealing with
+the way that the Response handler gets killed by the timeout.
+
+	diff --git a/P2P/Http/Server.hs b/P2P/Http/Server.hs
+	index b7f773301a..8c8ae96c06 100644
+	--- a/P2P/Http/Server.hs
+	+++ b/P2P/Http/Server.hs
+	@@ -40,14 +40,27 @@ import qualified Servant.Types.SourceT as S
+	 import qualified Data.ByteString as B
+	 import qualified Data.ByteString.Lazy as L
+	 import qualified Data.ByteString.Lazy.Internal as LI
+	+import qualified Network.Wai.Handler.Warp as Warp
+	 import Control.Concurrent.Async
+	 import Control.Concurrent.STM
+	 import Control.Concurrent
+	 import System.IO.Unsafe
+	 import Data.Either
+	 
+	+-- WAI middleware that disables warp's usual Slowloris protection after the
+	+-- Request is received. This is needed for the p2phttp server because
+	+-- after a client connects and makes its Request, and when the Request
+	+-- includes valid authentication, the server waits for a worker to become
+	+-- available to handle it. During that time, no traffic is being sent,
+	+-- which would usually trigger the Slowloris protection.
+	+avoidResponseTimeout :: Application -> Application
+	+avoidResponseTimeout app req resp = do
+	+	liftIO $ Warp.pauseTimeout req
+	+	app req resp
+	+
+	 p2pHttpApp :: TMVar P2PHttpServerState -> Application
+	-p2pHttpApp = serve p2pHttpAPI . serveP2pHttp
+	+p2pHttpApp st = avoidResponseTimeout $ serve p2pHttpAPI $ serveP2pHttp st
+	 
+	 serveP2pHttp :: TMVar P2PHttpServerState -> Server P2PHttpAPI
+	 serveP2pHttp st
+"""]]

@@ -2,7 +2,7 @@
  -
  - https://git-annex.branchable.com/design/p2p_protocol_over_http/
  -
- - Copyright 2024 Joey Hess <id@joeyh.name>
+ - Copyright 2024-2026 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -145,8 +145,9 @@ serveGet mst su apiver (B64Key k) cu bypass baf startat sec auth = do
 	(Len len, bs) <- liftIO $ atomically $ takeTMVar bsv
 	bv <- liftIO $ newMVar (filter (not . B.null) (L.toChunks bs))
 	szv <- liftIO $ newMVar 0
-	let streamer = S.SourceT $ \s -> s =<< return 
-		(stream (bv, szv, len, endv, validityv, finalv))
+	let streamer = S.SourceT $ do
+		\s -> s (stream (bv, szv, len, endv, validityv, finalv))
+			`onException` streamexception finalv
  	return $ addHeader (DataLength len) streamer
   where
 	stream (bv, szv, len, endv, validityv, finalv) =
@@ -189,7 +190,7 @@ serveGet mst su apiver (B64Key k) cu bypass baf startat sec auth = do
 				atomically $ putTMVar endv ()
 				validity <- atomically $ takeTMVar validityv
 				sz <- takeMVar szv
-				atomically $ putTMVar finalv ()
+				atomically $ putTMVar finalv True
 				void $ atomically $ tryPutTMVar endv ()
 				return $ case validity of
 					Nothing -> True
@@ -197,14 +198,15 @@ serveGet mst su apiver (B64Key k) cu bypass baf startat sec auth = do
 					Just Invalid -> sz /= len
 			, pure True
 			)
-	
+
 	waitfinal endv finalv conn annexworker = do
 		-- Wait for everything to be transferred before
 		-- stopping the annexworker. The finalv will usually
-		-- be written to at the end. If the client disconnects
-		-- early that does not happen, so catch STM exception.
-		alltransferred <- isRight
-			<$> tryNonAsync (liftIO $ atomically $ takeTMVar finalv)
+-		-- be written to at the end. If the client disconnects
+-		-- early that does not happen, so catch STM exceptions.
+		alltransferred <- 
+			either (const False) id 
+				<$> liftIO (tryNonAsync $ atomically $ takeTMVar finalv)
 		-- Make sure the annexworker is not left blocked on endv
 		-- if the client disconnected early.
 		void $ liftIO $ atomically $ tryPutTMVar endv ()
@@ -212,6 +214,11 @@ serveGet mst su apiver (B64Key k) cu bypass baf startat sec auth = do
 			then releaseP2PConnection conn
 			else closeP2PConnection conn
 		void $ tryNonAsync $ wait annexworker
+	
+	-- Slowloris attack prevention can cancel the streamer. Be sure to
+	-- close the P2P connection when that happens.
+	streamexception finalv =
+		liftIO $ atomically $ putTMVar finalv False
 	
 	sizer = pure $ Len $ case startat of
 		Just (Offset o) -> fromIntegral o
