@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2026-01-28T20:43:38Z"
+ content="""
+[[!commit 786360cdcf7f784847715ec79ef9837ada9fa649]] catches an exception
+that the slowloris attack prevention causes. It does prevent the server
+locking up... but only sometimes. So the test case 
+gets further, but eventually still locks up.
+
+Since slowloris attack prevention can cancel the thread at any point, it
+seems likely that there is some other point there a resource is left
+un-freed.
+"""]]

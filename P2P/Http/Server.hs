@@ -202,8 +202,8 @@ serveGet mst su apiver (B64Key k) cu bypass baf startat sec auth = do
 	waitfinal endv finalv conn annexworker = do
 		-- Wait for everything to be transferred before
 		-- stopping the annexworker. The finalv will usually
--		-- be written to at the end. If the client disconnects
--		-- early that does not happen, so catch STM exceptions.
+		-- be written to at the end. If the client disconnects
+		-- early that does not happen, so catch STM exceptions.
 		alltransferred <- 
 			either (const False) id 
 				<$> liftIO (tryNonAsync $ atomically $ takeTMVar finalv)
