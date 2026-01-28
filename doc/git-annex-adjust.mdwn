@@ -92,11 +92,15 @@ and will also propagate commits back to the original branch.
   set the `annex.adjustedbranchrefresh` config.
 
   Despite missing files being hidden, `git annex sync --content` will
-  still operate on them, and can be used to download missing
+  still operate on them, and can be used to retrieve missing
   files from remotes. It also updates the adjusted branch after
   transferring content.
 
-  This option can be combined with --unlock, --lock, or --fix.
+  To retrieve specific missing files, use eg:
+  `git-annex get --branch=master --include=foo`
+
+  The `--hide-missing` option can be combined with 
+  `--unlock`, `--lock`, or `--fix`.
 
 * `--unlock-present`
 
