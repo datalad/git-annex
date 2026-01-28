@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2026-01-28T17:01:37Z"
+ content="""
+The hang happens here:
+
+                  -- Wait for everything to be transferred before
+                  -- stopping the annexworker. The finalv will usually
+                  -- be written to at the end. If the client disconnects
+                  -- early that does not happen, so catch STM exception.
+                  alltransferred <- isRight
+                          <$> tryNonAsync (liftIO $ atomically $ takeTMVar finalv)
+
+I think what is happening is finalv is never getting filled, but for whatever
+reason, STM also is not detecting a deadlock, so this does not fail with an
+exception and waits forever.
+"""]]

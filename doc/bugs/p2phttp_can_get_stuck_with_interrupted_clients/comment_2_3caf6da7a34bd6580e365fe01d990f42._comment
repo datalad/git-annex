@@ -1,0 +1,55 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2026-01-28T16:15:03Z"
+ content="""
+`kill -s SIGINT` is not valid syntax (at least not with procps's `kill`), so
+`kill` fails to do anything and a bunch of git-annex processes stack up all
+trying to get the same files. Probably you meant `kill -s INT`
+
+With that said, the busted test case does work in exposing a problem, since 
+the git-annex get processes hang.
+
+This behaves the same:
+
+	for x in $(seq 1 5); do git annex get & done
+
+That's without anything interrupting `git-annex get` at any point.
+
+This error is displayed by some of the git-annex get processes,
+and once this has happened as many times as the number of jobs,
+the server is hung:
+
+	 HttpExceptionRequest Request {
+	    host                 = "localhost"
+	    port                 = 3001
+	    secure               = False
+	    requestHeaders       = [("Accept","application/octet-stream")]
+	    path                 = "/git-annex/8dd1a380-3785-4285-b93d-994e1ccb9fbf/v4/key/SHA256E-s1073741824--52fc7ce3067ad69f3989f7fef817670096f00eab7721884fe606d17b9215d6f5.bin"
+	    queryString          = "?clientuuid=2ab2859b-d423-4427-bac2-553e18c02197&associatedfile=test1.bin"
+	    method               = "GET"
+	    proxy                = Nothing
+	    rawBody              = False
+	    redirectCount        = 10
+	    responseTimeout      = ResponseTimeoutDefault
+	    requestVersion       = HTTP/1.1
+	    proxySecureMode      = ProxySecureWithConnect
+	  }
+	   InvalidChunkHeaders
+
+So this seems very similar to the bug that
+[[!commit f2fed42a090e081bf880dcacc9a25bfa8a0f7d8f]] was supposed to fix.
+Same InvalidChunkHeaders exception indicating the http server response
+thread probably crashed. 
+
+And I've verified that when this happens, serveGet's waitfinal starts
+and never finishes, which is why the job slot remains in use.
+
+BTW, InvalidChunkHeaders is a http-client exception, so it seems this
+might involve a problem at the http layer, so with http-client or warp?
+Looking in http-client, it is thrown in 3 situations. 2 are when a read
+from the server yields 0 bytes. The 3rd is when a line is read from the server,
+and the result cannot be parsed as hexidecimal.
+So it seems likely that the http server is crashing in the middle of servicing
+a request. Possibly due to a bug in the http stack.
+"""]]
