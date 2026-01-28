@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2026-01-28T18:26:41Z"
+ content="""
+So, can the slowloris attack prevention just be disabled in p2phttp,
+without exposing it to problems due to that attack?
+
+Well, the slowloris attack is a DDOS that tries to open as many http
+connections to the server as possible, and keep them open with as little
+bandwidth used as possible. It does so by sending partial request headers
+slowly, so the server is stuck waiting to see the full request.
+
+Given that the p2phttp server is serving large objects, and probably runs
+with a moderately low -J value (probably < 100), just opening that many
+connections to the server each requesting an object, and consuming a chunk
+of the response once per 30 seconds would be enough to work around Warp's
+protections against the slowloris attack. Which needs little enough
+bandwidth to be a viable attack.
+
+The client would need authentication to do that though. A slowloris attack
+though just sends requests, it does not need to successfully authenticate.
+
+So it would be better to disable the slowloris attack prevention only after
+the request has been authenticated.
+
+warp provides `pauseTimeout` that can do that, but I'm not sure how
+to use it from inside a servant application.
+"""]]

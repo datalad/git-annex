@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2026-01-28T17:53:26Z"
+ content="""
+Warp's Slowloris attack prevention seems to be causing this problem.
+I was able to get the test case to not hang by applying
+`Warp.setTimeout 1000000000` to the warp settings.
+
+I guess that, when Warp detects what it thinks is a slowloris attack,
+it kills the handling thread in some unusual way. Which prevents the usual
+STM exception from being thrown?
+
+This also explains the InvalidChunkHeaders exception, because the http
+server has hung up on the client before sending the expected headers.
+
+`git-annex get` is triggering the slowloris attack detection because
+it connects to the p2phttp server, sends a request, and then is stuck 
+waiting some long period of time for a worker slot to become available.
+
+Warp detects a slowloris attack by examining how much network traffic is
+flowing. And in this case, no traffic is flowing.
+
+So the reason this test case triggers the problem is because it's using 1
+GB files! With smaller files, the transfers happen too fast to trigger the
+default 30 second timeout.
+"""]]
