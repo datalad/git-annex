@@ -175,3 +175,5 @@ get test10.bin ^C
 Starting with a DataLad Dataset and by extension git-annex repository is the first thing I do whenever I have to deal with code and/or data that is not some throwaway stuff :)
 
 [[!tag projects/ICE4]]
+
+> [[done]] --[[Joey]]

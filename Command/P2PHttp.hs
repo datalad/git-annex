@@ -184,12 +184,26 @@ startIO o
 					<> serverShutdownCleanup oldst
 			}
 
+-- Disable Warp's slowloris attack prevention. Since the web server
+-- only allows serving -J jobs at a time, and blocks when an additional 
+-- request is received, that can result in there being no network traffic
+-- for a period of time, which triggers the slowloris attack prevention.
+--
+-- The implementation of the P2P http server is not exception safe enough
+-- to deal with Response handlers being killed at any point by warp.
+--
+-- It would be better to use setTimeout, so that slowloris attacks in 
+-- making the request are prevented. But, it does not work! See
+-- https://github.com/yesodweb/wai/issues/1058
+disableSlowlorisPrevention :: Warp.Settings -> Warp.Settings
+disableSlowlorisPrevention = Warp.setTimeout maxBound
+
 runServer :: Options -> P2PHttpServerState -> IO ()
 runServer o mst = go `finally` serverShutdownCleanup mst
   where
 	go = do
 		let settings = Warp.setPort port $ Warp.setHost host $
-			Warp.defaultSettings
+			disableSlowlorisPrevention $ Warp.defaultSettings
 		mstv <- newTMVarIO mst
 		let app = p2pHttpApp mstv
 		case (certFileOption o, privateKeyFileOption o) of

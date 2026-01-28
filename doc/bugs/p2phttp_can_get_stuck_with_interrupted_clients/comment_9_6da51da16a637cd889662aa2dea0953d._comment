@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2026-01-28T21:38:46Z"
+ content="""
+Disabled the slowloris protection. :-/
+
+I also checked with the original test case, fixed to call `kill -s INT`,
+and it also passed. I'm assuming this was never a bug about interruption..
+"""]]

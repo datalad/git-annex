@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2026-01-28T21:10:00Z"
+ content="""
+Seems likely that getP2PConnection is run by serveGet, and the worker slot
+is allocated. Then a ThreadKilled exception arrives before the rest of
+serveGet's threads are started up. So the worker slot never gets freed.
+It's even possible that getP2PConnection is itself not cancellation safe.
+
+So, I made all of serveGet be inside an uninterruptibleMask. That did seem to
+make the test case get past more slowloris cancellations than before. But,
+it still eventually hung.
+
+Given the inversion of control that servant and streaming response body
+entails, it seems likely that an ThreadKilled exception could arrive at a
+point entirely outside the control of git-annex, leaving the P2P connection
+open with no way to close it.
+
+I really dislike that this slowloris attack prevention is making me need
+to worry about the server threads getting cancelled at any point. That
+requires significantly more robust code, if it's even possible.
+
+So, I think disabling the slowloris attack prevention may be the way to go,
+at least until warp is fixed to allow only disabling it after the Request
+is received.
+
+Doing so will make p2phttp more vulnerable to DDOS, but as it stands, it's
+vulnerable to locking up due to entirely legitimate users just running
+a few `git-annex get`s. Which is much worse!
+"""]]

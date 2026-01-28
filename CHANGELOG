@@ -13,6 +13,8 @@ git-annex (10.20260116) UNRELEASED; urgency=medium
   * fromkey, registerurl: When passed an url, generate a VURL key.
   * unregisterurl: Unregister both VURL and URL keys.
   * unregisterurl: Fix display of action to not be "registerurl".
+  * p2phttp: Fix a server stall by disabling warp's slowloris attack
+    prevention.
 
  -- Joey Hess <id@joeyh.name>  Mon, 19 Jan 2026 10:55:02 -0400
 
