@@ -44,7 +44,6 @@ import Control.Concurrent.Async
 import Control.Concurrent.STM
 import Control.Concurrent
 import System.IO.Unsafe
-import Data.Either
 
 p2pHttpApp :: TMVar P2PHttpServerState -> Application
 p2pHttpApp = serve p2pHttpAPI . serveP2pHttp
