@@ -1,0 +1,40 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 12"""
+ date="2026-01-29T17:36:30Z"
+ content="""
+Re serving more requests than workers, the point of limiting the number
+workers is that each worker can take a certian amount of resources. The
+resource may only be a file descriptor and a bit of cpu and memory
+usually; with proxying it could also include making outgoing connections,
+running gpg, etc. The worker limit is about being able to control the
+total amount of resources used.
+
+---
+
+It would be possible to have an option where p2phttp does not limit the
+number of workers at all, and the slowloris attack prevention could be left
+enabled in that mode. Of course then enough clients could overwhelm the
+server, but maybe that's better for some use cases.
+
+IIRC forgejo-aneksajo runs one p2phttp per repository and proxies requests
+to them. If so, you need a lower worker limit per p2phttp. I suppose it
+would be possible to make the proxy enforce its own limits to the number of
+concurrent p2phttp requests, and then it might make sense to not have
+p2phttp limit the number of workers.
+
+---
+
+p2phttp (or a proxy in front if it) could send a 503 response if it is
+unable to get a worker. That would avoid this slowlaris attack prevention
+problem. It would leave it up to the git-annex client to retry. Which
+depends on the `annex.retry` setting currently. It might make sense to have
+some automatic retrying on 503 in the p2phttp client.
+
+One benefit of the way it works now is a `git-annex get -J10` will
+automatically use as many workers as the p2phttp server has available, and
+if 2 people are both running that, it naturally balances out fairly evenly
+between them, and keeps the server as busy as it wants to be in an
+efficient way. Client side retry would not work as nicely, there would need
+to be retry delays, and it would have to time out at some point.
+"""]]

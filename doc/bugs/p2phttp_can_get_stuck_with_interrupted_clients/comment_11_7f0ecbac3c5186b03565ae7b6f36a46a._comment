@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2026-01-29T17:33:30Z"
+ content="""
+The `kill -SIGINT` was my mistake; I ran the script using dash and it was
+its builtin kill that does not accept that.
+
+So, your test case was supposed to interrupt it after all. Tested it again
+with interruption and my fix does seem to have fixed it as best I can tell.
+"""]]
