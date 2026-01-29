@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/cd1c0b3be1af288012e49197918395f0"
+ subject="comment 10"
+ date="2026-01-29T09:04:03Z"
+ content="""
+> kill -s SIGINT is not valid syntax (at least not with procps's kill), so kill fails to do anything and a bunch of git-annex processes stack up all trying to get the same files. Probably you meant kill -s INT
+
+That's weird, I checked and both the shell built-in kill that I was using as well as the kill from procps-ng (Ubuntu's build: procps/noble-updates,now 2:4.0.4-4ubuntu3.2 amd64) installed on my laptop accept `-s SIGINT`.
+
+Anyway, thank you for investigating! I agree being susceptible to DoS attacks is not great, but better than accidentally DoS'ing ourselves in normal usage...
+
+I wonder, would it be architecturally possible to serve multiple requests concurrently with less workers than requests? E.g. do some async/multitasking magic between requests? If that was the case then I suspect this issue wouldn't come up, because all requests would progress steadily instead of waiting for a potentially long time.
+"""]]
