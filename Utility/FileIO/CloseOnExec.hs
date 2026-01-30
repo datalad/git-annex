@@ -46,7 +46,7 @@ import Prelude (Bool(..), pure, either, (.), (>>=), ($))
 import Control.Exception
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
-#ifndef mingw32_HOST_OS
+#if ! MIN_VERSION_file_io(0,2,0)
 import System.Posix.IO
 import Utility.Process
 #endif
@@ -98,18 +98,17 @@ appendFile'
   :: OsPath -> BS.ByteString -> IO ()
 appendFile' fp contents = withFileNoEncoding fp AppendMode (`BS.hPut` contents)
 
-{- Re-implementing openTempFile is difficult due to the current
- - structure of file-io. See this issue for discussion about improving
- - that: https://github.com/haskell/file-io/issues/44
- - So, instead this uses noCreateProcessWhile.
- - -}
 openTempFile :: OsPath -> OsString -> IO (OsPath, Handle)
 openTempFile tmp_dir template = do
-#ifdef mingw32_HOST_OS
-	(p, h) <- I.openTempFile tmp_dir template
+#if MIN_VERSION_file_io(0,2,0)
+	(p, h) <- I.openTempFile' "openTempFile" tmp_dir template False 0o600 True
 	getLocaleEncoding >>= hSetEncoding h
 	pure (p, h)
 #else
+	{- Old versions of file-io make reimplementing openTempFile difficult.
+ 	 - So, instead this uses noCreateProcessWhile. This does not need
+	 - to support Windows, which always builds with the new file-io.
+	 -}
 	noCreateProcessWhile $ do
 		(p, h) <- I.openTempFile tmp_dir template
 		fd <- handleToFd h
