@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 14"""
+ date="2026-01-30T16:20:39Z"
+ content="""
+Re the number of threads, -J will affect the number of green threads used.
+(Which will be some constant-ish multiple of the -J value.)
+Green threads won't show up in htop, only OS-native theads will.
+
+The maximum number of OS-native threads should be capped at the number of
+cores.
+
+Exactly how many OS-native threads spawn is under the control of the
+haskell runtime, and it probably spawns an additional OS-native thread
+per green thread up to the limit.
+
+(It would be possible to limit the maximum number of OS-native threads to
+less than the number of cores, if that would somehow be useful. It would
+need a new config setting.)
+"""]]
