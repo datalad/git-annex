@@ -2,8 +2,7 @@
  - readFileString, writeFileString, and appendFileString.
  -
  - When building with file-io, all exported functions set the close-on-exec
- - flag. Also, some other issues are handled that file-io does not handle
- - correctly.
+ - flag.
  -
  - When not building with file-io, this provides equvilant
  - RawFilePath versions. Note that those versions do not currently
@@ -87,7 +86,7 @@ appendFile' = O.appendFile'
 
 -- On Windows, System.File.OsPath does not handle UNC-style conversion itself
 -- for this function, so that has to be done when calling it. See
---- https://github.com/haskell/file-io/issues/39
+-- https://github.com/haskell/file-io/issues/39
 openTempFile :: OsPath -> OsPath -> IO (OsPath, Handle)
 openTempFile p s = do
 	p' <- toOsPath <$> convertToWindowsNativeNamespace (fromOsPath p)

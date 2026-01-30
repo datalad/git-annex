@@ -312,11 +312,8 @@ Executable git-annex
     Build-Depends:
       os-string (>= 2.0.0),
       directory (>= 1.3.8.3),
-      filepath (>= 1.5.2.0)
-    if (os(windows))
-      Build-Depends: file-io (>= 0.2.0)
-    else
-      Build-Depends: file-io (>= 0.1.3)
+      filepath (>= 1.5.2.0),
+      file-io (>= 0.2.0)
     CPP-Options: -DWITH_OSPATH
   else
     Build-Depends:

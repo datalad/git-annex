@@ -3,11 +3,7 @@
  - All functions have been modified to set the close-on-exec
  - flag to True.
  -
- - Also, functions that return a Handle (for a non-binary file)
- - have been modified to use the locale encoding, working around
- - this bug: https://github.com/haskell/file-io/issues/45
- -
- - Copyright 2025 Joey Hess <id@joeyh.name>
+ - Copyright 2025-2026 Joey Hess <id@joeyh.name>
  - Copyright 2024 Julian Ospald
  -
  - License: BSD-3-clause
@@ -39,34 +35,29 @@ module Utility.FileIO.CloseOnExec
 
 import System.File.OsPath.Internal (withOpenFile', augmentError)
 import qualified System.File.OsPath.Internal as I
-import System.IO (IO, Handle, IOMode(..), hSetEncoding)
-import GHC.IO.Encoding (getLocaleEncoding)
+import System.IO (IO, Handle, IOMode(..))
 import System.OsPath (OsPath, OsString)
 import Prelude (Bool(..), pure, either, (.), (>>=), ($))
 import Control.Exception
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
-#if ! MIN_VERSION_file_io(0,2,0)
-import System.Posix.IO
-import Utility.Process
-#endif
 
 closeOnExec :: Bool
 closeOnExec = True
 
 withFile :: OsPath -> IOMode -> (Handle -> IO r) -> IO r
 withFile osfp iomode act = (augmentError "withFile" osfp
-    $ withOpenFileEncoding osfp iomode False False closeOnExec (try . act) True)
+    $ withOpenFile' osfp iomode False False closeOnExec (try . act) True)
   >>= either ioError pure
 
 withFile' :: OsPath -> IOMode -> (Handle -> IO r) -> IO r
 withFile' osfp iomode act = (augmentError "withFile'" osfp
-    $ withOpenFileEncoding osfp iomode False False closeOnExec (try . act) False)
+    $ withOpenFile' osfp iomode False False closeOnExec (try . act) False)
   >>= either ioError pure
 
 openFile :: OsPath -> IOMode -> IO Handle
 openFile osfp iomode =  augmentError "openFile" osfp $
-	withOpenFileEncoding osfp iomode False False closeOnExec pure False
+	withOpenFile' osfp iomode False False closeOnExec pure False
 
 withBinaryFile :: OsPath -> IOMode -> (Handle -> IO r) -> IO r
 withBinaryFile osfp iomode act = (augmentError "withBinaryFile" osfp
@@ -78,70 +69,27 @@ openBinaryFile osfp iomode = augmentError "openBinaryFile" osfp $
 	 withOpenFile' osfp iomode True False closeOnExec pure False
 
 readFile :: OsPath -> IO BSL.ByteString
-readFile fp = withFileNoEncoding' fp ReadMode BSL.hGetContents
+readFile fp = withFile' fp ReadMode BSL.hGetContents
 
 readFile'
   :: OsPath -> IO BS.ByteString
-readFile' fp = withFileNoEncoding fp ReadMode BS.hGetContents
+readFile' fp = withFile' fp ReadMode BS.hGetContents
 
 writeFile :: OsPath -> BSL.ByteString -> IO ()
-writeFile fp contents = withFileNoEncoding fp WriteMode (`BSL.hPut` contents)
+writeFile fp contents = withFile' fp WriteMode (`BSL.hPut` contents)
 
 writeFile'
   :: OsPath -> BS.ByteString -> IO ()
-writeFile' fp contents = withFileNoEncoding fp WriteMode (`BS.hPut` contents)
+writeFile' fp contents = withFile' fp WriteMode (`BS.hPut` contents)
 
 appendFile :: OsPath -> BSL.ByteString -> IO ()
-appendFile fp contents = withFileNoEncoding fp AppendMode (`BSL.hPut` contents)
+appendFile fp contents = withFile' fp AppendMode (`BSL.hPut` contents)
 
 appendFile'
   :: OsPath -> BS.ByteString -> IO ()
-appendFile' fp contents = withFileNoEncoding fp AppendMode (`BS.hPut` contents)
+appendFile' fp contents = withFile' fp AppendMode (`BS.hPut` contents)
 
 openTempFile :: OsPath -> OsString -> IO (OsPath, Handle)
-openTempFile tmp_dir template = do
-#if MIN_VERSION_file_io(0,2,0)
-	(p, h) <- I.openTempFile' "openTempFile" tmp_dir template False 0o600 True
-	getLocaleEncoding >>= hSetEncoding h
-	pure (p, h)
-#else
-	{- Old versions of file-io make reimplementing openTempFile difficult.
- 	 - So, instead this uses noCreateProcessWhile. This does not need
-	 - to support Windows, which always builds with the new file-io.
-	 -}
-	noCreateProcessWhile $ do
-		(p, h) <- I.openTempFile tmp_dir template
-		fd <- handleToFd h
-		setFdOption fd CloseOnExec True
-		h' <- fdToHandle fd
-		getLocaleEncoding >>= hSetEncoding h'
-		pure (p, h')
-#endif
-
-{- Wrapper around withOpenFile' that sets the locale encoding on the
- - Handle. -}
-withOpenFileEncoding :: OsPath -> IOMode -> Bool -> Bool -> Bool -> (Handle -> IO r) -> Bool -> IO r
-withOpenFileEncoding fp iomode binary existing cloExec action close_finally =
-	withOpenFile' fp iomode binary existing cloExec action' close_finally
-  where
-	action' h = do
-		getLocaleEncoding >>= hSetEncoding h
-		action h
-
-{- Variant of withFile above that does not have the overhead of setting the
- - locale encoding. Faster to use when the Handle is not used in a way that
- - needs any encoding. -}
-withFileNoEncoding :: OsPath -> IOMode -> (Handle -> IO r) -> IO r
-withFileNoEncoding osfp iomode act = (augmentError "withFile" osfp
-    $ withOpenFile' osfp iomode False False closeOnExec (try . act) True)
-  >>= either ioError pure
-
-{- Variant of withFile' above that does not have the overhead of setting the
- - locale encoding. Faster to use when the Handle is not used in a way that
- - needs any encoding. -}
-withFileNoEncoding' :: OsPath -> IOMode -> (Handle -> IO r) -> IO r
-withFileNoEncoding' osfp iomode act = (augmentError "withFile'" osfp
-    $ withOpenFile' osfp iomode False False closeOnExec (try . act) False)
-  >>= either ioError pure
-
+openTempFile tmp_dir template =
+	I.openTempFile' "openTempFile" tmp_dir template False 0o600 closeOnExec
 #endif
