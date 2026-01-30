@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/cd1c0b3be1af288012e49197918395f0"
+ subject="comment 13"
+ date="2026-01-29T19:25:14Z"
+ content="""
+I might have some misunderstandings about what the -J flag does exactly... So far I assumed that it just sets the number of OS threads that are used as a worker pool to handle requests. In Forgejo-aneksajo it is set to -J2 because of that assumption and there being one p2phttp process per repository (if p2phttp has recently been used with the repository, it is started on demand and stopped after a while of non-usage), so larger values could multiply pretty fast. Your description sounds like it should actually just be a limit on the number of requests that can be handled concurrently, independent of the size of the worker pool. What I am observing when I increase it is that htop shows two new threads when I increment the value by one though.
+
+Could there be a fixed-size (small) worker pool, and a higher number of concurrent requests allowed? I agree that limiting the total resource usage makes a lot of sense, but does it have to be tied to the thread count?
+
+Maybe I am overthinking this a bit though, and I should just bump the number up by one or more factors of 2 and see what happens.
+"""]]
