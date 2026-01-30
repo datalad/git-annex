@@ -9,8 +9,11 @@ flags:
     debuglocks: false
     benchmark: true
     ospath: true
+  file-io:
+    os-string: true
 packages:
 - '.'
 resolver: lts-24.26
 extra-deps:
 - aws-0.25.2
+- file-io-0.2.0

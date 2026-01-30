@@ -46,10 +46,6 @@ module Utility.FileIO
 import Utility.FileIO.CloseOnExec
 import Utility.FileIO.String
 #else
--- On Windows, System.File.OsPath does not handle UNC-style conversion itself,
--- so that has to be done when calling it. See 
--- https://github.com/haskell/file-io/issues/39
-import Utility.Path.Windows
 import Utility.OsPath
 import System.IO (IO, Handle, IOMode)
 import Prelude (String, return)
@@ -60,55 +56,38 @@ import qualified Data.ByteString.Lazy as L
 import Control.Applicative
 
 withFile :: OsPath -> IOMode -> (Handle -> IO r) -> IO r 
-withFile f m a = do
-	f' <- toOsPath <$> convertToWindowsNativeNamespace (fromOsPath f)
-	O.withFile f' m a
+withFile = O.withFile
 
 openFile :: OsPath -> IOMode -> IO Handle
-openFile f m = do
-	f' <- toOsPath <$> convertToWindowsNativeNamespace (fromOsPath f)
-	O.openFile f' m
+openFile = O.openFile
 
 withBinaryFile :: OsPath -> IOMode -> (Handle -> IO r) -> IO r 
-withBinaryFile f m a = do
-	f' <- toOsPath <$> convertToWindowsNativeNamespace (fromOsPath f)
-	O.withBinaryFile f' m a
+withBinaryFile = O.withBinaryFile
 
 openBinaryFile :: OsPath -> IOMode -> IO Handle
-openBinaryFile f m = do
-	f' <- toOsPath <$> convertToWindowsNativeNamespace (fromOsPath f)
-	O.openBinaryFile f' m
+openBinaryFile = O.openBinaryFile
 
 readFile :: OsPath -> IO L.ByteString
-readFile f = do
-	f' <- toOsPath <$> convertToWindowsNativeNamespace (fromOsPath f)
-	O.readFile f'
+readFile = O.readFile
 
 readFile' :: OsPath -> IO B.ByteString
-readFile' f = do
-	f' <- toOsPath <$> convertToWindowsNativeNamespace (fromOsPath f)
-	O.readFile' f'
+readFile' = O.readFile'
 
 writeFile :: OsPath -> L.ByteString -> IO ()
-writeFile f b = do
-	f' <- toOsPath <$> convertToWindowsNativeNamespace (fromOsPath f)
-	O.writeFile f' b
+writeFile = O.writeFile
 
 writeFile' :: OsPath -> B.ByteString -> IO ()
-writeFile' f b = do
-	f' <- toOsPath <$> convertToWindowsNativeNamespace (fromOsPath f)
-	O.writeFile' f' b
+writeFile' = O.writeFile'
 
 appendFile :: OsPath -> L.ByteString -> IO ()
-appendFile f b = do
-	f' <- toOsPath <$> convertToWindowsNativeNamespace (fromOsPath f)
-	O.appendFile f' b
+appendFile = O.appendFile
 
 appendFile' :: OsPath -> B.ByteString -> IO ()
-appendFile' f b = do
-	f' <- toOsPath <$> convertToWindowsNativeNamespace (fromOsPath f)
-	O.appendFile' f' b
+appendFile' = O.appendFile'
 
+-- On Windows, System.File.OsPath does not handle UNC-style conversion itself
+-- for this function, so that has to be done when calling it. See
+--- https://github.com/haskell/file-io/issues/39
 openTempFile :: OsPath -> OsPath -> IO (OsPath, Handle)
 openTempFile p s = do
 	p' <- toOsPath <$> convertToWindowsNativeNamespace (fromOsPath p)
@@ -118,19 +97,13 @@ openTempFile p s = do
 	return (t', h)
 
 readFileString :: OsPath -> IO String
-readFileString p = do
-	p' <- toOsPath <$> convertToWindowsNativeNamespace (fromOsPath p)
-	O.readFileString p'
+readFileString = O.readFileString
 
 writeFileString :: OsPath -> String -> IO ()
-writeFileString f txt = do
-	f' <- toOsPath <$> convertToWindowsNativeNamespace (fromOsPath f)
-	O.writeFileString f' txt
+writeFileString = O.writeFileString
 
 appendFileString :: OsPath -> String -> IO ()
-appendFileString f txt = do
-	f' <- toOsPath <$> convertToWindowsNativeNamespace (fromOsPath f)
-	O.appendFileString f' txt
+appendFileString = O.appendFileString
 #endif
 
 #else
