@@ -61,9 +61,17 @@ convenient way to download the content of any key, by using the path
   This or annex.jobs must be set to configure the number of worker
   threads, per repository served, that serve connections to the webserver.
 
-  This must be set to 2 or more.
+  This must be set to 2 or more, since the webserver needs one thread
+  for itself. 
 
-  A good choice is often one worker per CPU core: `--jobs=cpus`
+  Each additional job lets the webserver serve one more concurrent request.
+  When there are too many requests to serve all at once, the webserver will
+  delay responding to some requests until others have completed.
+
+  A conservative starting place would be one worker per CPU core: `--jobs=cpus`
+
+  However, to avoid delays, this can be set to much higher values.
+  Avoid setting it so high that the server runs out of file descriptors.
 
 * `--proxyconnections=N`
 
