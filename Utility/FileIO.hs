@@ -46,6 +46,7 @@ import Utility.FileIO.CloseOnExec
 import Utility.FileIO.String
 #else
 import Utility.OsPath
+import Utility.Path.Windows
 import System.IO (IO, Handle, IOMode)
 import Prelude (String, return)
 import qualified Utility.FileIO.CloseOnExec as O
