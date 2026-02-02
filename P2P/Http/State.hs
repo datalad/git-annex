@@ -642,9 +642,10 @@ dropLock lckid st = do
 		Nothing -> return ()
 		Just locker -> wait (lockerThread locker)
 
-withAnnexWorkerPool :: (Maybe Concurrency) -> (AnnexWorkerPool -> Annex a) -> Annex a
-withAnnexWorkerPool mc a = do
-	maybe noop (setConcurrency . ConcurrencyCmdLine) mc
+withAnnexWorkerPool :: Maybe Concurrency -> Maybe Cpus -> (AnnexWorkerPool -> Annex a) -> Annex a
+withAnnexWorkerPool mconc mcpus a = do
+	maybe noop setCpus mcpus
+	maybe noop (setConcurrency . ConcurrencyCmdLine) mconc
 	startConcurrency transferStages $
 		Annex.getState Annex.workers >>= \case
 			Nothing -> giveup "Use -Jn or set annex.jobs to configure the number of worker threads."

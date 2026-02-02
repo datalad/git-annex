@@ -68,10 +68,19 @@ convenient way to download the content of any key, by using the path
   When there are too many requests to serve all at once, the webserver will
   delay responding to some requests until others have completed.
 
-  A conservative starting place would be one worker per CPU core: `--jobs=cpus`
+  A conservative starting place would be one worker per CPU core:
+  `--jobs=cpus`
 
   However, to avoid delays, this can be set to much higher values.
-  Avoid setting it so high that the server runs out of file descriptors.
+  Avoid setting it so high that the server runs out of file descriptors
+  or other resources.
+
+* `--cpus=N`
+
+  Limit how many CPU cores the web server can run on at the same time.
+
+  Setting `--jobs=100 --cpus=2` will make the web server only use 2 cpu
+  cores, but use threads to serve up to 100 concurrent requests.
 
 * `--proxyconnections=N`
 

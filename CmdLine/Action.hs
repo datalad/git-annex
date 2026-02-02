@@ -247,7 +247,7 @@ startConcurrency usedstages a = do
 			goconcurrentpercpu
   where
 	goconcurrent n = do
-		liftIO $ raiseCapabilitiesForJobs n
+		raiseCapabilitiesForJobs n
 		withMessageState $ \s -> case outputType s of
 			NormalOutput -> ifM (liftIO concurrentOutputSupported)
 				( Regions.displayConsoleRegions $
@@ -341,10 +341,11 @@ checkSizeLimit (Just sizelimitvar) startmsg a =
 	
 	reachedlimit = Annex.changeState $ \s -> s { Annex.reachedlimit = True }
 
-raiseCapabilitiesForJobs :: Int -> IO ()
+raiseCapabilitiesForJobs :: Int -> Annex ()
 raiseCapabilitiesForJobs njobs = do
-	ncpus <- getNumProcessors
+	ncpus <- maybe (liftIO getNumProcessors) (\(Cpus n) -> return n)
+		=<< Annex.getState Annex.cpus
 	let n = min ncpus njobs
-	c <- getNumCapabilities
+	c <- liftIO getNumCapabilities
 	when (n > c) $
-		setNumCapabilities n
+		liftIO $ setNumCapabilities n

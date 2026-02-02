@@ -1,6 +1,6 @@
 {- git-annex command-line option parsing
  -
- - Copyright 2010-2024 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2026 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -541,6 +541,21 @@ jobsOptionParser =
 		( long "jobs" <> short 'J' 
 		<> metavar (paramNumber `paramOr` "cpus")
 		<> help "enable concurrent jobs"
+		<> hidden
+		)
+
+cpusOption :: [AnnexOption]
+cpusOption = 
+	[ annexOption (setAnnexState . setCpus)
+		cpusOptionParser
+	]
+
+cpusOptionParser :: Parser Cpus
+cpusOptionParser = 
+	option (maybeReader parseCpus)
+		( long "cpus" 
+		<> metavar paramNumber
+		<> help "how many cpus to run jobs on"
 		<> hidden
 		)
 

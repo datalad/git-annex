@@ -18,6 +18,7 @@ git-annex (10.20260116) UNRELEASED; urgency=medium
   * The OsPath build flag requires file-io 0.2.0, which fixes several
     issues.
   * Avoid ever starting more capabilities than the number of cpus.
+  * p2phttp: Added --cpus option.
 
  -- Joey Hess <id@joeyh.name>  Mon, 19 Jan 2026 10:55:02 -0400
 

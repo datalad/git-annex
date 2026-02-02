@@ -11,7 +11,7 @@
 
 module Command.P2PHttp where
 
-import Command hiding (jobsOption)
+import Command hiding (jobsOption, cpusOption)
 import P2P.Http.Server
 import P2P.Http.Url
 import qualified P2P.Protocol as P2P
@@ -58,6 +58,7 @@ data Options = Options
 	, proxyConnectionsOption :: Maybe Integer
 	, jobsOption :: Maybe Concurrency
 	, clusterJobsOption :: Maybe Int
+	, cpusOption :: Maybe Cpus
 	, lockedFilesOption :: Maybe Integer
 	, directoryOption :: [FilePath]
 	}
@@ -121,6 +122,7 @@ optParser _ = Options
 		( long "clusterjobs" <> metavar paramNumber
 		<> help "number of concurrent node accesses per connection"
 		))
+	<*> optional cpusOptionParser
 	<*> optional (option auto
 		( long "lockedfiles" <> metavar paramNumber
 		<> help "number of content files that can be locked"
@@ -239,7 +241,7 @@ runServer o mst = go `finally` serverShutdownCleanup mst
 
 mkServerState :: Options -> M.Map Auth P2P.ServerMode -> LockedFilesQSem -> Annex P2PHttpServerState
 mkServerState o authenv lockedfilesqsem = 
-	withAnnexWorkerPool (jobsOption o) $
+	withAnnexWorkerPool (jobsOption o) (cpusOption o) $
 		mkP2PHttpServerState
 			(mkGetServerMode authenv o)
 			return

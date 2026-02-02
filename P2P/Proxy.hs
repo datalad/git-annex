@@ -719,7 +719,7 @@ concurrencyConfigJobs = (annexJobs <$> Annex.getGitConfig) >>= \case
 	ConcurrentPerCpu -> go =<< liftIO getNumProcessors
   where
 	go n = do
-		liftIO $ raiseCapabilitiesForJobs n
+		raiseCapabilitiesForJobs n
 		setConcurrency (ConcurrencyGitConfig (Concurrent n))
 		mkConcurrencyConfig n
 

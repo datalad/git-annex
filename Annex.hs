@@ -1,6 +1,6 @@
 {- git-annex monad
  -
- - Copyright 2010-2024 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2026 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -190,6 +190,7 @@ data AnnexState = AnnexState
 	, remotes :: [Types.Remote.RemoteA Annex]
 	, output :: MessageState
 	, concurrency :: ConcurrencySetting
+	, cpus :: Maybe Cpus
 	, daemon :: Bool
 	, repoqueue :: Maybe (Git.Queue.Queue Annex)
 	, catfilehandles :: CatFileHandles
@@ -248,6 +249,7 @@ newAnnexState c r = do
 		, remotes = []
 		, output = o
 		, concurrency = ConcurrencyCmdLine NonConcurrent
+		, cpus = Nothing
 		, daemon = False
 		, repoqueue = Nothing
 		, catfilehandles = catFileHandlesNonConcurrent

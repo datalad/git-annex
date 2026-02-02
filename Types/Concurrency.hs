@@ -1,4 +1,4 @@
-{- Copyright 2016 Joey Hess <id@joeyh.name>
+{- Copyright 2016-2026 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -23,3 +23,10 @@ data ConcurrencySetting
 	= ConcurrencyCmdLine Concurrency
 	| ConcurrencyGitConfig Concurrency
 	deriving (Eq)
+
+newtype Cpus = Cpus Int
+	deriving (Eq)
+
+parseCpus :: String -> Maybe Cpus
+parseCpus s = Cpus <$> readish s
+

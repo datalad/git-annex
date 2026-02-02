@@ -1,6 +1,6 @@
 {- git-annex concurrent state
  -
- - Copyright 2015-2022 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2026 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -61,6 +61,9 @@ setConcurrency' c f = do
 			, Annex.hashobjecthandle = Just hoh
 			, Annex.checkignorehandle = Just cih
 			}
+
+setCpus :: Cpus -> Annex ()
+setCpus n =  Annex.changeState $ \s -> s  { Annex.cpus = Just n }
 
 {- Allows forking off a thread that uses a copy of the current AnnexState
  - to run an Annex action.
