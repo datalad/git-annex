@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2026-02-02T17:36:12Z"
+ content="""
+Seems I was misremembering details of how ghc's "capabilities" work. From
+its [manual](https://downloads.haskell.org/ghc/latest/docs/users_guide/using-concurrent.html):
+
+> Each capability can run one Haskell thread at a time, so the number of
+> capabilities is equal to the number of Haskell threads that can run physically
+> in parallel. A capability is animated by one or more OS threads; the runtime
+> manages a pool of OS threads for each capability, so that if a Haskell thread
+> makes a foreign call (see Multi-threading and the FFI) another OS thread can
+> take over that capability.
+
+Currently git-annex raises the number of capabilities to the -J value.
+
+Probably the thread pool starts at 2 threads to have one spare preallocated
+for the first FFI call, explaining why each -J doubles the number of OS threads.
+
+I think would make sense to have a separate option that controls the number
+of capabilities. Then you could set that to eg 2, and set a large -J value,
+in order to have `git-annex p2phttp` allow serving a large number of concurrent
+requests, threaded on only 2 cores.
+
+Also, it does not seem to make sense for the default number of capabilities,
+with a high -J value, to exceed the number of cores. As you noticed,
+each capability uses some FDs, for eventfd, eventpoll, I'm not sure what else.
+"""]]
