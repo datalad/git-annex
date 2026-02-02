@@ -1,0 +1,94 @@
+### Please describe the problem.
+
+In the discussion under <https://git-annex.branchable.com/bugs/p2phttp_can_get_stuck_with_interrupted_clients/> you've said that the -J flag of p2phttp should be approximately equivalent to a limit on the green threads git-annex starts, while the number of OS threads should be handled by the haskell runtime and limited by core count.
+
+What I am seeing is different though:
+
+```
+$ git annex p2phttp -J2
+$ ps -o thcount $(pgrep git-annex)
+THCNT
+    7
+```
+
+```
+$ git annex p2phttp -J3
+$ ps -o thcount $(pgrep git-annex)
+THCNT
+    9
+```
+
+```
+$ git annex p2phttp -J20
+$ ps -o thcount $(pgrep git-annex)
+THCNT
+   43
+```
+
+```
+$ git annex p2phttp -J200
+$ ps -o thcount $(pgrep git-annex)
+THCNT
+  403
+```
+
+Eventually it fails:
+
+```
+$ git annex p2phttp -J2000
+git-annex: setNumCapabilities: Attempt to increase capability count beyond maximum capability count 256; clamping...
+
+git-annex: git: createProcess: pipe: resource exhausted (Too many open files)
+```
+
+```
+$ git annex p2phttp -J252
+git-annex: git: createProcess: pipe: resource exhausted (Too many open files)
+```
+
+```
+$ git annex p2phttp -J251
+$ ps -o thcount $(pgrep git-annex)
+THCNT
+  505
+```
+
+The thread count increases together with -J (2 new threads per increment), without any limit on the number of OS threads that I am seeing. My laptop only has 4 cores + hyperthreading.
+
+Looking at the code it seems like the value of -J is passed to setNumCapabilities. The documentation says that this sets the number of OS threads (and should not be larger than the number of physical cores): <https://hackage-content.haskell.org/package/base-4.22.0.0/docs/Control-Concurrent.html#v:setNumCapabilities>.
+
+
+### What steps will reproduce the problem?
+
+Trying out different -J values for git-annex p2phttp.
+
+
+### What version of git-annex are you using? On what operating system?
+
+```
+$ git annex version
+git-annex version: 10.20260115-ge8de977f1d5b5ac57cfe7a0c66d4e1c3ff337af1
+build flags: Assistant Webapp Inotify DBus DesktopNotify TorrentParser MagicMime Benchmark Feeds Testsuite S3 WebDAV Servant OsPath
+dependency versions: aws-0.25.2 bloomfilter-2.0.1.3 crypton-1.0.4 DAV-1.3.4 feed-1.3.2.1 ghc-9.10.3 http-client-0.7.19 torrent-10000.1.3 uuid-1.3.16 yesod-1.6.2.1
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL GITBUNDLE GITMANIFEST VURL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg rclone hook external compute mask
+operating system: linux x86_64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
+local repository version: 10
+```
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
