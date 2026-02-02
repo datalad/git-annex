@@ -71,23 +71,20 @@ openBinaryFile osfp iomode = augmentError "openBinaryFile" osfp $
 readFile :: OsPath -> IO BSL.ByteString
 readFile fp = withFile' fp ReadMode BSL.hGetContents
 
-readFile'
-  :: OsPath -> IO BS.ByteString
-readFile' fp = withFile' fp ReadMode BS.hGetContents
+readFile' :: OsPath -> IO BS.ByteString
+readFile' fp = withFile fp ReadMode BS.hGetContents
 
 writeFile :: OsPath -> BSL.ByteString -> IO ()
-writeFile fp contents = withFile' fp WriteMode (`BSL.hPut` contents)
+writeFile fp contents = withFile fp WriteMode (`BSL.hPut` contents)
 
-writeFile'
-  :: OsPath -> BS.ByteString -> IO ()
-writeFile' fp contents = withFile' fp WriteMode (`BS.hPut` contents)
+writeFile' :: OsPath -> BS.ByteString -> IO ()
+writeFile' fp contents = withFile fp WriteMode (`BS.hPut` contents)
 
 appendFile :: OsPath -> BSL.ByteString -> IO ()
-appendFile fp contents = withFile' fp AppendMode (`BSL.hPut` contents)
+appendFile fp contents = withFile fp AppendMode (`BSL.hPut` contents)
 
-appendFile'
-  :: OsPath -> BS.ByteString -> IO ()
-appendFile' fp contents = withFile' fp AppendMode (`BS.hPut` contents)
+appendFile' :: OsPath -> BS.ByteString -> IO ()
+appendFile' fp contents = withFile fp AppendMode (`BS.hPut` contents)
 
 openTempFile :: OsPath -> OsString -> IO (OsPath, Handle)
 openTempFile tmp_dir template =
