@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2026-02-02T18:47:29Z"
+ content="""
+Added --cpus option. And avoided a high -J value increasing the number of
+capabilities higher than the available number of cpus.
+
+I think you might want to use something like: `git-annex p2phttp --cpus=2 --jobs=100`
+"""]]
