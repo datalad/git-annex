@@ -1,6 +1,6 @@
 {- git-annex command-line actions and concurrency
  -
- - Copyright 2010-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2026 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -247,7 +247,7 @@ startConcurrency usedstages a = do
 			goconcurrentpercpu
   where
 	goconcurrent n = do
-		raisecapabilitiesto n
+		liftIO $ raiseCapabilitiesForJobs n
 		withMessageState $ \s -> case outputType s of
 			NormalOutput -> ifM (liftIO concurrentOutputSupported)
 				( Regions.displayConsoleRegions $
@@ -269,11 +269,6 @@ startConcurrency usedstages a = do
 
 	setconcurrentoutputenabled b = Annex.changeState $ \s ->
 		s { Annex.output = (Annex.output s) { concurrentOutputEnabled = b } }
-
-	raisecapabilitiesto n = do
-		c <- liftIO getNumCapabilities
-		when (n > c) $
-			liftIO $ setNumCapabilities n
 	
 	initworkerpool n = do
 		tv <- liftIO newEmptyTMVarIO
@@ -345,3 +340,11 @@ checkSizeLimit (Just sizelimitvar) startmsg a =
 			else reachedlimit
 	
 	reachedlimit = Annex.changeState $ \s -> s { Annex.reachedlimit = True }
+
+raiseCapabilitiesForJobs :: Int -> IO ()
+raiseCapabilitiesForJobs njobs = do
+	ncpus <- getNumProcessors
+	let n = min ncpus njobs
+	c <- getNumCapabilities
+	when (n > c) $
+		setNumCapabilities n

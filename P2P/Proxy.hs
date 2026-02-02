@@ -20,6 +20,7 @@ import Git.FilePath
 import Types.Concurrency
 import Annex.Concurrent
 import qualified Remote
+import CmdLine.Action
 
 import Data.Either
 import Control.Concurrent.STM
@@ -718,9 +719,7 @@ concurrencyConfigJobs = (annexJobs <$> Annex.getGitConfig) >>= \case
 	ConcurrentPerCpu -> go =<< liftIO getNumProcessors
   where
 	go n = do
-		c <- liftIO getNumCapabilities
-		when (n > c) $
-			liftIO $ setNumCapabilities n
+		liftIO $ raiseCapabilitiesForJobs n
 		setConcurrency (ConcurrencyGitConfig (Concurrent n))
 		mkConcurrencyConfig n
 
