@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2026-02-02T17:19:34Z"
+ content="""
+I don't reproduce this:
+
+	joey@darkstar:~/tmp/bench/r>git-annex export --fast master --to rsync
+	(recording state in git...)
+
+Nothing is exported by `export --fast` (which matches its documentation), 
+and examining the files in the remote's directory, none are deleted or
+overwritten.
+
+When I later run `git-annex push`, all files in the tree get exported.
+In cases where the remote's directory already contained a file with the
+same name, it is overwritten. That is as expected.
+
+> My plan was to add the directory as an exporttree remote, make git-annex
+> think that the current main branches tree should be available there via
+> the fast export, and then do a
+> `git annex fsck --from <remote>` to discover what's actually there
+
+You could do that with a special remote also configured with
+importtree=yes. No need to do anything special, just import from the
+remote, and git-annex will learn what files are on it.
+
+Unfortunately, 
+[[importtree is not supported by the rsync special remote|todo/import_tree_from_rsync_special_remote]]
+
+Your use case sounds like it might be one that
+[[todo/importtree_only_remotes]] would support.
+"""]]
