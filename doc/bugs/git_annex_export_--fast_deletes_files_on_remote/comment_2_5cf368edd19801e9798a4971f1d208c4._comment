@@ -1,0 +1,62 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/cd1c0b3be1af288012e49197918395f0"
+ subject="comment 2"
+ date="2026-02-03T12:58:32Z"
+ content="""
+Sorry, I must have misunderstood the failure condition (the full project also involves an external special remote with a custom URL scheme and an external backend, which I have now ruled out as the cause). It is actually not the first export, but rather a later re-export once something has changed. What I have been encountering this with is after migrating some keys:
+
+[[!format sh \"\"\"
+icg149@icg1911:~/Playground$ datalad create test-export-repo
+create(ok): /home/icg149/Playground/test-export-repo (dataset)
+icg149@icg1911:~/Playground$ cd test-export-repo
+icg149@icg1911:~/Playground/test-export-repo$ mkdir subdir
+icg149@icg1911:~/Playground/test-export-repo$ head -c 10K /dev/urandom > subdir/test1.bin
+icg149@icg1911:~/Playground/test-export-repo$ head -c 10K /dev/urandom > subdir/test2.bin
+icg149@icg1911:~/Playground/test-export-repo$ head -c 10K /dev/urandom > subdir/test3.bin
+icg149@icg1911:~/Playground/test-export-repo$ datalad save
+add(ok): subdir/test1.bin (file)                                                                                                                              
+add(ok): subdir/test2.bin (file)                                                                                                                              
+add(ok): subdir/test3.bin (file)                                                                                                                              
+save(ok): . (dataset)                                                                                                                                         
+action summary:                                                                                                                                               
+  add (ok: 3)
+  save (ok: 1)
+icg149@icg1911:~/Playground/test-export-repo$ mkdir -p ../test-export-dir/subdir
+icg149@icg1911:~/Playground/test-export-repo$ cp subdir/test*.bin ../test-export-dir/subdir
+icg149@icg1911:~/Playground/test-export-repo$ git annex initremote rsync type=rsync rsyncurl=../test-export-dir exporttree=yes encryption=none autoenable=true
+initremote rsync ok
+(recording state in git...)
+icg149@icg1911:~/Playground/test-export-repo$ git annex drop --force subdir/test2.bin
+drop subdir/test2.bin ok
+(recording state in git...)
+icg149@icg1911:~/Playground/test-export-repo$ git annex export --fast main --to rsync
+(recording state in git...)
+icg149@icg1911:~/Playground/test-export-repo$ tree ../test-export-dir/
+../test-export-dir/
+└── subdir
+    ├── test1.bin
+    ├── test2.bin
+    └── test3.bin
+
+2 directories, 3 files
+icg149@icg1911:~/Playground/test-export-repo$ git annex migrate --backend SHA256E subdir/test1.bin
+migrate subdir/test1.bin (checksum...) (checksum...) ok
+(recording state in git...)
+icg149@icg1911:~/Playground/test-export-repo$ datalad save
+save(ok): . (dataset)                                                                                                                                         
+icg149@icg1911:~/Playground/test-export-repo$ git annex export --fast main --to rsync
+unexport rsync subdir/test1.bin ok
+(recording state in git...)
+icg149@icg1911:~/Playground/test-export-repo$ tree ../test-export-dir/
+../test-export-dir/
+
+0 directories, 0 files
+\"\"\"]]
+
+This seems to not only happen with a migrate, but also if the file-as-tracked-in-git changes in other ways.
+
+The unexport makes some sense given that the git-tracked-file has changed, but since in my case it is only a backend migration the content is still the same. I think this unexport shouldn't happen at all with --fast though.
+
+That this single file change also removes the other files in the same subdirectory, regardless of if they are present or not, is very surprising.
+"""]]
