@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/cd1c0b3be1af288012e49197918395f0"
+ subject="comment 3"
+ date="2026-02-03T13:22:11Z"
+ content="""
+> You could do that with a special remote also configured with importtree=yes. No need to do anything special, just import from the remote, and git-annex will learn what files are on it.
+> [...]
+> Your use case sounds like it might be one that importtree only remotes would support.
+
+I do not trust the content that is stored in this directory on the HPC system. I am able to reproduce some of the newer files directly from the third-party they were downloaded from, but for older files I get very weird slightly different data. That's why I don't want to import anything from there. Instead, I am building this DataLad Dataset which records the requests necessary to fetch each file from the third-party (via datalad-cds' URLs) and then I am planning to download them all, record their checksums, and fsck the \"legacy\" data that we have in this non-version-controlled directory. In the end I also want to be able to populate this directory from the dataset with files downloaded via git-annex. `git annex copy --to` for export remotes would be nice for that, but as of now I would probably rsync them over myself and update git-annex' content tracking for the export remote myself.
+
+I don't think importtree or even importtree-only would be the right tool for this.
+"""]]
