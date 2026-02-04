@@ -344,14 +344,7 @@ removeExportM o _k loc =
 		Just f' -> includes f'
 
 removeExportDirectoryM :: RsyncOpts -> ExportDirectory -> Annex ()
-removeExportDirectoryM o ed = removeGeneric o $
-	map fromOsPath (allbelow d : includes d)
-  where
-	d = fromExportDirectory ed
-	allbelow f = f </> literalOsPath "***"
-	includes f = f : case upFrom f of
-		Nothing -> []
-		Just f' -> includes f'
+removeExportDirectoryM o ed = removeGeneric o []
 
 renameExportM :: RsyncOpts -> Key -> ExportLocation -> ExportLocation -> Annex (Maybe ())
 renameExportM _ _ _ _ = return Nothing

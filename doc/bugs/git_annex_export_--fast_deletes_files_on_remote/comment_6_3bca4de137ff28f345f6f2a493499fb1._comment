@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2026-02-04T19:40:43Z"
+ content="""
+Actually, it is possible to get rsync to delete a directory when it's
+empty, but preserve it otherwise. So I have implemented that.
+
+The other remotes that I mentioned will still have this behavior.
+And at least in the case of webdav, I doubt it can be made to only
+delete empty directories.
+
+Also note that the documentation is clear about this at the API level:
+
+	`REMOVEEXPORTDIRECTORY Directory`
+	[...]
+	Typically the directory will be empty, but it could possbly contain
+	files or other directories, and it's ok to remove those.
+"""]]

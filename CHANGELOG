@@ -19,6 +19,8 @@ git-annex (10.20260116) UNRELEASED; urgency=medium
     issues.
   * Avoid ever starting more capabilities than the number of cpus.
   * p2phttp: Added --cpus option.
+  * rsync: Avoid deleting contents of a non-empty directory when
+    removing the last exported file to the directory.
 
  -- Joey Hess <id@joeyh.name>  Mon, 19 Jan 2026 10:55:02 -0400
 
