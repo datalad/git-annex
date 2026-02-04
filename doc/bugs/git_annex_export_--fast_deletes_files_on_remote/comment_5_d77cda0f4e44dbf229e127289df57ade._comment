@@ -1,0 +1,54 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2026-02-04T16:59:05Z"
+ content="""
+Reproduced that behavior.
+
+What is happening here is that empty directories on the rsync special
+remote get cleaned up in a separate step after unexport of a file. It is
+unexporting `subdir/test1.bin`. And in this situation, due to the use of
+`export --fast`, no files have been sent to the export remote yet. So as
+far as git-annex is concerned, `subdir/` there is an empty directory, and
+so it removes it.
+
+Now, since `subdir/test1.bin` never did get sent to the remote, its old version
+does not actually need to be unexported before the new version is sent. Which
+would have avoided the cleanup and so avoided the problem. (Although I think
+there are probably good reasons for that unexport to be done, involving
+multi-writer situations. I would need to refresh my memory about some
+complicated stuff to say for sure.)
+
+But, the same thing can happen in other ways. For example, consider:
+
+	mkdir newdir
+	touch newdir/foo
+	git-annex add newdir/foo
+	git commit -m add
+	git-annex export master --to rsync
+	git rm newdir/foo
+	git commit -m rm
+	git-annex export master --to rsync
+
+That also deletes any other files that a third party has written to 
+`newdir/` on the remote. And in this case, it really does need to
+unexport `newdir/foo`.
+
+Note that the directory special remote does not behave the same way; it doesn't
+need the separate step to remove "empty" directories, and it just cleans up
+empty directories after removing a file from the export. But rsync does not
+have a way to delete a directory only when it's empty, which is why git-annex
+does the separate step to identify and remove empty directories. (From
+git-annex's perspective.) Also, the adb and webdav special remotes
+behave the same as rsync.
+
+I don't know that git-annex documents anywhere that an exporttree remote
+avoids deleting files added to the remote by third parties. I did find it
+susprising that files with names that git-annex doesn't even know about get
+deleted in this case. On the other hand, if git-annex is told to export a tree
+containing file `foo`, that is going to overwrite any `foo` written to the
+remote by a third party, and I think that is expected behavior.
+
+Also note that importtree remotes don't have this problem. Including avoiding
+export overwriting files written by third parties.
+"""]]
