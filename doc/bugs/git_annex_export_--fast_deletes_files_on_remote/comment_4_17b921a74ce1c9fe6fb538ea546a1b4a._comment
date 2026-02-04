@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2026-02-04T16:29:45Z"
+ content="""
+> I am planning to download them all, record their checksums
+
+That's what an import does do.. You would end up with an imported tree
+which you could diff with your known correct tree, and see what's different
+there, and for all files that are stored on the remote correctly, 
+`git-annex get` would be able to get them from there.
+"""]]
