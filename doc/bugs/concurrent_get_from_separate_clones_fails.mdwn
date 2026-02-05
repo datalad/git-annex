@@ -47,6 +47,8 @@ originally observed with datalad 1.3.0 and git annex 10.20240831+git21-gd717e9ac
 
 ### Please provide any additional information below.
 
+<details><summary> Reproducer script output</summary>
+
 [[!format sh """
 # If you can, paste a complete transcript of the problem occurring here.
 # If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
@@ -218,6 +220,7 @@ ok
 [2026-02-05 10:12:40.113699633] (Utility.Process) process [1453650] done ExitSuccess
 [2026-02-05 10:12:40.113998072] (Utility.Process) process [1453672] done ExitSuccess
 
+</details>
 
 # End of transcript or log.
 """]]
