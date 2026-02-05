@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="asmacdo"
+ avatar="http://cdn.libravatar.org/avatar/546a67f17e6420c02ca544eeb1bf373e"
+ subject="Have you had any luck using git-annex before?"
+ date="2026-02-05T16:21:39Z"
+ content="""
+YES! I use git-annex under the hood of datalad all the time, usually with no git-annex issues at all, I appreciate you for making VC with data possible!
+"""]]
