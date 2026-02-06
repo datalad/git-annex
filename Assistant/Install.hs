@@ -113,7 +113,7 @@ installWrapper file content = do
 installFileManagerHooks :: OsPath -> IO ()
 #ifdef linux_HOST_OS
 installFileManagerHooks program = unlessM osAndroid $ do
-	let actions = ["get", "drop", "undo"]
+	let actions = ["get", "drop"]
 
 	-- Gnome
 	nautilusScriptdir <- (\d -> d </> literalOsPath "nautilus" </> literalOsPath "scripts") <$> userDataDir

@@ -1,6 +1,6 @@
 # NAME
 
-git-annex undo - undo last change to a file or directory
+git-annex undo - undo last change to a file or directory (deprecated)
 
 # SYNOPSIS
 
@@ -13,7 +13,7 @@ file.
   
 When passed a directory, undoes the last change that was made to the
 contents of that directory.
-  
+
 Running undo a second time will undo the undo, returning the working
 tree to the same state it had before. To support undoing an undo of
 staged changes, any staged changes are first committed by the
@@ -21,6 +21,9 @@ undo command.
 
 Note that this does not undo get/drop of a file's content; it only
 operates on the file tree committed to git.
+
+This command is deprecated, the same things can be done 
+in other ways using usual git commands.
 
 # OPTIONS
 

@@ -22,11 +22,12 @@ import qualified Git.Branch
 cmd :: Command
 cmd = notBareRepo $ withAnnexOptions [jsonOptions] $
 	command "undo" SectionCommon 
-		"undo last change to a file or directory"
+		"undo last change to a file or directory (deprecated)"
 		paramPaths (withParams seek)
 
 seek :: CmdParams -> CommandSeek
 seek ps = do
+	warning "git-annex undo is deprecated and will be removed from a future version of git-annex"
 	-- Safety first; avoid any undo that would touch files that are not
 	-- in the index.
 	(fs, cleanup) <- inRepo $ LsFiles.notInRepo [] False (map toOsPath ps)

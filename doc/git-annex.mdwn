@@ -182,7 +182,7 @@ content from the key-value store.
 
 * `undo [filename|directory] ...`
 
-  Undo last change to a file or directory.
+  Undo last change to a file or directory. (deprecated)
   
   See [[git-annex-undo]](1) for details.
 

@@ -22,6 +22,8 @@ git-annex (10.20260116) UNRELEASED; urgency=medium
   * rsync: Avoid deleting contents of a non-empty directory when
     removing the last exported file to the directory.
   * Remove deprecated commands direct, indirect, proxy, and transferkeys.
+  * Deprecate undo command.
+  * Remove undo action from kde and nautilus integrations.
 
  -- Joey Hess <id@joeyh.name>  Mon, 19 Jan 2026 10:55:02 -0400
 
