@@ -111,8 +111,6 @@ import qualified Command.RmUrl
 import qualified Command.Import
 import qualified Command.Export
 import qualified Command.Map
-import qualified Command.Direct
-import qualified Command.Indirect
 import qualified Command.Upgrade
 import qualified Command.Forget
 import qualified Command.OldKeys
@@ -243,8 +241,6 @@ cmds testoptparser testrunner mkbenchmarkgenerator = map addGitAnnexCommonOption
 	, Command.Inprogress.cmd
 	, Command.Migrate.cmd
 	, Command.Map.cmd
-	, Command.Direct.cmd
-	, Command.Indirect.cmd
 	, Command.Upgrade.cmd
 	, Command.Forget.cmd
 	, Command.OldKeys.cmd

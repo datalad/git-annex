@@ -640,7 +640,6 @@ Executable git-annex
     Command.Dead
     Command.Describe
     Command.DiffDriver
-    Command.Direct
     Command.Drop
     Command.DropKey
     Command.DropUnused
@@ -669,7 +668,6 @@ Executable git-annex
     Command.Import
     Command.ImportFeed
     Command.InAnnex
-    Command.Indirect
     Command.Info
     Command.Init
     Command.InitCluster

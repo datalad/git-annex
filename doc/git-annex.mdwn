@@ -406,18 +406,6 @@ content from the key-value store.
   
   See [[git-annex-adjust]](1) for details.
 
-* `direct`
-
-  Switches a repository to use direct mode. (deprecated)
-  
-  See [[git-annex-direct]](1) for details.
-
-* `indirect`
-
-  Switches a repository to use indirect mode. (deprecated)
-  
-  See [[git-annex-indirect]](1) for details.
-
 # REPOSITORY MAINTENANCE COMMANDS
 
 * `fsck [path ...]`
