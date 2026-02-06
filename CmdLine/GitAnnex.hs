@@ -116,7 +116,6 @@ import qualified Command.Forget
 import qualified Command.OldKeys
 import qualified Command.P2P
 import qualified Command.P2PHttp
-import qualified Command.Proxy
 import qualified Command.DiffDriver
 import qualified Command.Smudge
 import qualified Command.FilterProcess
@@ -246,7 +245,6 @@ cmds testoptparser testrunner mkbenchmarkgenerator = map addGitAnnexCommonOption
 	, Command.OldKeys.cmd
 	, Command.P2P.cmd
 	, Command.P2PHttp.cmd
-	, Command.Proxy.cmd
 	, Command.DiffDriver.cmd
 	, Command.Smudge.cmd
 	, Command.FilterProcess.cmd

@@ -813,10 +813,6 @@ content from the key-value store.
   Lists files in a git ref. (deprecated)
   
   See [[git-annex-findref]](1) for details.
-
-* `proxy -- git cmd [options]`
-
-  Bypass direct mode guard. (deprecated)
   
   See [[git-annex-proxy]](1) for details.
 

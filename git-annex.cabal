@@ -695,7 +695,6 @@ Executable git-annex
     Command.P2PStdIO
     Command.PostReceive
     Command.PreCommit
-    Command.Proxy
     Command.Pull
     Command.Push
     Command.Recompute
