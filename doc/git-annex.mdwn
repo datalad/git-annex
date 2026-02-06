@@ -759,12 +759,6 @@ content from the key-value store.
 
   See [[git-annex-transferrer]](1) for details.
 
-* `transferkeys`
-  
-  Used internally by old versions of the assistant.
-
-  See [[git-annex-transferkey]](1) for details.
-
 * `setpresentkey key uuid [1|0]`
 
   This plumbing-level command changes git-annex's records about whether

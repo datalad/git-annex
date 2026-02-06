@@ -39,7 +39,6 @@ import qualified Command.SetKey
 import qualified Command.DropKey
 import qualified Command.Transferrer
 import qualified Command.TransferKey
-import qualified Command.TransferKeys
 import qualified Command.SetPresentKey
 import qualified Command.ReadPresentKey
 import qualified Command.CheckPresentKey
@@ -212,7 +211,6 @@ cmds testoptparser testrunner mkbenchmarkgenerator = map addGitAnnexCommonOption
 	, Command.DropKey.cmd
 	, Command.Transferrer.cmd
 	, Command.TransferKey.cmd
-	, Command.TransferKeys.cmd
 	, Command.SetPresentKey.cmd
 	, Command.ReadPresentKey.cmd
 	, Command.CheckPresentKey.cmd

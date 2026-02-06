@@ -21,6 +21,7 @@ git-annex (10.20260116) UNRELEASED; urgency=medium
   * p2phttp: Added --cpus option.
   * rsync: Avoid deleting contents of a non-empty directory when
     removing the last exported file to the directory.
+  * Remove deprecated git-annex transferkeys.
 
  -- Joey Hess <id@joeyh.name>  Mon, 19 Jan 2026 10:55:02 -0400
 
