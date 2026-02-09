@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="nadir"
+ avatar="http://cdn.libravatar.org/avatar/2af9174cf6c06de802104d632dc40071"
+ subject="Same issue"
+ date="2026-02-07T10:42:10Z"
+ content="""
+I can't follow the link as it appears to be broken, so couldn't look whether there was a fix for the high ram usage.
+
+My borg repo is only about 100 GB, but it has a large amount of files: 
+
+```
+local annex keys: 850128
+local annex size: 117.05 gigabytes
+annexed files in working tree: 1197089
+```
+
+The first sync action after my first borg backup (only one snapshot) is currently using about 26 GB of my 32 GB of RAM and possibly still climbing.
+
+
+"""]]

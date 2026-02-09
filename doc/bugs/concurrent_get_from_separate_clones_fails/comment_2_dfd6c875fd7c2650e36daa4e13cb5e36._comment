@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2026-02-06T21:58:36Z"
+ content="""
+ideally there should be no locking for the entire duration of `get` since there could be hundreds of clients trying to get that file. If locking is needed to update git-annex branch, better be journalled + flushed at once or locked only for git-annex branch edit (anyways better to debounce multiple operations)
+"""]]
