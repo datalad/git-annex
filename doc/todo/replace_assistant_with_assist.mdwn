@@ -1,0 +1,37 @@
+`git-annex assistant` is a complicated mess of race conditions and its own
+5 kloc of code that is independent of the rest of git-annex and has to be
+separately maintained to keep it at feature parity. Generally it has bugs
+that the rest of git-annex don't, and doesn't support everything that the
+rest of git-annex does.
+
+For example, the assistant currently 
+[misbehaves in repos containing a submodule](https://git-annex.branchable.com/bugs/assistant__58___nothing_added_to_commit_but_untracked../).
+Fixing that will involve the assistant running `git ls-files`, which it
+currently does not do. So it will get closer to how the rest of git-annex
+works. But approaching the rest of git-annex by degrees is an ongoing
+maintenance burden.
+
+So why not throw out the current assistant and replace it with a compositional
+system using parts that already exist elsewhere in git-annex? It might also
+be possible to use git's own support for inotify (and similar), rather than
+reinventing that wheel as well.
+
+Basically replacing the assistant needs 3 things:
+
+1. Gather inotify events and trigger an add and commit.
+2. Trigger `git-annex pull` when `git-annex remotedaemon` detects a
+   change has been made to a remote.
+3. Wait for commits and trigger `git-annex push` to remotes.
+
+There is more than that to the assistant, eg automatic periodic fscking,
+various attempts to diagnose and fix problems with repositories, live 
+detection of configuration changes, detecting drive mount events, etc. But
+those 3 would be enough for most users.
+
+Those could be 3 separate programs, which would gain the benefits of
+composition. If the user only wants automatic commits but not pushing or
+pulling, they can run one 1 program.
+
+This would also probably involve [[remove_webapp]], although in theory the
+webapp could be retained, with only the parts of the assistant that handle
+staging, committing, pull, and push replaced.
