@@ -26,6 +26,8 @@ git-annex (10.20260116) UNRELEASED; urgency=medium
   * Remove undo action from kde and nautilus integrations.
   * Fix incorrect transfer direction in remote transfer log when
     downloading from a local git remote.
+  * Fix bug that prevented 2 clones of a local git remote 
+    from concurrently downloading the same file.
 
  -- Joey Hess <id@joeyh.name>  Mon, 19 Jan 2026 10:55:02 -0400
 

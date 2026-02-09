@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2026-02-09T16:29:19Z"
+ content="""
+Reproducer worked for me.
+
+This seems specific to using a local git remote, it will not happen over
+ssh.
+
+In Remote.Git, copyFromRemote calls `runTransfer` in the remote repository.
+That should be `alwaysRunTransfer` as is usually used when git-annex is
+running as a server to send files. Which avoids this problem.
+"""]]
