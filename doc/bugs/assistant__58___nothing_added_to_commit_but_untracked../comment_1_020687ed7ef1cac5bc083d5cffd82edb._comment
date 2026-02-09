@@ -1,0 +1,48 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2026-02-09T17:08:04Z"
+ content="""
+This is due to the assistant not supporting submodules. Nothing has ever
+been done to make it support them.
+
+When `git check-ignore --stdin` is passed a path in a submodule, it exits.
+We can see this happen near the top of the log:
+	
+	fatal: Pathspec 'code/containers/.codespellrc' is in submodule 'code/containers'
+
+	git check-ignore EOF: user error
+
+The subseqent "resource vanished (Broken pipe)"
+are each time git-annex tries to talk to git check-ignore.
+
+Indeed, looking at the source code to check-ignore, if it's passed a path
+inside a submodule, it errors out, and so won't be listening to stdin
+for any more paths:
+
+	joey@darkstar:~/tmp/t>git check-ignore --stdin
+	r/x
+	fatal: Pathspec 'r/x' is in submodule 'r'
+	- exit 128
+
+And I was able to reproduce this by having a submodule with a file in it,
+and starting the assistant.
+
+In some cases, the assistant still added files despite check-ignore
+having crashed. (It will even add gitignored files when check-ignore has
+crashed.) In other cases not. The problem probably extends beyond
+check-ignore to also staging files. Eg, "git add submodule/foo bar" will
+error out on the file in the submodule and not ever get to the point of
+adding the second file.
+
+Fixing this would need an inexpensive way to query git about whether a file
+is in a submodule. Passing the files that
+the assistant gathers through `git ls-files --modified --others` 
+might be the only way to do that. 
+
+Using that at all efficiently would need
+some other changes, because it needs to come before the ignore check,
+which it currently does for each file event. The ignore check would need to
+be moved to the point where a set of files has been gathered, so
+ls-files can be run once on the set of files.
+"""]]
