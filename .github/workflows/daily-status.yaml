@@ -46,7 +46,7 @@ jobs:
 
       - name: Send e-mail
         # freeze to v6
-        uses: dawidd6/action-send-mail@6d98ae34d733f9a723a9e04e94f2f24ba05e1402
+        uses: dawidd6/action-send-mail@62a2d05b79935ad4fb90ce9079928099579c14ac
         with:
           server_address: ${{ secrets.NOTIFY_SMTP_HOST }}
           server_port: ${{ secrets.NOTIFY_SMTP_PORT }}
