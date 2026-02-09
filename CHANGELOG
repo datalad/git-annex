@@ -24,6 +24,8 @@ git-annex (10.20260116) UNRELEASED; urgency=medium
   * Remove deprecated commands direct, indirect, proxy, and transferkeys.
   * Deprecate undo command.
   * Remove undo action from kde and nautilus integrations.
+  * Fix incorrect transfer direction in remote transfer log when
+    downloading from a local git remote.
 
  -- Joey Hess <id@joeyh.name>  Mon, 19 Jan 2026 10:55:02 -0400
 

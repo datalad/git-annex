@@ -605,7 +605,7 @@ copyFromRemote'' repo r st@(State connpool _ _ _ _ _) key af dest meterupdate vc
 					Just err -> giveup err
 					Nothing -> return True
 				copier <- mkFileCopier hardlink st
-				(ok, v) <- runTransfer (Transfer Download u (fromKey id key))
+				(ok, v) <- runTransfer (Transfer Upload u (fromKey id key))
 					Nothing af Nothing stdRetry $ \p ->
 						metered (Just (combineMeterUpdate p meterupdate)) key bwlimit $ \_ p' -> 
 							copier object dest key p' checksuccess vc
