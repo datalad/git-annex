@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2026-02-09T16:56:19Z"
+ content="""
+> ideally there should be no locking for the entire duration of get since there could be hundreds of clients trying to get that file
+
+It's somewhat more complex than that, but git-annex's locking does take
+concurrenct into account.
+
+The transfer locking in specific is there to avoid issues like `git-annex
+get` of the same file being run in the same repo in 2 different terminals.
+So it intentionally does not allow concurrency. Except for in this
+particular case where multiple clients are downloading.
+"""]]
