@@ -23,14 +23,16 @@ Basically replacing the assistant needs 3 things:
    change has been made to a remote.
 3. Wait for commits and trigger `git-annex push` to remotes.
 
-There is more than that to the assistant, eg automatic periodic fscking,
-various attempts to diagnose and fix problems with repositories, live 
-detection of configuration changes, detecting drive mount events, etc. But
-those 3 would be enough for most users.
-
 Those could be 3 separate programs, which would gain the benefits of
 composition. If the user only wants automatic commits but not pushing or
 pulling, they can run one 1 program.
+
+There is more than that to the assistant, eg automatic periodic fscking,
+various attempts to diagnose and fix problems with repositories, live 
+detection of configuration changes, detecting drive mount events, etc. But
+those 3 would be enough for most users. Alternatively, keeping that other
+stuff, but replacing the parts of the assistant that do those three things,
+would also ease maintenance.
 
 This would also probably involve [[remove_webapp]], although in theory the
 webapp could be retained, with only the parts of the assistant that handle
