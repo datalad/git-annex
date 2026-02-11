@@ -1,33 +1,33 @@
 git-annex (10.20260116) UNRELEASED; urgency=medium
 
-  * Fix behavior of local git remotes that have annex-ignore
-    set to be the same as ssh git remotes.
-  * p2phttp: Commit git-annex branch changes promptly.
   * When used with git forges that allow Push to Create, the remote's
     annex-uuid is re-probed after the initial push.
-  * Added annex.security.allow-insecure-https config, which allows
-    using old http servers that use TLS 1.2 without Extended Main
-    Secret support.
-  * fsck: Support repairing a corrupted file in a versiond S3 remote.
   * addurl, importfeed: Enable --verifiable by default.
   * fromkey, registerurl: When passed an url, generate a VURL key.
   * unregisterurl: Unregister both VURL and URL keys.
-  * unregisterurl: Fix display of action to not be "registerurl".
+  * Fix behavior of local git remotes that have annex-ignore
+    set to be the same as ssh git remotes.
+  * Added annex.security.allow-insecure-https config, which allows
+    using old http servers that use TLS 1.2 without Extended Main
+    Secret support.
+  * p2phttp: Commit git-annex branch changes promptly.
   * p2phttp: Fix a server stall by disabling warp's slowloris attack
     prevention.
-  * The OsPath build flag requires file-io 0.2.0, which fixes several
-    issues.
-  * Avoid ever starting more capabilities than the number of cpus.
   * p2phttp: Added --cpus option.
-  * rsync: Avoid deleting contents of a non-empty directory when
-    removing the last exported file to the directory.
-  * Remove deprecated commands direct, indirect, proxy, and transferkeys.
-  * Deprecate undo command.
-  * Remove undo action from kde and nautilus integrations.
+  * Avoid ever starting more capabilities than the number of cpus.
+  * fsck: Support repairing a corrupted file in a versioned S3 remote.
   * Fix incorrect transfer direction in remote transfer log when
     downloading from a local git remote.
   * Fix bug that prevented 2 clones of a local git remote 
     from concurrently downloading the same file.
+  * rsync: Avoid deleting contents of a non-empty directory when
+    removing the last exported file from the directory.
+  * unregisterurl: Fix display of action to not be "registerurl".
+  * The OsPath build flag requires file-io 0.2.0, which fixes several
+    issues.
+  * Remove deprecated commands direct, indirect, proxy, and transferkeys.
+  * Deprecate undo command.
+  * Remove undo action from kde and nautilus integrations.
 
  -- Joey Hess <id@joeyh.name>  Mon, 19 Jan 2026 10:55:02 -0400
 
