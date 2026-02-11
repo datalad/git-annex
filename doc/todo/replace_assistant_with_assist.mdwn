@@ -5,7 +5,7 @@ that the rest of git-annex don't, and doesn't support everything that the
 rest of git-annex does.
 
 For example, the assistant currently 
-[misbehaves in repos containing a submodule](https://git-annex.branchable.com/bugs/assistant__58___nothing_added_to_commit_but_untracked../).
+[misbehaves in repos containing a submodule](https://git-annex.branchable.com/bugs/assistant__58___nothing_added_to_commit_but_untracked/).
 Fixing that will involve the assistant running `git ls-files`, which it
 currently does not do. So it will get closer to how the rest of git-annex
 works. But approaching the rest of git-annex by degrees is an ongoing
