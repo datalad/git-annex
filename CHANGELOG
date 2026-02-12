@@ -28,6 +28,7 @@ git-annex (10.20260116) UNRELEASED; urgency=medium
   * Remove deprecated commands direct, indirect, proxy, and transferkeys.
   * Deprecate undo command.
   * Remove undo action from kde and nautilus integrations.
+  * Fix build on BSDs. Thanks, Greg Steuck
 
  -- Joey Hess <id@joeyh.name>  Mon, 19 Jan 2026 10:55:02 -0400
 
