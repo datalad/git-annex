@@ -1,0 +1,107 @@
+### Please describe the problem.
+
+For a relaxed url youtube video, git-annex seems just completely skip even trying (I see no apache2 log hits) to download from http git remote where it even points to correct HTTP address, and then just proceeds to yt-dlp to just fail there:
+
+```shell
+❯ git clone https://datasets.datalad.org/repronim/ReproTube/AFNIBootcamp/.git/
+Cloning into 'AFNIBootcamp'...
+remote: Enumerating objects: 5904, done.
+remote: Counting objects: 100% (5904/5904), done.
+remote: Compressing objects: 100% (1793/1793), done.
+remote: Total 5904 (delta 2659), reused 5554 (delta 2644), pack-reused 0 (from 0)
+Receiving objects: 100% (5904/5904), 743.23 KiB | 2.23 MiB/s, done.
+Resolving deltas: 100% (2659/2659), done.
+❯ cd AFNIBootcamp
+authors.tsv@  channel.json  channel_avatar.jpg@  playlists/  videos/
+❯ git annex whereis videos/2020/04/2020-04-17_AFNI-Academy-AFNI-GUI-Clusterizing/video.mkv
+whereis videos/2020/04/2020-04-17_AFNI-Academy-AFNI-GUI-Clusterizing/video.mkv (3 copies) 
+  	00000000-0000-0000-0000-000000000001 -- web
+  	cc815e85-73bc-4a5c-81c3-81a39b0c677b -- yoh@falkor:/srv/datasets.datalad.org/www/repronim/ReproTube/AFNIBootcamp [origin]
+  	f574aace-b921-4987-b376-f43cfcc0e925 -- annextube YouTube archive
+
+  web: https://www.youtube.com/watch?v=3ZXfZfnRfyM
+ok
+❯ git annex --debug get --from origin videos/2020/04/2020-04-17_AFNI-Academy-AFNI-GUI-Clusterizing/video.mkv
+[2026-02-12 17:58:20.476127402] (Utility.Process) process [1348659] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","git-annex"]
+[2026-02-12 17:58:20.477586712] (Utility.Process) process [1348659] done ExitSuccess
+[2026-02-12 17:58:20.477947473] (Utility.Process) process [1348660] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","--hash","refs/heads/git-annex"]
+[2026-02-12 17:58:20.479504195] (Utility.Process) process [1348660] done ExitSuccess
+[2026-02-12 17:58:20.480128621] (Utility.Process) process [1348661] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","log","refs/heads/git-annex..164c7074ef367be9c939366c3febb2322f70c103","--pretty=%H","-n1"]
+[2026-02-12 17:58:20.482481122] (Utility.Process) process [1348661] done ExitSuccess
+[2026-02-12 17:58:20.484072231] (Utility.Process) process [1348662] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch"]
+[2026-02-12 17:58:20.488013705] (Utility.Process) process [1348663] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","ls-files","--stage","-z","--error-unmatch","--","videos/2020/04/2020-04-17_AFNI-Academy-AFNI-GUI-Clusterizing/video.mkv"]
+[2026-02-12 17:58:20.488431021] (Utility.Process) process [1348664] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)","--buffer"]
+[2026-02-12 17:58:20.488864415] (Utility.Process) process [1348665] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch=%(objectname) %(objecttype) %(objectsize)","--buffer"]
+[2026-02-12 17:58:20.489285814] (Utility.Process) process [1348666] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch=%(objectname) %(objecttype) %(objectsize)","--buffer"]
+[2026-02-12 17:58:20.491835062] (Utility.Process) process [1348666] done ExitSuccess
+[2026-02-12 17:58:20.491913957] (Utility.Process) process [1348665] done ExitSuccess
+[2026-02-12 17:58:20.491944604] (Utility.Process) process [1348664] done ExitSuccess
+[2026-02-12 17:58:20.491970167] (Utility.Process) process [1348663] done ExitSuccess
+get videos/2020/04/2020-04-17_AFNI-Academy-AFNI-GUI-Clusterizing/video.mkv (from origin...) 
+[2026-02-12 17:58:20.516237522] (Utility.Url) https://datasets.datalad.org/repronim/ReproTube/AFNIBootcamp/.git//annex/objects/zZ/3v/URL--yt&chttps&c%%www.youtube.com%watch,63v,613ZXfZfnRfyM/URL--yt&chttps&c%%www.youtube.com%watch,63v,613ZXfZfnRfyM
+[2026-02-12 17:58:20.519744566] (Utility.Url) https://datasets.datalad.org/repronim/ReproTube/AFNIBootcamp/.git//annex/objects/950/20d/URL--yt&chttps&c%%www.youtube.com%watch,63v,613ZXfZfnRfyM/URL--yt&chttps&c%%www.youtube.com%watch,63v,613ZXfZfnRfyM
+  download failed: invalid url
+
+  failed to download content
+(Delaying 1s before retrying....)
+[2026-02-12 17:58:21.524457718] (Utility.Url) https://datasets.datalad.org/repronim/ReproTube/AFNIBootcamp/.git//annex/objects/zZ/3v/URL--yt&chttps&c%%www.youtube.com%watch,63v,613ZXfZfnRfyM/URL--yt&chttps&c%%www.youtube.com%watch,63v,613ZXfZfnRfyM
+[2026-02-12 17:58:21.527050375] (Utility.Url) https://datasets.datalad.org/repronim/ReproTube/AFNIBootcamp/.git//annex/objects/950/20d/URL--yt&chttps&c%%www.youtube.com%watch,63v,613ZXfZfnRfyM/URL--yt&chttps&c%%www.youtube.com%watch,63v,6get videos/2020/04/2020-04-17_AFNI-Academy-AFNI-GUI-Clusterizing/video.mkv (from origin...) 
+  download failed: invalid url
+
+  failed to download content
+(Delaying 1s before retrying....)
+
+  download failed: invalid url
+
+  failed to download content
+(Delaying 2s before retrying....)
+
+  download failed: invalid url
+
+  failed to download content
+failed
+[2026-02-12 17:58:23.537290686] (Utility.Process) process [1348662] done ExitSuccess
+get: 1 failed
+```
+
+for a simpler file -- works fine
+
+```
+❯ git annex whereis channel_avatar.jpg
+whereis channel_avatar.jpg (2 copies) 
+  	cc815e85-73bc-4a5c-81c3-81a39b0c677b -- yoh@falkor:/srv/datasets.datalad.org/www/repronim/ReproTube/AFNIBootcamp [origin]
+  	f574aace-b921-4987-b376-f43cfcc0e925 -- annextube YouTube archive
+ok
+❯ git annex get --from origin channel_avatar.jpg
+get channel_avatar.jpg (from origin...) ok
+(recording state in git...)
+❯ ls -l channel_avatar.jpg
+lrwxrwxrwx 1 yoh yoh 196 Feb 12 17:57 channel_avatar.jpg -> .git/annex/objects/54/77/SHA256E-s107998--454529608f75da5804000d74018ff790ec24a03eef3544fc44c28071e31acd15.jpg/SHA256E-s107998--454529608f75da5804000d74018ff790ec24a03eef3544fc44c28071e31acd15.jpg
+```
+
+### What steps will reproduce the problem?
+
+```
+  git clone https://datasets.datalad.org/repronim/ReproTube/AFNIBootcamp/.git/
+  cd AFNIBootcamp
+  git annex whereis videos/2020/04/2020-04-17_AFNI-Academy-AFNI-GUI-Clusterizing/video.mkv
+  git annex --debug get --from origin videos/2020/04/2020-04-17_AFNI-Academy-AFNI-GUI-Clusterizing/video.mkv
+```
+
+### What version of git-annex are you using? On what operating system?
+
+
+```shell
+❯ git annex version
+git-annex version: 10.20250929-gf014fd60d05a3407e2f747e0394997d3780eeafc
+```
+but did try even most recent
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+when I was lucky - yes.
+
+[[!meta author=yoh]]
+[[!tag projects/repronim]]
+
