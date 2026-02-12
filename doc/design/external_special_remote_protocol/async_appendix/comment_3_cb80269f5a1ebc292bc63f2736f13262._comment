@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="calmofthestorm"
+ avatar="http://cdn.libravatar.org/avatar/9d97e9bcb1cf7680309e37cd69fab408"
+ subject="Ensuring only one process"
+ date="2026-02-12T19:10:11Z"
+ content="""
+My remote (version 1) uses a database that is multithreaded but has process-level locking. Despite using async, multiple remote processes are still being started in `testremote`. Right now I have it working with POSIX advisory locks and open/close the database for each operation in each thread in each process, but that's a lot of overhead. Is there a better way to do this? I could make them coordinate via IPC, or have them release the lock only when idle/when others are waiting, but it seems like it shouldn't be that complex.
+
+I get clear failures when I use `testremote`. On real workloads (with -j 24) it is more confusing. There are not errors, but at some point the `git-annex` command hangs. Quite possibly a bug in my code, given `testremote` is failing.
+
+I guess my question is: Is there a way to force git-annex to only use one special remote process, either by configuration or by having all but the first return \"use the other one\" (without -j 1 always)? And does the way this is handled differ between actual use and `testremote`?
+
+Or to put it another way: how do you envision one should design a special remote that supports concurrency and relies on a database with process-level locking?
+"""]]
