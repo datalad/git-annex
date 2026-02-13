@@ -184,7 +184,7 @@ source-repository head
 
 custom-setup
   Setup-Depends:
-    base (>= 4.18.2.1 && < 5.0),
+    base (>= 4.18.2.1 && < 5),
     split,
     filepath,
     exceptions,
@@ -195,12 +195,12 @@ custom-setup
     directory (>= 1.2.7.0),
     async,
     utf8-string (>= 1.0.0),
-    Cabal (< 4.0)
+    Cabal (< 4)
 
 Executable git-annex
   Main-Is: git-annex.hs
   Build-Depends:
-   base (>= 4.18.2.1 && < 5.0),
+   base (>= 4.18.2.1 && < 5),
    network-uri (>= 2.6),
    optparse-applicative (>= 0.14.2),
    containers (>= 0.5.8),
