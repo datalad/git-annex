@@ -1,4 +1,4 @@
-git-annex (10.20260116) UNRELEASED; urgency=medium
+git-annex (10.20260213) upstream; urgency=medium
 
   * When used with git forges that allow Push to Create, the remote's
     annex-uuid is re-probed after the initial push.
@@ -30,7 +30,7 @@ git-annex (10.20260116) UNRELEASED; urgency=medium
   * Remove undo action from kde and nautilus integrations.
   * Fix build on BSDs. Thanks, Greg Steuck
 
- -- Joey Hess <id@joeyh.name>  Mon, 19 Jan 2026 10:55:02 -0400
+ -- Joey Hess <id@joeyh.name>  Fri, 13 Feb 2026 12:53:48 -0400
 
 git-annex (10.20260115) upstream; urgency=medium
 
