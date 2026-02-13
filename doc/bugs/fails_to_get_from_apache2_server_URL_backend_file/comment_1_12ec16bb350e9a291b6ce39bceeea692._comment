@@ -1,0 +1,75 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="the fix"
+ date="2026-02-13T01:43:15Z"
+ content="""
+TL;DR, the patch
+
+```patch
+diff --git a/Remote/Git.hs b/Remote/Git.hs
+index 6b7dc77d98..4faaea082d 100644
+--- a/Remote/Git.hs
++++ b/Remote/Git.hs
+@@ -482,7 +482,12 @@ inAnnex' repo rmt st@(State connpool duc _ _ _ _) key
+ keyUrls :: GitConfig -> Git.Repo -> Remote -> Key -> [String]
+ keyUrls gc repo r key = map tourl locs'
+   where
+-	tourl l = Git.repoLocation repo ++ \"/\" ++ l
++	tourl l = Git.repoLocation repo ++ \"/\" ++ escapeURIString escchar l
++	-- Escape characters that are not allowed unescaped in a URI
++	-- path component, but don't escape '/' since the location
++	-- is a path with multiple components.
++	escchar '/' = True
++	escchar c = isUnescapedInURIComponent c
+ 	-- If the remote is known to not be bare, try the hash locations
+ 	-- used for non-bare repos first, as an optimisation.
+ 	locs
+```
+
+seems to work well. Built in https://github.com/datalad/git-annex/pull/251  (CI tests still run), tested locally:
+
+```
+❯ /usr/bin/git-annex version
+git-annex version: 10.20260115+git119-g43a3f3aaf2-1~ndall+1
+build flags: Assistant Webapp Inotify DBus DesktopNotify TorrentParser MagicMime Benchmark Feeds Testsuite S3 WebDAV Servant
+dependency versions: aws-0.24.1 bloomfilter-2.0.1.2 crypton-0.34 DAV-1.3.4 feed-1.3.2.1 ghc-9.6.6 http-client-0.7.17 torrent-10000.1.3 uuid-1.3.15 yesod-1.6.2.1
+...
+❯ /usr/bin/git-annex get --from origin video.mkv
+get video.mkv (from origin...) ok
+(recording state in git...)
+```
+to work.  Here is claude's analysis which lead it to the fix:
+
+```
+  Bug Analysis: fails_to_get_from_apache2_server_URL_backend_file
+
+  Root Cause
+
+  The bug is in Remote/Git.hs:485 — the keyUrls function constructs URLs by simple string concatenation without URL-encoding the path components:
+
+  tourl l = Git.repoLocation repo ++ \"/\" ++ l
+
+  How the failure occurs
+
+  1. Key: URL--yt:https://www.youtube.com/watch,63v,613ZXfZfnRfyM
+  2. keyFile encoding (Annex/Locations.hs:783-795) converts : → &c and / → %:
+  URL--yt&chttps&c%%www.youtube.com%watch,63v,613ZXfZfnRfyM
+  3. keyUrls concatenates this directly into the URL path:
+  https://datasets.datalad.org/.../.git//annex/objects/zZ/3v/URL--yt&chttps&c%%www.youtube.com%watch,63v,613ZXfZfnRfyM/...
+  4. parseURIRelaxed (Utility/Url/Parse.hs:45-47) tries to parse this URL. It calls escapeURIString isAllowedInURI first, but % is allowed in URIs (it's the percent-encoding introducer), so it passes through unescaped.
+  5. parseURI then sees %%w and %wa which are invalid percent-encoding sequences (% must be followed by two hex digits). The parse fails, returning Nothing.
+  6. download' (Utility/Url.hs:389-391) hits the Nothing branch and returns \"invalid url\".
+
+  Why SHA256E keys work
+
+  SHA256E keys (like SHA256E-s107998--4545...) contain only alphanumeric characters, -, and .. The keyFile encoding produces no % or & characters, so the concatenated URL is always valid.
+
+  The fix
+
+  keyUrls in Remote/Git.hs:485 needs to URL-encode the path components. Other remotes already do this:
+
+  - S3 (Remote/S3.hs:1221-1229): uses escapeURIString with a custom predicate keeping / but encoding everything else
+  - WebDAV (Remote/WebDAV/DavLocation.hs:35): uses escapeURIString isUnescapedInURI
+```
+"""]]
