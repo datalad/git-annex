@@ -48,8 +48,10 @@ import Network.HTTP.Client
 import Network.HTTP.Client.TLS
 import Text.Read
 import qualified Data.Set as S
+#if MIN_VERSION_tls(2,0,0)
 import qualified Network.Connection as NC
 import qualified Network.TLS as TLS
+#endif
 
 defaultUserAgent :: U.UserAgent
 defaultUserAgent = "git-annex/" ++ BuildInfo.packageversion
