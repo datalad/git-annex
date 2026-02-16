@@ -179,6 +179,7 @@ makeinfos updated changelogversion = do
 	void $ inRepo $ runBool
 		[ Param "annex"
 		, Param "sync"
+		, Param "--no-content"
 		]
 	
 	-- Check for out of date info files.
