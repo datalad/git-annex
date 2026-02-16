@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2026-02-16T18:24:00Z"
+ content="""
+Looked in more detail into fixing this by moving the ignore check to after
+a set of files has been gathered and fed through `git ls-files`. Unfortunately
+that will be complicated significantly by the fact that, after the ignore check
+it currently does things like re-writing symlinks to annex objects when the
+link target needs updating. There is a chicken and egg problem here,
+because the type of Change that gets queued depends on parts of that same
+code having run.
+
+BTW: Another way this same bug can manifest is that an annex object is added
+to a submodule, and the assistant updates its symlink to point out of the
+submodule, to the wrong annex objects directory.
+
+There is some very delicate timing going on in
+Assistant.Threads.Committer in order to gather Changes that happen close
+together in time. Which makes me think that even a simple approach of
+running `git ls-files` once per changed file, before the ignore check,
+might throw the timing off enough to be a problem. As well as being murder
+on the CPU when eg, a lot of files have been moved around.
+
+Note that [[todo/replace_assistant_with_assist]] would fix this bug,
+since `git-annex assist` does use `git ls-files`. Not that implementing
+that would be any easier than just fixing this bug. But, fixing this bug
+moves the assistant in the direction of that todo one way or the other.
+"""]]

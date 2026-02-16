@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject=""""Gather inotify events""""
+ date="2026-02-16T18:51:50Z"
+ content="""
+The assistant has some very tricky, and probably also fragile code that
+gathers related inotify events. That would need to be factored out for
+this.
+"""]]
