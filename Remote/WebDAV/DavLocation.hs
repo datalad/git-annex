@@ -13,7 +13,7 @@ module Remote.WebDAV.DavLocation where
 import Types
 import Types.Export
 import Annex.Locations
-import Utility.Url (URLString)
+import Utility.Url (URLString, extendUrlWithPath)
 #ifdef mingw32_HOST_OS
 import Utility.Split
 #endif
@@ -22,7 +22,6 @@ import Utility.OsPath
 import qualified System.FilePath.Posix as UrlPath
 import Network.Protocol.HTTP.DAV (inDAVLocation, DAVT)
 import Control.Monad.IO.Class (MonadIO)
-import Network.URI
 import Data.Default
 
 -- Relative to the top of the DAV url.
@@ -30,9 +29,7 @@ type DavLocation = String
 
 {- Runs action with a new location relative to the current location. -}
 inLocation :: (MonadIO m) => DavLocation -> DAVT m a -> DAVT m a
-inLocation d = inDAVLocation (UrlPath.</> d')
-  where
-	d' = escapeURIString isUnescapedInURI d
+inLocation d = inDAVLocation (`extendUrlWithPath` d)
 
 {- The directory where files(s) for a key are stored. -}
 keyDir :: Key -> DavLocation

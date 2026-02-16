@@ -50,6 +50,7 @@ import Logs.Cluster.Basic
 import Utility.Metered
 import Utility.Env
 import Utility.Batch
+import Utility.Url (extendUrlWithPath)
 import qualified Utility.FileIO as F
 import Remote.Helper.Git
 import Remote.Helper.Messages
@@ -482,7 +483,7 @@ inAnnex' repo rmt st@(State connpool duc _ _ _ _) key
 keyUrls :: GitConfig -> Git.Repo -> Remote -> Key -> [String]
 keyUrls gc repo r key = map tourl locs'
   where
-	tourl l = Git.repoLocation repo ++ "/" ++ l
+	tourl = extendUrlWithPath (Git.repoLocation repo)
 	-- If the remote is known to not be bare, try the hash locations
 	-- used for non-bare repos first, as an optimisation.
 	locs

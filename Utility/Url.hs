@@ -1,6 +1,6 @@
 {- Url downloading.
  -
- - Copyright 2011-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2026 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -41,6 +41,7 @@ module Utility.Url (
 	applyBasicAuth',
 	extractFromResourceT,
 	conduitUrlSchemes,
+	extendUrlWithPath,
 ) where
 
 import Common
@@ -55,6 +56,7 @@ import qualified Utility.FileIO as F
 
 import Network.URI
 import Network.HTTP.Types
+import qualified System.FilePath.Posix as UrlPath
 import qualified Data.CaseInsensitive as CI
 import qualified Data.ByteString as B
 import qualified Data.ByteString.UTF8 as B8
@@ -763,3 +765,24 @@ extractFromResourceT :: (MonadIO m, NFData a) => a -> ResourceT m a
 extractFromResourceT v = do
 	liftIO $ evaluate (rnf v)
 	return v
+
+{- Extends an url by adding a path to the end.
+ -
+ - If the url does not end with '/' already, that will be added before
+ - the path.
+ -
+ - Characters in the path that are not allowed in an url are url-escaped,
+ - so if the input url string is a valid url, the result will also be a
+ - valid url.
+ -}
+extendUrlWithPath :: URLString -> FilePath -> URLString
+extendUrlWithPath u p = u UrlPath.</> escapeURIString skipescape p
+  where
+	-- Don't escape any '/' in the path. But do escape other
+	-- characters that are not allowed unescaped in an url,
+	-- which could result in the url not parsing, or parsing
+	-- to not point to the desired path but somewhere else.
+	-- (In particular '%' and '[' and ']'.)
+	skipescape '/' = True
+	skipescape c = isUnescapedInURIComponent c
+

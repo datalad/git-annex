@@ -28,7 +28,6 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.Map as M
 import qualified Data.Set as S
-import qualified System.FilePath.Posix as Posix
 import Data.Char
 import Data.String
 import Data.Maybe
@@ -37,7 +36,6 @@ import Network.Socket (HostName)
 import Network.HTTP.Conduit (Manager)
 import Network.HTTP.Client (responseStatus, responseBody, RequestBody(..))
 import Network.HTTP.Types
-import Network.URI
 import Control.Monad.Trans.Resource
 import Control.Monad.Catch
 import Control.Concurrent.STM (atomically)
@@ -68,7 +66,7 @@ import Utility.Metered
 import Utility.DataUnits
 import Annex.Content
 import qualified Annex.Url as Url
-import Utility.Url (extractFromResourceT, UserAgent, sinkResponseIncrementalVerifier)
+import Utility.Url (extractFromResourceT, UserAgent, sinkResponseIncrementalVerifier, extendUrlWithPath)
 import Annex.Url (getUserAgent, getUrlOptions, withUrlOptions, UrlOptions(..))
 import Utility.Env
 import Annex.Verify
@@ -1219,14 +1217,7 @@ awsPublicUrl info = genericPublicUrl $
 	"https://" ++ T.unpack (bucket info) ++ ".s3.amazonaws.com/" 
 
 genericPublicUrl :: URLString -> BucketObject -> URLString
-genericPublicUrl baseurl p = 
-	baseurl Posix.</> escapeURIString skipescape p
- where
-	-- Don't need to escape '/' because the bucket object
-	-- is not necessarily a single url component. 
-	-- But do want to escape eg '+' and ' '
-	skipescape '/' = True
-	skipescape c = isUnescapedInURIComponent c
+genericPublicUrl = extendUrlWithPath
 
 genCredentials :: CredPair -> IO AWS.Credentials
 genCredentials (keyid, secret) = do
