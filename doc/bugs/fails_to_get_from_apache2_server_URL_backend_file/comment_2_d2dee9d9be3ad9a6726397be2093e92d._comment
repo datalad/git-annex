@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2026-02-16T16:09:47Z"
+ content="""
+> SHA256E keys (like SHA256E-s107998--4545...) contain only alphanumeric characters
+
+> The keyFile encoding produces no % or & characters
+
+Incorrect statements FWIW.
+
+Certian SHA*E keys will also be affected by this bug.
+"""]]
