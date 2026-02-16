@@ -1,0 +1,54 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2026-02-16T16:35:28Z"
+ content="""
+Congrats I guess, that's the first LLM-generated patch to git-annex, and
+it seems approximately correct.
+
+It was unambiguously helpful to get the hint that `Remote/Git.hs:485`
+was the location of the bug. That probably saved 10 minutes of my time.
+
+But, I probably would have found it easier to fix this on my own without
+seeing that patch than it was to fix it given that patch. I had to do a
+considerable amount of thinking about whether the patch was correct, or
+just confidently sounding incorrect in a different manner than a
+human-generated patch would be. (Not helped, certainly, by this being an
+area of the code with no type system guardrails helping it be correct.)
+
+For one thing, I wondered, why does it use isUnescapedInURIComponent rather
+than isUnescapedInURI? The latter handles '/' correctly without needing a
+special case.
+
+Being faced with an LLM-generated patch also meant that I needed to consider
+what its license is. I was faced with needing to clean-room my own version,
+which is a bit difficult given how short the patch is (while probably still
+long enough to be copyrightable).
+
+But, it turns out that git-annex already contains essentially the same
+code in Remote/S3.hs, in genericPublicUrl:
+
+	        baseurl Posix.</> escapeURIString skipescape p
+	 where
+	        -- Don't need to escape '/' because the bucket object
+	        -- is not necessarily a single url component.
+	        -- But do want to escape eg '+' and ' '
+	        skipescape '/' = True
+	        skipescape c = isUnescapedInURIComponent c
+
+This code was presumably in the LLM's training set, and certainly appeared
+to be available to it for context, so its mirroring of this could simply be
+a case of Garbage In, Garbage Out. 
+
+Note that "skipescape" is a much better name than the LLM-generated
+"escchar" which behaves backwards from what its name suggests.
+
+Why did I use isUnescapedInURIComponent in that and isUnescapedInURI
+in Remote/WebDav/DavLocation.hs? 
+I doubt there was a good reason for either choice, but a full analysis
+did find a reason to prefer the isUnescapedInURIComponent approach,
+to handle a path containing '[' or '].
+
+So, in [[!commit 8fd9b67ed82ca0f39796a8d59431d42a7eb84957]], I've
+factored out a general purpose function, and fixed this bug by using it.
+"""]]
