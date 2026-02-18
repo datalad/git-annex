@@ -1,0 +1,46 @@
+### Please describe the problem.
+Syncing content to an rsync remote no longer works on macOS 26.3.
+(Specifically an encrypted rsync remote with shared encryption)
+
+### What steps will reproduce the problem?
+MacOS 26.3 (with openrsync)
+run: `git annex sync my-rsync-remote --content`
+observe: `rsync error: unexpected end of file.`
+(these files are all fine and can be opened locally)
+
+### What version of git-annex are you using? On what operating system?
+MacOS 26.3 with git-annex from homebrew
+
+git-annex version: 10.20260213
+build flags: Assistant Webapp FsEvents TorrentParser MagicMime Benchmark Feeds Testsuite S3 WebDAV Servant
+dependency versions: aws-0.25.2 bloomfilter-2.0.1.3 crypton-1.0.6 DAV-1.3.4 feed-1.3.2.1 ghc-9.14.1 http-client-0.7.19 torrent-10000.1.3 uuid-1.3.16 yesod-1.6.2.1
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL GITBUNDLE GITMANIFEST VURL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg rclone hook external compute mask
+operating system: darwin aarch64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
+local repository version: 10
+
+### Please provide any additional information below.
+
+I have a suspicion its because macOS now has openrsync instead of rsync.
+The files themselves all seem to be fine.
+The error I'm seeing seems to be some kind of rsync crash in the background.
+Googling shows that openrsync doesn't accept all the command line arguments rsync does.
+I don't know how git-annex is using it in the backend but I imagine this could be something that would break it.
+Are you able to confirm if git-annex should work on MacOS with openrsync? (default)
+If it is indeed the case that openrsync isn't supported, checking compatibility and aborting with a message directing the user on how to switch to use the other rsync would be great.
+Note: It's totally possible its something else... no idea what though.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+Yeah was working great for syncing and archiving large static files across multiple drives and machines. (helps deduping them too)
+Have also had success in the past syncing to NAS storage using rsync remote and then using it to pull data on demand when away from home.
+Thanks for taking the time to read this.
