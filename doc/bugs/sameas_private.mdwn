@@ -1,0 +1,13 @@
+`git-annex initremote --sameas=foo --private` is not actually
+private.
+
+It writes to the git-annex branch, adding in remote.log the config uuid of the
+sameas remote.
+
+It should be possible to avoid writing that there. Since the config uuid
+is the only place a sameas remote touches the git-annex branch, this would
+allow making up sameas remotes for local use. Location log changes
+for a private sameas remote would still be recorded in the git-annex
+branch, as long as the remote uuid is not itself private. --[[Joey]]
+
+[[!tag projects/INM7]]
