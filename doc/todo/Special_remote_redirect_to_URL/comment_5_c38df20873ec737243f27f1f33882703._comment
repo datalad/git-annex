@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: CHECKPRESENT"""
+ date="2026-02-18T18:47:51Z"
+ content="""
+Yes CHECKPRESENT still needs the special remote to do HTTP.
+
+I do think that was an oversight. The original todo mentioned 
+"taking advantage of the testing and security hardening of the
+git-annex implementation" and if a special remote is read-only,
+CHECKPRESENT may be the only time it needs to do HTTP.
+
+A protocol extension for this would look like:
+
+	EXTENSIONS CHECKPRESENT-URL
+	CHECKPRESENT-URL Key Url
+
+---
+
+> Would it impact the usage of such a special remote, if it would be configured
+> with sameas=otherremote? Would both remote implementations need to implement
+> CHECKPRESENT (consistently), or would one (in this case otherremote) by enough.
+
+git-annex won't try to use the otherremote when it's been asked to use
+the sameas remote.
+
+If one implemented CHECKPRESENT and the other always replied with
+"CHECKPRESENT-UNKNOWN", then a command like `git-annex fsck --fast --from`
+when used with the former remote would be able to verify that the content
+is present, and when used with the latter remote would it would error out.
+
+So you could perhaps get away with not implementing that. For a readonly
+remote, fsck is I think the only thing that uses CHECKPRESENT on a 
+user-specified remote. It's more used on remotes that can be written to.
+"""]]
