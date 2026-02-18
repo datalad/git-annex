@@ -1,0 +1,15 @@
+Following up on [[todo/Special_remote_redirect_to_URL]],
+it would be useful for CHECKPRESENT (and also CHECKPRESENTEXPORT) 
+to be able to redirect to an url, and let git-annex do the checking. 
+
+This will let external special remotes that are readonly and can calculate
+urls on their own avoid needing to implement HTTP at all.
+
+The protocol extension would be:
+
+    EXTENSIONS CHECKPRESENT-URL
+    CHECKPRESENT-URL Key Url
+
+--[[Joey]]
+
+[[!tag projects/INM7]]
