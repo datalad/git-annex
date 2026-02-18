@@ -87,6 +87,11 @@ want to use `git annex renameremote`.
   branch. The special remote will only be usable from the repository where
   it was created.
 
+  When used in combination with `--sameas=foo`, the configuration of the
+  new special remote is kept private. But when files are sent to the new
+  special remote, it will be public that they are present in remote "foo",
+  unless it is also private.
+
 * `--json`
 
   Enable JSON output. This is intended to be parsed by programs that use

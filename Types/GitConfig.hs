@@ -307,8 +307,10 @@ extractGitConfig configsource r = GitConfig
 			| Git.Config.isTrueFalse' v /= Just True = Nothing
 			| isRemoteKey (remoteAnnexConfigEnd "private") k = do
 				remotename <- remoteKeyToRemoteName k
-				toUUID <$> Git.Config.getMaybe
-					(remoteAnnexConfig remotename "uuid") r
+				let getu c = 
+					toUUID <$> Git.Config.getMaybe
+						(remoteAnnexConfig remotename c) r
+				getu "config-uuid" <|> getu "uuid"
 			| otherwise = Nothing
 		  in mapMaybe get (M.toList (Git.config r))
 		]
