@@ -1,0 +1,34 @@
+[[!comment format=mdwn
+ username="mih"
+ avatar="http://cdn.libravatar.org/avatar/f881df265a423e4f24eff27c623148fd"
+ subject="Functionality gaps?"
+ date="2026-02-18T18:10:07Z"
+ content="""
+I looked into adopting this new feature for a special remote implementation. Four questions arose:
+
+1. In order to implement CHECKPRESENT it appears that a special remote still needs to implemented the logic for the equivalent of a HTTP HEAD request. From my POV this limits the utility of a git-annex based download, because significant logic still needs to be implemented in a special remote itself. Would it impact the usage of such a special remote, if it would be configured with `sameas=otherremote`? Would both remote implementations need to implement CHECKPRESENT (consistently), or would one (in this case `otherremote`) by enough.
+
+2. I am uncertain re the signaling in case of multiple possible URL targets for a key, and an eventual download failure regarding one URL communicated via TRANSFER-RETRIEVE-URL. I believe that, when git-annex fails to download from a reported URL successfully, it can only send another TRANSFER-RETRIEVE request to the special remote (possibly go to the next remote first). This would mean that the special remote either needs to maintain a state on which URL has been reported before, or it would need to implement the capacity to test for availability (essentially the topic of Q1), and can never report more than one URL. Is this correct?
+
+3. What is the logic git-annex uses to act on a URL communicated via TRANSFER-RETRIEVE-URL. Would it match it against all available special remotes via CLAIMURL, or give it straight to `web` (and only that)?
+
+4. I am wondering, if it would be possible and sensible, to use this feature for implementing a download URL \"broker\"? A use case would be an informed selection of a download URL from a set of URLs associated with a key. This is similar to the `urlinclude/exclude` feature of the `web` special remote, but (depending on Q3) is relevant also to other special remotes acting as downloader implementations.
+
+
+Elaborating on (4) a bit more: My thinking is focused on the optimal long-term accessibility of keys -- across infrastructure transitions and different concurrent environments. From my POV git-annex provides me with the following options for making `myplace` as a special remote optimally work across space and time.
+
+- via `sameas=myplace`, I can have multiple special remotes point to `myplace`. In each environment I can use the additional remotes (by name) to optimally access `myplace`. The decision making process it independent of git-annex. However, the possible access options need to be encoded in the annex branch to make this work. This creates a problem of inflation of this space in case of repositories that are used in many different contexts (think public (research) data that want to capitalize on the decentralized nature of git-annex).
+
+- via `enableremote` I can swap out the type and parameterization of `myplace` entirely. However, unlike with `initremote` there is no `--private`, so this is more geared toward the use case of \"previous access method is no longer available\", rather than a temporary optimization.
+
+- when key access is (temporarily) preferred via URLs, I could generated a temporary `web` special remote via `initremote --private` and a `urlinclude` pattern.
+
+In all cases, I cannot simply run `git annex get`, but I need to identify a specific remote that may need to be created first, or set a low cost for it.
+
+I'd be glad to be pointed at omissions in this assessment. Thanks!
+
+
+
+
+
+"""]]
