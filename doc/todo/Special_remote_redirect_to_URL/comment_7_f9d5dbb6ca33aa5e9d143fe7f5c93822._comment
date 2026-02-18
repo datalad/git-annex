@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: CLAIMURL"""
+ date="2026-02-18T19:29:02Z"
+ content="""
+CLAIMURL is not currently used for TRANSFER-RETRIEVE-URL. (It's also
+not quite accurate to say that the `web` special remote is used.)
+
+Supporting that would mean that, each time a remote replies with
+TRANSFER-RETRIEVE-URL, git-annex would need to query each other remote
+in turn to see if they claim the url. That could mean starting up a lot
+of extenal special remote programs (when not running yet) and doing a
+roundtrip through them, so latency might start to become a problem.
+
+Also, there would be the possibility of loops between 2 or more remotes.
+Eg, remote A replies with TRANSFER-RETRIEVE-URL with an url that remote B
+CLAIMURLs, only to then reply with TRANSFER-RETRIEVE-URL, with an url that
+remote A CLAIMURLs.
+"""]]
