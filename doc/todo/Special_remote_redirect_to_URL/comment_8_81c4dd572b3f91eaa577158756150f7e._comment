@@ -7,11 +7,9 @@ Some of this strikes me as perhaps coming at
 [[todo/Ephemeral_special_remotes]] from a different direction?
 
 Re the inflation of the git-annex branch when using sameas,
-I've checked and `git-annex initremote --sameas=foo --private`
-still writes to the git-annex branch. But 
-it should be possible to keep the sameas remote's
-config out of the git-annex branch and only stored locally.
-Opened a bug report, [[bugs/sameas_private]].
+I fixed a bug ([[bugs/sameas_private]]) and you'll be able to use
+`git-annex initremote --sameas=foo --private` to keep the configuration
+of the new sameas remote out of the git-annex branch.
 
 So, it seems to me that your broker, if it knows of several different urls
 that can be used to access `myplace`, can be configured at `initremote`
