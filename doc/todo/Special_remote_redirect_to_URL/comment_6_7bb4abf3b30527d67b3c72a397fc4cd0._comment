@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: multiple URLS for a key"""
+ date="2026-02-18T19:16:06Z"
+ content="""
+TRANSFER-RETRIEVE-URL was designed as a redirect, so it only redirects to
+one place. And git-annex won't try again to retrieve from the same remote
+if url fails to download.
+
+I could imagine extending TRANSFER-RETRIEVE-URL to have a list of urls. But
+I can also imagine needing to extend it with HTTP headers to use for the 
+url, and these things conflict, given the simple line and word based
+protocol.
+
+I think that sameas remotes that use other urls might be a solution.
+Running eg `git-annex get` without specifying a remote, it will keep trying
+different remotes until one succeeds.
+"""]]
