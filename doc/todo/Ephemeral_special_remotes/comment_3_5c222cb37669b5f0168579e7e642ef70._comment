@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2026-02-19T18:10:08Z"
+ content="""
+After a bug fix, it's now possible to make a sameas remote that
+is private to the local repository.
+
+	git-annex initremote bar --sameas=foo --private type=...
+
+While not ephemeral as such, if you `git remote remove bar`,
+the only trace left of it will probably 
+be in `.git/annex/journal-private/remote.log`, and possibly 
+any creds that got cached for it.
+It would be possible to have a command that removes the remote, and also
+clears that.
+
+If that is close enough to ephemeral, then we could think about the
+second part, extending the external special remote protocol with
+REDIRECT-REMOTE.
+
+That is similar to [[todo/Special_remote_redirect_to_URL]].
+And a few comments over there go in a similar direction.
+In particular, the discussion of CLAIMURL. If TRANSFER-RETRIEVE-URL
+and TRANSFER-CHECKPRESENT-URL supported CLAIMURL, then if the ephermeral 
+special remote had some type of url, that it claimed, those could be used
+rather than REDIRECT-REMOTE. 
+
+That would not cover TRANSFER STORE and REMOVE though. And it probably
+doesn't make sense to extend those to urls generally. (There are too many
+ways to store to an url or remove an url, everything isn't WebDAV..)
+
+I don't know if it is really elegant to drag
+urls into this anyway. The user may be left making up an url scheme for
+something that does not involve urls at all.
+"""]]
