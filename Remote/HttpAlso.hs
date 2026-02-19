@@ -26,7 +26,6 @@ import qualified Annex.Url as Url
 import Annex.SpecialRemote.Config
 import Git.FilePath
 
-import Data.Either
 import qualified Data.Map as M
 import System.FilePath.Posix as P
 import Control.Concurrent.STM
@@ -139,18 +138,15 @@ downloadAction gc dest p iv run =
 
 checkKey :: RemoteGitConfig -> Maybe URLString -> LearnedLayout -> CheckPresent
 checkKey gc baseurl ll key =
-	isRight <$> keyUrlAction baseurl ll key (checkKey' gc key)
+	either giveup return =<< keyUrlAction baseurl ll key (checkKey' gc key)
 
-checkKey' :: RemoteGitConfig -> Key -> URLString -> Annex (Either String ())
+checkKey' :: RemoteGitConfig -> Key -> URLString -> Annex (Either String Bool)
 checkKey' gc key url = 
-	ifM (Url.withUrlOptions (Just gc) $ Url.checkBoth url (fromKey keySize key))
-		( return (Right ())
-		, return (Left "content not found")
-		)
+	Url.withUrlOptions (Just gc) $ Url.checkBoth' url (fromKey keySize key)
 
 checkPresentExportHttpAlso :: RemoteGitConfig -> Maybe URLString -> Key -> ExportLocation -> Annex Bool
 checkPresentExportHttpAlso gc baseurl key loc =
-	isRight <$> exportLocationUrlAction baseurl loc (checkKey' gc key)
+	either giveup return =<< exportLocationUrlAction baseurl loc (checkKey' gc key)
 
 type LearnedLayout = TVar (Maybe [Key -> URLString])
 
@@ -164,8 +160,8 @@ keyUrlAction
 	:: Maybe URLString
 	-> LearnedLayout
 	-> Key
-	-> (URLString -> Annex (Either String ()))
-	-> Annex (Either String ())
+	-> (URLString -> Annex (Either String a))
+	-> Annex (Either String a)
 keyUrlAction (Just baseurl) ll key downloader =
 	liftIO (readTVarIO ll) >>= \case
 		Just learned -> go Nothing False [learned]
@@ -173,27 +169,27 @@ keyUrlAction (Just baseurl) ll key downloader =
   where
 	go err learn [] = go' err learn [] []
 	go err learn (layouts:rest) = go' err learn layouts [] >>= \case
-		Right () -> return (Right ())
+		Right a -> return (Right a)
 		Left err' -> go (Just err') learn rest
 	
 	go' (Just err) _ [] _ = pure (Left err)
 	go' Nothing _ [] _ = error "internal"
 	go' _err learn (layout:rest) prevs = 
 		downloader (layout key) >>= \case
-			Right () -> do
+			Right a -> do
 				when learn $ do
 					let learned = layout:prevs++rest
 					liftIO $ atomically $
 						writeTVar ll (Just learned)
-				return (Right ())
+				return (Right a)
 			Left err -> go' (Just err) learn rest (layout:prevs)
 keyUrlAction Nothing _ _ _ = noBaseUrlError
 
 exportLocationUrlAction
 	:: Maybe URLString
 	-> ExportLocation
-	-> (URLString -> Annex (Either String ()))
-	-> Annex (Either String ())
+	-> (URLString -> Annex (Either String a))
+	-> Annex (Either String a)
 exportLocationUrlAction (Just baseurl) loc a =
 	a (baseurl P.</> fromOsPath (fromExportLocation loc))
 exportLocationUrlAction Nothing _ _ = noBaseUrlError
