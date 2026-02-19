@@ -216,8 +216,9 @@ assumeUrlExists = UrlInfo True Nothing Nothing
  -}
 getUrlInfo :: URLString -> UrlOptions -> IO (Either String UrlInfo)
 getUrlInfo url uo = case parseURIRelaxed url of
-	Just u -> checkPolicy uo u
-		(either (pure . Left . show) return =<< tryNonAsync (go u))
+	Just u -> checkPolicy uo u $
+		catchJust matchHttpException (go u) (return . Left . showHttpException)
+			`catchNonAsync` (return . Left . show)
 	Nothing -> return (Right dne)
    where
 	go :: URI -> IO (Either String UrlInfo)
@@ -374,7 +375,7 @@ download = download' False
 
 download' :: Bool -> MeterUpdate -> Maybe IncrementalVerifier -> URLString -> OsPath -> UrlOptions -> IO (Either String ())
 download' nocurlerror meterupdate iv url file uo =
-	catchJust matchHttpException go showhttpexception
+	catchJust matchHttpException go (dlfailed . showHttpException)
 		`catchNonAsync` (dlfailed . show)
   where
 	go = case parseURIRelaxed url of
@@ -400,16 +401,6 @@ download' nocurlerror meterupdate iv url file uo =
 
 	ftpport = 21
 
-	showhttpexception he = dlfailed $ case he of
-		HttpExceptionRequest _ (StatusCodeException r _) ->
-			B8.toString $ statusMessage $ responseStatus r
-		HttpExceptionRequest _ (InternalException ie) -> 
-			case fromException ie of
-				Nothing -> show ie
-				Just (ConnectionRestricted why) -> why
-		HttpExceptionRequest _ other -> show other
-		_ -> show he
-	
 	dlfailed msg = do
 		noverification
 		return $ Left $ "download failed: " ++ msg
@@ -789,3 +780,14 @@ extendUrlWithPath u p = u UrlPath.</> escapeURIString skipescape p
 	skipescape '/' = True
 	skipescape c = isUnescapedInURIComponent c
 
+showHttpException :: HttpException -> String
+showHttpException (HttpExceptionRequest _ (StatusCodeException r _)) =
+	B8.toString $ statusMessage $ responseStatus r
+showHttpException (HttpExceptionRequest _ (InternalException ie)) =
+	case fromException ie of
+		Nothing -> show ie
+		Just (ConnectionRestricted why) -> why
+showHttpException (HttpExceptionRequest _ (ConnectionFailure e)) = 
+	"connection failure: " ++ show e
+showHttpException (HttpExceptionRequest _ other) = show other
+showHttpException he = show he
