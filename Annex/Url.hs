@@ -199,8 +199,7 @@ checkBoth url expected_size uo =
 		Left err -> giveup err
 
 checkBoth' :: U.URLString -> Maybe Integer -> U.UrlOptions -> Annex (Either String Bool)
-checkBoth' url expected_size uo = either (Left . show) id 
-	<$> tryNonAsync (liftIO $ U.checkBoth url expected_size uo)
+checkBoth' url expected_size uo = liftIO $ U.checkBoth url expected_size uo
 
 download :: MeterUpdate -> Maybe IncrementalVerifier -> U.URLString -> OsPath -> U.UrlOptions -> Annex Bool
 download meterupdate iv url file uo =

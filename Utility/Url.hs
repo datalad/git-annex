@@ -178,8 +178,7 @@ allowedScheme uo u = uscheme `S.member` allowedSchemes uo
  -
  - The Left error is returned if policy or the restricted http manager
  - does not allow accessing the url or the url scheme is not supported.
- - 
- - Throws an exception on eg, DNS failure.
+ - It's also returned on eg, DNS or network failure.
  -}
 checkBoth :: URLString -> Maybe Integer -> UrlOptions -> IO (Either String Bool)
 checkBoth url expected_size uo = fmap go <$> check url expected_size uo
@@ -213,12 +212,12 @@ assumeUrlExists = UrlInfo True Nothing Nothing
  -
  - The Left error is returned if policy or the restricted http manages
  - does not allow accessing the url or the url scheme is not supported.
- -
- - Throws an exception on eg, DNS failure.
+ - It's also returned on eg, DNS or network failure.
  -}
 getUrlInfo :: URLString -> UrlOptions -> IO (Either String UrlInfo)
 getUrlInfo url uo = case parseURIRelaxed url of
-	Just u -> checkPolicy uo u (go u)
+	Just u -> checkPolicy uo u
+		(either (pure . Left . show) return =<< tryNonAsync (go u))
 	Nothing -> return (Right dne)
    where
 	go :: URI -> IO (Either String UrlInfo)
