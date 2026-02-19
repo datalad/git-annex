@@ -196,7 +196,7 @@ checkBoth :: U.URLString -> Maybe Integer -> U.UrlOptions -> Annex Bool
 checkBoth url expected_size uo =
 	liftIO (U.checkBoth url expected_size uo) >>= \case
 		Right r -> return r
-		Left err -> warning (UnquotedString err) >> return False
+		Left err -> giveup err
 
 checkBoth' :: U.URLString -> Maybe Integer -> U.UrlOptions -> Annex (Either String Bool)
 checkBoth' url expected_size uo = either (Left . show) id 
@@ -215,7 +215,7 @@ download' meterupdate iv url file uo =
 exists :: U.URLString -> U.UrlOptions -> Annex Bool
 exists url uo = liftIO (U.exists url uo) >>= \case
 	Right b -> return b
-	Left err -> warning (UnquotedString err) >> return False
+	Left err -> giveup err
 
 getUrlInfo :: U.URLString -> U.UrlOptions -> Annex (Either String U.UrlInfo)
 getUrlInfo url uo = liftIO (U.getUrlInfo url uo)
