@@ -71,6 +71,11 @@ a request, it can reply with `UNSUPPORTED-REQUEST`.
   * `CHECKPRESENT-UNKNOWN Key ErrorMsg`  
     Indicates that it is not currently possible to verify if content is
     present in the remote. (Perhaps the remote cannot be contacted.)
+  * `CHECKPRESENT-URL Key Url`  
+    Rather than the special remote checking an url itself, 
+    this lets it offload that work to git-annex. This response is a protocol
+    extension; it's only safe to send it to git-annex after it sent an
+    `EXTENSIONS` that included `CHECKPRESENT-URL`.
 * `REMOVEEXPORT Key`  
   Requests the remote to remove content stored by `TRANSFEREXPORT`
   with the previously provided `EXPORT` Name.  

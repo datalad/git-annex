@@ -1,6 +1,6 @@
 {- External special remote data types.
  -
- - Copyright 2013-2025 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2026 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -116,6 +116,7 @@ supportedExtensionList = ExtensionList
 	, "GETGITREMOTENAME"
 	, "UNAVAILABLERESPONSE"
 	, "TRANSFER-RETRIEVE-URL"
+	, "CHECKPRESENT-URL"
 	, asyncExtension
 	]
 
@@ -247,6 +248,7 @@ data Response
 	| CHECKPRESENT_SUCCESS Key
 	| CHECKPRESENT_FAILURE Key
 	| CHECKPRESENT_UNKNOWN Key ErrorMsg
+	| CHECKPRESENT_URL Key URLString
 	| REMOVE_SUCCESS Key
 	| REMOVE_FAILURE Key ErrorMsg
 	| COST Cost
@@ -286,6 +288,7 @@ instance Proto.Receivable Response where
 	parseCommand "CHECKPRESENT-SUCCESS" = Proto.parse1 CHECKPRESENT_SUCCESS
 	parseCommand "CHECKPRESENT-FAILURE" = Proto.parse1 CHECKPRESENT_FAILURE
 	parseCommand "CHECKPRESENT-UNKNOWN" = Proto.parse2 CHECKPRESENT_UNKNOWN
+	parseCommand "CHECKPRESENT-URL" = Proto.parse2 CHECKPRESENT_URL
 	parseCommand "REMOVE-SUCCESS" = Proto.parse1 REMOVE_SUCCESS
 	parseCommand "REMOVE-FAILURE" = Proto.parse2 REMOVE_FAILURE
 	parseCommand "COST" = Proto.parse1 COST

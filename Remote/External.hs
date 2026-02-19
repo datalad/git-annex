@@ -95,7 +95,7 @@ gen rt externalprogram r u rc gc rs
 				{ storeExport = storeExportM external
 				, retrieveExport = retrieveExportM external gc
 				, removeExport = removeExportM external
-				, checkPresentExport = checkPresentExportM external
+				, checkPresentExport = checkPresentExportM external gc
 				, removeExportDirectory = Just $ removeExportDirectoryM external
 				, renameExport = Just $ renameExportM external
 				}
@@ -118,7 +118,7 @@ gen rt externalprogram r u rc gc rs
 			(storeKeyM external)
 			(retrieveKeyFileM external gc)
 			(removeKeyM external)
-			(checkPresentM external)
+			(checkPresentM external gc)
 			rmt
   where
 	mk c cst ordered avail towhereis togetinfo toclaimurl tocheckurl exportactions cheapexportsupported =
@@ -276,8 +276,8 @@ removeKeyM external _proof k = either giveup return =<< go
 					respErrorMessage "REMOVE" errmsg
 			_ -> Nothing
 
-checkPresentM :: External -> CheckPresent
-checkPresentM external k = either giveup id <$> go
+checkPresentM :: External -> RemoteGitConfig -> CheckPresent
+checkPresentM external gc k = either giveup id <$> go
   where
 	go = handleRequestKey external CHECKPRESENT k Nothing $ \resp ->
 		case resp of
@@ -288,6 +288,8 @@ checkPresentM external k = either giveup id <$> go
 			CHECKPRESENT_UNKNOWN k' errmsg
 				| k' == k -> result $ Left $
 					respErrorMessage "CHECKPRESENT" errmsg
+			CHECKPRESENT_URL k' url
+				| k == k' -> checkKeyUrl' gc k url
 			_ -> Nothing
 
 whereisKeyM :: External -> Key -> Annex [String]
@@ -327,8 +329,8 @@ retrieveExportM external gc k loc dest p = do
 		_ -> Nothing
 	req sk = TRANSFEREXPORT Download sk (fromOsPath dest)
 
-checkPresentExportM :: External -> Key -> ExportLocation -> Annex Bool
-checkPresentExportM external k loc = either giveup id <$> go
+checkPresentExportM :: External -> RemoteGitConfig -> Key -> ExportLocation -> Annex Bool
+checkPresentExportM external gc k loc = either giveup id <$> go
   where
 	go = handleRequestExport external loc CHECKPRESENTEXPORT k Nothing $ \resp -> case resp of
 		CHECKPRESENT_SUCCESS k'
@@ -338,6 +340,8 @@ checkPresentExportM external k loc = either giveup id <$> go
 		CHECKPRESENT_UNKNOWN k' errmsg
 			| k' == k -> result $ Left $
 				respErrorMessage "CHECKPRESENT" errmsg
+		CHECKPRESENT_URL k' url
+			| k == k' -> checkKeyUrl' gc k url
 		UNSUPPORTED_REQUEST -> result $
 			Left "CHECKPRESENTEXPORT not implemented by external special remote"
 		_ -> Nothing
@@ -860,6 +864,11 @@ checkKeyUrl :: RemoteGitConfig -> CheckPresent
 checkKeyUrl gc k = do
 	us <- getWebUrls k
 	anyM (\u -> withUrlOptions (Just gc) $ checkBoth u (fromKey keySize k)) us
+
+checkKeyUrl' :: RemoteGitConfig -> Key -> URLString -> Maybe (Annex (ResponseHandlerResult (Either String Bool)))
+checkKeyUrl' gc k url = 
+	Just $ withUrlOptions (Just gc) $ \uo ->
+		Result <$> checkBoth' url (fromKey keySize k) uo
 
 getWebUrls :: Key -> Annex [URLString]
 getWebUrls key = filter supported <$> getUrls key

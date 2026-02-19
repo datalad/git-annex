@@ -13,3 +13,5 @@ The protocol extension would be:
 --[[Joey]]
 
 [[!tag projects/INM7]]
+
+> [[implemented|done]] --[[Joey]]

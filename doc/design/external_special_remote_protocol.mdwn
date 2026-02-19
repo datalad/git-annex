@@ -45,7 +45,7 @@ Recent versions of git-annex respond with a message indicating
 protocol extensions that it supports. Older versions of
 git-annex do not send this message.
 
-	EXTENSIONS INFO ASYNC GETGITREMOTENAME UNAVAILABLERESPONSE TRANSFER-RETRIEVE-URL
+	EXTENSIONS INFO ASYNC GETGITREMOTENAME UNAVAILABLERESPONSE TRANSFER-RETRIEVE-URL CHECKPRESENT-URL
 
 The special remote can respond to that with its own EXTENSIONS message, listing
 any extensions it wants to use. 
@@ -162,6 +162,11 @@ The following requests *must* all be supported by the special remote.
   * `CHECKPRESENT-UNKNOWN Key ErrorMsg`  
     Indicates that it is not currently possible to verify if the key is
     present in the remote. (Perhaps the remote cannot be contacted.)
+  * `CHECKPRESENT-URL Key Url`  
+    Rather than the special remote checking an url itself, 
+    this lets it offload that work to git-annex. This response is a protocol
+    extension; it's only safe to send it to git-annex after it sent an
+    `EXTENSIONS` that included `CHECKPRESENT-URL`.
 * `REMOVE Key`  
   Requests the remote to remove a key's contents.
   * `REMOVE-SUCCESS Key`  
@@ -488,6 +493,9 @@ These protocol extensions are currently supported.
 * `TRANSFER-RETRIEVE-URL`  
   This allows the `TRANSFER-RETRIEVE-URL` response to be used
   in reply to `TRANSFER` and `TRANSFEREXPORT`.
+* `CHECKPRESENT-URL`
+  This allows the `CHECKPRESENT-URL` response to be used
+  in reply to `CHECKPRESENT` and `CHECKPRESENTEXPORT`.
 
 ## signals
 
