@@ -1,0 +1,109 @@
+### Please describe the problem.
+
+we started to get a test  test_ria_postclone_noannex to fail, claude bisected to
+
+  This is a git-annex regression in 10.20260213. The configRead function in Remote/Git.hs was reordered to support a "Push to Create" feature:
+
+```
+  Before (10.20250630) — annex-ignore checked first:
+  (_, True, _) -> return r              -- annex-ignore → bail out immediately
+  (True, _, _) | remoteAnnexCheckUUID gc -> tryGitConfigRead ...
+
+  After (10.20260213) — local repos checked first, bypassing annex-ignore:
+  (True, _, _) | remoteAnnexCheckUUID gc -> tryGitConfigRead ...  -- local repo → auto-init!
+  (_, True, _) | remoteAnnexIgnoreAuto gc -> checkpushedtocreate gc
+
+  For local remotes, tryGitConfigRead → readlocalannexconfig → autoInitialize recreates the annex/ directory, even though annex-ignore=true is set. The annex-ignore case is never reached due to Haskell's top-to-bottom pattern matching.
+```
+
+which indeed sounds correct as pushToCreate feature still should not  touch remove which are already known to be annex-ignore'd I think. If needed -- flag should be cleared first
+
+<details>
+<summary>reproducer it created which passes on 10.20251029-1 and fails with 10.20260115+git119-g43a3f3aaf2-1~ndall+1 (might have been my patched version, so subtract few commits back)</summary> 
+
+```shell
+#!/bin/bash
+#
+# Reproducer for git-annex regression: annex-ignore not respected for local remotes
+#
+# In git-annex <= 10.20250630, configRead in Remote/Git.hs checked annex-ignore
+# BEFORE repoCheap (local), so local remotes with annex-ignore=true were skipped.
+#
+# In git-annex >= 10.20260213, the case ordering was swapped for "Push to Create"
+# support.  Now repoCheap is matched first, causing tryGitConfigRead ->
+# readlocalannexconfig -> autoInitialize to run even when annex-ignore=true.
+#
+# Expected: annex/ directory is NOT created on the bare remote
+# Actual (>= 10.20260213): annex/ directory IS created
+
+set -eu
+
+echo "=== git-annex annex-ignore regression reproducer ==="
+echo "git-annex version: $(git annex version --raw 2>/dev/null || git annex version | head -1)"
+echo
+
+WORKDIR=$(mktemp -d)
+trap "chmod -R u+w '$WORKDIR' 2>/dev/null; rm -rf '$WORKDIR'" EXIT
+
+ORIGIN="$WORKDIR/origin"
+BARE="$WORKDIR/bare.git"
+CLONE="$WORKDIR/clone"
+
+# 1. Create an annex repo with some content
+echo "--- Step 1: Create origin repo with annexed content"
+git init "$ORIGIN"
+cd "$ORIGIN"
+git annex init "origin"
+echo "hello" > file.txt
+git annex add file.txt
+git commit -m "add file"
+echo
+
+# 2. Create bare repo, push git-annex branch but remove annex/ and annex UUID.
+#    This simulates a RIA store where the annex objects dir was removed —
+#    the bare repo has a git-annex branch (metadata) but no local annex.
+echo "--- Step 2: Create bare repo, push, then strip local annex state"
+git clone --bare "$ORIGIN" "$BARE"
+cd "$ORIGIN"
+git remote add bare "$BARE"
+git push bare --all
+git annex copy --to bare file.txt
+git annex sync --content bare 2>&1 | tail -5
+# Now strip the annex/ directory and annex.uuid from the bare repo,
+# simulating a store that was never locally annex-initialized
+chmod -R u+w "$BARE/annex"
+rm -rf "$BARE/annex"
+git -C "$BARE" config --unset annex.uuid || true
+git -C "$BARE" config --unset annex.version || true
+echo
+echo "annex/ exists in bare after stripping: $(test -d "$BARE/annex" && echo YES || echo NO)"
+echo "annex.uuid in bare: $(git -C "$BARE" config annex.uuid 2>/dev/null || echo '<unset>')"
+echo
+
+# 3. Clone from the bare repo, set annex-ignore BEFORE git-annex init
+echo "--- Step 3: Clone from bare, set annex-ignore=true, then git-annex init"
+git clone "$BARE" "$CLONE"
+cd "$CLONE"
+git config remote.origin.annex-ignore true
+echo "remote.origin.annex-ignore = $(git config remote.origin.annex-ignore)"
+git annex init "clone"
+echo
+
+# 4. Check: was annex/ recreated on the bare repo?
+echo "--- Result"
+if test -d "$BARE/annex"; then
+    echo "FAIL: annex/ was recreated on the bare remote despite annex-ignore=true"
+    echo "      This is the git-annex regression."
+    echo "      annex.uuid in bare is now: $(git -C "$BARE" config annex.uuid 2>/dev/null || echo '<unset>')"
+    exit 1
+else
+    echo "OK: annex/ was NOT recreated. annex-ignore is respected."
+    exit 0
+fi
+
+```
+</details>
+
+
+[[!meta author=yoh]]
+[[!tag projects/forgejo]]
