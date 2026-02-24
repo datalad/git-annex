@@ -1,0 +1,3 @@
+I'm using tailscale for a lot of my infrastructure, even to ssh to my nas from any internet connection. This means that tailscale encrypts my traffic and ssh also encrypts the traffic.
+
+This can be fine for a lot of things, but when I'm using git-annex to `git annex sync --content` it would be nice if I could use the host directly on my network instead of using tailscale's wireguard. I think I can do this by creating two separate special remotes and associating them using `sameas`. The part I don't fully grasp is how I tell git-annex that it should first prefer the network local host before trying the tailscale global host. Is `<remote>.annex-cost` enough to do that?
