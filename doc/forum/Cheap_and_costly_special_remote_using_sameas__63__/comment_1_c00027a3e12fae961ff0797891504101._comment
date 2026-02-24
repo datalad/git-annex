@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="xentac"
+ avatar="http://cdn.libravatar.org/avatar/773b6c7b0dc34f10b66aa46d2730a5b3"
+ subject="comment 1"
+ date="2026-02-24T19:54:47Z"
+ content="""
+Trying to set up and test this, I just realized these aren't special remotes. They're proper git (git-annex) remotes on my nas. I'm trying to figure out what setting I need to change to mark them as `sameas` and if cost will work in that case as well.
+"""]]
