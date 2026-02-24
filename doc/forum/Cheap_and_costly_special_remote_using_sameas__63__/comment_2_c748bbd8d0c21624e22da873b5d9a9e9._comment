@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="xentac"
+ avatar="http://cdn.libravatar.org/avatar/773b6c7b0dc34f10b66aa46d2730a5b3"
+ subject="comment 2"
+ date="2026-02-24T20:18:01Z"
+ content="""
+I may have actually come up with a solution. Instead of creating a second remote, I was able to make my `~/.ssh/config` dynamic based on the results of a `dig` command: https://fmartingr.com/blog/2022/08/12/using-ssh-config-match-to-connect-to-a-host-using-multiple-ip-or-hostnames/
+
+Thanks for going with me on this journey!
+"""]]
