@@ -2,7 +2,8 @@ Hi Joey,
 
 We have a particular case where we need to merge datalad repos which were created separately.
 I was thinking to simply merge the git-annex branches with `--allow-unrelated-histories`  and initial tests show limited conflicts that can be easily fixed by using an union merge driver. 
-Conflicts mainly arise in 
+Conflicts mainly arise in: 
+
 - preferred-content.log
 - remote.log
 - uuid.log
