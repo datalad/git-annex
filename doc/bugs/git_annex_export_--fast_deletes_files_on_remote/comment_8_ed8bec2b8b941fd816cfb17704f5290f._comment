@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2026-03-02T16:02:51Z"
+ content="""
+Ok, I've tagged the todos about import support from rsync, and hopefully
+that will be able to get implemented.
+
+As for this bug, it seems that at least documentation improvements are
+needed in order to close it. I have also fixed the adb special remote to
+avoid the behavior, which leaves webdav and any external special remotes
+that might have the behavior.
+"""]]
