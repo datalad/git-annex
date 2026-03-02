@@ -37,4 +37,10 @@ importtree, but there are several roadblocks:
 So, it seems that, importtree would need to be able to run commands
 other than rsync on the server. --[[Joey]]
 
+Or, implement [[todo/importtree_only_remote]] and make rsync special
+remotes support either importtree or extporttree, but not both, which
+avoids that problem. --[[Joey]]
+
 [[!tag needsthought]]
+
+[[!tag projects/ICE4]]
