@@ -694,7 +694,7 @@ pushRemote o remote (Just branch, _) = do
 			, return True
 			)
 	  where
-		needemulation = Remote.Git.onLocalRepo repo $
+		needemulation = Remote.Git.onLocalRepo remote repo $
 			(annexCrippledFileSystem <$> Annex.getGitConfig)
 				<&&>
 			needUpdateInsteadEmulation			

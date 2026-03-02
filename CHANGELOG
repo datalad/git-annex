@@ -8,7 +8,8 @@ git-annex (10.20260214) UNRELEASED; urgency=medium
   * web, S3, git: Fix bugs in checking if content is present on a remote
     when configuration does not allow accessing it.
   * Improve display of http exceptions.
-  * 
+  * Fix reversion in previous version that caused auto-initializing of
+    local git remotes that have annex-ignore set.
 
  -- Joey Hess <id@joeyh.name>  Mon, 16 Feb 2026 13:38:21 -0400
 

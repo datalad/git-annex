@@ -191,7 +191,8 @@ configRead autoinit r = do
 	annexignore <- liftIO $ getDynamicConfig (remoteAnnexIgnore gc)
 	case (repoCheap r, annexignore, hasuuid) of
 		(True, _, _)
-			| remoteAnnexCheckUUID gc -> tryGitConfigRead gc autoinit r hasuuid
+			| remoteAnnexCheckUUID gc ->
+				tryGitConfigRead gc (not annexignore && autoinit) r hasuuid
 			| otherwise -> return r
 		(_, True, _) 
 			| remoteAnnexIgnoreAuto gc ->
@@ -413,9 +414,12 @@ tryGitConfigRead gc autoinit r hasuuid
 					": "  ++ show e
 			Annex.getState Annex.repo
 		let r' = r { Git.repoPathSpecifiedExplicitly = True }
-		s <- newLocal r'
-		liftIO $ Annex.eval s $ check
-			`finally` quiesce True
+		if autoinit
+			then do
+				s <- newLocal r'
+				liftIO $ Annex.eval s $ check
+					`finally` quiesce True
+			else liftIO $ Git.Config.read r'
 		
 	failedreadlocalconfig = do
 		unless hasuuid $ case Git.remoteName r of
@@ -758,12 +762,15 @@ repairRemote r a = return $ do
 		ensureInitialized noop (pure [])
 		a `finally` quiesce True
 
-data LocalRemoteAnnex = LocalRemoteAnnex Git.Repo (MVar [(Annex.AnnexState, Annex.AnnexRead)])
+data LocalRemoteAnnex = LocalRemoteAnnex Git.Repo Bool (MVar [(Annex.AnnexState, Annex.AnnexRead)])
 
 {- This can safely be called on a Repo that is not local, but of course
  - onLocal will not work if used with the result. -}
-mkLocalRemoteAnnex :: Git.Repo -> Annex (LocalRemoteAnnex)
-mkLocalRemoteAnnex repo = LocalRemoteAnnex repo <$> liftIO (newMVar [])
+mkLocalRemoteAnnex :: Git.Repo -> RemoteGitConfig -> Annex (LocalRemoteAnnex)
+mkLocalRemoteAnnex repo gc =
+	LocalRemoteAnnex repo
+		<$> liftIO (getDynamicConfig (remoteAnnexIgnore gc))
+		<*> liftIO (newMVar [])
 
 {- Runs an action from the perspective of a local remote.
  -
@@ -777,9 +784,9 @@ mkLocalRemoteAnnex repo = LocalRemoteAnnex repo <$> liftIO (newMVar [])
 onLocal :: State -> Annex a -> Annex a
 onLocal (State _ _ _ _ _ lra) = onLocal' lra
 
-onLocalRepo :: Git.Repo -> Annex a -> Annex a
-onLocalRepo repo a = do
-	lra <- mkLocalRemoteAnnex repo
+onLocalRepo :: Remote -> Git.Repo -> Annex a -> Annex a
+onLocalRepo r repo a = do
+	lra <- mkLocalRemoteAnnex repo (gitconfig r)
 	onLocal' lra a
 
 newLocal :: Git.Repo -> Annex (Annex.AnnexState, Annex.AnnexRead)
@@ -795,15 +802,17 @@ newLocal repo = do
 		})
 
 onLocal' :: LocalRemoteAnnex -> Annex a -> Annex a
-onLocal' (LocalRemoteAnnex repo mv) a = liftIO (takeMVar mv) >>= \case
+onLocal' (LocalRemoteAnnex repo annexignore mv) a = liftIO (takeMVar mv) >>= \case
 	[] -> do
 		liftIO $ putMVar mv []
 		v <- newLocal repo
-		go (v, ensureInitialized noop (pure []) >> a)
+		go (v, initialized >> a)
 	(v:rest) -> do
 		liftIO $ putMVar mv rest
 		go (v, a)
   where
+	initialized = unless annexignore $
+		ensureInitialized noop (pure [])
 	go ((st, rd), a') = do
 		curro <- Annex.getState Annex.output
 		let act = Annex.run (st { Annex.output = curro }, rd) $
@@ -902,7 +911,7 @@ mkState r u gc = do
 	pool <- Ssh.mkP2PShellConnectionPool
 	copycowtried <- liftIO newCopyCoWTried
 	fastcopy <- getFastCopy gc
-	lra <- mkLocalRemoteAnnex r
+	lra <- mkLocalRemoteAnnex r gc
 	(duc, getrepo) <- go
 	return $ State pool duc copycowtried fastcopy getrepo lra
   where
