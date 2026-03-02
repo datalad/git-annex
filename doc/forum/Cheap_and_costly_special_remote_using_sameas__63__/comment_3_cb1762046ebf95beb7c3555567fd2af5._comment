@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2026-03-02T15:45:30Z"
+ content="""
+git-annex allows you to have any number of remotes pointing at the same git
+repository. It is able to tell it's the same git repository, so you don't
+need anything like sameas in this case.
+
+All you need is a git remote with an url pointing at the network local
+host, and set the `<remote>.annex-cost` of that one lower than the other
+remote. And git-annex will try it first.
+
+Of course a dynamic ssh config is a fine way to do it too..
+"""]]
