@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2026-03-02T15:28:01Z"
+ content="""
+The git-annex branch is automatically merged by git-annex,
+it doesn't matter if it has unrelated histories or not. The merge will
+always succeed, without conflicts.
+
+All you need to do is pull the git-annex branch from a remote, and run
+`git-annex merge`.
+
+If for some reason you need to manually merge the git-annex branches,
+yes all it takes is a simple union merge where on conflict you concatenate
+both versions of the conflicted file together.
+"""]]
