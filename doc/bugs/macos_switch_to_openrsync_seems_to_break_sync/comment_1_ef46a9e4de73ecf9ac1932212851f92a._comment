@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2026-03-02T15:35:22Z"
+ content="""
+I'm not sure how it could be a bug in git-annex that it uses 
+any and all rsync options it might choose to use.
+
+In any case, "rsync error: unexpected end of file" kind of looks like
+openrsync is having difficulty communicating with the remote rsync server,
+and not like an un-implemented option.
+
+Searching the web for that error message finds plenty of other openrsync
+users, that are not using git-annex, and have similar problems with it.
+
+I think my suggestion has to be to install the real rsync somewhere in PATH
+before openrsync, so git-annex will use it.
+"""]]
