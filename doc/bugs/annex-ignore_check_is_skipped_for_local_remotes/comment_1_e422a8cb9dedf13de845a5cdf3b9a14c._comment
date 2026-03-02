@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2026-03-02T14:04:38Z"
+ content="""
+The LLM generated text incorrect. It is conflating two different commits
+which both modified the same code. 
+
+[[!commit 87e0b77a0435522dce7be8ebec77a1326f2ede20]] was the push-to-create
+commit, and it only involves cases after the repoCheap case is handled.
+
+In the meantime, we have [[!commit f79f7d322bc0278e4edba13c3b57093753fded6c]] 
+which explicitly involves annex-ignore and local git remotes and is
+intentionally making the config be read 
+
+I have to say that, once again, I find this kind of LLM-generated text
+counterproductive. My work on git-annex is necessarily detail-oriented, and
+needing to deal with something that subtly gets details wrong by
+construction is not helpful.
+"""]]
