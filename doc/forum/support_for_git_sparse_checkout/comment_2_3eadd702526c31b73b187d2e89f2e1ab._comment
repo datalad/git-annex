@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="Reigniting interested in this topic and linking to related efforts (BABS etc)"
+ date="2026-03-02T16:18:28Z"
+ content="""
+I just saw support for [git sparse-checkout](https://git-scm.com/docs/git-sparse-checkout) merged in [BABS](https://github.com/PennLINC/babs/pull/337) and frankly I never knew/used it before!  Inspired by an enthusiastic [Meng](https://github.com/just-meng) who ~~made a strategic mistake for her PhD progress~~ [pioneered use of use of git worktrees](https://blog.datalad.org/posts/git-worktree-workflow/) in DataLad having attended Distribits 2025, I thought to check if git-annex has support for the `sparse-checkout`.
+
+In conjunction with `sparse-checkout` (existing already) support for worktrees in `git-annex` can make a perfect \"couple\" for an efficient [ephemeral](https://myyoda.github.io/principles-examples/stamped_principles/e/) compute where we checkout only what is really needed, e.g. following the `datalad run` input/output specifications.
+
+This is just a summary of the potential research/implementation since may be it even somehow magically all works already given that BABS merged the sparse-checkout support and they extensively use `git annex` already...?
+"""]]
