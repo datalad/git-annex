@@ -288,7 +288,7 @@ data ExportActions a = ExportActions
 	, removeExport :: Key -> ExportLocation -> a ()
 	-- Removes an exported directory. Typically the directory will be
 	-- empty, but it could possibly contain files or other directories,
-	-- and it's ok to delete those (but not required to). 
+	-- and it's ok to delete those (but better to avoid doing so). 
 	-- If the remote does not use directories, or automatically cleans
 	-- up empty directories, this can be Nothing.
 	--

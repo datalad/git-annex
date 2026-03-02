@@ -274,7 +274,7 @@ removeExportDirectoryM serial abase dir =
 	unlessM go $
 		giveup "adb failed"
   where
-	go = adbShellBool serial [Param "rm", Param "-rf", File (fromAndroidPath adir)]
+	go = adbShellBool serial [Param "rmdir", Param "--ignore-fail-on-non-empty", File (fromAndroidPath adir)]
 	adir = androidExportLocation abase (mkExportLocation (fromExportDirectory dir))
 
 checkPresentExportM :: AndroidSerial -> AndroidPath -> Key -> ExportLocation -> Annex Bool
