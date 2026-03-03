@@ -1,0 +1,40 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2026-03-03T22:50:38Z"
+ content="""
+In a sparse checkout, most git commands behave as is they were run in a
+worktree that contains only the files in the sparse checkout, and not other
+files. Since git-annex uses git commands extensively when identifying files
+to work on, its commands skip over files not in the sparse checkout.
+
+There are exceptions, the main one seems to be `git ls-files`, which
+does list files not in the sparse checkout. All commands that operate on
+annexed files and that use `git ls-files` to enumerate files though feed
+the files into `git cat-file --batch`, and that will say a file is not
+found when it's not part of the sparse checkout. So git-annex skips those.
+
+The only exception I can find, and possibily the only one, is that
+`git-annex add` will add files that are in a subdirectory that is not
+included in the sparse checkout. (It uses `git ls-files` without `git
+cat-file`.) That is a different behavior than `git
+add`, which refuses to add such files (though the --sparse option
+overrides and causes them to be added).
+
+I don't know if this `git-annex add` behavior would be a problem.
+The documentation for `--sparse` says that the reason git add doesn't
+default to it is because, after it adds such a file, it could get removed
+from the worktree without warning. Which would make it hard to get the
+file's content back if it didn't get committed first.
+
+If that were a problem, it could be fixed by making git-annex run `git
+ls-files` with the `--sparse` option, which is supposed to filter out files
+not in the sparse checkout... Except that doesn't seem to work right when
+I try it. Maybe a bug in git (2.51.0)?
+
+Anyway, my impression is that this would all need 
+playing with to determine if it happens to meet your needs.
+Bearing in mind that sparse checkout is itself an experimental feature
+(for 6+ years?) that is documented to be subject to future behavior 
+changes.
+"""]]
