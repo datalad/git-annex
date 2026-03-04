@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""proposed design"""
+ date="2026-03-04T16:31:28Z"
+ content=""""
+I'm here going with the name "aspect" to refer to a sameas remote that is
+in a private namespace belonging to the external special remote that uses
+it. This name is a bit of a placeholder, but I think some name is needed,
+because it would be surprising if "INITREMOTE" did a different thing
+than `git-annex initremote`.
+
+Add to external special remote protocol, enabled by the `REDIRECTREMOTE`
+extension:
+
+	INITASPECT name type=whatever ephemeral=yes|no [params]
+ 	INITASPECT-OK
+	INITASPECT-FAILURE reason
+
+Add response to TRANSFER, REMOVE, CHECKPRESENT, TRANSFEREXPORT,
+CHECKPRESENTEXPORT, REMOVEEXPORT, REMOVEEXPORTDIRECTORY, RENAMEEXPORT:
+
+	USEASPECT name
+
+With ephemeral=yes, the aspect is automatically removed when the external
+special remote program shuts down (unless another one is using it.)
+With ephemeral=no, the aspect remains initialized for use next time.
+
+Note that INITASPECT will successfully do nothing if the remote already
+exists with the same config. If a remote exists with that name but a
+different config, it will remove the old one and init the new one.
+"""]]
