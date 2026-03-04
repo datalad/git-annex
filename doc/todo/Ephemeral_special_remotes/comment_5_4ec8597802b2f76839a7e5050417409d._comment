@@ -2,7 +2,7 @@
  username="joey"
  subject="""proposed design"""
  date="2026-03-04T16:31:28Z"
- content=""""
+ content="""
 I'm here going with the name "aspect" to refer to a sameas remote that is
 in a private namespace belonging to the external special remote that uses
 it. This name is a bit of a placeholder, but I think some name is needed,
