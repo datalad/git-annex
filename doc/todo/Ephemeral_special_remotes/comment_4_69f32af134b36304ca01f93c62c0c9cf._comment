@@ -24,12 +24,12 @@ automatically use that namespace.
 
 For example:
 
- INITREMOTE blah type=blah url=whatever
- INITREMOTE-OK
- [...]
- REDIRECT_REMOTE blah
- [...]
- REMOVEREMOTE blah
+	INITREMOTE blah type=blah url=whatever
+	INITREMOTE-OK
+	[...]
+	REDIRECT_REMOTE blah
+	[...]
+	REMOVEREMOTE blah
 
 That might make a remote named eg "foo-$foouuid-blah" where $foouuid is
 the uuid of the special remote foo that owns it. So there is no possibility
