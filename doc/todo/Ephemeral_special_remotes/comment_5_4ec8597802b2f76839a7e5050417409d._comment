@@ -25,7 +25,12 @@ With ephemeral=yes, the aspect is automatically removed when the external
 special remote program shuts down (unless another one is using it.)
 With ephemeral=no, the aspect remains initialized for use next time.
 
-Note that INITASPECT will successfully do nothing if the remote already
-exists with the same config. If a remote exists with that name but a
-different config, it will remove the old one and init the new one.
+Note that INITASPECT will successfully do nothing if the aspect already
+exists with the same config. If an aspect exists with that name but a
+different config, it will fail. I earlier thought it could remove the old
+one and make a new one, but that risks removing an aspect that is still
+in use by another process, which could result in unexpected behavior when
+that aspect reads its git config or cached creds or etc. It should
+be easy enough in most cases to avoid reusing the same aspect name for
+two different configs.
 """]]
