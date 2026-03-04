@@ -1,0 +1,51 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2026-03-04T15:47:39Z"
+ content="""
+Continuing my line of thought, `REDIRECT_REMOTE` would I guess be
+provided with a remote name, not a uuid, since with --sameas the
+remote would have the same uuid.
+
+While special remote "foo" could use "foo-bar", "foo-baz" etc as
+the name of its not-really-ephemeral helper remotes, that is not
+entirely satisfactory, since the user might have their own "foo-bar"
+remote. Or the user might notice "foo-bar" exists, and start using it,
+and then it would be painful if "foo" later removes it.
+
+And, new protocol command like `initremote` does seem to be needed,
+because if a special remote runs `git-annex initremote` itself, the
+git-annex process that is using the special remote won't know about
+the new remote.
+
+If there's an `initremote`-like protocol command, the special remotes
+it inits could be in a separate namespace, and `REDIRECT_REMOTE` could
+automatically use that namespace.
+
+For example:
+
+ INITREMOTE blah type=blah url=whatever
+ INITREMOTE-OK
+ [...]
+ REDIRECT_REMOTE blah
+ [...]
+ REMOVEREMOTE blah
+
+That might make a remote named eg "foo-$foouuid-blah" where $foouuid is
+the uuid of the special remote foo that owns it. So there is no possibility
+of collision. That would be in `.git/config` for the reasons I discussed
+earlier.
+
+Depending on the type of remote, it might be cheap enough to INITREMOTE
+and REMOVEREMOTE in the same session. Making it emphmeral, athough with
+some disk writes happening behind the scenes to update the git config etc.
+Or, the REMOVEREMOTE could be skipped to leave it set up for the next
+session. Then an `INITREMOTE` with the same settings would be optimised
+to a no-op.
+
+That would have `git remote remote foo` leave behind the configs for
+the not-so-ephemeral remotes that it set up. Not a big problem, the user
+can go in and delete them or a `git-annex removeremote` could handle it,
+as well as deleting `.git/annex/journal-private/remote.log`, cached creds,
+etc.
+"""]]
