@@ -1,0 +1,59 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2026-03-05T14:44:39Z"
+ content="""
+> Is a non-ephemeral aspect visible/accessible outside the context of the special remote that set it up? Would it appear as a regular special remote for a CLI user, as if they ran initremote?
+
+I think it would be best for it not to be visible to the user. Since these
+remotes can still set their own git configs though, they will necessarily
+show up in `git remote list`. (Any `git config remote.foo.bar` setting is
+enough for that.) It would be possible for git-annex to not treat them as
+valid remotes when used outside of the aspect context though.
+Easiest would be to set annex-ignore on them.
+
+It would be possible to point `GIT_CONFIG` at a different config file
+when setting up and using the ephemeral special remote. That would have
+the problem though that if the special remote looks at some user-set
+git configs, it wouldn't see them. An example that comes to mind
+that a special remote would be expected to see is the
+"credential.helper" configuration. Maybe git-annex could merge .git/config
+into the ephemeral remote's version when using it? Seems complex and
+potentially slow though.
+
+(BTW, Even ephemeral aspects will be user-visible while git-annex is running.)
+
+> At which stage would INITASPECT (have to) be used? The PREPARE stage, I guess.
+
+I think it could be used at any point.
+
+> How expensive could INITASPECT be? Would it (immediately) trigger init/prepare of the aspect-remote?
+
+As expensive as `git-annex initremote` initially, but subsequenty close to
+a noop when the remote configuration includes emphemeral=no
+
+Also, calling it repeatedly in the same session with the same configuration
+should be a noop after the first time. So you could call it immediately
+before USEASPECT.
+
+That does suggest a simplification: Rather than having a separate
+INITASPECT command:
+
+USEASPECT type=whatever ephemeral=yes|no [params]
+
+Neat, this avoids needing to name the aspect! And avoids any problem with
+the aspect name having been used before with a different config.
+
+It also means that any
+failure to initialize will necessarily make the USEASPECT response be
+an error message, so error handling takes care of itself.
+
+git-annex would still need a remote name internally; it could eg hash the
+configuration to get a name.
+
+I'm inclined to go with this simplification.
+
+> Do I understand correctly that it would be possible to set the active aspect on a per-key and per-operation basis?
+
+It's per-operation. If you want different aspects for different types of keys it would be up to you to pick between them.
+"""]]
