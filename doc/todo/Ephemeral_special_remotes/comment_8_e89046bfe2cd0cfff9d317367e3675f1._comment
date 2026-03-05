@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""simplified design with better name"""
+ date="2026-03-05T15:30:59Z"
+ content="""
+Add to external special remote protocol, enabled by the `DELEGATE`
+extension:
+
+	DELEGATE name type=whatever ephemeral=yes|no [params]
+
+Which can be used as a response to TRANSFER, REMOVE, CHECKPRESENT,
+TRANSFEREXPORT, CHECKPRESENTEXPORT, REMOVEEXPORT, REMOVEEXPORTDIRECTORY,
+RENAMEEXPORT
+
+This initializes a delegate special remote in a private namespace, and
+uses it to perform the operation.
+
+Subsequent uses of DELEGATE with the same configuration avoid the overhead
+of reinitialization.
+
+With ephemeral=yes, the delegate is automatically removed when the external
+special remote program shuts down (unless another one is using it.)
+With ephemeral=no, the delegate remains initialized for use next time.
+""]]
