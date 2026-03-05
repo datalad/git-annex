@@ -1,0 +1,48 @@
+This is an appendix to the [[external_special_remote_protocol]].
+
+The `DELEGATE` extension allows many requests to be responded to with:
+
+    DELEGATE type=value ephemeral=yes|no [params]
+
+This delegates the request to a special remote of the specified
+type, which is initialized with the provided parameters.
+
+It is similar to using `git-annex initremote` with the `--sameas`
+and `--private` options. The delegate special remote inherits
+the encryption settings, and uses the same annex-uuid. Its configuration
+is not stored to the git-annex branch.
+
+With ephemeral=yes, the delegate special remote is created and exists only
+as long as the external special remote program is used by git-annex. Then
+it is removed. With ephemeral=no, the delegate special remote is cached for
+use next time, avoiding the overhead of initializing it again.
+
+For example:
+
+    TRANSFER STORE somekey tmpfile
+    DELEGATE type=directory ephemeral=yes directory=/mnt/disk/
+
+This makes the annex object be stored in a directory special remote.
+Since initializing a directory special remote is inexpensive, it's
+made ephemeral.
+
+When the key is later requested to be retrieved,
+the same delegate can be used:
+
+    TRANSFER RETRIEVE somekey tmpfile
+    DELEGATE type=directory ephemeral=yes directory=/mnt/disk/
+
+----
+
+Internally, git-annex has to make a git remote for the delegate special
+remote. It comes up with a name by hashing the configuration of the
+delegate, and puts it in a namespace under the name of the external special
+remote that used it. For example, if the special remote doing the above
+delegation is named "foo", the delegate special remote might be named
+"foo-delegate-69fc17c8f97d751014b36de5c328464b76c41af7".
+
+Currently, delegate special remotes are user visible in eg `git remote`.
+While they are configured with `annex-ignore` set to avoid git-annex
+commands from ususally using them, the user can choose to directly use them
+if they desire. This is just a consequence of the current implementation,
+and  may change in future versions of git-annex.

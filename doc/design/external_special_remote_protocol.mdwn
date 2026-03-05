@@ -45,7 +45,7 @@ Recent versions of git-annex respond with a message indicating
 protocol extensions that it supports. Older versions of
 git-annex do not send this message.
 
-	EXTENSIONS INFO ASYNC GETGITREMOTENAME UNAVAILABLERESPONSE TRANSFER-RETRIEVE-URL CHECKPRESENT-URL
+	EXTENSIONS INFO ASYNC GETGITREMOTENAME UNAVAILABLERESPONSE TRANSFER-RETRIEVE-URL CHECKPRESENT-URL DELEGATE
 
 The special remote can respond to that with its own EXTENSIONS message, listing
 any extensions it wants to use. 
@@ -148,6 +148,9 @@ The following requests *must* all be supported by the special remote.
     this lets it offload that work to git-annex. This response is a protocol
     extension; it's only safe to send it to git-annex after it sent an
     `EXTENSIONS` that included `TRANSFER-RETRIEVE-URL`.
+  * `DELEGATE type=value ephemeral=yes|no [params]`  
+    Delegate this request to a different type of special remote.
+    See [[delegate_appendix]].
 * `CHECKPRESENT Key`  
   Requests the remote to check if a key is present in it.  
   It's important that, while a key is being transferred to a remote,
@@ -167,6 +170,9 @@ The following requests *must* all be supported by the special remote.
     this lets it offload that work to git-annex. This response is a protocol
     extension; it's only safe to send it to git-annex after it sent an
     `EXTENSIONS` that included `CHECKPRESENT-URL`.
+  * `DELEGATE type=value ephemeral=yes|no [params]`  
+    Delegate this request to a different type of special remote.
+    See [[delegate_appendix]].
 * `REMOVE Key`  
   Requests the remote to remove a key's contents.
   * `REMOVE-SUCCESS Key`  
@@ -174,6 +180,9 @@ The following requests *must* all be supported by the special remote.
     the remote didn't have the key at the point removal was requested.
   * `REMOVE-FAILURE Key ErrorMsg`  
     Indicates that the key was unable to be removed from the remote.
+  * `DELEGATE type=value ephemeral=yes|no [params]`  
+    Delegate this request to a different type of special remote.
+    See [[delegate_appendix]].
 
 Special remotes can optionally support tree exports and imports,
 which makes the [[git-annex-export]] and [[git-annex-import]] commands
@@ -222,6 +231,9 @@ the special remote can reply with `UNSUPPORTED-REQUEST`.
     Indicates that files are written in order.
   * `UNORDERED`
     Indicates that files are not written in order.
+  * `DELEGATE type=value ephemeral=yes|no [params]`  
+    Delegate this request to a different type of special remote.
+    See [[delegate_appendix]].
 * `GETAVAILABILITY`  
   Asks the remote if it is locally or globally available.
   (Ie stored in the cloud vs on a local disk.)  
@@ -240,8 +252,6 @@ the special remote can reply with `UNSUPPORTED-REQUEST`.
     trying to use the remote.  
     Older versions of git-annex do not support this response, so avoid
     sending it unless the `UNAVAILABLERESPONSE` extension is enabled.
-* `ORDERED`
-  
 * `CLAIMURL Url`  
   Asks the remote if it wishes to claim responsibility for downloading
   an url.
@@ -281,6 +291,9 @@ the special remote can reply with `UNSUPPORTED-REQUEST`.
     Indicates that no location is known for a key.
     This is not needed when `SETURIPRESENT` is used, since such uris are
     automatically displayed by `git annex whereis`.  
+  * `DELEGATE type=value ephemeral=yes|no [params]`  
+    Delegate this request to a different type of special remote.
+    See [[delegate_appendix]].
 * `GETINFO`  
   Requests the remote to send some information describing its
   configuration, for display by `git annex info`. A block of responses
@@ -493,9 +506,14 @@ These protocol extensions are currently supported.
 * `TRANSFER-RETRIEVE-URL`  
   This allows the `TRANSFER-RETRIEVE-URL` response to be used
   in reply to `TRANSFER` and `TRANSFEREXPORT`.
-* `CHECKPRESENT-URL`
+* `CHECKPRESENT-URL`  
   This allows the `CHECKPRESENT-URL` response to be used
   in reply to `CHECKPRESENT` and `CHECKPRESENTEXPORT`.
+* `DELEGATE`  
+  This allows the `DELEGATE` response to be used in reply to many requests.
+  That causes the request to be handled by a delegate special remote,
+  which is initialized as needed. See [[delegate_appendix]]
+  for details.
 
 ## signals
 
