@@ -1,6 +1,6 @@
 [[!comment format=mdwn
  username="joey"
- subject="""comment 6"""
+ subject="""Re: comment 6"""
  date="2026-03-05T14:44:39Z"
  content="""
 > Is a non-ephemeral aspect visible/accessible outside the context of the special remote that set it up? Would it appear as a regular special remote for a CLI user, as if they ran initremote?
