@@ -21,4 +21,4 @@ of reinitialization.
 With ephemeral=yes, the delegate is automatically removed when the external
 special remote program shuts down (unless another one is using it.)
 With ephemeral=no, the delegate remains initialized for use next time.
-""]]
+""""]]
