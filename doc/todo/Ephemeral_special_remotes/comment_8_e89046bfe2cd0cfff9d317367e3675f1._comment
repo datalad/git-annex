@@ -6,7 +6,7 @@
 Add to external special remote protocol, enabled by the `DELEGATE`
 extension:
 
-	DELEGATE name type=whatever ephemeral=yes|no [params]
+	DELEGATE type=whatever ephemeral=yes|no [params]
 
 Which can be used as a response to TRANSFER, REMOVE, CHECKPRESENT,
 TRANSFEREXPORT, CHECKPRESENTEXPORT, REMOVEEXPORT, REMOVEEXPORTDIRECTORY,
