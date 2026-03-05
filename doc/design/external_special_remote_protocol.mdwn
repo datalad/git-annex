@@ -231,9 +231,6 @@ the special remote can reply with `UNSUPPORTED-REQUEST`.
     Indicates that files are written in order.
   * `UNORDERED`
     Indicates that files are not written in order.
-  * `DELEGATE type=value ephemeral=yes|no [params]`  
-    Delegate this request to a different type of special remote.
-    See [[delegate_appendix]].
 * `GETAVAILABILITY`  
   Asks the remote if it is locally or globally available.
   (Ie stored in the cloud vs on a local disk.)  
