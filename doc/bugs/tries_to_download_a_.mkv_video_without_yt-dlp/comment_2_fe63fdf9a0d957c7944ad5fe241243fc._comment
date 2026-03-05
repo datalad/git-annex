@@ -1,0 +1,91 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="FTR commands to check and &quot;fix up&quot;"
+ date="2026-03-05T22:45:31Z"
+ content="""
+in fears against modification of files in git-annex branch directly, here is the commands to 'check' 
+
+
+```
+$> f=Чат_рулетка/2026-03-05-_армянин_за_путина._Армянин_из_россии_Воевал_против_Украины.mkv
+$> key=$(readlink \"$f\" | xargs basename); alog=$(git ls-tree -r git-annex | grep \"$key\" | awk '/.web$/{print $4;}'); git show \"git-annex:$alog\"
+1772708470s 1 https://www.youtube.com/watch?v=0fcKYGsBZxU
+```
+
+First I tried to fix via re-addurl, and we do get some difference:
+
+$> git rm \"$f\"; git annex addurl --no-raw --file \"$f\" \"$url\"
+rm 'Чат_рулетка/2026-03-05-_армянин_за_путина._Армянин_из_россии_Воевал_против_Украины.mkv'
+addurl https://www.youtube.com/watch?v=0fcKYGsBZxU (using yt-dlp) (to Чат_рулетка/2026-03-05-_армянин_за_путина._Армянин_из_россии_Воевал_против_Украины.mkv) ok
+(recording state in git...)
+$> git status
+On branch master
+Your branch is up to date with 'origin/master'.
+
+Changes to be committed:
+  (use \"git restore --staged <file>...\" to unstage)
+        modified:   Чат_рулетка/2026-03-05-_армянин_за_путина._Армянин_из_россии_Воевал_против_Украины.mkv
+
+$> git diff --cached
+diff --git a/Чат_рулетка/2026-03-05-_армянин_за_путина._Армянин_из_россии_Воевал_против_Украины.mkv b/Чат_рулетка/2026-03-05-_армянин_за_путина._Армянин_из_россии_Воевал_против_Украины.mkv
+index e59a58c35..e12bb1280 120000
+--- a/Чат_рулетка/2026-03-05-_армянин_за_путина._Армянин_из_россии_Воевал_против_Украины.mkv
++++ b/Чат_рулетка/2026-03-05-_армянин_за_путина._Армянин_из_россии_Воевал_против_Украины.mkv
+@@ -1 +1 @@
+-../.git/annex/objects/KQ/x1/URL-s0--https&c%%www.youtube.com%watch,63v,610fcKYGsBZxU/URL-s0--https&c%%www.youtube.com%watch,63v,610fcKYGsBZxU
+\ No newline at end of file
++../.git/annex/objects/wq/jM/URL--yt&chttps&c%%www.youtube.com%watch,63v,610fcKYGsBZxU/URL--yt&chttps&c%%www.youtube.com%watch,63v,610fcKYGsBZxU
+\ No newline at end of file
+
+```
+
+for which I did not really care as long as I got that file if metadata transferred, but it didn't:
+
+```
+$> git commit -m 'redownloaded \"unlucky\" video for which no yt: was added' $f
+[master 379d379ea] redownloaded \"unlucky\" video for which no yt: was added
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+$> git annex metadata \"$f\"
+metadata Чат_рулетка/2026-03-05-_армянин_за_путина._Армянин_из_россии_Воевал_против_Украины.mkv
+
+ok
+```
+
+Also when I used  recent after 202601 version which would auto-upgrade to use VURL key difference was to switch from URL to VURL.  Could you please point me on where to read up on VURLs and their benefit for relaxed URLs?
+
+
+then I tried to do the dance with unregisterurl, rmurl, addurl, which ended up having
+
+```
+$> key=$(readlink \"$f\" | xargs basename); alog=$(git ls-tree -r git-annex | grep \"$key\" | awk '/.web$/{print $4;}'); git show \"git-annex:$alog\"
+1772750261s 0 https://www.youtube.com/watch?v=0fcKYGsBZxU
+1772750309s 1 yt:https://www.youtube.com/watch?v=0fcKYGsBZxU
+
+```
+
+and for which I still was not able to get it:
+
+```
+$> git annex get \"$f\"
+get Чат_рулетка/2026-03-05-_армянин_за_путина._Армянин_из_россии_Воевал_против_Украины.mkv (from web...)
+  Verification of content failed
+
+  Unable to access these remotes: web
+
+  No other repository is known to contain the file.
+
+  (Note that these git remotes have annex-ignore set: origin)
+failed
+get: 1 failed
+git annex get \"$f\"  8.22s user 3.63s system 112% cpu 10.505 total
+```
+
+although I think it did fetch it. But i guess it is because of the `-s0` in the original key!  So original way with `git rm` + `addurl` was kinda legit as it also fixed up the URL BUT it lost the metadata for the key.
+
+Is there a quick way to copy metadata from another key? (like internally it does for the same path?)
+
+Or is there a better way to 'fix up URL/key' which would you recommend Joey so I could retain metadata? 
+
+
+"""]]
