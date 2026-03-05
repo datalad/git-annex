@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="mih"
+ avatar="http://cdn.libravatar.org/avatar/f881df265a423e4f24eff27c623148fd"
+ subject="comment 6"
+ date="2026-03-05T08:08:45Z"
+ content="""
+I concur with you reasoning, also in particular with the observation that making this about URLs would be a mistake. I was already trying to have the \"redirect\" approach do things, it did not want to be used for.
+
+Here is my understanding of the proposed design:
+
+I could use this to implement an \"orchestration\" special remote that, rather then implementing store and retrieve procedures, is focused on what other implementations shall be used. For this, it can rely on the full set of special remotes available on a system. It would be possible to have a single remote (using this new feature) abstract a data holding site that can be talked to via various protocols, and the specific access approach can be selected dynamically. This would, therefore, include the ability to use a redirect special remote for URL-based downloads.
+
+Few questions which I could not answer with confidence:
+
+- Is a non-ephemeral aspect visible/accessible outside the context of the special remote that set it up? Would it appear as a regular special remote for a CLI user, as if they ran `initremote`?
+- At which stage would `INITASPECT` (have to) be used? The `PREPARE` stage, I guess.
+- How expensive could `INITASPECT` be? Would it (immediately) trigger init/prepare of the aspect-remote?
+- `INITASPECT-OK|INITASPECT-FAILURE` are responses sent by the main git-annex process to the special remote, right? Any implementation would need to implement some kind of error handline (try another aspect, or error also).
+- Do I understand correctly that it would be possible to set the active aspect on a per-key and per-operation basis?
+
+
+"""]]
