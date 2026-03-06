@@ -1,0 +1,49 @@
+### Please describe the problem.
+
+I was investigating the safety of parallel workers pushing + annex copying to the same original local origin location. 
+It gets stuck (I have not even tried yet that "ssh" option...) and it seems potentially the counter play of 'annex copy' like
+
+```
+yoh      3858496  0.0  0.0   7628  3844 pts/29   S    15:25   0:00  |               \_ /usr/bin/bash -c worker 3
+yoh      3861583  0.0  0.0   7984  3936 pts/29   S    15:25   0:00  |               |   \_ git annex copy --to origin file-3-1.txt file-3-2.txt file-3-3.txt file-3-4.txt file-3-5.txt file-common.txt
+yoh      3861585  3.7  0.1 1075475816 72956 pts/29 Sl 15:25   0:05  |               |       \_ /usr/bin/git-annex copy --to origin file-3-1.txt file-3-2.txt file-3-3.txt file-3-4.txt file-3-5.txt file-common.txt
+yoh      3861886  0.0  0.0   8116  4564 pts/29   S    15:25   0:00  |               |           \_ git --git-dir=.git --work-tree=. --literal-pathspecs cat-file --batch
+
+```
+(of which I have ATM multiple going on)
+
+and 'annex post-receive' hook (of which I have only one) running upon `git push`
+
+```
+yoh      3858498  0.0  0.0   7628  3764 pts/29   S    15:25   0:00  |               \_ /usr/bin/bash -c worker 4
+yoh      3863122  0.0  0.0  17340  4948 pts/29   Sl   15:25   0:00  |               |   \_ git push origin master:br-4
+yoh      3863130  0.0  0.0   2692  1912 pts/29   S    15:25   0:00  |               |       \_ /bin/sh -c git-receive-pack '/home/yoh/.tmp/parallel-push-3858314/origin' git-receive-pack '/home/yoh/.tmp/parallel-push-3858314/origin'
+yoh      3863134  0.0  0.0  16980  5312 pts/29   Sl   15:25   0:00  |               |           \_ git-receive-pack /home/yoh/.tmp/parallel-push-3858314/origin
+yoh      3863172  0.0  0.0   2692  1872 pts/29   S    15:25   0:00  |               |               \_ /bin/sh hooks/post-receive
+yoh      3863192  0.0  0.0   7984  4060 pts/29   S    15:25   0:00  |               |                   \_ git annex post-receive
+yoh      3863195  0.3  0.0 1074074572 17816 pts/29 Sl 15:25   0:00  |               |                       \_ /usr/bin/git-annex post-receive
+```
+
+
+### What steps will reproduce the problem?
+
+[here](https://www.oneukrainian.com/tmp/parallel-push.sh) is a claude-code (with use of LLMs and HI; I did not even review in detail/try yet 'ssh' part coded there) generated script (look or use at your own discretion), on execution of which as `./parallel-push.sh --max-file-size 409600 --max-files 10 40 20` it gets stuck (this is the 4th run I think, consistent stuck at different places) with
+
+```
+copy file-common.txt ok
+copy file-12-1.txt (to origin...) (checksum...) ok
+(recording state in git...)
+clone-12: done (1 files)
+Cloning into '/home/yoh/.tmp/parallel-push-3858314/clone-12'...
+done.
+remote: (recording state in git...)        
+remote: (recovering from race...)        
+To /home/yoh/.tmp/parallel-push-3858314/origin
+ * [new branch]      master -> br-12
+
+
+```
+
+### What version of git-annex are you using? On what operating system?
+
+this run is with `10.20251029` but I tried bleeding edge standalone build `10.20260213+git57-gffa771e735-1~ndall+1` to the same result but process traces are more garbled so for the benefit of our both HI I pasted from the non-standalone built version 
