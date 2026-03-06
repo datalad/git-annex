@@ -1,0 +1,87 @@
+### Please describe the problem.
+
+I have an external backend for grib files that deliberately does not include a size in its generated keys. It intentionally produces the same key for data that is different on a binary level, but equivalent in practice. This means I don't want to include a size, because two files with equivalent data can have a different size but generate the same key after normalization.
+
+Now, the problem is that `git annex import` seems to unconditionally add a size to imported keys anyway, as seen in the log below.
+
+
+### What steps will reproduce the problem?
+
+1. Take the XFOO example backend from here: <https://git-annex.branchable.com/design/external_backend_protocol/git-annex-backend-XFOO>
+2. Make this change to remove the size from generated keys:
+   
+   ```
+   38c38
+   < 				echo "GENKEY-SUCCESS" "XFOO-s$sz--$hash"
+   ---
+   > 				echo "GENKEY-SUCCESS" "XFOO--$hash"
+   ```
+3. Create a repository and `git annex add --backend XFOO` a file
+4. Validate that this file's key does not have a size
+5. Set up a directory special remote with importtree=yes and import the same file from it
+6. Observe that the imported file's key has a size set
+
+### What version of git-annex are you using? On what operating system?
+
+```
+git-annex version: 10.20260213-g1b947233f21755c0c4d1f00e5a24f39d62fa3f1e
+build flags: Assistant Webapp Inotify DBus DesktopNotify TorrentParser MagicMime Benchmark Feeds Testsuite S3 WebDAV Servant OsPath
+dependency versions: aws-0.25.2 bloomfilter-2.0.1.3 crypton-1.0.4 DAV-1.3.4 feed-1.3.2.1 ghc-9.10.3 http-client-0.7.19 torrent-10000.1.3 uuid-1.3.16 yesod-1.6.2.1
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL GITBUNDLE GITMANIFEST VURL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg rclone hook external compute mask
+operating system: linux x86_64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
+```
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+$ datalad create test-import-key-size
+create(ok): /home/icg149/Playground/test-import-key-size (dataset)
+$ head -c 10K /dev/urandom > test-import-key-size/data.bin
+$ mkdir test-import-key-size-import-dir
+$ cp test-import-key-size/data.bin test-import-key-size-import-dir/
+$ cd test-import-key-size
+$ git annex add --backend XFOO data.bin 
+add data.bin 
+ok
+(recording state in git...)
+$ ls -l
+total 4
+lrwxrwxrwx 1 icg149 icg149 102 Mär  6 14:17 data.bin -> .git/annex/objects/jM/ZJ/XFOO--cc9401a4c19c25864b650740c215b3bd/XFOO--cc9401a4c19c25864b650740c215b3bd
+$ git annex initremote importdir type=directory directory=../test-import-key-size-import-dir importtree=yes encryption=none
+initremote importdir ok
+(recording state in git...)
+$ git annex import --no-content --backend XFOO import --from importdir
+list importdir ok
+import importdir data.bin 
+ok
+update refs/remotes/importdir/import ok
+(recording state in git...)
+$ git show importdir/import 
+commit 6d3aa436a9c643cef7d6f02647b952107bc09951 (importdir/import)
+Author: Matthias Riße <m.risse@fz-juelich.de>
+Date:   Fri Mar 6 14:18:14 2026 +0100
+
+    import from importdir
+
+diff --git a/data.bin b/data.bin
+new file mode 120000
+index 0000000..8620ffe
+--- /dev/null
++++ b/data.bin
+@@ -0,0 +1 @@
++.git/annex/objects/GF/8Z/XFOO-s10240--cc9401a4c19c25864b650740c215b3bd/XFOO-s10240--cc9401a4c19c25864b650740c215b3bd
+\ No newline at end of file
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
+[[!tag projects/ICE4]]
