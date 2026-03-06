@@ -262,7 +262,7 @@ getUrlInfo url uo = case parseURIRelaxed url of
 		<=< lookup hContentDisposition . responseHeaders
 
 	existsconduit r req =
-		let a = catchcrossprotoredir r (existsconduit' req uo)
+		let a = catchcrossprotoredir r (existsconduit' req uo Nothing)
 		in catchJust matchconnectionrestricted a retconnectionrestricted
 	
 	matchconnectionrestricted he@(HttpExceptionRequest _ (InternalException ie)) =
@@ -277,7 +277,10 @@ getUrlInfo url uo = case parseURIRelaxed url of
 			_ -> throwM he
 	retconnectionrestricted he = throwM he
 
-	existsconduit' req uo' = do
+	existsconduit' req uo' msignalauthsuccess = do
+		let authedok = liftIO $ case msignalauthsuccess of
+			Nothing -> noop
+			Just signalauthsuccess -> signalauthsuccess True
 		let req' = headRequest (applyRequest uo req)
 		debug "Utility.Url" (show req')
 		join $ runResourceT $ do
@@ -288,15 +291,20 @@ getUrlInfo url uo = case parseURIRelaxed url of
 					fn <- extractFromResourceT (extractfilename resp)
 					return $ found len fn
 				else if responseStatus resp == unauthorized401
-					then return $ getBasicAuth uo' (show (getUri req)) (responseHeaders resp) >>= \case
-						Nothing -> return dne
-						Just (ba, signalsuccess) -> do
-							ui <- existsconduit'
-								(applyBasicAuth' ba req)							
-								(uo' { getBasicAuth = noBasicAuth })
-							signalsuccess (urlExists ui)
-							return ui
-					else return $ return dne
+					then case msignalauthsuccess of
+						Nothing -> return $ getBasicAuth uo' (show (getUri req)) (responseHeaders resp) >>= \case
+							Just (ba, signalauthsuccess) ->
+								existsconduit'
+									(applyBasicAuth' ba req)
+									uo'
+									(Just signalauthsuccess)
+							Nothing -> return dne
+						Just signalauthsuccess -> do
+							liftIO $ signalauthsuccess False
+							return $ return dne
+					else do
+						authedok
+						return $ return dne
 
 	existscurl u curlparams = do
 		output <- catchDefaultIO "" $
@@ -460,7 +468,10 @@ download' nocurlerror meterupdate iv url file uo =
  - as usual.)
  -}
 downloadConduit :: MeterUpdate -> Maybe IncrementalVerifier -> Request -> OsPath -> UrlOptions -> IO ()
-downloadConduit meterupdate iv req file uo =
+downloadConduit = downloadConduit' Nothing
+
+downloadConduit' :: Maybe (Bool -> IO ()) -> MeterUpdate -> Maybe IncrementalVerifier -> Request -> OsPath -> UrlOptions -> IO ()
+downloadConduit' msignalauthsuccess meterupdate iv req file uo =
 	catchMaybeIO (getFileSize file) >>= \case
 		Just sz | sz > 0 -> resumedownload sz
 		_ -> join $ runResourceT $ do
@@ -468,15 +479,22 @@ downloadConduit meterupdate iv req file uo =
 			resp <- http req' (httpManager uo)
 			if responseStatus resp == ok200
 				then do
+					authedok
 					store zeroBytesProcessed WriteMode resp
 					return (return ())
 				else do
 					rf <- extractFromResourceT (respfailure resp)
 					if responseStatus resp == unauthorized401
-						then return $ getBasicAuth uo (show (getUri req')) (responseHeaders resp) >>= \case
-							Nothing -> giveup rf
-							Just ba -> retryauthed ba
-						else return $ giveup rf
+						then case msignalauthsuccess of
+							Nothing -> return $ getBasicAuth uo (show (getUri req')) (responseHeaders resp) >>= \case
+								Nothing -> giveup rf
+								Just ba -> retryauthed ba
+							Just signalauthsuccess -> do
+								liftIO $ signalauthsuccess False
+								giveup rf
+						else do
+							authedok
+							return $ giveup rf
   where
 	req' = applyRequest uo $ req
 		-- Override http-client's default decompression of gzip
@@ -500,23 +518,32 @@ downloadConduit meterupdate iv req file uo =
 		resp <- http req'' (httpManager uo)
 		if responseStatus resp == partialContent206
 			then do
+				authedok
 				store (toBytesProcessed sz) AppendMode resp
 				return (return ())
 			else if responseStatus resp == ok200
 				then do
+					authedok
 					store zeroBytesProcessed WriteMode resp
 					return (return ())
 				else if alreadydownloaded sz resp
 					then do
+						authedok
 						liftIO noverification
 						return (return ())
 					else do
 						rf <- extractFromResourceT (respfailure resp)
 						if responseStatus resp == unauthorized401
-							then return $ getBasicAuth uo (show (getUri req'')) (responseHeaders resp) >>= \case
-								Nothing -> giveup rf
-								Just ba -> retryauthed ba
-							else return $ giveup rf
+							then case msignalauthsuccess of
+								Nothing -> return $ getBasicAuth uo (show (getUri req'')) (responseHeaders resp) >>= \case
+									Just ba -> retryauthed ba
+									Nothing -> giveup rf
+								Just signalauthsuccess -> do
+									liftIO $ signalauthsuccess False
+									giveup rf
+							else do
+								authedok
+								return $ giveup rf
 	
 	alreadydownloaded sz resp
 		| responseStatus resp /= requestedRangeNotSatisfiable416 = False
@@ -538,19 +565,24 @@ downloadConduit meterupdate iv req file uo =
 	
 	respfailure = B8.toString . statusMessage . responseStatus
 	
-	retryauthed (ba, signalsuccess) = do
-		r <- tryNonAsync $ downloadConduit
+	retryauthed (ba, signalauthsuccess) = do
+		r <- tryNonAsync $ downloadConduit'
+			(Just signalauthsuccess)
 			meterupdate iv
 			(applyBasicAuth' ba req)
 			file
-			(uo { getBasicAuth = noBasicAuth })
+			uo
 		case r of
-			Right () -> signalsuccess True
+			Right () -> signalauthsuccess True
 			Left e -> do
-				() <- signalsuccess False
+				() <- signalauthsuccess False
 				throwM e
 	
 	noverification = maybe noop unableIncrementalVerifier iv
+	
+	authedok = liftIO $ case msignalauthsuccess of
+		Nothing -> noop
+		Just signalauthsuccess -> signalauthsuccess True
 	
 {- Sinks a Response's body to a file. The file can either be appended to
  - (AppendMode), or written from the start of the response (WriteMode).
