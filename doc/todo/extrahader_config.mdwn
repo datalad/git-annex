@@ -1,0 +1,23 @@
+Support git config `http.extraHeader` and `http.<url>.extraheader`.
+
+This would particularly be useful for P2P over HTTP, where an `annex+https`
+url could be configured to send headers for http basic auth. 
+
+And related to that case, it might also make sense to make the
+`remote.<name>.annexUrl` default to inheriting the extraheader
+of the `remote.<name>.url`. So that when using eg, forgejo-aneksajo,
+the user only needs to configure the auth header in one place.
+
+One concern with `http.extraHeader` is that, since git only uses that for
+git repo access, it could easily contain auth headers that the user would
+be surprised to find `git-annex addurl` using, for example. So it might
+make sense to only support the `http.<url>.extraheader` form for uses in
+git-annex. 
+
+The P2P over HTTP inheriting idea above could still use
+`http.extraheader` when the annexUrl and url are on the same host.
+(As is already done when querying `git credential` in that case,
+via `isP2PHttpSameHost`.)
+--[[Joey]]
+
+[[!tag projects/INM7]]
