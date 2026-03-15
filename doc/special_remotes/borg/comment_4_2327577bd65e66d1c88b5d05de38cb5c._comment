@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="nadir"
+ avatar="http://cdn.libravatar.org/avatar/2af9174cf6c06de802104d632dc40071"
+ subject="borg 2.0"
+ date="2026-03-15T13:27:42Z"
+ content="""
+With borg 2.0 on the horizon, I was wondering how support for that would look should that be planned.
+
+With how much has changed and the necessity to create new repos, it might make the most sense to create a separate borg2 remote, but I have now idea. Mostly just curious if there are any plans for that at all.
+"""]]
