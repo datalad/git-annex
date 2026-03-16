@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2026-03-16T10:48:29Z"
+ content="""
+I have not looked at borg 2 in any detail, but it seems they are trying to
+keep the CLI to some extent the same. So it seems it would depend on whether
+CLI changes break something git-annex relies on.
+
+I'd treat any incompatability as a [[bug|bugs]] or [[todo]] on the git-annex
+side, so if you try it and find problems, please report them.
+"""]]
