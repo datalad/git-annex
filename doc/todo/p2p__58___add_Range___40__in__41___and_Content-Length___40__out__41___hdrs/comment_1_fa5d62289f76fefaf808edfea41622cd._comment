@@ -3,20 +3,21 @@
  subject="""comment 1"""
  date="2026-03-17T17:47:39Z"
  content="""
-Note that forgejo does support raw file access, and I expect that supports
-range requests for annex objected.
+Note that forgejo does support raw file access, and I expect that it
+supports range requests for annex objects.
 
-The endpoint where it might make sense to support range requests
-is `https://git-annex.branchable.com/design/p2p_protocol_over_http/#index1h3`
+The p2phttp endpoint where it might make sense to support range requests
+is `/git-annex/$uuid/key/$key`
 
 When p2phttp is proxying to a special remote, it would need to download
 the whole file from the special remote even if the range request was for a
 small part. So I don't think it should be supported for proxying.
 
 One way to implement this might be to use Servant.Server.StaticFiles
-to serve `.git/annex/objects/`, and make the `serveGetGeneric` API endpoint
-redirect requests to that. That uses warp's built-in static file serving,
-which supports range requests.
+with a StaticSettings ssLookupFiles that returns the file location under
+`.git/annex/objects/` (or even a location in another git-annex repository
+when proxying to one, eg a cluster node.) That uses warp's built-in static
+file serving, which supports range requests.
 
 But how to handle authentication? It seems like
 the only way would be to reimplement p2phttp's authentication checking as
