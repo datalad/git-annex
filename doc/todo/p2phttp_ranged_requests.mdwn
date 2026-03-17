@@ -1,0 +1,13 @@
+The p2phttp endpoint for raw download of a key does not currently support
+range requests or other such things. While it's not always possible for
+p2phttp to support that, eg when proxying to a special remote it cannot, it
+would be useful if it supported it in configurations where it is possible
+to do so.
+
+One way to implement this might be to use Servant.Server.StaticFiles
+to serve `.git/annex/objects/`, and make the `serveGetGeneric` API endpoint
+redirect requests to that. And reject ranged requests when proxying.
+
+But how to handle authentication? It seems like
+the only way would be to reimplement p2phttp's authentication checking as
+WAI middleware. --[[Joey]]
