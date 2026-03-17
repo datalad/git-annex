@@ -9,4 +9,3 @@ and
 It would be great to have those supported. The former should facilitate datalad-fuse via fsspec sparse access to data via p2p protocol, the latter -- any additional verification/treatment of the fetched content by any standard http* library/downloader.
 
 [[!meta author=yoh]]
-[[!tag projects/FZJ]]
