@@ -3,7 +3,7 @@
  subject="""comment 9"""
  date="2026-03-05T19:00:16Z"
  content="""
-Started developing this in the `ephemeral` branch.
+Started developing this in the `delegate` branch.
 
 It seems to also make sense to allow DELEGATE as a response to WHEREIS.
 
