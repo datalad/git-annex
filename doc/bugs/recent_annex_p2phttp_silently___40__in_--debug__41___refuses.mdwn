@@ -1,6 +1,6 @@
 ### Please describe the problem.
 
-Finally got to try the neat p2p, ultimately with the hope to connect to datalad-fuse. Wanted to test range request support (since was reported to be lacking by claude on a forgejo+aneksjo instance) and thus thought to try on the most recent version locally.
+Finally got to try the neat p2p (inspired by trr379 use-case raised in matrix), ultimately with the hope to connect to datalad-fuse. Wanted to test range request support (since was reported to be lacking by claude on a forgejo+aneksjo instance) and thus thought to try on the most recent version locally.
 Unfortunately 
 
 <details>
@@ -77,6 +77,20 @@ curl: (52) Empty reply from server
 curl: (56) Recv failure: Connection reset by peer
 ```
 
+edit: added  the server side:
+
+```
+❯ git annex version --raw; echo; git annex --debug p2phttp --port 8081 --wideopen
+
+10.20260316+git1-g768707adf4-1~ndall+1
+[2026-03-17 10:16:22.435272107] (Utility.Process) process [2104460] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","git-annex"]
+[2026-03-17 10:16:22.441213037] (Utility.Process) process [2104460] done ExitSuccess
+[2026-03-17 10:16:22.441610323] (Utility.Process) process [2104461] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","--hash","refs/heads/git-annex"]
+[2026-03-17 10:16:22.446123885] (Utility.Process) process [2104461] done ExitSuccess
+[2026-03-17 10:16:22.447208284] (Utility.Process) process [2104462] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch"]
+[2026-03-17 10:16:22.453605123] (Annex.Branch) read proxy.log
+
+```
 </details>
 
 
@@ -89,3 +103,7 @@ this was on a local clone of https://datasets.datalad.org/dbic/QA/.git with `sou
 10.20260316+git1-g768707adf4-1~ndall+1 - not ok; 10.20251029 - not ok.
 
 FWIW -- https://github.com/datalad/git-annex testing was not happy for awhile but I think it was due to some change in behavior affecting RIA archives (I did not have yet chance to troubleshoot manually to report) , thus unrelated here.
+
+
+[[!meta author=yoh]]
+[[!tag projects/trr379.de]]
