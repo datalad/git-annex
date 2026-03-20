@@ -1,0 +1,7 @@
+What is the best way to use adb special remote with device connected and paired over wifi? It uses random ports for connection every time, so I haven't even bothered yet to try IP:PORT as a serialnumber.
+
+
+```
+$ adb devices -l
+XXXXX:12345      device product:XXX model:XXX device:XXX transport_id:1
+```
