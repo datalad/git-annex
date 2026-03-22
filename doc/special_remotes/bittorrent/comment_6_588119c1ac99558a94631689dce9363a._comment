@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="miris"
+ avatar="http://cdn.libravatar.org/avatar/bd975774ecba53f7454a61d50fc7d8cc"
+ subject="Re: registering multi-file torrent urls for existing files"
+ date="2026-03-22T12:36:40Z"
+ content="""
+Coming back to this one, turns out this is feasible using `git annex registerurl`:
+
+```
+aria2c --show-files multi-file.torrent
+# get the number of the file
+git annex registerurl \"$(git annex lookupkey file.mp4)\" \"magnet:...#<number>\"
+```
+
+Works as intended; however, this will skip verification, so it's imperative that this is only used when you are 100% certain the file in the torrent is exactly the same your local one. :)
+"""]]
