@@ -27,6 +27,7 @@ module Git (
 	repoIsLocalUnknown,
 	repoDescribe,
 	repoLocation,
+	repoLocationUserVisible,
 	repoPath,
 	repoWorkTree,
 	localGitDir,
@@ -38,7 +39,7 @@ module Git (
 	relPath,
 ) where
 
-import Network.URI (uriPath, uriScheme, uriQuery, uriFragment, unEscapeString)
+import Network.URI (uriPath, uriScheme, uriQuery, uriFragment, uriToString, unEscapeString)
 #ifndef mingw32_HOST_OS
 import System.Posix.Files
 #endif
@@ -53,21 +54,21 @@ import Utility.FileMode
 {- User-visible description of a git repo. -}
 repoDescribe :: Repo -> String
 repoDescribe Repo { remoteName = Just name } = name
-repoDescribe Repo { location = Url url } = show url
-repoDescribe Repo { location = UnparseableUrl url } = url
-repoDescribe Repo { location = Local { worktree = Just dir } } = fromOsPath dir
-repoDescribe Repo { location = Local { gitdir = dir } } = fromOsPath dir
-repoDescribe Repo { location = LocalUnknown dir } = fromOsPath dir
-repoDescribe Repo { location = Unknown } = "UNKNOWN"
+repoDescribe r = repoLocationUserVisible r
 
 {- Location of the repo, either as a path or url. -}
 repoLocation :: Repo -> String
-repoLocation Repo { location = Url url } = show url
+repoLocation Repo { location = Url url } = uriToString id url ""
 repoLocation Repo { location = UnparseableUrl url } = url
 repoLocation Repo { location = Local { worktree = Just dir } } = fromOsPath dir
 repoLocation Repo { location = Local { gitdir = dir } } = fromOsPath dir
 repoLocation Repo { location = LocalUnknown dir } = fromOsPath dir
-repoLocation Repo { location = Unknown } = giveup "unknown repoLocation"
+repoLocation Repo { location = Unknown } = giveup "UNKNOWN"
+
+{- Like repoLocation, but obscures any password in a repo url. -}
+repoLocationUserVisible :: Repo -> String
+repoLocationUserVisible Repo { location = Url url } = show url
+repoLocationUserVisible r = repoLocation r
 
 {- Path to a repository. For non-bare, this is the worktree, for bare, 
  - it's the gitdir, and for URL repositories, is the path on the remote
