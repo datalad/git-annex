@@ -188,6 +188,7 @@ data AnnexState = AnnexState
 	, gitconfiginodecache :: Maybe InodeCache
 	, backend :: Maybe (BackendA Annex)
 	, remotes :: [Types.Remote.RemoteA Annex]
+	, remotetypes :: [Types.Remote.RemoteTypeA Annex]
 	, output :: MessageState
 	, concurrency :: ConcurrencySetting
 	, cpus :: Maybe Cpus
@@ -247,6 +248,7 @@ newAnnexState c r = do
 		, gitconfiginodecache = Nothing
 		, backend = Nothing
 		, remotes = []
+		, remotetypes = []
 		, output = o
 		, concurrency = ConcurrencyCmdLine NonConcurrent
 		, cpus = Nothing

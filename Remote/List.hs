@@ -82,7 +82,10 @@ remoteList' :: Bool -> Annex [Remote]
 remoteList' autoinit = do
 	m <- remoteConfigMap
 	rs <- concat <$> mapM (process m) remoteTypes
-	Annex.changeState $ \s -> s { Annex.remotes = rs }
+	Annex.changeState $ \s -> s
+		{ Annex.remotes = rs
+		, Annex.remotetypes = remoteTypes
+		}
 	return rs
   where
 	process m t = enumerate t autoinit 

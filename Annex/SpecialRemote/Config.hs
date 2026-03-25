@@ -11,7 +11,7 @@
 module Annex.SpecialRemote.Config where
 
 import Common
-import Types.Remote (configParser)
+import Types.Remote (configParser, typename)
 import Types
 import Types.UUID
 import Types.ProposedAccepted
@@ -349,3 +349,17 @@ newConfig name sameas fromuser m = case sameas of
 		[ (sameasNameField, Proposed name)
 		, (sameasUUIDField, Proposed (fromUUID u))
 		] `M.union` fromuser
+
+findType' :: [RemoteType] -> RemoteConfig -> Either String RemoteType
+findType' typelist rc = maybe unspecified (specified . fromProposedAccepted) $
+	M.lookup typeField rc
+  where
+	unspecified = Left "Specify the type of remote with type="
+	specified s = case filter (findtype s) typelist of
+		[] -> Left $ "Unknown remote type " ++ s 
+			++ " (pick from: "
+			++ intercalate " " (map typename typelist)
+			++ ")"
+		(t:_) -> Right t
+	findtype s i = typename i == s
+

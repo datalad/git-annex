@@ -14,7 +14,7 @@ module Annex.SpecialRemote (
 
 import Annex.Common
 import Annex.SpecialRemote.Config
-import Types.Remote (RemoteConfig, SetupStage(..), typename, setup)
+import Types.Remote (RemoteConfig, SetupStage(..), setup)
 import Types.GitConfig
 import Types.ProposedAccepted
 import Config
@@ -58,17 +58,7 @@ specialRemoteNameMap = M.fromList . mapMaybe go . M.toList
 
 {- find the remote type -}
 findType :: RemoteConfig -> Either String RemoteType
-findType config = maybe unspecified (specified . fromProposedAccepted) $
-	M.lookup typeField config
-  where
-	unspecified = Left "Specify the type of remote with type="
-	specified s = case filter (findtype s) remoteTypes of
-		[] -> Left $ "Unknown remote type " ++ s 
-			++ " (pick from: "
-			++ intercalate " " (map typename remoteTypes)
-			++ ")"
-		(t:_) -> Right t
-	findtype s i = typename i == s
+findType = findType' remoteTypes
 
 autoEnable :: Annex ()
 autoEnable = do
