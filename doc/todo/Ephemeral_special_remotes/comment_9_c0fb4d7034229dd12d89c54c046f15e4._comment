@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2026-03-05T19:00:16Z"
+ content="""
+Started developing this in the `delegate` branch.
+
+It seems to also make sense to allow DELEGATE as a response to WHEREIS.
+
+I'm on the fence about delegating GETORDERED. Probably most remotes won't
+bother to respond to GETORDERED at all, and the only time it makes sense to
+delegate it is when always delegating to the same type of special remote.
+If delegating to different special remotes at different times, it
+doesn't make sense to delegate it to a single on of them.
+
+Similarly I don't think it makes sense to delegate GETINFO unless only
+delegating to a single special remote. Will probably wait to see if someone
+has a use case before supporting GETINFO, GETAVAILABILITY, CLAIMURL, etc.
+"""]]

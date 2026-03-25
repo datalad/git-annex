@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2026-03-17T17:47:39Z"
+ content="""
+Note that forgejo does support raw file access, and I expect that it
+supports range requests for annex objects.
+
+The p2phttp endpoint where it might make sense to support range requests
+is `/git-annex/$uuid/key/$key`
+
+When p2phttp is proxying to a special remote, it would need to download
+the whole file from the special remote even if the range request was for a
+small part. So I don't think it should be supported for proxying.
+
+One way to implement this might be to use Servant.Server.StaticFiles
+with a StaticSettings ssLookupFiles that returns the file location under
+`.git/annex/objects/` (or even a location in another git-annex repository
+when proxying to one, eg a cluster node.) That uses warp's built-in static
+file serving, which supports range requests.
+
+But how to handle authentication? It seems like
+the only way would be to reimplement p2phttp's authentication checking as
+WAI middleware.
+"""]]

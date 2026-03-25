@@ -51,15 +51,15 @@ getBasicAuthFromCredential r ccv u respheaders = do
   where
 	go storeincache c =
 		case credentialBasicAuth c of
-			Just ba -> return $ Just (ba, signalsuccess)
+			Just ba -> return $ Just (ba, signalauthsuccess)
 			Nothing -> do
-				signalsuccess False
+				signalauthsuccess False
 				return Nothing
 	  where
-		signalsuccess True = do
+		signalauthsuccess True = do
 			() <- storeincache c
 			approveUrlCredential c r
-		signalsuccess False = rejectUrlCredential c r
+		signalauthsuccess False = rejectUrlCredential c r
 
 -- | This may prompt the user for the credential, or get a cached
 -- credential from git.

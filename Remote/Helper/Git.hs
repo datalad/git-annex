@@ -81,7 +81,7 @@ gitRepoInfo r = do
 	let proxynames = map proxyname $ filter (not . iscluster) proxying
 	let clusternames = map proxyname $ filter iscluster proxying
 	return $ catMaybes
-		[ Just ("repository location", Git.repoLocation repo)
+		[ Just ("repository location", Git.repoLocationUserVisible repo)
 		, Just ("last synced", lastsynctime)
 		, Just ("proxied", proxied)
 		, if isClusterUUID (Remote.uuid r)

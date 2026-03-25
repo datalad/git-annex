@@ -1,19 +1,29 @@
-git-annex (10.20260214) UNRELEASED; urgency=medium
+git-annex (10.20260317) UNRELEASED; urgency=medium
 
+  * Fix annexUrl to inherit any password that is set in the remote url.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 23 Mar 2026 11:37:09 -0400
+
+git-annex (10.20260316) upstream; urgency=medium
+
+  * Added CHECKPRESENT-URL extension to the external special remote protocol.
+  * Fix reversion in previous version that caused auto-initializing of
+    local git remotes that have annex-ignore set.
+  * Fix bug that caused git credential to be rejected when a http request
+    failed for some reason other than 401.
+  * Importing from the directory special remote will no longer add sizes
+    to keys, which overrode backends that generate unsized keys.
   * Fix retrival from http git remotes of keys with '%' in their names.
   * Fix behavior when initremote is used with --sameas= 
     combined with --private.
-  * Added CHECKPRESENT-URL extension to the external special remote protocol.
-  * httpalso: Fix bugs in handling content not being present on the remote.
   * web, S3, git: Fix bugs in checking if content is present on a remote
     when configuration does not allow accessing it.
-  * Improve display of http exceptions.
-  * Fix reversion in previous version that caused auto-initializing of
-    local git remotes that have annex-ignore set.
+  * httpalso: Fix bugs in handling content not being present on the remote.
   * adb: Avoid deleting contents of a non-empty directory when
     removing the last exported file from the directory.
+  * Improve display of http exceptions.
 
- -- Joey Hess <id@joeyh.name>  Mon, 16 Feb 2026 13:38:21 -0400
+ -- Joey Hess <id@joeyh.name>  Mon, 16 Mar 2026 06:53:22 -0400
 
 git-annex (10.20260213) upstream; urgency=medium
 

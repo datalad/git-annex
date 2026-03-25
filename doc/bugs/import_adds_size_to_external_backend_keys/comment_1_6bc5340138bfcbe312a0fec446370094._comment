@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/cd1c0b3be1af288012e49197918395f0"
+ subject="comment 1"
+ date="2026-03-06T13:53:07Z"
+ content="""
+Unfortunately it seems like I can't even remove the size after the import:
+
+```
+$ git switch --detach importdir/import
+HEAD is now at 6d3aa43 import from importdir
+$ git annex migrate --remove-size
+migrate data.bin 
+git-annex: failed creating link from old to new key
+failed
+migrate: 1 failed
+[ble: exit 1]
+```
+"""]]

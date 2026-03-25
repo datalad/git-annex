@@ -1,0 +1,11 @@
+ATM according to [.../design/p2p_protocol_over_http/](https://git-annex.branchable.com/design/p2p_protocol_over_http/)
+
+> Request headers are currently ignored, so eg Range requests are not supported. (This would be possible to implement, up to a point.)
+
+and
+
+>  Note that there is no Content-Length header.
+
+It would be great to have those supported. The former should facilitate datalad-fuse via fsspec sparse access to data via p2p protocol, the latter -- any additional verification/treatment of the fetched content by any standard http* library/downloader.
+
+[[!meta author=yoh]]

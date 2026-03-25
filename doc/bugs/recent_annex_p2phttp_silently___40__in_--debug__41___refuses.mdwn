@@ -1,0 +1,109 @@
+### Please describe the problem.
+
+Finally got to try the neat p2p (inspired by trr379 use-case raised in matrix), ultimately with the hope to connect to datalad-fuse. Wanted to test range request support (since was reported to be lacking by claude on a forgejo+aneksjo instance) and thus thought to try on the most recent version locally.
+Unfortunately 
+
+<details>
+<summary>whenever p2phttp worked fine (for a full file) request on 10.20251029</summary> 
+
+```shell
+❯ curl  http://localhost:8081/git-annex/90d896aa-00d0-4f85-bcae-2fd1e992fcab/key/SHA256E-s101318091--02b4a96d66121ddbb5d51fa3f22c2b929bc16d955f438421c1f1b04a1264a50f.tgz >| out.tgz
+  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
+                                 Dload  Upload  Total   Spent   Left   Speed
+100 96.62M   0 96.62M   0      0 563.2M      0                              0
+❯ sha256sum out.tgz
+02b4a96d66121ddbb5d51fa3f22c2b929bc16d955f438421c1f1b04a1264a50f  out.tgz
+
+```
+
+and on server side:
+
+```
+❯ git annex version --raw; echo; git annex --debug p2phttp --port 8081 --wideopen
+10.20251029
+[2026-03-17 10:12:16.496986375] (Utility.Process) process [2098931] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","git-annex"]
+[2026-03-17 10:12:16.499045819] (Utility.Process) process [2098931] done ExitSuccess
+[2026-03-17 10:12:16.499500423] (Utility.Process) process [2098934] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","--hash","refs/heads/git-annex"]
+[2026-03-17 10:12:16.501265293] (Utility.Process) process [2098934] done ExitSuccess
+[2026-03-17 10:12:16.502428567] (Utility.Process) process [2098935] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch"]
+[2026-03-17 10:12:16.505874247] (Annex.Branch) read proxy.log
+[2026-03-17 10:12:26.349175199] (P2P.IO) [http client] [ThreadId 22] P2P > GET 0  SHA256E-s101318091--02b4a96d66121ddbb5d51fa3f22c2b929bc16d955f438421c1f1b04a1264a50f.tgz
+[2026-03-17 10:12:26.349539971] (P2P.IO) [http server] [ThreadId 19] P2P < GET 0  SHA256E-s101318091--02b4a96d66121ddbb5d51fa3f22c2b929bc16d955f438421c1f1b04a1264a50f.tgz
+[2026-03-17 10:12:26.350670225] (Utility.Process) process [2099177] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","-c","filter.annex.smudge=","-c","filter.annex.clean=","-c","filter.annex.process=","write-tree"]
+[2026-03-17 10:12:26.366674858] (Utility.Process) process [2099177] done ExitSuccess
+[2026-03-17 10:12:26.367081645] (Utility.Process) process [2099178] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","--hash","refs/annex/last-index"]
+[2026-03-17 10:12:26.369153188] (Utility.Process) process [2099178] done ExitSuccess
+[2026-03-17 10:12:26.370404636] (P2P.IO) [http server] [ThreadId 19] P2P > DATA 101318091
+[2026-03-17 10:12:26.370496387] (P2P.IO) [http client] [ThreadId 22] P2P < DATA 101318091
+[2026-03-17 10:12:26.518654447] (P2P.IO) [http client] [ThreadId 22] P2P > SUCCESS
+[2026-03-17 10:12:26.518800582] (P2P.IO) [http server] [ThreadId 19] P2P < SUCCESS
+
+```
+</details>
+
+
+<details>
+<summary>
+with the most recent version 10.20260316+git1-g768707adf4-1~ndall+1 we get silent treatment -- no content provided and nothing in the --debug log
+</summary> 
+
+
+```
+❯ curl http://localhost:8081/git-annex/90d896aa-00d0-4f85-bcae-2fd1e992fcab/key/SHA256E-s101318091--02b4a96d66121ddbb5d51fa3f22c2b929bc16d955f438421c1f1b04a1264a50f.tgz >| out.tgz
+  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
+                                 Dload  Upload  Total   Spent   Left   Speed
+  0      0   0      0   0      0      0      0                              0
+curl: (52) Empty reply from server
+❯ curl -v http://localhost:8081/git-annex/90d896aa-00d0-4f85-bcae-2fd1e992fcab/key/SHA256E-s101318091--02b4a96d66121ddbb5d51fa3f22c2b929bc16d955f438421c1f1b04a1264a50f.tgz >| out.tgz
+* Host localhost:8081 was resolved.
+* IPv6: ::1
+* IPv4: 127.0.0.1
+  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
+                                 Dload  Upload  Total   Spent   Left   Speed
+  0      0   0      0   0      0      0      0                              0*   Trying [::1]:8081...
+* connect to ::1 port 8081 from ::1 port 56576 failed: Connection refused
+*   Trying 127.0.0.1:8081...
+* Established connection to localhost (127.0.0.1 port 8081) from 127.0.0.1 port 58866 
+* using HTTP/1.x
+> GET /git-annex/90d896aa-00d0-4f85-bcae-2fd1e992fcab/key/SHA256E-s101318091--02b4a96d66121ddbb5d51fa3f22c2b929bc16d955f438421c1f1b04a1264a50f.tgz HTTP/1.1
+> Host: localhost:8081
+> User-Agent: curl/8.18.0
+> Accept: */*
+> 
+* Request completely sent off
+* Recv failure: Connection reset by peer
+
+* closing connection #0
+curl: (56) Recv failure: Connection reset by peer
+```
+
+edit: added  the server side:
+
+```
+❯ git annex version --raw; echo; git annex --debug p2phttp --port 8081 --wideopen
+
+10.20260316+git1-g768707adf4-1~ndall+1
+[2026-03-17 10:16:22.435272107] (Utility.Process) process [2104460] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","git-annex"]
+[2026-03-17 10:16:22.441213037] (Utility.Process) process [2104460] done ExitSuccess
+[2026-03-17 10:16:22.441610323] (Utility.Process) process [2104461] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","--hash","refs/heads/git-annex"]
+[2026-03-17 10:16:22.446123885] (Utility.Process) process [2104461] done ExitSuccess
+[2026-03-17 10:16:22.447208284] (Utility.Process) process [2104462] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch"]
+[2026-03-17 10:16:22.453605123] (Annex.Branch) read proxy.log
+
+```
+</details>
+
+
+### What steps will reproduce the problem?
+
+this was on a local clone of https://datasets.datalad.org/dbic/QA/.git with `sourcedata/sub-qa64/ses-20240715/func/sub-qa64_ses-20240715_acq-faX77_bold.dicom.tgz` content
+
+### What version of git-annex are you using? On what operating system?
+
+10.20260316+git1-g768707adf4-1~ndall+1 - not ok; 10.20251029 - not ok.
+
+FWIW -- https://github.com/datalad/git-annex testing was not happy for awhile but I think it was due to some change in behavior affecting RIA archives (I did not have yet chance to troubleshoot manually to report) , thus unrelated here.
+
+
+[[!meta author=yoh]]
+

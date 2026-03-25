@@ -1,0 +1,17 @@
+git-annex 10.20260316 released with [[!toggle text="these changes"]]
+[[!toggleable text="""  * Added CHECKPRESENT-URL extension to the external special remote protocol.
+  * Fix reversion in previous version that caused auto-initializing of
+    local git remotes that have annex-ignore set.
+  * Fix bug that caused git credential to be rejected when a http request
+    failed for some reason other than 401.
+  * Importing from the directory special remote will no longer add sizes
+    to keys, which overrode backends that generate unsized keys.
+  * Fix retrival from http git remotes of keys with '%' in their names.
+  * Fix behavior when initremote is used with --sameas=
+    combined with --private.
+  * web, S3, git: Fix bugs in checking if content is present on a remote
+    when configuration does not allow accessing it.
+  * httpalso: Fix bugs in handling content not being present on the remote.
+  * adb: Avoid deleting contents of a non-empty directory when
+    removing the last exported file from the directory.
+  * Improve display of http exceptions."""]]

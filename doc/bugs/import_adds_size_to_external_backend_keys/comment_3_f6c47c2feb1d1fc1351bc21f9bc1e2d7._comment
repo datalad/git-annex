@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2026-03-11T14:48:31Z"
+ content="""
+	$ git annex migrate --remove-size
+	migrate data.bin
+	git-annex: failed creating link from old to new key
+
+That happens when the file is not present in the local repository.
+If you get the file first it will work.
+
+Migrate needs the content present so it can populate the new key.
+Otherwise, there can be situation where the new key never ends up being
+populated with the content.
+"""]]

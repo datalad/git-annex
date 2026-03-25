@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2026-03-11T14:21:42Z"
+ content="""
+This bug only happens with the directory special remote and not others.
+
+The problem is that the directory special remote implements `importKey`,
+and explicitly adds the size back! 
+[[!commit 15000dee07a06d04285351616915794bd6ec7f14]] explains why
+it needs to do that.
+"""]]

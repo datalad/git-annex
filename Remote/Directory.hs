@@ -433,9 +433,7 @@ guardSameContentIdentifiers cont olds (Just new)
 importKeyM :: IgnoreInodes -> OsPath -> ExportLocation -> ContentIdentifier -> ByteSize -> MeterUpdate -> Annex (Maybe Key)
 importKeyM ii dir loc cid sz p = do
 	backend <- chooseBackend f
-	unsizedk <- fst <$> genKey ks p backend
-	let k = alterKey unsizedk $ \kd -> kd
-		{ keySize = keySize kd <|> Just sz }
+	k <- fst <$> genKey ks p backend
 	currcid <- liftIO $ mkContentIdentifier ii absf
 		=<< R.getSymbolicLinkStatus (fromOsPath absf)
 	guardSameContentIdentifiers (return (Just k)) [cid] currcid
