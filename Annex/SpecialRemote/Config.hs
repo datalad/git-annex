@@ -1,6 +1,6 @@
 {- git-annex special remote configuration
  -
- - Copyright 2019-2024 Joey Hess <id@joeyh.name>
+ - Copyright 2019-2026 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -17,6 +17,7 @@ import Types.UUID
 import Types.ProposedAccepted
 import Types.RemoteConfig
 import Types.GitConfig
+import Git.Types
 import Config.Cost
 
 import qualified Data.Map as M
@@ -332,3 +333,19 @@ genParser parse f mdef fielddesc valuedesc = RemoteConfigFieldParser
 					Just (ValueDesc vd) ->
 						" (expected " ++ vd ++ ")"
 					Nothing -> ""
+
+newConfig
+	:: RemoteName
+	-> Maybe (Sameas UUID)
+	-> RemoteConfig
+	-- ^ configuration provided by the user
+	-> M.Map UUID RemoteConfig
+	-- ^ configuration of other special remotes, to inherit from
+	-- when sameas is used
+	-> RemoteConfig
+newConfig name sameas fromuser m = case sameas of
+	Nothing -> M.insert nameField (Proposed name) fromuser
+	Just (Sameas u) -> addSameasInherited m $ M.fromList
+		[ (sameasNameField, Proposed name)
+		, (sameasUUIDField, Proposed (fromUUID u))
+		] `M.union` fromuser

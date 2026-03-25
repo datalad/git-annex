@@ -44,22 +44,6 @@ findExisting' name = do
 		. findByRemoteConfig (\c -> lookupName c == Just name)
 		<$> Logs.Remote.remoteConfigMap
 
-newConfig
-	:: RemoteName
-	-> Maybe (Sameas UUID)
-	-> RemoteConfig
-	-- ^ configuration provided by the user
-	-> M.Map UUID RemoteConfig
-	-- ^ configuration of other special remotes, to inherit from
-	-- when sameas is used
-	-> RemoteConfig
-newConfig name sameas fromuser m = case sameas of
-	Nothing -> M.insert nameField (Proposed name) fromuser
-	Just (Sameas u) -> addSameasInherited m $ M.fromList
-		[ (sameasNameField, Proposed name)
-		, (sameasUUIDField, Proposed (fromUUID u))
-		] `M.union` fromuser
-
 specialRemoteMap :: Annex (M.Map UUID RemoteName)
 specialRemoteMap = do
 	m <- Logs.Remote.remoteConfigMap
