@@ -117,6 +117,7 @@ supportedExtensionList = ExtensionList
 	, "UNAVAILABLERESPONSE"
 	, "TRANSFER-RETRIEVE-URL"
 	, "CHECKPRESENT-URL"
+	, "DELEGATE"
 	, asyncExtension
 	]
 
@@ -275,6 +276,7 @@ data Response
 	| REMOVEEXPORTDIRECTORY_FAILURE
 	| RENAMEEXPORT_SUCCESS Key
 	| RENAMEEXPORT_FAILURE Key
+	| DELEGATE [String]
 	| UNSUPPORTED_REQUEST
 	deriving (Show)
 
@@ -315,6 +317,7 @@ instance Proto.Receivable Response where
 	parseCommand "REMOVEEXPORTDIRECTORY-FAILURE" = Proto.parse0 REMOVEEXPORTDIRECTORY_FAILURE
 	parseCommand "RENAMEEXPORT-SUCCESS" = Proto.parse1 RENAMEEXPORT_SUCCESS
 	parseCommand "RENAMEEXPORT-FAILURE" = Proto.parse1 RENAMEEXPORT_FAILURE
+	parseCommand "DELEGATE" = Proto.parseList DELEGATE
 	parseCommand "UNSUPPORTED-REQUEST" = Proto.parse0 UNSUPPORTED_REQUEST
 	parseCommand _ = Proto.parseFail
 
