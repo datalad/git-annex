@@ -13,4 +13,8 @@ Their config does not get written to the git-annex branch and their
 configuration prevents the user from accidentially using them. The traces
 that hit the disk are just an implementation detail which can easily be
 ignored.
+
+So I'm inclined to merge the branch as it stands. But that would mean that,
+if ephemeral support is later added it would need to be a new extension eg
+"DELEGATE-EPHEMERAL".
 """]]
