@@ -1036,7 +1036,7 @@ getDelegateRemote external ps = case externalUUID external of
 		dummycfg <- liftIO dummyRemoteGitConfig
 		(c', u) <- setup t Init (Just externalu) delegatename Nothing c dummycfg
 
-		setRemoteSkipFetchAll c True
+		setRemoteSkipFetchAll c' True
 		setRemoteIgnore c' True
 		
 		g <- liftIO $ Git.Construct.remoteNamed delegatename
