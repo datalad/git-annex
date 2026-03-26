@@ -2,7 +2,7 @@ This is an appendix to the [[external_special_remote_protocol]].
 
 The `DELEGATE` extension allows many requests to be responded to with:
 
-    DELEGATE type=value ephemeral=yes|no [params]
+    DELEGATE type=value [params]
 
 This delegates the request to a special remote of the specified
 type, which is initialized with the provided parameters.
@@ -12,25 +12,18 @@ and `--private` options. The delegate special remote inherits
 the encryption settings, and uses the same annex-uuid. Its configuration
 is not stored to the git-annex branch.
 
-With ephemeral=yes, the delegate special remote is created and exists only
-as long as the external special remote program is used by git-annex. Then
-it is removed. With ephemeral=no, the delegate special remote is cached for
-use next time, avoiding the overhead of initializing it again.
-
 For example:
 
     TRANSFER STORE somekey tmpfile
-    DELEGATE type=directory ephemeral=yes directory=/mnt/disk/
+    DELEGATE type=directory directory=/mnt/disk/
 
 This makes the annex object be stored in a directory special remote.
-Since initializing a directory special remote is inexpensive, it's
-made ephemeral.
 
 When the key is later requested to be retrieved,
 the same delegate can be used:
 
     TRANSFER RETRIEVE somekey tmpfile
-    DELEGATE type=directory ephemeral=yes directory=/mnt/disk/
+    DELEGATE type=directory directory=/mnt/disk/
 
 ----
 
