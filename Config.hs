@@ -69,25 +69,25 @@ remoteCost' :: RemoteGitConfig -> ParsedRemoteConfig -> Annex (Maybe Cost)
 remoteCost' gc pc = maybe (getRemoteConfigValue costField pc) Just
 	<$> liftIO (getDynamicConfig $ remoteAnnexCost gc)
 
-setRemoteCost :: Git.Repo -> Cost -> Annex ()
+setRemoteCost :: RemoteNameable r => r -> Cost -> Annex ()
 setRemoteCost r c = setConfig (remoteAnnexConfig r "cost") (show c)
 
-setRemoteAvailability :: Git.Repo -> Availability -> Annex ()
+setRemoteAvailability :: RemoteNameable r => r -> Availability -> Annex ()
 setRemoteAvailability r c = setConfig (remoteAnnexConfig r "availability") (show c)
 
-setRemoteIgnore :: Git.Repo -> Bool -> Annex ()
+setRemoteIgnore :: RemoteNameable r => r -> Bool -> Annex ()
 setRemoteIgnore r b = setConfig (remoteAnnexConfig r "ignore") (Git.Config.boolConfig b)
 
-unsetRemoteIgnore :: Git.Repo -> Annex ()
+unsetRemoteIgnore :: RemoteNameable r => r -> Annex ()
 unsetRemoteIgnore r = unsetConfig (remoteAnnexConfig r "ignore")
 
-setRemoteIgnoreAuto :: Git.Repo -> Bool -> Annex ()
+setRemoteIgnoreAuto :: RemoteNameable r => r -> Bool -> Annex ()
 setRemoteIgnoreAuto r b = setConfig (remoteAnnexConfig r "ignore-auto") (Git.Config.boolConfig b)
 
-unsetRemoteIgnoreAuto :: Git.Repo -> Annex ()
+unsetRemoteIgnoreAuto :: RemoteNameable r => r -> Annex ()
 unsetRemoteIgnoreAuto r = unsetConfig (remoteAnnexConfig r "ignore-auto")
 
-setRemoteBare :: Git.Repo -> Bool -> Annex ()
+setRemoteBare :: RemoteNameable r => r -> Bool -> Annex ()
 setRemoteBare r b = setConfig (remoteAnnexConfig r "bare") (Git.Config.boolConfig b)
 
 isBareRepo :: Annex Bool
