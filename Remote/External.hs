@@ -1018,28 +1018,13 @@ remoteConfigParser externalprogram c
 	isproposed (Proposed _) = True
 
 getDelegateRemote :: External -> [String] -> Annex Remote
-getDelegateRemote external ps = case externalUUID external of
-	Just externalu -> do
-		c <- newConfig delegatename (Just (Sameas externalu))
-			(keyValToConfig Proposed ps)
-			<$> remoteConfigMap
-		remotetypes <- Annex.getState Annex.remotetypes
-		t <- either giveup return (findType' remotetypes c)
-		dummycfg <- liftIO dummyRemoteGitConfig
-		(c', u) <- setup t Init (Just externalu) delegatename Nothing c dummycfg
-
-		setRemoteSkipFetchAll c' True
-		setRemoteIgnore c' True
-		
-		g <- liftIO $ Git.Construct.remoteNamed delegatename
-			(pure Git.Construct.fromUnknown)
-		gc <- Annex.getRemoteGitConfig g
-		let cu = fromMaybe u $ remoteAnnexConfigUUID gc
-		let rs = RemoteStateHandle cu
-		generate t g u c' gc rs >>= \case
-			Nothing -> error "Failed to generate a delegate remote"
-			Just r -> adjustExportImport r rs
-	Nothing -> error "internal"
+getDelegateRemote external ps = do
+	rs <- Annex.getState Annex.remotes
+	case filter (\r -> name r == delegatename) rs of
+		(r:_) -> return r
+		_ -> case externalUUID external of
+			Just externalu -> gendelegate externalu
+			Nothing -> error "internal"
   where
 	-- Hash the configuration of the delegate remote, so
 	-- re-using the same configuration yields the same name.
@@ -1048,3 +1033,32 @@ getDelegateRemote external ps = case externalUUID external of
 		, "-delegate-"
 		, show $ md5s $ encodeBS $ show ps
 		]
+	
+	gendelegate externalu = do
+		c <- newConfig delegatename (Just (Sameas externalu))
+			(keyValToConfig Proposed ps)
+			<$> remoteConfigMap
+		remotetypes <- Annex.getState Annex.remotetypes
+		t <- either giveup return (findType' remotetypes c)
+		dummycfg <- liftIO dummyRemoteGitConfig
+		(c', u) <- setup t Init (Just externalu) delegatename Nothing c dummycfg
+		
+		setRemotePrivate c' True
+		cu <- liftIO genUUID
+		setRemoteConfigUUID c' cu
+		Logs.Remote.configSet cu c'
+		
+		setRemoteSkipFetchAll c' True
+		setRemoteIgnore c' True
+
+		g <- liftIO $ Git.Construct.remoteNamed delegatename
+			(pure Git.Construct.fromUnknown)
+		gc <- Annex.getRemoteGitConfig g
+		let rs = RemoteStateHandle cu
+		r <- generate t g u c' gc rs >>= \case
+			Nothing -> error "Failed to generate a delegate remote"
+			Just r -> adjustExportImport r rs
+		Annex.changeState $ \s -> s 
+			{ Annex.remotes = r : Annex.remotes s
+			}
+		return r
