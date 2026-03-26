@@ -32,6 +32,7 @@ import Remote.Helper.Special
 import Remote.Helper.ExportImport
 import Remote.Helper.ReadOnly
 import Utility.Metered
+import Utility.Hash
 import Types.Transfer
 import Logs.PreferredContent.Raw
 import Logs.RemoteState
@@ -1019,7 +1020,13 @@ remoteConfigParser externalprogram c
 getDelegateRemote :: External -> [String] -> Annex Remote
 getDelegateRemote external ps = case externalUUID external of
 	Just externalu -> do
-		let delegatename = "temp-name" -- FIXME
+		-- Hash the configuration of the delegate remote, so
+		-- re-using the same configuration yields the same name.
+		let delegatename = concat
+			[ fromMaybe "external" (externalRemoteName external)
+			, "-delegate-"
+			, show $ md5s $ encodeBS $ show ps
+			]
 		
 		c <- newConfig delegatename (Just (Sameas externalu))
 			(keyValToConfig Proposed ps)
