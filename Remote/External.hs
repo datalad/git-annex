@@ -1020,14 +1020,6 @@ remoteConfigParser externalprogram c
 getDelegateRemote :: External -> [String] -> Annex Remote
 getDelegateRemote external ps = case externalUUID external of
 	Just externalu -> do
-		-- Hash the configuration of the delegate remote, so
-		-- re-using the same configuration yields the same name.
-		let delegatename = concat
-			[ fromMaybe "external" (externalRemoteName external)
-			, "-delegate-"
-			, show $ md5s $ encodeBS $ show ps
-			]
-		
 		c <- newConfig delegatename (Just (Sameas externalu))
 			(keyValToConfig Proposed ps)
 			<$> remoteConfigMap
@@ -1048,3 +1040,11 @@ getDelegateRemote external ps = case externalUUID external of
 			Nothing -> error "Failed to generate a delegate remote"
 			Just r -> adjustExportImport r rs
 	Nothing -> error "internal"
+  where
+	-- Hash the configuration of the delegate remote, so
+	-- re-using the same configuration yields the same name.
+	delegatename = concat
+		[ fromMaybe "external" (externalRemoteName external)
+		, "-delegate-"
+		, show $ md5s $ encodeBS $ show ps
+		]
