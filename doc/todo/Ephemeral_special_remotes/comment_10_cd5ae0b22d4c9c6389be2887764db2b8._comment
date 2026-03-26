@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2026-03-26T16:08:11Z"
+ content="""
+The `delegate` branch now has the exension working. As it stands, I left
+out the `ephemeral=yes|no`, so the delegate remote remains
+in the git config and elsewhere after git-annex stops running, and will be
+reused next time it's needed.
+
+I suspect that it might not matter that delegate remotes are not ephemeral.
+Their config does not get written to the git-annex branch and their
+configuration prevents the user from accidentially using them. The traces
+that hit the disk are just an implementation detail which can easily be
+ignored.
+"""]]
