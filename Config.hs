@@ -93,6 +93,9 @@ setRemoteBare r b = setConfig (remoteAnnexConfig r "bare") (Git.Config.boolConfi
 setRemoteConfigUUID :: RemoteNameable r => r -> UUID -> Annex ()
 setRemoteConfigUUID r cu = setConfig (remoteAnnexConfig r "config-uuid") (fromUUID cu)
 
+setRemotePrivate :: RemoteNameable r => r -> Bool -> Annex ()
+setRemotePrivate r b = setConfig (remoteAnnexConfig r "private") (Git.Config.boolConfig b)
+
 setRemoteSkipFetchAll :: RemoteNameable r => r -> Bool -> Annex ()
 setRemoteSkipFetchAll r b = setConfig (remoteConfig r "skipFetchAll") (Git.Config.boolConfig b)
 

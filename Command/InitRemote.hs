@@ -20,7 +20,6 @@ import Logs.Remote
 import Types.GitConfig
 import Types.ProposedAccepted
 import Config
-import Git.Config
 import Git.Types
 import Annex.Init
 
@@ -107,7 +106,7 @@ start o (name:ws) = do
 perform :: RemoteType -> RemoteName -> R.RemoteConfig -> InitRemoteOptions -> CommandPerform
 perform t name c o = do
 	when (privateRemote o) $
-		setConfig (remoteAnnexConfig c "private") (boolConfig True)
+		setRemotePrivate c True
 	dummycfg <- liftIO dummyRemoteGitConfig
 	let c' = M.delete uuidField c
 	(c'', u) <- R.setup t R.Init (sameasu <|> uuidfromuser) name Nothing c' dummycfg
