@@ -137,7 +137,7 @@ cleanup t u name c o = do
 	when (withUrl o) $
 		setAnnexUrl c
 	unless (Remote.gitSyncableRemoteType t || withUrl o) $
-		setConfig (remoteConfig c "skipFetchAll") (boolConfig True)
+		setRemoteSkipFetchAll c True
 	return True
 
 setAnnexUrl :: R.RemoteConfig -> Annex ()

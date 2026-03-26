@@ -25,7 +25,6 @@ import Config
 import Config.DynamicConfig
 import Types.GitConfig
 import Types.ProposedAccepted
-import Git.Config
 
 import qualified Data.Map as M
 
@@ -143,7 +142,7 @@ cleanupSpecialRemote o t u c mcu = do
 	when (withUrl o) $
 		Command.InitRemote.setAnnexUrl c
 	unless (Remote.gitSyncableRemoteType t || withUrl o) $
-		setConfig (remoteConfig c "skipFetchAll") (boolConfig True)
+		setRemoteSkipFetchAll c True
 	return True
 
 unknownNameError :: String -> Annex a
