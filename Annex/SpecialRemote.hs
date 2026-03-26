@@ -76,7 +76,7 @@ autoEnable = do
 					Left e -> warning (UnquotedString (show e))
 					Right (_c, _u) ->
 						when (cu /= u) $
-							setConfig (remoteAnnexConfig c "config-uuid") (fromUUID cu)
+							setRemoteConfigUUID c cu
 			_ -> return ()
   where
 	getenabledremotes = M.fromList

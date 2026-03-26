@@ -604,15 +604,15 @@ withSpecialRemote cfg@(SpecialRemoteConfig {}) sab a = case specialRemoteName cf
 		Logs.Remote.configSet u c'
 		setConfig (remoteConfig c' "url") (specialRemoteUrl cfg)
 		case M.lookup (Accepted "config-uuid") (specialRemoteConfig cfg) of
-			Just cu -> do
-				setConfig (remoteAnnexConfig c' "config-uuid")
-					(fromProposedAccepted cu)
+			Just pcu -> do
+				let cu = toUUID (fromProposedAccepted pcu)
+				setRemoteConfigUUID c' cu
 				-- This is not quite the same as what is
 				-- usually stored to the git-annex branch
 				-- for the config-uuid, but it will work.
 				-- This change will never be committed to the
 				-- git-annex branch.
-				Logs.Remote.configSet (toUUID (fromProposedAccepted cu)) c'
+				Logs.Remote.configSet cu c'
 			Nothing -> noop
 		remotesChanged
 		getEnabledSpecialRemoteByName remotename >>= \case

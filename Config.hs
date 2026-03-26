@@ -90,6 +90,9 @@ unsetRemoteIgnoreAuto r = unsetConfig (remoteAnnexConfig r "ignore-auto")
 setRemoteBare :: RemoteNameable r => r -> Bool -> Annex ()
 setRemoteBare r b = setConfig (remoteAnnexConfig r "bare") (Git.Config.boolConfig b)
 
+setRemoteConfigUUID :: RemoteNameable r => r -> UUID -> Annex ()
+setRemoteConfigUUID r cu = setConfig (remoteAnnexConfig r "config-uuid") (fromUUID cu)
+
 setRemoteSkipFetchAll :: RemoteNameable r => r -> Bool -> Annex ()
 setRemoteSkipFetchAll r b = setConfig (remoteConfig r "skipFetchAll") (Git.Config.boolConfig b)
 

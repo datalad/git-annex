@@ -132,7 +132,7 @@ cleanup t u name c o = do
 			Logs.Remote.configSet u c
 		Just _ -> do
 			cu <- liftIO genUUID
-			setConfig (remoteAnnexConfig c "config-uuid") (fromUUID cu)
+			setRemoteConfigUUID c cu
 			Logs.Remote.configSet cu c
 	when (withUrl o) $
 		setAnnexUrl c
