@@ -1,6 +1,6 @@
 # NAME
 
-git-annex disableremote - stops git-annex from using a remote
+git-annex disableremote - stop using a remote
 
 # SYNOPSIS
 
@@ -8,16 +8,17 @@ git annex disableremote `name`
 
 # DESCRIPTION
 
-Stops git-annex in the current repository from using a remote that was
-earlier set up by `git-annex initremote` or `git-annex enableremote`.
-
-This does not prevent the same remote from continuing to be used in other
-clones of the repository.
-
 This removes the remote from the local git configuration, the same as
-`git remote remove` would. It also cleans up various other files in 
-`.git/annex/` that mention the remote, including deleting any cached
-credentials for the remote.
+`git remote remove` would. It removes remote tracking branches. 
+It also cleans up various other files in  `.git/annex/` that belong to 
+or mention the remote.
+
+Note that this does not currently delete any cached credentials for a
+special remote or P2P peer. That may be improved in the future.
+
+This does not prevent the same special remote from continuing to be used 
+in other clones of the repository, and it can be re-enabled for local
+use with the `git-annex enableremote` command.
 
 # OPTIONS
 
