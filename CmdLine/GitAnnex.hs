@@ -58,6 +58,7 @@ import qualified Command.InitRemote
 import qualified Command.EnableRemote
 import qualified Command.ConfigRemote
 import qualified Command.RenameRemote
+import qualified Command.DisableRemote
 import qualified Command.EnableTor
 import qualified Command.Multicast
 import qualified Command.Expire
@@ -173,6 +174,7 @@ cmds testoptparser testrunner mkbenchmarkgenerator = map addGitAnnexCommonOption
 	, Command.EnableRemote.cmd
 	, Command.ConfigRemote.cmd
 	, Command.RenameRemote.cmd
+	, Command.DisableRemote.cmd
 	, Command.EnableTor.cmd
 	, Command.Multicast.cmd
 	, Command.Reinject.cmd
