@@ -7,7 +7,7 @@
  - All files in the journal must be a series of lines separated by
  - newlines.
  -
- - Copyright 2011-2024 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2026 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -33,6 +33,7 @@ import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString as B
 import Data.ByteString.Builder
 import Data.Char
+import Control.Concurrent.MVar
 
 class Journalable t where
 	writeJournalHandle :: Handle -> t -> IO ()
@@ -293,3 +294,66 @@ lockJournal :: (JournalLocked -> Annex a) -> Annex a
 lockJournal a = do
 	lck <- fromRepo gitAnnexJournalLock
 	withExclusiveLock lck $ a ProduceJournalLocked
+
+{- Lists all files currently in the journal, but not files in the private
+ - journal. -}
+journalledFiles :: Annex [OsPath]
+journalledFiles = getJournalledFilesStale gitAnnexJournalDir
+
+journalledFilesPrivate :: Annex [OsPath]
+journalledFilesPrivate = ifM privateUUIDsKnown
+	( getJournalledFilesStale gitAnnexPrivateJournalDir
+	, return []
+	)
+
+type FileContents t b = Maybe (t, OsPath, Maybe (L.ByteString, Maybe b))
+
+{- Like overBranchFileContents but only reads the content of journalled
+ - files.
+ -}
+overJournalFileContents
+	:: (OsPath -> L.ByteString -> Annex (L.ByteString, Maybe b))
+	-- ^ Called with the journalled file content when the journalled
+	-- content may be stale or lack information committed to the
+	-- git-annex branch.
+	-> (OsPath -> Maybe v)
+	-> (Annex (FileContents v b) -> Annex a)
+	-> Annex a
+overJournalFileContents handlestale select go = do
+	buf <- liftIO newEmptyMVar
+	go $ overJournalFileContents' buf handlestale select
+
+overJournalFileContents'
+	:: MVar ([OsPath], [OsPath])
+	-> (OsPath -> L.ByteString -> Annex (L.ByteString, Maybe b))
+	-> (OsPath -> Maybe a)
+	-> Annex (FileContents a b)
+overJournalFileContents' buf handlestale select =
+	liftIO (tryTakeMVar buf) >>= \case
+		Nothing -> do
+			jfs <- journalledFiles
+			pjfs <- journalledFilesPrivate
+			drain jfs pjfs
+		Just (jfs, pjfs) -> drain jfs pjfs
+  where
+	drain fs pfs = case getnext fs pfs of
+		Just (v, f, fs', pfs') -> do
+			liftIO $ putMVar buf (fs', pfs')
+			content <- getJournalFileStale (GetPrivate True) f >>= \case
+				NoJournalledContent -> return Nothing
+				JournalledContent journalledcontent ->
+					return (Just (journalledcontent, Nothing))
+				PossiblyStaleJournalledContent journalledcontent ->
+					Just <$> handlestale f journalledcontent
+			return (Just (v, f, content))
+		Nothing -> do
+			liftIO $ putMVar buf ([], [])
+			return Nothing
+	
+	getnext [] [] = Nothing
+	getnext (f:fs) pfs = case select f of
+		Nothing -> getnext fs pfs
+		Just v -> Just (v, f, fs, pfs)
+	getnext [] (pf:pfs) = case select pf of
+		Nothing -> getnext [] pfs
+		Just v -> Just (v, pf, [], pfs)
