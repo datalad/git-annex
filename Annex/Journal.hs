@@ -102,6 +102,15 @@ setJournalFile _jl ru file content = withOtherTmp $ \tmp -> do
 	-- exists
 	mv `catchIO` (const (createAnnexDirectory jd >> mv))
 
+deleteJournalFile :: JournalLocked -> RegardingUUID -> OsPath -> Annex ()
+deleteJournalFile _jl ru file = do
+	st <- getState
+	jd <- fromRepo =<< ifM (regardingPrivateUUID ru)
+		( return (gitAnnexPrivateJournalDir st)
+		, return (gitAnnexJournalDir st)
+		)
+	liftIO $ removeWhenExistsWith removeFile (jd </> journalFile file)
+
 newtype AppendableJournalFile = AppendableJournalFile (OsPath, OsPath)
 
 {- If the journal file does not exist, it cannot be appended to, because
@@ -321,17 +330,32 @@ overJournalFileContents
 	-> Annex a
 overJournalFileContents handlestale select go = do
 	buf <- liftIO newEmptyMVar
-	go $ overJournalFileContents' buf handlestale select
+	go $ overJournalFileContents' buf False handlestale select
+
+{- Like overJournalFileContents, but only over files that are in the
+ - private journal. However, the file content still includes the public
+ - content, concacenated with the private content. -}
+overPrivateJournalFileContents
+	:: (OsPath -> L.ByteString -> Annex (L.ByteString, Maybe b))
+	-> (OsPath -> Maybe v)
+	-> (Annex (FileContents v b) -> Annex a)
+	-> Annex a
+overPrivateJournalFileContents handlestale select go = do
+	buf <- liftIO newEmptyMVar
+	go $ overJournalFileContents' buf True handlestale select
 
 overJournalFileContents'
 	:: MVar ([OsPath], [OsPath])
+	-> Bool
 	-> (OsPath -> L.ByteString -> Annex (L.ByteString, Maybe b))
 	-> (OsPath -> Maybe a)
 	-> Annex (FileContents a b)
-overJournalFileContents' buf handlestale select =
+overJournalFileContents' buf onlyprivate handlestale select =
 	liftIO (tryTakeMVar buf) >>= \case
 		Nothing -> do
-			jfs <- journalledFiles
+			jfs <- if onlyprivate
+				then return []
+				else journalledFiles
 			pjfs <- journalledFilesPrivate
 			drain jfs pjfs
 		Just (jfs, pjfs) -> drain jfs pjfs

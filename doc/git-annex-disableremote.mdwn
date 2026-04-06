@@ -13,12 +13,15 @@ This removes the remote from the local git configuration, the same as
 It also cleans up various other files in  `.git/annex/` that belong to 
 or mention the remote.
 
-Note that this does not currently delete any cached credentials for a
-special remote or P2P peer. That may be improved in the future.
-
 This does not prevent the same special remote from continuing to be used 
 in other clones of the repository, and it can be re-enabled for local
 use with the `git-annex enableremote` command.
+
+When `git-annex initremote --private` was used to initialize a private
+remote, disabling it also removes its information from the private journal.
+
+Note that this does not currently delete any cached credentials for a
+special remote or P2P peer. That may be improved in the future.
 
 # OPTIONS
 

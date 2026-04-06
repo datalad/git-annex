@@ -10,8 +10,22 @@ module Command.DisableRemote where
 import Command
 import Remote
 import Git
+import qualified Annex
 import qualified Git.Remote.Remove
 import qualified Git.Ref
+import Types.Remote
+import Annex.Journal
+import qualified Annex.Branch
+import Annex.Branch.Transitions
+import Types.Transitions
+import Logs
+import Logs.Remote.Pure
+import Logs.MapLog
+
+import Data.ByteString.Builder
+import qualified Data.Map as M
+import qualified Data.Set as S
+import qualified Data.ByteString.Lazy as L
 
 cmd :: Command
 cmd = withAnnexOptions [jsonOptions] $
@@ -27,6 +41,10 @@ start :: [String] -> CommandStart
 start (remotename:[]) = byName' remotename >>= \case
 	Left err -> giveup err
 	Right r -> starting "disableremote" ai si $ do
+		uniqueuuid <- not
+			. any (\r' -> uuid r' == uuid r && name r' /= name r)
+			<$> remoteList
+
 		-- It would be good to remove export databases, fsck
 		-- databases, and transfer logs, but all of those are
 		-- uuid based, so would need to avoid deleting any if the
@@ -39,12 +57,7 @@ start (remotename:[]) = byName' remotename >>= \case
 		-- It would be good to remove the AuthToken used for a P2P
 		-- remote.
 
-		-- If the remote is private, it would be good to remove
-		-- the remote from remote.log and uuid.log in the private
-		-- journal, and also to remove any private logs for the
-		-- uuid. (Unless there are other remotes using the same
-		-- uuid.)
-
+		cleanPrivateJournal r uniqueuuid
 		inRepo $ Git.Remote.Remove.remove remotename
 		removeRemoteTrackingBranches remotename
 		
@@ -66,3 +79,67 @@ removeRemoteTrackingBranches remotename = do
 		inRepo $ Git.Ref.delete' b
   where
 	branchprefix = "refs/remotes/" ++ remotename ++ "/"
+
+{- Remove a private remote's uuid from the private journal
+ - entirely when it is the only remote using that uuid.
+ -
+ - And, when the remote is a sameas remote, its config is stored
+ - under its config-uuid. Remove that from the private remote log.
+ -}
+cleanPrivateJournal :: Remote -> Bool -> Annex ()
+cleanPrivateJournal r uniqueuuid
+	| uniqueuuid == True = do
+		whenM (isprivateuuid (uuid r)) $ do
+			gc <- Annex.getGitConfig
+			let tc = filterBranch (\u -> u /= uuid r) gc
+			let handlestale = \_ b -> return (b, Nothing)
+			lockJournal $ \jl -> 
+				overPrivateJournalFileContents handlestale Just
+					(go jl tc)
+		removeconfiguuid
+	| otherwise = removeconfiguuid
+  where
+	isprivateuuid u = 
+		(\c -> u `S.member` annexPrivateRepos c)
+			<$> Annex.getGitConfig
+
+	go jl tc getfilecontents = getfilecontents >>= \case
+		Just (_, p, Just (b, _)) -> do
+			cleaner jl tc p b
+			go jl tc getfilecontents
+		Just (_, _, Nothing) ->
+			go jl tc getfilecontents
+		Nothing -> return ()
+			
+	cleaner jl tc p b = case tc p b of
+		PreserveFile -> return ()
+		ChangeFile builder ->
+			setlocaljournal jl (RegardingUUID [uuid r]) p builder
+	
+	removeconfiguuid = case remoteAnnexConfigUUID (gitconfig r) of
+		Nothing -> return ()
+		Just cu -> whenM (isprivateuuid cu) $
+			lockJournal $ \jl ->
+				getJournalFile jl (GetPrivate True) remoteLog >>= \case
+					JournalledContent b -> 
+						scrub jl cu b
+					PossiblyStaleJournalledContent b -> 
+						scrub jl cu b
+					NoJournalledContent ->
+						return ()
+	  where
+		scrub jl cu b =
+			setlocaljournal jl (RegardingUUID [cu]) remoteLog $
+				buildRemoteConfigLog $ MapLog $ M.delete cu $
+					fromMapLog $ parseRemoteConfigLog b
+
+	setlocaljournal jl ru p builder =
+		let b' = toLazyByteString builder
+		in if L.null b'
+			then deleteJournalFile jl ru p
+			else do
+				b'' <- Annex.Branch.getLocal' (GetPrivate False) p
+				if b'' == b'
+					then deleteJournalFile jl ru p
+					else setJournalFile jl ru p builder
+

@@ -21,6 +21,8 @@ module Annex.Branch (
 	forceUpdate,
 	updateTo,
 	get,
+	getLocal,
+	getLocal',
 	getHistorical,
 	getRef,
 	getUnmergedRefs,
@@ -1052,7 +1054,7 @@ overBranchFileContents' select go st = do
 		Nothing
 			| journalIgnorable st -> return Nothing
 			| otherwise ->
-				overJournalFileContents' buf (handlestale branchsha) select
+				overJournalFileContents' buf False (handlestale branchsha) select
 	res <- catObjectStreamLsTree l (select' . getTopFilePath . Git.LsTree.file) g go'
 		`finally` liftIO (void cleanup)
 	return (res, branchsha)
