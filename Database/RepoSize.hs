@@ -1,6 +1,6 @@
 {- Sqlite database used to track the sizes of repositories.
  -
- - Copyright 2024 Joey Hess <id@joeyh.name>
+ - Copyright 2024-2026 Joey Hess <id@joeyh.name>
  -:
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -31,6 +31,7 @@ module Database.RepoSize (
 	recordedRepoOffsets,
 	liveRepoOffsets,
 	setSizeChanges,
+	removeUUID,
 ) where
 
 import Annex.Common
@@ -425,3 +426,22 @@ liveRepoOffsets (RepoSizeHandle (Just h) _) wantedsizechange = H.queryDb h $ do
 			(fromMaybe [] $ M.lookup k livechangesbykey)
 	competinglivechanges _ _ AddingKey _ = []
 liveRepoOffsets (RepoSizeHandle Nothing _) _ = pure mempty
+
+removeUUID :: UUID -> Annex ()
+removeUUID u = do
+	db <- openDb
+	case db of
+		RepoSizeHandle (Just h) _ -> liftIO $ H.commitDb h $ do
+			l <- getRepoSizes'
+			forM_ (map fst l) unsetRepoSize
+			deleteWhere
+				[ LiveSizeChangesRepo ==. u
+				]
+			deleteWhere
+				[ SizeChangesRepo ==. u
+				]
+			deleteWhere
+				[ RecentChangesRepo ==. u
+				]
+		_ -> noop
+	closeDb db

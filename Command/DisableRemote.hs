@@ -23,6 +23,7 @@ import Logs.Remote.Pure
 import Logs.MapLog
 import qualified Database.Export
 import qualified Database.Fsck
+import qualified Database.RepoSize
 
 import Data.ByteString.Builder
 import qualified Data.Map as M
@@ -46,17 +47,20 @@ start (remotename:[]) = byName' remotename >>= \case
 		uniqueuuid <- not
 			. any (\r' -> uuid r' == uuid r && name r' /= name r)
 			<$> remoteList
+		
+		cleanPrivateJournal r uniqueuuid
 
 		when uniqueuuid $ do
 			Database.Export.removeDb (uuid r)
 			Database.Fsck.removeDb (uuid r)
+			Database.RepoSize.removeUUID (uuid r)
+			-- Remove Database.ContentIdentifier for uuid
 			-- It would be good to remove transfer logs
 
 		-- It would be good to remove cred files, but there
 		-- is currently no way to list cred files belonging to a
 		-- remote.
 		
-		cleanPrivateJournal r uniqueuuid
 		inRepo $ Git.Remote.Remove.remove remotename
 		removeRemoteTrackingBranches remotename
 		
