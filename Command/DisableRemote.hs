@@ -21,6 +21,8 @@ import Types.Transitions
 import Logs
 import Logs.Remote.Pure
 import Logs.MapLog
+import qualified Database.Export
+import qualified Database.Fsck
 
 import Data.ByteString.Builder
 import qualified Data.Map as M
@@ -45,11 +47,11 @@ start (remotename:[]) = byName' remotename >>= \case
 			. any (\r' -> uuid r' == uuid r && name r' /= name r)
 			<$> remoteList
 
-		-- It would be good to remove export databases, fsck
-		-- databases, and transfer logs, but all of those are
-		-- uuid based, so would need to avoid deleting any if the
-		-- same uuid is still in use by another remote.
-		
+		when uniqueuuid $ do
+			Database.Export.removeDb (uuid r)
+			Database.Fsck.removeDb (uuid r)
+			-- It would be good to remove transfer logs
+
 		-- It would be good to remove cred files, but there
 		-- is currently no way to list cred files belonging to a
 		-- remote.

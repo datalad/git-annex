@@ -1,6 +1,6 @@
 {- Sqlite database used for exports to special remotes.
  -
- - Copyright 2017-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2017-2026 Joey Hess <id@joeyh.name>
  -:
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -18,6 +18,7 @@ module Database.Export (
 	ExportHandle,
 	openDb,
 	closeDb,
+	removeDb,
 	writeLockDbWhile,
 	flushDbQueue,
 	addExportedLocation,
@@ -104,6 +105,16 @@ openDb u = do
 
 closeDb :: ExportHandle -> Annex ()
 closeDb (ExportHandle h _) = liftIO $ H.closeDbQueue h
+
+removeDb :: UUID -> Annex ()
+removeDb u = writeLockDbWhile' u (const noop) noop $ do
+	dbdir <- calcRepo' (gitAnnexExportDbDir u)
+	liftIO $ removeDirectoryRecursive dbdir
+	updatelck <- calcRepo' (gitAnnexExportUpdateLock u)
+	exlck <- calcRepo' (gitAnnexExportLock u)
+	void $ liftIO $ tryNonAsync $ do
+		removeWhenExistsWith removeFile updatelck
+		removeWhenExistsWith removeFile exlck
 
 queueDb :: ExportHandle -> SqlPersistM () -> IO ()
 queueDb (ExportHandle h _) = H.queueDb h checkcommit
@@ -258,11 +269,7 @@ updateExportDb = runExportDiffUpdater $ mkExportDiffUpdater removeold addnew
  - from the git-annex branch export log.
  -}
 writeLockDbWhile :: ExportHandle -> Annex a -> Annex a
-writeLockDbWhile db@(ExportHandle _ u) a = do
-	updatelck <- takeExclusiveLock =<< calcRepo' (gitAnnexExportUpdateLock u)
-	exlck <- calcRepo' (gitAnnexExportLock u)
-	withExclusiveLock exlck $ do
-		bracket_ (setup updatelck) cleanup a
+writeLockDbWhile db@(ExportHandle _ u) = writeLockDbWhile' u setup cleanup
   where
 	setup updatelck = do
 		void $ updateExportTreeFromLog' db
@@ -271,6 +278,13 @@ writeLockDbWhile db@(ExportHandle _ u) a = do
 		liftIO $ flushDbQueue db
 		liftIO $ dropLock updatelck
 	cleanup = liftIO $ flushDbQueue db
+
+writeLockDbWhile' :: UUID -> (LockHandle -> Annex ()) -> Annex () -> Annex a -> Annex a
+writeLockDbWhile' u setup cleanup a = do
+	updatelck <- takeExclusiveLock =<< calcRepo' (gitAnnexExportUpdateLock u)
+	exlck <- calcRepo' (gitAnnexExportLock u)
+	withExclusiveLock exlck $ do
+		bracket_ (setup updatelck) cleanup a
 
 data ExportUpdateResult = ExportUpdateSuccess | ExportUpdateConflict
 	deriving (Eq)

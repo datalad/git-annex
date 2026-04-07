@@ -1,6 +1,6 @@
 {- Sqlite database used for incremental fsck. 
  -
- - Copyright 2015-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2026 Joey Hess <id@joeyh.name>
  -:
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -20,6 +20,7 @@ module Database.Fsck (
 	newPass,
 	openDb,
 	closeDb,
+	removeDb,
 	addDb,
 	inDb,
 	FsckedId,
@@ -81,6 +82,15 @@ closeDb :: FsckHandle -> Annex ()
 closeDb (FsckHandle h u) = do
 	liftIO $ H.closeDbQueue h
 	unlockFile =<< calcRepo' (gitAnnexFsckDbLock u)
+
+removeDb :: UUID -> Annex ()
+removeDb u = do
+	lck <- calcRepo' (gitAnnexFsckDbLock u)
+	withExclusiveLock lck $ do
+		dbdir <- calcRepo' (gitAnnexFsckDbDir u)
+		liftIO $ removeDirectoryRecursive dbdir
+		liftIO $ void $ tryNonAsync $
+			removeWhenExistsWith removeFile lck
 
 addDb :: FsckHandle -> Key -> IO ()
 addDb (FsckHandle h _) k = H.queueDb h checkcommit $
