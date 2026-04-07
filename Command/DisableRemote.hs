@@ -55,6 +55,10 @@ start (remotename:[]) = byName' remotename >>= \case
 			-- Each uuid has its own export and fsck database,
 			-- so always remove them, so long as this is the
 			-- only remote using this uuid.
+			--
+			-- FIXME: These leave behind the
+			-- .git/annex/export/<UUID> and
+			-- .git/annex/fsck/<UUID> directories
 			Database.Export.removeDb (uuid r)
 			Database.Fsck.removeDb (uuid r)
 			-- These databases are updated from information
