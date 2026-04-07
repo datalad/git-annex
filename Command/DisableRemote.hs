@@ -54,9 +54,6 @@ start (remotename:[]) = byName' remotename >>= \case
 		-- is currently no way to list cred files belonging to a
 		-- remote.
 		
-		-- It would be good to remove the AuthToken used for a P2P
-		-- remote.
-
 		cleanPrivateJournal r uniqueuuid
 		inRepo $ Git.Remote.Remove.remove remotename
 		removeRemoteTrackingBranches remotename
