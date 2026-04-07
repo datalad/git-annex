@@ -24,6 +24,7 @@ import Logs.MapLog
 import qualified Database.Export
 import qualified Database.Fsck
 import qualified Database.RepoSize
+import qualified Database.ContentIdentifier
 
 import Data.ByteString.Builder
 import qualified Data.Map as M
@@ -51,15 +52,23 @@ start (remotename:[]) = byName' remotename >>= \case
 		cleanPrivateJournal r uniqueuuid
 
 		when uniqueuuid $ do
+			-- Each uuid has its own export and fsck database,
+			-- so always remove them, so long as this is the
+			-- only remote using this uuid.
 			Database.Export.removeDb (uuid r)
 			Database.Fsck.removeDb (uuid r)
-			Database.RepoSize.removeUUID (uuid r)
-			-- Remove Database.ContentIdentifier for uuid
+			-- These databases are updated from information
+			-- in the git-annex branch, so there is no point in
+			-- removing the uuid from them unless it's private.
+			whenM (isPrivateUUID (uuid r)) $ do
+				Database.RepoSize.removeUUID (uuid r)
+				Database.ContentIdentifier.removeUUID (uuid r) True
+	
 			-- It would be good to remove transfer logs
 
-		-- It would be good to remove cred files, but there
-		-- is currently no way to list cred files belonging to a
-		-- remote.
+			-- It would be good to remove cred files, but there
+			-- is currently no way to list cred files belonging
+			-- to a remote, or even to a UUID.
 		
 		inRepo $ Git.Remote.Remove.remove remotename
 		removeRemoteTrackingBranches remotename
@@ -83,6 +92,11 @@ removeRemoteTrackingBranches remotename = do
   where
 	branchprefix = "refs/remotes/" ++ remotename ++ "/"
 
+isPrivateUUID :: UUID -> Annex Bool
+isPrivateUUID u = 
+	(\c -> u `S.member` annexPrivateRepos c)
+		<$> Annex.getGitConfig
+
 {- Remove a private remote's uuid from the private journal
  - entirely when it is the only remote using that uuid.
  -
@@ -92,7 +106,7 @@ removeRemoteTrackingBranches remotename = do
 cleanPrivateJournal :: Remote -> Bool -> Annex ()
 cleanPrivateJournal r uniqueuuid
 	| uniqueuuid == True = do
-		whenM (isprivateuuid (uuid r)) $ do
+		whenM (isPrivateUUID (uuid r)) $ do
 			gc <- Annex.getGitConfig
 			let tc = filterBranch (\u -> u /= uuid r) gc
 			let handlestale = \_ b -> return (b, Nothing)
@@ -102,10 +116,6 @@ cleanPrivateJournal r uniqueuuid
 		removeconfiguuid
 	| otherwise = removeconfiguuid
   where
-	isprivateuuid u = 
-		(\c -> u `S.member` annexPrivateRepos c)
-			<$> Annex.getGitConfig
-
 	go jl tc getfilecontents = getfilecontents >>= \case
 		Just (_, p, Just (b, _)) -> do
 			cleaner jl tc p b
@@ -121,7 +131,7 @@ cleanPrivateJournal r uniqueuuid
 	
 	removeconfiguuid = case remoteAnnexConfigUUID (gitconfig r) of
 		Nothing -> return ()
-		Just cu -> whenM (isprivateuuid cu) $
+		Just cu -> whenM (isPrivateUUID cu) $
 			lockJournal $ \jl ->
 				getJournalFile jl (GetPrivate True) remoteLog >>= \case
 					JournalledContent b -> 

@@ -29,6 +29,7 @@ module Database.ContentIdentifier (
 	updateFromLog,
 	ContentIdentifiersId,
 	AnnexBranchId,
+	removeUUID,
 ) where
 
 import Database.Types
@@ -138,7 +139,10 @@ getContentIdentifierKeys (ContentIdentifierHandle h _) (RemoteStateHandle u) cid
 		return $ map (contentIdentifiersKey . entityVal) l
 
 recordAnnexBranchTree :: ContentIdentifierHandle -> Sha -> IO ()
-recordAnnexBranchTree h s = queueDb h $ do
+recordAnnexBranchTree h s = queueDb h $ recordAnnexBranchTree' s
+
+recordAnnexBranchTree' :: Sha -> SqlPersistM ()
+recordAnnexBranchTree' s = do
 	deleteWhere ([] :: [Filter AnnexBranch])
 	void $ insertUnique_ $ AnnexBranch $ toSSha s
 
@@ -175,3 +179,12 @@ updateFromLog db@(ContentIdentifierHandle h _) (oldtree, currtree) = do
 			liftIO $ forM_ l $ \(rs, cids) ->
 				forM_ cids $ \cid ->
 					recordContentIdentifier db rs cid k
+
+removeUUID :: UUID -> Bool -> Annex ()
+removeUUID u avoidinvalidate = do
+	db <- openDb
+	liftIO $ queueDb db $ do
+		deleteWhere [ ContentIdentifiersRemote ==. u ]
+		unless avoidinvalidate $
+			recordAnnexBranchTree' emptyTree
+	closeDb db
