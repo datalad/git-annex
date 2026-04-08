@@ -425,7 +425,7 @@ gitAnnexFsckDir u r mc = case annexDbDir =<< mc of
 	Nothing -> go (gitAnnexDir r)
 	Just d -> go d
   where
-	go d = d </> literalOsPath "fsck" </> fromUUID u
+	go d = d </> literalOsPath "fsck" </> uuidFile u
 
 {- .git/annex/fsck/uuid/ is used to store state of incremental fscks. -}
 gitAnnexFsckStateDir :: UUID -> Git.Repo -> OsPath
@@ -457,7 +457,7 @@ gitAnnexFsckDbLock u r c =
 {- .git/annex/fsckresults/uuid is used to store results of git fscks -}
 gitAnnexFsckResultsLog :: UUID -> Git.Repo -> OsPath
 gitAnnexFsckResultsLog u r = 
-	gitAnnexDir r </> literalOsPath "fsckresults" </> fromUUID u
+	gitAnnexDir r </> literalOsPath "fsckresults" </> uuidFile u
 
 {- .git/annex/upgrade.log is used to record repository version upgrades. -}
 gitAnnexUpgradeLog :: Git.Repo -> OsPath
@@ -524,7 +524,7 @@ gitAnnexExportDir r c = fromMaybe (gitAnnexDir r) (annexDbDir c)
 
 {- Per UUID export information directory. -}
 gitAnnexExportUUIDDir :: UUID -> Git.Repo -> GitConfig -> OsPath
-gitAnnexExportUUIDDir u r c = gitAnnexExportDir r c </> fromUUID u
+gitAnnexExportUUIDDir u r c = gitAnnexExportDir r c </> uuidFile u
 
 {- Directory containing database used to record export info. -}
 gitAnnexExportDbDir :: UUID -> Git.Repo -> GitConfig -> OsPath
@@ -544,7 +544,7 @@ gitAnnexExportUpdateLock u r c = gitAnnexExportDbDir u r c <> literalOsPath ".up
  - remote, but were excluded by its preferred content settings. -}
 gitAnnexExportExcludeLog :: UUID -> Git.Repo -> OsPath
 gitAnnexExportExcludeLog u r = gitAnnexDir r 
-	</> literalOsPath "export.ex" </> fromUUID u
+	</> literalOsPath "export.ex" </> uuidFile u
 
 {- Directory containing database used to record remote content ids.
  -
@@ -569,7 +569,7 @@ gitAnnexImportDir r c =
 {- File containing state about the last import done from a remote. -}
 gitAnnexImportLog :: UUID -> Git.Repo -> GitConfig -> OsPath
 gitAnnexImportLog u r c =
-	gitAnnexImportDir r c </> fromUUID u </> literalOsPath "log"
+	gitAnnexImportDir r c </> uuidFile u </> literalOsPath "log"
 
 {- Directory containing database used by importfeed. -}
 gitAnnexImportFeedDbDir :: Git.Repo -> GitConfig -> OsPath
@@ -643,8 +643,7 @@ gitAnnexTransferDirectionDir direction r = gitAnnexTransferDir r
  - and UUID. -}
 gitAnnexTransferUUIDDirectionDir :: UUID -> Direction -> Git.Repo -> OsPath
 gitAnnexTransferUUIDDirectionDir u direction r =
-	gitAnnexTransferDirectionDir direction r
-		</> OS.filter (/= unsafeFromChar '/') (fromUUID u)
+	gitAnnexTransferDirectionDir direction r </> uuidFile u
 
 {- The directory holding failed transfer information files for a given
  - Direction and UUID -}
@@ -652,7 +651,7 @@ gitAnnexFailedTransferDir :: UUID -> Direction -> Git.Repo -> OsPath
 gitAnnexFailedTransferDir u direction r = gitAnnexTransferDir r
 	</> literalOsPath "failed"
 	</> toOsPath (formatDirection direction)
-	</> OS.filter (/= unsafeFromChar '/') (fromUUID u)
+	</> uuidFile u
 
 {- The transfer information file to use to record a failed Transfer -}
 gitAnnexFailedTransferFile :: Transfer -> Git.Repo -> OsPath
@@ -879,3 +878,10 @@ keyPath key hasher = hasher key </> f </> f
 keyPaths :: Key -> NE.NonEmpty OsPath
 keyPaths key = NE.map (\h -> keyPath key (h def)) dirHashes
 
+{- Converts a UUID into a filename fragement without any directory.
+ -
+ - A UUID never contains '/', so to avoid any possible situation
+ - where an attacker attempts path traversal by a UUID, it is filtered out.
+ -}
+uuidFile :: UUID -> OsPath
+uuidFile u = OS.filter (/= unsafeFromChar '/') (fromUUID u)
