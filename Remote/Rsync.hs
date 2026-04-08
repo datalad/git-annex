@@ -106,7 +106,7 @@ gen r u rc gc rs = do
 				, retrieveExport = retrieveExportM o
 				, removeExport = removeExportM o
 				, checkPresentExport = checkPresentExportM o
-				, removeExportDirectory = Just (removeExportDirectoryM o)
+				, removeExportDirectory = Nothing
 				, renameExport = Just $ renameExportM o
 				}
 			, importActions = importUnsupported
@@ -342,9 +342,6 @@ removeExportM o _k loc =
 	includes f = f : case upFrom f of
 		Nothing -> []
 		Just f' -> includes f'
-
-removeExportDirectoryM :: RsyncOpts -> ExportDirectory -> Annex ()
-removeExportDirectoryM o ed = removeGeneric o []
 
 renameExportM :: RsyncOpts -> Key -> ExportLocation -> ExportLocation -> Annex (Maybe ())
 renameExportM _ _ _ _ = return Nothing

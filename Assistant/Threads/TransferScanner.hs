@@ -85,7 +85,7 @@ transferScannerThread urlrenderer = namedThread "TransferScanner" $ do
 {- This is a cheap scan for failed transfers involving a remote. -}
 failedTransferScan :: Remote -> Assistant ()
 failedTransferScan r = do
-	failed <- liftAnnex $ clearFailedTransfers (Remote.uuid r)
+	failed <- liftAnnex $ tryClearFailedTransfers (Remote.uuid r)
 	mapM_ retry failed
   where
 	retry (t, info)
@@ -123,7 +123,7 @@ expensiveScan urlrenderer rs = batch <~> do
 
 	let us = map Remote.uuid rs
 
-	mapM_ (liftAnnex . clearFailedTransfers) us
+	mapM_ (liftAnnex . tryClearFailedTransfers) us
 
 	unwantedrs <- liftAnnex $ S.fromList
 		<$> filterM inUnwantedGroup us

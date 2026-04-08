@@ -431,7 +431,7 @@ guardSameContentIdentifiers cont olds (Just new)
 				in ContentIdentifier (encodeBS (showInodeCache ic'))
 
 importKeyM :: IgnoreInodes -> OsPath -> ExportLocation -> ContentIdentifier -> ByteSize -> MeterUpdate -> Annex (Maybe Key)
-importKeyM ii dir loc cid sz p = do
+importKeyM ii dir loc cid _sz p = do
 	backend <- chooseBackend f
 	k <- fst <$> genKey ks p backend
 	currcid <- liftIO $ mkContentIdentifier ii absf

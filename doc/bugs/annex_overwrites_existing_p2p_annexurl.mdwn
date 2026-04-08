@@ -1,0 +1,71 @@
+### Please describe the problem.
+
+I am trying to orchestrate testing against a forgejo+aneksjo fixture instance in [datalad-fuse](https://github.com/datalad/datalad-fuse/pull/127) where I run forgejo+aneksjo in podman container mapping to a different (fixed) external ports.  Overall verdict - "have difficulties".
+
+
+One particular, potentially a core issue (besides that odd "push master first to get things rolling", likely to initiate smth on server side I guess), is that `annexurl`, even if I predefine it correct:
+
+```shell
+❯ git annex version | head -n 1
+git-annex version: 10.20260316+git1-g768707adf4-1~ndall+1
+❯ git annex copy --to=forgejo testfile.bin < /dev/null
+Username for 'http://127.0.0.1:41713': ^C
+❯ tail -n 5 .git/config
+[remote "forgejo"]
+	url = http://127.0.0.1:41713/testadmin/test-annex-91e0e3b7.git
+	fetch = +refs/heads/*:refs/remotes/forgejo/*
+	pushurl = http://testadmin:c8bacefb551205d5b1f75bba7af38aabc2dd7287@127.0.0.1:41713/testadmin/test-annex-91e0e3b7.git
+	annexurl = annex+http://127.0.0.1:41713/git-annex-p2phttp
+❯ git push forgejo master
+Enumerating objects: 9, done.
+Counting objects: 100% (9/9), done.
+Delta compression using up to 20 threads
+Compressing objects: 100% (8/8), done.
+Writing objects: 100% (9/9), 1003 bytes | 1003.00 KiB/s, done.
+Total 9 (delta 1), reused 0 (delta 0), pack-reused 0 (from 0)
+To http://127.0.0.1:41713/testadmin/test-annex-91e0e3b7.git
+ * [new branch]      master -> master
+❯ tail -n 5 .git/config
+[remote "forgejo"]
+	url = http://127.0.0.1:41713/testadmin/test-annex-91e0e3b7.git
+	fetch = +refs/heads/*:refs/remotes/forgejo/*
+	pushurl = http://testadmin:c8bacefb551205d5b1f75bba7af38aabc2dd7287@127.0.0.1:41713/testadmin/test-annex-91e0e3b7.git
+	annexurl = annex+http://127.0.0.1:41713/git-annex-p2phttp
+```
+
+it would get overridden by git-annex:
+
+```shell
+❯ git annex copy --to=forgejo testfile.bin < /dev/null
+copy testfile.bin (unable to connect to HTTP server: Network.Socket.connect: <socket: 30>: does not exist (Connection refused)) failed
+copy: 1 failed
+❯ tail -n 5 .git/config
+	url = http://127.0.0.1:41713/testadmin/test-annex-91e0e3b7.git
+	fetch = +refs/heads/*:refs/remotes/forgejo/*
+	pushurl = http://testadmin:c8bacefb551205d5b1f75bba7af38aabc2dd7287@127.0.0.1:41713/testadmin/test-annex-91e0e3b7.git
+	annexurl = annex+http://localhost:3000/git-annex-p2phttp
+	annex-uuid = ab484350-97c4-48a7-9d3d-8321dc966cb4
+```
+
+and fixing port is not enough:
+
+```shell
+❯ sed -i -e 's,:3000,:41713,g' .git/config
+❯ tail -n 5 .git/config
+	url = http://127.0.0.1:41713/testadmin/test-annex-91e0e3b7.git
+	fetch = +refs/heads/*:refs/remotes/forgejo/*
+	pushurl = http://testadmin:c8bacefb551205d5b1f75bba7af38aabc2dd7287@127.0.0.1:41713/testadmin/test-annex-91e0e3b7.git
+	annexurl = annex+http://localhost:41713/git-annex-p2phttp
+	annex-uuid = ab484350-97c4-48a7-9d3d-8321dc966cb4
+❯ git annex copy --to=forgejo testfile.bin < /dev/null
+Username for 'annex+http://localhost:41713/git-annex-p2phttp': ^C
+```
+ 
+seems that pointing to IP "fixes" it
+
+```
+❯ sed -i -e 's,localhost:41713,127.0.0.1:41713,g' .git/config
+❯ git annex copy --to=forgejo testfile.bin < /dev/null
+copy testfile.bin (to forgejo...) ok
+(recording state in git...)
+```

@@ -1,0 +1,43 @@
+### Please describe the problem.
+
+```
+$> git-annex version | head -n 1
+git-annex version: 10.20260316-gf01ba218ffb36e8607516d9895dfaeaeaf101a05
+
+
+(git)smaug:/tmp/ds000113[master]git
+$> time git-annex find --not --in here --fast | head -n 1
+derivatives/linear_anatomical_alignment/sub-01/ses-forrestgump/func/sub-01_ses-forrestgump_task-forrestgump_rec-XFMdico7Tad2grpbold7Tad_run-01_bold.mat
+
+```
+
+is hanging although IMHO should have exited right after spitting out first entry. Overall it takes under second to list them
+
+```
+$> time git-annex find --not --in here --fast > /dev/null
+git-annex find --not --in here --fast > /dev/null  0.45s user 0.09s system 132% cpu 0.408 total
+
+```
+
+but if piped -- stall!  
+
+it did manage to quit once 
+
+```
+$> git annex find --not --in here --fast | head -n 1
+derivatives/linear_anatomical_alignment/sub-01/ses-forrestgump/func/sub-01_ses-forrestgump_task-forrestgump_rec-XFMdico7Tad2grpbold7Tad_run-01_bold.mat
+git-annex: <stdout>: hFlush: resource vanished (Broken pipe)
+
+```
+
+with system wide installed 10.20250416 but I failed to reproduce
+
+### What steps will reproduce the problem?
+
+FWIW -- above on https://github.com/OpenNeuroDatasets/ds000113.git
+
+
+I didn't check other commands , but they all should behave sane as not to stall if piped !  Would be great if there was a test to ensure that long term.
+
+[[!meta author=yoh]]
+[[!tag projects/openneuro]]

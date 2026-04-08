@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2026-04-01T15:57:20Z"
+ content="""
+I have started a `disableremote` branch that adds a `git-annex
+disableremote` command. That same command will be able to be used
+for `ephemeral=yes`.
+
+As it stands, the command works, but there is some information about the
+remote that it does not remove. I think for this purpose, 
+it needs to at least remove the config uuid of the sameas remote
+from the private remote.log journal file. Otherwise that file will grow
+by one line each time an ephemeral delegate is used.
+
+Removing cached annex creds, etc would also be good, but is not essential; they
+would get overwritten on next use. And, since cached creds use a filename
+based on the uuid, there's actually no way to know if a cached creds is for
+an delegate or are creds used by the external special remote with the
+same uuid. This actually seems like a bit of a bug with --sameas in
+general, that if two sameas remotes both use cached creds, they will clash.
+(Perhaps creds should use the config-uuid.)
+"""]]

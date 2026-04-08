@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="a note on potential use case(s)"
+ date="2026-03-28T12:23:26Z"
+ content="""
+> because noone has requested it
+
+I came to this while considering using git-annex to importtree from rclone.
+
+The use case could be automation of workflow to work with docs on google drive or alike ([docflow](https://github.com/con/docflow)) or even more so for the [con/serve](https://con.github.io/serve/) \"concept\" since people do keep and collaborate via google drives and dropboxes. I do not have (yet) a clear idea on for which funded project this could apply, but it might become relevant/affordable one way or another if we guestimate the amount of work needed.  Also the [protocol enhancement](http://git-annex.branchable.com/design/external_special_remote_protocol/export_and_import_appendix/) for import/export-tree already looks quite thought-through.
+"""]]
