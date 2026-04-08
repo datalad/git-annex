@@ -183,6 +183,11 @@ removeTransferLogs u = do
 	-- transfer log files for transfers that are no longer running.
 	whenM (any foru <$> getTransfers) $
 		error "Active trasfers, cannot disable the remote."
+	forM_ [Upload, Download] $ \direction -> do
+		d <- fromRepo $ gitAnnexTransferUUIDDirectionDir u direction
+		liftIO $ void $ tryNonAsync $ removeDirectory d
+		d' <- fromRepo $ gitAnnexFailedTransferDir u direction
+		liftIO $ void $ tryNonAsync $ removeDirectory d'
 	clearFailedTransfers u
   where
 	foru (t, _) = transferUUID t == u
