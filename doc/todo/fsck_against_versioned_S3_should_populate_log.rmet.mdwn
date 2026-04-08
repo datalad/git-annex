@@ -1,0 +1,55 @@
+More info could be found at fresh [bug report against openneuro.org](https://github.com/OpenNeuroOrg/openneuro/issues/3875) and reproduction helpers in quick&dirty [20260408-noversionid](https://github.com/yarikoptic/20260408-noversionid)
+
+But boils down to the fact that if for some reason (older buggy git-annex used back then?) `git-annex` branch lacks log.rmet entries for files **present** exported on S3, it should populate those .log.rmet entries, but ATM it just fails to `fsck` but then manages to `get`.
+
+```shell
+(git)smaug:/mnt/btrfs/datasets/datalad/tmp/20260408-noversionid/ds000113[master]git
+$> git annex whereis sub-01/ses-auditoryperception/func/sub-01_ses-auditoryperception_task-auditoryperception_run-01_physio.tsv.gz
+whereis sub-01/ses-auditoryperception/func/sub-01_ses-auditoryperception_task-auditoryperception_run-01_physio.tsv.gz (3 copies) 
+        66a7004d-a15e-4764-90cd-54bbd179f74a -- [s3-PRIVATE]
+        b8b60a40-f339-4ddc-b08a-2a6f645bd3ef -- root@8dc3dbd70baf:/datalad/ds001473
+        e28d70a7-9314-4542-a4ce-7d95b862070f -- [s3-PUBLIC]
+ok
+
+$> git annex fsck --from s3-PUBLIC sub-01/ses-auditoryperception/func/sub-01_ses-auditoryperception_task-auditoryperception_run-01_physio.tsv.gz
+fsck sub-01/ses-auditoryperception/func/sub-01_ses-auditoryperception_task-auditoryperception_run-01_physio.tsv.gz 
+  Remote is configured to use versioning, but no S3 version ID is recorded for this key
+(cannot check content) failed
+(recording state in git...)
+fsck: 1 failed
+
+$> git annex whereis sub-01/ses-auditoryperception/func/sub-01_ses-auditoryperception_task-auditoryperception_run-01_physio.tsv.gz              
+whereis sub-01/ses-auditoryperception/func/sub-01_ses-auditoryperception_task-auditoryperception_run-01_physio.tsv.gz (3 copies) 
+        66a7004d-a15e-4764-90cd-54bbd179f74a -- [s3-PRIVATE]
+        b8b60a40-f339-4ddc-b08a-2a6f645bd3ef -- root@8dc3dbd70baf:/datalad/ds001473
+        e28d70a7-9314-4542-a4ce-7d95b862070f -- [s3-PUBLIC]
+ok
+
+$> git annex get sub-01/ses-auditoryperception/func/sub-01_ses-auditoryperception_task-auditoryperception_run-01_physio.tsv.gz
+get sub-01/ses-auditoryperception/func/sub-01_ses-auditoryperception_task-auditoryperception_run-01_physio.tsv.gz (from s3-PRIVATE...) 
+  Remote is configured to use versioning, but no S3 version ID is recorded for this key
+
+  download failed: invalid url
+(Delaying 1s before retrying....)
+
+  Remote is configured to use versioning, but no S3 version ID is recorded for this key
+
+  download failed: invalid url
+(Delaying 2s before retrying....)
+
+  Remote is configured to use versioning, but no S3 version ID is recorded for this key
+
+  download failed: invalid url
+(from s3-PUBLIC...) 
+  Remote is configured to use versioning, but no S3 version ID is recorded for this key
+ok
+
+$> git annex version | head -n 1                                                                                              
+git-annex version: 10.20260316-gf01ba218ffb36e8607516d9895dfaeaeaf101a05
+
+```
+
+Note that there could be multiple versions for the remote file and ideally git-annex does "its best" to figure out which one is the one to use, potentially even downloading them until hitting the matching one unless could associate using ETag etc. (FWIW ETag is deterministic even for multipart uploads, given knowing how upload was chunked. [Here](https://github.com/dandi/dandi-schema/blob/master/dandischema/digests/dandietag.py) our python code could be found.
+
+[[!meta author=yoh]]
+[[!tag projects/openneuro]]
