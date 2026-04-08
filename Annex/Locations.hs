@@ -1,6 +1,6 @@
 {- git-annex file locations
  -
- - Copyright 2010-2025 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2026 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -45,9 +45,11 @@ module Annex.Locations (
 	gitAnnexBadDir,
 	gitAnnexBadLocation,
 	gitAnnexUnusedLog,
+	gitAnnexFsckDbUUIDDir,
 	gitAnnexKeysDbDir,
 	gitAnnexKeysDbLock,
-	gitAnnexFsckState,
+	gitAnnexFsckStateDir,
+	gitAnnexFsckStateFile,
 	gitAnnexFsckDbDir,
 	gitAnnexFsckDbDirOld,
 	gitAnnexFsckDbLock,
@@ -68,6 +70,7 @@ module Annex.Locations (
 	gitAnnexMoveLog,
 	gitAnnexMoveLock,
 	gitAnnexExportDir,
+	gitAnnexExportUUIDDir,
 	gitAnnexExportDbDir,
 	gitAnnexExportLock,
 	gitAnnexExportUpdateLock,
@@ -83,6 +86,10 @@ module Annex.Locations (
 	gitAnnexRepoSizeLiveDir,
 	gitAnnexScheduleState,
 	gitAnnexTransferDir,
+	gitAnnexTransferDirectionDir,
+	gitAnnexTransferUUIDDirectionDir,
+	gitAnnexFailedTransferDir,
+	gitAnnexFailedTransferFile,
 	gitAnnexCredsDir,
 	gitAnnexWebCertificate,
 	gitAnnexWebPrivKey,
@@ -133,11 +140,14 @@ import Types.GitConfig
 import Types.Difference
 import Types.BranchState
 import Types.Export
+import Types.Direction
+import Types.Transfer
 import qualified Git
 import qualified Git.Types as Git
 import Git.FilePath
 import Annex.DirHashes
 import Annex.Fixup
+import qualified Utility.OsString as OS
 
 {- When constructing a path that is usually relative to the
  - .git directory, this can be used to relocate the path to
@@ -410,24 +420,29 @@ gitAnnexKeysDbDir r c =
 gitAnnexKeysDbLock :: Git.Repo -> GitConfig -> OsPath
 gitAnnexKeysDbLock  r c = gitAnnexKeysDbDir r c <> literalOsPath ".lck"
 
-{- .git/annex/fsck/uuid/ is used to store information about incremental
- - fscks. -}
 gitAnnexFsckDir :: UUID -> Git.Repo -> Maybe GitConfig -> OsPath
 gitAnnexFsckDir u r mc = case annexDbDir =<< mc of
 	Nothing -> go (gitAnnexDir r)
 	Just d -> go d
   where
-	go d = d </> literalOsPath "fsck" </> fromUUID u
+	go d = d </> literalOsPath "fsck" </> uuidFile u
 
-{- used to store information about incremental fscks. -}
-gitAnnexFsckState :: UUID -> Git.Repo -> OsPath
-gitAnnexFsckState u r = 
-	gitAnnexFsckDir u r Nothing </> literalOsPath "state"
+{- .git/annex/fsck/uuid/ is used to store state of incremental fscks. -}
+gitAnnexFsckStateDir :: UUID -> Git.Repo -> OsPath
+gitAnnexFsckStateDir u r = gitAnnexFsckDir u r Nothing
+
+{- File that stores state of incremental fscks. -}
+gitAnnexFsckStateFile :: UUID -> Git.Repo -> OsPath
+gitAnnexFsckStateFile u r = gitAnnexFsckStateDir u r </> literalOsPath "state"
+
+{- Per UUID directory containing database used to record fsck info. -}
+gitAnnexFsckDbUUIDDir :: UUID -> Git.Repo -> GitConfig -> OsPath
+gitAnnexFsckDbUUIDDir u r c = gitAnnexFsckDir u r (Just c)
 
 {- Directory containing database used to record fsck info. -}
 gitAnnexFsckDbDir :: UUID -> Git.Repo -> GitConfig -> OsPath
-gitAnnexFsckDbDir u r c = 
-	gitAnnexFsckDir u r (Just c) </> literalOsPath "fsckdb"
+gitAnnexFsckDbDir u r c =
+	gitAnnexFsckDbUUIDDir u r c </> literalOsPath "fsckdb"
 
 {- Directory containing old database used to record fsck info. -}
 gitAnnexFsckDbDirOld :: UUID -> Git.Repo -> GitConfig -> OsPath
@@ -442,7 +457,7 @@ gitAnnexFsckDbLock u r c =
 {- .git/annex/fsckresults/uuid is used to store results of git fscks -}
 gitAnnexFsckResultsLog :: UUID -> Git.Repo -> OsPath
 gitAnnexFsckResultsLog u r = 
-	gitAnnexDir r </> literalOsPath "fsckresults" </> fromUUID u
+	gitAnnexDir r </> literalOsPath "fsckresults" </> uuidFile u
 
 {- .git/annex/upgrade.log is used to record repository version upgrades. -}
 gitAnnexUpgradeLog :: Git.Repo -> OsPath
@@ -507,10 +522,14 @@ gitAnnexExportDir :: Git.Repo -> GitConfig -> OsPath
 gitAnnexExportDir r c = fromMaybe (gitAnnexDir r) (annexDbDir c)
 	</> literalOsPath "export"
 
+{- Per UUID export information directory. -}
+gitAnnexExportUUIDDir :: UUID -> Git.Repo -> GitConfig -> OsPath
+gitAnnexExportUUIDDir u r c = gitAnnexExportDir r c </> uuidFile u
+
 {- Directory containing database used to record export info. -}
 gitAnnexExportDbDir :: UUID -> Git.Repo -> GitConfig -> OsPath
 gitAnnexExportDbDir u r c = 
-	gitAnnexExportDir r c </> fromUUID u </> literalOsPath "exportdb"
+	gitAnnexExportUUIDDir u r c </> literalOsPath "exportdb"
 
 {- Lock file for export database. -}
 gitAnnexExportLock :: UUID -> Git.Repo -> GitConfig -> OsPath
@@ -525,7 +544,7 @@ gitAnnexExportUpdateLock u r c = gitAnnexExportDbDir u r c <> literalOsPath ".up
  - remote, but were excluded by its preferred content settings. -}
 gitAnnexExportExcludeLog :: UUID -> Git.Repo -> OsPath
 gitAnnexExportExcludeLog u r = gitAnnexDir r 
-	</> literalOsPath "export.ex" </> fromUUID u
+	</> literalOsPath "export.ex" </> uuidFile u
 
 {- Directory containing database used to record remote content ids.
  -
@@ -550,7 +569,7 @@ gitAnnexImportDir r c =
 {- File containing state about the last import done from a remote. -}
 gitAnnexImportLog :: UUID -> Git.Repo -> GitConfig -> OsPath
 gitAnnexImportLog u r c =
-	gitAnnexImportDir r c </> fromUUID u </> literalOsPath "log"
+	gitAnnexImportDir r c </> uuidFile u </> literalOsPath "log"
 
 {- Directory containing database used by importfeed. -}
 gitAnnexImportFeedDbDir :: Git.Repo -> GitConfig -> OsPath
@@ -614,6 +633,31 @@ gitAnnexMergeDir r = addTrailingPathSeparator $
 gitAnnexTransferDir :: Git.Repo -> OsPath
 gitAnnexTransferDir r =
 	addTrailingPathSeparator $ gitAnnexDir r </> literalOsPath "transfer"
+
+{- The directory holding transfer information files for a given Direction. -}
+gitAnnexTransferDirectionDir :: Direction -> Git.Repo -> OsPath
+gitAnnexTransferDirectionDir direction r = gitAnnexTransferDir r
+	</> toOsPath (formatDirection direction)
+
+{- The directory holding transfer information files for a given Direction
+ - and UUID. -}
+gitAnnexTransferUUIDDirectionDir :: UUID -> Direction -> Git.Repo -> OsPath
+gitAnnexTransferUUIDDirectionDir u direction r =
+	gitAnnexTransferDirectionDir direction r </> uuidFile u
+
+{- The directory holding failed transfer information files for a given
+ - Direction and UUID -}
+gitAnnexFailedTransferDir :: UUID -> Direction -> Git.Repo -> OsPath
+gitAnnexFailedTransferDir u direction r = gitAnnexTransferDir r
+	</> literalOsPath "failed"
+	</> toOsPath (formatDirection direction)
+	</> uuidFile u
+
+{- The transfer information file to use to record a failed Transfer -}
+gitAnnexFailedTransferFile :: Transfer -> Git.Repo -> OsPath
+gitAnnexFailedTransferFile (Transfer direction u kd) r = 
+	gitAnnexFailedTransferDir u direction r
+		</> keyFile (mkKey (const kd))
 
 {- .git/annex/journal/ is used to journal changes made to the git-annex
  - branch -}
@@ -834,3 +878,10 @@ keyPath key hasher = hasher key </> f </> f
 keyPaths :: Key -> NE.NonEmpty OsPath
 keyPaths key = NE.map (\h -> keyPath key (h def)) dirHashes
 
+{- Converts a UUID into a filename fragement without any directory.
+ -
+ - A UUID never contains '/', so to avoid any possible situation
+ - where an attacker attempts path traversal by a UUID, it is filtered out.
+ -}
+uuidFile :: UUID -> OsPath
+uuidFile u = OS.filter (/= unsafeFromChar '/') (fromUUID u)

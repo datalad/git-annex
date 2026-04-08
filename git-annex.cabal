@@ -640,6 +640,7 @@ Executable git-annex
     Command.Dead
     Command.Describe
     Command.DiffDriver
+    Command.DisableRemote
     Command.Drop
     Command.DropKey
     Command.DropUnused

@@ -21,6 +21,8 @@ module Annex.Branch (
 	forceUpdate,
 	updateTo,
 	get,
+	getLocal,
+	getLocal',
 	getHistorical,
 	getRef,
 	getUnmergedRefs,
@@ -632,17 +634,6 @@ files = do
 			let l = jfs ++ pjfs ++ bfs
 			return (Just (l, cleanup))
 
-{- Lists all files currently in the journal, but not files in the private
- - journal. -}
-journalledFiles :: Annex [OsPath]
-journalledFiles = getJournalledFilesStale gitAnnexJournalDir
-
-journalledFilesPrivate :: Annex [OsPath]
-journalledFilesPrivate = ifM privateUUIDsKnown
-	( getJournalledFilesStale gitAnnexPrivateJournalDir
-	, return []
-	)
-
 {- Files in the branch, not including any from journalled changes,
  - and without updating the branch. -}
 branchFiles :: Annex ([OsPath], IO Bool)
@@ -1006,8 +997,6 @@ data UnmergedBranches t
 	= UnmergedBranches t 
 	| NoUnmergedBranches t
 
-type FileContents t b = Maybe (t, OsPath, Maybe (L.ByteString, Maybe b))
-
 {- Runs an action on the content of selected files from the branch.
  - This is much faster than reading the content of each file in turn,
  - because it lets git cat-file stream content without blocking.
@@ -1065,7 +1054,7 @@ overBranchFileContents' select go st = do
 		Nothing
 			| journalIgnorable st -> return Nothing
 			| otherwise ->
-				overJournalFileContents' buf (handlestale branchsha) select
+				overJournalFileContents' buf False (handlestale branchsha) select
 	res <- catObjectStreamLsTree l (select' . getTopFilePath . Git.LsTree.file) g go'
 		`finally` liftIO (void cleanup)
 	return (res, branchsha)
@@ -1088,56 +1077,6 @@ overBranchFileContents' select go st = do
 combineStaleJournalWithBranch :: L.ByteString -> L.ByteString -> L.ByteString
 combineStaleJournalWithBranch branchcontent journalledcontent =
 	branchcontent <> journalledcontent
-
-{- Like overBranchFileContents but only reads the content of journalled
- - files.
- -}
-overJournalFileContents
-	:: (OsPath -> L.ByteString -> Annex (L.ByteString, Maybe b))
-	-- ^ Called with the journalled file content when the journalled
-	-- content may be stale or lack information committed to the
-	-- git-annex branch.
-	-> (OsPath -> Maybe v)
-	-> (Annex (FileContents v b) -> Annex a)
-	-> Annex a
-overJournalFileContents handlestale select go = do
-	buf <- liftIO newEmptyMVar
-	go $ overJournalFileContents' buf handlestale select
-
-overJournalFileContents'
-	:: MVar ([OsPath], [OsPath])
-	-> (OsPath -> L.ByteString -> Annex (L.ByteString, Maybe b))
-	-> (OsPath -> Maybe a)
-	-> Annex (FileContents a b)
-overJournalFileContents' buf handlestale select =
-	liftIO (tryTakeMVar buf) >>= \case
-		Nothing -> do
-			jfs <- journalledFiles
-			pjfs <- journalledFilesPrivate
-			drain jfs pjfs
-		Just (jfs, pjfs) -> drain jfs pjfs
-  where
-	drain fs pfs = case getnext fs pfs of
-		Just (v, f, fs', pfs') -> do
-			liftIO $ putMVar buf (fs', pfs')
-			content <- getJournalFileStale (GetPrivate True) f >>= \case
-				NoJournalledContent -> return Nothing
-				JournalledContent journalledcontent ->
-					return (Just (journalledcontent, Nothing))
-				PossiblyStaleJournalledContent journalledcontent ->
-					Just <$> handlestale f journalledcontent
-			return (Just (v, f, content))
-		Nothing -> do
-			liftIO $ putMVar buf ([], [])
-			return Nothing
-	
-	getnext [] [] = Nothing
-	getnext (f:fs) pfs = case select f of
-		Nothing -> getnext fs pfs
-		Just v -> Just (v, f, fs, pfs)
-	getnext [] (pf:pfs) = case select pf of
-		Nothing -> getnext [] pfs
-		Just v -> Just (v, pf, [], pfs)
 
 {- Check if the git-annex branch has been updated from the oldtree.
  - If so, returns the tuple of the old and new trees. -}
