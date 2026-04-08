@@ -148,7 +148,7 @@ The following requests *must* all be supported by the special remote.
     this lets it offload that work to git-annex. This response is a protocol
     extension; it's only safe to send it to git-annex after it sent an
     `EXTENSIONS` that included `TRANSFER-RETRIEVE-URL`.
-  * `DELEGATE type=value ephemeral=yes|no [params]`  
+  * `DELEGATE type=value [params]`  
     Delegate this request to a different type of special remote.
     See [[delegate_appendix]].
 * `CHECKPRESENT Key`  
@@ -170,7 +170,7 @@ The following requests *must* all be supported by the special remote.
     this lets it offload that work to git-annex. This response is a protocol
     extension; it's only safe to send it to git-annex after it sent an
     `EXTENSIONS` that included `CHECKPRESENT-URL`.
-  * `DELEGATE type=value ephemeral=yes|no [params]`  
+  * `DELEGATE type=value [params]`  
     Delegate this request to a different type of special remote.
     See [[delegate_appendix]].
 * `REMOVE Key`  
@@ -180,7 +180,7 @@ The following requests *must* all be supported by the special remote.
     the remote didn't have the key at the point removal was requested.
   * `REMOVE-FAILURE Key ErrorMsg`  
     Indicates that the key was unable to be removed from the remote.
-  * `DELEGATE type=value ephemeral=yes|no [params]`  
+  * `DELEGATE type=value [params]`  
     Delegate this request to a different type of special remote.
     See [[delegate_appendix]].
 
@@ -288,7 +288,7 @@ the special remote can reply with `UNSUPPORTED-REQUEST`.
     Indicates that no location is known for a key.
     This is not needed when `SETURIPRESENT` is used, since such uris are
     automatically displayed by `git annex whereis`.  
-  * `DELEGATE type=value ephemeral=yes|no [params]`  
+  * `DELEGATE type=value [params]`  
     Delegate this request to a different type of special remote.
     See [[delegate_appendix]].
 * `GETINFO`  
