@@ -20,9 +20,6 @@ use with the `git-annex enableremote` command.
 When `git-annex initremote --private` was used to initialize a private
 remote, disabling it also removes its information from the private journal.
 
-Note that this does not currently delete any cached credentials for a
-special remote or P2P peer. That may be improved in the future.
-
 # OPTIONS
 
 * `--json`

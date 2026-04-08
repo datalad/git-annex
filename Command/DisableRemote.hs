@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Command.DisableRemote where
 
 import Command
@@ -27,6 +29,7 @@ import qualified Database.Export
 import qualified Database.Fsck
 import qualified Database.RepoSize
 import qualified Database.ContentIdentifier
+import qualified Utility.OsString as OS
 
 import Data.ByteString.Builder
 import qualified Data.Map as M
@@ -73,10 +76,7 @@ start (remotename:[]) = byName' remotename >>= \case
 	
 			removeFsckState (uuid r)
 			removeImportLog (uuid r)
-
-			-- It would be good to remove cred files, but there
-			-- is currently no way to list cred files belonging
-			-- to a remote, or even to a UUID.
+			removeCredFiles (uuid r)
 		
 		inRepo $ Git.Remote.Remove.remove remotename
 		removeRemoteTrackingBranches remotename
@@ -187,3 +187,18 @@ removeTransferLogs u = do
   where
 	foru (t, _) = transferUUID t == u
 
+removeCredFiles :: UUID -> Annex ()
+removeCredFiles u = do
+	d <- fromRepo gitAnnexCredsDir
+	liftIO $ whenM (doesDirectoryExist d) $ do
+		mapM_ (removeWhenExistsWith removeFile)
+			=<< filter foru <$> dirContents d
+  where
+	us = fromUUID u
+
+	-- Remotes that use creds always include their UUID as part of the
+	-- filename. However, some remotes (Remote.External) need more than
+	-- one creds file, and add a "-foo" suffix to the UUID.
+	foru p = 
+		let f = takeFileName p
+		in f == us || (us <> literalOsPath "-") `OS.isPrefixOf` f
