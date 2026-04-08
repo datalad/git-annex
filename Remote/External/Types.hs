@@ -74,6 +74,7 @@ data External = External
 	, externalRemoteName :: Maybe RemoteName 
 	, externalRemoteStateHandle :: Maybe RemoteStateHandle
 	, externalAsync :: TMVar ExternalAsync
+	, externalDelegates :: TMVar [(RemoteName, Bool)]
 	}
 
 newExternal :: ExternalProgram -> Maybe UUID -> ParsedRemoteConfig -> Maybe RemoteGitConfig -> Maybe RemoteName -> Maybe RemoteStateHandle -> Annex External
@@ -87,6 +88,7 @@ newExternal p u c gc rn rs = liftIO $ External
 	<*> pure rn
 	<*> pure rs
 	<*> atomically (newTMVar UncheckedExternalAsync)
+	<*> atomically (newTMVar [])
 
 data ExternalProgram
 	= ExternalType String

@@ -523,6 +523,7 @@ Executable git-annex
     Annex.Debug.Utility
     Annex.Difference
     Annex.DirHashes
+    Annex.DisableRemote
     Annex.Drop
     Annex.Environment
     Annex.Export

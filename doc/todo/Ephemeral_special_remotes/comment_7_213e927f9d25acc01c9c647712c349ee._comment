@@ -30,7 +30,7 @@ I think it could be used at any point.
 > How expensive could INITASPECT be? Would it (immediately) trigger init/prepare of the aspect-remote?
 
 As expensive as `git-annex initremote` initially, but subsequenty close to
-a noop when the remote configuration includes emphemeral=no
+a noop when the remote configuration includes ephemeral=no
 
 Also, calling it repeatedly in the same session with the same configuration
 should be a noop after the first time. So you could call it immediately

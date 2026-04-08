@@ -43,6 +43,7 @@ import Annex.Content
 import Annex.Url
 import Annex.UUID
 import Annex.Verify
+import Annex.DisableRemote
 import Creds
 
 import Control.Concurrent.STM
@@ -795,9 +796,11 @@ startExternal' external = do
 		giveup ("unable to use external special remote " ++ externalcmd)
 
 stopExternal :: External -> Annex ()
-stopExternal external = liftIO $ do
-	l <- atomically $ swapTVar (externalState external) []
-	mapM_ (flip externalShutdown False) l
+stopExternal external = do
+	liftIO $ do
+		l <- atomically $ swapTVar (externalState external) []
+		mapM_ (flip externalShutdown False) l
+	removeEphemeralDelegates external
 
 checkVersion :: ExternalState -> RemoteRequest -> Maybe (Annex ())
 checkVersion st (VERSION v) = Just $
@@ -1019,13 +1022,34 @@ remoteConfigParser externalprogram c
 
 getDelegateRemote :: External -> [String] -> Annex Remote
 getDelegateRemote external ps = do
-	rs <- Annex.getState Annex.remotes
-	case filter (\r -> name r == delegatename) rs of
-		(r:_) -> return r
-		_ -> case externalUUID external of
-			Just externalu -> gendelegate externalu
-			Nothing -> error "internal"
+	ds <- liftIO $ atomically $ takeTMVar $ externalDelegates external
+	tryNonAsync go >>= \case
+		Left err -> do
+			liftIO $ atomically $ putTMVar (externalDelegates external) ds
+			throwM err
+		Right r -> do
+			let ds' = if any (== (delegatename, isephemeral)) ds
+				then ds
+				else (delegatename, isephemeral) : ds
+			liftIO $ atomically $ putTMVar (externalDelegates external) ds'
+			return r
   where
+	go = do
+		rs <- Annex.getState Annex.remotes
+		case filter (\r -> name r == delegatename) rs of
+			(r:_) -> return r
+			_ -> case externalUUID external of
+				Just externalu -> gendelegate externalu
+				Nothing -> error "internal"
+
+	(ps', isephemeral) = checkephemeral ps [] False
+
+	checkephemeral [] c b = (reverse c, b)
+	checkephemeral (p:rest) c b
+		| p == "ephemeral=yes" = checkephemeral rest c True
+		| p == "ephemeral=no" = checkephemeral rest c False
+		| otherwise = checkephemeral rest (p:c) b
+
 	-- Hash the configuration of the delegate remote, so
 	-- re-using the same configuration yields the same name.
 	delegatename = concat
@@ -1036,7 +1060,7 @@ getDelegateRemote external ps = do
 	
 	gendelegate externalu = do
 		c <- newConfig delegatename (Just (Sameas externalu))
-			(keyValToConfig Proposed ps)
+			(keyValToConfig Proposed ps')
 			<$> remoteConfigMap
 		remotetypes <- Annex.getState Annex.remotetypes
 		t <- either giveup return (findType' remotetypes c)
@@ -1062,3 +1086,23 @@ getDelegateRemote external ps = do
 			{ Annex.remotes = r : Annex.remotes s
 			}
 		return r
+
+removeEphemeralDelegates :: External -> Annex ()
+removeEphemeralDelegates external = bracket get clear go
+  where
+	get = liftIO $ atomically $ 
+		takeTMVar $ externalDelegates external
+	clear _ = liftIO $ atomically $ 
+		putTMVar (externalDelegates external) []
+	go ds = forM_ (map fst $ filter snd ds) $ \delegatename -> do
+		rs <- Annex.getState Annex.remotes
+		case filter (\r -> name r == delegatename) rs of
+			(r:_) -> disable r delegatename rs
+			_ -> return ()
+	disable r delegatename rs = 
+		tryNonAsync (disableRemote r delegatename rs) >>= \case
+			Right () -> return ()
+			Left err -> do
+				warning $ UnquotedString $ 
+					"Unable to remove ephemeral delegate remote " ++ delegatename ++ ": " ++ show err
+				return ()
