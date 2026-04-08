@@ -59,7 +59,7 @@ a request, it can reply with `UNSUPPORTED-REQUEST`.
     this lets it offload that work to git-annex. This response is a
     protocol extension; it's only safe to send it to git-annex after
     it sent an `EXTENSIONS` that included `TRANSFER-RETRIEVE-URL`.
-  * `DELEGATE type=value [params]`  
+  * `DELEGATE type=value emphemeral=yes|no [params]`  
     Delegate this request to a different type of special remote.
     See [[delegate_appendix]].
 * `CHECKPRESENTEXPORT Key`  
@@ -79,7 +79,7 @@ a request, it can reply with `UNSUPPORTED-REQUEST`.
     this lets it offload that work to git-annex. This response is a protocol
     extension; it's only safe to send it to git-annex after it sent an
     `EXTENSIONS` that included `CHECKPRESENT-URL`.
-  * `DELEGATE type=value [params]`  
+  * `DELEGATE type=value emphemeral=yes|no [params]`  
     Delegate this request to a different type of special remote.
     See [[delegate_appendix]].
 * `REMOVEEXPORT Key`  
@@ -90,7 +90,7 @@ a request, it can reply with `UNSUPPORTED-REQUEST`.
     the content was already not present.
   * `REMOVE-FAILURE Key ErrorMsg`  
     Indicates that the content was unable to be removed from the remote.
-  * `DELEGATE type=value [params]`  
+  * `DELEGATE type=value emphemeral=yes|no [params]`  
     Delegate this request to a different type of special remote.
     See [[delegate_appendix]].
 * `REMOVEEXPORTDIRECTORY Directory`  
@@ -107,7 +107,7 @@ a request, it can reply with `UNSUPPORTED-REQUEST`.
   * `REMOVEEXPORTDIRECTORY-FAILURE`  
     Indicates that a `REMOVEEXPORTDIRECTORY` failed for whatever reason.
     Should not be returned if the directory did not exist.
-  * `DELEGATE type=value [params]`  
+  * `DELEGATE type=value emphemeral=yes|no [params]`  
     Delegate this request to a different type of special remote.
     See [[delegate_appendix]].
 * `RENAMEEXPORT Key NewName`  
@@ -118,7 +118,7 @@ a request, it can reply with `UNSUPPORTED-REQUEST`.
     Indicates that a `RENAMEEXPORT` was done successfully.
   * `RENAMEEXPORT-FAILURE Key`  
     Indicates that a `RENAMEEXPORT` failed for whatever reason.
-  * `DELEGATE type=value [params]`  
+  * `DELEGATE type=value emphemeral=yes|no [params]`  
     Delegate this request to a different type of special remote.
     See [[delegate_appendix]].
 
