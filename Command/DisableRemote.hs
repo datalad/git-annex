@@ -161,6 +161,7 @@ cleanPrivateJournal r uniqueuuid
 removeFsckState :: UUID -> Annex ()
 removeFsckState u = do
 	d <- fromRepo (gitAnnexFsckStateDir u)
-	liftIO $ void $ tryNonAsync $ removeDirectoryRecursive d
+	liftIO $ whenM (doesDirectoryExist d) $
+		removeDirectoryRecursive d
 	f <- fromRepo (gitAnnexFsckResultsLog u)
 	liftIO $ removeWhenExistsWith removeFile f

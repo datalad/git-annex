@@ -88,7 +88,7 @@ removeDb u = do
 	lck <- calcRepo' (gitAnnexFsckDbLock u)
 	withExclusiveLock lck $ do
 		dir <- calcRepo' (gitAnnexFsckDbUUIDDir u)
-		liftIO $ void $ tryNonAsync $
+		liftIO $ whenM (doesDirectoryExist dir) $
 			removeDirectoryRecursive dir
 		liftIO $ void $ tryNonAsync $
 			removeWhenExistsWith removeFile lck
