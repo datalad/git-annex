@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="others stall too -- workaround <()"
+ date="2026-04-08T14:42:59Z"
+ content="""
+well -- head also stalls
+
+```
+smaug:/tmp/ds000113
+$> git annex list | head
+here
+|origin
+||s3-PRIVATE
+|||s3-PUBLIC
+||||web
+|||||bittorrent
+||||||
+___X__ derivatives/linear_anatomical_alignment/sub-01/ses-forrestgump/func/sub-01_ses-forrestgump_task-forrestgump_rec-XFMdico7Tad2grpbold7Tad_run-01_bold.mat
+___X__ derivatives/linear_anatomical_alignment/sub-01/ses-forrestgump/func/sub-01_ses-forrestgump_task-forrestgump_rec-XFMdico7Tad2grpbold7Tad_run-02_bold.mat
+___X__ derivatives/linear_anatomical_alignment/sub-01/ses-forrestgump/func/sub-01_ses-forrestgump_task-forrestgump_rec-XFMdico7Tad2grpbold7Tad_run-03_bold.mat
+
+```
+
+workaround 
+
+
+```
+*$> head -n1 <(git-annex find --not --in here --fast)
+derivatives/linear_anatomical_alignment/sub-01/ses-forrestgump/func/sub-01_ses-forrestgump_task-forrestgump_rec-XFMdico7Tad2grpbold7Tad_run-01_bold.mat
+```
+
+"""]]
