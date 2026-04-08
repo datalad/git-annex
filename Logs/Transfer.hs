@@ -1,6 +1,6 @@
 {- git-annex transfer information files and lock files
  -
- - Copyright 2012-2024 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2026 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -187,16 +187,21 @@ getFailedTransfers u = catMaybes <$> (liftIO . getpairs =<< concat <$> findfiles
 	findfiles = liftIO . mapM (emptyWhenDoesNotExist . dirContentsRecursive)
 		=<< mapM (fromRepo . failedTransferDir u) [Download, Upload]
 
-clearFailedTransfers :: UUID -> Annex [(Transfer, TransferInfo)]
+clearFailedTransfers :: UUID -> Annex ()
 clearFailedTransfers u = do
 	failed <- getFailedTransfers u
 	mapM_ (removeFailedTransfer . fst) failed
+
+tryClearFailedTransfers :: UUID -> Annex [(Transfer, TransferInfo)]
+tryClearFailedTransfers u = do
+	failed <- getFailedTransfers u
+	mapM_ (tryIO . removeFailedTransfer . fst) failed
 	return failed
 
 removeFailedTransfer :: Transfer -> Annex ()
 removeFailedTransfer t = do
 	f <- fromRepo $ failedTransferFile t
-	liftIO $ void $ tryIO $ removeFile f
+	liftIO $ removeWhenExistsWith removeFile f
 
 recordFailedTransfer :: Transfer -> TransferInfo -> Annex ()
 recordFailedTransfer t info = do

@@ -21,6 +21,8 @@ import Types.Transitions
 import Logs
 import Logs.Remote.Pure
 import Logs.MapLog
+import Logs.Transfer
+import Types.Transfer
 import qualified Database.Export
 import qualified Database.Fsck
 import qualified Database.RepoSize
@@ -49,6 +51,11 @@ start (remotename:[]) = byName' remotename >>= \case
 			. any (\r' -> uuid r' == uuid r && name r' /= name r)
 			<$> remoteList
 		
+		when uniqueuuid $
+			-- If there are transfers to/from the remote still
+			-- running, this fails. That's why it's run early.
+			removeTransferLogs (uuid r)
+		
 		cleanPrivateJournal r uniqueuuid
 
 		when uniqueuuid $ do
@@ -65,8 +72,7 @@ start (remotename:[]) = byName' remotename >>= \case
 				Database.ContentIdentifier.removeUUID (uuid r) True
 	
 			removeFsckState (uuid r)
-
-			-- It would be good to remove transfer logs
+			removeImportLog (uuid r)
 
 			-- It would be good to remove cred files, but there
 			-- is currently no way to list cred files belonging
@@ -165,3 +171,19 @@ removeFsckState u = do
 		removeDirectoryRecursive d
 	f <- fromRepo (gitAnnexFsckResultsLog u)
 	liftIO $ removeWhenExistsWith removeFile f
+
+removeImportLog :: UUID -> Annex ()
+removeImportLog u = do
+	f <- calcRepo' (gitAnnexImportLog u)
+	liftIO $ removeWhenExistsWith removeFile f
+	
+removeTransferLogs :: UUID -> Annex ()
+removeTransferLogs u = do
+	-- getTransfers calls checkTransfer, which cleans up
+	-- transfer log files for transfers that are no longer running.
+	whenM (any foru <$> getTransfers) $
+		error "Active trasfers, cannot disable the remote."
+	clearFailedTransfers u
+  where
+	foru (t, _) = transferUUID t == u
+
