@@ -87,9 +87,9 @@ removeDb :: UUID -> Annex ()
 removeDb u = do
 	lck <- calcRepo' (gitAnnexFsckDbLock u)
 	withExclusiveLock lck $ do
-		dbdir <- calcRepo' (gitAnnexFsckDbDir u)
+		dir <- calcRepo' (gitAnnexFsckDbUUIDDir u)
 		liftIO $ void $ tryNonAsync $
-			removeDirectoryRecursive dbdir
+			removeDirectoryRecursive dir
 		liftIO $ void $ tryNonAsync $
 			removeWhenExistsWith removeFile lck
 

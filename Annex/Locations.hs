@@ -45,9 +45,11 @@ module Annex.Locations (
 	gitAnnexBadDir,
 	gitAnnexBadLocation,
 	gitAnnexUnusedLog,
+	gitAnnexFsckDbUUIDDir,
 	gitAnnexKeysDbDir,
 	gitAnnexKeysDbLock,
-	gitAnnexFsckState,
+	gitAnnexFsckStateDir,
+	gitAnnexFsckStateFile,
 	gitAnnexFsckDbDir,
 	gitAnnexFsckDbDirOld,
 	gitAnnexFsckDbLock,
@@ -68,6 +70,7 @@ module Annex.Locations (
 	gitAnnexMoveLog,
 	gitAnnexMoveLock,
 	gitAnnexExportDir,
+	gitAnnexExportUUIDDir,
 	gitAnnexExportDbDir,
 	gitAnnexExportLock,
 	gitAnnexExportUpdateLock,
@@ -410,8 +413,6 @@ gitAnnexKeysDbDir r c =
 gitAnnexKeysDbLock :: Git.Repo -> GitConfig -> OsPath
 gitAnnexKeysDbLock  r c = gitAnnexKeysDbDir r c <> literalOsPath ".lck"
 
-{- .git/annex/fsck/uuid/ is used to store information about incremental
- - fscks. -}
 gitAnnexFsckDir :: UUID -> Git.Repo -> Maybe GitConfig -> OsPath
 gitAnnexFsckDir u r mc = case annexDbDir =<< mc of
 	Nothing -> go (gitAnnexDir r)
@@ -419,15 +420,22 @@ gitAnnexFsckDir u r mc = case annexDbDir =<< mc of
   where
 	go d = d </> literalOsPath "fsck" </> fromUUID u
 
-{- used to store information about incremental fscks. -}
-gitAnnexFsckState :: UUID -> Git.Repo -> OsPath
-gitAnnexFsckState u r = 
-	gitAnnexFsckDir u r Nothing </> literalOsPath "state"
+{- .git/annex/fsck/uuid/ is used to store state of incremental fscks. -}
+gitAnnexFsckStateDir :: UUID -> Git.Repo -> OsPath
+gitAnnexFsckStateDir u r = gitAnnexFsckDir u r Nothing
+
+{- File that stores state of incremental fscks. -}
+gitAnnexFsckStateFile :: UUID -> Git.Repo -> OsPath
+gitAnnexFsckStateFile u r = gitAnnexFsckStateDir u r </> literalOsPath "state"
+
+{- Per UUID directory containing database used to record fsck info. -}
+gitAnnexFsckDbUUIDDir :: UUID -> Git.Repo -> GitConfig -> OsPath
+gitAnnexFsckDbUUIDDir u r c = gitAnnexFsckDir u r (Just c)
 
 {- Directory containing database used to record fsck info. -}
 gitAnnexFsckDbDir :: UUID -> Git.Repo -> GitConfig -> OsPath
-gitAnnexFsckDbDir u r c = 
-	gitAnnexFsckDir u r (Just c) </> literalOsPath "fsckdb"
+gitAnnexFsckDbDir u r c =
+	gitAnnexFsckDbUUIDDir u r c </> literalOsPath "fsckdb"
 
 {- Directory containing old database used to record fsck info. -}
 gitAnnexFsckDbDirOld :: UUID -> Git.Repo -> GitConfig -> OsPath
@@ -507,10 +515,14 @@ gitAnnexExportDir :: Git.Repo -> GitConfig -> OsPath
 gitAnnexExportDir r c = fromMaybe (gitAnnexDir r) (annexDbDir c)
 	</> literalOsPath "export"
 
+{- Per UUID export information directory. -}
+gitAnnexExportUUIDDir :: UUID -> Git.Repo -> GitConfig -> OsPath
+gitAnnexExportUUIDDir u r c = gitAnnexExportDir r c </> fromUUID u
+
 {- Directory containing database used to record export info. -}
 gitAnnexExportDbDir :: UUID -> Git.Repo -> GitConfig -> OsPath
 gitAnnexExportDbDir u r c = 
-	gitAnnexExportDir r c </> fromUUID u </> literalOsPath "exportdb"
+	gitAnnexExportUUIDDir u r c </> literalOsPath "exportdb"
 
 {- Lock file for export database. -}
 gitAnnexExportLock :: UUID -> Git.Repo -> GitConfig -> OsPath

@@ -55,10 +55,6 @@ start (remotename:[]) = byName' remotename >>= \case
 			-- Each uuid has its own export and fsck database,
 			-- so always remove them, so long as this is the
 			-- only remote using this uuid.
-			--
-			-- FIXME: These leave behind the
-			-- .git/annex/export/<UUID> and
-			-- .git/annex/fsck/<UUID> directories
 			Database.Export.removeDb (uuid r)
 			Database.Fsck.removeDb (uuid r)
 			-- These databases are updated from information
@@ -68,6 +64,8 @@ start (remotename:[]) = byName' remotename >>= \case
 				Database.RepoSize.removeUUID (uuid r)
 				Database.ContentIdentifier.removeUUID (uuid r) True
 	
+			removeFsckState (uuid r)
+
 			-- It would be good to remove transfer logs
 
 			-- It would be good to remove cred files, but there
@@ -160,3 +158,9 @@ cleanPrivateJournal r uniqueuuid
 					then deleteJournalFile jl ru p
 					else setJournalFile jl ru p builder
 
+removeFsckState :: UUID -> Annex ()
+removeFsckState u = do
+	d <- fromRepo (gitAnnexFsckStateDir u)
+	liftIO $ void $ tryNonAsync $ removeDirectoryRecursive d
+	f <- fromRepo (gitAnnexFsckResultsLog u)
+	liftIO $ removeWhenExistsWith removeFile f

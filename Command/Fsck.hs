@@ -702,7 +702,7 @@ recordFsckTime inc key = withFsckDb inc $ \h -> liftIO $ FsckDb.addDb h key
  -}
 recordStartTime :: UUID -> Annex ()
 recordStartTime u = do
-	f <- fromRepo (gitAnnexFsckState u)
+	f <- fromRepo (gitAnnexFsckStateFile u)
 	createAnnexDirectory $ parentDir f
 	liftIO $ removeWhenExistsWith removeFile f
 	liftIO $ F.withFile f WriteMode $ \h -> do
@@ -719,12 +719,12 @@ recordStartTime u = do
 
 resetStartTime :: UUID -> Annex ()
 resetStartTime u = liftIO . removeWhenExistsWith removeFile
-	=<< fromRepo (gitAnnexFsckState u)
+	=<< fromRepo (gitAnnexFsckStateFile u)
 
 {- Gets the incremental fsck start time. -}
 getStartTime :: UUID -> Annex (Maybe EpochTime)
 getStartTime u = do
-	f <- fromRepo (gitAnnexFsckState u)
+	f <- fromRepo (gitAnnexFsckStateFile u)
 	liftIO $ catchDefaultIO Nothing $ do
 		timestamp <- modificationTime <$> R.getFileStatus (fromOsPath f)
 		let fromstatus = Just (realToFrac timestamp)

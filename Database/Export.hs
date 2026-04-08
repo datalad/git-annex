@@ -108,8 +108,8 @@ closeDb (ExportHandle h _) = liftIO $ H.closeDbQueue h
 
 removeDb :: UUID -> Annex ()
 removeDb u = writeLockDbWhile' u (const noop) noop $ do
-	dbdir <- calcRepo' (gitAnnexExportDbDir u)
-	void $ liftIO $ tryNonAsync $ removeDirectoryRecursive dbdir
+	uuiddir <- calcRepo' (gitAnnexExportUUIDDir u)
+	void $ liftIO $ tryNonAsync $ removeDirectoryRecursive uuiddir
 	updatelck <- calcRepo' (gitAnnexExportUpdateLock u)
 	exlck <- calcRepo' (gitAnnexExportLock u)
 	void $ liftIO $ tryNonAsync $ do
