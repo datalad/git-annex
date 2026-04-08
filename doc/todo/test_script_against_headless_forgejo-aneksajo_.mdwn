@@ -1,0 +1,19 @@
+The need came up in the scope of trying to extend datalad-fuse to support forgejo-aneksajo ([AI assisted PR, look at your discretion](https://github.com/datalad/datalad-fuse/pull/127/changes)). There, to test, I would like to establish test fixture which would be used in tests to test interactions against containerized `codeberg.org/forgejo-aneksajo/forgejo-aneksajo:forgejo-rootless` instance .  But I failed to programmatically establish the flow to make git-annex authenticate there even with some drums and bells.  
+
+So I thought if you have some basic shell script (not copy/paste of a manual execution since I think there might be some races I am confronting with) which could reliably demonstrate sequence of commands to 
+
+- boot up fresh forgejo-rootless (e.g. using podman)
+- create basic account there
+- create or push (to create) repo
+- clone it locally (so it gets recognized as git-annex repo)
+- add file under annex
+- git push and git-annex copy annexed file (so authentication should work out) to forgejo-rootless
+
+would be greatly appreciated.  
+
+It would allow us to establish local forgejo+aneksjo for testing of datalad-fuse (and other components) which would then use to access remote on forgejo instances openneuro preprocessed datasets.
+
+[[!meta author=yoh]]
+[[!tag projects/openneuro]]
+
+
