@@ -1,6 +1,6 @@
 {- git-annex file locations
  -
- - Copyright 2010-2025 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2026 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -86,6 +86,10 @@ module Annex.Locations (
 	gitAnnexRepoSizeLiveDir,
 	gitAnnexScheduleState,
 	gitAnnexTransferDir,
+	gitAnnexTransferDirectionDir,
+	gitAnnexTransferUUIDDirectionDir,
+	gitAnnexFailedTransferDir,
+	gitAnnexFailedTransferFile,
 	gitAnnexCredsDir,
 	gitAnnexWebCertificate,
 	gitAnnexWebPrivKey,
@@ -136,11 +140,14 @@ import Types.GitConfig
 import Types.Difference
 import Types.BranchState
 import Types.Export
+import Types.Direction
+import Types.Transfer
 import qualified Git
 import qualified Git.Types as Git
 import Git.FilePath
 import Annex.DirHashes
 import Annex.Fixup
+import qualified Utility.OsString as OS
 
 {- When constructing a path that is usually relative to the
  - .git directory, this can be used to relocate the path to
@@ -626,6 +633,32 @@ gitAnnexMergeDir r = addTrailingPathSeparator $
 gitAnnexTransferDir :: Git.Repo -> OsPath
 gitAnnexTransferDir r =
 	addTrailingPathSeparator $ gitAnnexDir r </> literalOsPath "transfer"
+
+{- The directory holding transfer information files for a given Direction. -}
+gitAnnexTransferDirectionDir :: Direction -> Git.Repo -> OsPath
+gitAnnexTransferDirectionDir direction r = gitAnnexTransferDir r
+	</> toOsPath (formatDirection direction)
+
+{- The directory holding transfer information files for a given Direction
+ - and UUID. -}
+gitAnnexTransferUUIDDirectionDir :: UUID -> Direction -> Git.Repo -> OsPath
+gitAnnexTransferUUIDDirectionDir u direction r =
+	gitAnnexTransferDirectionDir direction r
+		</> OS.filter (/= unsafeFromChar '/') (fromUUID u)
+
+{- The directory holding failed transfer information files for a given
+ - Direction and UUID -}
+gitAnnexFailedTransferDir :: UUID -> Direction -> Git.Repo -> OsPath
+gitAnnexFailedTransferDir u direction r = gitAnnexTransferDir r
+	</> literalOsPath "failed"
+	</> toOsPath (formatDirection direction)
+	</> OS.filter (/= unsafeFromChar '/') (fromUUID u)
+
+{- The transfer information file to use to record a failed Transfer -}
+gitAnnexFailedTransferFile :: Transfer -> Git.Repo -> OsPath
+gitAnnexFailedTransferFile (Transfer direction u kd) r = 
+	gitAnnexFailedTransferDir u direction r
+		</> keyFile (mkKey (const kd))
 
 {- .git/annex/journal/ is used to journal changes made to the git-annex
  - branch -}

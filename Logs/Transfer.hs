@@ -158,7 +158,7 @@ getTransfers' dirs wanted = do
 	return $ mapMaybe running $ zip transfers infos
   where
 	findfiles = liftIO . mapM (emptyWhenDoesNotExist . dirContentsRecursive)
-		=<< mapM (fromRepo . transferDir) dirs
+		=<< mapM (fromRepo . gitAnnexTransferDirectionDir) dirs
 	running (t, Just i) = Just (t, i)
 	running (_, Nothing) = Nothing
 
@@ -185,7 +185,7 @@ getFailedTransfers u = catMaybes <$> (liftIO . getpairs =<< concat <$> findfiles
 			(Just t, Just i) -> Just (t, i)
 			_ -> Nothing
 	findfiles = liftIO . mapM (emptyWhenDoesNotExist . dirContentsRecursive)
-		=<< mapM (fromRepo . failedTransferDir u) [Download, Upload]
+		=<< mapM (fromRepo . gitAnnexFailedTransferDir u) [Download, Upload]
 
 clearFailedTransfers :: UUID -> Annex ()
 clearFailedTransfers u = do
@@ -200,12 +200,12 @@ tryClearFailedTransfers u = do
 
 removeFailedTransfer :: Transfer -> Annex ()
 removeFailedTransfer t = do
-	f <- fromRepo $ failedTransferFile t
+	f <- fromRepo $ gitAnnexFailedTransferFile t
 	liftIO $ removeWhenExistsWith removeFile f
 
 recordFailedTransfer :: Transfer -> TransferInfo -> Annex ()
 recordFailedTransfer t info = do
-	failedtfile <- fromRepo $ failedTransferFile t
+	failedtfile <- fromRepo $ gitAnnexFailedTransferFile t
 	writeTransferInfoFile info failedtfile
 
 {- The transfer information file and transfer lock file 
@@ -234,19 +234,12 @@ transferFileAndLockFile (Transfer direction u kd) r =
 		Upload -> (transferfile, uuidlockfile, Nothing)
 		Download -> (transferfile, nouuidlockfile, Just uuidlockfile)
   where
-	td = transferDir direction r
-	fu = OS.filter (/= unsafeFromChar '/') (fromUUID u)
+	td = gitAnnexTransferUUIDDirectionDir u direction r
 	kf = keyFile (mkKey (const kd))
 	lckkf = literalOsPath "lck." <> kf
-	transferfile = td </> fu </> kf
-	uuidlockfile = td </> fu </> lckkf
-	nouuidlockfile = td </> literalOsPath "lck" </> lckkf
-
-{- The transfer information file to use to record a failed Transfer -}
-failedTransferFile :: Transfer -> Git.Repo -> OsPath
-failedTransferFile (Transfer direction u kd) r = 
-	failedTransferDir u direction r
-		</> keyFile (mkKey (const kd))
+	transferfile = td </> kf
+	uuidlockfile = td </> lckkf
+	nouuidlockfile = gitAnnexTransferDirectionDir direction r </> literalOsPath "lck" </> lckkf
 
 {- Parses a transfer information filename to a Transfer. -}
 parseTransferFile :: OsPath -> Maybe Transfer
@@ -332,20 +325,6 @@ readTransferInfo mpid s = TransferInfo
 	bytes = if numbits > 1
 		then Just <$> readish =<< headMaybe (drop 1 bits)
 		else pure Nothing -- not failure
-
-{- The directory holding transfer information files for a given Direction. -}
-transferDir :: Direction -> Git.Repo -> OsPath
-transferDir direction r = 
-	gitAnnexTransferDir r
-		</> toOsPath (formatDirection direction)
-
-{- The directory holding failed transfer information files for a given
- - Direction and UUID -}
-failedTransferDir :: UUID -> Direction -> Git.Repo -> OsPath
-failedTransferDir u direction r = gitAnnexTransferDir r
-	</> literalOsPath "failed"
-	</> toOsPath (formatDirection direction)
-	</> OS.filter (/= unsafeFromChar '/') (fromUUID u)
 
 prop_read_write_transferinfo :: TransferInfo -> Bool
 prop_read_write_transferinfo info
