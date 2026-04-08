@@ -12,3 +12,5 @@ A use case would be to have an "orchestration" special remotes that maybe repres
 in some way also an alternative to the `sameas` approach, where the alternatives are hidden in the implementation of a special remote, rather than in *each* repository.
 
 [[!tag projects/INM7]]
+
+> [[done]]! --[[Joey]]
