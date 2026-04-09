@@ -74,7 +74,7 @@ data External = External
 	, externalRemoteName :: Maybe RemoteName 
 	, externalRemoteStateHandle :: Maybe RemoteStateHandle
 	, externalAsync :: TMVar ExternalAsync
-	, externalDelegates :: TMVar [(RemoteName, Bool)]
+	, externalEphemeralDelegates :: TMVar [RemoteName]
 	}
 
 newExternal :: ExternalProgram -> Maybe UUID -> ParsedRemoteConfig -> Maybe RemoteGitConfig -> Maybe RemoteName -> Maybe RemoteStateHandle -> Annex External

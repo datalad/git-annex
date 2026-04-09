@@ -1021,18 +1021,20 @@ remoteConfigParser externalprogram c
 	isproposed (Proposed _) = True
 
 getDelegateRemote :: External -> [String] -> Annex Remote
-getDelegateRemote external ps = do
-	ds <- liftIO $ atomically $ takeTMVar $ externalDelegates external
-	tryNonAsync go >>= \case
-		Left err -> do
-			liftIO $ atomically $ putTMVar (externalDelegates external) ds
-			throwM err
-		Right r -> do
-			let ds' = if any (== (delegatename, isephemeral)) ds
-				then ds
-				else (delegatename, isephemeral) : ds
-			liftIO $ atomically $ putTMVar (externalDelegates external) ds'
-			return r
+getDelegateRemote external ps
+	| isephemeral = do
+		ds <- liftIO $ atomically $ takeTMVar $ externalEphemeralDelegates external
+		tryNonAsync go >>= \case
+			Left err -> do
+				liftIO $ atomically $ putTMVar (externalEphemeralDelegates external) ds
+				throwM err
+			Right r -> do
+				let ds' = if any (== delegatename) ds
+					then ds
+					else delegatename : ds
+				liftIO $ atomically $ putTMVar (externalEphemeralDelegates external) ds'
+				return r
+	| otherwise = go
   where
 	go = do
 		rs <- Annex.getState Annex.remotes
@@ -1091,10 +1093,10 @@ removeEphemeralDelegates :: External -> Annex ()
 removeEphemeralDelegates external = bracket get clear go
   where
 	get = liftIO $ atomically $ 
-		takeTMVar $ externalDelegates external
+		takeTMVar $ externalEphemeralDelegates external
 	clear _ = liftIO $ atomically $ 
-		putTMVar (externalDelegates external) []
-	go ds = forM_ (map fst $ filter snd ds) $ \delegatename -> do
+		putTMVar (externalEphemeralDelegates external) []
+	go ds = forM_ ds $ \delegatename -> do
 		rs <- Annex.getState Annex.remotes
 		case filter (\r -> name r == delegatename) rs of
 			(r:_) -> disable r delegatename rs
