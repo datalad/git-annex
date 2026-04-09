@@ -38,13 +38,16 @@ import Logs.PreferredContent.Raw
 import Logs.RemoteState
 import Logs.Web
 import Logs.Remote
+import Logs.File
 import Config.Cost
 import Annex.Content
 import Annex.Url
 import Annex.UUID
 import Annex.Verify
 import Annex.DisableRemote
+import Annex.LockFile
 import Creds
+import qualified Utility.FileIO as F
 
 import Control.Concurrent.STM
 import qualified Data.Map as M
@@ -1021,28 +1024,41 @@ remoteConfigParser externalprogram c
 	isproposed (Proposed _) = True
 
 getDelegateRemote :: External -> [String] -> Annex Remote
-getDelegateRemote external ps
-	| isephemeral = do
-		ds <- liftIO $ atomically $ takeTMVar $ externalEphemeralDelegates external
-		tryNonAsync go >>= \case
-			Left err -> do
-				liftIO $ atomically $ putTMVar (externalEphemeralDelegates external) ds
-				throwM err
-			Right r -> do
-				let ds' = if any (== delegatename) ds
-					then ds
-					else delegatename : ds
-				liftIO $ atomically $ putTMVar (externalEphemeralDelegates external) ds'
+getDelegateRemote external ps = do
+	rs <- Annex.getState Annex.remotes
+	case filter (\r -> name r == delegatename) rs of
+		(r:_) -> return r
+		_ -> do
+			lockfile <- fromRepo $ gitAnnexRemoteLockFile externalu
+			r <- withExclusiveLock lockfile $ do
+				r <- gendelegate
+				when isephemeral $ do
+					statefile <- fromRepo $ gitAnnexRemoteStateFile externalu
+					appendLogFile' statefile (encodeBL delegatename)
 				return r
-	| otherwise = go
+			when isephemeral $
+				registerephemeral r
+			return r
   where
-	go = do
-		rs <- Annex.getState Annex.remotes
-		case filter (\r -> name r == delegatename) rs of
-			(r:_) -> return r
-			_ -> case externalUUID external of
-				Just externalu -> gendelegate externalu
-				Nothing -> error "internal"
+	registerephemeral r = do
+		-- Take a shared lock of the state file to indicate the
+		-- remote is in use.
+		statefile <- fromRepo $ gitAnnexRemoteStateFile externalu
+		let lckvar = externalEphemeralDelegateLock external
+		liftIO (atomically (takeTMVar lckvar)) >>= \case
+			Just lck -> liftIO $ atomically $
+				putTMVar lckvar (Just lck)
+			Nothing -> do
+				lck <- takeSharedLock statefile
+				liftIO $ atomically $
+					putTMVar lckvar (Just lck)
+		liftIO $ atomically $ do
+			l <- takeTMVar (externalEphemeralDelegates external)
+			putTMVar (externalEphemeralDelegates external) (r:l)
+
+	externalu = case externalUUID external of
+		Just u -> u
+		Nothing -> error "internal"
 
 	(ps', isephemeral) = checkephemeral ps [] False
 
@@ -1060,7 +1076,7 @@ getDelegateRemote external ps
 		, show $ md5s $ encodeBS $ show ps
 		]
 	
-	gendelegate externalu = do
+	gendelegate = do
 		c <- newConfig delegatename (Just (Sameas externalu))
 			(keyValToConfig Proposed ps')
 			<$> remoteConfigMap
@@ -1090,17 +1106,36 @@ getDelegateRemote external ps
 		return r
 
 removeEphemeralDelegates :: External -> Annex ()
-removeEphemeralDelegates external = bracket get clear go
+removeEphemeralDelegates external = do
+	let lckvar = externalEphemeralDelegateLock external
+	liftIO (atomically (takeTMVar lckvar)) >>= \case
+		Just sharedlck -> do
+			liftIO $ dropLock sharedlck
+			case externalUUID external of
+				Just externalu -> go externalu
+				Nothing -> return ()
+		Nothing -> return ()
+	liftIO $ atomically $ putTMVar lckvar Nothing
   where
-	get = liftIO $ atomically $ 
-		takeTMVar $ externalEphemeralDelegates external
-	clear _ = liftIO $ atomically $ 
-		putTMVar (externalEphemeralDelegates external) []
-	go ds = forM_ ds $ \delegatename -> do
-		rs <- Annex.getState Annex.remotes
-		case filter (\r -> name r == delegatename) rs of
-			(r:_) -> disable r delegatename rs
-			_ -> return ()
+	go externalu = do
+		statefile <- fromRepo $ gitAnnexRemoteStateFile externalu
+		lockfile <- fromRepo $ gitAnnexRemoteLockFile externalu
+		-- Only remove them when no other process has a shared
+		-- lock of the state file. (And when no other process
+		-- is also removing them.)
+		void $ tryExclusiveLock statefile $
+			withExclusiveLock lockfile $ do
+				ds <- liftIO $ nub . map decodeBL . fileLines
+					<$> F.readFile statefile
+				rs <- Annex.getState Annex.remotes
+				rs' <- liftIO $ atomically $ readTMVar (externalEphemeralDelegates external)
+				let rs'' = rs'++rs
+				forM_ ds $ \delegatename ->
+					case filter (\r -> name r == delegatename) rs'' of
+						(r:_) -> disable r delegatename rs''
+						_ -> return ()
+				writeLogFile statefile ""
+	
 	disable r delegatename rs = 
 		tryNonAsync (disableRemote r delegatename rs) >>= \case
 			Right () -> return ()

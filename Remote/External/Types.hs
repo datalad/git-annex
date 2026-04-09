@@ -55,6 +55,7 @@ import Types.Key
 import Utility.Url (URLString)
 import Utility.Url.Parse
 import qualified Utility.SimpleProtocol as Proto
+import Annex.LockFile
 
 import Control.Concurrent.STM
 import Network.URI
@@ -74,7 +75,8 @@ data External = External
 	, externalRemoteName :: Maybe RemoteName 
 	, externalRemoteStateHandle :: Maybe RemoteStateHandle
 	, externalAsync :: TMVar ExternalAsync
-	, externalEphemeralDelegates :: TMVar [RemoteName]
+	, externalEphemeralDelegateLock :: TMVar (Maybe LockHandle)
+	, externalEphemeralDelegates :: TMVar [Remote]
 	}
 
 newExternal :: ExternalProgram -> Maybe UUID -> ParsedRemoteConfig -> Maybe RemoteGitConfig -> Maybe RemoteName -> Maybe RemoteStateHandle -> Annex External
@@ -88,6 +90,7 @@ newExternal p u c gc rn rs = liftIO $ External
 	<*> pure rn
 	<*> pure rs
 	<*> atomically (newTMVar UncheckedExternalAsync)
+	<*> atomically (newTMVar Nothing)
 	<*> atomically (newTMVar [])
 
 data ExternalProgram

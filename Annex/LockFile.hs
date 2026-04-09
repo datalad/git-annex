@@ -1,6 +1,6 @@
 {- git-annex lock files.
  -
- - Copyright 2012-2024 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2026 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -15,8 +15,11 @@ module Annex.LockFile (
 	withSharedLock,
 	withExclusiveLock,
 	takeExclusiveLock,
+	takeSharedLock,
 	tryExclusiveLock,
 	trySharedLock,
+	dropLock,
+	LockHandle,
 ) where
 
 import Annex.Common
@@ -93,6 +96,19 @@ takeExclusiveLock lockfile = debugLocks $ do
 	lock mode = lockExclusive (Just mode)
 #else
 	lock _mode = liftIO . waitToLock . lockExclusive
+#endif
+
+{- Takes a shared lock, blocking until any exclusive lock is freed. -}
+takeSharedLock :: OsPath -> Annex LockHandle
+takeSharedLock lockfile = debugLocks $ do
+	createAnnexDirectory $ takeDirectory lockfile
+	mode <- annexFileMode
+	lock mode lockfile
+  where
+#ifndef mingw32_HOST_OS
+	lock mode = lockShared (Just mode)
+#else
+	lock _mode = liftIO . waitToLock . lockShared
 #endif
 
 {- Tries to take an exclusive lock and run an action. If the lock is

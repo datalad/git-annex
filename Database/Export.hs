@@ -53,7 +53,6 @@ import Types.Export
 import Annex.Export
 import qualified Logs.Export as Log
 import Annex.LockFile
-import Annex.LockPool
 import Git.Types
 import Git.Sha
 import Git.FilePath

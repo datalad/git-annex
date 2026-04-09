@@ -11,6 +11,7 @@ module Logs.File (
 	writeLogFile,
 	withLogHandle,
 	appendLogFile,
+	appendLogFile',
 	modifyLogFile,
 	streamLogFile,
 	streamLogFileUnsafe,
@@ -57,12 +58,16 @@ withLogHandle f a = do
 -- | Appends a line to a log file, first locking it to prevent
 -- concurrent writers.
 appendLogFile :: OsPath -> OsPath -> L.ByteString -> Annex ()
-appendLogFile f lck c = 
-	createDirWhenNeeded f $
-		withExclusiveLock lck $ do
-			liftIO $ F.withFile f AppendMode $
-				\h -> L8.hPutStrLn h c
-			setAnnexFilePerm f
+appendLogFile f lck c = withExclusiveLock lck $ appendLogFile' f c
+
+-- | An exclusive lock must be held while calling this
+-- to prevent concurrent writes.
+appendLogFile' :: OsPath -> L.ByteString -> Annex ()
+appendLogFile' f c = 
+	createDirWhenNeeded f $ do
+		liftIO $ F.withFile f AppendMode $
+			\h -> L8.hPutStrLn h c
+		setAnnexFilePerm f
 
 -- | Modifies a log file.
 --

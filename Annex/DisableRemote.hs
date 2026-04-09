@@ -64,6 +64,7 @@ disableRemote r remotename remotelist = do
 		removeImportLog (uuid r)
 		removeCredFiles (uuid r)
 		removeRemoteLockFile (uuid r)
+		removeRemoteStateFile (uuid r)
 		
 	inRepo $ Git.Remote.Remove.remove remotename
 	removeRemoteTrackingBranches remotename
@@ -191,6 +192,10 @@ removeCredFiles u = do
 
 removeRemoteLockFile :: UUID -> Annex ()
 removeRemoteLockFile u = do
-	lck <- fromRepo $ gitAnnexRemoteLockFile u
-	liftIO $ removeWhenExistsWith removeFile lck
+	f <- fromRepo $ gitAnnexRemoteLockFile u
+	liftIO $ removeWhenExistsWith removeFile f
 
+removeRemoteStateFile :: UUID -> Annex ()
+removeRemoteStateFile u = do
+	f <- fromRepo $ gitAnnexRemoteStateFile u
+	liftIO $ removeWhenExistsWith removeFile f

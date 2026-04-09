@@ -15,7 +15,6 @@ import Database.RepoSize.Handle
 import Annex.UUID
 import Types.FileMatcher
 import Annex.LockFile
-import Annex.LockPool
 import qualified Database.RepoSize as Db
 import qualified Utility.Matcher as Matcher
 import Utility.PID
