@@ -334,11 +334,10 @@ bupLocal = notElem ':'
  - should run at a time; multiple readers may run if no writer is running. -}
 lockBup :: Bool -> Remote -> Annex a -> Annex a
 lockBup writer r a = do
-	dir <- fromRepo gitAnnexRemotesDir
+	lck <- fromRepo $ gitAnnexRemoteLockFile (uuid r)
+	let dir = takeDirectory lck
 	unlessM (liftIO $ doesDirectoryExist dir) $
 		createAnnexDirectory dir
-	let remoteid = fromUUID (uuid r)
-	let lck = dir </> remoteid <> literalOsPath ".lck"
 	if writer
 		then withExclusiveLock lck a
 		else withSharedLock lck a

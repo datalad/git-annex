@@ -49,14 +49,13 @@ addHooks' r starthook stophook = r'
 
 runHooks :: Remote -> Maybe String -> Maybe String -> Annex a -> Annex a
 runHooks r starthook stophook a = do
-	dir <- fromRepo gitAnnexRemotesDir
-	let lck = dir </> remoteid <> literalOsPath ".lck"
+	lck <- fromRepo $ gitAnnexRemoteLockFile (uuid r)
+	let dir = takeDirectory lck
 	whenM (notElem lck . M.keys <$> getLockCache) $ do
 		createAnnexDirectory dir
 		firstrun lck
 	a
   where
-	remoteid = fromUUID (uuid r)
 	run Nothing = noop
 	run (Just command) = void $ liftIO $
 		boolSystem "sh" [Param "-c", Param command]

@@ -63,6 +63,7 @@ disableRemote r remotename remotelist = do
 		removeFsckState (uuid r)
 		removeImportLog (uuid r)
 		removeCredFiles (uuid r)
+		removeRemoteLockFile (uuid r)
 		
 	inRepo $ Git.Remote.Remove.remove remotename
 	removeRemoteTrackingBranches remotename
@@ -187,3 +188,9 @@ removeCredFiles u = do
 	foru p = 
 		let f = takeFileName p
 		in f == us || (us <> literalOsPath "-") `OS.isPrefixOf` f
+
+removeRemoteLockFile :: UUID -> Annex ()
+removeRemoteLockFile u = do
+	lck <- fromRepo $ gitAnnexRemoteLockFile u
+	liftIO $ removeWhenExistsWith removeFile lck
+

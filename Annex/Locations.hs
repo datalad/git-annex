@@ -117,7 +117,7 @@ module Annex.Locations (
 	gitAnnexTmpCfgFile,
 	gitAnnexSshDir,
 	gitAnnexP2PDir,
-	gitAnnexRemotesDir,
+	gitAnnexRemoteLockFile,
 	gitAnnexAssistantDefaultDir,
 	gitAnnexSimDir,
 	HashLevels(..),
@@ -760,10 +760,11 @@ gitAnnexP2PDir :: Git.Repo -> OsPath
 gitAnnexP2PDir r = addTrailingPathSeparator $
 	gitAnnexDir r </> literalOsPath "p2p"
 
-{- .git/annex/remotes/ is used for remote-specific state. -}
-gitAnnexRemotesDir :: Git.Repo -> OsPath
-gitAnnexRemotesDir r = addTrailingPathSeparator $
-	gitAnnexDir r </> literalOsPath "remotes"
+{- .git/annex/remotes/ is used for remote-specific lock files. -}
+gitAnnexRemoteLockFile :: UUID -> Git.Repo -> OsPath
+gitAnnexRemoteLockFile u r =
+	gitAnnexDir r </> literalOsPath "remotes" 
+		</> uuidFile u <> literalOsPath ".lck"
 
 {- This is the base directory name used by the assistant when making
  - repositories, by default. -}
