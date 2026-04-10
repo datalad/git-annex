@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2026-04-10T13:03:09Z"
+ content="""
+FWIW, I think this might be useful for openneuro as I think we run into cases (e.g. ds000113) where we have records on some elderly keys (such as SHA1--771e0eea7ceb32216a5a06c89c50d1f02bc79d6d) for which I think we no longer have any commit in the history pointing to them or even if we do -- we have no such key exported in the bucket (I think).
+"""]]
