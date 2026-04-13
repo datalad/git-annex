@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2026-04-13T15:22:17Z"
+ content="""
+Turns out that a git-annex that does not
+use sanitizeTopLevelExceptionMessages will not have this behavior.
+
+Without that, `git-annex find | head -n1` does not display the broken
+pipe exception, and so the crash loop never happens when stderr is closed.
+
+That is relatively new; it was added in git-annex 10.20230407.
+
+And apparently what ghc's default exception display mechanism does is
+actually to ignore the broken pipe exception for stdout. Which leads
+to the more typical unix behavior of silently stopping on SIGPIPE.
+See also <https://mail.haskell.org/pipermail/haskell-cafe/2023-May/136194.html>
+
+Note that the loop when displaying an exception fails with an exception due
+to stderr being closed still seems to be the fault of ghc/base, not
+git-annex. All that sanitizeTopLevelExceptionMessages does is cause the
+exception to be displayed.
+"""]]
