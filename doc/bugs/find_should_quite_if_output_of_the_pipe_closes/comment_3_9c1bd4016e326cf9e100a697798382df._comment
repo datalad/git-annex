@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 3"
+ date="2026-04-13T15:56:23Z"
+ content="""
+> I'm curious if you also ran git-annex with FD 2 closed?
+
+how do I discover that ?  it worked fine if I redirect stderr:
+
+```
+$> git annex find --in here 2>/dev/null | head -n 1
+derivatives/linear_anatomical_alignment/sub-01/ses-forrestgump/func/sub-01_ses-forrestgump_task-forrestgump_rec-XFMdico7Tad2grpbold7Tad_run-01_bold.mat
+
+$> echo $?
+0
+
+```
+
+and damn it -- after that it started to work in that shell:
+
+```
+$> git annex find --in here | head -n 1   
+derivatives/linear_anatomical_alignment/sub-01/ses-forrestgump/func/sub-01_ses-forrestgump_task-forrestgump_rec-XFMdico7Tad2grpbold7Tad_run-01_bold.mat
+git-annex: <stdout>: hFlush: resource vanished (Broken pipe)
+```
+
+:-/  I think it relates to dataset size as if I go to other small datasets in that shell now -- it returns fine as expected, but in huge `/mnt/btrfs/datasets/datalad/crawl/dandi/dandisets/000026` -- still running (likely more stuff spit out to stdout), even with
+
+```
+(git)smaug:/mnt/btrfs/datasets/datalad/crawl/dandi/dandisets/000026[draft]git
+$> git annex find --not --in here --fast 2>/dev/null | head -n 1
+derivatives/Depth_normalized_OCT_volume/I38/sub-I38_ses-OCT_sample-BrocaAreaS01_depth-normed_OCT.ome.tiff
+```
+
+I will keep it going to see if ever returns, will check in an hour. FWIW -- that dataset is [here](https://github.com/dandisets/000026)
+"""]]
