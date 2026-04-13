@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 5"
+ date="2026-04-13T17:30:16Z"
+ content="""
+FWIW -- never returned, doing on another box -- here is a complete command : `git clone https://github.com/dandisets/000026.git && cd 000026 &&  git annex init && git annex find --not --in here --fast | head -n 1` -- stalled as well.  I wonder if replicates for you. Also there with `2>/dev/null` returned right away, but on rerun without - stalled again.
+"""]]
