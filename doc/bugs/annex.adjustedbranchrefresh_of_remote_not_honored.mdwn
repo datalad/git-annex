@@ -1,0 +1,8 @@
+When a git remote has annex.adjustedbranchrefresh set to 1, `git-annex sync --content`
+run with that remote should only refresh the adjusted branch there once.
+But, I've verified it does so after every file is sent. Which is quite
+slow.
+
+Apparently this is because in this case it registers a cleanup action, and
+the way the Annex monad works for a local git remote, it runs those each
+time, due to calling quiesce. --[[Joey]]
