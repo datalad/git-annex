@@ -1,6 +1,6 @@
 {- git-annex output messages
  -
- - Copyright 2010-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2026 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -65,6 +65,9 @@ import qualified Data.ByteString.Char8 as S8
 import System.Exit
 import qualified Control.Monad.Catch as M
 import Data.String
+#ifndef mingw32_HOST_OS
+import System.Posix.Signals
+#endif
 
 import Common
 import Types
@@ -355,15 +358,23 @@ mkPrompter = getConcurrency >>= \case
 {- Catch all (non-async and not ExitCode) exceptions and display, 
  - sanitizing any control characters in the exceptions.
  -
- - Exits nonzero on exception, so should only be used at topmost level.
+ - Should only be used at topmost level.
  -}
 sanitizeTopLevelExceptionMessages :: IO a -> IO a
-sanitizeTopLevelExceptionMessages a = a `catches`
-	((M.Handler (\ (e :: ExitCode) -> throwM e)) : nonAsyncHandler go)
+sanitizeTopLevelExceptionMessages a = do
+#ifndef mingw32_HOST_OS
+	-- By default ghc Ignores sigPIPE, and then does not display
+	-- exceptions like <stdout>: hFlush: resource vanished (Broken pipe)
+	--
+	-- Since this would display such exceptions, instead restore the
+	-- Default sigPIPE behavior, which is for the program to
+	-- immediately exit.
+	void $ installHandler sigPIPE Default Nothing
+#endif
+	a `catches`
+		((M.Handler (\ (e :: ExitCode) -> throwM e)) : nonAsyncHandler go)
   where
-	go e = do
-		hPutStrLn stderr $ safeOutput $ toplevelMsg (show e)
-		exitWith $ ExitFailure 1
+	go e = giveup $ show e
 
 {- Used to only run an action that displays a message after the specified
  - number of steps. This is useful when performing an action that can

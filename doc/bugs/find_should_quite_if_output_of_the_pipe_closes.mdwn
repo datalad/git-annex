@@ -41,3 +41,5 @@ I didn't check other commands , but they all should behave sane as not to stall 
 
 [[!meta author=yoh]]
 [[!tag projects/openneuro]]
+
+> [[fixed|done]] --[[Joey]]

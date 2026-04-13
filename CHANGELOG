@@ -4,6 +4,10 @@ git-annex (10.20260317) UNRELEASED; urgency=medium
   * disableremote: New command.
   * Add DELEGATE extension to the external special remote protocol.
   * Improve UUID sanitization.
+  * Avoid dying of an exception when when stdout gets closed by eg head(1),
+    and avoid a crash loop when stderr is closed and git-annex dies of an
+    exception.
+    Fixes reversion introduced in version 10.20230407.
 
  -- Joey Hess <id@joeyh.name>  Mon, 23 Mar 2026 11:37:09 -0400
 
