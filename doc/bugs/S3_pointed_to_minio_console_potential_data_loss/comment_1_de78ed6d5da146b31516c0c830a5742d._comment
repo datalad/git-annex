@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2026-04-13T14:01:37Z"
+ content="""
+It's arguably not git-annex's fault if it was pointed to an API endpoint
+that behaves enough like S3 to make it seems like it's stored data,
+but does not store the data.
+
+With that said, for there to be data loss here, the file would need to be
+dropped from the local repository, relying on the copy "stored" in S3.
+So the S3 special remote's checkPresent could be improved to prevent
+such a bad endpoint from being treated as containing the content of an
+object.
+
+For S3, checkPresent does pass in the VersionID when git-annex knows one.
+(Which that doesn't help if the API endpoint ignores that header.)
+What it does not do is check the response from S3 for a VersionID or ETag.
+Improving that seems like a possible way to avoid this kind of problem.
+
+It does check the ETag when the S3 remote is configured with
+exporttree=true.
+
+As for the idea of checking the annex-uuid write by reading the file back,
+the difficulty with that is S3 `DEEP_ARCHIVE` and similar can have an
+hours-long delay to get back out a file that is already stored in the
+bucket. Also, the annex-uuid file is not used for exporttree=yes remotes.
+"""]]
