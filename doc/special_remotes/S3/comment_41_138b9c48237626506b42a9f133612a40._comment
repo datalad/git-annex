@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: git-annex: potential data loss with initremote and push with S3 special remotes."""
+ date="2026-04-13T13:59:28Z"
+ content="""
+That needs to be a bug report. I have copied it to one here:
+[[bugs/S3_pointed_to_minio_console_potential_data_loss]]
+"""]]
