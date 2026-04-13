@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2026-04-13T14:29:51Z"
+ content="""
+I was able to reproduce this, but only when I ran git-annex with FD 2
+closed.
+
+	perl -e 'close(STDERR); system("git-annex find --not --in here --fast | head -n 1")'
+
+I'm curious if you also ran git-annex with FD 2 closed?
+
+I suspect what must be happening is that the exception handler crashes when
+outputting to stderr, which causes an exception to be thrown,
+leading to a crash loop.
+
+If so, it would seem likely to be a bug in ghc/base. And I'd not be surprised to find
+such a bug somewhere in its bug tracker. In fact, I almost remember finding this same
+behavior before, which may have helped me guess this due was FD 2 being closed.
+
+With that said, I've not been able to reproduce the behavior yet with a simpler
+haskell program like this one:
+
+	import System.IO
+
+	main = do
+		print "foo"
+		hFlush stdout
+		print "bar"
+		hFlush stdout
+		main
+
+But, that simple program also doesn't throw
+"hFlush: resource vanished (Broken pipe)" when piped to `head -n1`,
+so it's not quite replicating what git-annex does.
+"""]]
