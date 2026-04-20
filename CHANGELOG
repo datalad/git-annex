@@ -1,4 +1,4 @@
-git-annex (10.20260317) UNRELEASED; urgency=medium
+git-annex (10.20260420) upstream; urgency=medium
 
   * disableremote: New command.
   * Fix annexUrl to inherit any password that is set in the remote url.
@@ -10,7 +10,7 @@ git-annex (10.20260317) UNRELEASED; urgency=medium
   * Improve UUID sanitization.
   * Deal with breaking changes to test concurrency in tasty-1.5.4.
 
- -- Joey Hess <id@joeyh.name>  Mon, 23 Mar 2026 11:37:09 -0400
+ -- Joey Hess <id@joeyh.name>  Mon, 20 Apr 2026 11:01:26 -0400
 
 git-annex (10.20260316) upstream; urgency=medium
 
