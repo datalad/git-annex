@@ -161,7 +161,7 @@ tests numparts crippledfilesystem opts =
 		(repoTests d numparts)
 
 properties :: TestTree
-properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck" $
+properties = localOption (QuickCheckTests 1000) $ inOrderTestGroup "QuickCheck" $
 	[ testProperty "prop_quote_unquote_roundtrip" Git.Quote.prop_quote_unquote_roundtrip
 	, testProperty "prop_encode_c_decode_c_roundtrip" Utility.Format.prop_encode_c_decode_c_roundtrip
 	, testProperty "prop_isomorphic_key_encode" Key.prop_isomorphic_key_encode
@@ -205,7 +205,7 @@ properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck" $
 		]
 
 testRemotes :: TestTree
-testRemotes = testGroup "Remote Tests" $
+testRemotes = inOrderTestGroup "Remote Tests" $
 	-- These tests are failing in really strange ways on Windows,
 	-- apparently not due to an actual problem with the remotes being
 	-- tested, so are disabled there.
@@ -235,7 +235,7 @@ testDirectoryRemote = testRemote True "directory" $ \remotename -> do
 testRemote :: Bool -> String -> (String -> IO ()) -> TestTree
 testRemote testvariants remotetype setupremote = 
 	withResource newEmptyTMVarIO (const noop) $ \getv -> 
-		testGroup ("testremote type " ++ remotetype) $ concat
+		inOrderTestGroup ("testremote type " ++ remotetype) $ concat
 			[ [testCase "init" (prep getv)]
 			, go getv
 			]
@@ -280,7 +280,7 @@ testRemote testvariants remotetype setupremote =
 {- These tests set up the test environment, but also test some basic parts
  - of git-annex. They are always run before the repoTests. -}
 initTests :: TestTree
-initTests = testGroup initTestsName
+initTests = inOrderTestGroup initTestsName
 	[ testCase "init" test_init
 	, testCase "add" test_add
 	]
@@ -372,7 +372,7 @@ repoTests note numparts = map mk $ sep
 	, testCase "enableremote encryption changes" test_enableremote_encryption_changes
 	]
   where
-	mk l = testGroup groupname (initTests : map adddep l)
+	mk l = inOrderTestGroup groupname (initTests : map adddep l)
 	adddep = Test.Tasty.after AllSucceed (groupname ++ "." ++ initTestsName)
 	groupname = "Repo Tests " ++ note
 	sep l = 

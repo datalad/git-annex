@@ -33,6 +33,7 @@ import Remote.Helper.Chunked
 import Remote.Helper.Encryptable (encryptionField, highRandomQualityField)
 import qualified Utility.FileIO as F
 import Remote.List
+import Test.Framework
 
 import Test.Tasty
 import Test.Tasty.Runners
@@ -108,7 +109,7 @@ perform drs unavailr exportr ks = do
 	st <- liftIO . newTVarIO =<< (,)
 		<$> Annex.getState id
 		<*> Annex.getRead id
-	let tests = testGroup "Remote Tests" $ mkTestTrees
+	let tests = inOrderTestGroup "Remote Tests" $ mkTestTrees
 		(runTestCase st) 
 		drs
 		(pure unavailr)
@@ -222,9 +223,9 @@ mkTestTrees
 	-> (NE.NonEmpty (Described (Annex Key)))
 	-> [TestTree]
 mkTestTrees runannex mkrs mkunavailr mkexportr mkks = concat $
-	[ [ testGroup "unavailable remote" (testUnavailable runannex mkunavailr (getVal (NE.head mkks))) ]
-	, [ testGroup (desc mkr mkk) (test runannex (getVal mkr) (getVal mkk)) | mkk <- NE.toList mkks, mkr <- mkrs ]
-	, [ testGroup (descexport mkk1 mkk2) (testExportTree runannex mkexportr (getVal mkk1) (getVal mkk2)) | mkk1 <- take 2 (NE.toList mkks), mkk2 <- take 2 (reverse (NE.toList mkks)) ]
+	[ [ inOrderTestGroup "unavailable remote" (testUnavailable runannex mkunavailr (getVal (NE.head mkks))) ]
+	, [ inOrderTestGroup (desc mkr mkk) (test runannex (getVal mkr) (getVal mkk)) | mkk <- NE.toList mkks, mkr <- mkrs ]
+	, [ inOrderTestGroup (descexport mkk1 mkk2) (testExportTree runannex mkexportr (getVal mkk1) (getVal mkk2)) | mkk1 <- take 2 (NE.toList mkks), mkk2 <- take 2 (reverse (NE.toList mkks)) ]
 	]
    where
 	desc r k = intercalate "; " $ map unwords

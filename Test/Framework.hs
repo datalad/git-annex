@@ -1,13 +1,18 @@
 {- git-annex test suite framework
  -
- - Copyright 2010-2024 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2026 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
 {-# LANGUAGE OverloadedStrings, CPP #-}
 
-module Test.Framework where
+module Test.Framework (
+	module Test.Framework,
+#if MIN_VERSION_tasty(1,5,4)
+	inOrderTestGroup
+#endif
+) where
 
 import Test.Tasty
 import Test.Tasty.Runners
@@ -234,7 +239,7 @@ inpath path a = do
 
 setuprepo :: FilePath -> IO FilePath
 setuprepo dir = do
-	cleanup dir
+	cleanupTestDir dir
 	git "init" ["-q", dir] "git init"
 	configrepo dir
 	return dir
@@ -253,7 +258,7 @@ newCloneRepoConfig = CloneRepoConfig
 -- clones are always done as local clones; we cannot test ssh clones
 clonerepo :: FilePath -> FilePath -> CloneRepoConfig -> IO FilePath
 clonerepo old new cfg = do
-	cleanup new
+	cleanupTestDir new
 	let cloneparams = catMaybes
 		[ Just "-q"
 		, if bareClone cfg then Just "--bare" else Nothing
@@ -346,8 +351,8 @@ setTestEnv a = Utility.Tmp.Dir.withTmpDir (literalOsPath "testhome") $ \tmphome 
 removeDirectoryForCleanup :: FilePath -> IO ()
 removeDirectoryForCleanup = removePathForcibly . toOsPath
 
-cleanup :: FilePath -> IO ()
-cleanup dir = whenM (doesDirectoryExist (toOsPath dir)) $ do
+cleanupTestDir :: FilePath -> IO ()
+cleanupTestDir dir = whenM (doesDirectoryExist (toOsPath dir)) $ do
 	Command.Uninit.prepareRemoveAnnexDir' (toOsPath dir)
 	-- This can fail if files in the directory are still open by a
 	-- subprocess.
@@ -891,7 +896,7 @@ parallelTestRunner' numjobs opts mkts
 			(False, tastyOptionSet opts)
 
 topLevelTestGroup :: [TestTree] -> TestTree
-topLevelTestGroup = testGroup "Tests"
+topLevelTestGroup = inOrderTestGroup "Tests"
 
 initTestsName :: String
 initTestsName = "Init Tests"
@@ -905,3 +910,8 @@ ingredients =
 	, rerunningTests [consoleTestReporter]
 	]
 
+-- Prior to tasty 1.5.4, testGroup ran in order.
+#if ! MIN_VERSION_tasty(1,5,4)
+inOrderTestGroup :: TestName -> [TestTree] -> TestTree
+inOrderTestGroup = testGroup
+#endif
