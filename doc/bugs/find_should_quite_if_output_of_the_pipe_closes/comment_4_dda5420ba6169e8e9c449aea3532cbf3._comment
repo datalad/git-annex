@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2026-04-13T16:58:54Z"
+ content="""
+Was able to get git-annex back to typical unix-like behavior on sigpipe,
+and also avoided the crash loop when stderr is closed.
+"""]]
