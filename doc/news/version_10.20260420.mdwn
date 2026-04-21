@@ -1,0 +1,10 @@
+git-annex 10.20260420 released with [[!toggle text="these changes"]]
+[[!toggleable text="""  * disableremote: New command.
+  * Fix annexUrl to inherit any password that is set in the remote url.
+  * Add DELEGATE extension to the external special remote protocol.
+  * Avoid dying of an exception when when stdout gets closed by eg head(1),
+    and avoid a crash loop when stderr is closed and git-annex dies of an
+    exception.
+    Fixes reversion introduced in version 10.20230407.
+  * Improve UUID sanitization.
+  * Deal with breaking changes to test concurrency in tasty-1.5.4."""]]
