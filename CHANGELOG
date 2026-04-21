@@ -1,4 +1,4 @@
-git-annex (10.20260420) upstream; urgency=medium
+git-annex (10.20260421) upstream; urgency=medium
 
   * disableremote: New command.
   * Fix annexUrl to inherit any password that is set in the remote url.
