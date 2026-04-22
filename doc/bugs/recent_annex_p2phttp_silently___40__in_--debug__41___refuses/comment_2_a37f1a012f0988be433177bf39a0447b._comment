@@ -1,0 +1,97 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2026-04-22T17:02:04Z"
+ content="""
+FWIW: Nothing in the original report was produced by AI. Mention of claude and absent range requests support was only to provide provenance on what brought me here to discover this issue.
+
+Here is a full trivial reproducer collating those manually ran commands into 1 script:
+
+```
+#!/bin/bash
+
+export PS4='> '
+set -xeu
+
+cd \"$(mktemp -d ${TMPDIR:-/tmp}/dl-XXXXXXX)\"
+git clone https://datasets.datalad.org/dbic/QA/.git
+cd QA
+git annex version --raw; echo; 
+
+sha256=02b4a96d66121ddbb5d51fa3f22c2b929bc16d955f438421c1f1b04a1264a50f
+key=SHA256E-s101318091--$sha256.tgz
+
+git annex get  --key \"$key\"
+uuid=$(git config annex.uuid)
+
+git annex --debug p2phttp --port 8081 --wideopen &
+
+sleep 2
+
+curl http://localhost:8081/git-annex/$uuid/key/$key >| out.gz
+
+ls -l out.gz; sha256sum out.gz
+
+kill %1
+
+echo \"done ok\"
+```
+
+which with recent git-annex produces
+
+```
+...
+> git annex version --raw
+10.20260316+git92-g28d90e468f-1~ndall+1> echo
+...
+curl: (52) Empty reply from server
+...
+```
+
+while passing all the way to 'done ok' with `10.20251029`.
+
+
+<details>
+<summary>with bleeding edge snapshot 10.20260421+git5-g38a24cc9df-1~ndall+1 - I still get \"Empty reply from server\" but now there are also logs from the git-annex server for `P2P .* DATA 101318091` but no `P2P .* SUCCESS`</summary> 
+
+```shell
+> git annex version --raw
+10.20260421+git5-g38a24cc9df-1~ndall+1> echo
+
+> sha256=02b4a96d66121ddbb5d51fa3f22c2b929bc16d955f438421c1f1b04a1264a50f
+> key=SHA256E-s101318091--02b4a96d66121ddbb5d51fa3f22c2b929bc16d955f438421c1f1b04a1264a50f.tgz
+> git annex get --key SHA256E-s101318091--02b4a96d66121ddbb5d51fa3f22c2b929bc16d955f438421c1f1b04a1264a50f.tgz
+get SHA256E-s101318091--02b4a96d66121ddbb5d51fa3f22c2b929bc16d955f438421c1f1b04a1264a50f.tgz (from origin...) (scanning for annexed files...)
+ok
+(recording state in git...)
+>> git config annex.uuid
+> uuid=6a1c5631-aa13-45be-babb-48aed74bcff9
+> sleep 2
+> git annex --debug p2phttp --port 8081 --wideopen
+[2026-04-22 12:59:21.489519787] (Utility.Process) process [3021850] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"show-ref\",\"git-annex\"]
+[2026-04-22 12:59:21.493864396] (Utility.Process) process [3021850] done ExitSuccess
+[2026-04-22 12:59:21.494532963] (Utility.Process) process [3021851] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2026-04-22 12:59:21.498327575] (Utility.Process) process [3021851] done ExitSuccess
+[2026-04-22 12:59:21.498911996] (Utility.Process) process [3021854] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"log\",\"refs/heads/git-annex..7487ff3e269d9c37208e4f2a93e31a1ff6103f4c\",\"--pretty=%H\",\"-n1\"]
+[2026-04-22 12:59:21.50282289] (Utility.Process) process [3021854] done ExitSuccess
+[2026-04-22 12:59:21.504379992] (Utility.Process) process [3021855] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"cat-file\",\"--batch\"]
+[2026-04-22 12:59:21.509479669] (Annex.Branch) read proxy.log
+> curl http://localhost:8081/git-annex/6a1c5631-aa13-45be-babb-48aed74bcff9/key/SHA256E-s101318091--02b4a96d66121ddbb5d51fa3f22c2b929bc16d955f438421c1f1b04a1264a50f.tgz
+  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
+                                 Dload  Upload  Total   Spent   Left   Speed
+  0      0   0      0   0      0      0      0                              0[2026-04-22 12:59:23.475306344] (P2P.IO) [http client] [ThreadId 23] P2P > GET 0  SHA256E-s101318091--02b4a96d66121ddbb5d51fa3f22c2b929bc16d955f438421c1f1b04a1264a50f.tgz
+[2026-04-22 12:59:23.475728505] (P2P.IO) [http server] [ThreadId 22] P2P < GET 0  SHA256E-s101318091--02b4a96d66121ddbb5d51fa3f22c2b929bc16d955f438421c1f1b04a1264a50f.tgz
+[2026-04-22 12:59:23.477029319] (Utility.Process) process [3022009] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"-c\",\"filter.annex.smudge=\",\"-c\",\"filter.annex.clean=\",\"-c\",\"filter.annex.process=\",\"write-tree\"]
+[2026-04-22 12:59:23.487752805] (Utility.Process) process [3022009] done ExitSuccess
+[2026-04-22 12:59:23.488176365] (Utility.Process) process [3022015] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"show-ref\",\"--hash\",\"refs/annex/last-index\"]
+[2026-04-22 12:59:23.492356509] (Utility.Process) process [3022015] done ExitSuccess
+[2026-04-22 12:59:23.493004854] (P2P.IO) [http server] [ThreadId 22] P2P > DATA 101318091
+[2026-04-22 12:59:23.493137804] (P2P.IO) [http client] [ThreadId 23] P2P < DATA 101318091
+  0      0   0      0   0      0      0      0                              0
+curl: (52) Empty reply from server
+bash p2p-notworking.sh  10.64s user 3.16s system 75% cpu 18.358 total
+
+```
+</details>
+"""]]
