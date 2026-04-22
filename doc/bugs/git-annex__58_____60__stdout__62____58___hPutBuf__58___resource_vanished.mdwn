@@ -45,3 +45,5 @@ upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 This is my first post here. First, I use git-annex for both my personal files and professional datasets since around 5 years. So I have to say this wonderful piece of software helped me a lot, therefore a big thank you Joey and other contributors. ;) Second, as a reminder to myself, I really should consider to add tips to the website, since I accumulated a lot of self-wrote documentation in my notes!
+
+> [[fixed|done]] --[[Joey]]
