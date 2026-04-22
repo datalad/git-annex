@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2026-04-22T14:59:36Z"
+ content="""
+> since was reported to be lacking by claude on a forgejo+aneksjo instance
+
+Your slop machine is hallucinating again. forgejo+aneksjo has range
+support.
+
+The git-annex p2phttp endpoint, being an API endpoint for a protocol that
+does not use range support, does not have range support.
+
+I suspect that the rest of this bug report is similar AI-addled thinking.
+It's not worth my time to try to understand what you or an AI were doing
+here. Thus, closing.
+"""]]
