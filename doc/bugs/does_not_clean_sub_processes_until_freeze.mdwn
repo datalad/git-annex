@@ -63,3 +63,6 @@ upgrade supported from repository versions: 0 1 2 3 4 5 6 7
 I use it for all kind of data I have both in private and at work. Amazing
 piece of software. I'm sure my colleagues/IT are annoyed of me plugging it to
 every possible discussion.
+
+> [[done]] as this seems like a bug that was already fixed in a newer
+> version. --[[Joey]]
