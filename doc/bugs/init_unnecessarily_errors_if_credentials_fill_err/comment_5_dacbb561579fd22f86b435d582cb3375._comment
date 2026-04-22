@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 5"
+ date="2026-04-22T04:13:37Z"
+ content="""
+FWIW, the issue is likely not in git-annex itself but rather in forgejo-aneksjo not populating annex.uuid in the config although populating annex.url upon \"push to create\". Filed [forgejo-aneksajo/issues/113](https://codeberg.org/forgejo-aneksajo/forgejo-aneksajo/issues/113).
+"""]]
