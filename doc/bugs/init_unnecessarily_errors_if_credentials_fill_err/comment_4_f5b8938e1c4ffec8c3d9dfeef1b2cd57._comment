@@ -4,11 +4,7 @@
  subject="comment 4"
  date="2026-04-22T03:24:29Z"
  content="""
-Joey, You asked that AI-generated bug reports not be posted -- and I didn't post one. The report itself was written by me. What it contained inline was a short, focused excerpt of `git-annex`'s own debug output showing exactly where `git credential fill` exits 128 and where git-annex then sets `annex-ignore` on the remote. That is the evidence for the bug, extracted and summarized by me so you would not have to wade through anything longer. It is not 315 lines, and it is not AI output -- it is your program's log output. If to understand more fully you need more information -- just ask, and I will try to distill.
-
-The fuller reproducer script lived behind a link, deliberately, so that you would not have to read it, and so that it is not posted on this site, as per your request. I included that link, together with the explicit AI disclaimer, because I wanted to be transparent about provenance rather than hide how I arrived at the diagnosis. Reading that as an attempt to \"work around\" your request is the opposite of what I intended, and I'd ask you to reconsider it.
-
-In the past I've done my best to produce minimal reproducers, and I'll keep doing that as feasible and time permits -- here I did not have one hand-crafted. But I don't recall a stated policy that reports without a complete hand-crafted reproducer would be deleted as AI slop — and that's the part that rubs me wrong, because the concise summary I did write is the part that seems went unread.
-
-I would genuinely appreciate a clearer statement of what you will and will not accept for bug and todo contributions, so I can either meet that bar or stop contributing here. I will respect whatever policy you set for this site. I would hope that policy would concern what gets posted here, and not what tools I use in my own work elsewhere, where I will continue to use what I need, including AI assistance, to do my job. I won't ask you to look at external reproducers going forward, but I would appreciate if the policy would not forbid me to link such materials when they exist, for provenance.
+This comment consisted of AI slop and as such has been deleted.
+(It was also condescending corporate speak bullshit and techinically wrong
+to boot.) --[[Joey]]
 """]]
