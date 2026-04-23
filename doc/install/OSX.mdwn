@@ -18,10 +18,8 @@ several more. Handy if you don't otherwise have git installed.
 
 ## autobuilds
 
-An autobuild is also available, thanks to the Datalad project.
-
-* [git-annex.dmg](https://downloads.kitenet.net/git-annex/autobuild/x86_64-apple-catalina/git-annex.dmg)
-  ([build logs](https://github.com/datalad/git-annex/actions/workflows/build-macos.yaml?query=Build+git-annex+on+macOS))
+No autobuilds are currently available, however there is a Appveyor CI
+[here](https://ci.appveyor.com/project/mih/git-annex).
 
 ## download security
 
