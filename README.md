@@ -1,17 +1,23 @@
 This repository provides a **non-official** distribution of builds of [git-annex](https://git-annex.branchable.com).
 
-It contains an unmodified mirror of the `master` branch from the original
-[git-annex](https://git-annex.branchable.com) repository at
-<https://git.kitenet.net/index.cgi/git-annex.git/> under
-[`upstream/master`](https://github.com/datalad/git-annex/tree/upstream/master)
-branch here.  The local `master` branch in this repository stores CI
-configuration, associated scripts, and potential patches on top of the original
-`git-annex` sources, which then applied at build time, thus when patches
-applied producing "forked builds" of git-annex, thus potentially functioning
-differently than official original builds of git-annex.  This repository might
-contain issues which are specific to these  builds and not relevant to the original
-git-annex functioning.
+It contains two primary branches:
 
+- [`upstream/master`](https://github.com/datalad/git-annex/tree/upstream/master) -
+  an unmodified mirror of the `master` branch from the original
+  [git-annex](https://git-annex.branchable.com) [repository](https://git.kitenet.net/index.cgi/git-annex.git/) under
+- [`master`](https://github.com/datalad/git-annex/tree/upstream/master) -
+  CI configuration, associated scripts, and potential patches on top of the `upstream/master`,
+  which then applied at build time.
+
+As a result, provided here builds are potentially functioning differently
+than the official original builds of git-annex.  This repository also contain
+issues which are might be specific to these builds and not necessarily relevant
+to the original git-annex functioning.
+
+**Disclaimer**: Agentic AI tools might be used for various aspects of the
+troubleshooting, development, and maintenance in this repository. We strive to
+provide our best effort for adequate provenance and attribution on
+AI-assisted work in commit messages, patch headers, and issues.
 
 ## Submitting Patches
 
