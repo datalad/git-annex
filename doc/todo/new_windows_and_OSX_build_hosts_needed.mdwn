@@ -10,8 +10,10 @@ Note that CI for Windows and OSX is still available through
 appveyor. But I don't think build artifacts can be extracted from there?
 
 A possible alternative for OSX would be to stop providing builds, 
-and rely on homebrew's builds. And/or the
-[pipi/uv](https://pypi.org/project/git-annex/)
-builds could perhaps be blessed as the official builds.
+and rely on homebrew's builds. 
+
+And/or the [pipi/uv](https://pypi.org/project/git-annex/) builds could
+perhaps be blessed as the official builds. Although they may currently be
+built from on datalad/git-annex?
 
 --[[Joey]]
