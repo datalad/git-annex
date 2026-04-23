@@ -1,11 +1,17 @@
-This repository provides an unmodified mirror of the `master` branch from the original
-[git-annex](https://git-annex.branchable.com) repository at <https://git.kitenet.net/index.cgi/git-annex.git/>
-under [`upstream/master`](https://github.com/datalad/git-annex/tree/upstream/master) branch here.
-The local `master` branch in this repository stores CI configuration, associated
-scripts, and potential patches on top of the original `git-annex` sources, which then
-applied at build time, thus when patches applied producing "forked builds"
-of git-annex, thus potentially functioning differently than official original builds
-of git-annex.
+This repository provides a **non-official** distribution of builds of [git-annex](https://git-annex.branchable.com).
+
+It contains an unmodified mirror of the `master` branch from the original
+[git-annex](https://git-annex.branchable.com) repository at
+<https://git.kitenet.net/index.cgi/git-annex.git/> under
+[`upstream/master`](https://github.com/datalad/git-annex/tree/upstream/master)
+branch here.  The local `master` branch in this repository stores CI
+configuration, associated scripts, and potential patches on top of the original
+`git-annex` sources, which then applied at build time, thus when patches
+applied producing "forked builds" of git-annex, thus potentially functioning
+differently than official original builds of git-annex.  This repository might
+contain issues which are specific to these  builds and not relevant to the original
+git-annex functioning.
+
 
 ## Submitting Patches
 
