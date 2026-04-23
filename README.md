@@ -1,9 +1,11 @@
-This is a mirror of the official [git-annex](https://git-annex.branchable.com)
-repository at <https://git.kitenet.net/index.cgi/git-annex.git/>.  The remote
-`master` branch is mirrored here as
-[`upstream/master`](https://github.com/datalad/git-annex/tree/upstream/master).
-The local `master` branch in this repository is only used to store CI
-configuration and associated scripts.
+This repository provides an unmodified mirror of the `master` branch from the original
+[git-annex](https://git-annex.branchable.com) repository at <https://git.kitenet.net/index.cgi/git-annex.git/>
+under [`upstream/master`](https://github.com/datalad/git-annex/tree/upstream/master) branch here.
+The local `master` branch in this repository stores CI configuration, associated
+scripts, and potential patches on top of the original `git-annex` sources, which then
+applied at build time, thus when patches applied producing "forked builds"
+of git-annex, thus potentially functioning differently than official original builds
+of git-annex.
 
 ## Submitting Patches
 
