@@ -6,18 +6,18 @@
 
 The primary goal for the repository is to provide extensive automated testing
 of fresh builds of [git-annex](https://git-annex.branchable.com) using
-its built-in tests battery across various base operating systems and
+its built-in test battery across various base operating systems and
 environments, and against our downstream [DataLad](https://datalad.org/)
 project.
 
 ### Distribution
 
-As a side-artifact of build during testing process, we provide non-official
+As a side-artifact of the build during the testing process, we provide non-official
 automated builds of `git-annex`.  They are attached as artifacts to the CI
-runs, and then for the `git-annex` releases -- from the
+runs, and, for the `git-annex` releases, also to the
 [Releases](https://github.com/datalad/git-annex/releases) page.  All build logs
-and builds are archived "privately" on internal server using
-[con/tinuous](https://github.com/con/tinuous), and then release builds are then
+and builds are archived "privately" on an internal server using
+[con/tinuous](https://github.com/con/tinuous), and release builds are then
 re-shared from the
 [///datalad/packages](https://datasets.datalad.org/?dir=/datalad/packages)
 DataLad package.
@@ -42,14 +42,14 @@ This repository contains two primary branches:
 - [`upstream/master`](https://github.com/datalad/git-annex/tree/upstream/master) -
   an unmodified mirror of the `master` branch from the original
   [git-annex](https://git-annex.branchable.com) [repository](https://git.kitenet.net/index.cgi/git-annex.git/), and
-- [`master`](https://github.com/datalad/git-annex/tree/upstream/master) -
-  CI configuration, associated scripts, and potential patches on top of the `upstream/master`,
-  which then applied at build time.
+- [`master`](https://github.com/datalad/git-annex/tree/master) -
+  CI configuration, associated scripts, and potential patches on top of `upstream/master`,
+  which are then applied at build time.
 
-As a result, provided here builds are potentially functioning differently
-than the official original builds of git-annex.  This repository also contain
-issues which are might be specific to these builds and not necessarily relevant
-to the original git-annex functioning.
+As a result, the builds provided here may function differently
+than the official original builds of git-annex.  This repository also contains
+issues which might be specific to these builds and not necessarily relevant
+to the original git-annex.
 
 ### Submitting Patches
 
