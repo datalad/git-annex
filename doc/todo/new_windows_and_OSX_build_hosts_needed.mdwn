@@ -1,0 +1,17 @@
+The datalad/git-annex repository is no longer used as an autobuilder of
+of git-annex. <https://github.com/datalad/git-annex/issues/260>
+
+Specifically, it was used before for the Windows and OSX autobuilds.
+
+A new build host is needed in order for git-annex releases to be
+accompanied by Windows and OSX builds.
+
+Note that CI for Windows and OSX is still available through
+appveyor. But I don't think build artifacts can be extracted from there?
+
+A possible alternative for OSX would be to stop providing builds, 
+and rely on homebrew's builds. And/or the
+[pipi/uv](https://pypi.org/project/git-annex/)
+builds could perhaps be blessed as the official builds.
+
+--[[Joey]]
