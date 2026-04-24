@@ -13,7 +13,7 @@ A possible alternative for OSX would be to stop providing builds,
 and rely on homebrew's builds. 
 
 And/or the [pipi/uv](https://pypi.org/project/git-annex/) builds could
-perhaps be blessed as the official builds. Although they may currently be
-built from on datalad/git-annex?
+perhaps be blessed as the official builds. mih assures me those builds
+will contiue to be from git-annex master.
 
 --[[Joey]]
