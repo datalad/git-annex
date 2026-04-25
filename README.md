@@ -63,6 +63,25 @@ It is recommended that patches be given names of the form
 `YYYYMMDD-{commit}-{brief_description}.patch`, where `{commit}` is the short
 hash of the git-annex source code commit against which the patch was made.
 
+New patches should carry a
+[DEP-3](https://dep-team.pages.debian.net/deps/dep3/) header at the top of
+the file (`git apply` ignores the preamble), including SPDX tags so the
+patch remains [REUSE](https://reuse.software/) compliant on its own:
+
+```
+Description: <one-line summary>
+ <if needed - longer explanation: why this patch exists in datalad/git-annex,
+ what it works around, and who benefits>
+Origin: vendor, https://github.com/datalad/git-annex/commit/<sha>
+Author: Your Name <you@example.org>
+Forwarded: not-needed   # or: <URL of upstream submission>
+Last-Update: YYYY-MM-DD
+SPDX-FileCopyrightText: YEAR Your Name <you@example.org>
+SPDX-License-Identifier: AGPL-3.0-or-later
+---
+diff --git a/...
+```
+
 Once a patch PR is merged into `master`, the patch will be applied to all
 git-annex builds on all platforms, including release builds.  Patches in
 `patches/` are applied in lexicographic filename order.  If a patch in
@@ -70,6 +89,27 @@ git-annex builds on all platforms, including release builds.  Patches in
 the file from `patches/`, and the patch will be skipped.  If a patch fails to
 apply, an issue will be automatically created in this repository, and the build
 will fail.
+
+## Licensing
+
+Files in the `master` branch (this branch) are
+[REUSE](https://reuse.software/) compliant — see [`REUSE.toml`](./REUSE.toml)
+and [`LICENSES/`](./LICENSES/) for the authoritative, machine-readable
+copyright and license information.  In short:
+
+- Repository scaffolding (CI workflows, test drivers, docs, README) is
+  licensed **MIT** © DataLad Team.
+- Files under [`patches/`](./patches/) modify upstream
+  [git-annex](https://git-annex.branchable.com) source and are therefore
+  licensed **AGPL-3.0-or-later**.  Each patch carries a
+  [DEP-3](https://dep-team.pages.debian.net/deps/dep3/) header documenting
+  its description, origin, author, and upstream-forwarding status.
+
+The
+[`upstream/master`](https://github.com/datalad/git-annex/tree/upstream/master)
+branch is an unmodified mirror of git-annex upstream and follows the
+licensing of that source tree (`AGPL-3.0-or-later` as a whole, with
+component-level licenses recorded in upstream's own `COPYRIGHT` file).
 
 ## Status
 

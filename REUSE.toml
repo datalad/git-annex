@@ -1,0 +1,28 @@
+version = 1
+
+# Default: DataLad scaffolding for CI / testing / distribution of git-annex.
+# Covers root files, GitHub workflows, test client drivers, and docs.
+[[annotations]]
+path = [
+  "README.md",
+  "noxfile.py",
+  "setup.cfg",
+  ".gitignore",
+  ".pre-commit-config.yaml",
+  ".github/**",
+  "clients/**",
+  "docs/**",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2020-2026 DataLad Team <team@datalad.org>"
+SPDX-License-Identifier = "MIT"
+
+# Patches modify git-annex source. As derivative works of git-annex
+# (AGPL-3.0-or-later), the patch files inherit that license. Per-file
+# DEP-3 / SPDX headers inside individual *.patch files override this
+# block (precedence = "closest") to record the actual patch author.
+[[annotations]]
+path = "patches/**"
+precedence = "closest"
+SPDX-FileCopyrightText = "2020-2026 DataLad Team <team@datalad.org>"
+SPDX-License-Identifier = "AGPL-3.0-or-later"

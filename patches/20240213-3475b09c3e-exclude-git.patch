@@ -1,3 +1,11 @@
+Description: Exclude datalad/git-annex CI scaffolding from Debian source package
+Origin: vendor, https://github.com/datalad/git-annex/commit/b4a7900e2b
+Author: John T. Wodder II <git@varonathe.org>
+Forwarded: not-needed
+Last-Update: 2024-02-16
+SPDX-FileCopyrightText: 2024 John T. Wodder II <git@varonathe.org>
+SPDX-License-Identifier: AGPL-3.0-or-later
+---
 diff --git a/debian/source/options b/debian/source/options
 new file mode 100644
 index 0000000000..62612d7c71

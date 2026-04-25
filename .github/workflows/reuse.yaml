@@ -1,0 +1,27 @@
+# SPDX-FileCopyrightText: 2020-2026 DataLad Team <team@datalad.org>
+# SPDX-License-Identifier: MIT
+name: REUSE Compliance
+
+on:
+  pull_request:
+    paths:
+      - 'REUSE.toml'
+      - 'LICENSES/**'
+      - 'patches/**'
+      - '**/*.py'
+      - '**/*.sh'
+      - '**/*.yaml'
+      - '**/*.yml'
+      - '**/*.md'
+      - '.github/workflows/reuse.yaml'
+  push:
+    branches:
+      - master
+
+jobs:
+  reuse:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: REUSE compliance check
+        uses: fsfe/reuse-action@v5

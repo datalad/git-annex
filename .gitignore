@@ -2,3 +2,12 @@
 __pycache__/
 venv/
 .npm
+
+# Local build artifacts
+buildenv.sif
+.tox/
+.venv*/
+.cache/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
