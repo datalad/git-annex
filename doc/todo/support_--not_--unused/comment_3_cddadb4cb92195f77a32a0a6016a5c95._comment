@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2026-04-27T17:28:19Z"
+ content="""
+A `--used` type file matching option would only make sense combined
+with `--all` or perhaps `--key`. Otherwise, it's the default to not operate
+on unused keys, because commands operate on keys that are referenced by
+files in the working tree.
+
+Having that as a file matching option would open a new user confusion.
+Consider  "git-annex drop --not --used". That would never drop any files
+because `drop` by default operates only on used files.
+
+(Except for in the case where `git-annex unused` was run in the past,
+then an unused file were added back to the tree.. then it would surprise
+the user in a different way!)
+
+Given that `--unused` is already potentially confusing since it's not a
+file matching option and can behave in surprising ways when treated as one,
+having a `--used` or similar that *is* a file matching option but doesn't
+usually do anything seems like it only adds to the confusion.
+"""]]

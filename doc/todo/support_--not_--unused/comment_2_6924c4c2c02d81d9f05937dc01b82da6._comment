@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2026-04-27T17:18:02Z"
+ content="""
+`git-annex find` does not accept the `--unused` option. Only copy, drop,
+get, whereis, and a few other commands like that do.
+
+But, the bug still holds, for example `git-annex get --not --unused` will
+confusingly get all unused files and not any other files.
+
+There is a similar problem with `--not --key=foo`, which might be expected
+to get all other keys. Or even `--not --branch=foo`.
+
+It seems difficult to detect all such mistakes though. Consider 
+`git-annex get --not --unused --smallerthan=1mb`.
+The user might expect that to get small files that are not unused, 
+but actually it gets large files that are unused. To detect
+that mistake, the option parser for `--unused` (and `--key` and `--branch`)
+would need to detect that a file matching expression was started before
+it, and is not complete.
+
+I think at some point it just doesn't make sense to prevent user foot
+shooting. `--not` is well documented in what it can be used with, and if
+the user comes up with some combination of options that includes it and
+tries to read it as english, we'd even have to worry about things like
+rejecting `--not --quiet --smallerthan=1mb` since the user might expect
+it to behave like `--verbose`.
+"""]]
