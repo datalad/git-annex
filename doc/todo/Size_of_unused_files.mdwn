@@ -12,3 +12,5 @@ Maybe I'm missing something, but it feels like having `git annex unused` and `gi
 
 Cheers,
 Yann
+
+> [[done]] --[[Joey]]

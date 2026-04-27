@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2026-04-27T15:48:40Z"
+ content="""
+Note that `git-annex info` already shows the size of the keys in the
+temporary directory, and the bad directory. `git-annex unused` lists
+the keys in those 2 directories, in separate tables from the unused keys.
+
+This is making me rethink whether it might make sense for `git-annex info`
+to display the total size of the unused keys as well. While that would make
+the output of info depend on when `git-annex unused` was last run, and
+also on *how* it was run, it would be consistent.
+
+Also, someone may run `git-annex unused` regularly, or have run it and not
+paid much attention to the output, and not want to run it again in order to
+see how much space is used by the unused keys.
+
+And `info` has repository size information, so it would make sense to look
+at it when considering a `git-annex move --unused`.
+
+As for making `git-annex unused` also report the size, it would necessarily
+use a different output format than `git-annex info`. This feels like
+unnecessary duplication of functionality, even if it shared a common
+implementation.
+"""]]

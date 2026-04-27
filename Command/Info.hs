@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2011-2025 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2026 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -33,6 +33,7 @@ import Annex.WorkTree
 import Logs.UUID
 import Logs.Trust
 import Logs.Location
+import Logs.Unused
 import Annex.Branch (UnmergedBranches(..), getUnmergedRefs)
 import Annex.NumCopies
 import Git.Config (boolConfig)
@@ -293,6 +294,7 @@ global_slow_stats :: [Stat]
 global_slow_stats = 
 	[ tmp_size
 	, bad_data_size
+	, unused_data_size
 	, local_annex_keys
 	, local_annex_size
 	, known_annex_files True
@@ -469,10 +471,15 @@ treeDesc True = "working tree"
 treeDesc False = "tree"
 
 tmp_size :: Stat
-tmp_size = staleSize "temporary object directory size" gitAnnexTmpObjectDir
+tmp_size = staleDirSize "temporary object directory size" gitAnnexTmpObjectDir
 
 bad_data_size :: Stat
-bad_data_size = staleSize "bad keys size" gitAnnexBadDir
+bad_data_size = staleDirSize "bad keys size" gitAnnexBadDir
+
+unused_data_size :: Stat
+unused_data_size = staleSize "unused keys size"
+	(M.keys <$> readUnusedLog (literalOsPath ""))
+	(pure (calcRepo . gitAnnexLocation))
 
 key_size :: Key -> Stat
 key_size k = simpleStat "size" $ showSizeKeys $ addKey k emptyKeyInfo
@@ -829,10 +836,17 @@ showSizeKeys d = do
 			"+ " ++ show (unknownSizeKeys d) ++
 			" unknown size"
 
-staleSize :: String -> (Git.Repo -> OsPath) -> Stat
-staleSize label dirspec = Stat label $ do
-	keys <- lift $ dirKeys dirspec	
-	onsize =<< sum <$> keysizes keys
+staleDirSize :: String -> (Git.Repo -> OsPath) -> Stat
+staleDirSize label dirspec = staleSize label (dirKeys dirspec) getpath
+  where
+	getpath = do
+		dir <- fromRepo dirspec
+		return (\k -> pure (dir </> keyFile k))
+
+staleSize :: String -> Annex [Key] -> (Annex (Key -> Annex OsPath)) -> Stat
+staleSize label listkeys getpath = Stat label $ do
+	keys <- lift listkeys
+	onsize =<< sum <$> lift (keysizes keys)
   where
 	onsize 0 = return Nothing
 	onsize size = return $ Just $
@@ -841,9 +855,10 @@ staleSize label dirspec = Stat label $ do
 			return $ sizer storageUnits False size
 		in json (++ aside "clean up with git-annex unused") val label
 	keysizes keys = do
-		dir <- lift $ fromRepo dirspec
-		liftIO $ forM keys $ \k -> 
-			catchDefaultIO 0 $ getFileSize (dir </> keyFile k)
+		getpath' <- getpath
+		forM keys $ \k -> do
+			p <- getpath' k
+			liftIO $ catchDefaultIO 0 $ getFileSize p
 
 aside :: String -> String
 aside s = " (" ++ s ++ ")"

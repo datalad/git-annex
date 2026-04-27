@@ -1,3 +1,9 @@
+git-annex (10.20260422) UNRELEASED; urgency=medium
+
+  * info: Report the total size of unused keys.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 27 Apr 2026 11:41:49 -0400
+
 git-annex (10.20260421) upstream; urgency=medium
 
   * disableremote: New command.
