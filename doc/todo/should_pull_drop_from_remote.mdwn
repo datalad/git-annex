@@ -40,3 +40,8 @@ possible to only document this behavior change, and if a user has set up
 such a preferred content, they can of course change it to something that
 picks the repository they want to keep the copy.
 --[[Joey]]
+
+> While this is a behavior change, it's also clearly a bug fix.
+> So it's ok to change behavior. I did call it out as a behavior change in
+> the changelog so affected users will hopefully notice. It did not seem
+> a big enough behavior change for a news entry though. [[done]] --[[Joey]]

@@ -2,6 +2,11 @@ git-annex (10.20260422) UNRELEASED; urgency=medium
 
   * info: Report the total size of unused keys found by the last run
     of git-annex unused.
+  * Behavior change to git-annex pull and push's handling of unwanted
+    files. While previously both commands dropped unwanted files from
+    both the remote and the local repository, now pull only drops unwanted
+    files from the local repository, and push only drops unwanted files
+    from the remote.
 
  -- Joey Hess <id@joeyh.name>  Mon, 27 Apr 2026 11:41:49 -0400
 

@@ -910,10 +910,11 @@ seekSyncContent o rs currbranch = do
  - Send it to each remote that doesn't have it, and for which it's
  - preferred content.
  -
- - Drop it locally if it's not preferred content (honoring numcopies).
- - 
- - Drop it from each remote that has it, where it's not preferred content
+ - When pulling, drop it locally if it's not preferred content
  - (honoring numcopies).
+ - 
+ - When pushing, drop it from each remote that has it, where it's
+ - not preferred content (honoring numcopies).
  -
  - Returns True if any file transfers were made.
  -}
@@ -949,13 +950,14 @@ syncFile o ebloom rs af k = do
 		-- includeCommandAction for drops,
 		-- because a failure to drop does not mean
 		-- the sync failed.
-		handleDropsFrom locs' rs "unwanted" True k af si []
+		handleDropsFrom locs' dropfromrs "unwanted" dropfromhere
+			k af si []
 			callCommandAction
 	
 	return (got || not (null putrs))
   where
 	wantget lu have inhere = allM id 
-		[ pure (pullOption o || operationMode o == SatisfyMode)
+		[ pure (pullOption o || satisfymode)
 		, pure (not $ null have)
 		, pure (not inhere)
 		, wantGet lu True (Just k) af
@@ -971,7 +973,7 @@ syncFile o ebloom rs af k = do
 			next $ return True
 
 	wantput lu r
-		| pushOption o == False && operationMode o /= SatisfyMode = return False
+		| pushOption o == False && not satisfymode = return False
 		| Remote.readonly r || remoteAnnexReadOnly (Remote.gitconfig r) = return False
 		| isImport r && not (isExport r) = return False
 		| isExport r && not (exportHasAnnexObjects r) = return False
@@ -989,6 +991,14 @@ syncFile o ebloom rs af k = do
 		| otherwise = return []
 	put lu dest = includeCommandAction $ 
 		Command.Move.toStart' lu dest Command.Move.RemoveNever af k ai si
+	
+	dropfromhere = pullOption o || satisfymode
+
+	dropfromrs
+		| pushOption o || satisfymode = rs
+		| otherwise = []
+	
+	satisfymode = operationMode o == SatisfyMode
 
 	ai = mkActionItem (k, af)
 	si = SeekInput []

@@ -44,7 +44,7 @@ Normally this tries to upload the content of each annexed file that is
 in the working tree, to any remote that it's pushing to that does not have
 a copy. To control which files are uploaded to a remote, configure the preferred
 content of the remote. When a file is not the preferred content of a remote,
-or of the local repository, this command will try to drop the file's content.
+this command will try to drop the file's content from it.
 See [[git-annex-preferred-content]](1).
 
 # OPTIONS
