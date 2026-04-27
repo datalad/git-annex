@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2026-04-27T15:32:13Z"
+ content="""
+I could imagine adding something to preferred content expressions like
+`metadatawanted` that looks to see if the metadata contains a `wanted`
+field that is the uuid of the repository.
+
+I doubt that this belongs in the standard preferred content expression
+though. But `annex.initwanted` can be used to configure a preferred content
+expression that you want to use in all new repositories that `git-annex`
+inits.
+"""]]
