@@ -150,7 +150,7 @@ unusedMsg' :: [(Int, Key)] -> [String] -> [String] -> String
 unusedMsg' u mheader mtrailer = unlines $
 	mheader ++
 	table u ++
-	["(To see where this data was previously used, run: git annex whereused --historical --unused"] ++
+	["(To see where this data was previously used, run: git annex whereused --historical --unused)"] ++
 	mtrailer
 
 remoteUnusedMsg :: Maybe Remote -> RemoteName -> [(Int, Key)] -> String
