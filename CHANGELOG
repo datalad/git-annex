@@ -1,6 +1,7 @@
 git-annex (10.20260422) UNRELEASED; urgency=medium
 
-  * info: Report the total size of unused keys.
+  * info: Report the total size of unused keys found by the last run
+    of git-annex unused.
 
  -- Joey Hess <id@joeyh.name>  Mon, 27 Apr 2026 11:41:49 -0400
 
