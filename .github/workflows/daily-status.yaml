@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout this repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Checkout ci-reports repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: con/git-annex-ci-reports
           token: ${{ secrets.DATALAD_GITHUB_TOKEN }}
