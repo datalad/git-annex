@@ -90,6 +90,12 @@ the file from `patches/`, and the patch will be skipped.  If a patch fails to
 apply, an issue will be automatically created in this repository, and the build
 will fail.
 
+## Setup
+
+Maintainer-facing documentation on the CI secrets this repository
+requires (fine-grained PAT scopes, SSH deploy key, SMTP notifications,
+etc.) lives in [`SETUP.md`](./SETUP.md).
+
 ## Licensing
 
 Files in the `master` branch (this branch) are

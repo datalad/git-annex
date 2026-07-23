@@ -5,6 +5,7 @@ version = 1
 [[annotations]]
 path = [
   "README.md",
+  "SETUP.md",
   "noxfile.py",
   "setup.cfg",
   ".gitignore",
