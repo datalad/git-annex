@@ -72,15 +72,17 @@ getAssociatedKeyMissBench (BenchDb h _ _) = bench ("getAssociatedKey (miss)") $ 
 
 addAssociatedFileOldBench :: BenchDb -> Benchmark
 addAssociatedFileOldBench (BenchDb h num _) = bench ("addAssociatedFile to (old)") $ nfIO $ do
-	n <- getStdRandom (randomR (1,num))
-	SQL.addAssociatedFile (keyN n) (fileN n) (SQL.WriteHandle h)
+	forM_ [1..num] $ \_ -> do
+		n <- getStdRandom (randomR (1,num))
+		SQL.addAssociatedFile (keyN n) (fileN n) (SQL.WriteHandle h)
 	H.flushDbQueue h
 
 addAssociatedFileNewBench :: BenchDb -> Benchmark
 addAssociatedFileNewBench (BenchDb h num mv) = bench ("addAssociatedFile to (new)") $ nfIO $ do
 	n <- takeMVar mv
-	putMVar mv (n+1)
-	SQL.addAssociatedFile (keyN n) (fileN (num+n)) (SQL.WriteHandle h)
+	putMVar mv (n+num)
+	forM_ [n..n+num] $ \n' ->
+		SQL.addAssociatedFile (keyN n) (fileN (num+n')) (SQL.WriteHandle h)
 	H.flushDbQueue h
 
 populateAssociatedFiles :: H.DbQueue -> Integer -> IO ()
