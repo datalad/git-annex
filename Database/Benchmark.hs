@@ -11,6 +11,7 @@
 module Database.Benchmark (benchmarkDbs) where
 
 import Annex.Common
+import Annex.Tmp
 import Types.Benchmark
 #ifdef WITH_BENCHMARK
 import qualified Database.Keys.SQL as SQL
@@ -30,18 +31,21 @@ import Control.Concurrent
 
 benchmarkDbs :: CriterionMode -> Integer -> Annex ()
 #ifdef WITH_BENCHMARK
-benchmarkDbs mode n = withTmpDirIn (literalOsPath ".") (literalOsPath "benchmark") $ \tmpdir -> do
-	db <- benchDb tmpdir n
-	liftIO $ runMode mode
-		[ bgroup "keys database"
-			[ getAssociatedFilesHitBench db
-			, getAssociatedFilesMissBench db
-			, getAssociatedKeyHitBench db
-			, getAssociatedKeyMissBench db
-			, addAssociatedFileOldBench db
-			, addAssociatedFileNewBench db
+benchmarkDbs mode n = withOtherTmp $ \othertmpdir -> do
+		withTmpDirIn othertmpdir (literalOsPath "benchmark") go
+  where
+	go tmpdir = do
+		db <- benchDb tmpdir n
+		liftIO $ runMode mode
+			[ bgroup "keys database"
+				[ getAssociatedFilesHitBench db
+				, getAssociatedFilesMissBench db
+				, getAssociatedKeyHitBench db
+				, getAssociatedKeyMissBench db
+				, addAssociatedFileOldBench db
+				, addAssociatedFileNewBench db
+				]
 			]
-		]
 #else
 benchmarkDbs _ = giveup "not built with criterion, cannot benchmark"
 #endif
