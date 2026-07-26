@@ -412,7 +412,7 @@ runDownload todownload url extension cache cv getter = do
 				| null ks -> do
 					broken <- checkFeedBroken (feedurl todownload)
 					when broken $
-						void $ feedProblem url "download failed"
+						void $ feedProblem (feedurl todownload) "download failed"
 					liftIO $ atomically $ putTMVar cv broken
 					next $ return False
 				| otherwise -> do
@@ -468,7 +468,7 @@ startUrlDownload cv todownload url a = do
 		(go `onException` recordfailure)
   where
 	recordfailure = do
-		void $ feedProblem url "download failed"
+		void $ feedProblem (feedurl todownload) "download failed"
 		liftIO $ atomically $ tryPutTMVar cv False
 	go = do
 		maybeAddJSONField "url" url
