@@ -172,10 +172,13 @@ getFeed o url st =
 	parse tmpf = liftIO (parseFeedFromFile' tmpf) >>= \case
 		Nothing -> debugfeedcontent tmpf "parsing the feed failed"
 		Just f -> do
-			case decodeBS $ fromFeedText $ getFeedTitle f of
-				"" -> noop
-				t -> showNote (UnquotedString ('"' : t ++ "\""))
-			case findDownloads url f of
+			let feedtitle = '"' : decodeBS (fromFeedText $ getFeedTitle f) ++ "\""
+			unless (null feedtitle) $
+				showNote (UnquotedString feedtitle)
+			let feeddesc = if null feedtitle
+				then url
+				else feedtitle
+			case findDownloads url f feeddesc of
 				[] -> debugfeedcontent tmpf "bad feed content; no enclosures to download"
 				l -> do
 					record (Just (Just l))
@@ -202,6 +205,7 @@ getFeed o url st =
 
 data ToDownload = ToDownload
 	{ feedurl :: URLString
+	, feeddescription :: String
 	, location :: DownloadLocation
 	, itemid :: Maybe B.ByteString
 	-- Either the parsed or unparsed date.
@@ -240,8 +244,8 @@ getCache opttemplate = ifM (Annex.getRead Annex.force)
 	ai = ActionItemOther (Just "gathering known urls")
 	si = SeekInput []
 
-findDownloads :: URLString -> Feed -> [ToDownload]
-findDownloads u f = catMaybes $ map mk (feedItems f)
+findDownloads :: URLString -> Feed -> String -> [ToDownload]
+findDownloads u f feeddesc = catMaybes $ map mk (feedItems f)
   where
 	mk i = case getItemEnclosure i of
 		Just (enclosureurl, _, _) ->
@@ -253,6 +257,7 @@ findDownloads u f = catMaybes $ map mk (feedItems f)
 			Nothing -> Nothing
 	mk' i l = ToDownload
 		{ feedurl = u
+		, feeddescription = feeddesc
 		, location = l
 		, itemid = case getItemId i of
 			Just (_, iid) -> Just (fromFeedText iid)
@@ -471,6 +476,8 @@ startUrlDownload cv todownload url a = do
 		void $ feedProblem (feedurl todownload) "download failed"
 		liftIO $ atomically $ tryPutTMVar cv False
 	go = do
+		showNote $ UnquotedString $
+			"from " ++ feeddescription todownload
 		maybeAddJSONField "url" url
 		a
 
@@ -582,6 +589,7 @@ playlistDownloads url = mapMaybe go
 		iurl <- youtube_url i
 		return $ ToDownload
 			{ feedurl = url
+			, feeddescription = url
 			, location = MediaLink iurl
 			, itemid = Just (encodeBS iurl)
 			, itempubdate = 
