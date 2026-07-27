@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 1"
+ date="2026-07-21T17:08:46Z"
+ content="""
+I feel like I had asked similar question in the past but failed to find it or an answer ;-)
+
+Indeed it feels like it would be great to  be able to just declare to always do only \"unlocked\" mode operations in a given git-annex repo, and thus potentially keeping it always in the \"unlocked\" mode (even when on system with symlinks support), but without requiring any `adjusted/` \"synchronization\" altogether.
+"""]]
