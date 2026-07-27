@@ -16,3 +16,7 @@ although it does document the key format and the external could be expected
 to generate it by itself. Or there could be a reply like 
 "IMPORTKEY-SUCCESS SHA1 $hash".
 --[[Joey]]:
+
+> [[done]], but I punted on the key generation and left that up to
+> the external program. It may make sense for git-annex to later
+> grow a command to handle that. --[[Joey]]
