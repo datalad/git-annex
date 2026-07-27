@@ -18,6 +18,7 @@ module Remote.External.Types (
 	ExtensionList(..),
 	supportedExtensionList,
 	asyncExtensionEnabled,
+	importKeyExtensionEnabled,
 	ExternalAsync(..),
 	ExternalAsyncRelay(..),
 	Proto.parseMessage,
@@ -109,6 +110,7 @@ data ExternalState = ExternalState
 	, externalPrepared :: TMVar PrepareStatus
 	, externalConfig :: TMVar ParsedRemoteConfig
 	, externalConfigChanges :: TMVar (RemoteConfig -> RemoteConfig)
+	, externalExtensions :: ExtensionList
 	}
 
 type PID = Int
@@ -124,6 +126,7 @@ supportedExtensionList = ExtensionList
 	, "UNAVAILABLERESPONSE"
 	, "TRANSFER-RETRIEVE-URL"
 	, "CHECKPRESENT-URL"
+	, importKeyExtension
 	, "DELEGATE"
 	, asyncExtension
 	]
@@ -133,6 +136,12 @@ asyncExtension = "ASYNC"
 
 asyncExtensionEnabled :: ExtensionList -> Bool
 asyncExtensionEnabled l = asyncExtension `elem` fromExtensionList l
+
+importKeyExtension :: String
+importKeyExtension = "IMPORTKEY"
+
+importKeyExtensionEnabled :: ExtensionList -> Bool
+importKeyExtensionEnabled l = importKeyExtension `elem` fromExtensionList l
 
 -- When the async extension is in use, a single external process
 -- is started and used for all requests.
@@ -198,6 +207,7 @@ data Request
 	| IMPORT ImportLocation
 	| RETRIEVEIMPORT FilePath
 	| CHECKPRESENTIMPORT SafeKey
+	| IMPORTKEY Size ContentIdentifier
 	deriving (Show)
 
 -- Does PREPARE need to have been sent before this request?
@@ -269,6 +279,11 @@ instance Proto.Sendable Request where
 		[ "CHECKPRESENTIMPORT"
 		, Proto.serialize key
 		]
+	formatMessage (IMPORTKEY size cid) = Proto.mkMessage
+		[ "IMPORTKEY"
+		, Proto.serialize size
+		, Proto.serialize cid
+		]
 
 -- Responses the external remote can make to requests.
 data Response
@@ -318,6 +333,9 @@ data Response
 	| RETRIEVEIMPORT_SUCCESS
 	| RETRIEVEIMPORT_FAILURE ErrorMsg
 	| RETRIEVEIMPORT_URL URLString
+	| IMPORTKEY_SUCCESS Key
+	| IMPORTKEY_FAILURE ErrorMsg
+	| IMPORTKEY_SKIP
 	| DELEGATE [String]
 	| UNSUPPORTED_REQUEST
 	deriving (Show)
@@ -369,6 +387,9 @@ instance Proto.Receivable Response where
 	parseCommand "RETRIEVEIMPORT-SUCCESS" = Proto.parse0 RETRIEVEIMPORT_SUCCESS
 	parseCommand "RETRIEVEIMPORT-FAILURE" = Proto.parse1 RETRIEVEIMPORT_FAILURE
 	parseCommand "RETRIEVEIMPORT-URL" = Proto.parse1 RETRIEVEIMPORT_URL
+	parseCommand "IMPORTKEY-SUCCESS" = Proto.parse1 IMPORTKEY_SUCCESS
+	parseCommand "IMPORTKEY-FAILURE" = Proto.parse1 IMPORTKEY_FAILURE
+	parseCommand "IMPORTKEY-SKIP" = Proto.parse0 IMPORTKEY_SKIP
 	parseCommand "DELEGATE" = Proto.parseList DELEGATE
 	parseCommand "UNSUPPORTED-REQUEST" = Proto.parse0 UNSUPPORTED_REQUEST
 	parseCommand _ = Proto.parseFail

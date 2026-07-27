@@ -262,9 +262,9 @@ support a request, it can reply with `UNSUPPORTED-REQUEST`.
   can reuse the md5 to generate the key. It is not necessary to guarantee
   that the file on the remote still has the same ContentIdentifier.  
   * `IMPORTKEY-SUCCESS Key`  
-    Responding with the imported key.
+    Responding with a key.
   * `IMPORTKEY-FAILURE ErrorMsg`  
-    Indicates that it was not possible to import the key.
+    Indicates that it was not possible to import a key.
     (Perhaps because the remote cannot be contacted.)
   * `IMPORTKEY-SKIP`  
     This makes the file not be included in the imported tree.

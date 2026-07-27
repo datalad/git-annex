@@ -119,7 +119,8 @@ gen r u rc gc rs = do
 			, importActions = importUnsupported
 			, exportImportActions = ExportImportActions
 				{ listImportableOrExportedContents = listImportableOrExportedContentsM ii dir
-				, importKeyWithContentIdentifier = Just (importKeyWithContentIdentifierM ii dir)
+				, importKeyWithContentIdentifier = pure $ 
+					Just (importKeyWithContentIdentifierM ii dir)
 				, retrieveExportWithContentIdentifier = retrieveExportWithContentIdentifierM ii dir cow
 				, storeExportWithContentIdentifier = storeExportWithContentIdentifierM ii dir cow fastcopy
 				, removeExportWithContentIdentifier = removeExportWithContentIdentifierM ii dir

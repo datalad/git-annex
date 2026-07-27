@@ -98,7 +98,8 @@ gen r u rc gc rs = do
 		, importActions = importUnsupported
 		, exportImportActions = ExportImportActions
 			{ listImportableOrExportedContents = listImportableOrExportedContentsM u borgrepo c
-			, importKeyWithContentIdentifier = Just ThirdPartyPopulated.importKey
+			, importKeyWithContentIdentifier = pure $ 
+				Just ThirdPartyPopulated.importKey
 			, retrieveExportWithContentIdentifier = retrieveExportWithContentIdentifierM borgrepo
 			, checkPresentExportWithContentIdentifier = checkPresentExportWithContentIdentifierM borgrepo
 			-- This remote is thirdPartyPopulated, so these
