@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 2"""
- date="2026-07-27T16:42:33Z"
- content="""
-webdav supports reading hashes
-<https://central.owncloud.org/t/reading-hashes-md5-or-sha1-via-webdav/14348/2>
-so this could also be used for git-annex's built-in webdav special remote.
-"""]]
