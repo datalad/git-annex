@@ -499,11 +499,11 @@ buildImportTreesHistory
 buildImportTreesHistory converttree basetree msubdir history hdl = S.fromList
 	<$> mapM (\ic -> buildImportTreesGeneric' converttree basetree msubdir ic hdl) history
 
-canImportKeys :: Remote -> Bool -> Bool
+canImportKeys :: Remote -> Bool -> Annex Bool
 canImportKeys remote importcontent =
-	importcontent || isJust (Remote.importKey ia)
+	pure (importcontent) <||> (isJust <$> Remote.importKey ia)
   where
-	ia = Remote.exportImportActions remote
+	ia = Remote.importActions remote
 
 -- Result of an import. 
 data ImportResult t
@@ -671,7 +671,7 @@ importKeys
 	-> ImportableContentsChunkable Annex (ContentIdentifier, ByteSize)
 	-> Annex (ImportResult (ImportableContentsChunkable Annex (Either Sha Key)))
 importKeys remote importtreeconfig importcontent thirdpartypopulated importablecontents = do
-	unless (canImportKeys remote importcontent) $
+	unlessM (canImportKeys remote importcontent) $
 		giveup "This remote does not support importing without downloading content."
 	-- This map is used to remember content identifiers that
 	-- were just imported, before they have necessarily been
@@ -807,7 +807,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 			return (Right job)
 	
 	thirdpartypopulatedimport db (loc, (cid, sz)) = 
-		case Remote.importKey (Remote.exportImportActions remote) of
+		Remote.importKey (Remote.importActions remote) >>= \case
 			Nothing -> return Nothing
 			Just importkey ->
 				tryNonAsync (importkey loc cid sz nullMeterUpdate) >>= \case
@@ -823,20 +823,21 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 	importordownload cidmap (loc, (cid, sz)) largematcher = do
 		f <- locworktreefile loc
 		matcher <- largematcher f
+		let usedownload = dodownload cidmap (loc, (cid, sz)) f matcher
+		let useimport = doimport cidmap (loc, (cid, sz)) f matcher
 		-- When importing a key is supported, always use it rather
 		-- than downloading and retrieving a key, to avoid
 		-- generating trees with different keys for the same content.
-		let act = if importcontent
-			then case Remote.importKey (Remote.exportImportActions remote) of
-				Nothing -> dodownload
+		if importcontent
+			then Remote.importKey (Remote.importActions remote) >>= \case
+				Nothing -> usedownload
 				Just _ -> if Utility.Matcher.introspect matchNeedsFileContent (fst matcher)
-					then dodownload
-					else doimport
-			else doimport
-		act cidmap (loc, (cid, sz)) f matcher
+					then usedownload
+					else useimport
+			else useimport
 
 	doimport cidmap (loc, (cid, sz)) f matcher =
-		case Remote.importKey (Remote.exportImportActions remote) of
+		Remote.importKey (Remote.importActions remote) >>= \case
 			Nothing -> error "internal" -- checked earlier
 			Just importkey -> do
 				when (Utility.Matcher.introspect matchNeedsFileContent (fst matcher)) $

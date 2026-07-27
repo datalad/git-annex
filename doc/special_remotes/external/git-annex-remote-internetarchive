@@ -13,6 +13,9 @@
 # To limit the files that are imported to a particular extension use eg:
 # 	git-annex wanted iaitem include="*.mp3"
 #
+# Note that git-annex import --no-content is supported by this special
+# remote.
+#
 # Copyright 2013-2026 Joey Hess; licenced under the GNU GPL version 3 or higher.
 set -e
 getconfig () {
@@ -25,6 +28,15 @@ echo VERSION 2
 while read line; do
 	set -- $line
 	case "$1" in
+		EXTENSIONS)
+			shift 1
+			for extension in "$@"; do
+				if [ "$extension" = IMPORTKEY ]; then
+					echo EXTENSIONS IMPORTKEY
+					break
+				fi
+			done
+		;;
 		INITREMOTE)
 			getconfig
 			if [ -z "$item" ]; then
@@ -49,6 +61,13 @@ while read line; do
 				fi
 			done
 			echo LISTIMPORTABLECONTENTS-SUCCESS
+		;;
+		IMPORTKEY)
+			# This relies on IMPORTABLECONTENTIDENTIFIER above
+			# being a sha1.
+			size="$2"
+			sha1="$3"
+			echo "IMPORTKEY-SUCCESS SHA1-s$size--$sha1"
 		;;
 		RETRIEVEIMPORT)
 			echo RETRIEVEIMPORT-URL "https://archive.org/download/$item/$importlocation"

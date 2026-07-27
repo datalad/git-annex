@@ -119,7 +119,8 @@ gen r u rc gc rs = do
 			, importActions = importUnsupported
 			, exportImportActions = ExportImportActions
 				{ listImportableOrExportedContents = listImportableOrExportedContentsM ii dir
-				, importKey = Just (importKeyM ii dir)
+				, importKeyWithContentIdentifier = pure $ 
+					Just (importKeyWithContentIdentifierM ii dir)
 				, retrieveExportWithContentIdentifier = retrieveExportWithContentIdentifierM ii dir cow
 				, storeExportWithContentIdentifier = storeExportWithContentIdentifierM ii dir cow fastcopy
 				, removeExportWithContentIdentifier = removeExportWithContentIdentifierM ii dir
@@ -432,8 +433,8 @@ guardSameContentIdentifiers cont olds (Just new)
 				let ic' = replaceInode 0 ic
 				in ContentIdentifier (encodeBS (showInodeCache ic'))
 
-importKeyM :: IgnoreInodes -> OsPath -> ExportLocation -> ContentIdentifier -> ByteSize -> MeterUpdate -> Annex (Maybe Key)
-importKeyM ii dir loc cid _sz p = do
+importKeyWithContentIdentifierM :: IgnoreInodes -> OsPath -> ExportLocation -> ContentIdentifier -> ByteSize -> MeterUpdate -> Annex (Maybe Key)
+importKeyWithContentIdentifierM ii dir loc cid _sz p = do
 	backend <- chooseBackend f
 	k <- fst <$> genKey ks p backend
 	currcid <- liftIO $ mkContentIdentifier ii absf

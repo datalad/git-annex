@@ -627,8 +627,8 @@ importRemote importcontent o remote currbranch
 		Nothing -> noop
 		Just b -> do
 			let (branch, subdir) = splitRemoteAnnexTrackingBranchSubdir b
-			if canImportKeys remote importcontent
-				then do
+			ifM (canImportKeys remote importcontent)
+				( do
 					addunlockedmatcher <- addUnlockedMatcher
 					Command.Import.seekRemote remote branch subdir importcontent (CheckGitIgnore True) addunlockedmatcher []
 					-- Importing generates a branch
@@ -638,7 +638,8 @@ importRemote importcontent o remote currbranch
 					-- mergeing it.
 					mc <- mergeConfig True
 					void $ mergeRemote remote currbranch mc o
-				else warning $ UnquotedString $ "Cannot import from " ++ Remote.name remote ++ " when not syncing content."
+				, warning $ UnquotedString $ "Cannot import from " ++ Remote.name remote ++ " when not syncing content."
+				)
   where
 	wantpull = remoteAnnexPull (Remote.gitconfig remote)
 
@@ -651,10 +652,12 @@ importRemote importcontent o remote currbranch
 pullThirdPartyPopulated :: SyncOptions -> Remote -> CommandSeek
 pullThirdPartyPopulated o remote
 	| not (pullOption o) || not wantpull = noop
-	| not (canImportKeys remote False) = noop
-	| otherwise = void $ includeCommandAction $ starting "list" ai si $
-		Command.Import.listContents' remote ImportTree (CheckGitIgnore False) go
+	| otherwise = 
+		whenM (canImportKeys remote False)
+			start
   where
+	start = void $ includeCommandAction $ starting "list" ai si $
+		Command.Import.listContents' remote ImportTree (CheckGitIgnore False) go
 	go (Just importable) = importChanges remote ImportTree False True importable >>= \case
 		ImportFinished postexportlogupdate imported -> do
 			(_t, updatestate) <- recordImportTree remote ImportTree Nothing imported postexportlogupdate

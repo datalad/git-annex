@@ -114,6 +114,7 @@ gen r u rc gc rs = do
 				}
 			, importActions = ImportActions
 				{ listImportableContents = listImportableContentsM o
+				, importKey = pure Nothing
 				, retrieveImport = retrieveImportM o
 				, checkPresentImport = checkPresentImportExportM o
 				}

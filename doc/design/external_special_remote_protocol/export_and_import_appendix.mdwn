@@ -207,7 +207,10 @@ support a request, it can reply with `UNSUPPORTED-REQUEST`.
   No response is made to this message.
 * `RETRIEVEIMPORT File`  
   Retrieves the content of a file with the previously provided 
-  `IMPORT` Name from the special remote to the File on local disk.
+  `IMPORT` Name from the special remote to the File on local disk.  
+  Note that the special remote can send `DOWNLOAD-URL` messages
+  without negotiating support for it in the protocol, because versions
+  of git-annex that support this also support `DOWNLOAD-URL`.  
   While the transfer is running, the remote can send any number of
   `PROGRESS` messages. Once the transfer is complete, it finishes by
   sending one of these replies:
@@ -220,7 +223,7 @@ support a request, it can reply with `UNSUPPORTED-REQUEST`.
     this lets it offload that work to git-annex.
   * `DELEGATE type=value [params]`  
     Delegate this request to a different type of special remote.
-    See [[delegate_appendix]].
+    See [[delegate_appendix]].  
 * `CHECKPRESENTIMPORT Key`  
   Requests the remote to check if the previously provided `IMPORT` Name
   is present in it.
@@ -239,10 +242,35 @@ support a request, it can reply with `UNSUPPORTED-REQUEST`.
   * `DELEGATE type=value [params]`  
     Delegate this request to a different type of special remote.
     See [[delegate_appendix]].
-
-Note that the special remote can send `DOWNLOAD-URL` without negotiating
-support for it in the protocol, because versions of git-annex that support
-this also support `DOWNLOAD-URL`.
+* `IMPORTKEY Size ContentIdentifier`  
+  Requests the remote generate a git-annex key for content stored
+  on it without downloading that content.  
+  This request is a protocol extension and will only be sent if the
+  special remote sent an `EXTENSIONS` that included `IMPORTKEY`.  
+  Implementing this allows using `git-annex import --no-content` from
+  the remote.
+  The remote can generate any [[type of git-annex key|backends]] that uses
+  a checksum. For example, if a cloud storage service allows querying for
+  a md5, key, it's ok to generate a MD5 key. 
+  To generate the key, see [[internals/key_format]].  
+  The previously provided `IMPORT` Name specifies which file on the remote
+  to generate the key for.  
+  The Size is provided because the key should include the size of the file.  
+  The ContentIdentifier is provided in case it can be used to avoid
+  extra work in determining the key. For example, if a remote uses a md5
+  as the ContentIdentifier in `LISTIMPORTABLECONTENTS`, it
+  can reuse the md5 to generate the key. It is not necessary to guarantee
+  that the file on the remote still has the same ContentIdentifier.  
+  * `IMPORTKEY-SUCCESS Key`  
+    Responding with a key.
+  * `IMPORTKEY-FAILURE ErrorMsg`  
+    Indicates that it was not possible to import a key.
+    (Perhaps because the remote cannot be contacted.)
+  * `IMPORTKEY-SKIP`  
+    This makes the file not be included in the imported tree.
+  * `DELEGATE type=value [params]`  
+    Delegate this request to a different type of special remote.
+    See [[delegate_appendix]].
 
 ### import example
 

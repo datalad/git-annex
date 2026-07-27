@@ -387,8 +387,11 @@ data ExportImportActions a = ExportImportActions
 	-- file stored on the remote is the content of an annex object,
 	-- and return its Key, or Nothing if it is not.
 	--
-	-- Throws exception on failure to access the remote.
-	, importKey :: Maybe (ImportLocation -> ContentIdentifier -> ByteSize -> MeterUpdate -> a (Maybe Key))
+	-- The outer action should only check if the remote supports
+	-- this, and return the inner action if so.
+	-- The returned action throws exception on failure to access the
+	-- remote.
+	, importKeyWithContentIdentifier :: a (Maybe (ImportLocation -> ContentIdentifier -> ByteSize -> MeterUpdate -> a (Maybe Key)))
 	-- Retrieves a file from the remote. Ensures that the file
 	-- it retrieves has one of the requested ContentIdentifiers.
 	--
@@ -470,6 +473,13 @@ data ImportActions a = ImportActions
 	-- not need to uniquely identify content.
 	-- Eg, a mtime is sufficient.
 	{ listImportableContents :: a (Maybe (ImportableContentsChunkable a (ContentIdentifier, ByteSize)))
+	-- Like importKeyWithContentIdentifier, but does not need to
+	-- guarantee that the file on the remote still has the same
+	-- content that it did when listImportableContents returned
+	-- the ContentIdentifier. The ContentIdentifier is still
+	-- provided so that information in it can be used to generate the
+	-- key.
+	, importKey :: a (Maybe (ImportLocation -> ContentIdentifier -> ByteSize -> MeterUpdate -> a (Maybe Key)))
 	-- Like retrieveExportWithContentIdentifier, but does not
 	-- need to guarantee that the file it retrieves has one
 	-- of the requested ContentIdentifiers.

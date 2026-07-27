@@ -129,6 +129,7 @@ gen rt externalprogram r u rc gc rs
 		let importactions = if importsupported
 			then ImportActions
 				{ listImportableContents = listImportableContentsM external
+				, importKey = importKeyM external
 				, retrieveImport = retrieveImportM external gc
 				, checkPresentImport = checkPresentImportM external gc
 				}
@@ -612,6 +613,32 @@ listImportableContentsM external =
 	go _ _ UNSUPPORTED_REQUEST = result Nothing
 	go _ _ _ = Nothing
 
+importKeyM
+	:: External
+	-> Annex (Maybe (ImportLocation -> ContentIdentifier -> ByteSize -> MeterUpdate -> Annex (Maybe Key)))
+importKeyM external = 
+	withExternalState external $ \st ->
+		return $ if importKeyExtensionEnabled (externalExtensions st)
+			then Just go
+			else Nothing
+  where
+	go loc cid sz p =
+		handleRequestImport' external loc (IMPORTKEY sz cid) Nothing $ \case
+			IMPORTKEY_SUCCESS k ->
+				result (Just k)
+			IMPORTKEY_FAILURE err ->
+				giveup err
+			IMPORTKEY_SKIP ->
+				result Nothing
+			DELEGATE ps -> Just $ do
+				delegate <- getDelegateRemote external ps
+				importKey (importActions delegate) >>= \case
+					Just a -> Result <$> a loc cid sz p
+					Nothing -> giveup "IMPORTKEY delegated to a special remote that does not support it"
+			UNSUPPORTED_REQUEST ->
+				giveup "IMPORTKEY not implemented by external special remote, but it claimed to support it"
+			_ -> Nothing
+
 {- Sends a Request to the external remote, and waits for it to generate
  - a Response. That is fed into the responsehandler, which should return
  - the action to run for it (or Nothing if there's a protocol error).
@@ -990,25 +1017,25 @@ startExternal external =
 	liftIO (atomically $ takeTMVar (externalAsync external)) >>= \case
 		UncheckedExternalAsync -> do
 			(st, extensions) <- startExternal' external
-				`onException` store UncheckedExternalAsync
+				`onException` storeasync UncheckedExternalAsync
 			if asyncExtensionEnabled extensions
 				then do
 					annexrunner <- Annex.makeRunner
 					relay <- liftIO $ runRelayToExternalAsync external st annexrunner
 					st' <- liftIO $ asyncRelayExternalState relay
-					store (ExternalAsync relay)
+					storeasync (ExternalAsync relay)
 					return st'
 				else do
-					store NoExternalAsync
+					storeasync NoExternalAsync
 					return st
 		v@NoExternalAsync -> do
-			store v
+			storeasync v
 			fst <$> startExternal' external
 		v@(ExternalAsync relay) -> do
-			store v
+			storeasync v
 			liftIO $ asyncRelayExternalState relay
   where
-	store = liftIO . atomically . putTMVar (externalAsync external)
+	storeasync = liftIO . atomically . putTMVar (externalAsync external)
 
 startExternal' :: External -> Annex (ExternalState, ExtensionList)
 startExternal' external = do
@@ -1040,9 +1067,10 @@ startExternal' external = do
 				, externalPrepared = pv
 				, externalConfig = cv
 				, externalConfigChanges = ccv
+				, externalExtensions = ExtensionList []
 				}
 			extensions <- startproto st
-			return (st, extensions)
+			return (st { externalExtensions = extensions }, extensions)
   where
 	(externalcmd, externalparams) = case externalProgram external of
 		ExternalType t -> ("git-annex-remote-" ++ t, [])

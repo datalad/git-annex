@@ -58,6 +58,7 @@ instance HasImportUnsupported (ParsedRemoteConfig -> RemoteGitConfig -> Annex Im
 instance HasImportUnsupported (ImportActions Annex) where
 	importUnsupported = ImportActions
 		{ listImportableContents = nope
+		, importKey = nope
 		, retrieveImport = nope
 		, checkPresentImport = \_ _ -> return False
 		}
@@ -74,7 +75,7 @@ instance HasExportImportUnsupported (ParsedRemoteConfig -> RemoteGitConfig -> An
 instance HasExportImportUnsupported (ExportImportActions Annex) where
 	exportImportUnsupported = ExportImportActions
 		{ listImportableOrExportedContents = nope
-		, importKey = Nothing
+		, importKeyWithContentIdentifier = pure Nothing
 		, retrieveExportWithContentIdentifier = nope
 		, storeExportWithContentIdentifier = nope
 		, removeExportWithContentIdentifier = nope
@@ -332,6 +333,7 @@ adjustExportImport' isexport isimport isexportimport annexobjects r rs gc = do
 	-- more strongly.
 	importActionsForExportImport ciddbv = ImportActions
 		{ listImportableContents = listImportableOrExportedContents (exportImportActions r)
+		, importKey = importKeyWithContentIdentifier (exportImportActions r)
 		, retrieveImport = retrieveExportWithContentIdentifier (exportImportActions r)
 		, checkPresentImport = checkPresentExportImport ciddbv
 		}

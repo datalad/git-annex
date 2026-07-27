@@ -45,7 +45,7 @@ Recent versions of git-annex respond with a message indicating
 protocol extensions that it supports. Older versions of
 git-annex do not send this message.
 
-	EXTENSIONS INFO ASYNC GETGITREMOTENAME UNAVAILABLERESPONSE TRANSFER-RETRIEVE-URL CHECKPRESENT-URL DELEGATE
+	EXTENSIONS INFO ASYNC GETGITREMOTENAME UNAVAILABLERESPONSE TRANSFER-RETRIEVE-URL CHECKPRESENT-URL DELEGATE IMPORTKEY
 
 The special remote can respond to that with its own EXTENSIONS message, listing
 any extensions it wants to use. 
@@ -529,6 +529,9 @@ These protocol extensions are currently supported.
 * `CHECKPRESENT-URL`  
   This allows the `CHECKPRESENT-URL` response to be used
   in reply to `CHECKPRESENT` and `CHECKPRESENTEXPORT`.
+* `IMPORTKEY`  
+  This indicates that the external special remote supports the `IMPORTKEY`
+  request documented in the [[export_and_import_appendix]].
 * `DELEGATE`  
   This allows the `DELEGATE` response to be used in reply to many requests.
   That causes the request to be handled by a delegate special remote,

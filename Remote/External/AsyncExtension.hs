@@ -53,6 +53,7 @@ runRelayToExternalAsync external st annexrunner = do
 			, externalPrepared = externalPrepared st
 			, externalConfig = externalConfig st
 			, externalConfigChanges = externalConfigChanges st
+			, externalExtensions = externalExtensions st
 			}
 
 type ReceiveQueue = TBMChan String
