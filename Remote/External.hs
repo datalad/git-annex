@@ -129,6 +129,7 @@ gen rt externalprogram r u rc gc rs
 		let importactions = if importsupported
 			then ImportActions
 				{ listImportableContents = listImportableContentsM external
+				, importKey = Nothing
 				, retrieveImport = retrieveImportM external gc
 				, checkPresentImport = checkPresentImportM external gc
 				}

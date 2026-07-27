@@ -501,9 +501,9 @@ buildImportTreesHistory converttree basetree msubdir history hdl = S.fromList
 
 canImportKeys :: Remote -> Bool -> Bool
 canImportKeys remote importcontent =
-	importcontent || isJust (Remote.importKeyWithContentIdentifier ia)
+	importcontent || isJust (Remote.importKey ia)
   where
-	ia = Remote.exportImportActions remote
+	ia = Remote.importActions remote
 
 -- Result of an import. 
 data ImportResult t
@@ -807,7 +807,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 			return (Right job)
 	
 	thirdpartypopulatedimport db (loc, (cid, sz)) = 
-		case Remote.importKeyWithContentIdentifier (Remote.exportImportActions remote) of
+		case Remote.importKey (Remote.importActions remote) of
 			Nothing -> return Nothing
 			Just importkey ->
 				tryNonAsync (importkey loc cid sz nullMeterUpdate) >>= \case
@@ -827,7 +827,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 		-- than downloading and retrieving a key, to avoid
 		-- generating trees with different keys for the same content.
 		let act = if importcontent
-			then case Remote.importKeyWithContentIdentifier (Remote.exportImportActions remote) of
+			then case Remote.importKey (Remote.importActions remote) of
 				Nothing -> dodownload
 				Just _ -> if Utility.Matcher.introspect matchNeedsFileContent (fst matcher)
 					then dodownload
@@ -836,7 +836,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 		act cidmap (loc, (cid, sz)) f matcher
 
 	doimport cidmap (loc, (cid, sz)) f matcher =
-		case Remote.importKeyWithContentIdentifier (Remote.exportImportActions remote) of
+		case Remote.importKey (Remote.importActions remote) of
 			Nothing -> error "internal" -- checked earlier
 			Just importkey -> do
 				when (Utility.Matcher.introspect matchNeedsFileContent (fst matcher)) $

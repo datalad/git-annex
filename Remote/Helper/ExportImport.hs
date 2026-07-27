@@ -332,6 +332,7 @@ adjustExportImport' isexport isimport isexportimport annexobjects r rs gc = do
 	-- more strongly.
 	importActionsForExportImport ciddbv = ImportActions
 		{ listImportableContents = listImportableOrExportedContents (exportImportActions r)
+		, importKey = importKeyWithContentIdentifier (exportImportActions r)
 		, retrieveImport = retrieveExportWithContentIdentifier (exportImportActions r)
 		, checkPresentImport = checkPresentExportImport ciddbv
 		}

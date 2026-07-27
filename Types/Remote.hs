@@ -470,6 +470,13 @@ data ImportActions a = ImportActions
 	-- not need to uniquely identify content.
 	-- Eg, a mtime is sufficient.
 	{ listImportableContents :: a (Maybe (ImportableContentsChunkable a (ContentIdentifier, ByteSize)))
+	-- Like importKeyWithContentIdentifier, but does not need to
+	-- guarantee that the file on the remote still has the same
+	-- content that it did when listImportableContents returned
+	-- the ContentIdentifier. The ContentIdentifier is still
+	-- provided so that information in it can be used to generate the
+	-- key.
+	, importKey :: Maybe (ImportLocation -> ContentIdentifier -> ByteSize -> MeterUpdate -> a (Maybe Key))
 	-- Like retrieveExportWithContentIdentifier, but does not
 	-- need to guarantee that the file it retrieves has one
 	-- of the requested ContentIdentifiers.
