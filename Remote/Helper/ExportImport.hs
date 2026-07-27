@@ -74,7 +74,7 @@ instance HasExportImportUnsupported (ParsedRemoteConfig -> RemoteGitConfig -> An
 instance HasExportImportUnsupported (ExportImportActions Annex) where
 	exportImportUnsupported = ExportImportActions
 		{ listImportableOrExportedContents = nope
-		, importKey = Nothing
+		, importKeyWithContentIdentifier = Nothing
 		, retrieveExportWithContentIdentifier = nope
 		, storeExportWithContentIdentifier = nope
 		, removeExportWithContentIdentifier = nope

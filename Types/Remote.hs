@@ -388,7 +388,7 @@ data ExportImportActions a = ExportImportActions
 	-- and return its Key, or Nothing if it is not.
 	--
 	-- Throws exception on failure to access the remote.
-	, importKey :: Maybe (ImportLocation -> ContentIdentifier -> ByteSize -> MeterUpdate -> a (Maybe Key))
+	, importKeyWithContentIdentifier :: Maybe (ImportLocation -> ContentIdentifier -> ByteSize -> MeterUpdate -> a (Maybe Key))
 	-- Retrieves a file from the remote. Ensures that the file
 	-- it retrieves has one of the requested ContentIdentifiers.
 	--
