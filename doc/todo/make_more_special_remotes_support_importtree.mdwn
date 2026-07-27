@@ -2,6 +2,8 @@ Now that importtree=yes is supported for special remotes without also
 needing to implement exporttree=yes, it should be possible to make a lot
 more special remotes support tree importing.
 
+## builtin
+
 These built-in ones could support it:
 
 * webdav
@@ -13,6 +15,59 @@ These built-in ones could support it:
     It would be possible to support importtree=yes without exporttree=yes
     for any S3 bucket with no need of forcing.
 
+## external special remotes
+
 Lots of external special remotes could also probably support it.
 That will be left up to their maintainers, but it would make sense to ping
 the maintainers.
+
+Update: Went down the list and thought about if it might make sense for
+each external to support it, and pinged those that seem likely to be
+worthwhile. --[[Joey]]
+
+* https://github.com/DanielDent/git-annex-remote-rclone
+	<https://github.com/git-annex-remote-rclone/git-annex-remote-rclone/issues/81>
+* rclone gitannex
+	<https://github.com/rclone/rclone/issues/9666>
+* https://github.com/encryptio/git-annex-remote-b2
+	maybe useful?
+* https://github.com/mhameed/git-annex-remote-ceph
+	seems unlikely to make sense to import from a ceph pool?
+* https://pypi.org/project/git-annex-remote-internxt/
+	<https://hub.datalad.org/git-annex/git-annex-remote-internxt/issues/21>
+* https://git.sr.ht/~ehmry/git-annex-remote-nncp
+	probably not useful, since the purpose is P2P
+	transfers with both sides using git-annex
+* https://github.com/grawity/code/blob/master/net/git-annex-remote-gvfs
+	(repository is gone)
+* https://github.com/3ofcoins/knife-annex/
+	old and uses hook backend, so not applicable
+* https://github.com/xloem/gitlakepy
+	Seems to use a non-defunct blockchain storage
+* https://github.com/Schnouki/git-annex-remote-hubic
+	repository is archived
+* https://pypi.org/project/git-annex-remote-dbx/
+	does not seem active and rclone also supports dropbox
+* https://github.com/bgilbert/gcsannex
+	repository is archived
+* https://github.com/Lykos153/git-annex-remote-googledrive	
+	commented on existing issue
+	<https://github.com/Lykos153/git-annex-remote-googledrive/issues/21>
+* https://github.com/dxtr/megaannex-go
+	seems inactive
+* https://github.com/TobiasTheViking/megaannex
+	(no longer working)
+* https://github.com/TobiasTheViking/owncloudannex
+	open question about whether this has any benefit over regular
+	webdav: <https://github.com/TobiasTheViking/owncloudannex/issues/6>
+* https://github.com/TobiasTheViking/skydriveannex
+	too old/inactive to seem worth filing an issue on
+* https://github.com/TobiasTheViking/flickrannex
+	not applicable
+* https://github.com/TobiasTheViking/dropboxannex
+	does not seem active and rclone also supports dropbox
+
+## libraries
+
+* https://github.com/Lykos153/AnnexRemote
+	<https://github.com/Lykos153/AnnexRemote/issues/132>
