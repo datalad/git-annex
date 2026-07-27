@@ -132,11 +132,11 @@ a request, it can reply with `UNSUPPORTED-REQUEST`.
 
 ## import interface
 
-(This part is a draft, not implemented yet.)
-
 git-annex will use this interface when the special remote is
 initialized with importtree=yes and indicates
 that it supports imports.
+
+git-annex version 10.20260717 was the first to support this.
 
 ### content identifiers
 
