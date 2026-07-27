@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2026-07-27T15:30:28Z"
+ content="""
+rclone would be another use case, some of its remotes support
+server-side generation of md5, sha1, or other hashes.
+"""]]
