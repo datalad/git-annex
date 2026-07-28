@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2026-07-28T15:46:54Z"
+ content="""
+Now that external special remotes can support importtree, it does seem like
+all that is missing to have this in an external special remote is a way to
+set `thirdPartyPopulated`.
+"""]]
