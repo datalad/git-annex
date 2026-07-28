@@ -140,7 +140,8 @@ the S3 remote.
   the content of files overwritten in this way can still be recovered,
   but you may have to look through the git history to find them.
   When versioning is not enabled, this risks data loss, and so git-annex
-  will not let you enable a remote with that configuration unless forced.
+  will not let you enable a remote with this set in combination
+  with exporttree unless forced.
 
 * `annexobjects` - When set to "yes" along with "exporttree=yes",
   this allows storing other objects in the remote along with the
