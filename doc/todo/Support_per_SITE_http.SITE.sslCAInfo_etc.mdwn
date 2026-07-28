@@ -1,0 +1,57 @@
+https://git-annex.branchable.com/git-annex/ mentions 
+
+> (The http.sslCAInfo and http.sslCAPath git configs have the same effect.)
+
+but unfortunately it seems that there is no symmetric to git support for per-SITE settings, e.g.
+
+```
+(tmp) yoh@typhon:/tmp$ git clone https://datalad-test.local.lan/DLTC/sample_datalad_provider /tmp/my_clone
+Cloning into '/tmp/my_clone'...
+fatal: unable to access 'https://datalad-test.local.lan/DLTC/sample_datalad_provider/': server verification failed: certificate signer not trusted. (CAfile: /etc/ssl/certs/ca-certificates.crt CRLfile: none)
+```
+
+can be overcome for git with
+
+```
+(tmp) yoh@typhon:/tmp$ openssl s_client -connect datalad-test.local.lan:443 </dev/null 2>/dev/null     | openssl x509 > ~/.config/git-credential-diab/datalad-test.local.lan-ca.pem
+(tmp) yoh@typhon:/tmp$ git config --global http.https://datalad-test.local.lan.sslCAInfo       ~/.config/git-credential-diab/datalad-test.local.lan-ca.pem
+(tmp) yoh@typhon:/tmp$ git clone https://datalad-test.local.lan/DLTC/sample_datalad_provider /tmp/my_clone
+Cloning into '/tmp/my_clone'...
+remote: Enumerating objects: 47, done.
+remote: Counting objects: 100% (47/47), done.
+remote: Compressing objects: 100% (38/38), done.
+remote: Total 47 (delta 12), reused 0 (delta 0), pack-reused 0 (from 0)
+Receiving objects: 100% (47/47), 4.33 KiB | 4.33 MiB/s, done.
+Resolving deltas: 100% (12/12), done.
+```
+
+but for recent annex it remains "not good" (until we override for all sites):
+
+```
+(tmp) yoh@typhon:/tmp/my_clone$ git annex version --raw; echo
+10.20260624-g1f50df25f767231afaf9de9119f4a339d0619256
+
+(tmp) yoh@typhon:/tmp$ cd my_clone/
+
+(tmp) yoh@typhon:/tmp/my_clone$ git annex whereis annexed_demo.bin 
+
+  Remote origin not usable by git-annex; setting annex-ignore
+
+  https://datalad-test.local.lan/DLTC/sample_datalad_provider/config download failed: HandshakeFailed (Error_Protocol "certificate has unknown CA" UnknownCa)
+whereis annexed_demo.bin (2 copies) 
+        01486323-6af3-4c59-a372-dea7d9340f6d -- git@02915365b276:/data/git/repositories/dltc/sample_datalad_provider.git
+        a69e3dc7-4554-4aae-819f-c65b7dd414e9 -- datalad@datalad-kbdm-datalad-provider:/tmp/push_test
+ok
+
+(tmp) yoh@typhon:/tmp/my_clone$ git config --unset remote.origin.annex-ignore
+
+(tmp) yoh@typhon:/tmp/my_clone$ git annex whereis annexed_demo.bin 
+whereis annexed_demo.bin (2 copies) 
+        01486323-6af3-4c59-a372-dea7d9340f6d -- git@02915365b276:/data/git/repositories/dltc/sample_datalad_provider.git [origin]
+        a69e3dc7-4554-4aae-819f-c65b7dd414e9 -- datalad@datalad-kbdm-datalad-provider:/tmp/push_test
+ok
+
+# so no complains about ssl certificate and subsequent annex copy actually works out nicely
+```
+
+
