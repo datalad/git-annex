@@ -6,7 +6,7 @@ more special remotes support tree importing.
 
 These built-in ones could support it:
 
-* webdav
+* webdav (partially done; see [[webdav_importtree_support]]
 
 ## external special remotes
 
@@ -64,3 +64,5 @@ worthwhile. --[[Joey]]
 
 * https://github.com/Lykos153/AnnexRemote  
 	<https://github.com/Lykos153/AnnexRemote/issues/132>
+
+[[done]] --[[Joey]]

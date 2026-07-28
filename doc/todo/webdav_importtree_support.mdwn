@@ -1,0 +1,5 @@
+Make the webdav special remote support importtree=yes
+
+The `webdav-importtree` branch has a partial implementation, but finishing
+it will need either improvements to the haskell DAV library, or parsing a
+webdav response document in git-annex. --[[Joey]]
