@@ -1,0 +1,12 @@
+I want a way to make a preferred content expression like
+`lackingcopies` but that excludes copies in a group.
+
+My example use case is I have a number of archive remotes. The archive
+groupwanted includes  `approxlackingcopies=1` so numcopies-1 copies get
+sent to the archives, along with the 1 local copy. This means that
+`git-annex drop` isn't able to drop files; they need to be manually sent to
+one more archive remote first.
+
+Syntax could be: `lackingcopies=number-group` eg `lackingcopies=1-client`
+
+--[[Joey]]
