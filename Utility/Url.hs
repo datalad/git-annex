@@ -55,8 +55,9 @@ import Utility.Url.Parse
 import qualified Utility.FileIO as F
 
 import Network.URI
-import Network.HTTP.Types
-import Network.HTTP.Types.Header (hAcceptEncoding, hContentDisposition, hContentRange)
+import Network.HTTP.Types.Status
+import Network.HTTP.Types.Method
+import Network.HTTP.Types.Header
 import qualified System.FilePath.Posix as UrlPath
 import qualified Data.CaseInsensitive as CI
 import qualified Data.ByteString as B

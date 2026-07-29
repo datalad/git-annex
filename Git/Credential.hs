@@ -19,7 +19,6 @@ import Utility.Url.Parse
 
 import qualified Data.Map as M
 import Network.URI
-import Network.HTTP.Types
 import Network.HTTP.Types.Header
 import Control.Concurrent.STM
 
