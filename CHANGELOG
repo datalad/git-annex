@@ -7,6 +7,7 @@ git-annex (10.20260718) UNRELEASED; urgency=medium
   * importfeed: When adding an url, indicate which feed it is from.
   * Remove the ParallelBuild cabal flag and add cabal.project that
     enables parallel build by default with ghc 9.8+ and cabal-install 3.12.
+  * stack.yaml: Update to lts-24.52
 
  -- Joey Hess <id@joeyh.name>  Fri, 24 Jul 2026 10:07:07 -0400
 

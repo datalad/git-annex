@@ -18,12 +18,13 @@ flags:
     pkg-config: false
 packages:
 - '.'
-resolver: lts-24.26
+resolver: lts-24.52
 extra-deps:
 - aws-0.25.2
 - file-io-0.2.0
 - blake3-0.3
-- xxhash-ffi-0.3.1
 - ram-0.20.1
 - persistent-2.14.6.3
 - persistent-sqlite-2.13.3.0
+- yesod-form-1.7.9.2
+- yesod-static-1.6.1.2

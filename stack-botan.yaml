@@ -18,11 +18,10 @@ flags:
     pkg-config: false
 packages:
 - '.'
-resolver: lts-24.26
+resolver: lts-24.52
 extra-deps:
 - aws-0.25.2
 - file-io-0.2.0
 - botan-low-0.2.0.1
 - botan-bindings-0.3.0.0
 - blake3-0.3
-- xxhash-ffi-0.3.1
