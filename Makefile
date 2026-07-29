@@ -33,7 +33,7 @@ build-dependencies:
 tmp/configure-stamp: Build/TestConfig.hs Build/Configure.hs
 	if [ "$(BUILDER)" = ./Setup ]; then $(GHC) --make Setup; fi
 	if [ "$(BUILDER)" != stack ]; then \
-		$(BUILDER) configure -fParallelBuild $(BUILDERCOMMONOPTIONS) --ghc-options="$(shell Build/collect-ghc-options.sh)"; \
+		$(BUILDER) configure $(BUILDERCOMMONOPTIONS) --ghc-options="$(shell Build/collect-ghc-options.sh)"; \
 		rm cabal.project.local~* 2>/dev/null || true; \
 	else \
 		$(BUILDER) setup $(BUILDERCOMMONOPTIONS); \
@@ -51,7 +51,7 @@ dev:
 # This leaves cabal.project.local configured for a prof build,
 # so just running make will continue to do prof builds.
 prof:
-	$(BUILDER) configure -f"-Production" -fParallelBuild \
+	$(BUILDER) configure -f"-Production" \
 		--enable-executable-dynamic --enable-profiling
 	rm cabal.project.local~* 2>/dev/null || true
 	mkdir -p tmp

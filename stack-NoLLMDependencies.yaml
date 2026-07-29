@@ -2,7 +2,6 @@ flags:
   git-annex:
     NoLLMDependencies: true
     production: true
-    parallelbuild: true
     assistant: true
     torrentparser: true
     magicmime: false

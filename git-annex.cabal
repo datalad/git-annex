@@ -37,6 +37,7 @@ Extra-Source-Files:
   stack.yaml
   stack-botan.yaml
   stack-NoLLMDependencies.yaml
+  cabal.project
   README
   CHANGELOG
   NEWS
@@ -159,11 +160,6 @@ Flag Assistant
 
 Flag Production
   Description: Enable production build (slower build; faster binary)
-
-Flag ParallelBuild
-  Description: Enable building in parallel
-  Default: False
-  Manual: True
 
 Flag Botan
   Description: Build with the Botan C++ library for faster hashing
@@ -327,9 +323,6 @@ Executable git-annex
       GHC-Options: -O2
   else
     GHC-Options: -O0
-
-  if flag(ParallelBuild)
-    GHC-Options: -j
 
   -- Avoid linking with unused dynamic libraries.
   if os(linux) || os(freebsd)
