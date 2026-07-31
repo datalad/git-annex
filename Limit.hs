@@ -1,6 +1,6 @@
 {- user-specified limits on files to act on
  -
- - Copyright 2011-2025 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2026 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -415,8 +415,10 @@ limitCopies want = case splitc ':' want of
 	[v, n] -> case parsetrustspec v of
 		Just checker -> go n $ checktrust checker
 		Nothing -> go n $ checkgroup (toGroup v)
-	[n] -> go n $ const $ return True
-	_ -> Left "bad value for copies"
+	_ -> case splitc '=' want of
+		[gl, n] -> go n $ checkgrouplimit (parseGroupLimit gl)
+		[n] -> go n $ const $ return True
+		_ -> Left "bad value for copies"
   where
 	go num good = case readish num of
 		Nothing -> Left "bad number for copies"
@@ -437,6 +439,9 @@ limitCopies want = case splitc ':' want of
 		return $ numCopiesCount us >= n
 	checktrust checker u = checker <$> lookupTrust u
 	checkgroup g u = S.member g <$> lookupGroups u
+	checkgrouplimit gl u = do
+		m <- uuidsByGroup <$> groupMap
+		return (checkGroupLimit gl m u)
 	parsetrustspec s
 		| "+" `isSuffixOf` s = (<=) <$> readTrustLevel (beginning s)
 		| otherwise = (==) <$> readTrustLevel s
@@ -446,7 +451,7 @@ addLackingCopies :: String -> Bool -> String -> Annex ()
 addLackingCopies desc approx = addLimit . limitLackingCopies desc approx
 
 limitLackingCopies :: String -> Bool -> MkLimit Annex
-limitLackingCopies desc approx want = case readish want of
+limitLackingCopies desc approx want = case readish numwant of
 	Just needed -> Right $ MatchFiles
 		{ matchAction = const $ \notpresent mi -> flip checkKey mi $
 			go mi needed notpresent
@@ -460,13 +465,28 @@ limitLackingCopies desc approx want = case readish want of
 		}
 	Nothing -> Left "bad value for number of lacking copies"
   where
-	go mi needed notpresent key =
-		limitCheckNumCopies approx mi notpresent key vs
+	go mi needed notpresent key = case (groupwant, grouplimit) of
+		(Nothing, []) -> check (const True)
+		(Just g, _) -> do
+			s <- fromMaybe S.empty
+				. M.lookup g
+				. uuidsByGroup
+				<$> groupMap
+			check (`S.member` s)
+		(Nothing, gl) -> do
+			m <- uuidsByGroup <$> groupMap
+			check (checkGroupLimit gl m)
 	  where
+		check uuidp = limitCheckNumCopies approx mi notpresent uuidp key vs
 		vs nhave numcopies' = numcopies' - nhave >= needed
+	(groupwant, grouplimit, numwant) = case splitc ':' want of
+		(g:n:[]) -> (Just (toGroup g), [], n)
+		_ -> case splitc '=' want of
+			(gl:n:[]) -> (Nothing, parseGroupLimit gl, n)
+			_ -> (Nothing, [], want)
 
-limitCheckNumCopies :: Bool -> MatchInfo -> AssumeNotPresent -> Key -> (Int -> Int -> v) -> Annex v
-limitCheckNumCopies approx mi notpresent key vs = do
+limitCheckNumCopies :: Bool -> MatchInfo -> AssumeNotPresent -> (UUID -> Bool) -> Key -> (Int -> Int -> v) -> Annex v
+limitCheckNumCopies approx mi notpresent uuidp key vs = do
 	numcopies <- if approx
 		then approxNumCopies
 		else case mi of
@@ -474,7 +494,7 @@ limitCheckNumCopies approx mi notpresent key vs = do
 				matchFile fi
 			MatchingInfo {} -> approxNumCopies
 			MatchingUserInfo {} -> approxNumCopies
-	us <- filter (`S.notMember` notpresent)
+	us <- filter (\u -> uuidp u && u `S.notMember` notpresent)
 		<$> (trustExclude UnTrusted =<< Remote.keyLocations key)
 	return $ numCopiesCheck'' us vs numcopies
   where
@@ -684,7 +704,7 @@ limitFullyBalanced'' filtercandidates termname mu getgroupmap want =
 			| n == "lackingcopies" -> go g $ 
 				Left $ \mi notpresent key -> 
 					let vs nhave numcopies = numcopies - nhave
-					in limitCheckNumCopies False mi notpresent key vs
+					in limitCheckNumCopies False mi notpresent (const True) key vs
 			| otherwise -> maybe
 				(Left $ "bad number for " ++ termname)
 				(go g . Right)
@@ -964,3 +984,30 @@ matchDescSimple s Nothing = Utility.Matcher.MatchDesc s
 
 (=?) :: String -> String -> (Maybe Bool -> Utility.Matcher.MatchDesc)
 k =? v = matchDescSimple (k ++ "=" ++ v)
+
+data GroupLimit
+	= GroupInclude Group
+	| GroupExclude Group
+	deriving (Show)
+
+parseGroupLimit :: String -> [GroupLimit]
+parseGroupLimit = go GroupInclude
+  where
+	go b s = case break (\c -> c == '+' || c == '-') s of
+		("", "") -> []
+		("", ('+':s')) -> go GroupInclude s'
+		("", ('-':s')) -> go GroupExclude s'
+		(groupname, s') -> b (toGroup groupname) : go GroupInclude s'
+
+checkGroupLimit :: Ord t => [GroupLimit] -> M.Map Group (S.Set t) -> t -> Bool
+checkGroupLimit gl m u = 
+	let (includes, excludes) = partition fst (map decompose gl)
+	in (any member includes || null includes) && not (any member excludes)
+  where
+	decompose (GroupInclude g) = (True, g)
+	decompose (GroupExclude g) = (False, g)
+
+	member (_, g) = 
+		case M.lookup g m of
+			Nothing -> False
+			Just s -> u `S.member` s

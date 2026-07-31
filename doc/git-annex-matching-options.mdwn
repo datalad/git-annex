@@ -106,7 +106,7 @@ in either of two repositories.
 * `--copies=trustlevel:number`
 
   Matches only when git-annex believes there are the specified number of
-  copies, on remotes with the specified trust level. For example,
+  copies, or more, on remotes with the specified trust level. For example,
   `--copies=trusted:2`
 
   To match any trust level at or higher than a given level,
@@ -115,8 +115,25 @@ in either of two repositories.
 * `--copies=groupname:number`
 
   Matches only when git-annex believes there are the specified number of
-  copies, on remotes in the specified group. For example,
+  copies, or more, on remotes in the specified group. For example,
   `--copies=archive:2`
+
+* `copies=grouplimit=number`
+
+  Matches only files that git-annex believes have the specified number of
+  copies, or more, on repositories in groups allowed by the group limit.
+
+  In a group limit, use "+" before a group to include that group, and "-"
+  before a group to exclude it. (The first group to be included does
+  not need to be prefixed with a "+" though it may be.)
+
+  A group limit matches repositories that are in any of the included
+  groups and are in none of the excluded groups.
+
+  For example, "--copies=backup+archive-offsite=3" matches
+  files that are stored in 3 backup or archive repositories,
+  excluding offsite repositories. And "--copies=-offsite=3" matches
+  files that are stored in 3 repositories excluding offsite repositories.
 
 * `--lackingcopies=number`
 
@@ -124,9 +141,32 @@ in either of two repositories.
   more additional copies need to be made in order to satisfy numcopies
   settings.
 
-* `--approxlackingcopies=number`
+* `--lackingcopies=groupname:number`
 
-  Like lackingcopies, but does not look at .gitattributes annex.numcopies
+  Providing the name of a group limits `--lackingcopies` to only
+  considering repositories in that group toward the numcopies count.
+
+* `--lackingcopies=grouplimit=number`
+
+  Providing a group limit makes `--lackingcopies` only consider repositories
+  in groups that match the group limit toward the numcopies count.
+
+  In a group limit, use "+" before a group to include that group, and "-"
+  before a group to exclude it. (The first group to be included does
+  not need to be prefixed with a "+" though it may be.)
+
+  A group limit matches repositories that are in any of the included
+  groups and are in none of the excluded groups.
+
+  For example, "--lackingcopies=backup+archive-offsite=1" matches
+  files that are not stored in enough backup or archive repositories,
+  excluding offsite repositories. And "--lackingcopies=-offsite=1" matches
+  files that are not stored in enough repositories, excluding offsite
+  repositories.
+
+* `--approxlackingcopies=value`
+
+  Like `--lackingcopies`, but does not look at .gitattributes annex.numcopies
   settings. This makes it significantly faster.
 
 * `--inbackend=name`

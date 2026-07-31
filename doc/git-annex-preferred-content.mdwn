@@ -79,8 +79,8 @@ content not being configured.
 * `copies=trustlevel:number`
 
   Matches only files that git-annex believes have the specified number
-  copies, on remotes with the specified trust level. For example,
-  `copies=trusted:2`
+  of copies, or more, on repositories with the specified trust level.
+  For example, `copies=trusted:2`
 
   To match any trust level at or higher than a given level,
   use `trustlevel+`. For example, `copies=semitrusted+:2`
@@ -88,7 +88,7 @@ content not being configured.
 * `copies=groupname:number`
 
   Matches only files that git-annex believes have the specified number of
-  copies, on remotes in the specified group. For example,
+  copies, or more, on repositories in the specified group. For example,
   `copies=archive:2`
 
   Preferred content expressions have no equivalent to the `--in`
@@ -98,13 +98,57 @@ content not being configured.
   put all the USB drives into a "transfer" group, and use
   `copies=transfer:1`
 
+* `copies=grouplimit=number`
+
+  Matches only files that git-annex believes have the specified number of
+  copies, or more, on repositories in groups allowed by the group limit.
+
+  In a group limit, use "+" before a group to include that group, and "-"
+  before a group to exclude it. (The first group to be included does
+  not need to be prefixed with a "+" though it may be.)
+
+  A group limit matches repositories that are in any of the included
+  groups and are in none of the excluded groups.
+
+  For example, "copies=backup+archive-offsite=3" matches
+  files that are stored in 3 backup or archive repositories,
+  excluding offsite repositories. And "copies=-offsite=3" matches
+  files that are stored in 3 repositories excluding offsite repositories.
+
 * `lackingcopies=number`
 
   Matches only files that git-annex believes need the specified number or
   more additional copies to be made in order to satisfy their numcopies
   settings.
 
-* `approxlackingcopies=number`
+* `lackingcopies=groupname:number`
+
+  Providing the name of a group limits `lackingcopies` to only
+  considering repositories in that group toward the numcopies count.
+
+  For example, `lackingcopies=backup:1` matches files that are not
+  stored in enough backup repositories to satisfy numcopies, even if
+  they are stored in enough other repositories.
+
+* `lackingcopies=grouplimit=number`
+
+  Providing a group limit makes `lackingcopies` only consider repositories
+  in groups that match the group limit toward the numcopies count.
+
+  In a group limit, use "+" before a group to include that group, and "-"
+  before a group to exclude it. (The first group to be included does
+  not need to be prefixed with a "+" though it may be.)
+
+  A group limit matches repositories that are in any of the included
+  groups and are in none of the excluded groups.
+
+  For example, "lackingcopies=backup+archive-offsite=1" matches
+  files that are not stored in enough backup or archive repositories,
+  excluding offsite repositories. And "lackingcopies=-offsite=1" matches
+  files that are not stored in enough repositories, excluding offsite
+  repositories.
+
+* `approxlackingcopies=value`
 
   Like lackingcopies, but does not look at .gitattributes annex.numcopies
   settings. This makes it significantly faster.

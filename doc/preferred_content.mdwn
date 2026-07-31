@@ -55,11 +55,23 @@ preferred content. From version 5.20140320, git-annex has a nicer fallback
 behavior: When it is unable to parse a preferred content expression,
 it assumes all files that are currently present are preferred content.
 
-Here are recent changes to preferred content expressions, and the version
+Here are changes to preferred content expressions, and the version
 they were added in.
 
-* "balanced=", "fullybalanced=" 10.20240831
+* "copies=grouplimit=number", "lackingcopies=grouplimit=number",
+  "approxlackingcopies=grouplimit=number" 10.20260718
+* "lackingcopies=groupname:number",
+  "approxlackingcopies=groupname:number" 10.20260718
+* "url=" 10.20250721
+* "balanced=groupname:lackingcopies" 10.20250520
+* "not present" changed to never match (also "not balanced" and "not
+  sizebalanced") 10.20240927
+* "balanced=", "fullybalanced=", "sizebalanced=", "fullysizebalanced=" 
+  10.20240831
+* "onlyingroup=" 10.20230802
+* "inbackend=" 10.20220927
 * "securehash" 6.20170228
+* "metadata=field&lt;number" etc 6.20160227
 * "nothing" 6.201600202
 * "anything" 5.20150616
 * "standard" 5.20140314  
@@ -69,4 +81,3 @@ they were added in.
 * "metadata=" 5.20140221
 * "lackingcopies=", "approxlackingcopies=", "unused=" 5.20140127
 * "inpreferreddir=" 4.20130501
-* "metadata=field&lt;number" etc 6.20160227

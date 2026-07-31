@@ -21,3 +21,15 @@ groups. Eg `lackingcopies=number-client-othergroup` or
 The nice thing about `lackingcopies=archive,othergroup:1` is that it
 could be back-generalized to `copies=archive,othergroup:1`
 --[[Joey]]
+
+> Considering back-compat, older versions of git-annex need to fail
+> to parse the new syntax, rather than misparsing it.
+> So, reusing "=foo:number" is not good, because old git-annex will
+> take "foo" to be the name of a group, and eg "not copies=-offsite=1"
+> would evaluate to true, because there are no copies in group "-offsite".
+> 
+> So I have settled on "=grouplimit=number" with a group limit syntax
+> that supports both including and excluding groups. Eg,
+> "lackingcopies=backup+archive-offsite=1" --[[Joey]]
+
+[[done]] --[[Joey]]
