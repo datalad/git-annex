@@ -213,7 +213,7 @@ numCopiesCheck' file vs have = do
 	let nhave = numCopiesCount have
 	explain (ActionItemTreeFile file) $ Just $ UnquotedString $
 		"has " ++ show nhave ++ " " ++ pluralCopies nhave ++ 
-		", and the configured annex.numcopies is " ++ show needed
+		", and the configured annex.numcopies is " ++ show (fromNumCopies needed)
 	return $ numCopiesCheck'' have vs needed
 
 numCopiesCheck'' :: [UUID] -> (Int -> Int -> v) -> NumCopies -> v
