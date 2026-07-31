@@ -342,7 +342,7 @@ makeMatcher groupmap configmap groupwantedmap u matcherf mktokens unknownmatcher
 				(groupwanted mygroups)
 			| otherwise = unknownmatcher
 		mygroups = fromMaybe S.empty (u `M.lookup` groupsByUUID groupmap)
-		groupwanted s = case M.elems $ M.filterWithKey (\k _ -> S.member k s) groupwantedmap of
+		groupwanted s = case filter (not . null) $ M.elems $ M.filterWithKey (\k _ -> S.member k s) groupwantedmap of
 			[pc] -> Just pc
 			_ -> Nothing
 

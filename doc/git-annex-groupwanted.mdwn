@@ -14,7 +14,7 @@ content expression set to "groupwanted".
   
 For example, to configure a group named redundantarchive, and
 make repositories in the group want to contain 3 copies of every file:
-  
+
 	git annex groupwanted redundantarchive "not (copies=redundantarchive:3)"
 	for repo in foo bar baz; do
 		git annex group $repo redundantarchive
@@ -24,6 +24,11 @@ make repositories in the group want to contain 3 copies of every file:
 Note that there must be exactly one groupwanted expression configured
 amoung all the groups that a repository is in; if there's more than one,
 none of them will be used.
+
+To clear a groupwanted expression, use an empty value for the expression,
+eg:
+
+    git-annex groupwanted foo ""
 
 # OPTIONS
 

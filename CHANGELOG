@@ -16,6 +16,9 @@ git-annex (10.20260718) UNRELEASED; urgency=medium
     "copies=archive+backup-offsite=3"
   * Also expanded --lackingcopies, --approxlackingcopies, and --copies
     with the same syntax.
+  * The preferred content groupwanted expression will no longer
+    consider a groupwanted expression of "" to be set, which allows
+    another group's groupwanted expression to be used instead.
 
  -- Joey Hess <id@joeyh.name>  Fri, 24 Jul 2026 10:07:07 -0400
 
