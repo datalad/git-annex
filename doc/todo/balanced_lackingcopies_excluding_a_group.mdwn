@@ -1,0 +1,13 @@
+Similar to [[todo/preferred_content_lackingcopies_excluding_a_group]],
+"balanced=lackingcopies" could have a way to exclude a group from being
+treated as a copy.
+
+Eg, if there are client repositories and backup repositories, the goal
+might be to make the backup repositories balance enough copies to satisfy
+numcopies on their own, not counting client repositories.
+"balanced=backup:lackingcopies" will not do that.
+
+Maybe "balanced=backup:lackingcopies-client" and 
+"balanced=backup:lackingcopies+backup". The former counts copies that
+are not on clients, while the latter only counts copies that are on
+backups. --[[Joey]]
