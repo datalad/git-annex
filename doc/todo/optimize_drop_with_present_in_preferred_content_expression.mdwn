@@ -1,0 +1,33 @@
+`git-annex drop --auto --from` a remote when the remote's preferred content
+expression is "present" and when the key is not present will do
+work to drop the key, unless --fast is used.
+
+In the vast majority of cases, that is unncessary work. Only if the
+location tracking is out of date and the remote actually has the content
+does the content get dropped. 
+
+(As well as being unncessary work, it looks pretty weird. I thought
+for a while that my preferred content expression was broken or that
+git-annex was dropping things it shouldn't.)
+
+Generally drop does not default to --fast because the goal is that
+dropping a specific file from a remote really guarantees that the remote 
+does not contain the file. Even if the local repository is not in sync.
+
+In this case though, the drop is not dropping a specific file, it's
+working to satisfy the preferred content. If the local repository is out
+of sync there are surely other ways that a preferred content expression
+won't be fully satisfied. For example, if a repository only wants content
+when no other repository in its group contains it, the local repository
+being out of sync can make a drop not happen when it "should" 
+(or happen when it "shouldn't").
+
+It might be that the solution to this is to make `drop --auto` default
+to `--fast`. Or a more targeted solution that checks if the preferred
+content depends on location tracking might be better. Unsure. I'd lean
+toward the simpler one.
+
+Note that `git-annex sync` only drops from remotes that location
+tracking thinks contain the content. So this would bring `git-annex drop
+--auto` into alignment with it.
+--[[Joey]]
