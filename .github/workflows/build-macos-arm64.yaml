@@ -338,10 +338,10 @@ jobs:
             See <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}> for more information.
 
   test-extra:
-    # Runs the extra-tests suite in tests/extra/ (both pytest and bats
-    # variants).  Each test declares its own skip conditions, so the
-    # default is: run on every platform, skip only where an individual
-    # test's dependencies aren't available (e.g. dynlibs needs strace).
+    # Runs the pytest extra-tests suite in tests/extra/pytest/.  Each
+    # test declares its own skip conditions, so the default is: run on
+    # every platform, skip only where an individual test's dependencies
+    # aren't available (e.g. dynlibs needs strace).
     runs-on: macos-15
     needs: build-package
     steps:
@@ -371,8 +371,6 @@ jobs:
           hdiutil detach /Volumes/git-annex/
           echo /Applications/git-annex.app/Contents/MacOS >> "$GITHUB_PATH"
 
-      - name: Install bats
-        run: brew install bats-core
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -389,9 +387,6 @@ jobs:
 
       - name: Run pytest suite
         run: python -m pytest -v tests/extra/pytest/
-
-      - name: Run bats suite
-        run: bats tests/extra/bats/
 
       - name: Set final PR status
         if: always() && github.event.inputs.pr != ''

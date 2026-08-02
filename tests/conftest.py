@@ -159,7 +159,6 @@ def pytest_report_header(config: pytest.Config) -> list[str]:
     """Version + tool info at the top of pytest's session banner."""
     tools = [
         ("git",        ["git", "--version"]),
-        ("bats",       ["bats", "--version"]),
         ("yt-dlp",     ["yt-dlp", "--version"]),
         ("youtube-dl", ["youtube-dl", "--version"]),
         ("strace",     ["strace", "--version"]),

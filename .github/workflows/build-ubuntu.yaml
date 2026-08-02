@@ -378,10 +378,10 @@ jobs:
             See <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}> for more information.
 
   test-extra:
-    # Runs the extra-tests suite in tests/extra/ (both pytest and bats
-    # variants).  Each test declares its own skip conditions, so the
-    # default is: run on every platform, skip only where an individual
-    # test's dependencies aren't available (e.g. dynlibs needs strace).
+    # Runs the pytest extra-tests suite in tests/extra/pytest/.  Each
+    # test declares its own skip conditions, so the default is: run on
+    # every platform, skip only where an individual test's dependencies
+    # aren't available (e.g. dynlibs needs strace).
     runs-on: ubuntu-24.04
     needs: build-package
     steps:
@@ -408,8 +408,8 @@ jobs:
         run: |
           sudo dpkg -i git-annex*.deb
 
-      - name: Install strace and bats
-        run: sudo apt-get update -qq && sudo apt-get install -y strace bats
+      - name: Install strace
+        run: sudo apt-get update -qq && sudo apt-get install -y strace
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -426,9 +426,6 @@ jobs:
 
       - name: Run pytest suite
         run: python -m pytest -v tests/extra/pytest/
-
-      - name: Run bats suite
-        run: bats tests/extra/bats/
 
       - name: Set final PR status
         if: always() && github.event.inputs.pr != ''
