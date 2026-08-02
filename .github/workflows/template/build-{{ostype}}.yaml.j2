@@ -564,8 +564,11 @@ jobs:
 
             See <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}> for more information.
 
-{% if ostype == "ubuntu" or ostype.startswith("macos") %}
-  test-annex-more:
+  test-extra:
+    # Runs the extra-tests suite in tests/extra/ (both pytest and bats
+    # variants).  Each test declares its own skip conditions, so the
+    # default is: run on every platform, skip only where an individual
+    # test's dependencies aren't available (e.g. dynlibs needs strace).
     runs-on: {{runs_on}}
     needs: build-package
     steps:
@@ -578,7 +581,7 @@ jobs:
           .github/workflows/tools/set-pr-status \
             "${{ github.event.inputs.pr }}" \
             {{osname}} \
-            test-annex-more \
+            test-extra \
             pending
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -597,17 +600,37 @@ jobs:
           {{step}}
           {% endfor %}
 
-      - name: Seek of dynlibs
+    {% if ostype == "ubuntu" %}
+      - name: Install strace and bats
+        run: sudo apt-get update -qq && sudo apt-get install -y strace bats
+    {% elif ostype.startswith("macos") %}
+      - name: Install bats
+        run: brew install bats-core
+    {% elif ostype == "windows" %}
+      - name: Install bats
         run: |
-          mkdir /tmp/testrepo; cd /tmp/testrepo; git init
-          function nfailed() {
-            strace -f git-annex "$1" 2>&1 | awk "/$2.*ENOENT/{print}" | tee /dev/fd/2 | wc -l
-          }
-          # We should get some reasonable number (not 40) of directories look up for dynamic libraries
-          liblookups=
-          PS4='> '; set -x
-          test $(nfailed version "libpcre.*so") -lt 7
-          test $(nfailed init "libpcre.*so") -lt 260
+          git clone --depth=1 https://github.com/bats-core/bats-core.git "$RUNNER_TEMP/bats-core"
+          echo "$RUNNER_TEMP/bats-core/bin" >> "$GITHUB_PATH"
+    {% endif %}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install pytest
+        run: python -m pip install --upgrade pip pytest
+
+      - name: Configure git identity
+        run: |
+          git config --global user.email "test@github.land"
+          git config --global user.name "GitHub Almighty"
+
+      - name: Run pytest suite
+        run: python -m pytest -v tests/extra/pytest/
+
+      - name: Run bats suite
+        run: bats tests/extra/bats/
 
       - name: Set final PR status
         if: always() && github.event.inputs.pr != ''
@@ -615,12 +638,12 @@ jobs:
           .github/workflows/tools/set-pr-status \
             "${{ github.event.inputs.pr }}" \
             {{osname}} \
-            test-annex-more \
+            test-extra \
             "${{ job.status }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-{% endif %}
+
 {% if test_datalad %}
   test-datalad:
     runs-on: {{runs_on}}

@@ -13,6 +13,7 @@ path = [
   ".github/**",
   "clients/**",
   "docs/**",
+  "tests/**",
 ]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2020-2026 DataLad Team <team@datalad.org>"

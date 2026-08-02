@@ -151,7 +151,7 @@ jobs:
              git-annex-installer_"${{ steps.build-version.outputs.version }}".exe
 
       - name: Upload packages
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v6
         with:
           name: git-annex-windows-installer_${{ steps.build-version.outputs.version }}
           path: |
@@ -199,7 +199,7 @@ jobs:
       - name: Send e-mail on failed run
         if: failure() && contains(fromJSON('["schedule", "workflow_dispatch"]'), github.event_name)
         # freeze to v17
-        uses: dawidd6/action-send-mail@42942bc2f8fba4e611b459a018967a6a7c78c68c
+        uses: dawidd6/action-send-mail@6e71c855c9a091d80a519621b9fd3e8d252ca40c
         with:
           server_address: ${{ secrets.NOTIFY_SMTP_HOST }}
           server_port: ${{ secrets.NOTIFY_SMTP_PORT }}
@@ -239,7 +239,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download git-annex package
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v7
         with:
           name: git-annex-windows-installer_${{ needs.build-package.outputs.build-version }}
 
@@ -306,7 +306,7 @@ jobs:
       - name: Send e-mail on failed run
         if: failure() && contains(fromJSON('["schedule", "workflow_dispatch"]'), github.event_name)
         # freeze to v17
-        uses: dawidd6/action-send-mail@42942bc2f8fba4e611b459a018967a6a7c78c68c
+        uses: dawidd6/action-send-mail@6e71c855c9a091d80a519621b9fd3e8d252ca40c
         with:
           server_address: ${{ secrets.NOTIFY_SMTP_HOST }}
           server_port: ${{ secrets.NOTIFY_SMTP_PORT }}
@@ -321,6 +321,74 @@ jobs:
             The tests for a build (via ${{ github.event_name }}) of git-annex for Windows (flavor: ${{ matrix.flavor }}, OS: ${{ matrix.os }}) failed!
 
             See <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}> for more information.
+
+  test-extra:
+    # Runs the extra-tests suite in tests/extra/ (both pytest and bats
+    # variants).  Each test declares its own skip conditions, so the
+    # default is: run on every platform, skip only where an individual
+    # test's dependencies aren't available (e.g. dynlibs needs strace).
+    runs-on: windows-2025
+    needs: build-package
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v6
+
+      - name: Create pending PR status
+        if: github.event.inputs.pr != ''
+        run: |
+          .github/workflows/tools/set-pr-status \
+            "${{ github.event.inputs.pr }}" \
+            Windows \
+            test-extra \
+            pending
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download git-annex package
+        uses: actions/download-artifact@v7
+        with:
+          name: git-annex-windows-installer_${{ needs.build-package.outputs.build-version }}
+
+      - name: Install git-annex package
+        shell: powershell
+        run: |
+          ./git-annex-installer_*.exe /S
+
+      - name: Install bats
+        run: |
+          git clone --depth=1 https://github.com/bats-core/bats-core.git "$RUNNER_TEMP/bats-core"
+          echo "$RUNNER_TEMP/bats-core/bin" >> "$GITHUB_PATH"
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install pytest
+        run: python -m pip install --upgrade pip pytest
+
+      - name: Configure git identity
+        run: |
+          git config --global user.email "test@github.land"
+          git config --global user.name "GitHub Almighty"
+
+      - name: Run pytest suite
+        run: python -m pytest -v tests/extra/pytest/
+
+      - name: Run bats suite
+        run: bats tests/extra/bats/
+
+      - name: Set final PR status
+        if: always() && github.event.inputs.pr != ''
+        run: |
+          .github/workflows/tools/set-pr-status \
+            "${{ github.event.inputs.pr }}" \
+            Windows \
+            test-extra \
+            "${{ job.status }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
   test-datalad:
     runs-on: windows-2025
@@ -345,7 +413,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download git-annex package
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v7
         with:
           name: git-annex-windows-installer_${{ needs.build-package.outputs.build-version }}
 
