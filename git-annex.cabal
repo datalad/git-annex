@@ -532,7 +532,7 @@ Executable git-annex
     CPP-Options: -DWITH_TORRENTPARSER
 
   if flag(MagicMime)
-    Build-Depends: magic
+    Build-Depends: magic (<= 1.1)
     CPP-Options: -DWITH_MAGICMIME
 
   if flag(Benchmark)

@@ -19,6 +19,8 @@ git-annex (10.20260718) UNRELEASED; urgency=medium
   * The preferred content groupwanted expression will no longer
     consider a groupwanted expression of "" to be set, which allows
     another group's groupwanted expression to be used instead.
+  * git-annex.cabal: Pin magic to 1.1 avoiding build failure on Windows
+    with newer version.
 
  -- Joey Hess <id@joeyh.name>  Fri, 24 Jul 2026 10:07:07 -0400
 
