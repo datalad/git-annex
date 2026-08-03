@@ -19,8 +19,13 @@ HTTPS, so the retrieval does not require yt-dlp or YouTube access.
 
 from __future__ import annotations
 
+import os
+import shutil
+import stat
 import subprocess
+import sys
 from pathlib import Path
+from typing import Any, Callable
 
 import pytest
 
@@ -54,6 +59,37 @@ TARGET = (
 )
 
 
+def _make_tree_writable(root: Path) -> None:
+    """
+    git-annex sets the key file *and* its containing directory to mode
+    0500, which makes both `os.unlink(file)` and `os.rmdir(dir)` fail.
+    Walk the tree bottom-up and add owner-write to every dir and file
+    so a subsequent rmtree succeeds.  Mirrors what `chmod -R u+w` did
+    in the dropped bats teardown.
+    """
+    for dirpath, dirnames, filenames in os.walk(root):
+        for name in (*dirnames, *filenames):
+            p = os.path.join(dirpath, name)
+            try:
+                os.chmod(p, os.stat(p).st_mode | stat.S_IWUSR | stat.S_IRUSR | stat.S_IXUSR)
+            except OSError:
+                pass
+    try:
+        os.chmod(root, os.stat(root).st_mode | stat.S_IWUSR | stat.S_IRUSR | stat.S_IXUSR)
+    except OSError:
+        pass
+
+
+def _chmod_and_retry(func: Callable[..., Any], path: str, _exc: BaseException) -> None:
+    """rmtree onexc fallback: chmod the file *and its parent dir* writable, retry."""
+    for target in (path, os.path.dirname(path)):
+        try:
+            os.chmod(target, os.stat(target).st_mode | stat.S_IWUSR | stat.S_IRUSR | stat.S_IXUSR)
+        except OSError:
+            pass
+    func(path)
+
+
 @pytest.fixture(scope="module")
 def cloned_repo(tmp_path_factory: pytest.TempPathFactory) -> Path:
     workdir = tmp_path_factory.mktemp("ReproTube")
@@ -73,7 +109,21 @@ def cloned_repo(tmp_path_factory: pytest.TempPathFactory) -> Path:
         cwd=repo, check=True,
     )
     subprocess.run(["git", "annex", "init", "-q"], cwd=repo, check=True)
-    return repo
+    yield repo
+    # Explicit teardown so pytest's later `tmp_path_factory` cleanup
+    # doesn't trip over git-annex's read-only object files (Windows,
+    # and also POSIX where the containing key-directory is 0500).
+    _make_tree_writable(workdir)
+    # Belt-and-braces: even after the walk, if a race added new
+    # read-only entries, the onexc handler chmods and retries.  Python
+    # < 3.12 spells the kwarg `onerror`; 3.12+ prefers `onexc`.
+    if sys.version_info >= (3, 12):
+        shutil.rmtree(workdir, onexc=_chmod_and_retry)
+    else:
+        shutil.rmtree(
+            workdir,
+            onerror=lambda f, p, e: _chmod_and_retry(f, p, e[1]),
+        )
 
 
 def test_whereis_parses_url_backend_key(cloned_repo: Path) -> None:
