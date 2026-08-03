@@ -23,8 +23,8 @@ used by other haskell libraries. Eg, in Remote.S3, git-annex passes
 a Manager into `aws`, and so has no visibility about what urls
 that Manager will be used for.
 
-And that shades into another problem --
-"http.<url>.*" documentation includes this:
+And that shades into another problem -- the
+`http.<url>.*` documentation includes this:
 
 	The URLs that are matched against are those given directly to Git com‐
 	mands. This means any URLs visited as a result of a redirection do not
