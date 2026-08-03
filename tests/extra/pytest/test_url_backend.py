@@ -33,13 +33,22 @@ from _helpers import git_annex_version, git_annex_version_below
 
 # URL_BACKEND_FIX_VERSION is the git-annex release that first shipped
 # the fix (upstream commit 8fd9b67ed8 "factor out extendUrlWithPath …",
-# 2026-02-16).  Older versions xfail so we do not block CI on a known
-# regression while still guaranteeing that once a build is on a fixed
-# version, the test acts as a permanent regression guard.
+# 2026-02-16).  Older versions xfail so we do not block local dev on
+# a known regression while still guaranteeing that once a build is on
+# a fixed version, the test acts as a permanent regression guard.
 URL_BACKEND_FIX_VERSION = "10.20260420"
 
+# On CI, forbid xfails: CI runs against a specific build of git-annex,
+# and we want every failure — including "known-broken old-version"
+# failures — to be loud rather than silently swallowed by an xfail
+# marker.  Setting condition=False disables the xfail entirely (so a
+# failure surfaces as a normal FAIL), independent of the installed
+# version.  Locally, the version check keeps the marker useful for
+# interactive dev on older branches.
+_ON_CI = bool(os.environ.get("CI"))
+
 _xfail_broken_url_backend = pytest.mark.xfail(
-    condition=git_annex_version_below(URL_BACKEND_FIX_VERSION),
+    condition=(not _ON_CI) and git_annex_version_below(URL_BACKEND_FIX_VERSION),
     reason=(
         f"URL-encoded-key retrieval bug present in git-annex "
         f"< {URL_BACKEND_FIX_VERSION} "
