@@ -28,15 +28,38 @@ pytestmark = pytest.mark.skipif(
 
 
 def _count_enoent(subcommand: str, pattern: str, cwd: Path) -> int:
-    """Return the number of ENOENT lines matching `pattern` under strace."""
+    """
+    Return the number of ENOENT lines matching `pattern` under strace.
+
+    Raises on strace failures (bad exit, timeout, empty stderr, or
+    stderr that lacks any syscall lines).  Without these guards a
+    seccomp-restricted or ptrace_scope-restricted runner would produce
+    an empty stderr, a count of 0, and a vacuously passing test.
+    """
     result = subprocess.run(
         ["strace", "-f", "git-annex", subcommand],
         cwd=cwd,
         capture_output=True,
         text=True,
+        timeout=120,
     )
+    stderr = result.stderr
+    if result.returncode != 0:
+        raise RuntimeError(
+            f"strace exited {result.returncode} for `git-annex {subcommand}`:"
+            f"\n{stderr[-2000:]}"
+        )
+    # Cheap sanity check: strace always emits at least a "+++ exited"
+    # and one syscall line if it actually ran.  A blocked strace under
+    # seccomp / ptrace_scope produces essentially nothing on stderr.
+    if "+++ exited" not in stderr and " ENOENT " not in stderr and " = " not in stderr:
+        raise RuntimeError(
+            "strace produced no syscall output; is it blocked by seccomp / "
+            "ptrace_scope?  Cannot trust ENOENT count.\n"
+            f"stderr head: {stderr[:2000]}"
+        )
     regex = re.compile(rf"{pattern}.*ENOENT")
-    matches = [line for line in result.stderr.splitlines() if regex.search(line)]
+    matches = [line for line in stderr.splitlines() if regex.search(line)]
     for m in matches:
         print(m, file=sys.stderr)
     return len(matches)
