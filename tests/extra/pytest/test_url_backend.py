@@ -29,17 +29,14 @@ from typing import Any, Callable
 
 import pytest
 
-from _helpers import (
-    URL_BACKEND_FIX_VERSION,
-    git_annex_version,
-    git_annex_version_below,
-)
+from _helpers import git_annex_version, git_annex_version_below
 
 # URL_BACKEND_FIX_VERSION is the git-annex release that first shipped
 # the fix (upstream commit 8fd9b67ed8 "factor out extendUrlWithPath …",
 # 2026-02-16).  Older versions xfail so we do not block CI on a known
 # regression while still guaranteeing that once a build is on a fixed
 # version, the test acts as a permanent regression guard.
+URL_BACKEND_FIX_VERSION = "10.20260420"
 
 _xfail_broken_url_backend = pytest.mark.xfail(
     condition=git_annex_version_below(URL_BACKEND_FIX_VERSION),

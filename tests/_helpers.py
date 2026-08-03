@@ -18,13 +18,6 @@ import subprocess
 from functools import lru_cache
 
 
-# Fix version for the URL-encoded-key bug (upstream 8fd9b67ed8,
-# 2026-02-16; first shipped in release 10.20260420).  Single source of
-# truth for both the xfail marker in test_url_backend.py and the
-# version reporting in tests/conftest.py.
-URL_BACKEND_FIX_VERSION = "10.20260420"
-
-
 @lru_cache(maxsize=1)
 def git_annex_version_output() -> str | None:
     """Raw stdout of `git annex version`, cached for the session."""
