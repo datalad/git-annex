@@ -38,6 +38,7 @@ import qualified Git.Types
 import qualified Git.Ref
 import qualified Git.LsTree
 import qualified Git.FilePath
+import qualified Git.Config.Url
 #ifndef mingw32_HOST_OS
 import qualified Annex.Locations
 import qualified Git.Bundle
@@ -196,6 +197,7 @@ properties = localOption (QuickCheckTests 1000) $ inOrderTestGroup "QuickCheck" 
 	, testProperty "prop_viewedFile_rountrips" Annex.View.ViewedFile.prop_viewedFile_roundtrips
 	, testProperty "prop_standardGroups_parse" Logs.PreferredContent.prop_standardGroups_parse
 	, testProperty "prop_balanced_stable" Annex.Balanced.prop_balanced_stable
+	, testProperty "prop_httpConfigKeys_sane" Git.Config.Url.prop_httpConfigKeys_sane
 	] ++ map (uncurry testProperty) combos
   where
 	combos = concat

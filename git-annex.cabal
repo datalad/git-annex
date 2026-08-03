@@ -837,6 +837,7 @@ Executable git-annex
     Git.Command
     Git.Command.Batch
     Git.Config
+    Git.Config.Url
     Git.ConfigTypes
     Git.Construct
     Git.Credential
