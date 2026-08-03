@@ -15,28 +15,8 @@ import platform
 import shutil
 import subprocess
 from functools import lru_cache
-from pathlib import Path
 
 import pytest
-
-
-# --- shared fixtures ----------------------------------------------------------
-
-
-@pytest.fixture
-def git_annex_repo(tmp_path: Path) -> Path:
-    """An empty, initialised git-annex repository in a fresh temp dir."""
-    subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
-    subprocess.run(
-        ["git", "config", "user.email", "test@github.land"],
-        cwd=tmp_path, check=True,
-    )
-    subprocess.run(
-        ["git", "config", "user.name", "GitHub Almighty"],
-        cwd=tmp_path, check=True,
-    )
-    subprocess.run(["git", "annex", "init", "-q"], cwd=tmp_path, check=True)
-    return tmp_path
 
 
 # --- git-annex version helpers -----------------------------------------------
