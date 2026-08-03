@@ -56,6 +56,9 @@ Paths of files or directories to drop can be specified.
   files when there are not enough other copies for the drop to be possible.
   See [[git-annex-preferred-content]](1)
 
+  When dropping from a remote, this avoids doing anything when the remote
+  is not belived to contain a file.
+
 * `--force`
 
   Use this option with care! It bypasses safety checks, and forces

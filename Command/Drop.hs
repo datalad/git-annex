@@ -90,7 +90,7 @@ start' o from key afile ai si = do
 		stopUnless (wantdrop lu) $
 			case from of
 				Nothing -> startLocal lu pcc afile ai si numcopies mincopies key [] ud
-				Just remote -> startRemote lu pcc afile ai si numcopies mincopies key ud remote
+				Just remote -> startRemote' (autoMode o) lu pcc afile ai si numcopies mincopies key ud remote
   where
 	remoteuuid = Remote.uuid <$> from
 	wantdrop lu
@@ -110,8 +110,11 @@ startLocal lu pcc afile ai si numcopies mincopies key preverified ud =
 		performLocal lu pcc key afile numcopies mincopies preverified ud
 
 startRemote :: LiveUpdate -> PreferredContentChecked -> AssociatedFile -> ActionItem -> SeekInput -> NumCopies -> MinCopies -> Key -> DroppingUnused -> Remote -> CommandStart
-startRemote lu pcc afile ai si numcopies mincopies key ud remote = do
-	fast <- Annex.getRead Annex.fast
+startRemote = startRemote' False
+
+startRemote' :: Bool -> LiveUpdate -> PreferredContentChecked -> AssociatedFile -> ActionItem -> SeekInput -> NumCopies -> MinCopies -> Key -> DroppingUnused -> Remote -> CommandStart
+startRemote' automode lu pcc afile ai si numcopies mincopies key ud remote = do
+	fast <- if automode then pure True else Annex.getRead Annex.fast
 	if fast
 		then do
 			remotes <- Remote.keyPossibilities (Remote.IncludeIgnored True) key

@@ -36,3 +36,5 @@ Note that `git-annex sync` only drops from remotes that location
 tracking thinks contain the content. So this would bring `git-annex drop
 --auto` into alignment with it.
 --[[Joey]]
+
+> [[done]] --[[Joey]]
