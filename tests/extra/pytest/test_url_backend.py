@@ -24,7 +24,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import (
+from _helpers import (
     URL_BACKEND_FIX_VERSION,
     git_annex_version,
     git_annex_version_below,
