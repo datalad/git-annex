@@ -3,7 +3,7 @@
  subject="""comment 1"""
  date="2026-08-03T19:04:39Z"
  content="""
-git's "http.<url>.*" documentation includes this:
+git's `http.<url>.*` documentation includes this:
 
 	The URLs that are matched against are those given directly to Git com‐
 	mands. This means any URLs visited as a result of a redirection do not
