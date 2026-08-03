@@ -4,7 +4,12 @@ work to drop the key, unless --fast is used.
 
 In the vast majority of cases, that is unncessary work. Only if the
 location tracking is out of date and the remote actually has the content
-does the content get dropped. 
+does the content get dropped. And in that case, from the remote's
+perspective, it does want the content, since the content is "present",
+so it *shouldn't* get dropped. 
+
+So drop is doing unncessary work whose only possible result can be to
+do the wrong thing in an edge case!
 
 (As well as being unncessary work, it looks pretty weird. I thought
 for a while that my preferred content expression was broken or that
