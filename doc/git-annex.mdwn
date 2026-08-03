@@ -1628,7 +1628,7 @@ Remotes are configured using these settings in `.git/config`.
   of these checksums, you can set this to `false`.
 
   Note that even when this is set to `false`, git-annex does verification
-  in some edge cases, where it's likely the case than an
+  in some edge cases, where it's likely the case that an
   object was downloaded incorrectly, or when needed for security.
 
 * `remote.<name>.annex-fastcopy`, `annex.fastcopy`
