@@ -1,0 +1,64 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2026-08-03T18:39:40Z"
+ content="""
+I got as far as implementing a git compatible config matcher,
+in [[!commit 6f43e386788eb01e944f98df0d6ed6eb79b84e76]].
+
+But, it's difficult to see a way to implementing this for
+http.sslCAInfo and http.sslCAPath. It needs to somehow be fed into
+http-client's Manager. But a Manager is set up outside any code path
+that knows what url is being downloaded. And nothing in the Manager
+API lets it override its ConnectionContext based on the url being requested.
+
+I think that UrlOptions would need to change httpMananger to an IO action
+that takes the url. And then to be performant, there would need to be
+caching of Managers, so that once a manager is created using a given
+http.sslCAInfo or http.sslCAPath, that same Manager keeps being used
+for other urls that use the same config values.
+
+But the fun doesn't stop there, because Manager is a core data type
+used by other haskell libraries. Eg, in Remote.S3, git-annex passes
+a Manager into `aws`, and so has no visibility about what urls
+that Manager will be used for.
+
+And that shades into another problem --
+"http.<url>.*" documentation includes this:
+
+	The URLs that are matched against are those given directly to Git com‐
+	mands. This means any URLs visited as a result of a redirection do not
+	participate in matching.
+
+If git-annex follows that, it would need to distinguish when an url is
+user-provided enough to use that config and not.
+
+When using Remote.GitLfs to download an object, there is essentially a
+redirect via the git-lfs protocol. Should that url be matched against
+the git config? Seemingly not. But in the aws case, the S3 publicurl= 
+value was provided as an input to git-annex annex command.
+So it seems that it should.
+
+What does it mean for the url to be given directly to a git(-annex)
+command? The `git clone` url certianly was. The S3 publicurl= value was
+provided by *someone* but it may not be the user using the remote now. And
+similarly a `git-annex get --from web` may be run by someone other than the
+person who ran `addurl`. 
+
+And `git-annex importfeed` discovers other urls, but is otherwise
+equivilant to the user running `git-annex addurl` themselves on those urls.
+In one case the user gave the url to a git-annex command, and in the ther
+case they did not. It does not really make sense for git-annex to
+distinguish those two cases, but either thing it picks will violate the git
+documentation.
+
+Now, git-annex could choose to diverge from git and always use the config.
+But bear in mind that [[todo/extraheader_config]] is asking some very similar
+questions about another `http.` config. Which could be a security hole if it
+exposes the config to the wrong urls.
+
+What might make sense would be for git-annex to support 
+`http.<url>.sslCAInfo` and `http.<url>.sslCAPath` only where git
+does. So for a git remote url, and not for anything else.
+I think that would also make sense for the [[todo/extraheader_config]].
+"""]]

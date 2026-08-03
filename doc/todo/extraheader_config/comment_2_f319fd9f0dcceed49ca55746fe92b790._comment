@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2026-08-03T19:20:57Z"
+ content="""
+[[!commit de52af5d334c55bb64dc2c5223c476b19c200a6c]] implemented
+`http.<url>.*` matching in git configs, which is the necessary
+(and quite fiddly!) groundwork for this.
+"""]]

@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2026-08-03T19:04:39Z"
+ content="""
+git's "http.<url>.*" documentation includes this:
+
+	The URLs that are matched against are those given directly to Git com‐
+	mands. This means any URLs visited as a result of a redirection do not
+	participate in matching.
+
+This raises further questions about when it would make sense for git-annex
+to use the config. I wrote more about this problem over at 
+[[todo/Support_per_SITE_http.SITE.sslCAInfo_etc]].
+
+What I am leaning toward is only supporting these configs for git remote
+urls, and not for all the other urls that git-annex uses.
+"""]]
