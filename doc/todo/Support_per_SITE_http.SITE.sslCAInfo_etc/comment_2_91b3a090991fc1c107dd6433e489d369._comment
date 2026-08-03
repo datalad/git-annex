@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2026-08-03T19:46:50Z"
+ content="""
+`git-annex initremote type=git-lfs` does set `git.remote.url`,
+so it cannot be distinguished if a git-lfs remote got its url set by
+the user cloning or adding a git remote or by initremote. In the first
+2 cases, matching the url against the git configs seems right; in the last
+case it's not clear what it should do. 
+
+This could I suppose be fixed by documenting better that it sets
+`git.remote.url`. So the user knows that they set the config
+with that command, and won't be surprised that Remote.GitLFS
+matches the remote url against the git configs.
+"""]]
