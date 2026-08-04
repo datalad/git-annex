@@ -58,6 +58,8 @@ it assumes all files that are currently present are preferred content.
 Here are changes to preferred content expressions, and the version
 they were added in.
 
+* "balanced=group:lackingcopies=grouplimit" (also for "fullybalanced",
+  "sizebalanced" and "fullysizebalanced") 10.20260718
 * "copies=grouplimit=number", "lackingcopies=grouplimit=number",
   "approxlackingcopies=grouplimit=number" 10.20260718
 * "lackingcopies=groupname:number",

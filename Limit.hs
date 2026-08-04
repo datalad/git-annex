@@ -621,21 +621,20 @@ limitBalanced mu getgroupmap groupname = do
 
 limitBalanced' :: String -> MatchFiles Annex -> Maybe UUID -> MkLimit Annex
 limitBalanced' termname fullybalanced mu want = do
-	let checknumcopies = ":lackingcopies" `isSuffixOf` want
-	enoughcopies <- if checknumcopies
-		then limitLackingCopies termname False "1"
+	limitcopies <- if checklackingcopies
+		then limitLackingCopies termname False wantlackingcopies
 		else limitCopies $ if ':' `elem` want
 			then want
 			else want ++ ":1"
-	let checkenoughcopies = if checknumcopies then id else not
+	let checkenoughcopies = if checklackingcopies then id else not
 	let present = limitPresent mu
-	let combo f = f present || f fullybalanced || f enoughcopies
+	let combo f = f present || f fullybalanced || f limitcopies
 	Right $ MatchFiles
 		{ matchAction = \lu a i ->
 			ifM (Annex.getRead Annex.rebalance)
 				( matchAction fullybalanced lu a i
 				, matchAction present lu a i <||>
-					((checkenoughcopies <$> matchAction enoughcopies lu a i)
+					((checkenoughcopies <$> matchAction limitcopies lu a i)
 						<&&> matchAction fullybalanced lu a i
 					)
 				)
@@ -647,7 +646,15 @@ limitBalanced' termname fullybalanced mu want = do
 		, matchNegationUnstable = combo matchNegationUnstable
 		, matchDesc = termname =? want
 		}
-
+  where
+	(checklackingcopies, wantlackingcopies) = 
+		case splitc ':' want of
+			[g, want']
+				| want' == "lackingcopies" -> (True, "1")
+				| "lackingcopies="` isPrefixOf` want' ->
+					let (_, sgrouplimit) = break (== '=') want'
+					in (True, drop 1 sgrouplimit ++ "+" ++ g ++ "=1")
+			_ -> (False, "")
 
 limitFullyBalanced :: Maybe UUID -> Annex GroupMap -> MkLimit Annex
 limitFullyBalanced = limitFullyBalanced' "fullybalanced"
@@ -699,11 +706,18 @@ limitFullyBalanced'' filtercandidates termname mu getgroupmap want =
 		[g, n]
 			| n == "lackingcopies" -> go g $ 
 				Left $ \mi notpresent key -> do
-					s <- groupUUIDs (toGroup g)
-						<$> groupMap
+					s <- getgids g <$> groupMap
 					let others = flip S.notMember s
-					let calc nothers numcopies = numcopies - nothers
-					limitCheckNumCopies False mi notpresent others key calc
+					calcnumcopiesneeded mi notpresent key others
+			| "lackingcopies="` isPrefixOf` n -> go g $
+				Left $ \mi notpresent key -> do
+					m <- groupMap
+					let s = getgids g m
+					let (_, sgrouplimit) = break (== '=') n
+					let gl = parseGroupLimit (drop 1 sgrouplimit)
+					let others = \u -> u `S.notMember` s
+						&& checkGroupLimit gl (uuidsByGroup m) u
+					calcnumcopiesneeded mi notpresent key others
 			| otherwise -> maybe
 				(Left $ "bad number for " ++ termname)
 				(go g . Right)
@@ -712,6 +726,11 @@ limitFullyBalanced'' filtercandidates termname mu getgroupmap want =
   where
 	go s n = limitFullyBalanced''' filtercandidates termname mu
 		getgroupmap (toGroup s) n want
+	getgids = groupUUIDs . toGroup
+
+	calcnumcopiesneeded mi notpresent key others =
+		let calc nothers numcopies = numcopies - nothers
+		in limitCheckNumCopies False mi notpresent others key calc
 
 limitFullyBalanced'''
 	:: (Int -> Key -> S.Set UUID -> Annex (S.Set UUID))
