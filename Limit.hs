@@ -620,13 +620,13 @@ limitBalanced mu getgroupmap groupname = do
 	limitBalanced' "balanced" fullybalanced mu groupname 
 
 limitBalanced' :: String -> MatchFiles Annex -> Maybe UUID -> MkLimit Annex
-limitBalanced' termname fullybalanced mu groupname = do
-	let checknumcopies = ":lackingcopies" `isSuffixOf` groupname
+limitBalanced' termname fullybalanced mu want = do
+	let checknumcopies = ":lackingcopies" `isSuffixOf` want
 	enoughcopies <- if checknumcopies
 		then limitLackingCopies termname False "1"
-		else limitCopies $ if ':' `elem` groupname
-			then groupname
-			else groupname ++ ":1"
+		else limitCopies $ if ':' `elem` want
+			then want
+			else want ++ ":1"
 	let checkenoughcopies = if checknumcopies then id else not
 	let present = limitPresent mu
 	let combo f = f present || f fullybalanced || f enoughcopies
@@ -645,7 +645,7 @@ limitBalanced' termname fullybalanced mu groupname = do
 		, matchNeedsLocationLog = combo matchNeedsLocationLog
 		, matchNeedsLiveRepoSize = True
 		, matchNegationUnstable = combo matchNegationUnstable
-		, matchDesc = termname =? groupname
+		, matchDesc = termname =? want
 		}
 
 
