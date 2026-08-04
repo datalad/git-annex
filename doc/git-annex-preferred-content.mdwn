@@ -364,7 +364,7 @@ content not being configured.
 * `balanced=groupname:lackingcopies`
   
   This makes each file be balanced amoung as many repositories in the group
-  as are needed to satisfy its numcopies configuration. 
+  as are needed to satisfy the numcopies configuration. 
 
   For example, "balanced=backup:lackingcopies", when numcopies is 3 and
   there is 1 other copy (in a repository not in the backup group) will
