@@ -1,0 +1,12 @@
+Eg `balanced=pool:lackingcopies` with numcopies set to 3 and 2 copies in 
+repositories in the pool group will not send the content to the 3rd
+repository. 
+
+This seems to have been broken ever since that preferred content syntax was
+introduced. 
+
+As the code is written, it uses `numcopies - nhave`, so in the example
+`3 - 2` so it only wants 1 copy to be in the pool group. The only reason it 
+doesn't drop other copies is numcopies checks prevent it.
+
+[[fixed|done]] --[[Joey]]

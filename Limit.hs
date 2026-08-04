@@ -702,9 +702,14 @@ limitFullyBalanced'' filtercandidates termname mu getgroupmap want =
 		[g] -> go g (Right 1)
 		[g, n]
 			| n == "lackingcopies" -> go g $ 
-				Left $ \mi notpresent key -> 
-					let vs nhave numcopies = numcopies - nhave
-					in limitCheckNumCopies False mi notpresent (const True) key vs
+				Left $ \mi notpresent key -> do
+					s <- fromMaybe S.empty
+						. M.lookup (toGroup g)
+						. uuidsByGroup
+						<$> groupMap
+					let others = flip S.notMember s
+					let calc nothers numcopies = numcopies - nothers
+					limitCheckNumCopies False mi notpresent others key calc
 			| otherwise -> maybe
 				(Left $ "bad number for " ++ termname)
 				(go g . Right)

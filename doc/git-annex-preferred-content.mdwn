@@ -329,8 +329,8 @@ content not being configured.
   Using "lackingcopies" rather than a number makes each file be balanced
   amoung as many repositories in the group as are needed to satisfy
   its numcopies configuration. Eg, "balanced=backup:lackingcopies", when
-  numcopies is 3 and there is 1 other copy will behave the same as
-  "balanced=backup:2".
+  numcopies is 3 and there is 1 other copy (in a repository not in the
+  backup group) will behave the same as "balanced=backup:2".
 
   For balancing to work, each repository in the group should have its
   preferred content set to the same expression. Using `groupwanted` is a
