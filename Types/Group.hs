@@ -1,6 +1,6 @@
 {- git-annex repo groups
  -
- - Copyright 2012-2024 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2026 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -10,7 +10,8 @@ module Types.Group (
 	fromGroup,
 	toGroup,
 	GroupMap(..),
-	emptyGroupMap
+	emptyGroupMap,
+	groupUUIDs
 ) where
 
 import Types.UUID
@@ -19,9 +20,10 @@ import Annex.Balanced
 
 import qualified Data.Map as M
 import qualified Data.Set as S
-import qualified Data.ByteString as S
+import qualified Data.ByteString as BS
+import Data.Maybe
 
-newtype Group = Group S.ByteString
+newtype Group = Group BS.ByteString
 	deriving (Eq, Ord, Show, Read)
 
 fromGroup :: Group -> String
@@ -38,3 +40,6 @@ data GroupMap = GroupMap
 
 emptyGroupMap :: GroupMap
 emptyGroupMap = GroupMap M.empty M.empty M.empty
+
+groupUUIDs :: Group -> GroupMap -> S.Set UUID
+groupUUIDs g = fromMaybe S.empty . M.lookup g . uuidsByGroup

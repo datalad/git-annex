@@ -468,10 +468,7 @@ limitLackingCopies desc approx want = case readish numwant of
 	go mi needed notpresent key = case (groupwant, grouplimit) of
 		(Nothing, []) -> check (const True)
 		(Just g, _) -> do
-			s <- fromMaybe S.empty
-				. M.lookup g
-				. uuidsByGroup
-				<$> groupMap
+			s <- groupUUIDs g <$> groupMap
 			check (`S.member` s)
 		(Nothing, gl) -> do
 			m <- uuidsByGroup <$> groupMap
@@ -568,8 +565,7 @@ addInAllGroup groupname = addLimit $ limitInAllGroup groupMap groupname
 limitInAllGroup :: Annex GroupMap -> MkLimit Annex
 limitInAllGroup getgroupmap groupname = Right $ MatchFiles
 	{ matchAction = const $ \notpresent mi -> do
-		m <- getgroupmap
-		let want = fromMaybe S.empty $ M.lookup (toGroup groupname) $ uuidsByGroup m
+		want <- groupUUIDs (toGroup groupname) <$> getgroupmap
 		if S.null want
 			then return True
 			-- optimisation: Check if a wanted uuid is notpresent.
@@ -599,7 +595,7 @@ limitOnlyInGroup :: Annex GroupMap -> MkLimit Annex
 limitOnlyInGroup getgroupmap groupname = Right $ MatchFiles
 	{ matchAction = const $ \notpresent mi -> do
 		m <- getgroupmap
-		let want = fromMaybe S.empty $ M.lookup (toGroup groupname) $ uuidsByGroup m
+		let want = groupUUIDs (toGroup groupname) m
 		if S.null want
 			then return False
 			else checkKey (check notpresent want) mi
@@ -703,9 +699,7 @@ limitFullyBalanced'' filtercandidates termname mu getgroupmap want =
 		[g, n]
 			| n == "lackingcopies" -> go g $ 
 				Left $ \mi notpresent key -> do
-					s <- fromMaybe S.empty
-						. M.lookup (toGroup g)
-						. uuidsByGroup
+					s <- groupUUIDs (toGroup g)
 						<$> groupMap
 					let others = flip S.notMember s
 					let calc nothers numcopies = numcopies - nothers
@@ -730,8 +724,7 @@ limitFullyBalanced'''
 limitFullyBalanced''' filtercandidates termname mu getgroupmap g getn want = Right $ MatchFiles
 	{ matchAction = \lu notpresent mi -> flip checkKey mi $ \key -> do
 		gm <- getgroupmap
-		let groupmembers = fromMaybe S.empty $
-			M.lookup g (uuidsByGroup gm)
+		let groupmembers = groupUUIDs g gm
 		n <- case getn of
 			Right n -> pure n
 			Left a -> a mi notpresent key
