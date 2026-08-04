@@ -1,0 +1,29 @@
+Currently, preferred content "balanced=groupname:lackingcopies"
+does not cause any repository in the balanced group to want to drop
+content even when there are more than enough copies.
+
+("balanced=groupname:lackingcopies=grouplimit" also doesn't cause a drop)
+
+Using --rebalance does make it want to drop.
+
+Is this a good thing? If so, it needs to be documented.
+Or it could be changed to drop when there are more copies than necessary.
+
+Internally, the reason this behavior happens is that 
+"balanced=groupname:number" is the same as 
+"(fullybalanced=groupname:number and not copies=groupname:number) or present"
+until --rebalance is used. And "balanced=groupname:lackingcopies"
+inherited that "or present".
+
+The "or present" is important to avoid moving objects between repositories
+of a balanced group when not rebalancing. But, it's behaving more broadly
+here and keeping copies when there are enough copies outside the group.
+
+Could it be changed to want to keep present copies where they are when
+there are not enough copies outside the balanced group, but otherwise
+want to drop from the balanced group?
+
+I think that would entail making "balanced=groupname:lackingcopies"
+work the same as 
+"fullybalanced=groupname:lackingcopies or (present and not lackingcopies=0)"
+--[[Joey]]
