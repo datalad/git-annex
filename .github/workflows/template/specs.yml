@@ -26,9 +26,12 @@
     # TODO: Add "crippled-home" back in once
     # <https://git-annex.branchable.com/bugs/gets_stuck_in_Remote_Tests___40____63____41___while_running_on_OSX_with_HOME_on_crippled_FS/?updated>
     # is fixed
-  test_annex_include:
-    - flavor: normal
-      os: macos-latest-large
+  # macos-latest-large is a paid larger-Intel runner class; jobs get blocked
+  # on billing.  Since macos-15-intel already provides Intel coverage,
+  # disable this extra include until billing is sorted.
+  # test_annex_include:
+  #   - flavor: normal
+  #     os: macos-latest-large
   artifact_basename: git-annex-macos-dmg
   artifact_install_steps:
     - hdiutil attach git-annex_*.dmg
@@ -67,7 +70,9 @@
   test_annex_flavors: [normal, custom-config1]
   artifact_basename: git-annex-windows-installer
   artifact_install_steps:
-    - ./git-annex-installer_*.exe /S
+    # -Wait is required because NSIS silent installers fork and the parent
+    # returns immediately — without it the next step may race the copy.
+    - Start-Process -FilePath (Get-Item ./git-annex-installer_*.exe).FullName -ArgumentList '/S' -Wait -NoNewWindow
   test_datalad: true
     # TODO: reenable -- was hanging on test step
     # see https://github.com/datalad/datalad-extensions/pull/54

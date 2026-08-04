@@ -246,7 +246,7 @@ jobs:
       - name: Install git-annex package
         shell: powershell
         run: |
-          ./git-annex-installer_*.exe /S
+          Start-Process -FilePath (Get-Item ./git-annex-installer_*.exe).FullName -ArgumentList '/S' -Wait -NoNewWindow
 
       - name: Check that magic files are installed
         run: |
@@ -352,7 +352,7 @@ jobs:
       - name: Install git-annex package
         shell: powershell
         run: |
-          ./git-annex-installer_*.exe /S
+          Start-Process -FilePath (Get-Item ./git-annex-installer_*.exe).FullName -ArgumentList '/S' -Wait -NoNewWindow
 
       - name: Define test host alias
         shell: cmd
