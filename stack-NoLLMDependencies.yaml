@@ -28,3 +28,4 @@ extra-deps:
 - persistent-sqlite-2.13.3.0
 - yesod-form-1.7.9.2
 - yesod-static-1.6.1.2
+- magic-1.1
