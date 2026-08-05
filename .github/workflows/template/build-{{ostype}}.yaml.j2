@@ -196,6 +196,9 @@ jobs:
       - name: Enable building with magic
         run: |
           perl -pli -e 's/magicmime: false/magicmime: true/' stack.yaml
+          # lts-24 caps `magic` at 1.1 while some transitive dep pulls 1.1.2;
+          # pin the exact-1.1 hackage revision that stack itself recommends.
+          echo '- magic-1.1@sha256:3a31ca1c49fa5f6a857f647471739bd240a6020af6ae43e71fb72201fc482fa2,928' >> stack.yaml
 
       - name: stack setup
         run: stack setup
@@ -234,6 +237,9 @@ jobs:
       - name: Enable building with magic
         run: |
           perl -pli -e 's/magicmime: false/magicmime: true/' stack.yaml
+          # lts-24 caps `magic` at 1.1 while some transitive dep pulls 1.1.2;
+          # pin the exact-1.1 hackage revision that stack itself recommends.
+          echo '- magic-1.1@sha256:3a31ca1c49fa5f6a857f647471739bd240a6020af6ae43e71fb72201fc482fa2,928' >> stack.yaml
 
       - name: Set UPGRADE_LOCATION
         run: |
@@ -286,7 +292,7 @@ jobs:
 
     {% endif %}
       - name: Upload packages
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: {{artifact_basename}}_${{ steps.build-version.outputs.version }}
           path: |
@@ -372,7 +378,7 @@ jobs:
       - name: Send e-mail on failed run
         if: failure() && contains(fromJSON('["schedule", "workflow_dispatch"]'), github.event_name)
         # freeze to v17
-        uses: dawidd6/action-send-mail@6e71c855c9a091d80a519621b9fd3e8d252ca40c
+        uses: dawidd6/action-send-mail@42942bc2f8fba4e611b459a018967a6a7c78c68c
         with:
           server_address: ${{ secrets.NOTIFY_SMTP_HOST }}
           server_port: ${{ secrets.NOTIFY_SMTP_PORT }}
@@ -424,7 +430,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download git-annex package
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: {{artifact_basename}}_${{ needs.build-package.outputs.build-version }}
 
@@ -544,7 +550,7 @@ jobs:
       - name: Send e-mail on failed run
         if: failure() && contains(fromJSON('["schedule", "workflow_dispatch"]'), github.event_name)
         # freeze to v17
-        uses: dawidd6/action-send-mail@6e71c855c9a091d80a519621b9fd3e8d252ca40c
+        uses: dawidd6/action-send-mail@42942bc2f8fba4e611b459a018967a6a7c78c68c
         with:
           server_address: ${{ secrets.NOTIFY_SMTP_HOST }}
           server_port: ${{ secrets.NOTIFY_SMTP_PORT }}
@@ -584,7 +590,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download git-annex package
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: {{artifact_basename}}_${{ needs.build-package.outputs.build-version }}
 
@@ -645,7 +651,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download git-annex package
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: {{artifact_basename}}_${{ needs.build-package.outputs.build-version }}
 
