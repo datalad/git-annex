@@ -29,6 +29,7 @@ git-annex (10.20260718) UNRELEASED; urgency=medium
     another group's groupwanted expression to be used instead.
   * git-annex.cabal: Pin magic to 1.1 avoiding build failure on Windows
     with newer version.
+  * NoLLMDependencies: Update for warp.
 
  -- Joey Hess <id@joeyh.name>  Fri, 24 Jul 2026 10:07:07 -0400
 

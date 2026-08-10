@@ -82,6 +82,12 @@ in order to prevent such dependencies using the newer version.
 
 git-annex supports being built with older versions.
 
+### warp
+
+[warp](https://hackage.haskell.org/package/warp) since 3.4.11
+
+[First LLM generated code](https://github.com/yesodweb/wai/commit/4eb93bd228cf269c86b257e811ec758b510b5578)
+
 ### yesod
 
 [yesod](https://hackage.haskell.org/package/yesod-core) since 1.7.0.0

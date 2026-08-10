@@ -307,7 +307,8 @@ Executable git-annex
     Build-Depends:
      base (>= 4.18.2.1 && < 4.23),
      ram (< 0.21.0),
-     persistent (>= 2.13.3) && (< 2.15.0.0)
+     persistent (>= 2.13.3) && (< 2.15.0.0),
+     warp (< 3.4.11)
   else
     Build-Depends:
      base (>= 4.18.2.1 && < 5),
