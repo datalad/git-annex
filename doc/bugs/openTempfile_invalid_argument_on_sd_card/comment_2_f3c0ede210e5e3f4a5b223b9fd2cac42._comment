@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="gernot"
+ avatar="http://cdn.libravatar.org/avatar/878bf929d34bb9b32e7e9f85f660d969"
+ subject="comment 2"
+ date="2026-08-11T08:44:17Z"
+ content="""
+I ran into this error during the `export` of a view to FAT32.  At least some of the problems were caused by how git-annex constructed the view's filenames (or temporary transfer filenames), I believe.  The filenames are constructed from path elements, which may get truncated, and so the final filenames could end up with trailing spaces.  Upgrading to the current version has fixed almost all of those errors.
+
+What appears to continue to be a problem are filenames with percentage signs in them, e.g., `foobar 100%.bin`.  As far as the filesystem is concerned, `%` characters themselves are obviously fine, because git-annex uses them for all view branch filenames, and the export generally works for them.  (For now, I've renamed files to, e.g., `foo 100 percent.bin`, and it works 100% now. :) )
+"""]]
