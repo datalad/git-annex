@@ -196,9 +196,6 @@ jobs:
       - name: Enable building with magic
         run: |
           perl -pli -e 's/magicmime: false/magicmime: true/' stack.yaml
-          # lts-24 caps `magic` at 1.1 while some transitive dep pulls 1.1.2;
-          # pin the exact-1.1 hackage revision that stack itself recommends.
-          echo '- magic-1.1@sha256:3a31ca1c49fa5f6a857f647471739bd240a6020af6ae43e71fb72201fc482fa2,928' >> stack.yaml
 
       - name: stack setup
         run: stack setup
@@ -237,9 +234,6 @@ jobs:
       - name: Enable building with magic
         run: |
           perl -pli -e 's/magicmime: false/magicmime: true/' stack.yaml
-          # lts-24 caps `magic` at 1.1 while some transitive dep pulls 1.1.2;
-          # pin the exact-1.1 hackage revision that stack itself recommends.
-          echo '- magic-1.1@sha256:3a31ca1c49fa5f6a857f647471739bd240a6020af6ae43e71fb72201fc482fa2,928' >> stack.yaml
 
       - name: Set UPGRADE_LOCATION
         run: |
