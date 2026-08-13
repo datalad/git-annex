@@ -25,6 +25,7 @@ env:
 jobs:
   build-package:
     runs-on: macos-15-intel
+    if: false  # TEMP: skip whole macOS workflow to isolate Windows test-extra flakiness
     outputs:
       build-version: ${{ steps.build-version.outputs.version }}
     steps:

@@ -218,6 +218,7 @@ jobs:
   test-annex:
     runs-on: ${{ matrix.os }}
     needs: build-package
+    if: false  # TEMP: skip to isolate test-extra flakiness
     strategy:
       matrix:
         flavor: ["normal", "custom-config1"]
@@ -404,6 +405,7 @@ jobs:
   test-datalad:
     runs-on: windows-2025
     needs: build-package
+    if: false  # TEMP: skip to isolate test-extra flakiness
     strategy:
       matrix:
         version: [master, maint, release]
