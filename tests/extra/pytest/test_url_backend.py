@@ -96,6 +96,9 @@ def _chmod_and_retry(func: Callable[..., Any], path: str, _exc: BaseException) -
     func(path)
 
 
+_FIXTURE_LOG: list[str] = []  # captured setup output, shown in diagnostics
+
+
 @pytest.fixture(scope="module")
 def cloned_repo(tmp_path_factory: pytest.TempPathFactory) -> Path:
     workdir = tmp_path_factory.mktemp("ReproTube")
@@ -114,7 +117,19 @@ def cloned_repo(tmp_path_factory: pytest.TempPathFactory) -> Path:
         ["git", "config", "user.name", "GitHub Almighty"],
         cwd=repo, check=True,
     )
-    subprocess.run(["git", "annex", "init"], cwd=repo, check=True)
+    # Capture `git annex init` output for the diagnostic dump.  A
+    # module-scoped fixture's setup output is attached by pytest to
+    # the *first* test that used the fixture, not to whichever test
+    # later fails, so we stash it here explicitly.
+    init = subprocess.run(
+        ["git", "annex", "init"],
+        cwd=repo, capture_output=True, text=True, check=True,
+    )
+    _FIXTURE_LOG.append(f"$ git annex init  (rc={init.returncode})")
+    if init.stdout.strip():
+        _FIXTURE_LOG.append("  stdout:\n" + "\n".join("    " + l for l in init.stdout.splitlines()))
+    if init.stderr.strip():
+        _FIXTURE_LOG.append("  stderr:\n" + "\n".join("    " + l for l in init.stderr.splitlines()))
     yield repo
     # Explicit teardown so pytest's later `tmp_path_factory` cleanup
     # doesn't trip over git-annex's read-only object files (Windows,
@@ -171,6 +186,12 @@ def _collect_diagnostics(cloned_repo: Path, target: Path) -> str:
     lines.append(f"cwd: {cloned_repo}")
     lines.append(f"target (rel): {TARGET}")
     lines.append(f"target (abs): {target}")
+    if _FIXTURE_LOG:
+        lines.append("")
+        lines.append("--- fixture setup output (captured) ---")
+        lines.extend(_FIXTURE_LOG)
+        lines.append("--- end fixture setup ---")
+        lines.append("")
 
     # Working-tree entry: does anything exist there at all?
     lines.append(f"os.path.lexists(target): {os.path.lexists(target)}")
@@ -199,14 +220,19 @@ def _collect_diagnostics(cloned_repo: Path, target: Path) -> str:
 
     # git-annex's own view: is content locally available?
     for cmd in (
+        ["git", "branch", "--show-current"],
+        ["git", "symbolic-ref", "HEAD"],
         ["git", "annex", "find", "--in=here", TARGET],
         ["git", "annex", "whereis", TARGET],
         ["git", "annex", "info", TARGET, "--bytes"],
         ["git", "annex", "lookupkey", TARGET],
         ["git", "annex", "version"],
-        ["git", "annex", "config", "--get", "annex.crippledfilesystem"],
-        ["git", "config", "--get", "core.symlinks"],
-        ["git", "config", "--get", "core.longpaths"],
+        ["git", "config", "annex.crippledfilesystem"],
+        ["git", "config", "annex.direct"],
+        ["git", "config", "annex.version"],
+        ["git", "config", "annex.uuid"],
+        ["git", "config", "core.symlinks"],
+        ["git", "config", "core.longpaths"],
         ["git", "status", "--porcelain"],
         ["git", "log", "-1", "--pretty=%H %s", "--", TARGET],
     ):
