@@ -6,4 +6,10 @@
 I do think that "present and foo" will work, with the right "foo". I'm just
 having trouble coming up with it, and it may be that it's not expressible
 with current preferred content syntax.
+
+What's needed is something that only matches when there are too many
+copies.
+
+"lackingcopies=groupname:0" matches when there are too many or the desired
+numcopies, which is not quite right.
 """]]
