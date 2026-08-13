@@ -629,15 +629,17 @@ limitBalanced' termname fullybalanced mu want = do
 	let checkenoughcopies = if checklackingcopies then id else not
 	let present = limitPresent mu
 	let combo f = f present || f fullybalanced || f limitcopies
-	Right $ MatchFiles
-		{ matchAction = \lu a i ->
-			ifM (Annex.getRead Annex.rebalance)
-				( matchAction fullybalanced lu a i
-				, matchAction present lu a i <||>
-					((checkenoughcopies <$> matchAction limitcopies lu a i)
-						<&&> matchAction fullybalanced lu a i
-					)
+	let matchaction lu a i =
+		let match f = matchAction f lu a i
+		in ifM (Annex.getRead Annex.rebalance)
+			( match fullybalanced
+			, match present <||>
+				((checkenoughcopies <$> match limitcopies)
+					<&&> match fullybalanced
 				)
+			)
+	Right $ MatchFiles
+		{ matchAction = matchaction
 		, matchNeedsFileName = combo matchNeedsFileName
 		, matchNeedsFileContent = combo matchNeedsFileContent
 		, matchNeedsKey = combo matchNeedsKey
