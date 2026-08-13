@@ -329,9 +329,27 @@ jobs:
     # aren't available (e.g. dynlibs needs strace).
     runs-on: windows-2025
     needs: build-package
+    # Windows: point TMP/TEMP at a short root so any test that shells
+    # out to `git clone` on repos with long annex-object paths (e.g.
+    # the ReproTube DataLad dataset in test_url_backend) stays under
+    # MAX_PATH.  The default runner tempdir under
+    # C:\Users\runneradmin\AppData\Local\Temp is ~65 chars, plus
+    # pytest's per-run subdir pushes total prefix past ~90 chars —
+    # combined with SHA256E annex-object paths (~200 chars) that
+    # crosses 260 and git checkout fails with "Filename too long".
+    env:
+      TMP: C:\t
+      TEMP: C:\t
     steps:
       - name: Checkout this repository
         uses: actions/checkout@v6
+
+      - name: Prepare short TMPDIR
+        shell: bash
+        run: mkdir -p /c/t
+
+      - name: Handle long filenames
+        run: git config --system core.longpaths true
 
       - name: Create pending PR status
         if: github.event.inputs.pr != ''
