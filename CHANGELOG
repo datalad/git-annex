@@ -18,8 +18,8 @@ git-annex (10.20260718) UNRELEASED; urgency=medium
     "copies=archive+backup-offsite=3"
   * Also expanded --lackingcopies, --approxlackingcopies, and --copies
     with the same syntax.
-  * Expand preferred content "balanced", fullybalanced, 
-    sizebalanced and fullysizebalanced expression syntax to support
+  * Expand preferred content "balanced", "fullybalanced", 
+    "sizebalanced" and "fullysizebalanced" expression syntax to support
     group limits as well. Eg
     "balanced=backup:lackingcopies=archive-offsite"
   * The preferred content groupwanted expression will no longer
