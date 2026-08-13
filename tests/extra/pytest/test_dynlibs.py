@@ -66,12 +66,12 @@ def _count_enoent(subcommand: str, pattern: str, cwd: Path) -> int:
 
 
 def test_libpcre_lookups_on_version(tmp_path: Path) -> None:
-    subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
+    subprocess.run(["git", "init"], cwd=tmp_path, check=True)
     n = _count_enoent("version", r"libpcre.*so", tmp_path)
     assert n < 7, f"too many libpcre ENOENT lookups on `git-annex version`: {n}"
 
 
 def test_libpcre_lookups_on_init(tmp_path: Path) -> None:
-    subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
+    subprocess.run(["git", "init"], cwd=tmp_path, check=True)
     n = _count_enoent("init", r"libpcre.*so", tmp_path)
     assert n < 260, f"too many libpcre ENOENT lookups on `git-annex init`: {n}"

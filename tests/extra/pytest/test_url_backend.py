@@ -114,7 +114,7 @@ def cloned_repo(tmp_path_factory: pytest.TempPathFactory) -> Path:
         ["git", "config", "user.name", "GitHub Almighty"],
         cwd=repo, check=True,
     )
-    subprocess.run(["git", "annex", "init", "-q"], cwd=repo, check=True)
+    subprocess.run(["git", "annex", "init"], cwd=repo, check=True)
     yield repo
     # Explicit teardown so pytest's later `tmp_path_factory` cleanup
     # doesn't trip over git-annex's read-only object files (Windows,
