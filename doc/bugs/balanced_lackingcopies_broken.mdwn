@@ -9,19 +9,4 @@ As the code is written, it uses `numcopies - nhave`, so in the example
 `3 - 2` so it only wants 1 copy to be in the pool group. The only reason it 
 doesn't drop other copies is numcopies checks prevent it.
 
-> I thought I had fixed this in [[!commit 83e4798d4a4c968830b8b3f77d56a46697bbf2cb]]
-> but apparently not:
-
-	joey@darkstar:~/tmp/bench/r3>git-annex whereis foo
-	whereis foo (2 copies)
-	  	3d99baba-c958-4c8f-a2a8-ea8ba16a9c94 -- joey@darkstar:~/tmp/bench/r3 [here]
-	  	a3d7c703-fd22-4379-8274-78e2cbbce6a9 -- joey@darkstar:~/tmp/bench/r4 [r4]
-	ok
-	joey@darkstar:~/tmp/bench/r3>git-annex copy foo --auto --to origin --explain --rebalance
-	[ foo does not match preferred content: balanced=pool:lackingcopies[FALSE] ]
-	[ foo has 2 copies, and the configured annex.numcopies is 2 ]
-	joey@darkstar:~/tmp/bench/r3>git-annex group r4
-	offsite
-	joey@darkstar:~/tmp/bench/r3>git-annex group here
-	pool
-
+[[fixed|done]] --[[Joey]]
