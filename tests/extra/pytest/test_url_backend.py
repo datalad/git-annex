@@ -149,6 +149,104 @@ def test_whereis_parses_url_backend_key(cloned_repo: Path) -> None:
     )
 
 
+def _run(cmd: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
+    """Run a diagnostic command; never raise, capture text."""
+    try:
+        return subprocess.run(
+            cmd, cwd=cwd, capture_output=True, text=True, timeout=30,
+        )
+    except (subprocess.SubprocessError, OSError) as exc:
+        return subprocess.CompletedProcess(cmd, returncode=-1, stdout="", stderr=f"{type(exc).__name__}: {exc}")
+
+
+def _collect_diagnostics(cloned_repo: Path, target: Path) -> str:
+    """
+    Gather everything an upstream bug report would want when a
+    `git annex get` claims success but the working-tree file isn't
+    visible.  Kept as a plain-text dump so it appears verbatim in
+    the pytest assertion message.
+    """
+    lines: list[str] = ["", "--- diagnostics ---"]
+    lines.append(f"platform: {sys.platform}")
+    lines.append(f"cwd: {cloned_repo}")
+    lines.append(f"target (rel): {TARGET}")
+    lines.append(f"target (abs): {target}")
+
+    # Working-tree entry: does anything exist there at all?
+    lines.append(f"os.path.lexists(target): {os.path.lexists(target)}")
+    lines.append(f"target.exists(): {target.exists()}")
+    lines.append(f"target.is_symlink(): {target.is_symlink()}")
+    try:
+        st = os.lstat(target)
+        lines.append(
+            f"os.lstat: mode=0o{st.st_mode:o} size={st.st_size} "
+            f"mtime={st.st_mtime}"
+        )
+    except OSError as exc:
+        lines.append(f"os.lstat: {type(exc).__name__}: {exc}")
+
+    if target.is_symlink():
+        try:
+            link_target = os.readlink(target)
+            lines.append(f"readlink(target): {link_target!r}")
+            resolved = (target.parent / link_target).resolve(strict=False)
+            lines.append(f"resolved: {resolved}")
+            lines.append(f"resolved.exists(): {resolved.exists()}")
+            if resolved.exists():
+                lines.append(f"resolved.stat().st_size: {resolved.stat().st_size}")
+        except OSError as exc:
+            lines.append(f"readlink/resolve: {type(exc).__name__}: {exc}")
+
+    # git-annex's own view: is content locally available?
+    for cmd in (
+        ["git", "annex", "find", "--in=here", TARGET],
+        ["git", "annex", "whereis", TARGET],
+        ["git", "annex", "info", TARGET, "--bytes"],
+        ["git", "annex", "lookupkey", TARGET],
+        ["git", "annex", "version"],
+        ["git", "annex", "config", "--get", "annex.crippledfilesystem"],
+        ["git", "config", "--get", "core.symlinks"],
+        ["git", "config", "--get", "core.longpaths"],
+        ["git", "status", "--porcelain"],
+        ["git", "log", "-1", "--pretty=%H %s", "--", TARGET],
+    ):
+        r = _run(cmd, cloned_repo)
+        lines.append(f"$ {' '.join(cmd)}  (rc={r.returncode})")
+        if r.stdout.strip():
+            lines.append(f"  stdout: {r.stdout.strip()}")
+        if r.stderr.strip():
+            lines.append(f"  stderr: {r.stderr.strip()}")
+
+    # If we got a key, try to inspect the annex object file directly.
+    key_out = _run(["git", "annex", "lookupkey", TARGET], cloned_repo).stdout.strip()
+    if key_out:
+        # Compute annex object path via `git annex examinekey --format`.
+        r = _run(
+            ["git", "annex", "examinekey", key_out, "--format=${objectpath}\\n"],
+            cloned_repo,
+        )
+        obj_rel = r.stdout.strip()
+        if obj_rel:
+            obj_abs = cloned_repo / obj_rel
+            lines.append(f"annex object path (rel): {obj_rel}")
+            lines.append(f"annex object exists: {obj_abs.exists()}")
+            if obj_abs.exists():
+                lines.append(f"annex object size: {obj_abs.stat().st_size}")
+
+    # Parent directory listing — did the intermediate dirs get created?
+    parent = target.parent
+    lines.append(f"parent dir exists: {parent.exists()}")
+    if parent.exists():
+        try:
+            names = sorted(os.listdir(parent))
+            lines.append(f"parent listing ({len(names)} entries): {names[:20]}")
+        except OSError as exc:
+            lines.append(f"listdir(parent): {type(exc).__name__}: {exc}")
+
+    lines.append("--- end diagnostics ---")
+    return "\n".join(lines)
+
+
 @_xfail_broken_url_backend
 def test_get_url_backend_key(cloned_repo: Path) -> None:
     """Full reproducer: retrieve the URL-backend file."""
@@ -159,5 +257,27 @@ def test_get_url_backend_key(cloned_repo: Path) -> None:
         timeout=600,
     )
     target = cloned_repo / TARGET
-    assert target.exists(), f"{TARGET} was not retrieved"
-    assert target.stat().st_size > 0, f"{TARGET} is empty after get"
+    # Cross-check via git-annex first — content should be recorded as
+    # locally available.  If this fails, `get` didn't actually work.
+    found = _run(["git", "annex", "find", "--in=here", TARGET], cloned_repo)
+    if not found.stdout.strip():
+        pytest.fail(
+            f"`git annex find --in=here {TARGET}` returned empty after get; "
+            f"content not locally available per git-annex's own view."
+            + _collect_diagnostics(cloned_repo, target)
+        )
+    # And the working-tree entry should be present + non-empty.  On
+    # 2026-08-13 Windows we saw `find --in=here` pass while
+    # `target.exists()` returned False — capture full state so an
+    # upstream report has enough to reproduce.
+    if not target.exists():
+        pytest.fail(
+            f"{TARGET} not visible via Path.exists() despite `find --in=here` "
+            f"reporting content present."
+            + _collect_diagnostics(cloned_repo, target)
+        )
+    if target.stat().st_size == 0:
+        pytest.fail(
+            f"{TARGET} exists but is empty after get."
+            + _collect_diagnostics(cloned_repo, target)
+        )
