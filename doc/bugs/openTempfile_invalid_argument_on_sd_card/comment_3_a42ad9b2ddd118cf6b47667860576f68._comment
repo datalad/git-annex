@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2026-08-13T18:10:47Z"
+ content="""
+Reproduced a problem with that filename:
+
+	joey@darkstar:~>sudo mount -t msdos -o loop,uid=1000,gid=1000,check=strict fs mnt
+	joey@darkstar:~>touch 'mnt/foobar 100%.bin'
+	touch: cannot touch 'mnt/foobar 100%.bin': Invalid argument
+
+(Without check=strict, it does not EINVAL but `ls` shows
+that the filename created is "foobar 1.bin")
+
+But, the '%' is not responsible for the problem really:
+
+	joey@darkstar:~>touch 'mnt/foobar 1.bin'
+	touch: cannot touch 'mnt/foobar 1.bin': Invalid argument
+
+The problem is just that FAT with check=strict doesn't allow any spaces in the filename.
+And I think there's just nothing git-annex can do about exporting trees with filenames
+with spaces to filesystems that don't support spaces in filenames.
+
+Perhaps you are using some other mount options though that have a different behavior where
+'%' is really responsible for the problem. If so, I think you should file a new bug report
+with enough details to reproduce the problem.
+"""]]
