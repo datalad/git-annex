@@ -772,9 +772,22 @@ jobs:
     {% endif %}
       - name: Run datalad tests
         run: |
-          mkdir -p __testhome__
-          cd __testhome__
-          python -m pytest -c ../datalad/tox.ini -s -v --pyargs datalad
+          {% if ostype == "windows" %}
+          # windows-2025: HOME and default tempfile live on C: while the
+          # actions workspace is on D:.  Any datalad code that computes
+          # `os.path.relpath(some_C_path, some_D_path)` raises
+          # `ValueError: path is on mount 'D:', start on mount 'C:'`.
+          # Run pytest from a C: directory so tempdir + HOME + CWD all
+          # share one drive.  See commit message for context.
+          testhome="$HOME/dl-testhome"
+          toxini="$GITHUB_WORKSPACE/datalad/tox.ini"
+          {% else %}
+          testhome="$PWD/__testhome__"
+          toxini="../datalad/tox.ini"
+          {% endif %}
+          mkdir -p "$testhome"
+          cd "$testhome"
+          python -m pytest -c "$toxini" -s -v --pyargs datalad
 
       - name: Set final PR status
         if: always() && github.event.inputs.pr != ''
