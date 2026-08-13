@@ -1,17 +1,15 @@
 git-annex (10.20260718) UNRELEASED; urgency=medium
 
-  * drop --auto --from a remote does not try to drop content that is not
-    known to be present on the remote. This avoids unncessary work
-    and makes it consistent with the behavior of git-annex sync and push.
+  * Behavior change: drop --auto --from a remote does not any longer 
+    try to drop content that is not known to be present on the remote.
+    This avoids unncessary work and makes it consistent with the behavior
+    of git-annex sync and push.
   * External special remote protocol extended to support IMPORTKEY.
   * git-annex-remote-internetarchive supports --no-content imports.
-  * Fix reversion in 8.20200226 that broke git-annex benchmark --databases
   * importfeed: Fix reporting and logging of problems with feeds.
   * importfeed: When adding an url, indicate which feed it is from.
-  * Remove the ParallelBuild cabal flag and add cabal.project that
-    enables parallel build by default with ghc 9.8+ and cabal-install 3.12.
-  * stack.yaml: Update to lts-24.52
-  * Fixed buggy handling of preferred content "balanced=groupname:lackingcopies"
+  * Fixed buggy handling of preferred content
+    "balanced=groupname:lackingcopies"
   * Expand preferred content "lackingcopies" and "approxlackingcopies"
     expression syntax to support "groupname:number"
   * Expand preferred content "copies", "lackingcopies", and
@@ -29,7 +27,11 @@ git-annex (10.20260718) UNRELEASED; urgency=medium
     another group's groupwanted expression to be used instead.
   * git-annex.cabal: Pin magic to 1.1 avoiding build failure on Windows
     with newer version.
+  * Fix reversion in 8.20200226 that broke git-annex benchmark --databases
   * NoLLMDependencies: Update for warp.
+  * Remove the ParallelBuild cabal flag and add cabal.project that
+    enables parallel build by default with ghc 9.8+ and cabal-install 3.12.
+  * stack.yaml: Update to lts-24.52
 
  -- Joey Hess <id@joeyh.name>  Fri, 24 Jul 2026 10:07:07 -0400
 
