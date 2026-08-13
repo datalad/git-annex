@@ -25,5 +25,6 @@ want to drop from the balanced group?
 
 I think that would entail making "balanced=groupname:lackingcopies"
 work the same as 
-"fullybalanced=groupname:lackingcopies or (present and not lackingcopies=0)"
+"fullybalanced=groupname:lackingcopies or (present and 
+not lackingcopies=groupname:0)"
 --[[Joey]]
