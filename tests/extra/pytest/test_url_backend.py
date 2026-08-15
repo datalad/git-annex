@@ -57,6 +57,33 @@ _xfail_broken_url_backend = pytest.mark.xfail(
     strict=False,
 )
 
+# git-annex init on Windows / crippled-FS silently returns rc=0 even when
+# "Failed to enter adjusted branch!" occurs (because working-tree files
+# are marked modified after clone, so `git checkout adjusted/*(unlocked)`
+# refuses).  The repo is left half-migrated: `annex.crippledfilesystem`
+# is set but HEAD stays on master, so `git annex get` writes to the
+# hashdirlower object path while the checked-out symlink still points to
+# the source repo's hashdirmixed path — leaving the working-tree entry
+# permanently dangling despite `git annex info` reporting present=true.
+# Full analysis and proposed patch in
+# `.git-meta/UPSTREAM_ISSUE_adjust_silent_failure.md`.
+#
+# Unlike _xfail_broken_url_backend above, this xfail *is* honoured on CI
+# too — the failure is an upstream git-annex bug we've fully diagnosed
+# and reported, not a regression in our own code that CI needs to catch
+# loudly.  Once upstream ships a fix, tighten this to
+# `condition=git_annex_version_below(<fix-version>) and sys.platform=="win32"`.
+_xfail_windows_adjusted_branch_init = pytest.mark.xfail(
+    condition=sys.platform.startswith("win"),
+    reason=(
+        "git-annex init on Windows silently fails to enter adjusted "
+        "branch when working-tree files show as modified after clone; "
+        "annex get then leaves working-tree symlinks dangling. See "
+        "UPSTREAM_ISSUE_adjust_silent_failure.md."
+    ),
+    strict=False,
+)
+
 REPRO_URL = "https://datasets.datalad.org/repronim/ReproTube/DataLad/.git/"
 TARGET = (
     "videos/2021/07/"
@@ -273,6 +300,7 @@ def _collect_diagnostics(cloned_repo: Path, target: Path) -> str:
     return "\n".join(lines)
 
 
+@_xfail_windows_adjusted_branch_init
 @_xfail_broken_url_backend
 def test_get_url_backend_key(cloned_repo: Path) -> None:
     """Full reproducer: retrieve the URL-backend file."""
