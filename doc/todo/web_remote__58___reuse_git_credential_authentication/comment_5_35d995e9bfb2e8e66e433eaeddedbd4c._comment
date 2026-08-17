@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="thoughts on git credential. scope"
+ date="2026-08-17T19:24:21Z"
+ content="""
+> @yoh what do you think about that idea?
+
+I might be missing the point for extra parameter (`urlinclude`) for web remote itself as it might complicate handling multiple `<url>` settings, and overall feels more of a user/system wide configuration and not remote.
+
+As for the need of support by all special remotes -- now that there is a [`DELEGATE`](https://git-annex.branchable.com/design/external_special_remote_protocol/delegate_appendix/) functionality for special remotes, I think special remotes should generally be advised to just delegate HTTP downloads to git-annex for robust/centralized operation overall where feasible.  Then it would fall under centralized `credential.<url>.` handling by git-annex. 
+
+Related: just an idea, what about adding `credential.<url>.annex-ignore` defaulting to `True`, just to let folks where needed explicitly set to `False` so to tell credential provider to be used for that `<url>`?  Since manual configuration of a `credential.` is anyways required, IMHO it is ok to request explicitly specify if it should apply to git-annex or not, with default being \"not\".
+"""]]
