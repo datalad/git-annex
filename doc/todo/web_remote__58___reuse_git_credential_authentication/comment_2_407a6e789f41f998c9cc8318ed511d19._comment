@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2026-08-17T18:01:38Z"
+ content="""
+I also think you're pretty far down a slippery slope with this repository. It
+just happens to have a S3 proxy endpoint under it. Any HTTP resource
+could be put under a repo that way, and if that were used to argue that these
+configs should apply to it, then *every* git-annex special remote that uses
+HTTP would need to support applying those configs to every url that it
+accesses. No matter what third-party library might be used for a cloud service
+protocol. Even external special remotes. That is clearly taking it too far.
+
+There could be room for a middle ground, and it might be something
+like a separate web special remote that is configured with
+`urlinclude=https://datalad-test.local.lan`
+inheriting your git configs for that url.
+"""]]

@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2026-08-17T16:19:34Z"
+ content="""
+There are some fairly related todos that I have been thinking about
+recently.
+
+* [[todo/extraheader_config]] wants `http.<url>.extraheader` to be
+  supported at least for P2P over HTTP urls 
+* [[todo/Support_per_SITE_http.SITE.sslCAInfo_etc]] 
+  for `http.<url>.sslCAInfo` and `http.<url>.sslCAPath`.
+
+Each of those has their own considerations around things like security
+and what is able to be implemented sanely.
+
+Those are about `http.<url>.*`, while this is about
+`credential.<url>.*`. git has different matching rules for those.
+For `http.<url>.*` git's documentation explicitly limits it to
+
+	The URLs that are matched against are those given directly to Git com‐
+	mands. This means any URLs visited as a result of a redirection do not
+	participate in matching.
+
+For `credential.<url>.*` git's documentation is less explicit about
+exactly which urls it applies to.
+(I also noticed that at least the design document `technical/bundle-uri.adoc`
+talks about using git credential for accessing bundle urls that are 
+provided by the git server. I don't know if that is implemented in git though.)
+
+I think it's important that whatever git-annex does about these per-url
+configs, it does it consistently. A small divergence from git's documented
+behavior would be ok as long as it's documented and doesn't open security cans
+of worms.
+"""]]

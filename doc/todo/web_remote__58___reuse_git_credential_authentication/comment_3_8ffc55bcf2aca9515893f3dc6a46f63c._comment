@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2026-08-17T18:02:06Z"
+ content="""
+However, that could lead to a security hole...
+
+For example, suppose a user has read the git documentation
+above, and knows that `http.<url>.extraheader` will only be used for urls
+that they give to a git command. They know that the only git repos that
+they'll be using under `sharedhosting.com` are under foo.sharedhosting.com
+and bar.sharedhosting.com, which are both sites that they control.
+So they  decide to set `http.https://*.sharedhosting.com/.extraheader` to an
+authentication token to use for both. That's a shortcut, but it's fine.
+
+... Until they clone a git-annex repo from elsewhere that has an autoenabled
+ web special remote configured with `urlinclude=https://baz.sharedhosting.com/`,
+which is a site controlled by an attacker, who intercepts the extraheader
+that git-annex sends.
+
+I think that `credential.<url>.*` configs could also be subject to that
+kind of security hole, if a credential helper had a config that contained
+sensitive information. (I guess that even `credential.<url>.username`
+could be considered sensative information by someone.)
+"""]]
