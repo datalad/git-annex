@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2026-08-17T18:20:02Z"
+ content="""
+If that is a security hole, then autoenabled git remotes could already
+be used for a similar attack. (The user needs to run eg `git pull --all`
+rather than `git-annex get` in order to be exploited, at least until
+some of these todos get implemented, but that's not a significant
+difference.)
+
+Now, I do expect that a git-annex user needs to be familiar with the fact
+that it can autoenable remotes. So I could say that the user who sets a
+too-broad git config wildcard of sensative information is responsible for 
+the consequences.
+
+But, if I had considered this problem in 2015, I may have thought twice
+about implementing autoenable. (FWIW, git started supporting url wildcards
+in configs in 2013.)
+"""]]
