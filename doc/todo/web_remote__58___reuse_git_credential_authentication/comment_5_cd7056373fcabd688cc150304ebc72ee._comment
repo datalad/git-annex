@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2026-08-17T19:34:28Z"
+ content="""
+`credential.<url>.annex-ignore` seems like the right track,
+and I suppose there could also be something like 
+`http.<url>.sslCAInfo.annex-ignore` etc too. Such configs would need to
+be clearly documented as only being supported by the web special remote
+and not other special remotes though.
+
+FWIW I don't want DELEGATE to supplant every other use of http in special
+remotes. Any applicable web API library should be able to be used by a
+special remote, when that's the lowest friction way to implement one.
+"""]]
