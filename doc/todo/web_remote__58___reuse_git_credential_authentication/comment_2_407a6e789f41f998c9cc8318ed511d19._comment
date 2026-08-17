@@ -15,4 +15,6 @@ There could be room for a middle ground, and it might be something
 like a separate web special remote that is configured with
 `urlinclude=https://datalad-test.local.lan`
 inheriting your git configs for that url.
+
+@yoh what do you think about that idea?
 """]]
