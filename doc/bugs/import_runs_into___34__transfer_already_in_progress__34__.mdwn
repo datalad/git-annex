@@ -59,3 +59,7 @@ git -C ephys-compression annex initremote s3-bucket type=S3 bucket=aind-benchmar
 
 10.20260717-g698698a3c787a39d6ebe444d85b3eed81a60fb2d Debian GNU/Linux
 
+
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]
