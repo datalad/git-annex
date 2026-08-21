@@ -1,0 +1,69 @@
+### Please describe the problem.
+
+There appears to be an issue with the mask remote with encryption: annex-copying several files stalls after first file.
+
+I first noticed this issue with forgejo-aneksajo and reported as <https://codeberg.org/forgejo-aneksajo/forgejo-aneksajo/issues/125> - only then did I realize that this also affects bare repositories. I added a comment to the forgejo-aneksajo issue and will amend it further, linking to this issue here.
+
+### What steps will reproduce the problem?
+
+This would create a repo with four small files and try to push it to an encrypted mask remote:
+
+```
+git init /tmp/foo
+git init --bare /tmp/local-bare-repo
+cd /tmp/foo
+for n in {1..4}; do head -c 1M < /dev/urandom > f$n.dat; done
+git annex init
+git annex add *dat
+git commit -m "Add 4x1M"
+git remote add local /tmp/local-bare-repo
+git annex sync --no-content local
+git annex sync --no-content local
+git annex info local | grep uuid
+git annex initremote local-mask type=mask remote=local encryption=hybrid keyid=<GPG KEY ID HERE>
+git annex copy --to local-mask
+```
+
+This stalls for me after the first file (ie. after printing copy f2.dat) and I interrupt with Ctrl+c.
+
+On one attempt I got "gpg: signal Interrupt caught ... exiting" after Ctrl+c but usually I got nothing.
+
+### What version of git-annex are you using? On what operating system?
+
+I tried this on two systems:
+
+- git-annex 10.20260717 (from PyPI), git 2.47.3, gpg (GnuPG) 2.4.7 on Debian GNU/Linux 13 (trixie)
+- git-annex 10.20250416, git 2.39.5, gpg (GnuPG) 2.2.40 on Debian GNU/Linux 12 (bookworm)
+
+
+### Please provide any additional information below.
+
+This seems to be specific for copying multiple files, because copying the files one-by-one works fine:
+
+```
+git annex copy f1.dat --to local-mask
+git annex copy f2.dat --to local-mask
+git annex copy f3.dat --to local-mask
+git annex copy f4.dat --to local-mask
+```
+
+This seems to be specific to the mask special remote (and not just a problem with gpg), because e.g. copy to directory remote works:
+
+```
+mkdir /tmp/safe
+git annex initremote safe type=directory directory=/tmp/safe encryption=hybrid keyid=<GPG KEY ID HERE>
+git annex copy --to safe
+```
+
+And it does not seem to be specific to copy, since (after pushing files one by one) fsck shows similar behavior (all at once stalls, one-by-one works).
+
+```
+❱ git annex fsck --fast --from local-mask
+fsck f1.dat ok
+fsck f2.dat ok
+fsck f3.dat    # stalls here
+```
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Plenty - and I think I must have used mask special remote with more than one file before.
