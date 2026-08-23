@@ -1,0 +1,68 @@
+### Please describe the problem.
+`git annex export` to a directory special remote can delete pre-existing files
+that it never wrote.
+When export encounters a path that already exists on the export remote, it does
+not overwrite it — the existing file's contents are left untouched. But it still
+prints `export <remote> <file> ok` and records the file as exported. That record
+later authorises a deletion: once the exported tree stops listing that path,
+export prints `unexport <remote> <file> ok` and removes the pre-existing file.
+So the behaviour is asymmetric in an unfortunate direction: too conservative to
+overwrite a file it does not own, but willing to delete that same file later.
+### What steps will reproduce the problem?
+Set up a directory holding data that git-annex did not put there:
+	mkdir -p /tmp/target
+	echo "PRECIOUS-PREEXISTING-DATA" > /tmp/target/a.txt
+	echo "ALSO-PRECIOUS"             > /tmp/target/keep.txt
+Make an annex whose tree happens to contain a file of the same name, plus one
+new file:
+	mkdir /tmp/work && cd /tmp/work
+	git init -q .
+	git annex init -q work
+	echo "DIFFERENT-CONTENT-FROM-TREE" > a.txt
+	echo "new"                         > b.txt
+	git annex add a.txt b.txt
+	git commit -qm tree
+	git annex initremote t type=directory encryption=none \
+	    directory=/tmp/target exporttree=yes
+Export:
+	$ git annex export main --to t
+	export t a.txt ok
+	export t b.txt ok
+	$ cat /tmp/target/a.txt
+	PRECIOUS-PREEXISTING-DATA
+Note `a.txt` was reported as exported, but its contents were (correctly) not
+overwritten.
+Now export a tree that no longer contains those files. The empty tree is used
+here for brevity; in practice this is just an ordinary change that drops a path.
+	$ git annex export $(git hash-object -t tree /dev/null) --to t
+	unexport t b.txt ok
+	unexport t a.txt ok
+	$ cat /tmp/target/a.txt
+	cat: /tmp/target/a.txt: No such file or directory
+	$ cat /tmp/target/keep.txt
+	ALSO-PRECIOUS
+`a.txt` is gone. Its contents were never exported by git-annex, and never
+existed anywhere in the annex — they are simply lost.
+`keep.txt` survives, which isolates the cause: it was never named in an exported
+tree, so no export record was created for it. Deletion follows the export
+record, and the export record was created for a file that was never written.
+### What version of git-annex are you using? On what operating system?
+10.20251215 on Linux (Manjaro, x86_64). Also reproduced with a build of
+10.20260718 from git.
+### Please provide any additional information below.
+The impact depends on what else lives in the export remote's directory. If it
+holds a checked-out git repository, the deletion can remove that repository's
+`.git/config`, `HEAD`, `refs/*`, `logs/*` and hooks in one pass — every one of
+which export had previously declined to overwrite. In a test here that took a
+working repository from 31 files to 4, after which `git log` in it reported
+`fatal: not a git repository`.
+A couple of related observations from the same testing, in case they are useful:
+* Exporting to an *empty* directory writes every file in the tree as expected,
+  so the non-overwriting behaviour above is specific to paths that already
+  exist.
+* Once export has written a file, later modifying that file on the remote and
+  re-running export does not restore it, with or without `--force`.
+I have deliberately not proposed a fix, since the right behaviour is a design
+question — whether export should refuse such a path, warn, overwrite it, or
+simply not record a file it did not write, all have different consequences for
+existing users.
