@@ -564,13 +564,38 @@ jobs:
 
             See <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}> for more information.
 
-{% if ostype == "ubuntu" or ostype.startswith("macos") %}
-  test-annex-more:
+  test-extra:
+    # Runs the pytest extra-tests suite in tests/extra/pytest/.  Each
+    # test declares its own skip conditions, so the default is: run on
+    # every platform, skip only where an individual test's dependencies
+    # aren't available (e.g. dynlibs needs strace).
     runs-on: {{runs_on}}
     needs: build-package
+    {% if ostype == "windows" %}
+    # Windows: point TMP/TEMP at a short root so any test that shells
+    # out to `git clone` on repos with long annex-object paths (e.g.
+    # the ReproTube DataLad dataset in test_url_backend) stays under
+    # MAX_PATH.  The default runner tempdir under
+    # C:\Users\runneradmin\AppData\Local\Temp is ~65 chars, plus
+    # pytest's per-run subdir pushes total prefix past ~90 chars —
+    # combined with SHA256E annex-object paths (~200 chars) that
+    # crosses 260 and git checkout fails with "Filename too long".
+    env:
+      TMP: C:\t
+      TEMP: C:\t
+    {% endif %}
     steps:
       - name: Checkout this repository
         uses: actions/checkout@v6
+    {% if ostype == "windows" %}
+
+      - name: Prepare short TMPDIR
+        shell: bash
+        run: mkdir -p /c/t
+
+      - name: Handle long filenames
+        run: git config --system core.longpaths true
+    {% endif %}
 
       - name: Create pending PR status
         if: github.event.inputs.pr != ''
@@ -578,7 +603,7 @@ jobs:
           .github/workflows/tools/set-pr-status \
             "${{ github.event.inputs.pr }}" \
             {{osname}} \
-            test-annex-more \
+            test-extra \
             pending
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -597,17 +622,26 @@ jobs:
           {{step}}
           {% endfor %}
 
-      - name: Seek of dynlibs
+    {% if ostype == "ubuntu" %}
+      - name: Install strace
+        run: sudo apt-get update -qq && sudo apt-get install -y strace
+    {% endif %}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install pytest
+        run: python -m pip install --upgrade pip pytest
+
+      - name: Configure git identity
         run: |
-          mkdir /tmp/testrepo; cd /tmp/testrepo; git init
-          function nfailed() {
-            strace -f git-annex "$1" 2>&1 | awk "/$2.*ENOENT/{print}" | tee /dev/fd/2 | wc -l
-          }
-          # We should get some reasonable number (not 40) of directories look up for dynamic libraries
-          liblookups=
-          PS4='> '; set -x
-          test $(nfailed version "libpcre.*so") -lt 7
-          test $(nfailed init "libpcre.*so") -lt 260
+          git config --global user.email "test@github.land"
+          git config --global user.name "GitHub Almighty"
+
+      - name: Run pytest suite
+        run: python -m pytest -v tests/extra/pytest/
 
       - name: Set final PR status
         if: always() && github.event.inputs.pr != ''
@@ -615,12 +649,12 @@ jobs:
           .github/workflows/tools/set-pr-status \
             "${{ github.event.inputs.pr }}" \
             {{osname}} \
-            test-annex-more \
+            test-extra \
             "${{ job.status }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-{% endif %}
+
 {% if test_datalad %}
   test-datalad:
     runs-on: {{runs_on}}

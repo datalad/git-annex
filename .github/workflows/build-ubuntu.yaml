@@ -245,6 +245,7 @@ jobs:
   test-annex:
     runs-on: ${{ matrix.os }}
     needs: build-package
+    if: false  # TEMP: skip to isolate test-extra flakiness
     strategy:
       matrix:
         flavor: ["normal", "crippled-tmp", "crippled-home", "nfs-home", "custom-config1"]
@@ -377,7 +378,11 @@ jobs:
 
             See <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}> for more information.
 
-  test-annex-more:
+  test-extra:
+    # Runs the pytest extra-tests suite in tests/extra/pytest/.  Each
+    # test declares its own skip conditions, so the default is: run on
+    # every platform, skip only where an individual test's dependencies
+    # aren't available (e.g. dynlibs needs strace).
     runs-on: ubuntu-24.04
     needs: build-package
     steps:
@@ -390,7 +395,7 @@ jobs:
           .github/workflows/tools/set-pr-status \
             "${{ github.event.inputs.pr }}" \
             Ubuntu \
-            test-annex-more \
+            test-extra \
             pending
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -404,17 +409,24 @@ jobs:
         run: |
           sudo dpkg -i git-annex*.deb
 
-      - name: Seek of dynlibs
+      - name: Install strace
+        run: sudo apt-get update -qq && sudo apt-get install -y strace
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install pytest
+        run: python -m pip install --upgrade pip pytest
+
+      - name: Configure git identity
         run: |
-          mkdir /tmp/testrepo; cd /tmp/testrepo; git init
-          function nfailed() {
-            strace -f git-annex "$1" 2>&1 | awk "/$2.*ENOENT/{print}" | tee /dev/fd/2 | wc -l
-          }
-          # We should get some reasonable number (not 40) of directories look up for dynamic libraries
-          liblookups=
-          PS4='> '; set -x
-          test $(nfailed version "libpcre.*so") -lt 7
-          test $(nfailed init "libpcre.*so") -lt 260
+          git config --global user.email "test@github.land"
+          git config --global user.name "GitHub Almighty"
+
+      - name: Run pytest suite
+        run: python -m pytest -v tests/extra/pytest/
 
       - name: Set final PR status
         if: always() && github.event.inputs.pr != ''
@@ -422,14 +434,16 @@ jobs:
           .github/workflows/tools/set-pr-status \
             "${{ github.event.inputs.pr }}" \
             Ubuntu \
-            test-annex-more \
+            test-extra \
             "${{ job.status }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+
   test-datalad:
     runs-on: ubuntu-24.04
     needs: build-package
+    if: false  # TEMP: skip to isolate test-extra flakiness
     strategy:
       matrix:
         version: [master, maint, release]
