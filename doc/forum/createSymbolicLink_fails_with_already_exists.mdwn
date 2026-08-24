@@ -1,0 +1,21 @@
+What happened here? It's not a small repo (around 200k files).
+
+```
+# git annex add .   
+add snapshot-20250204-2159/backups/USERNAME/HOSTNAME/home_USERNAME_20190121/.local/share/evolution/mail/local/.Sent.ibex.index.data 
+git-annex: createSymbolicLink '../../../../../../../../../../.git/annex/objects/23/Qj/SHA256E-s8--aedcc86ad84d1a969ae06583f122eab63c402af85b5435f1c77c9a7c02fb401e.data/SHA256E-s8--aedcc86ad84d1a969ae06583f122eab63c402af85b5435f1c77c9a7c02fb401e.data' to '.git/annex/othertmp/.0': already exists (File exists)
+failed
+add snapshot-20250204-2159/backups/USERNAME/HOSTNAME/home_USERNAME_20190121/.local/share/evolution/mail/local/.Templates.ibex.index 
+git-annex: createSymbolicLink '../../../../../../../../../../.git/annex/objects/Z5/6j/SHA256E-s7168--225731ef7798fb6626c969d0ea114bf4ae53f4801027ca8cdb21b1a9878b3e79/SHA256E-s7168--225731ef7798fb6626c969d0ea114bf4ae53f4801027ca8cdb21b1a9878b3e79' to '.git/annex/othertmp/.1': already exists (File exists)
+failed
+add snapshot-20250204-2159/backups/USERNAME/HOSTNAME/home_USERNAME/.local/share/evolution/mail/local/.Sent.ibex.index.data 
+git-annex: createSymbolicLink '../../../../../../../../../../.git/annex/objects/23/Qj/SHA256E-s8--aedcc86ad84d1a969ae06583f122eab63c402af85b5435f1c77c9a7c02fb401e.data/SHA256E-s8--aedcc86ad84d1a969ae06583f122eab63c402af85b5435f1c77c9a7c02fb401e.data' to '.git/annex/othertmp/.0': already exists (File exists)
+failed
+add snapshot-20250204-2159/backups/USERNAME/HOSTNAME/home_USERNAME/.local/share/evolution/mail/local/.Templates.ibex.index 
+git-annex: createSymbolicLink '../../../../../../../../../../.git/annex/objects/Z5/6j/SHA256E-s7168--225731ef7798fb6626c969d0ea114bf4ae53f4801027ca8cdb21b1a9878b3e79/SHA256E-s7168--225731ef7798fb6626c969d0ea114bf4ae53f4801027ca8cdb21b1a9878b3e79' to '.git/annex/othertmp/.0': already exists (File exists)
+failed
+add: 4 failed
+
+```
+
+Btw: In the FormattingHelp in this Wiki the triple backticks for a fenced code block should be mentioned.

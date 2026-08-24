@@ -1,0 +1,65 @@
+### Please describe the problem.
+
+already the 2nd attempt since on first, with annex version from march this year, it did run 
+
+```
+import s3-bucket aind-np1/625749_2022-08-03_15-15-06_ProbeA/provenance.json ok
+import s3-bucket aind-np1/634568_2022-08-05_15-59-46_ProbeA/properties/contact_vector.npy
+  transfer already in progress, or unable to take transfer lock
+failed
+import s3-bucket aind-np1/634568_2022-08-05_15-59-46_ProbeA/properties/offset_to_uV.npy
+  transfer already in progress, or unable to take transfer lock
+failed
+import s3-bucket aind-np1/625749_2022-08-03_15-15-06_ProbeA/properties/channel_name.npy ok
+```
+
+and then after fetching all the rest 400GB without a hiccup, it did exit with non-0... i decided to make a fresh run with "bleeding edge" release 10.20260717-g698698a3c787a39d6ebe444d85b3eed81a60fb2d to similar result
+
+```
+(git)smaug:/mnt/datasets/datalad/crawl/aind-benchmark-data[master]git
+$> datalad run -m "Initial update (import; 2nd attempt; first had 2 files failed)" duct code/update ephys-compression
+[INFO   ] == Command start (output follows) ===== 
+2026-08-18T17:44:04-0400 [INFO    ] con-duct: python-dotenv not installed, skipping .env file loading
+2026-08-18T17:44:04-0400 [INFO    ] con-duct: duct 0.18.0 is executing 'code/update ephys-compression'...
+2026-08-18T17:44:04-0400 [INFO    ] con-duct: Log files will be written to .duct/logs/2026.08.18T17.44.04-2688207_
+I: annex version 10.20260717-g698698a3c787a39d6ebe444d85b3eed81a60fb2d
+list s3-bucket ok
+import s3-bucket aind-np1/625749_2022-08-03_15-15-06_ProbeA/binary.json ok
+import s3-bucket aind-np1/625749_2022-08-03_15-15-06_ProbeA/properties/gain_to_uV.npy ok
+import s3-bucket aind-np1/634568_2022-08-05_15-59-46_ProbeA/properties/channel_name.npy 
+  transfer already in progress, or unable to take transfer lock
+failed
+import s3-bucket aind-np1/625749_2022-08-03_15-15-06_ProbeA/properties/channel_name.npy ok
+...
+```
+
+which I just interrupted then.
+
+I have 
+
+```
+$> git config --list | grep '^annex'
+annex.retry=3
+annex.jobs=5
+annex.autoupgraderepository=false
+annex.autoupgraderepository=false
+annex.diskreserve=0M
+```
+
+
+### What steps will reproduce the problem?
+
+s3 importree remote was initiated via
+
+```
+git -C ephys-compression annex initremote s3-bucket type=S3 bucket=aind-benchmark-data datacenter=US encryption=none fileprefix=ephys-compression/ host=s3.amazonaws.com importtree=yes publicurl=https://aind-benchmark-data.s3.amazonaws.com/ region=us-west-2 signature=anonymous versioning=no
+```
+
+### What version of git-annex are you using? On what operating system?
+
+10.20260717-g698698a3c787a39d6ebe444d85b3eed81a60fb2d Debian GNU/Linux
+
+
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]
