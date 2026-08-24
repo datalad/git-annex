@@ -99,6 +99,14 @@ and 10,000+ lines of changes.
 
 (See [[todo/ditch_yesod]])
 
+### magic
+
+[magic](https://hackage.haskell.org/package/magic) since 1.1.1
+
+New maintainer has not disclosed their LLM use, but it is apparent,
+including in their communications to [[Joey]] about incorrect
+LLM-generated statements in the changelog.
+
 ### Cabal
 
 [First LLM generated code](https://github.com/haskell/cabal/commit/da8b314563feb15a3df7bc1baeef4b7aa08f7578)
