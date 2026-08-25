@@ -1,24 +1,25 @@
-ndoli:
-  # Client location:
-  # - Server: ndoli.dartmouth.edu
-  # - Account: f006dyc
-  # - con/git-annex clone location: ~/git-annex-client/git-annex
-  tests:
-    git-annex-home: |
-      set -eux
-      source testlib.sh
-      workdir_base "$HOME/git-annex-client/work"
-      export PATH=~/bin:$PATH
-      git annex version
-      timeout 7200 git annex test -J5 | ts -s
-
-    git-annex-tmp: |
-      set -eux
-      source testlib.sh
-      workdir_base /dartfs/rc/lab/D/DBIC/DBIC/archive/tmp/ci-git-annex
-      export PATH=~/bin:$PATH
-      git annex version
-      timeout 7200 git annex test -J5 | ts -s
+# Disappeared! yet to reincarnate
+#ndoli:
+#  # Client location:
+#  # - Server: ndoli.dartmouth.edu
+#  # - Account: f006dyc
+#  # - con/git-annex clone location: ~/git-annex-client/git-annex
+#  tests:
+#    git-annex-home: |
+#      set -eux
+#      source testlib.sh
+#      workdir_base "$HOME/git-annex-client/work"
+#      export PATH=~/bin:$PATH
+#      git annex version
+#      timeout 7200 git annex test -J5 | ts -s
+#
+#    git-annex-tmp: |
+#      set -eux
+#      source testlib.sh
+#      workdir_base /dartfs/rc/lab/D/DBIC/DBIC/archive/tmp/ci-git-annex
+#      export PATH=~/bin:$PATH
+#      git annex version
+#      timeout 7200 git annex test -J5 | ts -s
 
 smaug:
   # Client location:
@@ -33,23 +34,24 @@ smaug:
       git annex version
       timeout 3600 git annex test -J5 | ts -s
 
-openmind7:
-  # Client location:
-  # - Server: openmind
-  # - Account: Managed by @yarikoptic; see him for information
-  # - con/git-annex clone location: ~/git-annex-ci/git-annex
-  tests:
-    git-annex-home: |
-      set -eux
-      source testlib.sh
-      workdir_base "$HOME/git-annex-client"
-      export PATH=~/bin:$PATH
-      git annex version
-      timeout 3600 git annex test -J5 | ts -s
-    git-annex-om2: |
-      set -eux
-      source testlib.sh
-      workdir_base /om2/user/yhalchen/git-annex-client
-      export PATH=~/bin:$PATH
-      git annex version
-      timeout 3600 git annex test -J5 | ts -s
+# Retired as of March 2026. TODO: replace with engaging
+#openmind7:
+#  # Client location:
+#  # - Server: openmind
+#  # - Account: Managed by @yarikoptic; see him for information
+#  # - con/git-annex clone location: ~/git-annex-ci/git-annex
+#  tests:
+#    git-annex-home: |
+#      set -eux
+#      source testlib.sh
+#      workdir_base "$HOME/git-annex-client"
+#      export PATH=~/bin:$PATH
+#      git annex version
+#      timeout 3600 git annex test -J5 | ts -s
+#    git-annex-om2: |
+#      set -eux
+#      source testlib.sh
+#      workdir_base /om2/user/yhalchen/git-annex-client
+#      export PATH=~/bin:$PATH
+#      git annex version
+#      timeout 3600 git annex test -J5 | ts -s
