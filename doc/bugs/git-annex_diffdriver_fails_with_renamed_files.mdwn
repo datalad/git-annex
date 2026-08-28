@@ -36,7 +36,7 @@ upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
 local repository version: 10
 ```
 
-from conda-forge. I'll retry with the latest version once the update hits the repositories...
+from conda-forge. ~~I'll retry with the latest version once the update hits the repositories...~~ Same issue with `10.20260717-g0c917920c80ab1e8cc3d8f5886537708949e1659`.
 
 ### Please provide any additional information below.
 
