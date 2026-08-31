@@ -192,6 +192,8 @@ preferredContentTokens pcd =
 	, ValueToken "copies" (usev limitCopies)
 	, ValueToken "lackingcopies" (usev $ limitLackingCopies "lackingcopies" False)
 	, ValueToken "approxlackingcopies" (usev $ limitLackingCopies "approxlackingcopies" True)
+	, ValueToken "excesscopies" (usev $ limitExcessCopies "excesscopies" False)
+	, ValueToken "approxexcesscopies" (usev $ limitExcessCopies "approxexcesscopies" True)
 	, ValueToken "inbackend" (usev limitInBackend)
 	, ValueToken "metadata" (usev limitMetaData)
 	, ValueToken "url" (usev limitUrl)
