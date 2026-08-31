@@ -1,0 +1,15 @@
+"not excesscopies=1" would match when the number of copies is not larger
+than the configured numcopies. It complements "lackingcopies".
+
+I had an implementation in
+[[!commit 26a7f4d89b9e73bf0a0989934e938968cbbbf522]],
+but reverted it in [[!commit e962788bd46eddf8c5a4b2ae96d5fab7298f1cca]]
+because it was buggy.
+
+I think that what's needed to implement this is for it to ignore the
+AssumeNotPresent. But when I tried that, `git-annex drop --auto`
+would drop, but then `git-annex get --auto` would get, so it wasn't stable.
+
+So, I think there needs to also be a AssumePresent, which gets populated
+with the uuid of the repository that is getting a file. "excesscopies"
+would look at AssumePresent. --[[Joey]]
