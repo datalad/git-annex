@@ -450,22 +450,8 @@ limitCopies want = case splitc ':' want of
 addLackingCopies :: String -> Bool -> String -> Annex ()
 addLackingCopies desc approx = addLimit . limitLackingCopies desc approx
 
-{- Adds a limit to match files that have more copies than needed. -}
-addExcessCopies :: String -> Bool -> String -> Annex ()
-addExcessCopies desc approx = addLimit . limitExcessCopies desc approx
-
 limitLackingCopies :: String -> Bool -> MkLimit Annex
-limitLackingCopies = limitCopiesBy "lacking" vs
-  where
-	vs needed nhave numcopies = numcopies - nhave >= needed	
-
-limitExcessCopies :: String -> Bool -> MkLimit Annex
-limitExcessCopies = limitCopiesBy "excess" vs
-  where
-	vs needed nhave numcopies = nhave >= numcopies + needed
-
-limitCopiesBy :: String -> (Int -> Int -> Int -> Bool) -> String -> Bool -> MkLimit Annex
-limitCopiesBy by vs desc approx want = case readish numwant of
+limitLackingCopies desc approx want = case readish numwant of
 	Just needed -> Right $ MatchFiles
 		{ matchAction = const $ \notpresent mi -> flip checkKey mi $
 			go mi needed notpresent
@@ -477,7 +463,7 @@ limitCopiesBy by vs desc approx want = case readish numwant of
 		, matchNegationUnstable = False
 		, matchDesc = matchDescSimple desc
 		}
-	Nothing -> Left $ "bad value for number of " ++ by ++ " copies"
+	Nothing -> Left "bad value for number of lacking copies"
   where
 	go mi needed notpresent key = case (groupwant, grouplimit) of
 		(Nothing, []) -> check (const True)
@@ -488,9 +474,8 @@ limitCopiesBy by vs desc approx want = case readish numwant of
 			m <- uuidsByGroup <$> groupMap
 			check (checkGroupLimit gl m)
 	  where
-		check uuidp = limitCheckNumCopies approx mi
-			notpresent uuidp key
-			(vs needed)
+		check uuidp = limitCheckNumCopies approx mi notpresent uuidp key vs
+		vs nhave numcopies' = numcopies' - nhave >= needed
 	(groupwant, grouplimit, numwant) = case splitc ':' want of
 		(g:n:[]) -> (Just (toGroup g), [], n)
 		_ -> case splitc '=' want of

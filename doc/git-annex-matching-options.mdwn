@@ -169,39 +169,6 @@ in either of two repositories.
   Like `--lackingcopies`, but does not look at .gitattributes annex.numcopies
   settings. This makes it significantly faster.
 
-* `--excesscopies=number`
-
-  Matches only when git-annex believes that there are the specified number
-  or more of additional copies beyond the numcopies settings.
-
-* `--excesscopies=groupname:number`
-
-  Providing the name of a group limits `--excesscopies` to only
-  considering repositories in that group toward the numcopies count.
-
-* `--excesscopies=grouplimit=number`
-
-  Providing a group limit makes `--excesscopies` only consider repositories
-  in groups that match the group limit toward the numcopies count.
-
-  In a group limit, use "+" before a group to include that group, and "-"
-  before a group to exclude it. (The first group to be included does
-  not need to be prefixed with a "+" though it may be.)
-
-  A group limit matches repositories that are in any of the included
-  groups and are in none of the excluded groups.
-
-  For example, "--excesscopies=backup+archive-offsite=1" matches
-  files that are stored in more backup or archive repositories than needed
-  to satisfy numcopies, excluding offsite repositories. And 
-  "--excesscopies=-offsite=1" matches files that are stored in more
-  repositories than needed, excluding offsite repositories.
-
-* `--approxexcesscopies=value`
-
-  Like `--excesscopies`, but does not look at .gitattributes annex.numcopies
-  settings. This makes it significantly faster.
-
 * `--inbackend=name`
 
   Matches only when content is stored using the specified key-value

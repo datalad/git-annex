@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 3"""
- date="2026-08-31T13:58:40Z"
- content="""
-Added "excesscopies=" to preferred content expressions, since that was
-clearly something preferred content was not able to express before. It may
-allow solving this.
-"""]]

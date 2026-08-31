@@ -328,16 +328,6 @@ keyMatchingOptions' =
 		<> help "match files that need more copies (faster)"
 		<> hidden
 		)
-	, annexOption (setAnnexState . Limit.addExcessCopies "excesscopies" False) $ strOption
-		( long "excesscopies" <> metavar paramNumber
-		<> help "match files with more than numcopies"
-		<> hidden
-		)
-	, annexOption (setAnnexState . Limit.addExcessCopies "approxexcesscopies" True) $ strOption
-		( long "approxexcesscopies" <> metavar paramNumber
-		<> help "match files with more than numcopies (faster)"
-		<> hidden
-		)
 	, annexOption (setAnnexState . Limit.addInBackend) $ strOption
 		( long "inbackend" <> short 'B' <> metavar paramName
 		<> help "match files using a key-value backend"

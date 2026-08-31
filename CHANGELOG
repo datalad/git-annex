@@ -1,4 +1,4 @@
-git-annex (10.20260731) UNRELEASED; urgency=medium
+git-annex (10.20260718) UNRELEASED; urgency=medium
 
   * Behavior change: drop --auto --from a remote does not any longer 
     try to drop content that is not known to be present on the remote.
@@ -22,8 +22,6 @@ git-annex (10.20260731) UNRELEASED; urgency=medium
     "sizebalanced" and "fullysizebalanced" expression syntax to support
     group limits as well. Eg
     "balanced=backup:lackingcopies=archive-offsite"
-  * Add excesscopies and approxexcesscopies to preferred content expressions.
-  * Added --excesscopies and --approxexcesscopies.
   * The preferred content groupwanted expression will no longer
     consider a groupwanted expression of "" to be set, which allows
     another group's groupwanted expression to be used instead.
