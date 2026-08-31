@@ -1,9 +1,11 @@
 {- git-annex file matcher types
  -
- - Copyright 2013-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2026 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
+
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module Types.FileMatcher where
 
@@ -83,7 +85,8 @@ type FileMatcherMap a = M.Map UUID (FileMatcher a)
 
 type MkLimit a = String -> Either String (MatchFiles a)
 
-type AssumeNotPresent = S.Set UUID
+newtype AssumeNotPresent = AssumeNotPresent (S.Set UUID)
+	deriving (Semigroup, Monoid)
 
 data MatchFiles a = MatchFiles 
 	{ matchAction :: LiveUpdate -> AssumeNotPresent -> MatchInfo -> a Bool

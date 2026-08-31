@@ -19,11 +19,11 @@ import qualified Data.Set as S
 
 {- Check if a file is preferred content for the local repository. -}
 wantGet :: LiveUpdate -> Bool -> Maybe Key -> AssociatedFile -> Annex Bool
-wantGet lu d key file = isPreferredContent lu Nothing S.empty key file d
+wantGet lu d key file = isPreferredContent lu Nothing mempty key file d
 
 {- Check if a file is preferred content for a repository. -}
 wantGetBy :: LiveUpdate -> Bool -> Maybe Key -> AssociatedFile -> UUID -> Annex Bool
-wantGetBy lu d key file to = isPreferredContent lu (Just to) S.empty key file d
+wantGetBy lu d key file to = isPreferredContent lu (Just to) mempty key file d
 
 {- Check if a file is not preferred or required content, and can be
  - dropped. When a UUID is provided, checks for that repository.
@@ -46,8 +46,8 @@ wantDrop lu d from key file others =
 checkDrop :: (LiveUpdate -> Maybe UUID -> AssumeNotPresent -> Maybe Key -> AssociatedFile -> Bool -> Annex Bool) -> LiveUpdate -> Bool -> Maybe UUID -> Maybe Key -> AssociatedFile -> (Maybe [AssociatedFile]) -> Annex (Maybe AssociatedFile)
 checkDrop checker lu d from key file others = do
 	u <- maybe getUUID (pure . id) from
-	let s = S.singleton u
-	let checker' f = checker lu (Just u) s key f d
+	let notpresent = AssumeNotPresent (S.singleton u)
+	let checker' f = checker lu (Just u) notpresent key f d
 	ifM (checker' file)
 		( return (Just file)
 		, do

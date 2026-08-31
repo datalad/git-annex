@@ -67,7 +67,7 @@ checkFileMatcher lu getmatcher file =
 checkFileMatcher' :: LiveUpdate -> GetFileMatcher -> OsPath -> Annex Bool -> Annex Bool
 checkFileMatcher' lu getmatcher file notconfigured = do
 	matcher <- getmatcher file
-	checkMatcher matcher Nothing afile lu S.empty notconfigured d
+	checkMatcher matcher Nothing afile lu mempty notconfigured d
   where
 	afile = AssociatedFile (Just file)
 	-- checkMatcher will never use this, because afile is provided.
@@ -287,7 +287,7 @@ addUnlockedMatcher = AddUnlockedMatcher <$>
 
 checkAddUnlockedMatcher :: LiveUpdate -> AddUnlockedMatcher -> MatchInfo -> Annex Bool
 checkAddUnlockedMatcher lu (AddUnlockedMatcher matcher) mi = 
-	checkMatcher' matcher mi lu S.empty
+	checkMatcher' matcher mi lu mempty
 
 simply :: MatchFiles Annex -> ParseResult (MatchFiles Annex)
 simply = Right . Operation

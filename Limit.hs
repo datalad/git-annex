@@ -67,7 +67,7 @@ getMatcher = run <$> getMatcher'
 	run matcher i = do
 		(match, desc) <- runWriterT $
 			Utility.Matcher.matchMrun' matcher $ \o ->
-				matchAction o NoLiveUpdate S.empty i
+				matchAction o NoLiveUpdate mempty i
 		explain (mkActionItem i) $ UnquotedString <$>
 			Utility.Matcher.describeMatchResult
 				(\o -> matchDesc o . Just) desc
@@ -333,14 +333,14 @@ addIn s = do
 		, matchNegationUnstable = False
 		, matchDesc = "in" =? s
 		}
-	checkinuuid u notpresent key
+	checkinuuid u (AssumeNotPresent notpresent) key
 		| null date = do
 			us <- Remote.keyLocations key
 			return $ u `elem` us && u `S.notMember` notpresent
 		| otherwise = do
 			us <- loggedLocationsHistorical (RefDate date) key
 			return $ u `elem` us
-	checkinhere notpresent key
+	checkinhere (AssumeNotPresent notpresent) key
 		| S.null notpresent = inAnnex key
 		| otherwise = do
 			u <- getUUID
@@ -433,7 +433,7 @@ limitCopies want = case splitc ':' want of
 			, matchNegationUnstable = False
 			, matchDesc = "copies" =? want
 			}
-	go' n good notpresent key = do
+	go' n good (AssumeNotPresent notpresent) key = do
 		us <- filter (`S.notMember` notpresent)
 			<$> (filterM good =<< Remote.keyLocations key)
 		return $ numCopiesCount us >= n
@@ -483,7 +483,7 @@ limitLackingCopies desc approx want = case readish numwant of
 			_ -> (Nothing, [], want)
 
 limitCheckNumCopies :: Bool -> MatchInfo -> AssumeNotPresent -> (UUID -> Bool) -> Key -> (Int -> Int -> v) -> Annex v
-limitCheckNumCopies approx mi notpresent uuidp key vs = do
+limitCheckNumCopies approx mi (AssumeNotPresent notpresent) uuidp key vs = do
 	numcopies <- if approx
 		then approxNumCopies
 		else case mi of
@@ -564,7 +564,7 @@ addInAllGroup groupname = addLimit $ limitInAllGroup groupMap groupname
 
 limitInAllGroup :: Annex GroupMap -> MkLimit Annex
 limitInAllGroup getgroupmap groupname = Right $ MatchFiles
-	{ matchAction = const $ \notpresent mi -> do
+	{ matchAction = const $ \(AssumeNotPresent notpresent) mi -> do
 		want <- groupUUIDs (toGroup groupname) <$> getgroupmap
 		if S.null want
 			then return True
@@ -608,7 +608,7 @@ limitOnlyInGroup getgroupmap groupname = Right $ MatchFiles
 	, matchDesc = "onlyingroup" =? groupname
 	}
   where
-	check notpresent want key = do
+	check (AssumeNotPresent notpresent) want key = do
 		locs <- S.fromList <$> Remote.keyLocations key
 		let present = locs `S.difference` notpresent
 		return $ not (S.null $ present `S.intersection` want)

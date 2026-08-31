@@ -14,7 +14,6 @@ import Annex.UUID
 import Logs.Group
 
 import qualified Data.Map as M
-import qualified Data.Set as S
 
 cmd :: Command
 cmd = noCommit $
@@ -90,7 +89,7 @@ seek o = do
 			, liftIO exitFailure
 			)
   where
-	checkmatcher matcher = checkMatcher' matcher (matchinfo o) NoLiveUpdate S.empty
+	checkmatcher matcher = checkMatcher' matcher (matchinfo o) NoLiveUpdate mempty
 
 bail :: String -> IO a
 bail s = do

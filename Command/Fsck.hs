@@ -395,7 +395,7 @@ verifyRequiredContent key ai@(ActionItemAssociatedFile afile _) = case afile of
 	go requiredlocs = do
 		presentlocs <- S.fromList <$> loggedLocations key
 		missinglocs <- filterM
-			(\u -> isRequiredContent NoLiveUpdate (Just u) S.empty (Just key) afile False)
+			(\u -> isRequiredContent NoLiveUpdate (Just u) mempty (Just key) afile False)
 			(S.toList $ S.difference requiredlocs presentlocs)
 		if null missinglocs
 			then return True
