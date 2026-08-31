@@ -28,3 +28,5 @@ work the same as
 "fullybalanced=groupname:lackingcopies or (present and 
 not lackingcopies=groupname:0)"
 --[[Joey]]
+
+> Gave up on this one, as not able to be implemented. [[done]] --[[Joey]]
