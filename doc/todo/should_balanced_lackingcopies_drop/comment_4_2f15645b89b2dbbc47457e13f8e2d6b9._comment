@@ -37,4 +37,6 @@ But then, how to make it want to drop in the one case, and not in the other case
 
 Maybe better to leave this up to the user. They could use eg 
 "balanced=pool:lackingcopies=backup and not excesscopies=pool+backup=1"
+if excesscopies were implemented. Sadly, I failed to implement it, see
+[[!commit e962788bd46eddf8c5a4b2ae96d5fab7298f1cca]]
 """]]
