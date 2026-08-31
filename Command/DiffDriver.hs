@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2014-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2026 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -88,6 +88,10 @@ parseReq opts
 			, rNewHex = new_hex
 			, rNewMode = new_mode
 			}
+	-- git documents 7 parameters, but there can be an additional parameter
+	-- containing a similarity index description.
+	mk (path:old_file:old_hex:old_mode:new_file:new_hex:new_mode:_:[]) =
+		mk (path:old_file:old_hex:old_mode:new_file:new_hex:new_mode:[])
 	mk (unmergedpath:[]) = UnmergedReq { rPath = unmergedpath }
 	mk _ = badopts
 

@@ -8,6 +8,8 @@ git-annex (10.20260718) UNRELEASED; urgency=medium
   * git-annex-remote-internetarchive supports --no-content imports.
   * importfeed: Fix reporting and logging of problems with feeds.
   * importfeed: When adding an url, indicate which feed it is from.
+  * diffdriver: Avoid crashing when git passes an (undocumented) 8th
+    parameter.
   * Fixed buggy handling of preferred content
     "balanced=groupname:lackingcopies"
   * Expand preferred content "lackingcopies" and "approxlackingcopies"
