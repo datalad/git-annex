@@ -641,17 +641,21 @@ limitBalanced' termname fullybalanced mu want = do
 		else limitCopies $ if ':' `elem` want
 			then want
 			else want ++ ":1"
-	let checkenoughcopies = if checklackingcopies then id else not
 	let present = limitPresent mu
 	let combo f = f present || f fullybalanced || f limitcopies
 	let matchaction lu a i =
 		let match f = matchAction f lu a i
 		in ifM (Annex.getRead Annex.rebalance)
 			( match fullybalanced
-			, match present <||>
-				((checkenoughcopies <$> match limitcopies)
-					<&&> match fullybalanced
-				)
+			, if checklackingcopies
+				then match present <||>
+					(match limitcopies
+						<&&> match fullybalanced
+					)
+				else match present <||>
+					((not <$> match limitcopies)
+						<&&> match fullybalanced
+					)
 			)
 	Right $ MatchFiles
 		{ matchAction = matchaction
