@@ -1,0 +1,40 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2026-08-31T15:44:32Z"
+ content="""
+Hmm, this behavior is not limited to balanced lackingcopies. 
+Eg "balanced=pool:2" will keep 3 copies if there are already 3, until
+--rebalance is used.
+
+But in that case, the only way there can be 3 copies is if one is manually
+made. And one reason to manually make an extra copy might be when moving a file
+between two nodes of the pool, where it's copied to the new node first,
+and then dropped from the second. It seems that the user would not want
+a `git-annex sync` run in the middle of that process to undo their copy.
+
+And the documentation does mention that:
+
+	Some of the ways that it can get out of balance include [...]
+	a file getting copied into more repositories in the
+	group than the specified number
+
+In the case of eg, "balanced=pool:lackingcopies=backup", a new backup
+repository could be set up, and get a copy of a file (backup repositories
+want all files). Then the file would have more copies in the pool than the
+expression wants it to have.
+
+Is that different enough to justify a different behavior of dropping a copy
+from the pool? At this point, before balanced lackingcopies is in a release,
+it can be done without being  a behavior change still. It would be harder
+to justify it as a later behavior change.
+
+What about the similar situation with a manual move between nodes
+with balanced lackingcopies? It seems the same reasoning applies to that as
+to balanced copies.
+
+But then, how to make it want to drop in the one case, and not in the other case?
+
+Maybe better to leave this up to the user. They could use eg 
+"balanced=pool:lackingcopies=backup and not excesscopies=pool+backup=1"
+"""]]
