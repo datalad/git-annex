@@ -1,4 +1,4 @@
-git-annex (10.20260718) UNRELEASED; urgency=medium
+git-annex (10.20260901) upstream; urgency=medium
 
   * Behavior change: drop --auto --from a remote does not any longer 
     try to drop content that is not known to be present on the remote.
@@ -6,10 +6,11 @@ git-annex (10.20260718) UNRELEASED; urgency=medium
     of git-annex sync and push.
   * External special remote protocol extended to support IMPORTKEY.
   * git-annex-remote-internetarchive supports --no-content imports.
-  * importfeed: Fix reporting and logging of problems with feeds.
-  * importfeed: When adding an url, indicate which feed it is from.
   * diffdriver: Avoid crashing when git passes an (undocumented) 8th
     parameter.
+  * The preferred content groupwanted expression will no longer
+    consider a groupwanted expression of "" to be set, which allows
+    another group's groupwanted expression to be used instead.
   * Fixed buggy handling of preferred content
     "balanced=groupname:lackingcopies"
   * Expand preferred content "lackingcopies" and "approxlackingcopies"
@@ -24,18 +25,17 @@ git-annex (10.20260718) UNRELEASED; urgency=medium
     "sizebalanced" and "fullysizebalanced" expression syntax to support
     group limits as well. Eg
     "balanced=backup:lackingcopies=archive-offsite"
-  * The preferred content groupwanted expression will no longer
-    consider a groupwanted expression of "" to be set, which allows
-    another group's groupwanted expression to be used instead.
-  * git-annex.cabal: Pin magic to 1.1 avoiding build failure on Windows
-    with newer version.
+  * importfeed: Fix reporting and logging of problems with feeds.
+  * importfeed: When adding an url, indicate which feed it is from.
   * Fix reversion in 8.20200226 that broke git-annex benchmark --databases
-  * NoLLMDependencies: Update for warp.
   * Remove the ParallelBuild cabal flag and add cabal.project that
     enables parallel build by default with ghc 9.8+ and cabal-install 3.12.
+  * NoLLMDependencies: Update for warp and magic.
+  * git-annex.cabal: Pin magic to 1.1 avoiding build failure on Windows
+    with newer version.
   * stack.yaml: Update to lts-24.52
 
- -- Joey Hess <id@joeyh.name>  Fri, 24 Jul 2026 10:07:07 -0400
+ -- Joey Hess <id@joeyh.name>  Tue, 01 Sep 2026 11:25:45 -0400
 
 git-annex (10.20260717) upstream; urgency=medium
 
