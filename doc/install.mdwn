@@ -30,7 +30,11 @@ detailed instructions             | quick install
 
 ## Historical builds
 
-Many of historical builds available from the [https://downloads.kitenet.net/.git/](https://downloads.kitenet.net/.git/) git-annex repository.  Visit [downloads.kitenet.net](https://downloads.kitenet.net/) for more information.
+Many historical builds are available from the
+[https://downloads.kitenet.net/.git/](https://downloads.kitenet.net/.git/)
+git-annex repository.Visit
+[downloads.kitenet.net](https://downloads.kitenet.net/) for more
+information.
 
 ## Building it yourself
 
