@@ -1,7 +1,9 @@
-Now git-annex can be used on Android!
+The easiest way to install git-annex on Android is using the [[termux]]
+package.
 
-[[Installation instructions here|/Android]].
+It's also possible to install git-annex manually, using
+the [[Linux_standalone]] build, run inside the Termux or Nix-On-Droid
+app. [[Manual installation instructions here|/Android]].
 
-The way it works now is the [[Linux_standalone]] builds of git-annex are run
-inside the Termux app. The old git-annex Android app,
-is no longer being updated, details about it are at [[oldapp]].
+The old git-annex Android app,
+is no longer bEing updated, details about it are at [[oldapp]].

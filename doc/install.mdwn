@@ -21,8 +21,10 @@ detailed instructions             | quick install
 &nbsp;&nbsp;[[OSX/Homebrew]]      | `brew install git-annex`
 [[FreeBSD]]                       | `pkg install hs-git-annex`
 [[OpenBSD]]                       | `pkg_add git-annex`
-[[Android]]                       | **beta**
-[[Windows]]                       | **beta**
+[[Android]]                       |
+&nbsp;&nbsp;[[termux]]            | `pkg install git-annex`
+&nbsp;&nbsp;[[Nix-On-Droid]]      |
+[[Windows]]                       |
 [[PyPI]]                          | `uv tool install git-annex`
 """]]
 
