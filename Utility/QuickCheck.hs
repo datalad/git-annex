@@ -8,6 +8,7 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 {-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE CPP #-}
 
 module Utility.QuickCheck
 	( module X
@@ -23,7 +24,9 @@ import Data.Time.Clock.POSIX
 import Data.Ratio
 import Data.Char
 import System.Posix.Types
+#if ! MIN_VERSION_QuickCheck(2,17,0)
 import Data.List.NonEmpty (NonEmpty(..))
+#endif
 
 {- A String, but Arbitrary is limited to ascii.
  -
@@ -78,8 +81,10 @@ instance Arbitrary FileID where
 instance Arbitrary FileOffset where
 	arbitrary = nonNegative arbitrarySizedIntegral
 
+#if ! MIN_VERSION_QuickCheck(2,17,0)
 instance Arbitrary l => Arbitrary (NonEmpty l) where
 	arbitrary = (:|) <$> arbitrary <*> arbitrary
+#endif
 
 nonNegative :: (Num a, Ord a) => Gen a -> Gen a
 nonNegative g = g `suchThat` (>= 0)

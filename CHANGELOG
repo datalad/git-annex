@@ -1,3 +1,9 @@
+git-annex (10.20260902) UNRELEASED; urgency=medium
+
+  * Support building with QuickCheck 2.17.
+
+ -- Joey Hess <id@joeyh.name>  Wed, 02 Sep 2026 11:04:59 -0400
+
 git-annex (10.20260901) upstream; urgency=medium
 
   * Behavior change: drop --auto --from a remote does not any longer 
