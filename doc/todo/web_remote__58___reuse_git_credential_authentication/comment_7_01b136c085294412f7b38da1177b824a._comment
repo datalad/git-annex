@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2026-09-03T14:47:57Z"
+ content="""
+I think if there is a config that is only used by the web special remote,
+it needs to mention the web special remote in its name (or value) somehow.
+
+So rather than `credential.<url>.annex-ignore = false`, something like
+`credential.<url>.annex-web-special-remote = true`. But that is a mouthful.
+
+Or `remote.web.annex-gitcredentials = true`. Which avoids git-annex needing
+to handle `credential.` config matching at all, git-credential would use
+whatever configs are set.
+
+That would make the web special remote use git credential for any urls that
+need auth. Which may be too broad for some use case I suppose, but if the
+user wants it to only be used for some specific urls, they can make a
+separate web special remote with `urlinclude=` and set the git config for
+that remote.
+"""]]
