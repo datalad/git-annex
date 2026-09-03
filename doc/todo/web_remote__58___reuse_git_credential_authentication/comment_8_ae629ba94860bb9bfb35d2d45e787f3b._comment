@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2026-09-03T15:23:08Z"
+ content="""
+I started writing docs for `remote.web.annex-gitcredentials`,
+and quickly realized that it's confusing that, for a git remote,
+`remote.<name>.annex-gitcredentials` is not needed in order for git-credential
+to be used, while for a web special remote, it is needed.
+
+That makes me wonder if the config is needed at all, or if it should
+default to true. Either choice would mean that the security considerations
+need to be considered again.
+
+But: A git remote can also be set up to be autoenabled, with an attacker
+controlled url. In that case, git-annex will already use the git credential
+config when accessing files in that git remote, and so will git when
+pulling from that remote.
+
+So, there does not seem to be any additional security exposure in making the
+web special remote use git-credential by default.
+"""]]
