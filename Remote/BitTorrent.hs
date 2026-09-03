@@ -216,7 +216,7 @@ downloadTorrentFile gc u = do
 					withTmpFileIn othertmp (literalOsPath "torrent") $ \f h -> do
 						liftIO $ hClose h
 						resetAnnexFilePerm f
-						ok <- Url.withUrlOptions (Just gc) $ 
+						ok <- Url.withUrlOptionsPromptingCreds (Just gc) $ 
 							Url.download nullMeterUpdate Nothing u f
 						when ok $
 							liftIO $ moveFile f torrent

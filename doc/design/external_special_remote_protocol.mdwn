@@ -159,7 +159,10 @@ in order for it to support being used for key/value storage.
     Rather than the special remote downloading content from an url itself,
     this lets it offload that work to git-annex. This response is a protocol
     extension; it's only safe to send it to git-annex after it sent an
-    `EXTENSIONS` that included `TRANSFER-RETRIEVE-URL`.
+    `EXTENSIONS` that included `TRANSFER-RETRIEVE-URL`.  
+    This uses the same url download machinery git-annex usually uses,
+    inluding using `git-credential` as needed (since git-annex version
+    10.20260902).  
   * `DELEGATE type=value [params]`  
     Delegate this request to a different type of special remote.
     See [[delegate_appendix]].
@@ -181,7 +184,10 @@ in order for it to support being used for key/value storage.
     Rather than the special remote checking an url itself, 
     this lets it offload that work to git-annex. This response is a protocol
     extension; it's only safe to send it to git-annex after it sent an
-    `EXTENSIONS` that included `CHECKPRESENT-URL`.
+    `EXTENSIONS` that included `CHECKPRESENT-URL`.  
+    This uses the same url download machinery git-annex usually uses,
+    inluding using `git-credential` as needed (since git-annex version
+    10.20260902).  
   * `DELEGATE type=value [params]`  
     Delegate this request to a different type of special remote.
     See [[delegate_appendix]].
@@ -473,7 +479,8 @@ handling a request.
 * `DOWNLOAD-URL Url`  
   Requests the git-annex download the url to a temporary file.
   This uses the same url download machinery git-annex usually uses,
-  inluding using `git-credential` as needed.  
+  inluding using `git-credential` as needed (since git-annex version
+  10.20260902).  
   (git-annex replies with DOWNLOAD-URL-SUCCESS followed by the name of
   the temporary file, or with DOWNLOAD-URL-FAILURE followed by an error
   message.)  

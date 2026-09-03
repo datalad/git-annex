@@ -2143,8 +2143,10 @@ Remotes are configured using these settings in `.git/config`.
   specific way. See its documentation.
 
   Setting this prevents git-annex from using git-credential
-  for prompting for http passwords. Instead, you can include "--netrc"
-  to make curl use your ~/.netrc file and record the passwords there.
+  for prompting for http passwords in situations where it usually does
+  (eg when using a git remote, or the web special remote). 
+  Instead, you can include "--netrc" to make curl use your ~/.netrc
+  file and record the passwords there.
 
 * `annex.youtube-dl-options`
 

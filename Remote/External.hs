@@ -100,9 +100,9 @@ gen rt externalprogram r u rc gc rs
 			importUnsupported
 		return $ Just $ specialRemote c
 			readonlyStorer
-			(retrieveUrl gc)
+			(retrieveUrlReadOnly gc)
 			readonlyRemoveKey
-			(checkKeyUrl gc)
+			(checkKeyUrlReadOnly gc)
 			rmt
 	| otherwise = do
 		c <- parsedRemoteConfig remote rc
@@ -335,7 +335,7 @@ retrieveKeyFileM external gc = fileRetriever $ \dest k p ->
 				| k == k' -> result $ Left $
 					respErrorMessage "TRANSFER" errmsg
 			TRANSFER_RETRIEVE_URL k' url
-				| k == k' -> getResult $ retrieveUrl' gc url dest k p
+				| k == k' -> getResult $ retrieveUrl gc url dest k p
 			DELEGATE ps -> getResult $ do
 				delegate <- getDelegateRemote external ps
 				_ <- retrieveKeyFile delegate k
@@ -373,7 +373,7 @@ checkPresentM external gc k = either giveup id <$> go
 				| k' == k -> result $ Left $
 					respErrorMessage "CHECKPRESENT" errmsg
 			CHECKPRESENT_URL k' url
-				| k == k' -> checkKeyUrl' gc k url
+				| k == k' -> checkKeyUrl gc k url
 			DELEGATE ps -> Just $ do
 				delegate <- getDelegateRemote external ps
 				Result . Right <$> checkPresent delegate k
@@ -432,7 +432,7 @@ retrieveExportM external gc k loc dest p = do
 		TRANSFER_FAILURE Download k' errmsg
 			| k == k' -> result $ Left $ respErrorMessage "TRANSFER" errmsg
 		TRANSFER_RETRIEVE_URL k' url
-			| k == k' -> Just $ Result <$> retrieveUrl' gc url dest k p
+			| k == k' -> Just $ Result <$> retrieveUrl gc url dest k p
 		DELEGATE ps -> getResult $ do
 			delegate <- getDelegateRemote external ps
 			_ <- retrieveExport (exportActions delegate) k loc dest p
@@ -466,7 +466,7 @@ retrieveImportM external gc loc cids dest gk p =
 		RETRIEVEIMPORT_FAILURE errmsg -> 
 			result $ Left $ respErrorMessage "RETRIEVEIMPORT" errmsg
 		RETRIEVEIMPORT_URL url -> getResult $ do
-			retrieveUrl' gc url dest UnknownSize p >>= \case
+			retrieveUrl gc url dest UnknownSize p >>= \case
 				Right () -> Right <$> either pure id gk
 				Left msg -> pure (Left msg)
 		DELEGATE ps -> getResult $ do
@@ -522,7 +522,7 @@ checkPresentExportImport request srequest delegateaction handlereq external gc k
 			| k' == k -> result $ Left $
 				respErrorMessage srequest errmsg
 		CHECKPRESENT_URL k' url
-			| k == k' -> checkKeyUrl' gc k url
+			| k == k' -> checkKeyUrl gc k url
 		DELEGATE ps -> Just $ do
 			delegate <- getDelegateRemote external ps
 			Result . Right <$> delegateaction delegate k loc
@@ -864,7 +864,7 @@ handleRequest' st external req mp responsehandler
 				liftIO $ atomically $ do
 					l <- takeTMVar cleanupv
 					putTMVar cleanupv (removeTmpFile tmpf:l)
-				res <- withUrlOptions (Just gc) $
+				res <- withUrlOptionsPromptingCreds (Just gc) $
 					downloadUrl' False UnknownSize 
 						nullMeterUpdate Nothing [url]
 						tmpf
@@ -1206,15 +1206,15 @@ checkUrlM external url =
   where
 	mkmulti (u, s, f) = (u, s, toOsPath f)
 
-retrieveUrl :: RemoteGitConfig -> Retriever
-retrieveUrl gc = fileRetriever' $ \f k p iv -> do
+retrieveUrlReadOnly :: RemoteGitConfig -> Retriever
+retrieveUrlReadOnly gc = fileRetriever' $ \f k p iv -> do
 	us <- getWebUrls k
 	unlessM (withUrlOptions (Just gc) $ downloadUrl True k p iv us f) $
 		giveup downloadFailed
 
-retrieveUrl' :: MeterSize sizer => RemoteGitConfig -> URLString -> OsPath -> sizer -> MeterUpdate -> Annex (Either String ())
-retrieveUrl' gc url dest sizer p = 
-	withUrlOptions (Just gc) $ \uo ->
+retrieveUrl :: MeterSize sizer => RemoteGitConfig -> URLString -> OsPath -> sizer -> MeterUpdate -> Annex (Either String ())
+retrieveUrl gc url dest sizer p = 
+	withUrlOptionsPromptingCreds (Just gc) $ \uo ->
 		downloadUrl' False sizer p Nothing [url] dest uo >>= return . \case
 			Left msg -> Left msg
 			Right True -> Right ()
@@ -1223,14 +1223,14 @@ retrieveUrl' gc url dest sizer p =
 downloadFailed :: String
 downloadFailed = "failed to download content"
 
-checkKeyUrl :: RemoteGitConfig -> CheckPresent
-checkKeyUrl gc k = do
+checkKeyUrlReadOnly :: RemoteGitConfig -> CheckPresent
+checkKeyUrlReadOnly gc k = do
 	us <- getWebUrls k
 	anyM (\u -> withUrlOptions (Just gc) $ checkBoth u (fromKey keySize k)) us
 
-checkKeyUrl' :: RemoteGitConfig -> Key -> URLString -> Maybe (Annex (ResponseHandlerResult (Either String Bool)))
-checkKeyUrl' gc k url = 
-	Just $ withUrlOptions (Just gc) $ \uo ->
+checkKeyUrl :: RemoteGitConfig -> Key -> URLString -> Maybe (Annex (ResponseHandlerResult (Either String Bool)))
+checkKeyUrl gc k url = 
+	Just $ withUrlOptionsPromptingCreds (Just gc) $ \uo ->
 		Result <$> checkBoth' url (fromKey keySize k) uo
 
 getWebUrls :: Key -> Annex [URLString]

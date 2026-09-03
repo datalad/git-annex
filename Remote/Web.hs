@@ -141,7 +141,7 @@ downloadKey gc urlincludeexclude key _af dest p vc =
 			)
 	dl (us, ytus) = do
 		iv <- startVerifyKeyContentIncrementally vc key
-		ifM (Url.withUrlOptions (Just gc) $ downloadUrl True key p iv (map fst us) dest)
+		ifM (Url.withUrlOptionsPromptingCreds (Just gc) $ downloadUrl True key p iv (map fst us) dest)
 			( finishVerifyKeyContentIncrementally iv >>= \case
 				(True, v) -> postdl v
 				(False, _) -> dl ([], ytus)
@@ -193,7 +193,7 @@ checkKey' gc key us = firsthit us (Right False) $ \u -> do
 	case downloader of
 		YoutubeDownloader -> youtubeDlCheck u'
 		_ -> catchMsgIO $
-			Url.withUrlOptions (Just gc) $
+			Url.withUrlOptionsPromptingCreds (Just gc) $
 				Url.checkBoth u' (fromKey keySize key)
   where
 	firsthit [] miss _ = return miss

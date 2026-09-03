@@ -1,5 +1,12 @@
 git-annex (10.20260902) UNRELEASED; urgency=medium
 
+  * Use git-credential in more situations when accessing urls that need a
+    password or other authentication, including the web, bittorrent and
+    httpalso special remotes, and git-annex addurl and importfeed.
+  * external: Fix DOWNLOAD-URL to support git-credential, which it
+    was already documented to do.
+  * external: Support git-credential in TRANSFER-RETRIEVE-URL,
+    CHECKPRESENT-URL, and RETRIEVEIMPORT-URL
   * Support building with QuickCheck 2.17.
 
  -- Joey Hess <id@joeyh.name>  Wed, 02 Sep 2026 11:04:59 -0400

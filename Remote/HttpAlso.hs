@@ -134,7 +134,7 @@ retriveExportHttpAlso gc baseurl key loc dest p = do
 
 downloadAction :: RemoteGitConfig -> OsPath -> MeterUpdate -> Maybe IncrementalVerifier -> ((URLString -> Annex (Either String ())) -> Annex (Either String ())) -> Annex ()
 downloadAction gc dest p iv run =
-	Url.withUrlOptions (Just gc) $ \uo ->
+	Url.withUrlOptionsPromptingCreds (Just gc) $ \uo ->
 		run (\url -> Url.download' p iv url dest uo)
 			>>= either giveup (const (return ()))
 
@@ -144,7 +144,7 @@ checkKey gc baseurl ll key =
 
 checkKey' :: RemoteGitConfig -> Key -> URLString -> Annex (Either String Bool)
 checkKey' gc key url = 
-	Url.withUrlOptions (Just gc) $ Url.checkBoth' url (fromKey keySize key)
+	Url.withUrlOptionsPromptingCreds (Just gc) $ Url.checkBoth' url (fromKey keySize key)
 
 checkPresentExportHttpAlso :: RemoteGitConfig -> Maybe URLString -> Key -> ExportLocation -> Annex Bool
 checkPresentExportHttpAlso gc baseurl key loc =

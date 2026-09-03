@@ -39,3 +39,10 @@ for a list of known working combinations.
 Configuration of encryption and chunking is inherited from the other
 special remote, and does not need to be specified when initializing the
 httpalso remote.
+
+## password prompting
+
+When a httpalso special remote is used with an url that requires a password
+or other credential, it will use git-credential(1). The first version of
+git-annex to support that is 10.20260902; older versions will fail to
+download from such an url.

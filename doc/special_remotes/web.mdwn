@@ -40,3 +40,10 @@ to downloading from slowweb.
 
     git-annex initremote --sameas=web slowweb type=web urlinclude='*//slowhost.com/*'
     git config remote.slowweb.annex-cost 300
+
+## password prompting
+
+When the web special remote is used with an url that requires a password
+or other credential, it will use git-credential(1). The first version of
+git-annex to support that is 10.20260902; older versions will fail to
+download from such an url.
