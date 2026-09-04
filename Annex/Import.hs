@@ -853,7 +853,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 				islargefile <- checkMatcher' matcher mi NoLiveUpdate mempty
 				metered Nothing sz bwlimit $ const $ if islargefile
 					then doimportlarge importkey cidmap loc cid sz f
-					else doimportsmall cidmap loc cid sz
+					else doimportsmall cidmap loc cid sz f
 	
 	doimportlarge importkey cidmap loc cid sz f p =
 		tryNonAsync importer >>= \case
@@ -901,25 +901,28 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 	-- The file is small, so is added to git, so while importing
 	-- without content does not retrieve annexed files, it does
 	-- need to retrieve this file.
-	doimportsmall cidmap loc cid sz p = do
-		let downloader tmpfile = do
+	doimportsmall cidmap loc cid sz f p = do
+		let downloader p' tmpfile = do
 			(k, _) <- Remote.retrieveImport
 				(Remote.importActions remote)
 				loc [cid] tmpfile
 				(Right (mkkey tmpfile))
-				p
+				(combineMeterUpdate p' p)
 			case keyGitSha k of
 				Just sha -> do
 					recordcidkey cidmap cid k
 					return sha
 				Nothing -> error "internal"
+		let af = AssociatedFile (Just f)
 		checkDiskSpaceToGet tmpkey Nothing Nothing $
-			withTmp tmpkey $ \tmpfile ->
-				tryNonAsync (downloader tmpfile) >>= \case
-					Right sha -> return $ Just (loc, Left sha)
-					Left e -> do
-						warning (UnquotedString (show e))
-						return Nothing
+			notifyTransfer Download af $
+				download' (Remote.uuid remote) tmpkey af Nothing stdRetry $ \p' ->
+					withTmp tmpkey $ \tmpfile ->
+						tryNonAsync (downloader p' tmpfile) >>= \case
+							Right sha -> return $ Just (loc, Left sha)
+							Left e -> do
+								warning (UnquotedString (show e))
+								return Nothing
 	  where
 		tmpkey = tmpImportKey cid sz
 		mkkey tmpfile = gitShaKey <$> hashFile tmpfile

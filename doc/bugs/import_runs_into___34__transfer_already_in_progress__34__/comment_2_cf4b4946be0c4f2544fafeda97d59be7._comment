@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2026-09-04T15:17:15Z"
+ content="""
+Looks like there is a similar problem when importing small files,
+except in the `doimportsmall` code path it does not use `download`,
+so doesn't notice that it's downloading the same key twice. Which can leave
+2 threads both writing to the same tmpfile, with possibly bad results.
+
+I've fixed that, but only by making that case fail with
+the same "transfer already in progress".
+"""]]
