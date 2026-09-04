@@ -921,7 +921,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 						warning (UnquotedString (show e))
 						return Nothing
 	  where
-		tmpkey = importKey cid sz
+		tmpkey = tmpImportKey cid sz
 		mkkey tmpfile = gitShaKey <$> hashFile tmpfile
 	
 	dodownload cidmap (loc, (cid, sz)) f matcher = do
@@ -956,7 +956,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 						metered (Just p) tmpkey bwlimit $
 							const (rundownload tmpfile)
 	  where
-		tmpkey = importKey cid sz
+		tmpkey = tmpImportKey cid sz
 	
 		mkkey tmpfile = do
 			let mi = MatchingFile FileInfo
@@ -1024,8 +1024,8 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 
 {- Temporary key used for import of a ContentIdentifier while downloading
  - content, before generating its real key. -}
-importKey :: ContentIdentifier -> Integer -> Key
-importKey (ContentIdentifier cid) size = mkKey $ \k -> k
+tmpImportKey :: ContentIdentifier -> Integer -> Key
+tmpImportKey (ContentIdentifier cid) size = mkKey $ \k -> k
 	{ keyName = genKeyName (decodeBS cid)
 	, keyVariety = OtherKey "CID"
 	, keySize = Just size
