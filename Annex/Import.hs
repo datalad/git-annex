@@ -787,10 +787,10 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 			job <- liftIO $ newEmptyTMVarIO
 			let ai = ActionItemOther (Just (QuotedPath (fromImportLocation loc)))
 			let si = SeekInput []
-			let importaction = starting ("import " ++ Remote.name remote) ai si $ do
+			let importaction = do
 				when oldversion $
 					showNote "old version"
-				tryNonAsync (importordownload cidmap i largematcher) >>= \case
+				res <- tryNonAsync (importordownload cidmap i largematcher) >>= \case
 					Left e -> next $ do
 						warning (UnquotedString (show e))
 						liftIO $ atomically $
@@ -800,10 +800,12 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 						liftIO $ atomically $
 							putTMVar job r
 						return (isJust r)
-			commandAction $ bracket_
-				(waitstart importing cid)
-				(signaldone importing cid)
-				importaction
+				return res
+			commandAction $ starting ("import " ++ Remote.name remote) ai si $
+				bracket_
+					(waitstart importing cid)
+					(signaldone importing cid)
+					importaction
 			return (Right job)
 	
 	thirdpartypopulatedimport db (loc, (cid, sz)) = 

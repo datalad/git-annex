@@ -63,3 +63,5 @@ git -C ephys-compression annex initremote s3-bucket type=S3 bucket=aind-benchmar
 
 [[!meta author=yoh]]
 [[!tag projects/dandi]]
+
+> [[fixed|done]] --[[Joey]]

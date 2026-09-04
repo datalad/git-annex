@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2026-09-04T16:37:51Z"
+ content="""
+This bug has been present as long as import has supported -J,
+although it had code that was supposed to prevent this problem.
+
+I've fixed it now.
+"""]]
