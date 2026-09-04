@@ -857,8 +857,8 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 	
 	doimportlarge importkey cidmap loc cid sz f p =
 		tryNonAsync importer >>= \case
-			Right (Just (k, True)) -> return $ Just (loc, Right k)
-			Right _ -> return Nothing
+			Right (Just v) -> return $ Just v
+			Right Nothing -> return Nothing
 			Left e -> do
 				warning (UnquotedString (show e))
 				return Nothing
@@ -877,27 +877,25 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 						logChange NoLiveUpdate k (Remote.uuid remote) InfoPresent
 						if importcontent
 							then getcontent k
-							else return (Just (k, True))
+							else return (Just (loc, Right k))
 					Just msg -> giveup (msg ++ " to import")
 
-		getcontent :: Key -> Annex (Maybe (Key, Bool))
 		getcontent k = do
-			let af = AssociatedFile (Just f)
 			let downloader p' tmpfile = do
 				_ <- Remote.retrieveImport
 					(Remote.importActions remote)
 					loc [cid] tmpfile
 					(Left k)
 					(combineMeterUpdate p' p)
-				ok <- moveAnnex k tmpfile
-				when ok $
-					logStatus NoLiveUpdate k InfoPresent
-				return (Just (k, ok))
-			checkDiskSpaceToGet k Nothing Nothing $
-				notifyTransfer Download af $
-					download' (Remote.uuid remote) k af Nothing stdRetry $ \p' ->
-						withTmp k $ downloader p'
-			
+				ifM (moveAnnex k tmpfile)
+					( do
+						logStatus NoLiveUpdate k InfoPresent
+						return (Just (loc, Right k))
+					, return Nothing
+					)
+			downloadimport k f $ \p' ->
+				withTmp k $ downloader p'
+	
 	-- The file is small, so is added to git, so while importing
 	-- without content does not retrieve annexed files, it does
 	-- need to retrieve this file.
@@ -913,22 +911,18 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 					recordcidkey cidmap cid k
 					return sha
 				Nothing -> error "internal"
-		let af = AssociatedFile (Just f)
-		checkDiskSpaceToGet tmpkey Nothing Nothing $
-			notifyTransfer Download af $
-				download' (Remote.uuid remote) tmpkey af Nothing stdRetry $ \p' ->
-					withTmp tmpkey $ \tmpfile ->
-						tryNonAsync (downloader p' tmpfile) >>= \case
-							Right sha -> return $ Just (loc, Left sha)
-							Left e -> do
-								warning (UnquotedString (show e))
-								return Nothing
+		downloadimport tmpkey f $ \p' ->
+			withTmp tmpkey $ \tmpfile ->
+				tryNonAsync (downloader p' tmpfile) >>= \case
+					Right sha -> return $ Just (loc, Left sha)
+					Left e -> do
+						warning (UnquotedString (show e))
+						return Nothing
 	  where
 		tmpkey = tmpImportKey cid sz
 		mkkey tmpfile = gitShaKey <$> hashFile tmpfile
 	
 	dodownload cidmap (loc, (cid, sz)) f matcher = do
-		let af = AssociatedFile (Just f)
 		let downloader tmpfile p = do
 			(k, _) <- Remote.retrieveImport
 				(Remote.importActions remote)
@@ -952,12 +946,10 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 			Left e -> do
 				warning (UnquotedString (show e))
 				return Nothing
-		checkDiskSpaceToGet tmpkey Nothing Nothing $
-			notifyTransfer Download af $
-				download' (Remote.uuid remote) tmpkey af Nothing stdRetry $ \p ->
-					withTmp tmpkey $ \tmpfile ->
-						metered (Just p) tmpkey bwlimit $
-							const (rundownload tmpfile)
+		downloadimport tmpkey f $ \p ->
+			withTmp tmpkey $ \tmpfile ->
+				metered (Just p) tmpkey bwlimit $
+					const (rundownload tmpfile)
 	  where
 		tmpkey = tmpImportKey cid sz
 	
@@ -978,7 +970,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 						}
 					fst <$> genKey ks nullMeterUpdate backend
 				else gitShaKey <$> hashFile tmpfile
-				
+	
 	bwlimit = remoteAnnexBwLimitDownload (Remote.gitconfig remote)
 			<|> remoteAnnexBwLimit (Remote.gitconfig remote)
 
@@ -1024,6 +1016,14 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 		CIDLog.recordContentIdentifier rs cid k
 
 	rs = Remote.remoteStateHandle remote
+	
+	downloadimport :: Key -> OsPath -> (MeterUpdate -> Annex (Maybe (ImportLocation, (Either Sha Key)))) -> Annex (Maybe (ImportLocation, (Either Sha Key)))
+	downloadimport k f a =
+		checkDiskSpaceToGet k Nothing Nothing $
+			notifyTransfer Download af $
+				download' (Remote.uuid remote) k af Nothing stdRetry a
+	  where
+		af = AssociatedFile (Just f)	
 
 {- Temporary key used for import of a ContentIdentifier while downloading
  - content, before generating its real key. -}
