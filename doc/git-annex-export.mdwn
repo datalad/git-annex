@@ -31,6 +31,11 @@ being exported to it. (Note that things in the expression like
 Any files in the treeish that are stored on git will also be exported to
 the special remote.
 
+Note that, unless the special remote is also configured with
+`importtree=yes`, git-annex should be the only thing writing to it.
+Files written to it in other ways can be overwritten by git-annex,
+or can confuse git-annex.
+
 Repeated exports are done efficiently, by diffing the old and new tree,
 and transferring only the changed files, and renaming files as necessary.
 
