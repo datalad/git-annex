@@ -417,12 +417,12 @@ choke f = do
 
 data DavHandle = DavHandle DAVContext DavUser DavPass URLString
 
-type DavHandleVar = TMVar (Either (Annex (Either String DavHandle)) (Either String DavHandle))
+type DavHandleVar = TVar (Either (Annex (Either String DavHandle)) (Either String DavHandle))
 
 {- Prepares a DavHandle for later use. Does not connect to the server or do
  - anything else expensive. -}
 mkDavHandleVar :: ParsedRemoteConfig -> RemoteGitConfig -> UUID -> Annex DavHandleVar
-mkDavHandleVar c gc u = liftIO $ newTMVarIO $ Left $ do
+mkDavHandleVar c gc u = liftIO $ newTVarIO $ Left $ do
 	mcreds <- getCreds c gc u
 	case (mcreds, configUrl c) of
 		(Just (user, pass), Just baseurl) -> do
@@ -431,16 +431,12 @@ mkDavHandleVar c gc u = liftIO $ newTMVarIO $ Left $ do
 			return (Right h)
 		_ -> return $ Left "webdav credentials not available"
 
-{- Concurrent actions are allowed to run at the same time with the same
- - DavHandle, so any use of eg setDepth will affect other actions. -}
 withDavHandle :: DavHandleVar -> (DavHandle -> Annex a) -> Annex a
-withDavHandle hv a = liftIO (atomically (takeTMVar hv)) >>= \case
-	Right hdl -> do
-		liftIO $ atomically $ putTMVar hv (Right hdl)
-		either giveup a hdl
+withDavHandle hv a = liftIO (readTVarIO hv) >>= \case
+	Right hdl -> either giveup a hdl
 	Left mkhdl -> do
 		hdl <- mkhdl
-		liftIO $ atomically $ putTMVar hv (Right hdl)
+		liftIO $ atomically $ writeTVar hv (Right hdl)
 		either giveup a hdl
 
 goDAV :: DavHandle -> DAVT IO a -> IO a

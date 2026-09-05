@@ -12,6 +12,8 @@ git-annex (10.20260902) UNRELEASED; urgency=medium
   * Also fixes possible data corruption when importing identical small files.
   * Support building with QuickCheck 2.17.
   * importfeed: Avoid displaying empty feed titles.
+  * webdav: Fix a hang when credentials are not available.
+    (Reversion introduced in 10.20260901)
 
  -- Joey Hess <id@joeyh.name>  Wed, 02 Sep 2026 11:04:59 -0400
 
