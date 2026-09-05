@@ -10,11 +10,14 @@ So the behaviour is asymmetric in an unfortunate direction: too conservative to
 overwrite a file it does not own, but willing to delete that same file later.
 ### What steps will reproduce the problem?
 Set up a directory holding data that git-annex did not put there:
+
 	mkdir -p /tmp/target
 	echo "PRECIOUS-PREEXISTING-DATA" > /tmp/target/a.txt
 	echo "ALSO-PRECIOUS"             > /tmp/target/keep.txt
+
 Make an annex whose tree happens to contain a file of the same name, plus one
 new file:
+
 	mkdir /tmp/work && cd /tmp/work
 	git init -q .
 	git annex init -q work
@@ -24,16 +27,20 @@ new file:
 	git commit -qm tree
 	git annex initremote t type=directory encryption=none \
 	    directory=/tmp/target exporttree=yes
+
 Export:
+
 	$ git annex export main --to t
 	export t a.txt ok
 	export t b.txt ok
 	$ cat /tmp/target/a.txt
 	PRECIOUS-PREEXISTING-DATA
+
 Note `a.txt` was reported as exported, but its contents were (correctly) not
 overwritten.
 Now export a tree that no longer contains those files. The empty tree is used
 here for brevity; in practice this is just an ordinary change that drops a path.
+
 	$ git annex export $(git hash-object -t tree /dev/null) --to t
 	unexport t b.txt ok
 	unexport t a.txt ok
@@ -41,6 +48,7 @@ here for brevity; in practice this is just an ordinary change that drops a path.
 	cat: /tmp/target/a.txt: No such file or directory
 	$ cat /tmp/target/keep.txt
 	ALSO-PRECIOUS
+
 `a.txt` is gone. Its contents were never exported by git-annex, and never
 existed anywhere in the annex — they are simply lost.
 `keep.txt` survives, which isolates the cause: it was never named in an exported
