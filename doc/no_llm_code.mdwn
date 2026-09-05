@@ -120,8 +120,20 @@ git-annex.cabal that prevent an old version building it.
 
 ### git
 
-Since 2.53
+Status is unclear. Possibly since 2.53 or 2.55.
 
-[First LLM generated code](https://github.com/git/git/commit/d7971544fe17378f44f49983010dbfc1834f7bef)
+git's developer documentation
+[states](https://git-scm.com/docs/SubmittingPatches#ai) that they will "reject
+anything that looks AI generated", with similar legal concerns as those
+discussed at the top of this web page. See [this
+thread](https://lore.kernel.org/git/aooRdiVdjovWSFiG@fruit.crustytoothpaste.net/T/#md349b22d89eb933d22ec7a77dbc45ab562de5348).
+
+[First Assisted-By LLM code](https://github.com/git/git/commit/d7971544fe17378f44f49983010dbfc1834f7bef),
+but the git developers think this and other similar patches were
+[mimicked other code in git](https://lore.kernel.org/git/aooRdiVdjovWSFiG@fruit.crustytoothpaste.net/T/#mf9ad560764da1645d1fa9a13cf68e4e2cd579d9a)
+is a way that makes them not be a potential license problem.
+
+[First Co-Authored-By LLM code](https://github.com/git/git/commit/d9ee2ab501089e0ee22305ae99e13c7b730bc798)
+which was merged into gitk upstream of git and so avoided git's policy.
 
 git-annex supports git back to 2.22.
