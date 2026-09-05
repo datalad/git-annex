@@ -1,0 +1,28 @@
+If a directory special remote, which is configured with exporttree=yes
+but without importtree=yes, has a file written to it not by git-annex,
+a later git-annex export of a file with the same name but a different
+content fails to overwrite it, but the output of the command indicates
+the export succeeded.
+
+Of course, it's fine for the file to be overwritten. The user is not 
+supposed to be writing files to such a location themselves; if they
+want such files preserved they need to use importtree=yes. 
+It would also be fine for the command to error out.
+But it's surprising for it to silently fail to write to it.
+
+This is not limited to the directory special remote. It happens because
+`checkPresentExport` is used to check if there is a file in the export
+location and it's skipped being written if so, under the assumption
+that the export already was done in another clone of the repository.
+See [[!commit c3fa1f2b0869a87a9788ebbf881993c8093f3196]].
+
+Would it be possible to deal with that better? The export log should
+indicate if the file is known to have been exported to the special remote,
+and so it should be able to skip trying to re-export it in that case,
+without needing the `checkPresentExport`.
+
+(FWIW: There is another, probably LLM generated bug report, about this
+which, as is usual for LLM generated bug reports, contains specious
+pseudo-reasoning which it's not worth engaging with.
+I am filing this bug report in anticipation of deleting that one.)
+--[[Joey]]
