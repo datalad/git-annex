@@ -172,12 +172,13 @@ getFeed o url st =
 	parse tmpf = liftIO (parseFeedFromFile' tmpf) >>= \case
 		Nothing -> debugfeedcontent tmpf "parsing the feed failed"
 		Just f -> do
-			let feedtitle = '"' : decodeBS (fromFeedText $ getFeedTitle f) ++ "\""
+			let qq s = '"' : s ++ "\""
+			let feedtitle = decodeBS (fromFeedText $ getFeedTitle f)
 			unless (null feedtitle) $
-				showNote (UnquotedString feedtitle)
+				showNote (UnquotedString (qq feedtitle))
 			let feeddesc = if null feedtitle
 				then url
-				else feedtitle
+				else qq feedtitle
 			case findDownloads url f feeddesc of
 				[] -> debugfeedcontent tmpf "bad feed content; no enclosures to download"
 				l -> do
