@@ -1,4 +1,4 @@
-### Please describe the problem.
+### Please describe the problem in your own words.
 
 
 ### What steps will reproduce the problem?
