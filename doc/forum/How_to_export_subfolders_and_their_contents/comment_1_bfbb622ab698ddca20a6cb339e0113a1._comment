@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2026-09-07T15:52:37Z"
+ content="""
+git-annex will filter the tree it exports to only the files that are
+configured to be preferred content of the remote. So you could do this:
+
+	git annex wanted android 'include=album/*'
+	git-annex export master --to android
+
+See [[git-annex-preferred-content]] for details about the syntax, but
+basically you can extend that to as many directories as you want, separated by 
+"or"; it will include any files in any of those directories.
+
+----
+
+> How do I create a tree that contains the subfolder itself too?
+
+Worth noting that is a general git question really, with several valid
+answers that don't involve git-annex at all. (One easy one is to check out
+a new branch, `git rm` everything except the subfolder, and `git commit`.)
+
+And once you have such a tree stored on a git branch, you can pass that
+branch to `git-annex export`. So that's an option if you don't want to need
+to deal with git-annex's own filtering features.
+"""]]
