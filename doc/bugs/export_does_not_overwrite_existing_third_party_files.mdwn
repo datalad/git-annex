@@ -16,10 +16,7 @@ location and it's skipped being written if so, under the assumption
 that the export already was done in another clone of the repository.
 See [[!commit c3fa1f2b0869a87a9788ebbf881993c8093f3196]].
 
-Would it be possible to deal with that better? The export log should
-indicate if the file is known to have been exported to the special remote,
-and so it should be able to skip trying to re-export it in that case,
-without needing the `checkPresentExport`.
+Would it be possible to deal with that better?
 
 (FWIW: There is another, probably LLM generated bug report, about this
 which, as is usual for LLM generated bug reports, contains specious
