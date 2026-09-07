@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2026-09-07T13:26:05Z"
+ content="""
+FWIW, I did add a note to the git-annex-export man page that git-annex
+expects to be the only thing writing to an exporttree=yes remote unless
+importtree=yes. So hopefully there will be less confused users. However,
+I'm doubtful that will be enough to avoid all confusion.
+
+So, I've also made it display a warning in this situation.
+"""]]

@@ -283,7 +283,10 @@ startExport r srcrs db cvar allfilledvar ti = do
 	stopUnless (notrecordedpresent ek) $
 		starting ("export " ++ name r) ai si $
 			ifM (either (const False) id <$> tryNonAsync (checkPresentExport (exportActions r) ek loc))
-				( next $ cleanupExport r db ek loc False
+				( do
+					unlessM (isImportSupported r) $
+						warning presentwarning 
+					next $ cleanupExport r db ek loc False
 				, do
 					liftIO $ modifyMVar_ cvar (pure . const (FileUploaded True))
 					performExport r srcrs db ek af (Git.LsTree.sha ti) loc allfilledvar
@@ -308,6 +311,16 @@ startExport r srcrs db cvar allfilledvar ti = do
 				then return False
 				else notElem (uuid r) <$> loggedLocations ek
 			)
+	
+	presentwarning = UnquotedString $ unwords
+		[ "A file by this name is already present in the remote."
+		, "This is typically due to an export conflict, which will"
+		, "be resolved by this command once the git-annex branch"
+		, "is in sync across all writers. (Or it may be due to"
+		, "something other than git-annex writing to the remote."
+		, "Since the remote is not configured with importtree=yes,"
+		, "such modifications will not be preserved.)"
+		]
 
 performExport :: Remote -> [Remote] -> ExportHandle -> Key -> AssociatedFile -> Sha -> ExportLocation -> MVar AllFilled -> CommandPerform
 performExport r srcrs db ek af contentsha loc allfilledvar = do
