@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2026-09-07T15:17:19Z"
+ content="""
+This is a simple failure to refill a TMVar on use, so easy to fix.
+
+T the bug has always been there since the first release of Remote.Mask.
+I am as surprised as you that apparently none of us tried it with multiple
+files before.
+"""]]

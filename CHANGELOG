@@ -18,6 +18,7 @@ git-annex (10.20260902) UNRELEASED; urgency=medium
     of an export conflict, or has been unsafely writing directly to a
     remote that is configured with exporttree=yes but without
     importtree=yes.
+  * Fix mask special remote to not hang after the first file.
 
  -- Joey Hess <id@joeyh.name>  Wed, 02 Sep 2026 11:04:59 -0400
 

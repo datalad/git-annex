@@ -166,12 +166,17 @@ mkMaskedRemote :: RemoteConfig -> RemoteGitConfig -> UUID -> Annex MaskedRemote
 mkMaskedRemote c gc u = do
 	v <- liftIO $ newTMVarIO Nothing
 	return $ MaskedRemote $ 
-		liftIO (atomically (takeTMVar v)) >>= \case
-			Just maskedremote -> return maskedremote
-			Nothing -> do
-				maskedremote <- findMaskedRemote c gc u
-				liftIO $ atomically $ putTMVar v (Just maskedremote)
-				return maskedremote
+		liftIO (atomically (takeTMVar v)) >>= \d ->
+			go v d `onException` restore v
+  where
+	go v (Just maskedremote) = do
+		liftIO $ atomically $ putTMVar v (Just maskedremote)
+		return maskedremote
+	go v Nothing = do
+		maskedremote <- findMaskedRemote c gc u
+		liftIO $ atomically $ putTMVar v (Just maskedremote)
+		return maskedremote
+	restore v = liftIO (atomically (void (tryPutTMVar v Nothing)))
 
 findMaskedRemote :: RemoteConfig -> RemoteGitConfig -> UUID -> Annex Remote
 findMaskedRemote c gc myuuid = case remoteAnnexMask gc of

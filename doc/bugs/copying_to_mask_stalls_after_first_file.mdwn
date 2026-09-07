@@ -67,3 +67,5 @@ fsck f3.dat    # stalls here
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Plenty - and I think I must have used mask special remote with more than one file before.
+
+> [[fixed|done]]
