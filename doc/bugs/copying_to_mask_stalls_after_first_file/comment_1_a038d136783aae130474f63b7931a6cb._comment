@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2026-09-07T15:13:31Z"
+ content="""
+Reproduced. Note that `{1..4}` is a bashism or something and didn't work
+when I used it in a shell script, but `seq 1 4` worked.
+"""]]
